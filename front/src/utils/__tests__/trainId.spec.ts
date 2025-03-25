@@ -9,6 +9,7 @@ import {
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
+  getOccurrenceIndexFromOccurrenceId,
 } from '../trainId';
 
 describe('formatEditoastTrainIdToTrainScheduleId', () => {
@@ -85,6 +86,42 @@ describe('formatOccurrenceIdToEditoastTrainId', () => {
     const occurrenceId = 'occurrence-1-paced-123' as OccurrenceId;
     const result = formatOccurrenceIdToEditoastTrainId(occurrenceId);
     expect(result).toBe(123);
+  });
+
+  it('should throw an error for an invalid pacedTrain key format', () => {
+    const occurrenceId = 'occurrence-1-invalid-123' as OccurrenceId;
+    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
+      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+    );
+  });
+
+  it('should throw an error for an invalid occurrence key format', () => {
+    const occurrenceId = 'train-1-paced-123' as OccurrenceId;
+    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
+      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+    );
+  });
+
+  it("should throw an error if the paced train id isn't a number", () => {
+    const occurrenceId = 'occurrence-3-paced-onetwo' as OccurrenceId;
+    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
+      `Invalid paced train ID or occurrence index: ${occurrenceId}`
+    );
+  });
+
+  it("should throw an error if the occurrence id isn't a number", () => {
+    const occurrenceId = 'occurrence-five-paced-2' as OccurrenceId;
+    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
+      `Invalid paced train ID or occurrence index: ${occurrenceId}`
+    );
+  });
+});
+
+describe('getOccurrenceIndexFromOccurrenceId', () => {
+  it('should return the occurrence index', () => {
+    const occurrenceId = 'occurrence-1-paced-123' as OccurrenceId;
+    const result = getOccurrenceIndexFromOccurrenceId(occurrenceId);
+    expect(result).toBe(1);
   });
 
   it('should throw an error for an invalid pacedTrain key format', () => {

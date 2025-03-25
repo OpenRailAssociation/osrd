@@ -27,11 +27,7 @@ import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastTrainIdToTrainScheduleId,
-  formatTrainScheduleIdToEditoastTrainId,
-  isTrainSchedule,
-} from 'utils/trainId';
+import { isTrainSchedule } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from '../types';
@@ -45,9 +41,7 @@ type SimulationResultsProps = {
   collapsedTimetable: boolean;
   infraId?: number;
   projectionData?: ProjectionData;
-  trainScheduleSummaries?: TimetableItemWithDetails[];
-  // TODO Paced trains : uncomment this to have a `selectedTimetableItem` and replace the trainScheduleSummaries prop in https://github.com/OpenRailAssociation/osrd/issues/11054
-  // timetableItemsWithDetails: TimetableItemWithDetails[];
+  timetableItemsWithDetails: TimetableItemWithDetails[];
 
   conflicts?: Conflict[];
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => void;
@@ -58,7 +52,7 @@ const SimulationResults = ({
   collapsedTimetable,
   infraId,
   projectionData,
-  trainScheduleSummaries,
+  timetableItemsWithDetails,
   conflicts = [],
   updateTrainDepartureTime,
 }: SimulationResultsProps) => {
@@ -68,10 +62,10 @@ const SimulationResults = ({
   const timetableId = useSelector(getOperationalStudiesTimetableID);
 
   const {
-    selectedTrainSchedule,
-    selectedTrainRollingStock,
-    selectedTrainPowerRestrictions,
-    trainSimulation,
+    selectedTimetableItem,
+    selectedTimetableItemRollingStock,
+    selectedTimetableItemPowerRestrictions,
+    timetableItemSimulation,
     pathProperties,
     path,
   } = useSimulationResults();
@@ -89,8 +83,8 @@ const SimulationResults = ({
   const [mapCanvas, setMapCanvas] = useState<string>();
 
   const { operationalPoints, loading: formattedOpPointsLoading } = useFormattedOperationalPoints(
-    selectedTrainSchedule,
-    trainSimulation,
+    selectedTimetableItem,
+    timetableItemSimulation,
     pathProperties
   );
 
@@ -123,15 +117,12 @@ const SimulationResults = ({
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/11054
   const selectedTrainSummary = useMemo(
     () =>
-      trainScheduleSummaries?.find(
-        (train) =>
-          isTrainSchedule(train.id) &&
-          formatTrainScheduleIdToEditoastTrainId(train.id) === selectedTrainSchedule?.id
+      timetableItemsWithDetails?.find(
+        (timetableItem) => timetableItem.id === selectedTimetableItem?.id
       ),
-    [trainScheduleSummaries, selectedTrainSchedule]
+    [timetableItemsWithDetails, selectedTimetableItem]
   );
 
   // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
@@ -154,14 +145,14 @@ const SimulationResults = ({
     }
   };
 
-  if ((!selectedTrainSchedule || !trainSimulation) && !projectionData) {
+  if ((!selectedTimetableItem || !timetableItemSimulation) && !projectionData) {
     return null;
   }
 
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
-      {selectedTrainSchedule && (
+      {selectedTimetableItem && (
         <div
           className={cx('osrd-simulation-sticky-bar', {
             'with-collapsed-timetable': collapsedTimetable,
@@ -169,7 +160,7 @@ const SimulationResults = ({
         >
           <div className="row">
             <div className="col-xl-4">
-              <TimeButtons departureTime={selectedTrainSchedule.start_time} />
+              <TimeButtons departureTime={selectedTimetableItem.start_time} />
             </div>
             {trainUsedForProjectionSpaceTimeData && (
               <TrainDetails projectedTrain={trainUsedForProjectionSpaceTimeData} />
@@ -210,9 +201,10 @@ const SimulationResults = ({
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
+                      // TODO Paced train : remove this condition in https://github.com/OpenRailAssociation/osrd/issues/10613
                       selectedTrainScheduleId={
-                        selectedTrainSchedule?.id
-                          ? formatEditoastTrainIdToTrainScheduleId(selectedTrainSchedule.id)
+                        selectedTimetableItem && isTrainSchedule(selectedTimetableItem.id)
+                          ? selectedTimetableItem.id
                           : undefined
                       }
                       waypointsPanelData={{
@@ -236,10 +228,10 @@ const SimulationResults = ({
         </div>
       </ResizableSection>
 
-      {selectedTrainSchedule && trainSimulation && (
+      {selectedTimetableItem && timetableItemSimulation && (
         <>
-          {/* TRAIN : SPACE SPEED CHART */}
-          {selectedTrainRollingStock && pathProperties && (
+          {/* SIMULATION : SPEED SPACE CHART */}
+          {selectedTimetableItemRollingStock && pathProperties && (
             <div className="osrd-simulation-container speedspacechart-container">
               <div
                 className="chart-container"
@@ -248,9 +240,9 @@ const SimulationResults = ({
                 }}
               >
                 <SpeedSpaceChartContainer
-                  trainSimulation={trainSimulation}
-                  selectedTrainPowerRestrictions={selectedTrainPowerRestrictions}
-                  rollingStock={selectedTrainRollingStock}
+                  timetableItemSimulation={timetableItemSimulation}
+                  selectedTimetableItemPowerRestrictions={selectedTimetableItemPowerRestrictions}
+                  rollingStock={selectedTimetableItemRollingStock}
                   pathProperties={pathProperties}
                   heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
                   setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
@@ -263,10 +255,10 @@ const SimulationResults = ({
           <div className="simulation-map">
             <SimulationResultsMap
               geometry={pathProperties?.geometry}
-              trainSimulation={{
-                ...trainSimulation,
-                trainId: selectedTrainSchedule.id,
-                startTime: selectedTrainSchedule.start_time,
+              timetableItemSimulation={{
+                ...timetableItemSimulation,
+                timetableItemId: selectedTimetableItem.id,
+                startTime: selectedTimetableItem.start_time,
               }}
               setMapCanvas={setMapCanvas}
               pathfindingResult={path}
@@ -277,28 +269,32 @@ const SimulationResults = ({
           <div className="time-stop-outputs">
             <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('timetableOutput')}</p>
             <TimesStopsOutput
-              simulatedTrain={trainSimulation}
-              trainSummary={selectedTrainSummary}
+              simulatedTimetableItem={timetableItemSimulation}
+              timetableItemWithDetails={selectedTrainSummary}
               operationalPoints={pathProperties?.operationalPoints}
-              selectedTrainSchedule={selectedTrainSchedule}
+              selectedTimetableItem={selectedTimetableItem}
               path={path}
               dataIsLoading={formattedOpPointsLoading}
             />
           </div>
 
           {/* SIMULATION EXPORT BUTTONS */}
-          {pathProperties && selectedTrainRollingStock && operationalPoints && path && infraId && (
-            <SimulationResultExport
-              path={path}
-              scenarioData={scenarioData}
-              train={selectedTrainSchedule}
-              simulatedTrain={trainSimulation}
-              pathElectrifications={pathProperties.electrifications}
-              operationalPoints={operationalPoints}
-              rollingStock={selectedTrainRollingStock}
-              mapCanvas={mapCanvas}
-            />
-          )}
+          {pathProperties &&
+            selectedTimetableItemRollingStock &&
+            operationalPoints &&
+            path &&
+            infraId && (
+              <SimulationResultExport
+                path={path}
+                scenarioData={scenarioData}
+                timetableItem={selectedTimetableItem}
+                simulatedTimetableItem={timetableItemSimulation}
+                pathElectrifications={pathProperties.electrifications}
+                operationalPoints={operationalPoints}
+                rollingStock={selectedTimetableItemRollingStock}
+                mapCanvas={mapCanvas}
+              />
+            )}
         </>
       )}
     </div>

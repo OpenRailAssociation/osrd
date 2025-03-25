@@ -8,11 +8,10 @@ import type {
   RollingStockWithLiveries,
   SimulationResponse,
   TrainScheduleBase,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemWithTimetableId, TrainId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -156,10 +155,10 @@ export type ElectrificationVoltage = {
 };
 
 export type SimulationResultsData = {
-  selectedTrainSchedule?: TrainScheduleResult;
-  selectedTrainRollingStock?: RollingStockWithLiveries;
-  selectedTrainPowerRestrictions: LayerData<PowerRestrictionValues>[];
-  trainSimulation?: SimulationResponseSuccess;
+  selectedTimetableItem?: TimetableItemWithTimetableId;
+  selectedTimetableItemRollingStock?: RollingStockWithLiveries;
+  selectedTimetableItemPowerRestrictions: LayerData<PowerRestrictionValues>[];
+  timetableItemSimulation?: SimulationResponseSuccess;
   pathProperties?: PathPropertiesFormatted;
   pathLength?: number;
   path?: PathfindingResultSuccess;

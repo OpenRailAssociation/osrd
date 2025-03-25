@@ -5,11 +5,8 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import {
-  type ReportTrain,
-  type TrackSection,
-  type TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
+import { type ReportTrain, type TrackSection } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { mmToM, msToKmhRounded } from 'utils/physics';
@@ -19,7 +16,7 @@ export function massWithOneDecimal(number: number) {
 }
 
 // On the next function, we need to check if the found index is included in the array
-// to prevent a white screen when datas are computing and synchronizing when switching the selected train
+// to prevent a white screen when datas are computing and synchronizing when switching the selected timetable item
 
 /**
  * Get the Vmax values at a givenPosition (in meters), using vmax (MRSP in m/s)
@@ -97,28 +94,28 @@ const getTimeAndSpeed = (
  */
 export const formatOperationalPoints = (
   operationalPoints: PathPropertiesFormatted['operationalPoints'],
-  simulatedTrain: SimulationResponseSuccess,
-  train: TrainScheduleBase,
+  simulatedTimetableItem: SimulationResponseSuccess,
+  timetableItem: TimetableItemWithTimetableId,
   trackSections: Record<string, TrackSection>
 ): OperationalPointWithTimeAndSpeed[] => {
   // Format operational points
   const formattedStops: OperationalPointWithTimeAndSpeed[] = [];
 
-  const { final_output } = simulatedTrain;
+  const { final_output } = simulatedTimetableItem;
 
   operationalPoints.forEach((op) => {
     const { time: finalOutputTime, speed: finalOutputSpeed } = getTimeAndSpeed(final_output, op);
 
     // Get duration
     let stepDuration = Duration.zero;
-    const correspondingStep = train.path.find(
+    const correspondingStep = timetableItem.path.find(
       (step) =>
         'uic' in step &&
         step.uic === op.extensions?.identifier?.uic &&
         step.secondary_code === op.extensions.sncf?.ch
     );
     if (correspondingStep) {
-      const correspondingSchedule = train.schedule?.find(
+      const correspondingSchedule = timetableItem.schedule?.find(
         (step) => step.at === correspondingStep.id
       );
       if (correspondingSchedule && correspondingSchedule.stop_for) {
@@ -147,7 +144,7 @@ export const formatOperationalPoints = (
 
     formattedStops.push({
       time: addDurationToDate(
-        new Date(train.start_time),
+        new Date(timetableItem.start_time),
         new Duration({ milliseconds: finalOutputTime })
       ),
       speed: finalOutputSpeed,

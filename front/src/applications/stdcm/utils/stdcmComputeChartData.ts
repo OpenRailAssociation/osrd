@@ -2,13 +2,14 @@ import type { TFunction } from 'i18next';
 
 import { preparePathPropertiesData } from 'applications/operationalStudies/utils';
 import type { StdcmPathProperties, StdcmSuccessResponse } from 'applications/stdcm/types';
-import type { TrainScheduleResult, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 const computeChartData = (
   stdcmResponse: StdcmSuccessResponse,
-  stdcmTrainResult: TrainScheduleResult,
+  stdcmTrainResult: TimetableItemWithTimetableId,
   t: TFunction,
   rollingStock: RollingStockWithLiveries,
   pathProperties: StdcmPathProperties
@@ -22,7 +23,7 @@ const computeChartData = (
     t
   );
   const formattedPowerRestrictions = formatPowerRestrictionRangesWithHandled({
-    selectedTrainSchedule: stdcmTrainResult,
+    selectedTimetableItem: stdcmTrainResult,
     selectedTrainRollingStock: rollingStock,
     pathfindingResult,
     pathProperties: formattedPathProperties,

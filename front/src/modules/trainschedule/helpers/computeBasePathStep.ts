@@ -1,4 +1,4 @@
-import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
@@ -17,14 +17,14 @@ const findCorrespondingMargin = (
 };
 
 /**
- * Given a trainSchedule and a path item index, aggregate schedule, margins and the corresponding path item to return a PathStep
+ * Given a timetable item and a path item index, aggregate schedule, margins and the corresponding path item to return a PathStep
  */
 const computeBasePathStep = (
-  trainSchedule: Pick<TrainScheduleResult, 'path' | 'schedule' | 'margins'>,
+  timetableItem: Pick<TrainScheduleBase, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const step = trainSchedule.path[pathItemIndex];
-  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === step.id);
+  const step = timetableItem.path[pathItemIndex];
+  const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === step.id);
 
   const {
     arrival,
@@ -43,8 +43,8 @@ const computeBasePathStep = (
   }
 
   let theoreticalMargin;
-  if (trainSchedule.margins && pathItemIndex !== trainSchedule.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(step.id, pathItemIndex, trainSchedule.margins);
+  if (timetableItem.margins && pathItemIndex !== timetableItem.path.length - 1) {
+    theoreticalMargin = findCorrespondingMargin(step.id, pathItemIndex, timetableItem.margins);
   }
 
   return {

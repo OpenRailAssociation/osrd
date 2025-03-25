@@ -134,6 +134,9 @@
       align-items: center;
       border-top: 1px solid var(--white100);
       border-bottom: 1px solid var(--black10);
+      &:hover {
+        background-color: var(--ambiantB10);
+      }
       &.selected {
         background-color: var(--selection20);
       }

@@ -7,7 +7,7 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 import { formatOperationalPoints } from '../SimulationResultExport/utils';
 
@@ -15,8 +15,8 @@ import { formatOperationalPoints } from '../SimulationResultExport/utils';
  * add time, speed, position, duration to operational points
  */
 export const useFormattedOperationalPoints = (
-  train?: TrainScheduleBase,
-  simulatedTrain?: SimulationResponseSuccess,
+  timetableItem?: TimetableItemWithTimetableId,
+  simulatedTimetableItem?: SimulationResponseSuccess,
   pathProperties?: PathPropertiesFormatted
 ) => {
   const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>();
@@ -24,7 +24,7 @@ export const useFormattedOperationalPoints = (
   const { getTrackSectionsByIds } = useScenarioContext();
 
   useEffect(() => {
-    if (train && simulatedTrain && pathProperties) {
+    if (timetableItem && simulatedTimetableItem && pathProperties) {
       const fetchOperationalPoints = async () => {
         setLoading(true);
 
@@ -32,8 +32,8 @@ export const useFormattedOperationalPoints = (
         const trackSections = await getTrackSectionsByIds(trackIds);
         const formattedOperationalPoints = formatOperationalPoints(
           pathProperties.operationalPoints,
-          simulatedTrain,
-          train,
+          simulatedTimetableItem,
+          timetableItem,
           trackSections
         );
         setOperationalPoints(formattedOperationalPoints);
@@ -41,7 +41,7 @@ export const useFormattedOperationalPoints = (
       };
       fetchOperationalPoints();
     }
-  }, [train, simulatedTrain, pathProperties, getTrackSectionsByIds]);
+  }, [timetableItem, simulatedTimetableItem, pathProperties, getTrackSectionsByIds]);
 
   return { operationalPoints, loading };
 };

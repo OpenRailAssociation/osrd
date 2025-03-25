@@ -226,7 +226,7 @@ const ScenarioContent = ({
                   projectionData={projectionData}
                   infraId={infra.id}
                   conflicts={conflicts}
-                  trainScheduleSummaries={timetableItemsWithDetails}
+                  timetableItemsWithDetails={timetableItemsWithDetails}
                   updateTrainDepartureTime={updateTrainDepartureTime}
                 />
               )

@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import type { TFunction } from 'i18next';
 
-import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { PathfindingResultSuccess, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
 import type { OperationalPoint } from '../types';
 
@@ -11,7 +11,7 @@ const HIGHEST_PRIORITY_WEIGHT = 100;
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
 export const upsertMapWaypointsInOperationalPoints = (
-  path: TrainScheduleResult['path'],
+  path: TrainScheduleBase['path'],
   pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
   operationalPoints: OperationalPoint[],
   t: TFunction

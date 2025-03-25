@@ -82,7 +82,7 @@ export const formatPacedTrainIdToEditoastTrainId = (pacedTrainId: PacedTrainId):
 };
 
 /**
- * Given a occurrence id with a OccurrenceId format (used across the front),
+ * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the paced train id in the Editoast format (used for api).
  */
 export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId): number => {
@@ -100,4 +100,24 @@ export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId):
   }
 
   return formattedTrainId;
+};
+
+/**
+ * Given a occurrence id with an OccurrenceId format (used across the front),
+ * returns the occurrence index.
+ */
+export const getOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
+  if (!isOccurrence(occurrenceId)) {
+    throw new Error(
+      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+    );
+  }
+
+  const formattedOccurrenceIndex = Number(occurrenceId.split('-')[1]);
+
+  if (Number.isNaN(formattedOccurrenceIndex)) {
+    throw new Error(`Invalid paced train ID or occurrence index: ${occurrenceId}`);
+  }
+
+  return formattedOccurrenceIndex;
 };

@@ -20,7 +20,6 @@ import {
   type PostTimetableByIdStdcmApiArg,
   type PostTimetableByIdStdcmApiResponse,
   type RollingStockWithLiveries,
-  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
@@ -30,9 +29,11 @@ import {
   getStdcmTimetableID,
   getStdcmInfraID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import useStdcmForm from './useStdcmForm';
 import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
@@ -101,8 +102,8 @@ const useStdcm = ({
     // If the response is successful compute the chart data, otherwise only include conflicts.
     let outputs;
     if (formattedResponse.status === 'success') {
-      const stdcmTrain: TrainScheduleResult = {
-        id: STDCM_TRAIN_ID,
+      const stdcmTrain: TimetableItemWithTimetableId = {
+        id: formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID),
         timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',

@@ -10,7 +10,7 @@ import { mapValues } from 'lodash';
 import { getCurrentBearing } from 'utils/geometry';
 import { clamp } from 'utils/numbers';
 
-import type { TrainCurrentInfo } from './TrainOnMap';
+import type { TimetableItemCurrentInfo } from './TrainOnMap';
 
 type TriangleSideDimensions = {
   left: number;
@@ -22,7 +22,7 @@ type TriangleSideDimensions = {
 
 // When the train is backward, lineSliceAlong will crash. we need to have head and tail in the right order
 export const computeExtremityPositionPoints = (
-  { headDistanceAlong, tailDistanceAlong }: TrainCurrentInfo,
+  { headDistanceAlong, tailDistanceAlong }: TimetableItemCurrentInfo,
   geojsonPath: Feature<LineString>,
   sideDimensions: {
     head: TriangleSideDimensions;
@@ -111,7 +111,7 @@ const getTrainGeoJsonPath = (
 };
 
 export const getTrainPieces = (
-  trainInfo: TrainCurrentInfo,
+  trainInfo: TimetableItemCurrentInfo,
   geojsonPath: Feature<LineString>,
   zoomLengthFactor: number
 ) => {

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import type { TrainId } from 'reducers/osrdconf/types';
 
 import type { Occurrence } from '../types';
 
@@ -27,6 +28,7 @@ type OccurrenceItemProps = {
   isSelected: boolean;
   nextOccurrence?: Occurrence;
   isValid?: boolean;
+  selectOccurrence: (occurrence: TrainId) => void;
 };
 
 const OccurrenceItem = ({
@@ -34,6 +36,7 @@ const OccurrenceItem = ({
   isSelected,
   nextOccurrence,
   isValid,
+  selectOccurrence,
 }: OccurrenceItemProps) => {
   const { trainName, rollingStock, startTime, arrivalTime } = occurrence;
   const isAfterMidnight = dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
@@ -49,6 +52,9 @@ const OccurrenceItem = ({
         'next-after-midnight': isNextAfterMidnight,
         selected: isSelected,
       })}
+      role="button"
+      tabIndex={0}
+      onClick={() => selectOccurrence(occurrence.id)}
     >
       <div className="occurrence-item-dot">
         <Dot variant="fill" />

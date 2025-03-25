@@ -202,6 +202,26 @@ class PacedTrainSection extends CommonPage {
     await this.verifyItemsVisibility(occurrenceIndex, 'occurrence');
   }
 
+  async clickOnOccurrence({
+    pacedTrainIndex,
+    occurrenceIndex,
+  }: {
+    pacedTrainIndex: number;
+    occurrenceIndex: number;
+  }) {
+    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(pacedTrainIndex);
+
+    // Open the occurrences list to be able to have a unique
+    // paced train locator for the tested one
+    await expect(pacedTrainItemClickableZone).toBeVisible();
+    await pacedTrainItemClickableZone.click();
+
+    const occurrenceItem = this.testedPacedTrainOccurrences.nth(occurrenceIndex);
+    await occurrenceItem.click();
+
+    await pacedTrainItemClickableZone.click();
+  }
+
   async duplicatePacedTrain() {
     const pacedTrainItem = await this.getPacedTrainToClickableZone(0);
     await pacedTrainItem.click();

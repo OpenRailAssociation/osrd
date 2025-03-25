@@ -18,8 +18,8 @@ import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { formatData } from './helpers';
 
 export type SpeedSpaceChartContainerProps = {
-  trainSimulation: SimulationResponseSuccess;
-  selectedTrainPowerRestrictions?: LayerData<PowerRestrictionValues>[];
+  timetableItemSimulation: SimulationResponseSuccess;
+  selectedTimetableItemPowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties: PathPropertiesFormatted;
   heightOfSpeedSpaceChartContainer: number;
   rollingStock: RollingStockWithLiveries;
@@ -32,8 +32,8 @@ const SPEEDSPACECHART_BACKGROUND_COLOR = 'rgb(247, 246, 238)';
 const SPEEDSPACECHART_PADDING_BOTTOM = 22.5;
 
 const SpeedSpaceChartContainer = ({
-  trainSimulation,
-  selectedTrainPowerRestrictions,
+  timetableItemSimulation,
+  selectedTimetableItemPowerRestrictions,
   pathProperties,
   heightOfSpeedSpaceChartContainer,
   rollingStock,
@@ -49,9 +49,9 @@ const SpeedSpaceChartContainer = ({
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
   const speedSpaceChartData = formatData(
-    trainSimulation,
+    timetableItemSimulation,
     rollingStock.length,
-    selectedTrainPowerRestrictions,
+    selectedTimetableItemPowerRestrictions,
     pathProperties
   );
 

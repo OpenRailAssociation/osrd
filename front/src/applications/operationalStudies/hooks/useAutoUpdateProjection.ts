@@ -4,13 +4,19 @@ import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastTrainIdToTrainScheduleId, isTrainSchedule } from 'utils/trainId';
+import {
+  formatEditoastTrainIdToOccurrenceId,
+  formatPacedTrainIdToEditoastTrainId,
+  isPacedTrain,
+  isTrainSchedule,
+} from 'utils/trainId';
 
 /**
  * Automatically select the train to be used for the simulation results display and for the projection.
@@ -23,54 +29,72 @@ import { formatEditoastTrainIdToTrainScheduleId, isTrainSchedule } from 'utils/t
  */
 const useAutoUpdateProjection = (
   infra: InfraWithState,
-  editoastTrainIds: number[],
+  timetableItemIds: TimetableItemId[],
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const formattedTrainIds = editoastTrainIds.map((editoastTrainId) =>
-    formatEditoastTrainIdToTrainScheduleId(editoastTrainId)
-  );
-
   useEffect(() => {
-    if (infra.state !== 'CACHED' || editoastTrainIds.length === 0) {
+    if (infra.state !== 'CACHED' || timetableItemIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       return;
     }
 
+    const isSelectedTimetableItemIncluded =
+      selectedTrainId !== undefined &&
+      timetableItemIds.some((timetableItemId) =>
+        isTrainSchedule(timetableItemId)
+          ? timetableItemId === selectedTrainId
+          : selectedTrainId.includes(timetableItemId)
+      );
+
     // if a selected train is given, we use it for the projection
     if (
       selectedTrainId &&
-      isTrainSchedule(selectedTrainId) &&
       !currentTrainIdForProjection &&
-      formattedTrainIds.includes(selectedTrainId)
+      isTrainSchedule(selectedTrainId) &&
+      timetableItemIds.includes(selectedTrainId)
     ) {
       dispatch(updateTrainIdUsedForProjection(selectedTrainId));
       return;
     }
 
     // if there is already a projection and the projected train still exists, keep it
-    if (
-      currentTrainIdForProjection &&
-      isTrainSchedule(currentTrainIdForProjection) &&
-      formattedTrainIds.includes(currentTrainIdForProjection)
-    ) {
-      if (!selectedTrainId) dispatch(updateSelectedTrainId(formattedTrainIds[0]));
+    if (currentTrainIdForProjection && isSelectedTimetableItemIncluded) {
+      if (isTrainSchedule(timetableItemIds[0])) {
+        dispatch(updateSelectedTrainId(timetableItemIds[0]));
+      } else {
+        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(timetableItemIds[0]);
+        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
+          pacedTrainId: editoastPacedTrainId,
+          occurrenceIndex: 0,
+        });
+        dispatch(updateSelectedTrainId(occurrenceIdToSelect));
+      }
       return;
     }
 
     // by default, use the first valid train
-    const firstValidTrain = timetableItemsWithDetails.find(
-      (train) => train.isValid && isTrainSchedule(train.id)
-    );
-    if (firstValidTrain && isTrainSchedule(firstValidTrain.id)) {
-      dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
-      dispatch(updateSelectedTrainId(firstValidTrain.id));
+    const firstValidTrain = timetableItemsWithDetails.find((item) => item.isValid);
+    if (firstValidTrain) {
+      // TODO Paced train : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/10791
+      if (isTrainSchedule(firstValidTrain.id)) {
+        dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
+        dispatch(updateSelectedTrainId(firstValidTrain.id));
+      }
+      if (isPacedTrain(firstValidTrain.id)) {
+        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(firstValidTrain.id);
+        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
+          pacedTrainId: editoastPacedTrainId,
+          occurrenceIndex: 0,
+        });
+        dispatch(updateSelectedTrainId(occurrenceIdToSelect));
+      }
     }
-  }, [editoastTrainIds, infra, timetableItemsWithDetails]);
+  }, [timetableItemIds, infra, timetableItemsWithDetails]);
 };
 
 export default useAutoUpdateProjection;

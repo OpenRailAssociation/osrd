@@ -28,6 +28,8 @@ import OperationalStudiesPage from './pages/operational-studies/operational-stud
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import RouteTab from './pages/operational-studies/route-tab';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
+import OpSimulationResultPage from './pages/operational-studies/simulation-results-page';
+import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
@@ -43,6 +45,7 @@ import type {
   CommonTranslations,
   FlatTranslations,
   ManageTrainScheduleTranslations,
+  StationData,
   TimetableFilterTranslations,
 } from './utils/types';
 
@@ -70,10 +73,15 @@ const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
 );
 
+const expectedOutputData: StationData[] = readJsonFile(
+  './tests/assets/paced-train/output-table-data.json'
+);
+
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();
+  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
@@ -81,6 +89,8 @@ test.describe('Verify simulation configuration in operational studies for train 
   let routeTab: RouteTab;
   let pacedTrainSection: PacedTrainSection;
   let timesAndStopsTab: TimesAndStopsTab;
+  let simulationResultPage: OpSimulationResultPage;
+  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
 
   let project: Project;
   let study: Study;
@@ -118,6 +128,8 @@ test.describe('Verify simulation configuration in operational studies for train 
       routeTab,
       pacedTrainSection,
       timesAndStopsTab,
+      simulationResultPage,
+      timeAndStopSimulationOutputs,
     ] = [
       new RollingStockSelector(page),
       new OperationalStudiesPage(page),
@@ -125,6 +137,8 @@ test.describe('Verify simulation configuration in operational studies for train 
       new RouteTab(page),
       new PacedTrainSection(page),
       new TimesAndStopsTab(page),
+      new OpSimulationResultPage(page),
+      new TimeAndStopSimulationOutputs(page),
     ];
 
     ({ project, study, scenario } = await createScenario());
@@ -200,7 +214,9 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Verify the paced train has been added and return to the simulation results and timetable
     await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.pacedTrains.added);
+
     await operationalStudiesPage.returnSimulationResult();
+    await operationalStudiesPage.closeToastNotification();
 
     // Confirm that the number of paced trains added matches the expected number
     await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
@@ -211,7 +227,16 @@ test.describe('Verify simulation configuration in operational studies for train 
       ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0]
     );
 
-    // TODO : verify occurrence selection, projection, simulation results
+    // Click on occurrence to check its simulation results
+    await pacedTrainSection.clickOnOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
+
+    await scenarioTimetableSection.clickOnScenarioCollapseButton();
+
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-InitialInputs.png'
+    );
+    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
   });
 
   /** *************** Test 3 **************** */
@@ -259,13 +284,6 @@ test.describe('Verify simulation configuration in operational studies for train 
       DUPLICATED_PACED_TRAIN_INDEX,
       translations
     );
-
-    // As in other tests, checking the last notification needs to be done in a different method
-    // otherwise the received message of the last notification is empty
-    // await pacedTrainSection.verifyPacedTrainHasBeenDeleted(
-    //   DUPLICATED_PACED_TRAIN_DETAILS.name,
-    //   translations
-    // );
 
     // Verify global item counter has one less paced train
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {

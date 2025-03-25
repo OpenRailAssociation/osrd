@@ -13,8 +13,8 @@ import type {
 import type {
   PathfindingResultSuccess,
   RollingStockWithLiveries,
-  TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 import exportTrainCSV from './exportTrainCSV';
 import SimulationReportSheetScenario from './SimulationReportSheetScenario';
@@ -23,8 +23,8 @@ import type { SimulationSheetData } from './types';
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
-  train: TrainScheduleBase;
-  simulatedTrain: SimulationResponseSuccess;
+  timetableItem: TimetableItemWithTimetableId;
+  simulatedTimetableItem: SimulationResponseSuccess;
   pathElectrifications: PathPropertiesFormatted['electrifications'];
   operationalPoints: OperationalPointWithTimeAndSpeed[];
   rollingStock: RollingStockWithLiveries;
@@ -34,8 +34,8 @@ type SimulationResultExportProps = {
 const SimulationResultExport = ({
   path,
   scenarioData,
-  train,
-  simulatedTrain,
+  timetableItem,
+  simulatedTimetableItem,
   pathElectrifications,
   operationalPoints,
   rollingStock,
@@ -45,14 +45,14 @@ const SimulationResultExport = ({
 
   const simulationSheetData: SimulationSheetData = useMemo(
     () => ({
-      trainName: train.train_name,
+      trainName: timetableItem.train_name,
       departure_time: '',
-      simulation: simulatedTrain,
+      simulation: simulatedTimetableItem,
       creationDate: new Date(),
       rollingStock,
-      speedLimitByTag: train.speed_limit_tag,
+      speedLimitByTag: timetableItem.speed_limit_tag,
     }),
-    [simulatedTrain]
+    [simulatedTimetableItem]
   );
 
   const exportTrainPDF = useCallback(async () => {
@@ -85,7 +85,12 @@ const SimulationResultExport = ({
       {/* Export simulation CSV */}
       <Button
         onClick={() =>
-          exportTrainCSV(simulatedTrain, operationalPoints, pathElectrifications, train)
+          exportTrainCSV(
+            simulatedTimetableItem,
+            operationalPoints,
+            pathElectrifications,
+            timetableItem
+          )
         }
         variant="Quiet"
         label=".csv"

@@ -14,6 +14,7 @@ import type {
   PacedTrainId,
   TimetableItemId,
   TimetableItemWithTimetableId,
+  TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
@@ -117,11 +118,18 @@ const TimetableToolbar = ({
     }
   };
 
-  const handleTrainsDelete = async () => {
+  const handleTrainsDelete = async (currentSelectedTrainId?: TrainId) => {
     const itemsCount = selectedTimetableItemIds.length;
 
-    // TODO Paced train : Adapt this to handle paced trains selection in issue https://github.com/OpenRailAssociation/osrd/issues/11054
-    if (selectedTrainId && selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)) {
+    const isSelectedTimetableItemInSelection =
+      currentSelectedTrainId !== undefined &&
+      selectedTimetableItemIds.some((timetableItemId) =>
+        isTrainSchedule(timetableItemId)
+          ? timetableItemId === currentSelectedTrainId
+          : currentSelectedTrainId.includes(timetableItemId)
+      );
+
+    if (isSelectedTimetableItemInSelection) {
       // we need to set selectedTrainId to undefined, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrainId(undefined));
@@ -158,12 +166,8 @@ const TimetableToolbar = ({
           })
         );
       } catch (e) {
-        // TODO Paced train : Adapt this to handle paced trains selection in issue https://github.com/OpenRailAssociation/osrd/issues/11054
-        if (
-          selectedTrainId &&
-          selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)
-        ) {
-          dispatch(updateSelectedTrainId(selectedTrainId));
+        if (isSelectedTimetableItemInSelection) {
+          dispatch(updateSelectedTrainId(currentSelectedTrainId));
         } else {
           dispatch(setFailure(castErrorToFailure(e)));
         }
@@ -310,7 +314,7 @@ const TimetableToolbar = ({
               onClick={() =>
                 openModal(
                   <DeleteModal
-                    handleDelete={handleTrainsDelete}
+                    handleDelete={() => handleTrainsDelete(selectedTrainId)}
                     selectedPacedTrainIds={selectedPacedTrainIds}
                     selectedTrainScheduleIds={selectedTrainScheduleIds}
                   />,

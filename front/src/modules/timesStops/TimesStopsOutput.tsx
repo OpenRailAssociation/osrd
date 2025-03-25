@@ -4,8 +4,9 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
@@ -13,27 +14,27 @@ import TimesStops from './TimesStops';
 import { TableType, type TimesStopsRow } from './types';
 
 type TimesStopsOutputProps = {
-  simulatedTrain?: SimulationResponseSuccess;
-  trainSummary?: TimetableItemWithDetails;
+  simulatedTimetableItem?: SimulationResponseSuccess;
+  timetableItemWithDetails?: TimetableItemWithDetails;
   operationalPoints?: PathPropertiesFormatted['operationalPoints'];
-  selectedTrainSchedule?: TrainScheduleResult;
+  selectedTimetableItem?: TimetableItemWithTimetableId;
   path?: PathfindingResultSuccess;
   dataIsLoading: boolean;
 };
 
 const TimesStopsOutput = ({
-  simulatedTrain,
-  trainSummary,
+  simulatedTimetableItem,
+  timetableItemWithDetails,
   operationalPoints,
-  selectedTrainSchedule,
+  selectedTimetableItem,
   path,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
   const enrichedOperationalPoints = useOutputTableData(
-    simulatedTrain?.final_output,
-    trainSummary,
+    simulatedTimetableItem?.final_output,
+    timetableItemWithDetails,
     operationalPoints,
-    selectedTrainSchedule,
+    selectedTimetableItem,
     path
   );
   return (
@@ -53,7 +54,9 @@ const TimesStopsOutput = ({
         });
       }}
       headerRowHeight={40}
-      dataIsLoading={dataIsLoading || !trainSummary || !operationalPoints || !selectedTrainSchedule}
+      dataIsLoading={
+        dataIsLoading || !timetableItemWithDetails || !operationalPoints || !selectedTimetableItem
+      }
     />
   );
 };

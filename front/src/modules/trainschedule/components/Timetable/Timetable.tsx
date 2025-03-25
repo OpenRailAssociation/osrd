@@ -197,11 +197,9 @@ const Timetable = ({
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
-                  // TODO Paced trains : handle this in https://github.com/OpenRailAssociation/osrd/issues/11054
-                  // isSelected={infraState === 'CACHED' && selectedTrainId === timetableItem.id}
                   isOnEdit={timetableItem.id === itemIdToEdit}
                   isProjectionPathUsed={false}
-                  selectedTimeTableItemId={selectedTrainId}
+                  selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
                   // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612

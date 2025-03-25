@@ -92,8 +92,8 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
           }}
         >
           <SpeedSpaceChartContainer
-            trainSimulation={results.simulation}
-            selectedTrainPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
+            timetableItemSimulation={results.simulation}
+            selectedTimetableItemPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
             pathProperties={speedSpaceChartData.formattedPathProperties}
             heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
             setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}

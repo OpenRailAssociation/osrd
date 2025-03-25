@@ -160,13 +160,13 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [trainIdUsedForProjection, timetableItems]
   );
 
-  const trainScheduleEditoastIds = useMemo(
-    () => (fetchedTrainSchedulesResults || []).map((trainSchedule) => trainSchedule.id),
-    [fetchedTrainSchedulesResults]
+  const timetableItemIds = useMemo(
+    () => timetableItems?.map((item) => item.id) ?? [],
+    [timetableItems]
   );
 
   // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-  useAutoUpdateProjection(infra, trainScheduleEditoastIds, timetableItemsWithDetails);
+  useAutoUpdateProjection(infra, timetableItemIds, timetableItemsWithDetails);
 
   useEffect(() => {
     const sortedTimetableItems = [
@@ -189,8 +189,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       infra.state === 'CACHED' &&
       (timetableItemsWithDetails.length === 0 || pacedTrainWithDetails.length === 0)
     ) {
-      const timetableItemIds = timetableItems.map((timetableItem) => timetableItem.id);
-      setTimetableItemIdsToFetch(timetableItemIds);
+      const timetableItemIdsList = timetableItems.map((timetableItem) => timetableItem.id);
+      setTimetableItemIdsToFetch(timetableItemIdsList);
     }
   }, [timetableItems, infra.state]);
 

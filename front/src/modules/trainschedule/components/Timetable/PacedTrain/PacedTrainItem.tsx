@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -20,6 +20,7 @@ import type {
   TimetableItemWithTimetableId,
   TrainId,
 } from 'reducers/osrdconf/types';
+import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -38,10 +39,9 @@ type PacedTrainItemProps = {
   isInSelection: boolean;
   handleSelectPacedTrain: (pacedTrainId: PacedTrainId) => void;
   pacedTrain: PacedTrainWithDetails;
-  // isSelected: boolean;
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
-  selectedTimeTableItemId: TrainId | undefined;
+  selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
@@ -52,11 +52,10 @@ const PacedTrainItem = ({
   isInSelection,
   handleSelectPacedTrain,
   pacedTrain,
-  // isSelected,
   isOnEdit,
   isProjectionPathUsed,
   selectPacedTrainToEdit,
-  selectedTimeTableItemId,
+  selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
   // dtoImport,
@@ -74,12 +73,17 @@ const PacedTrainItem = ({
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
   const selectPathProjection = async () => {};
 
-  const deletePacedTrain = async () => {
-    // if (isSelected) {
-    //   // we need to set selectedTrainId to undefined, otherwise just after the delete,
-    //   // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-    //   dispatch(updateSelectedTrainId(undefined));
-    // }
+  const selectOccurrence = useCallback((occurrenceId: TrainId) => {
+    dispatch(updateSelectedTrainId(occurrenceId));
+  }, []);
+
+  const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
+    const hasOccurrenceSelected = selectedTrainId?.includes(pacedTrain.id);
+    if (hasOccurrenceSelected) {
+      // we need to set selectedTrainId to undefined, otherwise just after the delete,
+      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
+      dispatch(updateSelectedTrainId(undefined));
+    }
 
     try {
       await deletePacedTrains({
@@ -95,9 +99,9 @@ const PacedTrainItem = ({
       );
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
-      // if (isSelected) {
-      //   dispatch(updateSelectedTrainId(train.id));
-      // }
+      if (hasOccurrenceSelected) {
+        dispatch(updateSelectedTrainId(currentSelectedTrainId));
+      }
     }
   };
 
@@ -247,7 +251,7 @@ const PacedTrainItem = ({
           selectPathProjection={selectPathProjection}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTimetableItem={deletePacedTrain}
+          deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}
         />
       </div>
       <div className="occurrences">
@@ -255,9 +259,10 @@ const PacedTrainItem = ({
           <OccurrenceItem
             occurrence={occurrence}
             key={occurrence.id}
-            isSelected={selectedTimeTableItemId === occurrence.id}
+            isSelected={selectedTrainId === occurrence.id}
             nextOccurrence={occurrences[index + 1]}
             isValid={pacedTrain.isValid}
+            selectOccurrence={selectOccurrence}
           />
         ))}
       </div>

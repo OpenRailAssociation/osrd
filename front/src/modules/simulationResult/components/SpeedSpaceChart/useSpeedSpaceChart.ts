@@ -9,18 +9,18 @@ import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
   type SimulationResponse,
-  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 import { updateChartSynchronizerTrainData } from '../ChartSynchronizer/utils';
 
 /** Prepare data needed for speedSpaceChart */
 const useSpeedSpaceChart = (
-  trainScheduleResult?: TrainScheduleResult,
+  timetableItem?: TimetableItemWithTimetableId,
   pathfindingResult?: PathfindingResultSuccess,
   simulation?: SimulationResponse,
   departureTime?: string
@@ -32,7 +32,7 @@ const useSpeedSpaceChart = (
   const [formattedPowerRestrictions, setFormattedPowerRestrictions] =
     useState<LayerData<PowerRestrictionValues>[]>();
 
-  const rollingStockName = trainScheduleResult?.rolling_stock_name;
+  const rollingStockName = timetableItem?.rolling_stock_name;
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
       {
@@ -54,7 +54,7 @@ const useSpeedSpaceChart = (
     const getPathProperties = async () => {
       if (
         infraId &&
-        trainScheduleResult &&
+        timetableItem &&
         rollingStock &&
         pathfindingResult &&
         simulation?.status === 'success' &&
@@ -64,7 +64,7 @@ const useSpeedSpaceChart = (
           simulation.electrical_profiles,
           pathProperties,
           pathfindingResult,
-          trainScheduleResult.path,
+          timetableItem.path,
           t
         );
 
@@ -73,35 +73,28 @@ const useSpeedSpaceChart = (
     };
 
     getPathProperties();
-  }, [
-    infraId,
-    trainScheduleResult,
-    rollingStock,
-    pathfindingResult,
-    simulation?.status,
-    pathProperties,
-  ]);
+  }, [infraId, timetableItem, rollingStock, pathfindingResult, simulation?.status, pathProperties]);
 
   useEffect(() => {
-    if (trainScheduleResult && rollingStock && pathfindingResult && formattedPathProperties) {
+    if (timetableItem && rollingStock && pathfindingResult && formattedPathProperties) {
       const powerRestrictions = formatPowerRestrictionRangesWithHandled({
-        selectedTrainSchedule: trainScheduleResult,
+        selectedTimetableItem: timetableItem,
         selectedTrainRollingStock: rollingStock,
         pathfindingResult,
         pathProperties: formattedPathProperties,
       });
       setFormattedPowerRestrictions(powerRestrictions);
     }
-  }, [formattedPathProperties, trainScheduleResult]);
+  }, [formattedPathProperties, timetableItem]);
 
   // setup chart synchronizer
   useEffect(() => {
-    if (simulation?.status === 'success' && trainScheduleResult && rollingStock && departureTime) {
+    if (simulation?.status === 'success' && timetableItem && rollingStock && departureTime) {
       updateChartSynchronizerTrainData(simulation, rollingStock, departureTime);
     }
-  }, [simulation, trainScheduleResult, rollingStock, departureTime]);
+  }, [simulation, timetableItem, rollingStock, departureTime]);
 
-  return trainScheduleResult &&
+  return timetableItem &&
     rollingStock &&
     simulation?.status === 'success' &&
     formattedPathProperties &&

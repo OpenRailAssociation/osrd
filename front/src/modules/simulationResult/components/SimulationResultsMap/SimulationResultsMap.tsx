@@ -18,7 +18,9 @@ import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapMarkers, { type MapMarker } from 'common/Map/components/MapMarkers';
-import TrainOnMap, { type TrainCurrentInfo } from 'common/Map/components/TrainOnMap/TrainOnMap';
+import TrainOnMap, {
+  type TimetableItemCurrentInfo,
+} from 'common/Map/components/TrainOnMap/TrainOnMap';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
@@ -28,6 +30,7 @@ import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLe
 import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { getIsPlaying } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isoDateWithTimezoneToSec } from 'utils/date';
@@ -43,14 +46,17 @@ const MAP_ID = 'simulation-result-map';
 type SimulationResultMapProps = {
   pathfindingResult?: PathfindingResultSuccess;
   geometry?: PathPropertiesFormatted['geometry'];
-  trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
+  timetableItemSimulation?: SimulationResponseSuccess & {
+    timetableItemId: TimetableItemId;
+    startTime: string;
+  };
   setMapCanvas?: (mapCanvas: string) => void;
 };
 
 const SimulationResultMap = ({
   pathfindingResult,
   geometry,
-  trainSimulation,
+  timetableItemSimulation,
   setMapCanvas,
 }: SimulationResultMapProps) => {
   const dispatch = useAppDispatch();
@@ -62,7 +68,8 @@ const SimulationResultMap = ({
   const isPlaying = useSelector(getIsPlaying);
 
   const mapRef = React.useRef<MapRef>(null);
-  const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] = useState<TrainCurrentInfo>();
+  const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] =
+    useState<TimetableItemCurrentInfo>();
 
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
@@ -108,17 +115,17 @@ const SimulationResultMap = ({
 
   const { updateTimePosition } = useChartSynchronizer(
     (_, positionValues) => {
-      if (trainSimulation && geojsonPath) {
+      if (timetableItemSimulation && geojsonPath) {
         const selectedTrainPosition = getSelectedTrainHoverPositions(
           geojsonPath,
           positionValues,
-          trainSimulation.trainId
+          timetableItemSimulation.timetableItemId
         );
         setSelectedTrainHoverPosition(selectedTrainPosition);
       }
     },
     'simulation-result-map',
-    [geojsonPath, trainSimulation]
+    [geojsonPath, timetableItemSimulation]
   );
 
   const updateViewportChange = useCallback(
@@ -134,7 +141,7 @@ const SimulationResultMap = ({
   };
 
   const onPathHover = (e: MapLayerMouseEvent) => {
-    if (!isPlaying && e && geojsonPath && trainSimulation) {
+    if (!isPlaying && e && geojsonPath && timetableItemSimulation) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat.toArray());
 
@@ -144,15 +151,15 @@ const SimulationResultMap = ({
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = kmToM(lineLength(sliced, { units: 'kilometers' }));
 
-      const baseSpeedData = trainSimulation.base.speeds.map((speed, i) => ({
+      const baseSpeedData = timetableItemSimulation.base.speeds.map((speed, i) => ({
         speed: msToKmh(speed),
-        position: mmToM(trainSimulation.base.positions[i]),
-        time: trainSimulation.base.times[i],
+        position: mmToM(timetableItemSimulation.base.positions[i]),
+        time: timetableItemSimulation.base.times[i],
       }));
       const timePositionLocal = interpolateOnPosition(
         { speed: baseSpeedData },
         positionLocal,
-        isoDateWithTimezoneToSec(trainSimulation.startTime)
+        isoDateWithTimezoneToSec(timetableItemSimulation.startTime)
       );
 
       if (timePositionLocal instanceof Date) {
@@ -207,12 +214,12 @@ const SimulationResultMap = ({
 
         <MapMarkers markers={mapMarkers} />
 
-        {geojsonPath && selectedTrainHoverPosition && trainSimulation && (
+        {geojsonPath && selectedTrainHoverPosition && timetableItemSimulation && (
           <TrainOnMap
             trainInfo={selectedTrainHoverPosition}
             geojsonPath={geojsonPath}
             viewport={viewport}
-            trainSimulation={trainSimulation}
+            timetableItemSimulation={timetableItemSimulation}
           />
         )}
       </BaseMap>

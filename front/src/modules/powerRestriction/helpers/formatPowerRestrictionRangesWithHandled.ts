@@ -6,10 +6,10 @@ import type {
   PathfindingResultSuccess,
   RollingStock,
   TrainScheduleBase,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { mmToKm, mToMm } from 'utils/physics';
 
 /**
@@ -74,24 +74,24 @@ export const convertPowerRestrictionsAndCheckCompatibility = (
 };
 
 const formatPowerRestrictionRangesWithHandled = ({
-  selectedTrainSchedule,
+  selectedTimetableItem,
   selectedTrainRollingStock,
   pathfindingResult,
   pathProperties,
 }: {
-  selectedTrainSchedule?: TrainScheduleResult;
+  selectedTimetableItem?: TimetableItemWithTimetableId;
   selectedTrainRollingStock?: RollingStock;
   pathfindingResult: PathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;
 }) => {
   if (
-    selectedTrainSchedule &&
-    selectedTrainSchedule.power_restrictions &&
+    selectedTimetableItem &&
+    selectedTimetableItem.power_restrictions &&
     selectedTrainRollingStock
   ) {
     const powerRestrictionsRanges = formatPowerRestrictionRanges(
-      selectedTrainSchedule.power_restrictions,
-      selectedTrainSchedule.path,
+      selectedTimetableItem.power_restrictions,
+      selectedTimetableItem.path,
       pathfindingResult.path_item_positions
     );
     const powerRestrictionsWithHandled = convertPowerRestrictionsAndCheckCompatibility(
