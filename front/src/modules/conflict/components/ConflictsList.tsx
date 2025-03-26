@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 import ConflictCard from './ConflictCard';
 import type { ConflictWithTrainNames } from '../types';
@@ -14,7 +14,7 @@ import addTrainNamesToConflicts from '../utils';
 type ConflictsListProps = {
   conflicts: Conflict[];
   expanded: boolean;
-  trainSchedulesDetails: TrainScheduleWithDetails[];
+  timetableItems: TimetableItemWithDetails[];
   toggleConflictsList: () => void;
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 };
@@ -22,14 +22,14 @@ type ConflictsListProps = {
 const ConflictsList = ({
   conflicts,
   expanded,
-  trainSchedulesDetails,
+  timetableItems,
   toggleConflictsList,
   onConflictClick,
 }: ConflictsListProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const enrichedConflicts = useMemo(
-    () => addTrainNamesToConflicts(conflicts, trainSchedulesDetails),
-    [conflicts, trainSchedulesDetails]
+    () => addTrainNamesToConflicts(conflicts, timetableItems),
+    [conflicts, timetableItems]
   );
   if (conflicts.length === 0) {
     return null;
@@ -52,11 +52,7 @@ const ConflictsList = ({
 
       <div className={cx('conflicts-container', expanded && 'expanded')}>
         {enrichedConflicts.map((conflict, index) => (
-          <ConflictCard
-            key={`${conflict.train_schedule_ids.join(', ')}-${conflict.conflict_type}-${index}`}
-            conflict={conflict}
-            onConflictClick={onConflictClick}
-          />
+          <ConflictCard key={index} conflict={conflict} onConflictClick={onConflictClick} />
         ))}
       </div>
     </div>

@@ -222,12 +222,7 @@ const Timetable = ({
           conflicts={conflicts}
           expanded={conflictsListExpanded}
           toggleConflictsList={toggleConflictsListExpanded}
-          // TODO PACED TRAIN : Adapt this props to handle paced trains in issue
-          trainSchedulesDetails={
-            filteredTimetableItems.filter((timetableItem) =>
-              isTrainSchedule(timetableItem.id)
-            ) as TrainScheduleWithDetails[]
-          }
+          timetableItems={filteredTimetableItems}
           onConflictClick={handleConflictClick}
         />
       )}
