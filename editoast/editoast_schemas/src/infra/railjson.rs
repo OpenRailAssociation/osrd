@@ -52,3 +52,10 @@ pub struct RailJson {
     /// `Detector` is a device that identifies the presence of a train in a TVD section (Track Vacancy Detection section), indicating when a track area is occupied.
     pub detectors: Vec<Detector>,
 }
+
+pub fn major_version(version: &str) -> &str {
+    match version.split_once('.') {
+        Some((major, _)) => major,
+        None => version,
+    }
+}
