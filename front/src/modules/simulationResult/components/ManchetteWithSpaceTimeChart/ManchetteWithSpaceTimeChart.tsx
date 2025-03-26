@@ -13,7 +13,6 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
   Manchette,
-  type InteractiveWaypoint,
   type ProjectPathTrainResult,
   type WaypointMenuData,
   isSegmentPickingElement,
@@ -316,8 +315,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
       ...manchetteProps,
-      waypoints: manchetteProps.contents.map((waypoint: InteractiveWaypoint) => ({
-        ...waypoint,
+      contents: manchetteProps.contents.map((content) => ({
+        ...content,
         onClick: waypointMenuData.handleWaypointClick,
       })),
       waypointMenuData: {
