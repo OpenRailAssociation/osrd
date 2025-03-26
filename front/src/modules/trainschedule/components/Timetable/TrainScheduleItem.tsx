@@ -142,7 +142,6 @@ const TrainScheduleItem = ({
   };
 
   const selectPathProjection = async () => {
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
     dispatch(updateTrainIdUsedForProjection(train.id));
   };
 

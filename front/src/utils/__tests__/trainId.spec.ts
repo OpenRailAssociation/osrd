@@ -5,15 +5,16 @@ import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdc
 import {
   formatEditoastTrainIdToTrainScheduleId,
   formatEditoastTrainIdToIndexedOccurrenceId,
+  formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
-  formatPacedTrainIdToOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastTrainIdToExceptionId,
   getExceptionIdFromOccurrenceId,
+  extractPacedTrainIdFromOccurenceId,
 } from '../trainId';
 
 describe('formatEditoastTrainIdToTrainScheduleId', () => {
@@ -198,5 +199,13 @@ describe('getExceptionIdFromOccurrenceId', () => {
     expect(() => getExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
     );
+  });
+});
+
+describe('extractPacedTrainIdFromOccurenceId', () => {
+  it('should return the paced train ID', () => {
+    const occurrenceId = 'indexedoccurrence_123_1' as OccurrenceId;
+    const result = extractPacedTrainIdFromOccurenceId(occurrenceId);
+    expect(result).toBe('paced_123');
   });
 });

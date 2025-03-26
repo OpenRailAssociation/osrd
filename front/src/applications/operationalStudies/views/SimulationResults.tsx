@@ -22,9 +22,11 @@ import type { TimetableItemWithDetails } from 'modules/trainschedule/components/
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import {
+  getSelectedTrainId,
+  getTrainIdUsedForProjection,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isTrainSchedule } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 
@@ -54,6 +56,7 @@ const SimulationResults = ({
   const dispatch = useAppDispatch();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const {
     selectedTimetableItem,
@@ -95,8 +98,7 @@ const SimulationResults = ({
     filteredOperationalPoints,
     setFilteredOperationalPoints,
   } = useGetProjectedTrainOperationalPoints({
-    trainScheduleUsedForProjection: projectionData?.trainSchedule,
-    trainIdUsedForProjection: projectionData?.trainSchedule.id,
+    timetableItemUsedForProjection: projectionData?.trainSchedule,
     infraId,
     timetableId,
   });
@@ -134,7 +136,6 @@ const SimulationResults = ({
   if ((!selectedTimetableItem || !timetableItemSimulation) && !projectionData) {
     return null;
   }
-
   return (
     <div className="simulation-results">
       {/* SIMULATION : SPACE TIME CHART */}
@@ -169,12 +170,7 @@ const SimulationResults = ({
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
-                      // TODO Paced train : remove this condition in https://github.com/OpenRailAssociation/osrd/issues/10613
-                      selectedTrainScheduleId={
-                        selectedTimetableItem && isTrainSchedule(selectedTimetableItem.id)
-                          ? selectedTimetableItem.id
-                          : undefined
-                      }
+                      selectedTrainId={selectedTrainId}
                       waypointsPanelData={{
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,
@@ -185,7 +181,9 @@ const SimulationResults = ({
                       projectionLoaderData={projectionData.projectionLoaderData}
                       height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
                       handleTrainDrag={handleTrainDrag}
-                      onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
+                      onTrainClick={(trainId) => {
+                        dispatch(updateSelectedTrainId(trainId));
+                      }}
                       selectedProjectionId={trainIdUsedForProjection}
                     />
                   )}

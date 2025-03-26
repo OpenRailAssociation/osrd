@@ -21,7 +21,7 @@ import type {
   TimetableItemWithTimetableId,
   TrainId,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -71,11 +71,14 @@ const PacedTrainItem = ({
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
-  const selectPathProjection = async () => {};
 
   const selectOccurrence = useCallback((occurrenceId: TrainId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
   }, []);
+
+  const selectPathProjection = async () => {
+    dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
+  };
 
   const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
     const hasOccurrenceSelected = selectedTrainId?.includes(pacedTrain.id);

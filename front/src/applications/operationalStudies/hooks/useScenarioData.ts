@@ -25,7 +25,6 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrain,
-  isTrainSchedule,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -103,12 +102,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     rollingStocks,
     onProgress: (summaries) => {
       // TODO Paced trains : remove this filter when paced trains are handled in projection
-      const trainScheduleIds = [...summaries.keys()].filter(isTrainSchedule);
-      setTimetableItemIdsToProject((prev) => new Set([...prev, ...trainScheduleIds]));
+      setTimetableItemIdsToProject((prev) => new Set([...prev, ...summaries.keys()]));
     },
   });
 
-  // TODO Paced trains : adapt this hook in https://github.com/OpenRailAssociation/osrd/issues/10791
   const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
     infraId: scenario.infra_id,
     electricalProfileSetId,
@@ -121,10 +118,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   useEffect(() => {
     if (timetableItems && projectionPath?.path && allTrainsSimulated) {
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-      const trainIds = timetableItems
-        .filter((timetableItem) => isTrainSchedule(timetableItem.id))
-        .map((timetableItem) => timetableItem.id);
+      const trainIds = timetableItems.map((timetableItem) => timetableItem.id);
       setTimetableItemIdsToProject(new Set(trainIds));
     }
   }, [projectionPath?.path]);
@@ -152,13 +146,11 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     return sortBy(filteredTimetableItemsSummaries, 'startTime');
   }, [simulatedTrainsById, showPacedTrains]);
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const trainScheduleUsedForProjection = useMemo(
     () => timetableItems?.find((timetableItem) => timetableItem.id === trainIdUsedForProjection),
     [trainIdUsedForProjection, timetableItems]
@@ -169,7 +161,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [timetableItems]
   );
 
-  // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
   useAutoUpdateProjection(infra, timetableItemIds, timetableItemsWithDetails);
 
   useEffect(() => {
@@ -205,7 +196,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const upsertTimetableItems = useCallback(
     (timetableItemsToUpsert: TimetableItemWithTimetableId[]) => {
-      // TODO Paced train : Add logic for projected timetable items in https://github.com/OpenRailAssociation/osrd/issues/10613
       setProjectedTrainsById((prev) => {
         const newProjectedTrainsById = new Map(prev);
         timetableItemsToUpsert.forEach((trainSchedule) => {
@@ -237,7 +227,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
     removeSimulatedTimetableItems(_timetableItemsToRemove);
 
-    // TODO Paced train : Add logic for projected timetable items in https://github.com/OpenRailAssociation/osrd/issues/10613
     setProjectedTrainsById((prev) => {
       const newProjectedTrainsById = new Map(prev);
       _timetableItemsToRemove.forEach((trainId) => {

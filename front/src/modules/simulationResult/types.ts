@@ -14,7 +14,12 @@ import type {
   RollingStockWithLiveries,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithTimetableId, TrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type {
+  OccurrenceId,
+  TimetableItemWithTimetableId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // Space Time Chart
@@ -23,7 +28,6 @@ import type { ArrayElement } from 'utils/types';
  */
 // TODO: reuse the type from osrd-ui/ui-manchette
 export type TrainSpaceTimeData = {
-  id: TrainId;
   name: string;
   spaceTimeCurves: {
     positions: number[];
@@ -31,7 +35,7 @@ export type TrainSpaceTimeData = {
   }[];
   departureTime: Date;
   signalUpdates: ProjectPathTrainResult['signal_updates'];
-};
+} & ({ id: TrainScheduleId } | { id: OccurrenceId; paced: PacedTrainWithDetails['paced'] });
 
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;

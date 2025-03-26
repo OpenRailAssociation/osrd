@@ -13,9 +13,7 @@ import {
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
-  formatEditoastTrainIdToIndexedOccurrenceId,
-  formatPacedTrainIdToEditoastTrainId,
-  isPacedTrain,
+  formatPacedTrainIdToOccurrenceId,
   isTrainSchedule,
 } from 'utils/trainId';
 
@@ -56,9 +54,8 @@ const useAutoUpdateProjection = (
 
     // if a selected timetable item is given and is still in the timetable, don't change the selected train
     if (timetableItemId && isSelectedTimetableItemIncluded) {
-      // if no train is used for the projection, use the selected train (only if it is a trainSchedule for now)
-      // TODO Paced train : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/10791
-      if (!currentTrainIdForProjection && isTrainSchedule(timetableItemId)) {
+      // if no train is used for the projection, use the selected train
+      if (!currentTrainIdForProjection) {
         dispatch(updateTrainIdUsedForProjection(timetableItemId));
       }
       return;
@@ -68,19 +65,11 @@ const useAutoUpdateProjection = (
     // by default, select the first valid train
     const firstValidTrain = timetableItemsWithDetails.find((item) => item.isValid);
     if (firstValidTrain) {
-      // TODO Paced train : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/10791
-      if (isTrainSchedule(firstValidTrain.id)) {
-        dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
-        dispatch(updateSelectedTrainId(firstValidTrain.id));
-      }
-      if (isPacedTrain(firstValidTrain.id)) {
-        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(firstValidTrain.id);
-        const occurrenceIdToSelect = formatEditoastTrainIdToIndexedOccurrenceId({
-          pacedTrainId: editoastPacedTrainId,
-          occurrenceIndex: 0,
-        });
-        dispatch(updateSelectedTrainId(occurrenceIdToSelect));
-      }
+      dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
+      const newTrainIdToSelect = isTrainSchedule(firstValidTrain.id)
+        ? firstValidTrain.id
+        : formatPacedTrainIdToOccurrenceId(firstValidTrain.id, 0);
+      dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }
   }, [timetableItemIds, infra, timetableItemsWithDetails]);
 };
