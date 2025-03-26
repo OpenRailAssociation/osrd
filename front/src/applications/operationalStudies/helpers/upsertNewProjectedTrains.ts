@@ -1,27 +1,41 @@
 import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
-import type {
-  TimetableItemId,
-  TimetableItemWithTimetableId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
+import {
+  formatPacedTrainIdToOccurrenceId,
+  isPacedTrainResponseWithPacedTrainId,
+} from 'utils/trainId';
 
 const upsertNewProjectedTrains = (
   projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
-  projectedTrainsToUpsert: Map<TrainScheduleId, ProjectPathTrainResult>,
-  trainSchedulesById: Map<TimetableItemId, TimetableItemWithTimetableId>
+  projectedTrainsToUpsert: Map<TimetableItemId, ProjectPathTrainResult>,
+  timetableItemsById: Map<TimetableItemId, TimetableItemWithTimetableId>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 
   // For each key (train id) in projectPathTrainResult, we either add it or update it in the state
   for (const [trainIdKey, trainData] of projectedTrainsToUpsert) {
-    const matchingTrain = trainSchedulesById.get(trainIdKey);
+    const matchingTrain = timetableItemsById.get(trainIdKey);
+    if (!matchingTrain) {
+      // TODO: throw an error once useLazyProject is refactored
+      // this case should never happen
+      continue;
+    }
     const projectedTrain = {
-      id: trainIdKey,
       name: matchingTrain?.train_name || 'Train name not found',
       departureTime: new Date(trainData.departure_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates,
+      ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)
+        ? {
+            id: formatPacedTrainIdToOccurrenceId(matchingTrain.id, 0),
+            paced: {
+              timeWindow: Duration.parse(matchingTrain.paced.time_window),
+              interval: Duration.parse(matchingTrain.paced.interval),
+            },
+          }
+        : { id: matchingTrain.id }),
     };
 
     newProjectedTrains.set(trainIdKey, projectedTrain);

@@ -122,7 +122,6 @@ const Timetable = ({
       return show;
     });
   }, [currentDepartureDates]);
-
   const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
     dispatch(selectTrainToEdit(itemToEdit));
     setItemIdToEdit(itemToEdit.id);
@@ -196,10 +195,12 @@ const Timetable = ({
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
                   isOnEdit={timetableItem.id === itemIdToEdit}
-                  isProjectionPathUsed={false}
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
+                  isProjectionPathUsed={
+                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                  }
                 />
               )}
             </div>

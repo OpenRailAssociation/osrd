@@ -100,7 +100,6 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     simulateTimetableItems(formattedTrainSchedules);
   }, [formattedTrainSchedules]);
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10613
   // Progressive projection of the trains
   const { projectedTrainsById, allTrainsProjected } = useLazyProjectTrains({
     infraId,

@@ -7,7 +7,6 @@ const formatStdcmTrainIntoSpaceTimeData = (
   stdcmResponse: StdcmSuccessResponse
 ): TrainSpaceTimeData => {
   const { simulation, departure_time } = stdcmResponse;
-  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
   return {
     id: STDCM_TRAIN_TIMETABLE_ID,
     name: 'stdcm',

@@ -70,8 +70,8 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
               <div className="chart-container mt-2">
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={pathProperties.manchetteOperationalPoints}
+                  selectedTrainId={STDCM_TRAIN_TIMETABLE_ID}
                   projectPathTrainResult={projectedData.spaceTimeData}
-                  selectedTrainScheduleId={STDCM_TRAIN_TIMETABLE_ID}
                   workSchedules={workSchedules}
                   projectionLoaderData={projectedData.projectionLoaderData}
                   height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}

@@ -1,3 +1,4 @@
+import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type {
   TimetableItemWithDetails,
   PacedTrainWithDetails,
@@ -162,6 +163,9 @@ export const formatPacedTrainIdToOccurrenceId = (
   });
 };
 
+export const extractPacedTrainIdFromOccurenceId = (occurrenceId: OccurrenceId): PacedTrainId =>
+  `paced_${occurrenceId.split('_')[1]}` as PacedTrainId;
+
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * extract its paced train id with a PacedTrainId format (used across the front).
@@ -207,3 +211,12 @@ export const getExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): stri
   // Handle the case where exceptionId contains "_" itself
   return exceptionId.join('_');
 };
+
+/**
+ * Check if the given timetable item is a TrainScheduleProjection.
+ * @param timetableItem - The timetable item to check.
+ */
+export const isTrainScheduleProjection = (
+  timetableItem: TrainSpaceTimeData
+): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
+  isTrainSchedule(timetableItem.id);

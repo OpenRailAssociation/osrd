@@ -9,17 +9,16 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { setFailure } from 'reducers/main';
-import type {
-  TimetableItemId,
-  TimetableItemWithTimetableId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
+  formatPacedTrainIdToEditoastTrainId,
+  isTrainSchedule,
+  formatEditoastTrainIdToPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -68,6 +67,9 @@ const useLazyProjectTrains = ({
   const [postTrainScheduleProjectPath] =
     osrdEditoastApi.endpoints.postTrainScheduleProjectPath.useLazyQuery();
 
+  const [postPacedTrainProjectPath] =
+    osrdEditoastApi.endpoints.postPacedTrainProjectPath.useLazyQuery();
+
   const trainSchedulesById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
   // gradually project the trains on the selected path
@@ -79,11 +81,21 @@ const useLazyProjectTrains = ({
       packageToProject.forEach((trainId) => requestedProjectedTrainIds.current.add(trainId));
 
       // Format train ids back to editoast format
-      const editoastTrainIds = packageToProject.map((trainId) =>
-        formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId)
+      const { editoastTrainIds, editoastPacedTrainIds } = packageToProject.reduce<{
+        editoastTrainIds: number[];
+        editoastPacedTrainIds: number[];
+      }>(
+        (acc, trainId) => {
+          if (isTrainSchedule(trainId)) {
+            acc.editoastTrainIds.push(formatTrainScheduleIdToEditoastTrainId(trainId));
+          } else {
+            acc.editoastPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(trainId));
+          }
+          return acc;
+        },
+        { editoastTrainIds: [], editoastPacedTrainIds: [] }
       );
 
-      // TODO Paced train : adapt this to handle paced trains
       const { blocks, routes, track_section_ranges } = _path;
       const rawProjectedTrains = await postTrainScheduleProjectPath({
         projectPathForm: {
@@ -94,9 +106,23 @@ const useLazyProjectTrains = ({
         },
       }).unwrap();
 
-      const formattedRawProjectedTrains: Map<TrainScheduleId, ProjectPathTrainResult> = new Map();
+      const rawProjectedPacedTrains = await postPacedTrainProjectPath({
+        projectPathForm: {
+          infra_id: infraId!,
+          ids: editoastPacedTrainIds,
+          path: { blocks, routes, track_section_ranges },
+          electrical_profile_set_id: electricalProfileSetId,
+        },
+      }).unwrap();
+
+      const formattedRawProjectedTrains: Map<TimetableItemId, ProjectPathTrainResult> = new Map();
       for (const [editoastTrainId, projectedTrain] of Object.entries(rawProjectedTrains)) {
         const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
+        formattedRawProjectedTrains.set(trainId, projectedTrain);
+      }
+
+      for (const [editoastTrainId, projectedTrain] of Object.entries(rawProjectedPacedTrains)) {
+        const trainId = formatEditoastTrainIdToPacedTrainId(Number(editoastTrainId));
         formattedRawProjectedTrains.set(trainId, projectedTrain);
       }
 
