@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { computeOccurrenceName } from './useOccurrences';
+import computeOccurrenceName from './computeOccurrenceName';
 
 describe('computeOccurrenceName', () => {
   it('should properly compute occurrence name', () => {
