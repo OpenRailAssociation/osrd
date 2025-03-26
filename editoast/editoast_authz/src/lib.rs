@@ -31,12 +31,14 @@ pub async fn ensure_latest_authorization_model(
             client.update_authorization_model(&model).await?;
         }
         delta => {
-            let model = fga::compile_model(AUTHORIZATION_MODEL);
-            tracing::warn!(
+            // This can happen if multiple pods are spawned simultaneously resulting
+            // in a race condition where multiple models are uploaded at the same time.
+            tracing::error!(
                 delta,
-                "OpenFGA authorization model version is ahead of this release version --- pushing current model anyway"
+                "OpenFGA authorization model version is ahead of the release version.\n\
+                Using the latest uploaded model. Expect wrong behavior.\n\
+                This will be fixed eventually when a migration system is set up."
             );
-            client.update_authorization_model(&model).await?;
         }
     }
     Ok(())
