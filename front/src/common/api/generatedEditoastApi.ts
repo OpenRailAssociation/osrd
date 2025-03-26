@@ -495,7 +495,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
-      postPacedTrainProjectPath: build.mutation<
+      postPacedTrainProjectPath: build.query<
         PostPacedTrainProjectPathApiResponse,
         PostPacedTrainProjectPathApiArg
       >({
@@ -504,7 +504,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.projectPathForm,
         }),
-        invalidatesTags: ['paced_train'],
+        providesTags: ['paced_train'],
       }),
       postPacedTrainSimulationSummary: build.query<
         PostPacedTrainSimulationSummaryApiResponse,

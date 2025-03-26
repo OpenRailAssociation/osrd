@@ -30,10 +30,10 @@ describe('formatEditoastTrainIdToPacedTrainId', () => {
 
 describe('formatEditoastTrainIdToOccurrenceId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
-    const pacedTrainId = 123;
+    const pacedTrainId = 'paced-123' as PacedTrainId;
     const occurrenceIndex = 1;
     const result = formatEditoastTrainIdToOccurrenceId({ pacedTrainId, occurrenceIndex });
-    expect(result).toBe(`occurrence-${occurrenceIndex}-paced-${pacedTrainId}`);
+    expect(result).toBe(`occurrence-${occurrenceIndex}-${pacedTrainId}`);
   });
 });
 

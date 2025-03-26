@@ -25,7 +25,6 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrain,
-  isTrainSchedule,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -118,9 +117,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   useEffect(() => {
     if (timetableItems && projectionPath?.path && allTimetableItemsLoaded) {
       // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-      const trainIds = timetableItems
-        .filter((timetableItem) => isTrainSchedule(timetableItem.id))
-        .map((timetableItem) => timetableItem.id);
+      const trainIds = timetableItems.map((timetableItem) => timetableItem.id);
       setTimetableItemIdsToProject(new Set(trainIds));
     }
   }, [projectionPath?.path]);

@@ -14,7 +14,6 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
   Manchette,
-  type ProjectPathTrainResult,
   type WaypointMenuData,
   isSegmentPickingElement,
   isPointPickingElement,
@@ -22,6 +21,7 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import { KebabHorizontal, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import dayjs from 'dayjs';
 import { compact } from 'lodash';
 import { createPortal } from 'react-dom';
 
@@ -36,22 +36,39 @@ import type {
   LayerRangeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
-import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import type {
+  OccurrenceId,
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
+import { Duration } from 'utils/duration';
+import { getPacedTrainIdFromOccurrenceId, isOccurrence } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
-import { getIdFromTrainPath, getPathStyle } from './utils';
+import getPathStyle from './utils';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
+export type TrainSpaceTimeDataWithPaced = TrainSpaceTimeData & {
+  paced:
+    | {
+        duration: string;
+        step: string;
+      }
+    | undefined;
+};
+
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: OperationalPoint[];
-  projectPathTrainResult: TrainSpaceTimeData[];
+  projectPathTrainResult: TrainSpaceTimeDataWithPaced[];
   selectedTrainScheduleId?: TrainId;
+  selectedTrainId?: TrainId;
   waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -85,6 +102,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   handleTrainDrag,
   onTrainClick,
   selectedProjectionId,
+  selectedTrainId,
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
@@ -100,16 +118,41 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
 
-  const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
-
-  useEffect(() => {
-    setTmpSelectedTrain(selectedTrainScheduleId);
-  }, [selectedTrainScheduleId]);
+  const projectedTrainsAndOccurrences = useMemo(
+    () =>
+      projectPathTrainResult.flatMap((train) => {
+        if (isOccurrence(train.id) && train.paced) {
+          const pacedTrainId = getPacedTrainIdFromOccurrenceId(train.id);
+          const occurrencesCount = Math.ceil(
+            Duration.parse(train.paced.duration).ms / Duration.parse(train.paced.step).ms
+          );
+          const occurrences = [];
+          for (let i = 0; i < occurrencesCount; i += 1) {
+            const occurrenceStartTime = dayjs(train.departureTime)
+              .add(i * Duration.parse(train.paced.step).ms, 'ms')
+              .toDate();
+            occurrences.push({
+              id: `occurrence-${i}-${pacedTrainId}` as OccurrenceId,
+              name: computeOccurrenceName(train.name, i),
+              departureTime: occurrenceStartTime,
+            });
+          }
+          return occurrences.map((occurrence) => ({
+            ...train,
+            ...occurrence,
+          }));
+        }
+        return {
+          ...train,
+        };
+      }),
+    [projectPathTrainResult]
+  );
 
   // Cut the space time chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
     useMemo(() => {
-      let filteredProjectPathTrainResult = projectPathTrainResult;
+      let filteredProjectPathTrainResult = projectedTrainsAndOccurrences;
       let filteredConflicts = conflicts;
 
       if (!waypointsPanelData || waypointsPanelData.filteredWaypoints.length < 2)
@@ -120,7 +163,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const lastPosition = filteredWaypoints.at(-1)!.position;
 
       if (firstPosition !== 0 || lastPosition !== operationalPoints.at(-1)!.position) {
-        filteredProjectPathTrainResult = projectPathTrainResult.map((train) => ({
+        filteredProjectPathTrainResult = projectedTrainsAndOccurrences.map((train) => ({
           ...train,
           spaceTimeCurves: train.spaceTimeCurves.map(({ positions, times }) => {
             const cutPositions: number[] = [];
@@ -187,7 +230,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       }
 
       return { filteredProjectPathTrainResult, filteredConflicts };
-    }, [waypointsPanelData?.filteredWaypoints, projectPathTrainResult, conflicts]);
+    }, [waypointsPanelData?.filteredWaypoints, projectedTrainsAndOccurrences, conflicts]);
 
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
@@ -200,23 +243,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   }, [waypointsPanelData, operationalPoints]);
 
-  const formattedCutProjectedTrains: ProjectPathTrainResult[] = useMemo(
-    () =>
-      cutProjectedTrains.map((train) => ({
-        ...train,
-        id: formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId),
-      })),
-    [cutProjectedTrains]
-  );
-
-  const formattedTmpSelectedTrain = useMemo(
-    () =>
-      tmpSelectedTrain
-        ? formatTrainScheduleIdToEditoastTrainId(tmpSelectedTrain as TrainScheduleId)
-        : undefined,
-    [tmpSelectedTrain]
-  );
-
   const {
     manchetteProps,
     spaceTimeChartProps,
@@ -228,9 +254,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     setTimeOrigin,
   } = useManchetteWithSpaceTimeChart({
     waypoints: manchetteWaypoints,
-    projectPathTrainResult: formattedCutProjectedTrains,
+    projectPathTrainResult: cutProjectedTrains,
     manchetteWithSpaceTimeChartRef,
-    selectedTrain: formattedTmpSelectedTrain,
     height,
     spaceTimeChartRef,
     defaultTimeOrigin: 0,
@@ -306,12 +331,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
+      const hoveredTrainId = hoveredItem.element.pathId;
       const train = projectPathTrainResult.find(
         (projectedTrain) => projectedTrain.id === hoveredTrainId
       );
       if (train) {
-        setTmpSelectedTrain(train.id);
         setDraggingState({
           draggedTrain: train,
           initialDepartureTime: train.departureTime,
@@ -357,12 +381,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const editoastSelectedTrainId = formatTrainScheduleIdToEditoastTrainId(
-        selectedTrainScheduleId as TrainScheduleId
-      );
-      if (editoastSelectedTrainId !== Number(hoveredItem.element.pathId)) {
-        const trainId = getIdFromTrainPath(hoveredItem.element.pathId);
-        onTrainClick?.(trainId);
+      if (selectedTrainScheduleId !== hoveredItem.element.pathId) {
+        const trainId = hoveredItem.element.pathId;
+        onTrainClick?.(trainId as TrainId);
       }
     }
   };
@@ -481,7 +502,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               <PathLayer
                 key={path.id}
                 path={path}
-                {...getPathStyle(hoveredItem, path, !!draggingState)}
+                {...getPathStyle(hoveredItem, path, !!draggingState, selectedTrainId)}
               />
             ))}
             {spaceTimeChartProps.rect && <ZoomRect {...spaceTimeChartProps.rect} />}

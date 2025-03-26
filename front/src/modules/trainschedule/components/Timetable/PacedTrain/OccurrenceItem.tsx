@@ -38,7 +38,8 @@ const OccurrenceItem = ({
   isValid,
   selectOccurrence,
 }: OccurrenceItemProps) => {
-  const { trainName, rollingStock, startTime, arrivalTime } = occurrence;
+  const dispatch = useAppDispatch();
+  const { trainName, rollingStock, startTime, arrivalTime, id } = occurrence;
   const isAfterMidnight = dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
     ? dayjs(nextOccurrence.startTime).isAfter(occurrence.startTime, 'day')

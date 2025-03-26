@@ -51,9 +51,9 @@ export const formatEditoastTrainIdToOccurrenceId = ({
   pacedTrainId,
   occurrenceIndex,
 }: {
-  pacedTrainId: number;
+  pacedTrainId: PacedTrainId;
   occurrenceIndex: number;
-}): OccurrenceId => `occurrence-${occurrenceIndex}-paced-${pacedTrainId}` as OccurrenceId;
+}): OccurrenceId => `occurrence-${occurrenceIndex}-${pacedTrainId}` as OccurrenceId;
 
 /**
  * Given a train id with a TrainScheduleId format (used across the front),
@@ -109,6 +109,9 @@ export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId):
 
   return formattedTrainId;
 };
+
+export const getPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId): PacedTrainId =>
+  `paced-${occurrenceId.split('-')[3]}` as PacedTrainId;
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),

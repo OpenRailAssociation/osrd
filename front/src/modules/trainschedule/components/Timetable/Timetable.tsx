@@ -12,7 +12,7 @@ import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
@@ -122,7 +122,9 @@ const Timetable = ({
       return show;
     });
   }, [currentDepartureDates]);
-
+  const selectPathProjection = async (itemId: TimetableItemId) => {
+    dispatch(updateTrainIdUsedForProjection(itemId));
+  };
   const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
     dispatch(selectTrainToEdit(itemToEdit));
     setItemIdToEdit(itemToEdit.id);
@@ -197,10 +199,13 @@ const Timetable = ({
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
                   isOnEdit={timetableItem.id === itemIdToEdit}
-                  isProjectionPathUsed={false}
-                  selectedTrainId={selectedTrainId}
+                  selectedTimeTableItemId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
+                  setProjectionPath={selectPathProjection}
+                  isProjectionPathUsed={
+                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                  }
                   // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612
                   // dtoImport={dtoImport}
                 />

@@ -45,6 +45,7 @@ type PacedTrainItemProps = {
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
+  setProjectionPath: (itemId: TimetableItemId) => Promise<void>;
   // dtoImport: () => void;
 };
 
@@ -58,6 +59,7 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
+  setProjectionPath,
   // dtoImport,
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -71,7 +73,6 @@ const PacedTrainItem = ({
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
-  const selectPathProjection = async () => {};
 
   const selectOccurrence = useCallback((occurrenceId: TrainId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
@@ -248,7 +249,7 @@ const PacedTrainItem = ({
           </div>
         )}
         <TimetableItemActions
-          selectPathProjection={selectPathProjection}
+          selectPathProjection={() => setProjectionPath(pacedTrain.id)}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
           deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}

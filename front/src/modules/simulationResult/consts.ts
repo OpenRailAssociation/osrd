@@ -68,4 +68,6 @@ export const ASPECT_LABELS_COLORS: Record<AspectLabel, string> = {
 
 export const PATH_COLORS = {
   HOVERED_PATH: '#6B532E',
+  SELECTED_PATH: '#6B532E',
+  SELECTED_OCCURRENCE_PATH: '#B2539E',
 };

@@ -10,6 +10,7 @@ import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
+  type TrainSpaceTimeDataWithPaced,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
@@ -25,7 +26,10 @@ import type { TimetableItemWithDetails } from 'modules/trainschedule/components/
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import {
+  getSelectedTrainId,
+  getTrainIdUsedForProjection,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isTrainSchedule } from 'utils/trainId';
 
@@ -60,6 +64,7 @@ const SimulationResults = ({
   const dispatch = useAppDispatch();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const {
     selectedTimetableItem,
@@ -148,7 +153,6 @@ const SimulationResults = ({
   if ((!selectedTimetableItem || !timetableItemSimulation) && !projectionData) {
     return null;
   }
-
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
@@ -200,8 +204,10 @@ const SimulationResults = ({
                   {trainIdUsedForProjection && (
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
-                      projectPathTrainResult={projectPathTrainResult}
-                      // TODO Paced train : remove this condition in https://github.com/OpenRailAssociation/osrd/issues/10613
+                      projectPathTrainResult={
+                        projectPathTrainResult as TrainSpaceTimeDataWithPaced[]
+                      }
+                      selectedTrainId={selectedTrainId}
                       selectedTrainScheduleId={
                         selectedTimetableItem && isTrainSchedule(selectedTimetableItem.id)
                           ? selectedTimetableItem.id
@@ -217,7 +223,9 @@ const SimulationResults = ({
                       projectionLoaderData={projectionData.projectionLoaderData}
                       height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
                       handleTrainDrag={handleTrainDrag}
-                      onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
+                      onTrainClick={(trainId) => {
+                        dispatch(updateSelectedTrainId(trainId));
+                      }}
                       selectedProjectionId={trainIdUsedForProjection}
                     />
                   )}
