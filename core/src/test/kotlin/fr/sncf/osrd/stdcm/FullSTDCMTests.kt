@@ -231,10 +231,10 @@ class FullSTDCMTests {
     }
 
     /**
-     * Very long stop with an occupancy that starts after the stop end. The requested arrival time
-     * may make us stay longer at the stop location, to the point of causing a conflict. Not finding
-     * a solution is valid, we're looking for crashes (specifically postprocessing assertions).
-     * Reproduces a bug.
+     * Very long stop with an occupancy that starts after the stop end at the stop location. The
+     * requested arrival time may make us stay longer at the stop location, to the point of causing
+     * a conflict. Not finding a solution is valid, we're looking for crashes (specifically
+     * postprocessing assertions). Reproduces a bug.
      */
     @Test
     fun testConflictAtStop() {
@@ -264,6 +264,40 @@ class FullSTDCMTests {
             .setMaxRunTime(Double.POSITIVE_INFINITY)
             .setMaxDepartureDelay(0.0)
             .run() ?: return
+    }
+
+    /**
+     * The zone after the stop isn't available during the stop itself (and for a little while
+     * after). There is a solution if we lengthen the stop, but we need to properly account for the
+     * 20s margin where the signal must be green before the stop departure.
+     */
+    @Test
+    fun testConflictAfterStop() {
+        val infra =
+            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val start = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(0.meters))
+        val stop =
+            convertRouteLocation(
+                infra,
+                "rt.det.a1.nf->det.b1.nf",
+                Offset(6_000.meters) // Within sight distance of a signal
+            )
+        val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
+        val zoneAfterStop = "zone.[det.center.2:INCREASING, det.center.3:DECREASING]"
+        val requirements =
+            listOf(SpacingRequirement(zoneAfterStop, 0.0, 7_000.0, true))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartTime(0.0)
+                .setStartLocations(start.blockLocations)
+                .addStep(STDCMStep(stop.blockLocations, 5_000.0, true))
+                .setEndLocations(end.blockLocations)
+                .setBlockAvailability(makeBlockAvailability(requirements))
+                .setMaxRunTime(Double.POSITIVE_INFINITY)
+                .setMaxDepartureDelay(0.0)
+                .run()!!
+        assertTrue(res.stopResults.first().duration > 5_000.0)
     }
 
     private fun plannedTimingDataArg(): Stream<Arguments> {
