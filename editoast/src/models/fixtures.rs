@@ -102,8 +102,8 @@ pub fn simple_paced_train_base() -> PacedTrain {
     PacedTrain {
         train_schedule_base,
         paced: Paced {
-            duration: ChronoDuration::hours(2).try_into().unwrap(),
-            step: ChronoDuration::minutes(15).try_into().unwrap(),
+            time_window: ChronoDuration::hours(2).try_into().unwrap(),
+            interval: ChronoDuration::minutes(15).try_into().unwrap(),
         },
     }
 }

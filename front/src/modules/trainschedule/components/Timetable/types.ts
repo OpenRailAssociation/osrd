@@ -53,8 +53,8 @@ export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   id: PacedTrainId;
   paced: {
-    duration: Duration;
-    step: Duration;
+    timeWindow: Duration;
+    interval: Duration;
   };
 };
 

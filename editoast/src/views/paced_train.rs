@@ -538,8 +538,8 @@ mod tests {
         let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.duration = Duration::minutes(90).try_into().unwrap();
-        paced_train_base.paced.step = Duration::minutes(15).try_into().unwrap();
+        paced_train_base.paced.time_window = Duration::minutes(90).try_into().unwrap();
+        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
 
         let request = app
             .put(format!("/paced_train/{}", paced_train.id).as_str())
@@ -620,8 +620,8 @@ mod tests {
                     .expect("Unable to parse")
             },
             paced: Paced {
-                duration: Duration::hours(1).try_into().unwrap(),
-                step: Duration::minutes(15).try_into().unwrap(),
+                time_window: Duration::hours(1).try_into().unwrap(),
+                interval: Duration::minutes(15).try_into().unwrap(),
             },
         };
         let paced_train: PacedTrainChangeset = paced_train_base.into();

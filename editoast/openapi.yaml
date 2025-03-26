@@ -1706,17 +1706,17 @@ paths:
                   paced:
                     type: object
                     required:
-                    - duration
-                    - step
+                    - time_window
+                    - interval
                     properties:
-                      duration:
-                        type: string
-                        description: Duration of the paced train, an ISO 8601 format is expected
-                        example: PT2H
-                      step:
+                      interval:
                         type: string
                         description: Time between two occurrences, an ISO 8601 format is expected
                         example: PT15M
+                      time_window:
+                        type: string
+                        description: Duration of the paced train, an ISO 8601 format is expected
+                        example: PT2H
         required: true
       responses:
         '204':
@@ -8686,17 +8686,17 @@ components:
           paced:
             type: object
             required:
-            - duration
-            - step
+            - time_window
+            - interval
             properties:
-              duration:
-                type: string
-                description: Duration of the paced train, an ISO 8601 format is expected
-                example: PT2H
-              step:
+              interval:
                 type: string
                 description: Time between two occurrences, an ISO 8601 format is expected
                 example: PT15M
+              time_window:
+                type: string
+                description: Duration of the paced train, an ISO 8601 format is expected
+                example: PT2H
     PacedTrainForm:
       allOf:
       - $ref: '#/components/schemas/PacedTrain'

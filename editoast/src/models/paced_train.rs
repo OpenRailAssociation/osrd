@@ -45,10 +45,10 @@ pub struct PacedTrain {
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[model(json)]
     pub options: TrainScheduleOptions,
-    /// Total duration of the paced train
-    pub duration: ChronoDuration,
+    /// Time window of the paced train
+    pub time_window: ChronoDuration,
     /// Time between two occurrences
-    pub step: ChronoDuration,
+    pub interval: ChronoDuration,
 }
 
 impl PacedTrain {
@@ -94,8 +94,8 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .start_time(train_schedule_base.start_time)
             .train_name(train_schedule_base.train_name)
             .options(train_schedule_base.options)
-            .duration(ChronoDuration::from(paced.duration))
-            .step(ChronoDuration::from(paced.step))
+            .time_window(ChronoDuration::from(paced.time_window))
+            .interval(ChronoDuration::from(paced.interval))
     }
 }
 
@@ -118,8 +118,8 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 options: paced_train.options,
             },
             paced: Paced {
-                duration: paced_train.duration.try_into().unwrap(),
-                step: paced_train.step.try_into().unwrap(),
+                time_window: paced_train.time_window.try_into().unwrap(),
+                interval: paced_train.interval.try_into().unwrap(),
             },
         }
     }

@@ -27,10 +27,10 @@ const useOccurrences = ({
 
     for (let i = 0; i < occurrencesCount; i += 1) {
       const occurrenceStartTime = dayjs(startTime)
-        .add(i * paced.step.ms, 'ms')
+        .add(i * paced.interval.ms, 'ms')
         .toDate();
       const occurrenceArrivalTime = dayjs(arrivalTime)
-        .add(i * paced.step.ms, 'ms')
+        .add(i * paced.interval.ms, 'ms')
         .toDate();
       computedOccurrences.push({
         id: formatPacedTrainIdToOccurrenceId(id, i),
@@ -41,7 +41,7 @@ const useOccurrences = ({
       });
     }
     return { occurrencesCount, occurrences: computedOccurrences };
-  }, [paced.duration, paced.step, startTime, arrivalTime, name, id, rollingStock]);
+  }, [paced.timeWindow, paced.interval, startTime, arrivalTime, name, id, rollingStock]);
 
   return occurrencesState;
 };

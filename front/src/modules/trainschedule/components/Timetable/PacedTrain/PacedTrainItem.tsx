@@ -224,7 +224,7 @@ const PacedTrainItem = ({
           <div className="paced-train-right-zone">
             {pacedTrain.isValid && (
               <div data-testid="paced-train-cadence">
-                &mdash;&nbsp;{`${ms2min(pacedTrain.paced.step.ms)}min`}
+                &mdash;&nbsp;{`${ms2min(pacedTrain.paced.interval.ms)}min`}
               </div>
             )}
             <div

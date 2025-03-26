@@ -519,8 +519,8 @@ async fn conflicts(
     let mut paced_trains_ts = vec![];
     for paced_train in paced_trains.clone() {
         let occurrences =
-            (paced_train.duration.num_seconds() / paced_train.step.num_seconds()) as usize;
-        let step = paced_train.step;
+            (paced_train.time_window.num_seconds() / paced_train.interval.num_seconds()) as usize;
+        let interval = paced_train.interval;
         let mut start_time = paced_train.start_time;
 
         let mut all_occurrences = Vec::with_capacity(occurrences);
@@ -529,7 +529,7 @@ async fn conflicts(
             let mut first_occurrence = paced_train.clone().into_first_occurrence();
             first_occurrence.start_time = start_time;
             all_occurrences.push(first_occurrence);
-            start_time += step;
+            start_time += interval;
         }
 
         paced_trains_ts.extend(all_occurrences);
@@ -716,8 +716,8 @@ mod tests {
         let timetable = create_timetable(&mut pool.get_ok()).await;
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.paced.duration = Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.step = Duration::seconds(30).try_into().unwrap();
+        paced_train_2.paced.time_window = Duration::minutes(120).try_into().unwrap();
+        paced_train_2.paced.interval = Duration::seconds(30).try_into().unwrap();
 
         let paced_trains = vec![paced_train_1, paced_train_2];
 
@@ -755,8 +755,8 @@ mod tests {
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
         paced_train_2.train_schedule_base.start_time += Duration::minutes(200);
-        paced_train_2.paced.duration = Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.step = Duration::seconds(30).try_into().unwrap();
+        paced_train_2.paced.time_window = Duration::minutes(120).try_into().unwrap();
+        paced_train_2.paced.interval = Duration::seconds(30).try_into().unwrap();
 
         let paced_trains = vec![paced_train_1, paced_train_2];
 
