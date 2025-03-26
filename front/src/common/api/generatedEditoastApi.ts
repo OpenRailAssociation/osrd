@@ -33,6 +33,10 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
+        query: () => ({ url: `/authz/me` }),
+        providesTags: ['authz'],
+      }),
       getAuthzRolesMe: build.query<GetAuthzRolesMeApiResponse, GetAuthzRolesMeApiArg>({
         query: () => ({ url: `/authz/roles/me` }),
         providesTags: ['authz'],
@@ -1208,6 +1212,12 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedEditoastApi };
+export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
+  id: number;
+  name: string;
+  roles: Role[];
+};
+export type GetAuthzMeApiArg = void;
 export type GetAuthzRolesMeApiResponse =
   /** status 200 List the roles of the issuer of the request */ {
     builtin: Role[];

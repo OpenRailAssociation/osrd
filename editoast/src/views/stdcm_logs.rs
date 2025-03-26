@@ -154,7 +154,7 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use editoast_authz::subject::UserInfo;
+    use editoast_authz::subject;
     use editoast_authz::Role;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
@@ -183,7 +183,6 @@ mod tests {
     use crate::views::stdcm_logs::StdcmLogListResponse;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestRequestExt;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::Request;
@@ -319,7 +318,7 @@ mod tests {
         }
     }
 
-    async fn execute_stdcm_request(app: &TestApp, user: Option<UserInfo>) -> String {
+    async fn execute_stdcm_request(app: &TestApp, user: Option<&subject::User>) -> String {
         let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
         let rolling_stock =
@@ -353,8 +352,8 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
-        let request = app.get("/stdcm_logs").by_user(user);
+        let trace_id = execute_stdcm_request(&app, Some(&user)).await;
+        let request = app.get("/stdcm_logs").by_user(&user);
         let stdcm_logs_response: StdcmLogListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -372,10 +371,10 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
+        let trace_id = execute_stdcm_request(&app, Some(&user)).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
-            .by_user(user);
+            .by_user(&user);
         let stdcm_log: StdcmLog = app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(stdcm_log.trace_id, Some(trace_id));
     }
@@ -390,10 +389,10 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
+        let _ = execute_stdcm_request(&app, Some(&user)).await;
         let request = app
             .get("/stdcm_log?trace_id=not_existing_trace_id")
-            .by_user(user);
+            .by_user(&user);
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -407,8 +406,8 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
-        let request = app.get("/stdcm_log?id=0").by_user(user);
+        let _ = execute_stdcm_request(&app, Some(&user)).await;
+        let request = app.get("/stdcm_log?id=0").by_user(&user);
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -422,8 +421,8 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
-        let request = app.get("/stdcm_log").by_user(user);
+        let _ = execute_stdcm_request(&app, Some(&user)).await;
+        let request = app.get("/stdcm_log").by_user(&user);
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
@@ -440,10 +439,10 @@ mod tests {
             .user("bob", "Bob")
             .with_roles([Role::Stdcm]) // only available to admins
             .create();
-        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
+        let trace_id = execute_stdcm_request(&app, Some(&user)).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
-            .by_user(user);
+            .by_user(&user);
         app.fetch(request).assert_status(StatusCode::FORBIDDEN);
     }
 
@@ -472,8 +471,8 @@ mod tests {
             .with_rust_log_directive(rust_log())
             .build();
         let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
-        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
-        let request = app.get("/stdcm_logs").by_user(user);
+        let _ = execute_stdcm_request(&app, Some(&user)).await;
+        let request = app.get("/stdcm_logs").by_user(&user);
         let stdcm_logs_response: StdcmLogListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 

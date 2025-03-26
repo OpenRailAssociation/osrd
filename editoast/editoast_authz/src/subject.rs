@@ -36,3 +36,9 @@ impl std::fmt::Display for GroupInfo {
         write!(f, "{}", self.name)
     }
 }
+
+impl AsRef<UserInfo> for User {
+    fn as_ref(&self) -> &UserInfo {
+        &self.info
+    }
+}

@@ -44,6 +44,10 @@ impl<S: StorageDriver> Authorizer<S> {
         self.user_id
     }
 
+    pub fn user_name(&self) -> &str {
+        &self.user.name
+    }
+
     pub async fn user_roles(&self) -> Result<HashSet<Role>, Error<S::Error>> {
         self.regulator.user_roles(self.user_id).await
     }

@@ -7,6 +7,31 @@ info:
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.1.0
 paths:
+  /authz/me:
+    get:
+      tags:
+      - authz
+      responses:
+        '200':
+          description: Get the info of the current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - name
+                - roles
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  name:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
   /authz/roles/me:
     get:
       tags:

@@ -8,6 +8,7 @@ use std::sync::Arc;
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
+use editoast_authz::subject;
 use editoast_authz::subject::UserInfo;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
@@ -297,7 +298,7 @@ impl TestAppBuilder {
 /// The crate `stdext` is required.
 macro_rules! test_app {
     () => {
-        TestAppBuilder::new().test_name(
+        $crate::views::test_app::TestAppBuilder::new().test_name(
             stdext::function_name!()
                 .split("::")
                 .filter(|x| *x != "{{closure}}")
@@ -385,11 +386,11 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    pub fn create(self) -> UserInfo {
+    pub fn create(self) -> subject::User {
         let Self { app, info, roles } = self;
-        if !roles.is_empty()
-            && (app.authorization_model.is_none() || !app.app_state.config.enable_authorization)
-        {
+        let authz_disabled =
+            app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
+        if !roles.is_empty() && authz_disabled {
             panic!("Authorization must be enabled and a model must be provided to grant a user some roles");
         }
         let regulator = &app.app_state.regulator;
@@ -399,23 +400,26 @@ impl<'a> UserBuilder<'a> {
                 .ensure_user(&info.clone())
                 .await
                 .expect("User should be created successfully");
-            regulator
-                .grant_user_roles(user.id, roles)
-                .await
-                .expect("roles should be granted successfully");
-            info
+            if !authz_disabled {
+                regulator
+                    .grant_user_roles(user.id, roles)
+                    .await
+                    .expect("roles should be granted successfully");
+            }
+            user
         })
     }
 }
 
 pub trait TestRequestExt {
-    fn by_user(self, user: UserInfo) -> Self;
+    fn by_user(self, user: &impl AsRef<UserInfo>) -> Self;
 }
 
 impl TestRequestExt for TestRequest {
-    fn by_user(self, user: UserInfo) -> Self {
-        self.add_header("x-remote-user-identity", user.identity)
-            .add_header("x-remote-user-name", user.name)
+    fn by_user(self, user: &impl AsRef<UserInfo>) -> Self {
+        let UserInfo { identity, name } = user.as_ref();
+        self.add_header("x-remote-user-identity", identity)
+            .add_header("x-remote-user-name", name)
     }
 }
 

@@ -15,12 +15,15 @@ use super::AuthorizerError;
 use super::Regulator;
 
 crate::routes! {
-    "/authz/roles" => {
-        "/me" => list_current_roles,
-        "/{user_id}" => {
-            list_user_roles,
-            grant_roles,
-            strip_roles,
+    "/authz" => {
+        "/me" => whoami,
+        "/roles" => {
+            "/me" => list_current_roles,
+            "/{user_id}" => {
+                list_user_roles,
+                grant_roles,
+                strip_roles,
+            },
         },
     },
 }
@@ -51,6 +54,53 @@ enum NoSuchUserError {
     #[error("No user with ID {user_id} found")]
     #[editoast_error(status = 404)]
     NoSuchUser { user_id: i64 },
+}
+
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
+struct WhoamiResponse {
+    id: i64,
+    name: String,
+    roles: Vec<Role>,
+}
+
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "Get the info of the current user",
+        body = inline(WhoamiResponse),
+    ))
+)]
+async fn whoami(
+    State(AppState { config, .. }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+) -> Result<Json<WhoamiResponse>> {
+    // This is especially necessary as this endpoint is always queried by the frontend
+    // when loading. Making it return 401 results in a blank page.
+    // We return `Admin` as when no authorization is enabled, we want everyone to have
+    // access to full feature set of OSRD.
+    if !config.enable_authorization {
+        return Ok(Json(WhoamiResponse {
+            // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
+            id: -1,
+            name: "OSRD user".to_string(),
+            roles: Vec::from([Role::Admin]),
+        }));
+    }
+
+    let authorizer = auth.authorizer()?;
+    let user_roles = authorizer
+        .user_roles()
+        .await
+        .map_err(AuthzError::Authorizer)?;
+    Ok(Json(WhoamiResponse {
+        id: authorizer.user_id(),
+        name: authorizer.user_name().to_owned(),
+        roles: user_roles.into_iter().collect(),
+    }))
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -198,4 +248,52 @@ async fn strip_roles(
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::http::StatusCode;
+
+    use crate::views::test_app::test_app;
+    use crate::views::test_app::TestRequestExt as _;
+
+    use super::*;
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn whoami_test() {
+        let app = test_app!().enable_authorization(true).build();
+        let user = app
+            .user("test", "test")
+            .with_roles([Role::OperationalStudies])
+            .create();
+
+        let request = app.get("/authz/me").by_user(&user);
+        let user_data = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<WhoamiResponse>();
+
+        assert_eq!(
+            user_data,
+            WhoamiResponse {
+                id: user.id,
+                name: "test".to_string(),
+                roles: vec![Role::OperationalStudies],
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn whoami_authorization_disabled() {
+        let app = test_app!().enable_authorization(false).build();
+        let user = app.user("test", "test").create();
+
+        let request = app.get("/authz/me").by_user(&user);
+        let WhoamiResponse { roles, .. } = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<WhoamiResponse>();
+
+        assert_eq!(roles, vec![Role::Admin]);
+    }
 }

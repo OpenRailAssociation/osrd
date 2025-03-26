@@ -407,7 +407,7 @@ pub mod tests {
         let app = test_app!().enable_authorization(true).build();
         let user = app.user("bob", "Bob").with_roles([Role::Stdcm]).create();
 
-        let request = app.post("/projects").by_user(user).json(&json!({
+        let request = app.post("/projects").by_user(&user).json(&json!({
             "name": "test_project_failed",
             "description": "",
             "objectives": "",
