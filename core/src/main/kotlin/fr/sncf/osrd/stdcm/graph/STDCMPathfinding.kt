@@ -192,7 +192,7 @@ class STDCMPathfinding(
             val endNode = queue.poll() ?: return null
             progressLogger.processNode(endNode)
             if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
-                return null
+                continue
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
                 return buildResult(endNode)
             }
