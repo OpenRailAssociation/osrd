@@ -86,7 +86,7 @@ impl<'a> PathProjection<'a> {
             let mut left = 0;
             let mut right = self.path.len() - 1;
             while left != right {
-                let mid = (left + right + 1) / 2;
+                let mid = (left + right).div_ceil(2);
                 let mid_track_range = &self.path[mid];
                 let mid_position = self.map_position[&mid_track_range.track_section];
                 if mid_position > position {

@@ -121,8 +121,8 @@ describe('simulationConfReducer', () => {
         isValid: true,
         options: { use_electrical_profiles: false },
         paced: {
-          duration: new Duration({ minutes: 60 }),
-          step: new Duration({ minutes: 30 }),
+          timeWindow: new Duration({ minutes: 60 }),
+          interval: new Duration({ minutes: 30 }),
         },
       };
 

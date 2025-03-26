@@ -125,10 +125,10 @@ const useSimulationResults = (): SimulationResultsData => {
     if (!selectedPacedTrain) return undefined;
 
     const selectedOccurrenceIndex = getOccurrenceIndexFromOccurrenceId(selectedTrainId);
-    const pacedTrainStepInMs = Duration.parse(selectedPacedTrain.paced.step).ms;
+    const pacedTrainIntervalInMs = Duration.parse(selectedPacedTrain.paced.interval).ms;
 
     const selectedOccurrenceStartTime: string = dayjs(selectedPacedTrain.start_time)
-      .add(selectedOccurrenceIndex * pacedTrainStepInMs, 'ms')
+      .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
       .toISOString();
 
     const updatedSelectedPacedTrain: PacedTrainResponseWithPacedTrainId = {

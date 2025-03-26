@@ -72,7 +72,7 @@ def test_conflicts(
 
     stopping_paced_train_payload = stopping_train_schedule_payload[0]
     stopping_paced_train_payload["start_time"] = "2024-05-22T08:05:00.000Z"
-    stopping_paced_train_payload["paced"] = {"duration": "PT2H", "step": "PT15M"}
+    stopping_paced_train_payload["paced"] = {"time_window": "PT2H", "interval": "PT15M"}
 
     stopping_paced_train_response = requests.post(
         f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",

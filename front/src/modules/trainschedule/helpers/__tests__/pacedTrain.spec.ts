@@ -5,33 +5,33 @@ import { Duration } from 'utils/duration';
 import { getOccurrencesNb } from '../pacedTrain';
 
 describe('getOccurrencesNb', () => {
-  it('should properly compute occurrence nb for duration of 2h and step of 30min', () => {
+  it('should properly compute occurrence nb for time window of 2h and interval of 30min', () => {
     expect(
-      getOccurrencesNb({ duration: Duration.parse('PT2H'), step: Duration.parse('PT30M') })
+      getOccurrencesNb({ timeWindow: Duration.parse('PT2H'), interval: Duration.parse('PT30M') })
     ).toEqual(4);
   });
 
-  it('should properly compute occurrence nb for duration of 30min and step of 20min', () => {
+  it('should properly compute occurrence nb for time window of 30min and interval of 20min', () => {
     expect(
-      getOccurrencesNb({ duration: Duration.parse('PT30M'), step: Duration.parse('PT20M') })
+      getOccurrencesNb({ timeWindow: Duration.parse('PT30M'), interval: Duration.parse('PT20M') })
     ).toEqual(2);
   });
 
-  it('should properly compute occurrence nb for duration of 20min and step of 30min', () => {
+  it('should properly compute occurrence nb for time window of 20min and interval of 30min', () => {
     expect(
-      getOccurrencesNb({ duration: Duration.parse('PT20M'), step: Duration.parse('PT30M') })
+      getOccurrencesNb({ timeWindow: Duration.parse('PT20M'), interval: Duration.parse('PT30M') })
     ).toEqual(1);
   });
 
-  it('should properly compute occurrence nb for duration of 0h and step of 30min', () => {
+  it('should properly compute occurrence nb for time window of 0h and interval of 30min', () => {
     expect(
-      getOccurrencesNb({ duration: Duration.parse('PT0S'), step: Duration.parse('PT30M') })
+      getOccurrencesNb({ timeWindow: Duration.parse('PT0S'), interval: Duration.parse('PT30M') })
     ).toEqual(0);
   });
 
-  it('should properly compute occurrence nb for duration of 2h and step of 0min', () => {
+  it('should properly compute occurrence nb for time window of 2h and interval of 0min', () => {
     expect(() =>
-      getOccurrencesNb({ duration: Duration.parse('PT2H'), step: Duration.parse('PT0S') })
-    ).toThrow('Step cannot be 0');
+      getOccurrencesNb({ timeWindow: Duration.parse('PT2H'), interval: Duration.parse('PT0S') })
+    ).toThrow('Interval cannot be 0');
   });
 });

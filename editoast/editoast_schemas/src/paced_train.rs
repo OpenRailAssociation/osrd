@@ -12,10 +12,10 @@ editoast_common::schemas! {
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
     #[schema(value_type = chrono::Duration, example = "PT2H")]
-    pub duration: PositiveDuration,
+    pub time_window: PositiveDuration,
     /// Time between two occurrences, an ISO 8601 format is expected
     #[schema(value_type = chrono::Duration, example = "PT15M")]
-    pub step: PositiveDuration,
+    pub interval: PositiveDuration,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

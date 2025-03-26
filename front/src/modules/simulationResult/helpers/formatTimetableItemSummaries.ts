@@ -91,8 +91,8 @@ const formatTimetableItemSummaries = (
       return {
         ...formattedItem,
         paced: {
-          duration: Duration.parse(formattedItem.paced.duration),
-          step: Duration.parse(formattedItem.paced.step),
+          timeWindow: Duration.parse(formattedItem.paced.time_window),
+          interval: Duration.parse(formattedItem.paced.interval),
         },
       };
     }

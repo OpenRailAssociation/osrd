@@ -79,8 +79,8 @@ export const operationalStudiesConfSlice = createSlice({
 
       if (isPacedTrainWithDetails(action.payload)) {
         state.editingTrainIsPacedTrain = true;
-        state.timeRangeDuration = action.payload.paced.duration;
-        state.cadence = action.payload.paced.step;
+        state.timeRangeDuration = action.payload.paced.timeWindow;
+        state.cadence = action.payload.paced.interval;
       } else {
         state.editingTrainIsPacedTrain = false;
         state.timeRangeDuration = new Duration({ minutes: 120 });

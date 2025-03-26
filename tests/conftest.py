@@ -298,8 +298,8 @@ def west_to_south_east_paced_train(
                 "speed_limit_tag": "foo",
                 "start_time": "2024-01-01T07:19:54+00:00",
                 "paced": {
-                    "duration": "PT2H",
-                    "step": "PT15M",
+                    "time_window": "PT2H",
+                    "interval": "PT15M",
                 },
             }
         ],
@@ -333,24 +333,24 @@ def west_to_south_east_paced_trains(
                 **base,
                 "start_time": "2024-01-01T07:19:54+00:00",
                 "paced": {
-                    "duration": "PT2H",
-                    "step": "PT15M",
+                    "time_window": "PT2H",
+                    "interval": "PT15M",
                 },
             },
             {
                 **base,
                 "start_time": "2024-01-01T10:29:54+00:00",
                 "paced": {
-                    "duration": "PT2H",
-                    "step": "PT15M",
+                    "time_window": "PT2H",
+                    "interval": "PT15M",
                 },
             },
             {
                 **base,
                 "start_time": "2024-01-01T13:39:59+00:00",
                 "paced": {
-                    "duration": "PT2H",
-                    "step": "PT15M",
+                    "time_window": "PT2H",
+                    "interval": "PT15M",
                 },
             },
         ],

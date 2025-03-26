@@ -1633,10 +1633,10 @@ export type PutPacedTrainByIdApiArg = {
   id: number;
   body: TrainSchedule & {
     paced: {
-      /** Duration of the paced train, an ISO 8601 format is expected */
-      duration: string;
       /** Time between two occurrences, an ISO 8601 format is expected */
-      step: string;
+      interval: string;
+      /** Duration of the paced train, an ISO 8601 format is expected */
+      time_window: string;
     };
   };
 };
@@ -3273,10 +3273,10 @@ export type TrainSchedule = {
 };
 export type PacedTrain = TrainSchedule & {
   paced: {
-    /** Duration of the paced train, an ISO 8601 format is expected */
-    duration: string;
     /** Time between two occurrences, an ISO 8601 format is expected */
-    step: string;
+    interval: string;
+    /** Duration of the paced train, an ISO 8601 format is expected */
+    time_window: string;
   };
 };
 export type PacedTrainResponse = PacedTrain & {

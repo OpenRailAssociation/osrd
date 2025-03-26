@@ -452,8 +452,8 @@ diesel::table! {
         speed_limit_tag -> Nullable<Varchar>,
         power_restrictions -> Jsonb,
         options -> Jsonb,
-        duration -> Interval,
-        step -> Interval,
+        time_window -> Interval,
+        interval -> Interval,
     }
 }
 
