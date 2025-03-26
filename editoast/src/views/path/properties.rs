@@ -65,13 +65,12 @@ pub struct PathPropertiesInput {
 
 impl PathPropertiesInput {
     fn get_track_length_cumulative_sums(&self) -> Vec<u64> {
-        let mut cumulative_sums = Vec::new();
+        let mut cumulative_sums = Vec::with_capacity(self.track_section_ranges.len());
         let mut cumulative_sum = 0;
 
-        for track_section in self.track_section_ranges.iter() {
-            let range_length = track_section.end - track_section.begin;
-            cumulative_sum += range_length;
+        for track_range in &self.track_section_ranges {
             cumulative_sums.push(cumulative_sum);
+            cumulative_sum += track_range.length();
         }
 
         cumulative_sums
@@ -81,31 +80,28 @@ impl PathPropertiesInput {
         let track_length_cumulative_sums = self.get_track_length_cumulative_sums();
         let mut res = HashMap::new();
         for path_item_position in self.path_item_positions.iter() {
-            let track_section_index = track_length_cumulative_sums
+            let Some((track_range, inferior_sum)) = self
+                .track_section_ranges
                 .iter()
-                .position(|&cumulative_sum| *path_item_position <= cumulative_sum);
+                .zip(&track_length_cumulative_sums)
+                .find(|(track_range, cumulative_sum)| {
+                    *path_item_position <= **cumulative_sum + track_range.length()
+                })
+            else {
+                continue;
+            };
 
-            if let Some(track_section_index) = track_section_index {
-                let track_range = self.track_section_ranges[track_section_index].clone();
+            let offset_on_track_range = path_item_position - inferior_sum;
 
-                let inferior_sum = if track_section_index > 0 {
-                    track_length_cumulative_sums[track_section_index - 1]
-                } else {
-                    0
-                };
+            let offset_on_track_section = match track_range.direction {
+                Direction::StartToStop => track_range.begin + offset_on_track_range,
+                Direction::StopToStart => track_range.end - offset_on_track_range,
+            };
 
-                let offset_on_track_range = path_item_position - inferior_sum;
-
-                let offset_on_track_section = match track_range.direction {
-                    Direction::StartToStop => track_range.begin + offset_on_track_range,
-                    Direction::StopToStart => track_range.end - offset_on_track_range,
-                };
-
-                res.insert(
-                    (*track_range.track_section).clone(),
-                    offset_on_track_section,
-                );
-            }
+            res.insert(
+                (*track_range.track_section).clone(),
+                offset_on_track_section,
+            );
         }
         res
     }
