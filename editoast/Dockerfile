@@ -21,10 +21,10 @@ RUN cargo install diesel_cli --no-default-features --features postgres
 COPY --from=static_assets . /assets
 
 # install `fga` binary used when authorization is enabled (production) and in `crate fga` unit tests
-ADD --checksum=sha256:03f3becc8a0a3279f303291b01ed5468be683f6ad7c519ed570af1df4b4bdcc3 \
-    https://github.com/openfga/cli/releases/download/v0.6.4/fga_0.6.4_linux_amd64.tar.gz install/
+ADD --checksum=sha256:f5fc6a8e38260c8858f8724d268e4ccbd792a57436b2a6c56dd9ac06b91aa7f4 \
+    https://github.com/openfga/cli/releases/download/v0.6.5/fga_0.6.5_linux_amd64.tar.gz install/
 RUN cd install \
-    && tar xf fga_0.6.4_linux_amd64.tar.gz \
+    && tar xf fga_0.6.5_linux_amd64.tar.gz \
     && mv fga /usr/local/bin \
     && cd .. \
     && rm -rf install
