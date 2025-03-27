@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.68-rust-1.84-alpine3.20 AS chef
+FROM lukemathwalker/cargo-chef:0.1.71-rust-1.85-alpine3.21 AS chef
 WORKDIR /gateway
 
 #######################
@@ -47,7 +47,7 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM alpine:3.20 AS running_env
+FROM alpine:3.21 AS running_env
 RUN apk add --no-cache curl ca-certificates bind-tools jq
 COPY --from=run_builder /usr/local/cargo/bin/osrd_gateway /usr/local/bin/osrd_gateway
 

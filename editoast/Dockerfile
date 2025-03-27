@@ -1,7 +1,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.68-rust-1.84-alpine3.20 AS chef
+FROM lukemathwalker/cargo-chef:0.1.71-rust-1.85-alpine3.21 AS chef
 WORKDIR /editoast
 
 #######################
@@ -79,7 +79,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 ###############
 # Running env #
 ###############
-FROM alpine:3.20 AS running_env
+FROM alpine:3.21 AS running_env
 RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast

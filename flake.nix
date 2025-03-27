@@ -25,8 +25,6 @@
           inherit system;
         };
 
-        pythonPackages = ps: (import ./nix/python_env.nix { inherit ps; });
-
         fixedNode = pkgs.nodejs_23;
         fixedNodePackages = pkgs.nodePackages.override {
           nodejs = fixedNode;
@@ -61,11 +59,9 @@
               # Tools & Libs
               diesel-cli
               cargo-watch
-              # osmium-tool : currently broken in nixpkgs
               taplo
 
               # API
-              (python311.withPackages pythonPackages)
               ruff-lsp
 
               # Core
@@ -73,8 +69,6 @@
               jdk17
 
               # Front
-              fixedNodePackages.create-react-app
-              fixedNodePackages.eslint
               fixedNode
 
               # Nix formatter
@@ -84,7 +78,6 @@
               # OSRD dev scripts
               osrd-dev-scripts
               jq
-
             ]
             # Section added only on Linux systems
             ++ lib.optionals (!stdenv.isDarwin) [
