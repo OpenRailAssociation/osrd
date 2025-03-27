@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use actix_session::Session;
-use actix_web::{http::StatusCode, HttpRequest, HttpResponse};
+use actix_web::{HttpRequest, HttpResponse, http::StatusCode};
 use thiserror::Error;
 
 use super::providers::{
@@ -227,7 +227,7 @@ impl AuthContext {
                         provider_handler: handler,
                         user_id,
                         username,
-                    }
+                    };
                 }
                 ProviderIdentityStatus::Unknown => continue,
                 ProviderIdentityStatus::Error(msg) => {
@@ -255,7 +255,7 @@ impl AuthContext {
             match self.get_provider_handler(provider_id) {
                 Some(AuthProviderHandler::Session(session_handler)) => Some(session_handler),
                 Some(AuthProviderHandler::Identity(_)) => {
-                    return Err(LoginError::InvalidProviderId.into())
+                    return Err(LoginError::InvalidProviderId.into());
                 }
                 None => return Err(LoginError::ProviderNotFound.into()),
             }

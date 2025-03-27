@@ -1,6 +1,6 @@
 use actix::{
-    io::{SinkWrite, WriteHandler},
     Actor, ActorContext, AsyncContext, StreamHandler,
+    io::{SinkWrite, WriteHandler},
 };
 use actix_web::web::{self, Bytes};
 use actix_web_actors::ws;

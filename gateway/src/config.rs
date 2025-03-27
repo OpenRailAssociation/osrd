@@ -4,8 +4,8 @@ use std::{
 };
 
 use figment::{
-    providers::{Env, Format, Serialized, Toml},
     Figment,
+    providers::{Env, Format, Serialized, Toml},
 };
 use log::info;
 use opentelemetry::global;

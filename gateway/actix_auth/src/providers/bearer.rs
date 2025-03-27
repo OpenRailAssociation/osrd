@@ -25,7 +25,7 @@ impl IdentityProvider for BearerProvider {
         let bearer = match auth_headers::Bearer::parse(header) {
             Ok(bearer) => bearer,
             Err(_) => {
-                return ProviderIdentityStatus::Error("invalid HTTP Authorization Bearer token")
+                return ProviderIdentityStatus::Error("invalid HTTP Authorization Bearer token");
             }
         };
 

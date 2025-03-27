@@ -1,5 +1,5 @@
 use actix_web::http::header::{self, HeaderMap, HeaderValue};
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
 static STANDARD_HOP_BY_HOP_HEADERS: phf::Set<&'static str> = phf::phf_set! {
     "keep-alive",

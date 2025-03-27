@@ -1,11 +1,11 @@
 use std::{
-    future::{ready, Ready},
+    future::{Ready, ready},
     rc::Rc,
 };
 
-use actix_web::dev::{Extensions, Payload};
 use actix_web::HttpMessage;
-use actix_web::{error::ErrorInternalServerError, FromRequest, HttpRequest};
+use actix_web::dev::{Extensions, Payload};
+use actix_web::{FromRequest, HttpRequest, error::ErrorInternalServerError};
 
 use crate::{AuthContext, AuthStatus};
 

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use actix_web::http::header::{self, LanguageTag, Preference};
-use actix_web::{http::StatusCode, web, FromRequest, HttpRequest, HttpResponse};
+use actix_web::{FromRequest, HttpRequest, HttpResponse, http::StatusCode, web};
 use futures_util::future::LocalBoxFuture;
 use log::error;
 use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};

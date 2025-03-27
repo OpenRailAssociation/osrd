@@ -1,4 +1,5 @@
 use actix_web::{
+    FromRequest, HttpRequest, HttpResponse, ResponseError,
     body::BoxBody,
     dev::{
         self, HttpServiceFactory, ResourceDef, Service, ServiceFactory, ServiceRequest,
@@ -6,11 +7,11 @@ use actix_web::{
     },
     error::ParseError,
     http::{
+        StatusCode,
         header::{self, HeaderMap},
         uri::Authority,
-        StatusCode,
     },
-    web, FromRequest, HttpRequest, HttpResponse, ResponseError,
+    web,
 };
 use actix_web_actors::ws;
 use actix_web_opentelemetry::ClientExt;
@@ -19,15 +20,15 @@ use either::Either;
 use futures_util::future::LocalBoxFuture;
 use log::{debug, warn};
 use opentelemetry::{
+    Context,
     global::{self, BoxedTracer},
     trace::Tracer,
-    Context,
 };
 use opentelemetry::{
-    trace::{TraceContextExt, TracerProvider},
     KeyValue,
+    trace::{TraceContextExt, TracerProvider},
 };
-use percent_encoding::{utf8_percent_encode, AsciiSet};
+use percent_encoding::{AsciiSet, utf8_percent_encode};
 use regex::RegexSet;
 
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
@@ -35,7 +36,7 @@ use futures_util::StreamExt;
 use std::{collections::HashSet, net::IpAddr};
 use std::{fmt, rc::Rc};
 use std::{
-    future::{ready, Ready},
+    future::{Ready, ready},
     time::Duration,
 };
 
@@ -47,10 +48,10 @@ mod websocket;
 
 // re-exports
 pub use actix_web::http::{
-    header::{HeaderName, HeaderValue}, // for the request modifier / forwarded headers
     Uri,                               // for the upstream
+    header::{HeaderName, HeaderValue}, // for the request modifier / forwarded headers
 };
-pub use awc::{ws::WebsocketsRequest, ClientRequest}; // for the request modifier
+pub use awc::{ClientRequest, ws::WebsocketsRequest}; // for the request modifier
 pub use ipnet::IpNet; // for trusted proxies
 
 pub trait RequestModifier: DynClone {

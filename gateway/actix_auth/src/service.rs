@@ -1,6 +1,6 @@
 use crate::RequestAuth;
 use actix_session::Session;
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{HttpRequest, HttpResponse, Responder, web};
 use serde::Serialize;
 
 pub fn config(cfg: &mut web::ServiceConfig) {

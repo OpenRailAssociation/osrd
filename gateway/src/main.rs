@@ -3,17 +3,17 @@ use std::rc::Rc;
 
 use actix_proxy::IpNet;
 use actix_proxy::Proxy;
-use actix_session::storage::CookieSessionStore;
 use actix_session::SessionMiddleware;
+use actix_session::storage::CookieSessionStore;
 use actix_web::cookie::SameSite;
 use actix_web::{
-    middleware::{Compress, Logger},
     App, HttpServer,
+    middleware::{Compress, Logger},
 };
-use actix_web::{web, HttpResponse};
+use actix_web::{HttpResponse, web};
 use actix_web_opentelemetry::RequestTracing;
 use config_parser::{
-    parse_auth_config, parse_files_config, parse_secret_key, parse_targets, Files,
+    Files, parse_auth_config, parse_files_config, parse_secret_key, parse_targets,
 };
 use either::Either;
 use log::error;
@@ -52,7 +52,9 @@ async fn main() -> std::io::Result<()> {
         (Some(proxy), None) => Some(Either::Left(proxy)),
         (None, Some(files)) => Some(Either::Right(files)),
         (Some(_), Some(_)) => {
-            error!("both a default proxy target and a files config are provided, which are both default services");
+            error!(
+                "both a default proxy target and a files config are provided, which are both default services"
+            );
             exit(1);
         }
         (None, None) => None,
