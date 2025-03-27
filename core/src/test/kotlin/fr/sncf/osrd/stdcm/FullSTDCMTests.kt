@@ -284,8 +284,7 @@ class FullSTDCMTests {
             )
         val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
         val zoneAfterStop = "zone.[det.center.2:INCREASING, det.center.3:DECREASING]"
-        val requirements =
-            listOf(SpacingRequirement(zoneAfterStop, 0.0, 7_000.0, true))
+        val requirements = listOf(SpacingRequirement(zoneAfterStop, 0.0, 7_000.0, true))
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra)

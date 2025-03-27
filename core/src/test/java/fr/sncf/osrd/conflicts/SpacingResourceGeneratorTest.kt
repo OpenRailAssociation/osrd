@@ -5,12 +5,13 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
@@ -19,6 +20,7 @@ import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -317,13 +319,103 @@ class SpacingResourceGeneratorTest {
         // We should have just enough data to generate resource use
         assertTrue { iterationResult != NotEnoughPath }
     }
+
+    /**
+     * The train stops and restarts within sight distance of a signal, with a stop on closed signal.
+     */
+    @Test
+    fun testIncrementalStop() {
+        val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
+        val train = TestTrains.VERY_SHORT_FAST_TRAIN
+        val stopDuration = 5_000.0
+        val zoneNameAfterStop =
+            "zone.[det.b1.nf:DECREASING, det.b2.nf:DECREASING, det.center.3:INCREASING]"
+
+        // Init stops and offsets
+        val stopOffset =
+            blocks.take(3).map { infra.blockInfra.getBlockLength(it).distance }.sumDistances() -
+                50.meters
+        val pathLength = blocks.map { infra.blockInfra.getBlockLength(it).distance }.sumDistances()
+        val stops = listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP))
+
+        // Build path
+        path.extend(
+            PathFragment(
+                routes.toIdxList(),
+                blocks.toIdxList(),
+                stops = listOf(FragmentStop(Offset(stopOffset), SHORT_SLIP_STOP)),
+                containsStart = true,
+                containsEnd = true,
+                0.meters,
+                0.meters
+            )
+        )
+
+        // Init callbacks, one at the stop and one at the end
+        val callbacksAtStop =
+            makeCallbacks(stopOffset, false, train, stops, infiniteLastStop = true)
+        val fullCallbacks = makeCallbacks(pathLength, true, train, stops, infiniteLastStop = false)
+
+        // Automaton 1: two different calls, at the stop and at the end
+        val automaton =
+            SpacingRequirementAutomaton(
+                infra.rawInfra,
+                infra.loadedSignalInfra,
+                infra.blockInfra,
+                infra.signalingSimulator,
+                callbacksAtStop,
+                path
+            )
+        val incrementalResultAtStop =
+            (automaton.processPathUpdate() as SpacingRequirements).requirements
+        automaton.callbacks = fullCallbacks
+        val incrementalResultAtArrival =
+            (automaton.processPathUpdate() as SpacingRequirements).requirements
+
+        // For comparison, results with a single call
+        val oneShotResults =
+            SpacingRequirementAutomaton(
+                    infra.rawInfra,
+                    infra.loadedSignalInfra,
+                    infra.blockInfra,
+                    infra.signalingSimulator,
+                    fullCallbacks,
+                    path
+                )
+                .processPathUpdate() as SpacingRequirements
+        val stopDepartureTime =
+            callbacksAtStop.arrivalTimeInRange(Offset(stopOffset), Offset(stopOffset)) +
+                stopDuration
+
+        // Run assertions on the results
+        assert(incrementalResultAtStop.none { it.zone == zoneNameAfterStop }) {
+            "No requirement after the closed signal during the stop"
+        }
+        assert(incrementalResultAtStop.maxOf { it.endTime } == stopDepartureTime) {
+            "We still generate requirements during the full stop duration"
+        }
+        assert(
+            incrementalResultAtArrival.single { it.zone == zoneNameAfterStop } ==
+                oneShotResults.requirements.single { it.zone == zoneNameAfterStop }
+        ) {
+            "We generate the same requirements after the stop, even with incremental calls"
+        }
+        assert(
+            incrementalResultAtArrival.single { it.zone == zoneNameAfterStop }.beginTime ==
+                stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+        ) {
+            "We emit the requirement 20s before the departure time"
+        }
+    }
 }
 
 /** Returns an incremental requirement callback of the given length */
 private fun makeCallbacks(
     length: Distance,
     complete: Boolean,
-    rollingStock: PhysicsRollingStock = SimpleRollingStock.STANDARD_TRAIN
+    rollingStock: PhysicsRollingStock = SimpleRollingStock.STANDARD_TRAIN,
+    stops: List<TrainStop> = listOf(),
+    infiniteLastStop: Boolean = false,
 ): IncrementalRequirementCallbacks {
     val envelope =
         Envelope.make(
@@ -333,5 +425,11 @@ private fun makeCallbacks(
                 doubleArrayOf(30.0, 30.0)
             )
         )
-    return IncrementalRequirementEnvelopeAdapter(rollingStock, envelope, complete)
+    val withStops = EnvelopeStopWrapper(envelope, stops)
+    return IncrementalRequirementEnvelopeAdapter(
+        rollingStock,
+        withStops,
+        complete,
+        infiniteLastStop
+    )
 }
