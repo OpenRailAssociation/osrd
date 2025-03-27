@@ -74,32 +74,12 @@ struct WhoamiResponse {
         body = inline(WhoamiResponse),
     ))
 )]
-async fn whoami(
-    State(AppState { config, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
-) -> Result<Json<WhoamiResponse>> {
-    // This is especially necessary as this endpoint is always queried by the frontend
-    // when loading. Making it return 401 results in a blank page.
-    // We return `Admin` as when no authorization is enabled, we want everyone to have
-    // access to full feature set of OSRD.
-    if !config.enable_authorization {
-        return Ok(Json(WhoamiResponse {
-            // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
-            id: -1,
-            name: "OSRD user".to_string(),
-            roles: Vec::from([Role::Admin]),
-        }));
-    }
-
-    let authorizer = auth.authorizer()?;
-    let user_roles = authorizer
-        .user_roles()
-        .await
-        .map_err(AuthzError::Authorizer)?;
+async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiResponse>> {
     Ok(Json(WhoamiResponse {
-        id: authorizer.user_id(),
-        name: authorizer.user_name().to_owned(),
-        roles: user_roles.into_iter().collect(),
+        // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
+        id: auth.user_id()?.unwrap_or(-1),
+        name: auth.user_name()?.unwrap_or_else(|| "OSRD user".to_string()),
+        roles: auth.user_roles().await?.into_iter().collect(),
     }))
 }
 

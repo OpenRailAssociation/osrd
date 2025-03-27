@@ -256,26 +256,48 @@ pub enum Authentication {
     /// The issuer of the request provided the 'x-remote-user-identity' header.
     Authenticated(Authorizer<PgAuthDriver>),
     /// The requests comes from a trusted service (like core). All requests are considered safe.
-    SkipAuthorization,
+    SkipAuthorization {
+        #[expect(unused)]
+        identity: Option<String>,
+        name: Option<String>,
+    },
 }
 
 impl Authentication {
     fn user_id(&self) -> Result<Option<i64>, AuthorizationError> {
         match self {
-            Authentication::SkipAuthorization => Ok(None),
+            Authentication::SkipAuthorization { .. } => Ok(None),
             Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
             Authentication::Authenticated(authorizer) => Ok(Some(authorizer.user_id())),
         }
     }
 
+    fn user_name(&self) -> Result<Option<String>, AuthorizationError> {
+        match self {
+            Authentication::SkipAuthorization { name, .. } => Ok(name.clone()),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Authentication::Authenticated(authorizer) => {
+                Ok(Some(authorizer.user_name().to_owned()))
+            }
+        }
+    }
+
+    async fn user_roles(&self) -> Result<HashSet<Role>, AuthorizationError> {
+        match self {
+            Authentication::SkipAuthorization { .. } => Ok(HashSet::from([Role::Admin])),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Authentication::Authenticated(authorizer) => authorizer
+                .user_roles()
+                .await
+                .map_err(AuthorizationError::from),
+        }
+    }
+
     /// Checks if the issuer of the request has the required roles. Always returns `false` if the
     /// request is unauthenticated.
-    pub async fn check_roles(
-        &self,
-        required_roles: HashSet<Role>,
-    ) -> Result<bool, AuthorizerError> {
+    async fn check_roles(&self, required_roles: HashSet<Role>) -> Result<bool, AuthorizerError> {
         match self {
-            Authentication::SkipAuthorization => Ok(true),
+            Authentication::SkipAuthorization { .. } => Ok(true),
             Authentication::Unauthenticated => Ok(false),
             Authentication::Authenticated(authorizer) => {
                 authorizer.check_roles(required_roles).await
@@ -286,10 +308,10 @@ impl Authentication {
     /// Returns the underlying authorizer if the request is authenticated, otherwise returns an
     /// error. If the request comes from Core, this returns false as well as it makes no sense to
     /// have an Authorizer without an authenticated user.
-    pub fn authorizer(self) -> Result<Authorizer<PgAuthDriver>, AuthorizationError> {
+    fn authorizer(self) -> Result<Authorizer<PgAuthDriver>, AuthorizationError> {
         match self {
             Authentication::Authenticated(authorizer) => Ok(authorizer),
-            Authentication::Unauthenticated | Authentication::SkipAuthorization => {
+            Authentication::Unauthenticated | Authentication::SkipAuthorization { .. } => {
                 Err(AuthorizationError::Unauthorized)
             }
         }
@@ -303,44 +325,65 @@ async fn authenticate(
     headers: &axum::http::HeaderMap,
     regulator: Regulator,
 ) -> Result<Authentication, AuthorizationError> {
-    if !enable_authorization {
-        return Ok(Authentication::SkipAuthorization);
-    }
-    let Some(identity) = headers.get("x-remote-user-identity") else {
-        if headers.contains_key("x-osrd-skip-authz") {
-            return Ok(Authentication::SkipAuthorization);
+    const IDENTITY: &str = "x-remote-user-identity";
+    const NAME: &str = "x-remote-user-name";
+    const SKIP_AUTHZ: &str = "x-osrd-skip-authz";
+    const IMPERSONATE: &str = "x-impersonate";
+
+    let identity = headers.get(IDENTITY).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-remote-user-identity")
+            .to_owned()
+    });
+    let name = headers.get(NAME).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-remote-user-name")
+            .to_owned()
+    });
+    let impersonate = headers.get(IMPERSONATE).map(|hv| {
+        str::from_utf8(hv.as_bytes())
+            .expect("unexpected non-utf8 characters in x-impersonate")
+            .to_owned()
+    });
+    let skip_authz = headers.contains_key(SKIP_AUTHZ);
+
+    let user = match (identity, name) {
+        (identity, name) if !enable_authorization => {
+            tracing::debug!(
+                identity,
+                name,
+                "authorization disabled — all role and permission checks are bypassed"
+            );
+            return Ok(Authentication::SkipAuthorization { identity, name });
         }
-        return Ok(Authentication::Unauthenticated);
-    };
-    let identity = str::from_utf8(identity.as_bytes())
-        .expect("unexpected non-utf8 characters in x-remote-user-identity");
-
-    let name = match headers.get("x-remote-user-name") {
-        Some(name) => str::from_utf8(name.as_bytes())
-            .expect("unexpected non-utf8 characters in x-remote-user-name"),
-        None => "",
-    };
-
-    let authorizer = match Authorizer::try_initialize(identity.to_owned(), regulator.clone()).await
-    {
-        Ok(authorizer) => authorizer,
-        Err(AuthorizerError::UnknownUser { .. }) => {
-            // The user is not in the database, let's add it
-            regulator
-                .clone()
-                .driver()
-                .ensure_user(&UserInfo {
-                    identity: identity.to_owned(),
-                    name: name.to_owned(),
-                })
-                .await
-                .map_err(AuthorizerError::Storage)?;
-            Authorizer::try_initialize(identity.to_owned(), regulator.clone()).await?
+        (identity, name) if skip_authz => {
+            tracing::debug!(identity, name, "authorization skipped by request");
+            return Ok(Authentication::SkipAuthorization { identity, name });
         }
-        Err(err) => return Err(err.into()),
+        (None, _) => return Ok(Authentication::Unauthenticated),
+        (Some(identity), name) => UserInfo {
+            identity,
+            name: name.unwrap_or_default(),
+        },
     };
 
-    let Some(impersonated_identity) = headers.get("x-impersonate") else {
+    let authorizer =
+        match Authorizer::try_initialize(user.identity.clone(), regulator.clone()).await {
+            Ok(authorizer) => authorizer,
+            Err(AuthorizerError::UnknownUser { .. }) => {
+                // The user is not in the database, let's add it
+                regulator
+                    .clone()
+                    .driver()
+                    .ensure_user(&user)
+                    .await
+                    .map_err(AuthorizerError::Storage)?;
+                Authorizer::try_initialize(user.identity, regulator.clone()).await?
+            }
+            Err(err) => return Err(err.into()),
+        };
+
+    let Some(impersonated_identity) = impersonate else {
         return Ok(Authentication::Authenticated(authorizer));
     };
 
@@ -349,15 +392,12 @@ async fn authenticate(
         return Err(AuthorizationError::ForbiddenImpersonation);
     }
 
-    let impersonated_identity = str::from_utf8(impersonated_identity.as_bytes())
-        .expect("unexpected non-utf8 characters in x-impersonate");
-
     let impersonated_authorizer =
-        match Authorizer::try_initialize(impersonated_identity.to_owned(), regulator).await {
+        match Authorizer::try_initialize(impersonated_identity.clone(), regulator).await {
             Ok(authorizer) => authorizer,
             Err(AuthorizerError::UnknownUser { .. }) => {
                 return Err(AuthorizationError::ImpersonatedUserNotFound {
-                    identity: impersonated_identity.to_owned(),
+                    identity: impersonated_identity,
                 })
             }
             err => err?,
