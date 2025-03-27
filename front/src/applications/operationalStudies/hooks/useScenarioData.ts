@@ -205,7 +205,12 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         return newProjectedTrainsById;
       });
 
-      setTimetableItems((prev) => sortBy([...prev!, ...timetableItemsToUpsert], 'start_time'));
+      setTimetableItems((prev) =>
+        sortBy(
+          Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+          'start_time'
+        )
+      );
 
       const sortedTimetableItemsToUpsert = sortBy(timetableItemsToUpsert, 'start_time');
       setTimetableItemIdsToFetch(
