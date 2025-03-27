@@ -60,7 +60,7 @@ ${separator}
   const mailtoLink = `mailto:${stdcmFeedbackMail}?subject=${subject}&body=${body}`;
 
   const handleEmailClick = () => {
-    window.open(mailtoLink, '_blank');
+    window.open(mailtoLink, '_self');
   };
 
   return (
