@@ -18,7 +18,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::axum::QsQuery;
 use std::collections::hash_map::DefaultHasher;
-use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 use tracing::info;
@@ -76,10 +75,10 @@ impl PathPropertiesInput {
         cumulative_sums
     }
 
-    pub fn find_track_section_offset(&self) -> HashMap<String, u64> {
+    fn find_track_section_offsets(&self) -> Vec<(String, u64)> {
         let track_length_cumulative_sums = self.get_track_length_cumulative_sums();
-        let mut res = HashMap::new();
-        for path_item_position in self.path_item_positions.iter() {
+        let mut offsets = Vec::new();
+        for path_item_position in &self.path_item_positions {
             let Some((track_range, inferior_sum)) = self
                 .track_section_ranges
                 .iter()
@@ -98,12 +97,24 @@ impl PathPropertiesInput {
                 Direction::StopToStart => track_range.end - offset_on_track_range,
             };
 
-            res.insert(
+            offsets.push((
                 (*track_range.track_section).clone(),
                 offset_on_track_section,
-            );
+            ));
         }
-        res
+        offsets
+    }
+
+    fn get_ratio(&self, track_section: &TrackSection) -> Vec<(String, f64)> {
+        self.find_track_section_offsets()
+            .iter()
+            .filter(|(tr, _)| tr == track_section.id.as_ref())
+            .map(|(_, position)| *position as f64)
+            .map(|position| {
+                let ratio = position / (track_section.length * 1000_f64);
+                (track_section.id.to_string(), ratio)
+            })
+            .collect::<Vec<_>>()
     }
 }
 
@@ -241,39 +252,28 @@ async fn post(
     .await?;
 
     // Get track section offsets.
-    let track_section_offsets = path_properties_input.find_track_section_offset();
+    let track_section_offsets = path_properties_input.find_track_section_offsets();
 
     // Get the IDs of the track sections.
-    let object_ids = path_properties_input
-        .find_track_section_offset()
+    let track_section_ids = track_section_offsets
         .iter()
         .map(|ts| ts.0.clone()) // Extract track section IDs.
         .collect();
 
     // Fetch the track section objects using the IDs.
-    let objects = infra
-        .get_objects(conn, ObjectType::TrackSection, &object_ids)
-        .await?;
+    let track_sections = infra
+        .get_objects(conn, ObjectType::TrackSection, &track_section_ids)
+        .await?
+        .into_iter()
+        .map(|track_section| track_section.railjson)
+        .map(serde_json::from_value::<TrackSection>)
+        .collect::<Result<Vec<_>, serde_json::Error>>()?;
 
-    // Prepare a vector to store position ratios.
-    let mut path_item_position_ratio = Vec::new();
-
-    for object in objects {
-        let track_section =
-            serde_json::from_str::<TrackSection>(object.railjson.to_string().as_str())?;
-
-        // Get the position of the track section from the offsets.
-        let position = track_section_offsets[track_section.id.as_ref()] as f64;
-
-        // Calculate the geographic length of the track section.
-        let geo_length = track_section.geo_bbox().diagonal_length();
-
-        // Calculate the position ratio within the track section.
-        let geo_position = position * geo_length / (track_section.length * 1000_f64);
-        let ratio = geo_position / geo_length;
-
-        path_item_position_ratio.push((track_section.id.to_string(), ratio));
-    }
+    let path_item_position_ratio = track_sections
+        .iter()
+        .map(|ts| path_properties_input.get_ratio(ts))
+        .flatten()
+        .collect::<Vec<(String, f64)>>();
 
     // 1) Try to retrieve all the informations from Valkey
     let mut path_properties = retrieve_path_properties(
@@ -374,11 +374,14 @@ fn path_properties_input_hash(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
+    use editoast_schemas::infra::{Direction, TrackSection};
     use rstest::rstest;
     use serde_json::json;
 
     use super::PathProperties;
+    use crate::core::pathfinding::TrackRange;
     use crate::models::fixtures::create_small_infra;
+    use crate::views::path::properties::PathPropertiesInput;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
@@ -398,5 +401,56 @@ mod tests {
         assert!(response.electrifications.is_some());
         assert!(response.geometry.is_some());
         assert!(response.operational_points.is_some());
+    }
+
+    #[rstest]
+    fn test_get_track_length_cumulative_sums() {
+        let track_range_1 = TrackRange::new("TR1", 0, 1300, Direction::StartToStop);
+        let track_range_2 = TrackRange::new("TR2", 0, 1000, Direction::StartToStop);
+        let path_properties_input = PathPropertiesInput {
+            track_section_ranges: vec![track_range_1, track_range_2],
+            path_item_positions: vec![0, 2300],
+        };
+        assert_eq!(
+            path_properties_input.get_track_length_cumulative_sums(),
+            vec![0, 1300]
+        );
+    }
+
+    #[rstest]
+    fn test_find_track_section_offset() {
+        let track_range_1 = TrackRange::new("TR1", 0, 400, Direction::StartToStop);
+        let track_range_2 = TrackRange::new("TR2", 0, 600, Direction::StartToStop);
+        let path_properties_input = PathPropertiesInput {
+            track_section_ranges: vec![track_range_1, track_range_2],
+            path_item_positions: vec![0, 500, 1000],
+        };
+        assert_eq!(
+            path_properties_input.find_track_section_offsets(),
+            vec![
+                ("TR1".to_string(), 0),
+                ("TR2".to_string(), 100),
+                ("TR2".to_string(), 600)
+            ]
+        );
+    }
+
+    #[rstest]
+    fn test_get_ratio() {
+        let track_range_1 = TrackRange::new("TR1", 0, 4_000, Direction::StartToStop);
+        let track_range_2 = TrackRange::new("TR2", 0, 5_000, Direction::StartToStop);
+        let path_properties_input = PathPropertiesInput {
+            track_section_ranges: vec![track_range_1, track_range_2],
+            path_item_positions: vec![0, 5_000, 9_000],
+        };
+        let track_section = TrackSection {
+            id: "TR2".into(),
+            length: 5.0,
+            ..Default::default()
+        };
+        assert_eq!(
+            path_properties_input.get_ratio(&track_section),
+            vec![("TR2".to_string(), 0.2), ("TR2".to_string(), 1.0),]
+        );
     }
 }
