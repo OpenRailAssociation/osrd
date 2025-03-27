@@ -7,8 +7,8 @@ use crate::drivers::{
 use serde::{Deserialize, Serialize};
 
 use figment::{
-    providers::{Env, Format, Serialized, Yaml},
     Figment,
+    providers::{Env, Format, Serialized, Yaml},
 };
 use tracing::info;
 use url::Url;

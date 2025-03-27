@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use percent_encoding::{percent_decode_str, percent_encode, NON_ALPHANUMERIC};
+use percent_encoding::{NON_ALPHANUMERIC, percent_decode_str, percent_encode};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 

@@ -1,11 +1,11 @@
 use crate::{
-    drivers::{LABEL_QUEUE_NAME, LABEL_VERSION_IDENTIFIER},
     Key,
+    drivers::{LABEL_QUEUE_NAME, LABEL_VERSION_IDENTIFIER},
 };
 
 use super::{
-    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_MANAGED_BY, LABEL_WORKER_ID, LABEL_WORKER_KEY, MANAGED_BY_VALUE,
+    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
 };
 use k8s_openapi::{
     api::{
@@ -19,7 +19,7 @@ use k8s_openapi::{
     apimachinery::pkg::apis::meta::v1::LabelSelector,
 };
 use keda::{MetricType, ScaledObject};
-use kube::{api::ObjectMeta, Client};
+use kube::{Client, api::ObjectMeta};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{

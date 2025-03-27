@@ -63,7 +63,7 @@
 
 use std::{fmt::Debug, future::Future, pin::Pin};
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use im::HashMap;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};

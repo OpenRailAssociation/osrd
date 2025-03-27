@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin};
 
 use bollard::{
+    Docker,
     container::{
         Config, CreateContainerOptions, NetworkingConfig, RemoveContainerOptions,
         StartContainerOptions,
     },
     secret::HostConfig,
-    Docker,
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -16,9 +16,9 @@ use uuid::Uuid;
 use crate::Key;
 
 use super::{
-    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_MANAGED_BY, LABEL_VERSION_IDENTIFIER, LABEL_WORKER_ID, LABEL_WORKER_KEY,
     MANAGED_BY_VALUE,
+    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

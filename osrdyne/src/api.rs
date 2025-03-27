@@ -4,16 +4,16 @@ use std::{
     sync::Arc,
 };
 
-use axum::{body::Body, extract::State, response::IntoResponse, routing::get, Json, Router};
+use axum::{Json, Router, body::Body, extract::State, response::IntoResponse, routing::get};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use serde::Serialize;
 use tokio::{
     select,
-    sync::{watch, Mutex},
+    sync::{Mutex, watch},
 };
 use tracing::info;
 
-use crate::{drivers::worker_driver::WorkerMetadata, status_tracker::WorkerStatus, Key};
+use crate::{Key, drivers::worker_driver::WorkerMetadata, status_tracker::WorkerStatus};
 use axum_extra::extract::Query;
 use serde::Deserialize;
 

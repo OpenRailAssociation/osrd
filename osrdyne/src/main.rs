@@ -15,15 +15,15 @@ use tokio::signal;
 use tokio::spawn;
 use tokio::sync::mpsc;
 use tracing::{debug, error, info};
+use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::Layer;
 
 use crate::management_client::ArgumentValue;
 use crate::management_client::ManagementClient;
-use crate::target_tracker::target_tracker_actor;
 use crate::target_tracker::TargetTrackerClient;
 use crate::target_tracker::TargetTrackerConfig;
+use crate::target_tracker::target_tracker_actor;
 
 use crate::config::WorkerDriverConfig;
 use crate::drivers::docker::DockerDriver;
@@ -46,7 +46,7 @@ mod watch_logger;
 pub use key::Key;
 pub use pool::Pool;
 
-use config::{parse_config, OsrdyneConfig};
+use config::{OsrdyneConfig, parse_config};
 
 fn request_queues_policy(config: &OsrdyneConfig) -> BTreeMap<String, ArgumentValue> {
     let mut request_queues_policy = BTreeMap::new();

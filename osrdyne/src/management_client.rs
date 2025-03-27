@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
 use reqwest::{Method, Request, StatusCode};
 use serde::{Deserialize, Serialize};
 

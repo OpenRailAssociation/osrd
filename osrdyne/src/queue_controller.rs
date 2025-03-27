@@ -3,11 +3,11 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::sync::Arc;
 
+use lapin::Channel;
 use lapin::options::QueueBindOptions;
 use lapin::options::QueueDeclareOptions;
 use lapin::options::QueueDeleteOptions;
 use lapin::types::FieldTable;
-use lapin::Channel;
 use tokio::select;
 use tokio::sync::oneshot;
 use tokio::sync::watch;
@@ -15,11 +15,11 @@ use tokio::task::AbortHandle;
 use tokio::task::JoinSet;
 use tracing::debug;
 
+use crate::Key;
+use crate::Pool;
 use crate::target_tracker::GenerationId;
 use crate::target_tracker::QueueStatus;
 use crate::target_tracker::TargetUpdate;
-use crate::Key;
-use crate::Pool;
 
 #[derive(Debug)]
 pub struct QueuesState {

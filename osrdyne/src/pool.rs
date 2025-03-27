@@ -6,25 +6,25 @@ use std::{
 
 use futures_lite::stream::StreamExt;
 use lapin::{
+    BasicProperties, Channel, Connection,
+    ExchangeKind::{Direct, Fanout},
     options::{
         BasicConsumeOptions, BasicPublishOptions, BasicQosOptions, ExchangeDeclareOptions,
         QueueBindOptions, QueueDeclareOptions,
     },
     types::FieldTable,
-    BasicProperties, Channel, Connection,
-    ExchangeKind::{Direct, Fanout},
 };
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
 use tokio::{sync::oneshot, task::JoinSet};
-use tracing::{error, info, span, Level};
+use tracing::{Level, error, info, span};
 
 use crate::{
+    Key, WorkerDriver,
     drivers::worker_driver::WorkerMetadata,
     management_client::{ArgumentValue, ManagementClient, Policy, PolicyScope},
-    queue_controller::{queues_control_loop, QueuesState},
+    queue_controller::{QueuesState, queues_control_loop},
     target_tracker::{QueueStatus, TargetTrackerClient, TargetUpdate},
     watch_logger::watch_logger,
-    Key, WorkerDriver,
 };
 
 pub struct Pool {
