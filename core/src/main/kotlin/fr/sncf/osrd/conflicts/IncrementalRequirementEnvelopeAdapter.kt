@@ -12,6 +12,7 @@ class IncrementalRequirementEnvelopeAdapter(
     private val rollingStock: PhysicsRollingStock,
     private val envelopeWithStops: EnvelopeInterpolate?,
     override var simulationComplete: Boolean,
+    private val infiniteLastStop: Boolean = false,
 ) : IncrementalRequirementCallbacks {
     override fun maxSpeedInRange(
         pathBeginOff: Offset<TravelledPath>,
@@ -43,6 +44,9 @@ class IncrementalRequirementEnvelopeAdapter(
         var pastStop = (stopOffset.distance).meters
         if (pastStop > endPos) {
             pastStop = endPos
+        }
+        if (pastStop == endPos && infiniteLastStop) {
+            return Double.POSITIVE_INFINITY
         }
         return envelopeWithStops.interpolateDepartureFrom(pastStop)
     }
