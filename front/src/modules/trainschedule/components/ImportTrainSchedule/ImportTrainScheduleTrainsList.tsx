@@ -2,17 +2,11 @@ import { useMemo } from 'react';
 
 import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
-import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
-import {
-  osrdEditoastApi,
-  type LightRollingStockWithLiveries,
-  type TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
@@ -20,7 +14,6 @@ import { useAppDispatch } from 'store';
 import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
-import type { RollingstockOpenData2OSRDKeys } from './types';
 import { findValidTrainNameKey } from '../ManageTrainSchedule/helpers/trainNameHelper';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
@@ -33,7 +26,6 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 
 type ImportTrainScheduleTrainsListProps = {
   trainsList: ImportedTrainSchedule[];
-  rollingStocks: LightRollingStockWithLiveries[];
   isLoading: boolean;
   timetableId: number;
   trainsJsonData: TrainScheduleBase[];
@@ -44,7 +36,6 @@ type ImportTrainScheduleTrainsListProps = {
 
 const ImportTrainScheduleTrainsList = ({
   trainsList,
-  rollingStocks,
   isLoading,
   timetableId,
   trainsJsonData,
@@ -53,10 +44,6 @@ const ImportTrainScheduleTrainsList = ({
   dtoImport,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const rollingStockDict = useMemo(
-    () => keyBy(rollingStocks, (rollingStock) => rollingStock.name),
-    [rollingStocks]
-  );
 
   const formattedTrainsList = useMemo(
     () =>
@@ -128,7 +115,7 @@ const ImportTrainScheduleTrainsList = ({
     <div className="container-fluid mb-2">
       <div className="osrd-config-item-container import-train-schedule-trainlist">
         <div className="import-train-schedule-trainlist-launchbar">
-          <span className="import-train-schedule-trainlist-launchbar-nbresults">
+          <span>
             {trainsList.length > 0 ? trainsList.length : trainsJsonData.length} {t('trainsFound')}
           </span>
           <button
@@ -140,22 +127,6 @@ const ImportTrainScheduleTrainsList = ({
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
-        {trainsList.length > 0 && (
-          <div className="import-train-schedule-trainlist-results">
-            {trainsList.map((train, idx) => (
-              <ImportTrainScheduleTrainDetail
-                trainData={train}
-                idx={idx}
-                key={train.trainNumber}
-                rollingStock={
-                  rollingStockDict[
-                    rollingstockOpenData2OSRD[train.rollingStock as RollingstockOpenData2OSRDKeys]
-                  ]
-                }
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   ) : (

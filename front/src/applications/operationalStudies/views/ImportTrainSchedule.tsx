@@ -54,7 +54,6 @@ const ImportTrainSchedule = ({
       />
       <ImportTrainScheduleTrainsList
         isLoading={isLoading}
-        rollingStocks={rollingStocks}
         timetableId={timetableId}
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
