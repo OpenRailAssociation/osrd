@@ -33,9 +33,10 @@ def place_regular_signals_detectors(
     In the prefered direction, every <period> meters,
     in the opposite direction, every 3 *<period> meters."""
     if max_offset is None:
-        max_offset = track_section.length
+        max_offset = float(track_section.length)
     elif max_offset < 0:
-        max_offset = track_section.length + max_offset
+        max_offset = float(track_section.length) + max_offset
+    assert isinstance(max_offset, float)
 
     if prefered_direction is None:
         is_prefered = [True, True]
@@ -47,7 +48,7 @@ def place_regular_signals_detectors(
         ]
         is_reverse = [not pref for pref in is_prefered]
 
-    n_detectors = ((max_offset - min_offset) // period) - 1
+    n_detectors = int((max_offset - min_offset) // period) - 1
     detector_step = (max_offset - min_offset) / (n_detectors + 1)
     for i in range(1, n_detectors + 1):
         track_section.add_detector(
@@ -188,10 +189,10 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     ta5.add_detector(label="DA9", position=ta5.length / 2)
     # Extra signals
     place_regular_signals_detectors(
-        ta6, "A6", signaling_system, Direction.START_TO_STOP, 200, -200
+        ta6, "A6", signaling_system, Direction.START_TO_STOP, 200.0, -200.0
     )
     place_regular_signals_detectors(
-        ta7, "A7", signaling_system, Direction.STOP_TO_START, 200, -200
+        ta7, "A7", signaling_system, Direction.STOP_TO_START, 200.0, -200.0
     )
     # Station
     west = builder.add_operational_point(label="West_station", trigram="WS", uic=2)
@@ -378,10 +379,10 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     )
     pd1.set_coords(-0.172, LAT_1)
     place_regular_signals_detectors(
-        td0, "D0", signaling_system, Direction.START_TO_STOP, 200, -200
+        td0, "D0", signaling_system, Direction.START_TO_STOP, 200.0, -200.0
     )
     place_regular_signals_detectors(
-        td1, "D1", signaling_system, Direction.STOP_TO_START, 200, -200
+        td1, "D1", signaling_system, Direction.STOP_TO_START, 200.0, -200.0
     )
     # Station
     mid_east = builder.add_operational_point(
@@ -497,7 +498,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     south = builder.add_operational_point(label="South_station", trigram="SS", uic=6)
     south.add_part(tf1, 4300)
     place_regular_signals_detectors(
-        tf1, "F1", signaling_system, min_offset=200, max_offset=4300
+        tf1, "F1", signaling_system, min_offset=200.0, max_offset=4300.0
     )
     # Curves
     tf1.add_curve(begin=3100, end=4400, curve=9500)
@@ -545,7 +546,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     north_east.add_part(tg4, 1550)
     north_east.add_part(tg5, 1500)
     place_regular_signals_detectors(
-        tg1, "G1", signaling_system, min_offset=200, max_offset=-200
+        tg1, "G1", signaling_system, min_offset=200.0, max_offset=-200.0
     )
     # ================================
     #  Around station H: South-East
@@ -555,7 +556,7 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     th1 = builder.add_track_section(
         length=5000, label="TH1", **V1, **south_east_parking
     )
-    place_regular_signals_detectors(th1, "H1", signaling_system, min_offset=200)
+    place_regular_signals_detectors(th1, "H1", signaling_system, min_offset=200.0)
     # switches
     ph0 = builder.add_double_slip_switch(
         label="PH0",

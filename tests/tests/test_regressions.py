@@ -93,6 +93,7 @@ def _apply_prelude(prelude: List, editoast_url: str, scenario: Scenario):
         schedule_id = _schedule_with_payload(
             editoast_url, schedule_payload, accept_400=False, scenario=scenario
         )
+        assert schedule_id is not None
 
         _check_result(editoast_url, schedule_id, scenario.infra)
 
@@ -121,6 +122,7 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
     schedule_id = _schedule_with_payload(
         EDITOAST_URL, payload, stop_after_schedule, scenario
     )
+    assert schedule_id is not None
     if stop_after_schedule:
         return
 

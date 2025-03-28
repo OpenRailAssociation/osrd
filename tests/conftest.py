@@ -162,6 +162,7 @@ class TestRollingStock:
     name: str
     metadata: Mapping
     base_path: Path
+    __test__: bool
 
 
 # Mark the class as not a test class
@@ -193,9 +194,11 @@ def create_rolling_stock(
 
 @pytest.fixture
 def fast_rolling_stocks(request: pytest.FixtureRequest) -> Iterator[Iterable[int]]:
+    closest_marker = request.node.get_closest_marker("names_and_metadata")
+    assert closest_marker is not None
     ids = create_rolling_stock(
         FAST_ROLLING_STOCK_JSON_PATH,
-        request.node.get_closest_marker("names_and_metadata").args[0],
+        closest_marker.args[0],
     )
     yield ids
     for id in ids:
