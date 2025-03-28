@@ -253,6 +253,10 @@ class STDCMHeuristicTests {
                 0.0,
                 null,
             )
-        return heuristic.invoke(defaultEdge, nodeOffsetOnEdge?.let { Offset(it) }, nbPassedSteps)
+        return heuristic.invoke(
+            defaultEdge,
+            nodeOffsetOnEdge?.let { Offset(it) },
+            nbPassedSteps + 1 // TODO: remove this +1 when we'll use StepTrackers directly
+        )
     }
 }

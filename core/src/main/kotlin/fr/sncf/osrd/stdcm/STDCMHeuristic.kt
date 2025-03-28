@@ -23,7 +23,11 @@ import org.slf4j.LoggerFactory
 /**
  * This typealias defines a function that can be used as a heuristic for an A* pathfinding. It takes
  * an edge, and offset on this edge, and a number of passed steps as input, and returns an
- * estimation of the remaining time needed to get to the end.
+ * estimation of the remaining time needed to get to the end. The number of passed steps includes
+ * the train departure point.
+ *
+ * TODO: directly input `StepTracker` there (it will be required for takeovers as steps would be
+ *   dynamic). See issue #11285.
  */
 typealias STDCMAStarHeuristic = (STDCMEdge, Offset<Block>?, Int) -> Double
 /**
@@ -90,7 +94,8 @@ class STDCMHeuristicBuilder(
             "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.toInt()} seconds"
         )
 
-        val heuristic: STDCMAStarHeuristic = res@{ edge, offset, nPassedSteps ->
+        val heuristic: STDCMAStarHeuristic = res@{ edge, offset, nPassedStepsIncludingFirst ->
+            val nPassedSteps = max(0, nPassedStepsIncludingFirst - 1)
             if (nPassedSteps >= steps.size - 1) return@res 0.0
             val lookahead = edge.infraExplorer.getLookahead()
             val currentBlock = edge.block
