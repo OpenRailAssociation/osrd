@@ -348,18 +348,11 @@ jobs:
         run: |
           cd tests
           poetry install
-      - name: Flake8
+      - name: Ruff
         run: |
           cd tests
-          poetry run pflake8 --config ./pyproject.toml
-      - name: Black
-        run: |
-          cd tests
-          poetry run black . --check
-      - name: Isort
-        run: |
-          cd tests
-          poetry run isort . --check
+          poetry run ruff check
+          poetry run ruff format --check
       - name: Pytype
         run: |
           cd tests

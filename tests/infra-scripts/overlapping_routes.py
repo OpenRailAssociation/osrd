@@ -76,14 +76,18 @@ raw_signals: List[Signal] = [
 ]
 signals = []
 for raw_signal in raw_signals:
-    detector = raw_signal.track.add_detector(label=f"det.{raw_signal.name[2:]}", position=raw_signal.position)
+    detector = raw_signal.track.add_detector(
+        label=f"det.{raw_signal.name[2:]}", position=raw_signal.position
+    )
     signal = raw_signal.track.add_signal(
         label=raw_signal.name,
         position=raw_signal.position,
         direction=Direction.START_TO_STOP,
         is_route_delimiter=raw_signal.is_route_delimiter,
     )
-    signal.add_logical_signal("BAL", settings={"Nf": "true" if raw_signal.is_route_delimiter else "false"})
+    signal.add_logical_signal(
+        "BAL", settings={"Nf": "true" if raw_signal.is_route_delimiter else "false"}
+    )
     signals.append(signal)
 
 # Add links

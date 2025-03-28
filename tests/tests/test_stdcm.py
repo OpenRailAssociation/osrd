@@ -15,7 +15,9 @@ _MIDDLE = {"track": "TA5", "offset": 0}
 _STOP = {"track": "TH1", "offset": 0}
 
 
-def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, start_time: str):
+def _add_train(
+    editoast_url: str, scenario: Scenario, rolling_stock_name: str, start_time: str
+):
     schedule_payload = [
         {
             "constraint_distribution": "STANDARD",
@@ -29,16 +31,25 @@ def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, s
             "start_time": start_time,
         }
     ]
-    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedules/", json=schedule_payload)
+    r = requests.post(
+        editoast_url + f"/timetable/{scenario.timetable}/train_schedules/",
+        json=schedule_payload,
+    )
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
+        raise RuntimeError(
+            f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}"
+        )
     schedule_id = r.json()[0]
     return schedule_id
 
 
-def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
+def test_empty_timetable(
+    small_infra: Infra, foo_project_id: int, fast_rolling_stock: int
+):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario(
+        EDITOAST_URL, small_infra.id, foo_project_id, op_study
+    )
     requests.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
     payload = {
         "rolling_stock_id": fast_rolling_stock,
@@ -53,14 +64,21 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    r = requests.post(
+        EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
+        json=payload,
+    )
     assert r.status_code == 200
 
 
 # TO ADAPT
-def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
+def test_empty_timetable_with_stop(
+    small_infra: Infra, foo_project_id: int, fast_rolling_stock: int
+):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario(
+        EDITOAST_URL, small_infra.id, foo_project_id, op_study
+    )
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
@@ -75,15 +93,28 @@ def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    r = requests.post(
+        EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
+        json=payload,
+    )
     assert r.status_code == 200
 
 
 def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
-    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock_name, "2024-08-13T22:31:36.377Z")
-    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock_name, "2024-08-13T23:31:36.377Z")
+    _add_train(
+        EDITOAST_URL,
+        small_scenario,
+        fast_rolling_stock_name,
+        "2024-08-13T22:31:36.377Z",
+    )
+    _add_train(
+        EDITOAST_URL,
+        small_scenario,
+        fast_rolling_stock_name,
+        "2024-08-13T23:31:36.377Z",
+    )
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": small_scenario.timetable,
@@ -99,7 +130,9 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
         "maximum_run_time": 43200000,
     }
     r = requests.post(
-        EDITOAST_URL + f"/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}", json=payload
+        EDITOAST_URL
+        + f"/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}",
+        json=payload,
     )
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
@@ -121,7 +154,9 @@ def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
                     "start_date_time": start_time.isoformat(),
                     "end_date_time": end_time.isoformat(),
                     "obj_id": "string",
-                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track"]}],
+                    "track_ranges": [
+                        {"begin": 0, "end": 100000, "track": _START["track"]}
+                    ],
                     "work_schedule_type": "CATENARY",
                 }
             ],
@@ -148,7 +183,9 @@ def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
     r = requests.post(url, json=payload)
     assert r.status_code == 200
     response = r.json()
-    departure_time = datetime.datetime.fromisoformat(response["departure_time"].replace("Z", "+00:00"))
+    departure_time = datetime.datetime.fromisoformat(
+        response["departure_time"].replace("Z", "+00:00")
+    )
     assert departure_time >= end_time.astimezone(departure_time.tzinfo)
 
 
@@ -179,8 +216,14 @@ def test_mrsp_sources(
     assert content["simulation"]["mrsp"] == {
         "boundaries": [4180000, 4580000],
         "values": [
-            {"speed": 27.778, "source": {"speed_limit_source_type": "given_train_tag", "tag": "E32C"}},
-            {"speed": 22.222, "source": {"speed_limit_source_type": "fallback_tag", "tag": "MA100"}},
+            {
+                "speed": 27.778,
+                "source": {"speed_limit_source_type": "given_train_tag", "tag": "E32C"},
+            },
+            {
+                "speed": 22.222,
+                "source": {"speed_limit_source_type": "fallback_tag", "tag": "MA100"},
+            },
             {"speed": 80.0, "source": {"speed_limit_source_type": "unknown_tag"}},
         ],
     }
@@ -217,10 +260,18 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
                    [                             ] < departure time window
     """
     requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
-    origin_start_time = datetime.datetime(2024, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc)
-    origin_end_time = datetime.datetime(2025, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc)
-    destination_start_time = datetime.datetime(2023, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc)
-    destination_end_time = datetime.datetime(2024, 1, 1, 16, 0, 0, tzinfo=datetime.timezone.utc)
+    origin_start_time = datetime.datetime(
+        2024, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
+    )
+    origin_end_time = datetime.datetime(
+        2025, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
+    )
+    destination_start_time = datetime.datetime(
+        2023, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
+    )
+    destination_end_time = datetime.datetime(
+        2024, 1, 1, 16, 0, 0, tzinfo=datetime.timezone.utc
+    )
     # TODO: we cannot delete work schedules for now, so let's give a unique name
     # to avoid collisions
     now = datetime.datetime.now()
@@ -233,14 +284,18 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
                     "start_date_time": origin_start_time.isoformat(),
                     "end_date_time": origin_end_time.isoformat(),
                     "obj_id": "string",
-                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track"]}],
+                    "track_ranges": [
+                        {"begin": 0, "end": 100000, "track": _START["track"]}
+                    ],
                     "work_schedule_type": "CATENARY",
                 },
                 {
                     "start_date_time": destination_start_time.isoformat(),
                     "end_date_time": destination_end_time.isoformat(),
                     "obj_id": "string",
-                    "track_ranges": [{"begin": 0, "end": 100000, "track": _STOP["track"]}],
+                    "track_ranges": [
+                        {"begin": 0, "end": 100000, "track": _STOP["track"]}
+                    ],
                     "work_schedule_type": "CATENARY",
                 },
             ],
@@ -327,14 +382,54 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
             ],
             "status": "success",
             "track_section_ranges": [
-                {"begin": 0, "end": 1950000, "track_section": "TA2", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 50000, "track_section": "TA5", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 10000000, "track_section": "TA7", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 1000000, "track_section": "TC2", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 25000000, "track_section": "TD1", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 3000000, "track_section": "TD3", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 1000000, "track_section": "TH0", "direction": "START_TO_STOP"},
-                {"begin": 0, "end": 0, "track_section": "TH1", "direction": "START_TO_STOP"},
+                {
+                    "begin": 0,
+                    "end": 1950000,
+                    "track_section": "TA2",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 50000,
+                    "track_section": "TA5",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 10000000,
+                    "track_section": "TA7",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 1000000,
+                    "track_section": "TC2",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 25000000,
+                    "track_section": "TD1",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 3000000,
+                    "track_section": "TD3",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 1000000,
+                    "track_section": "TH0",
+                    "direction": "START_TO_STOP",
+                },
+                {
+                    "begin": 0,
+                    "end": 0,
+                    "track_section": "TH1",
+                    "direction": "START_TO_STOP",
+                },
             ],
         },
     }
@@ -342,7 +437,8 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
 
 def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: Dict[str, Any]):
     stdcm_response = requests.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/stdcm/?infra={infra.id}", json=stdcm_payload
+        f"{EDITOAST_URL}/timetable/{timetable_id}/stdcm/?infra={infra.id}",
+        json=stdcm_payload,
     )
     stdcm_response.raise_for_status()
     content = stdcm_response.json()

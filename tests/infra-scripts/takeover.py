@@ -39,7 +39,9 @@ builder = InfraBuilder()
 # Create operational points
 op_start = builder.add_operational_point("op.start", trigram="STA", uic=0, weight=1)
 op_center = builder.add_operational_point("op.center", trigram="CEN", uic=1, weight=0.5)
-op_takeover = builder.add_operational_point("op.takeover", trigram="TAK", uic=3, weight=0.5)
+op_takeover = builder.add_operational_point(
+    "op.takeover", trigram="TAK", uic=3, weight=0.5
+)
 op_end = builder.add_operational_point("op.end", trigram="END", uic=2, weight=1)
 
 # Create track sections
@@ -58,7 +60,9 @@ op_takeover.add_part(t_takeover, 1_500)
 t_1.add_buffer_stop(label="bf.1", position=0)
 t_3.add_buffer_stop(label="bf.3", position=20_000)
 
-builder.infra.electrifications.append(Electrification("electrification_1500", "1500V", [t_1, t_2, t_3, t_takeover]))
+builder.infra.electrifications.append(
+    Electrification("electrification_1500", "1500V", [t_1, t_2, t_3, t_takeover])
+)
 
 speed_limit = builder.add_speed_section(30 / 3.6)
 speed_limit.add_track_range(t_takeover, 0, t_takeover.length, ApplicableDirection.BOTH)
@@ -99,7 +103,9 @@ for offset in range(0, 20_000, 2_000):
 
 signals = []
 for raw_signal in raw_signals:
-    detector = raw_signal.track.add_detector(label=f"det.{raw_signal.name[2:]}", position=raw_signal.position)
+    detector = raw_signal.track.add_detector(
+        label=f"det.{raw_signal.name[2:]}", position=raw_signal.position
+    )
     signal = raw_signal.track.add_signal(
         label=raw_signal.name,
         position=raw_signal.position,
@@ -107,7 +113,9 @@ for raw_signal in raw_signals:
         is_route_delimiter=raw_signal.is_route_delimiter,
         sight_distance=raw_signal.sight_distance,
     )
-    signal.add_logical_signal("BAL", settings={"Nf": "true" if raw_signal.is_route_delimiter else "false"})
+    signal.add_logical_signal(
+        "BAL", settings={"Nf": "true" if raw_signal.is_route_delimiter else "false"}
+    )
     signals.append(signal)
 
 # Add links

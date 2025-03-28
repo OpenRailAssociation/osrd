@@ -5,7 +5,12 @@ import requests
 
 
 def create_op_study(editoast_url, project_id: int) -> int:
-    payload = {"name": "foo", "state": "Starting", "service_code": "AAA", "business_code": "BBB"}
+    payload = {
+        "name": "foo",
+        "state": "Starting",
+        "service_code": "AAA",
+        "business_code": "BBB",
+    }
     res = requests.post(editoast_url + f"projects/{project_id}/studies/", json=payload)
     if res.status_code // 100 != 2:
         err = f"Error creating operational study {res.status_code}: {res.content}, payload={json.dumps(payload)}"
@@ -13,7 +18,9 @@ def create_op_study(editoast_url, project_id: int) -> int:
     return res.json()["id"]
 
 
-def create_scenario(editoast_url: str, infra_id: int, project_id: int, op_study_id: int) -> Tuple[int, int]:
+def create_scenario(
+    editoast_url: str, infra_id: int, project_id: int, op_study_id: int
+) -> Tuple[int, int]:
     # Create the timetable
     r = requests.post(editoast_url + "/timetable/")
     if r.status_code // 100 != 2:
@@ -27,6 +34,9 @@ def create_scenario(editoast_url: str, infra_id: int, project_id: int, op_study_
         "infra_id": infra_id,
         "timetable_id": timetable_id,
     }
-    r = requests.post(editoast_url + f"/projects/{project_id}/studies/{op_study_id}/scenarios/", json=scenario_payload)
+    r = requests.post(
+        editoast_url + f"/projects/{project_id}/studies/{op_study_id}/scenarios/",
+        json=scenario_payload,
+    )
     r.raise_for_status()
     return r.json()["id"], timetable_id

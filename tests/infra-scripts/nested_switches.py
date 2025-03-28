@@ -85,13 +85,24 @@ for track, length in (
 # Create switches
 
 left, right, static = "A_B1", "A_B2", "STATIC"
-s1 = builder.add_point_switch(tracks["T1"].end(), tracks["TD1"].begin(), tracks["T1bis"].begin(), label="S1")
-s2 = builder.add_point_switch(tracks["TD1"].end(), tracks["TD2"].begin(), tracks["T2"].begin(), label="S2")
-s3 = builder.add_point_switch(tracks["T3"].end(), tracks["TD3"].begin(), tracks["T3bis"].begin(), label="S3")
-s3bis = builder.add_point_switch(
-    tracks["T3bis"].end(), tracks["TD3bis"].begin(), tracks["T3ter"].begin(), label="S3bis"
+s1 = builder.add_point_switch(
+    tracks["T1"].end(), tracks["TD1"].begin(), tracks["T1bis"].begin(), label="S1"
 )
-s4 = builder.add_point_switch(tracks["T4bis"].begin(), tracks["TD3bis"].end(), tracks["T4"].end(), label="S4")
+s2 = builder.add_point_switch(
+    tracks["TD1"].end(), tracks["TD2"].begin(), tracks["T2"].begin(), label="S2"
+)
+s3 = builder.add_point_switch(
+    tracks["T3"].end(), tracks["TD3"].begin(), tracks["T3bis"].begin(), label="S3"
+)
+s3bis = builder.add_point_switch(
+    tracks["T3bis"].end(),
+    tracks["TD3bis"].begin(),
+    tracks["T3ter"].begin(),
+    label="S3bis",
+)
+s4 = builder.add_point_switch(
+    tracks["T4bis"].begin(), tracks["TD3bis"].end(), tracks["T4"].end(), label="S4"
+)
 
 # Create links
 
@@ -129,9 +140,38 @@ routes = [
     (bs1, det, "BS1 -> DETECTOR", []),
     (det, bs1bis, "1 -> 1'", [(s1, right)]),
     (det, bs2, "1 -> 2", [(s1, left), (s2, right)]),
-    (det, bs3ter, "1 -> 3", [(s1, left), (s2, left), (td2_t3, static), (s3, right), (s3bis, right)]),
-    (det, bs4bis, "1 -> 4", [(s1, left), (s2, left), (td2_t3, static), (s3, left), (td3_t4, static), (s4, right)]),
-    (det, bs4bis, "1 -> 4'", [(s1, left), (s2, left), (td2_t3, static), (s3, right), (s3bis, left), (s4, left)]),
+    (
+        det,
+        bs3ter,
+        "1 -> 3",
+        [(s1, left), (s2, left), (td2_t3, static), (s3, right), (s3bis, right)],
+    ),
+    (
+        det,
+        bs4bis,
+        "1 -> 4",
+        [
+            (s1, left),
+            (s2, left),
+            (td2_t3, static),
+            (s3, left),
+            (td3_t4, static),
+            (s4, right),
+        ],
+    ),
+    (
+        det,
+        bs4bis,
+        "1 -> 4'",
+        [
+            (s1, left),
+            (s2, left),
+            (td2_t3, static),
+            (s3, right),
+            (s3bis, left),
+            (s4, left),
+        ],
+    ),
 ]
 
 for bs_in, bs_out, route_id, switches_directions in routes:
@@ -140,7 +180,9 @@ for bs_in, bs_out, route_id, switches_directions in routes:
             label=route_id,
             waypoints=[bs_in, bs_out],
             entry_point_direction=Direction.START_TO_STOP,
-            switches_directions={s.label: direction for s, direction in switches_directions},
+            switches_directions={
+                s.label: direction for s, direction in switches_directions
+            },
             release_waypoints=[],
         )
     )
@@ -152,20 +194,27 @@ builder.add_speed_section(50, label="sp/50/t1...t1bis").add_applicable_track_ran
 )
 
 builder.add_speed_section(40, label="sp/40/td1..td3_t4").add_applicable_track_ranges(
-    tracks["TD1"].forwards(), tracks["TD2"].forwards(), tracks["T3"].forwards(), tracks["TD3"].forwards()
+    tracks["TD1"].forwards(),
+    tracks["TD2"].forwards(),
+    tracks["T3"].forwards(),
+    tracks["TD3"].forwards(),
 )
 
 # Speed sections on routes
 
-builder.add_speed_section(42, label="sp/42/1 -> 1'", on_routes=["1 -> 1'"]).add_applicable_track_ranges(
-    tracks["T1"].forwards(), tracks["T1bis"].forwards()
-)
+builder.add_speed_section(
+    42, label="sp/42/1 -> 1'", on_routes=["1 -> 1'"]
+).add_applicable_track_ranges(tracks["T1"].forwards(), tracks["T1bis"].forwards())
 
-builder.add_speed_section(60, label="sp/60/1 -> 2", on_routes=["1 -> 2"]).add_applicable_track_ranges(
+builder.add_speed_section(
+    60, label="sp/60/1 -> 2", on_routes=["1 -> 2"]
+).add_applicable_track_ranges(
     tracks["T1"].forwards(), tracks["TD1"].forwards(), tracks["T2"].forwards()
 )
 
-builder.add_speed_section(30, label="sp/30/1 -> 3", on_routes=["1 -> 3"]).add_applicable_track_ranges(
+builder.add_speed_section(
+    30, label="sp/30/1 -> 3", on_routes=["1 -> 3"]
+).add_applicable_track_ranges(
     tracks["T1"].forwards(),
     tracks["TD1"].forwards(),
     tracks["TD2"].forwards(),
@@ -174,7 +223,9 @@ builder.add_speed_section(30, label="sp/30/1 -> 3", on_routes=["1 -> 3"]).add_ap
     tracks["T3ter"].forwards(),
 )
 
-builder.add_speed_section(80, label="sp/80/1 -> 4", on_routes=["1 -> 4"]).add_applicable_track_ranges(
+builder.add_speed_section(
+    80, label="sp/80/1 -> 4", on_routes=["1 -> 4"]
+).add_applicable_track_ranges(
     tracks["T1"].forwards(),
     tracks["TD1"].forwards(),
     tracks["TD2"].forwards(),
@@ -184,7 +235,9 @@ builder.add_speed_section(80, label="sp/80/1 -> 4", on_routes=["1 -> 4"]).add_ap
     tracks["T4bis"].forwards(),
 )
 
-builder.add_speed_section(30, label="sp/30/1 -> 4'", on_routes=["1 -> 4'"]).add_applicable_track_ranges(
+builder.add_speed_section(
+    30, label="sp/30/1 -> 4'", on_routes=["1 -> 4'"]
+).add_applicable_track_ranges(
     tracks["T1"].forwards(),
     tracks["TD1"].forwards(),
     tracks["TD2"].forwards(),

@@ -32,33 +32,53 @@ def _update_simulation_with_mareco_allowances(editoast_url, train_Schedule_id):
         "values": ["3%"],
     }
     train_schedule["constraint_distribution"] = "MARECO"
-    r = requests.put(editoast_url + f"/train_schedule/{train_Schedule_id}", json=train_schedule)
+    r = requests.put(
+        editoast_url + f"/train_schedule/{train_Schedule_id}", json=train_schedule
+    )
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(train_schedule)}")
+        raise RuntimeError(
+            f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(train_schedule)}"
+        )
     r = requests.get(editoast_url + f"/train_schedule/{train_Schedule_id}/")
     body = r.json()
     assert body["constraint_distribution"] == "MARECO"
     return body
 
 
-def test_get_and_update_schedule_result(west_to_south_east_simulation: Sequence[Any], small_infra: Infra):
+def test_get_and_update_schedule_result(
+    west_to_south_east_simulation: Sequence[Any], small_infra: Infra
+):
     schedule = west_to_south_east_simulation[0]
     schedule_id = schedule["id"]
     response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
     if response.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {response.status_code}: {response.content}, id={schedule_id}")
-    response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}")
+        raise RuntimeError(
+            f"Schedule error {response.status_code}: {response.content}, id={schedule_id}"
+        )
+    response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}"
+    )
     simulation_report = response.json()
-    assert simulation_report["base"]["energy_consumption"] == simulation_report["final_output"]["energy_consumption"]
+    assert (
+        simulation_report["base"]["energy_consumption"]
+        == simulation_report["final_output"]["energy_consumption"]
+    )
 
     response = _update_simulation_with_mareco_allowances(EDITOAST_URL, schedule_id)
     response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
     if response.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {response.status_code}: {response.content}, id={schedule_id}")
+        raise RuntimeError(
+            f"Schedule error {response.status_code}: {response.content}, id={schedule_id}"
+        )
 
-    response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}")
+    response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}"
+    )
     simulation_report = response.json()
-    assert simulation_report["base"]["energy_consumption"] != simulation_report["final_output"]["energy_consumption"]
+    assert (
+        simulation_report["base"]["energy_consumption"]
+        != simulation_report["final_output"]["energy_consumption"]
+    )
     assert (
         simulation_report["provisional"]["energy_consumption"]
         == simulation_report["final_output"]["energy_consumption"]
@@ -70,7 +90,9 @@ def test_editoast_delete(west_to_south_east_simulations: Sequence[Any]):
     trains_ids = [train["id"] for train in trains]
     r = requests.delete(f"{EDITOAST_URL}train_schedule/", json={"ids": trains_ids})
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(trains_ids)}")
+        raise RuntimeError(
+            f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(trains_ids)}"
+        )
     r = requests.get(
         f"{EDITOAST_URL}train_schedule/{trains_ids[0]}/",
     )
@@ -81,8 +103,12 @@ def test_editoast_delete(west_to_south_east_simulations: Sequence[Any]):
     assert r.status_code == 404
 
 
-def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenario, etcs_rolling_stock: int):
-    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
@@ -127,7 +153,9 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenar
     )
     simulation_final_output = simu_response.json()["final_output"]
 
-    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
 
     # To debug this test: please add a breakpoint then use front to display speed-space chart
     # (activate Context for Slopes and Speed limits).
@@ -159,8 +187,12 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenar
     for offset_index in range(1, len(stop_offsets) - 1):
         accelerating = True
         prev_speed = 0
-        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
-        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
         for pos_index in range(start_pos_index, end_pos_index):
             current_speed = simulation_final_output["speeds"][pos_index]
             if accelerating:
@@ -172,9 +204,25 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenar
 
     # Check that the uphill brake is shorter than downhill brake.
     offset_42_ms_brake_uphill = 19_332_051  # first stop is the end of the braking
-    assert abs(_get_current_or_next_speed_at(simulation_final_output, offset_42_ms_brake_uphill) - 42) < 1
+    assert (
+        abs(
+            _get_current_or_next_speed_at(
+                simulation_final_output, offset_42_ms_brake_uphill
+            )
+            - 42
+        )
+        < 1
+    )
     offset_42_ms_brake_downhill = 27_365_028  # third stop is the end of the braking
-    assert abs(_get_current_or_next_speed_at(simulation_final_output, offset_42_ms_brake_downhill) - 42) < 1
+    assert (
+        abs(
+            _get_current_or_next_speed_at(
+                simulation_final_output, offset_42_ms_brake_downhill
+            )
+            - 42
+        )
+        < 1
+    )
     uphill_brake_distance = first_stop_offset - offset_42_ms_brake_uphill
     downhill_brake_distance = third_stop_offset - offset_42_ms_brake_downhill
     # make sure that there is at least 100m difference
@@ -190,24 +238,38 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenar
     offset_first_high_speed = 14_509_017
     offset_first_brake_220_kph_speed = 17_544_856
     _assert_equal_speeds(
-        _get_current_or_next_speed_at(simulation_final_output, offset_first_high_speed), kph2ms(274.176)
+        _get_current_or_next_speed_at(simulation_final_output, offset_first_high_speed),
+        kph2ms(274.176),
     )
     _assert_equal_speeds(
-        _get_current_or_next_speed_at(simulation_final_output, offset_first_brake_220_kph_speed), kph2ms(221.004)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_first_brake_220_kph_speed
+        ),
+        kph2ms(221.004),
     )
 
     offset_fourth_high_speed = 37_087_342
     offset_fourth_brake_220_kph_speed = 37_661_601
     _assert_equal_speeds(
-        _get_current_or_next_speed_at(simulation_final_output, offset_fourth_high_speed), kph2ms(230.976)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_fourth_high_speed
+        ),
+        kph2ms(230.976),
     )
     _assert_equal_speeds(
-        _get_current_or_next_speed_at(simulation_final_output, offset_fourth_brake_220_kph_speed), kph2ms(219.744)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_fourth_brake_220_kph_speed
+        ),
+        kph2ms(219.744),
     )
 
 
-def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs_rolling_stock: int):
-    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+def test_etcs_schedule_result_stop_brake_from_mrsp(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
@@ -248,7 +310,9 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs
     )
     simulation_final_output = simu_response.json()["final_output"]
 
-    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
 
     # To debug this test: please add a breakpoint then use front to display speed-space chart
     # (activate Context for Slopes and Speed limits).
@@ -275,8 +339,12 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs
     for offset_index in range(1, len(stop_offsets) - 1):
         accelerating = True
         prev_speed = 0
-        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
-        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
         for pos_index in range(start_pos_index, end_pos_index):
             current_speed = simulation_final_output["speeds"][pos_index]
             if accelerating:
@@ -288,22 +356,35 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs
 
     # Check that the braking curves from the MRSP for the first and second stops start at the expected offset
     offset_start_first_brake = 21_467_192
-    speed_before_first_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake)
+    speed_before_first_brake = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_first_brake
+    )
     _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_first_brake + 1
+        )
+        < speed_before_first_brake
     )
     offset_start_second_brake = 40_663_532
-    speed_before_second_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_second_brake)
+    speed_before_second_brake = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_second_brake
+    )
     _assert_equal_speeds(speed_before_second_brake, SPEED_LIMIT_142)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_second_brake + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_second_brake + 1
+        )
         < speed_before_second_brake
     )
 
 
-def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenario: Scenario, etcs_rolling_stock: int):
-    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
@@ -342,7 +423,9 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenar
     )
     simulation_final_output = simu_response.json()["final_output"]
 
-    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
 
     # To debug this test: please add a breakpoint then use front to display speed-space chart
     # (activate Context for Slopes and Speed limits).
@@ -367,8 +450,12 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenar
     for offset_index in range(1, len(stop_offsets) - 1):
         accelerating = True
         prev_speed = 0
-        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
-        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
         for pos_index in range(start_pos_index, end_pos_index):
             current_speed = simulation_final_output["speeds"][pos_index]
             if accelerating:
@@ -380,10 +467,15 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenar
 
     # Check that the braking curve starts and ends at the expected offsets.
     offset_start_first_brake = 33_461_530
-    speed_before_first_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake)
+    speed_before_first_brake = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_first_brake
+    )
     _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_first_brake + 1
+        )
+        < speed_before_first_brake
     )
     # Check a bending point for the first stop's braking curve (where the Guidance curve's influence stops).
     offset_bending_guidance_point = 37_210_260
@@ -393,17 +485,23 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenar
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(224.447_943_6))
     # Check that the release part (where the speed stays at 40km/h) starts and ends at the expected offsets.
     offset_start_release_speed = 40_827_882
-    speed_at_start_release_speed = _get_current_or_next_speed_at(simulation_final_output, offset_start_release_speed)
+    speed_at_start_release_speed = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_release_speed
+    )
     _assert_equal_speeds(speed_at_start_release_speed, RELEASE_SPEED_40)
     offset_end_release_speed = 40_892_792
-    speed_at_end_release_speed = _get_current_or_next_speed_at(simulation_final_output, offset_end_release_speed)
+    speed_at_end_release_speed = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_release_speed
+    )
     _assert_equal_speeds(speed_at_end_release_speed, RELEASE_SPEED_40)
 
 
 def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     etcs_scenario: Scenario, etcs_rolling_stock: int
 ):
-    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
@@ -442,7 +540,9 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     )
     simulation_final_output = simu_response.json()["final_output"]
 
-    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
 
     # To debug this test: please add a breakpoint then use front to display speed-space chart
     # (activate Context for Slopes and Speed limits).
@@ -469,8 +569,12 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     for offset_index in range(1, len(stop_offsets) - 1):
         accelerating = True
         prev_speed = 0
-        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
-        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
         for pos_index in range(start_pos_index, end_pos_index):
             current_speed = simulation_final_output["speeds"][pos_index]
             if accelerating:
@@ -482,10 +586,15 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
 
     # Check that the braking curve starts and ends at the expected offsets.
     offset_start_first_brake = 33_361_530
-    speed_before_first_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake)
+    speed_before_first_brake = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_first_brake
+    )
     _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_first_brake + 1
+        )
+        < speed_before_first_brake
     )
     # Check the first bending point for the first stop's braking curve (where the Guidance curve's influence stops).
     offset_bending_guidance_point = 37_240_601
@@ -509,8 +618,12 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     _assert_equal_speeds(speed_at_bending_point_svl_to_eoa, kph2ms(59.212_766_74))
 
 
-def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_stock: int):
-    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+def test_etcs_schedule_result_slowdowns(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
@@ -547,7 +660,9 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     )
     simulation_final_output = simu_response.json()["final_output"]
 
-    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
 
     # To debug this test: please add a breakpoint then use front to display speed-space chart
     # (activate Context for Slopes and Speed limits).
@@ -569,8 +684,12 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     for offset_index in range(1, len(stop_offsets) - 1):
         accelerating = True
         prev_speed = 0
-        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
-        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
         for pos_index in range(start_pos_index, end_pos_index):
             current_speed = simulation_final_output["speeds"][pos_index]
             if accelerating:
@@ -595,7 +714,9 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     )
     _assert_equal_speeds(speed_before_brake_288_to_142, MAX_SPEED_288)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_288_to_142 + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_288_to_142 + 1
+        )
         < speed_before_brake_288_to_142
     )
 
@@ -608,9 +729,13 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.107_866_2))
 
     offset_end_brake_288_to_142 = 40_824_370
-    speed_after_brake_288_to_142 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_288_to_142)
+    speed_after_brake_288_to_142 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_288_to_142
+    )
     assert (
-        _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_288_to_142 - 1)
+        _get_current_or_prev_speed_at(
+            simulation_final_output, offset_end_brake_288_to_142 - 1
+        )
         > speed_after_brake_288_to_142
     )
     _assert_equal_speeds(speed_after_brake_288_to_142, SPEED_LIMIT_142)
@@ -622,45 +747,67 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     )
     _assert_equal_speeds(speed_before_brake_142_to_120, SPEED_LIMIT_142)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_142_to_120 + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_142_to_120 + 1
+        )
         < speed_before_brake_142_to_120
     )
     offset_end_brake_142_to_120 = 44_948_022
-    speed_after_brake_142_to_120 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_142_to_120)
+    speed_after_brake_142_to_120 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_142_to_120
+    )
     assert (
-        _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_142_to_120 - 1)
+        _get_current_or_prev_speed_at(
+            simulation_final_output, offset_end_brake_142_to_120 - 1
+        )
         > speed_after_brake_142_to_120
     )
     _assert_equal_speeds(speed_after_brake_142_to_120, SPEED_LIMIT_112)
 
     # Slowdown for Safety Speed stop: should probably disappear for ETCS at some point.
     offset_start_brake_120_to_30 = 45_635_550
-    speed_before_brake_120_to_30 = _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_120_to_30)
+    speed_before_brake_120_to_30 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_120_to_30
+    )
     _assert_equal_speeds(speed_before_brake_120_to_30, SPEED_LIMIT_112)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_120_to_30 + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_120_to_30 + 1
+        )
         < speed_before_brake_120_to_30
     )
     offset_end_brake_120_to_30 = 46_654_236
-    speed_after_brake_120_to_30 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_120_to_30)
+    speed_after_brake_120_to_30 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_120_to_30
+    )
     assert (
-        _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_120_to_30 - 1)
+        _get_current_or_prev_speed_at(
+            simulation_final_output, offset_end_brake_120_to_30 - 1
+        )
         > speed_after_brake_120_to_30
     )
     _assert_equal_speeds(speed_after_brake_120_to_30, SAFE_SPEED_30)
 
     # Slowdown for short slip stop: should probably disappear for ETCS at some point.
     offset_start_brake_30_to_10 = 46_697_503
-    speed_before_brake_30_to_10 = _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_30_to_10)
+    speed_before_brake_30_to_10 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_30_to_10
+    )
     _assert_equal_speeds(speed_before_brake_30_to_10, SAFE_SPEED_30)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_30_to_10 + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_30_to_10 + 1
+        )
         < speed_before_brake_30_to_10
     )
     offset_end_brake_30_to_10 = 46_848_695
-    speed_after_brake_30_to_10 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_30_to_10)
+    speed_after_brake_30_to_10 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_30_to_10
+    )
     assert (
-        _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_30_to_10 - 1)
+        _get_current_or_prev_speed_at(
+            simulation_final_output, offset_end_brake_30_to_10 - 1
+        )
         > speed_after_brake_30_to_10
     )
     _assert_equal_speeds(speed_after_brake_30_to_10, SHORT_SLIP_SPEED_10)
@@ -668,10 +815,14 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     # Final slowdown: EoA (complete stop) braking curve is applied.
     # Note: This should also be impacted if Safety Speed stop and short slip stop disappear for ETCS.
     offset_start_brake_10_to_0 = 46_953_914
-    speed_before_brake_10_to_0 = _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_10_to_0)
+    speed_before_brake_10_to_0 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_10_to_0
+    )
     _assert_equal_speeds(speed_before_brake_10_to_0, SHORT_SLIP_SPEED_10)
     assert (
-        _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_10_to_0 + 1)
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_10_to_0 + 1
+        )
         < speed_before_brake_10_to_0
     )
 
@@ -680,12 +831,16 @@ def _assert_equal_speeds(left, right):
     assert abs(left - right) < 1e-2
 
 
-def _get_current_or_next_speed_at(simulation_final_output: Dict[str, Any], position: int) -> int:
+def _get_current_or_next_speed_at(
+    simulation_final_output: Dict[str, Any], position: int
+) -> int:
     idx = bisect.bisect_left(simulation_final_output["positions"], position)
     return simulation_final_output["speeds"][idx]
 
 
-def _get_current_or_prev_speed_at(simulation_final_output: Dict[str, Any], position: int) -> int:
+def _get_current_or_prev_speed_at(
+    simulation_final_output: Dict[str, Any], position: int
+) -> int:
     idx = bisect.bisect_left(simulation_final_output["positions"], position)
     if simulation_final_output["positions"][idx] > position and idx > 0:
         return simulation_final_output["speeds"][idx - 1]
