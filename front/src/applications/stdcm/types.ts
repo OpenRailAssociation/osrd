@@ -78,19 +78,16 @@ export type StdcmResultsOperationalPoint = {
   stopRequested: boolean;
 };
 
+export type FieldError = {
+  message?: string;
+  display: boolean;
+  type: 'missing' | 'invalid';
+};
+
 export type ConsistErrors = {
-  totalMass: {
-    message?: string;
-    display: boolean;
-  };
-  totalLength: {
-    message?: string;
-    display: boolean;
-  };
-  maxSpeed: {
-    message?: string;
-    display: boolean;
-  };
+  totalMass: FieldError;
+  totalLength: FieldError;
+  maxSpeed: FieldError;
 };
 
 export type StdcmResults = {
@@ -176,12 +173,15 @@ export enum ArrivalTimeTypes {
 
 export enum StdcmConfigErrorTypes {
   INFRA_NOT_LOADED = 'infraNotLoaded',
-  MISSING_LOCATION = 'missingLocation',
   PATHFINDING_FAILED = 'pathfindingFailed',
   BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
   NO_SCHEDULED_POINT = 'noScheduledPoint',
   ZERO_LENGTH_PATH = 'zeroLengthPath',
   MISSING_INFORMATIONS = 'missingInformations',
+  INVALID_FIELDS = 'invalidInformations',
+  MULTIPLE_ERRORS = 'multipleErrors',
+  VIA_STOP_DURATION_MISSING = 'viaStopDurationMissing',
+  VIA_STOP_DURATION_TOO_SHORT = 'viaStopDurationTooShort',
 }
 
 export type MissingFields =
@@ -190,14 +190,22 @@ export type MissingFields =
   | 'totalLength'
   | 'maxSpeed'
   | 'origin'
+  | 'vias'
   | 'destination';
+
+export type InvalidFields = {
+  fieldName: 'totalMass' | 'totalLength' | 'maxSpeed';
+};
 
 export type StdcmConfigErrors = {
   errorType: StdcmConfigErrorTypes;
   errorDetails?: {
+    routeErrors?: StdcmConfigErrorTypes[];
+
     originTime?: string;
     destinationTime?: string;
     missingFields?: MissingFields[];
+    invalidFields?: InvalidFields[];
   };
 };
 
