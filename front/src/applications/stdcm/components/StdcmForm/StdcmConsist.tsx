@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { consistErrorFields } from 'applications/stdcm/consts';
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import type { ConsistErrors } from 'applications/stdcm/types';
@@ -48,9 +49,16 @@ const ConsistCardTitle = ({
 export type StdcmConsistProps = {
   isDebugMode: boolean;
   disabled?: boolean;
+  consistErrors: ConsistErrors;
+  setConsistErrors: React.Dispatch<React.SetStateAction<ConsistErrors>>;
 };
 
-const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
+const StdcmConsist = ({
+  isDebugMode,
+  disabled = false,
+  consistErrors,
+  setConsistErrors,
+}: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
@@ -68,12 +76,6 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
     mass: true,
     length: true,
     speed: true,
-  });
-
-  const [consistErrors, setConsistErrors] = useState<ConsistErrors>({
-    totalMass: { display: false },
-    totalLength: { display: false },
-    maxSpeed: { display: false },
   });
 
   const {
@@ -102,6 +104,13 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
   const lengthFieldStatus = createFieldStatus('totalLength');
   const speedFieldStatus = createFieldStatus('maxSpeed');
 
+  const getMissingFieldMessage = (value?: number): string | null => {
+    if (!value) {
+      return t('consist.errors.missingValue');
+    }
+    return null;
+  };
+
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({ isStdcm: true });
 
   const { filteredTowedRollingStockList: towedRollingStocks } = useFilterTowedRollingStock({
@@ -113,9 +122,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const rollingStockComboBoxDefaultProps = useDefaultComboBox(rollingStocks, getLabel);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const towedRollingStockComboBoxDefaultProps = useDefaultComboBox(
     towedRollingStocks,
     (trs: TowedRollingStock) => trs.name
@@ -141,38 +148,66 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
     setStatusMessagesVisible((prevState) => ({ ...prevState, [key]: false }));
   };
 
-  useEffect(() => {
-    const totalMassError = validateTotalMass({
-      tractionEngineMass: rollingStock?.mass,
-      towedMass: towedRollingStock?.mass,
-      totalMass,
-    });
-
-    const totalLengthError = validateTotalLength({
-      tractionEngineLength: rollingStock?.length,
-      towedLength: towedRollingStock?.length,
-      totalLength,
-    });
-
-    const maxSpeedError = validateMaxSpeed(maxSpeed, rollingStock?.max_speed);
-
-    // Hide the tooltip if the user just changed the value for an invalid one (should be displayed only on focus out)
-    // but we also want to hide it as soon as the user corrects it
-    setConsistErrors((prevErrors) => ({
-      totalMass: {
-        message: totalMassError,
-        display: prevErrors.totalMass.display && !!totalMassError,
-      },
-      totalLength: {
-        message: totalLengthError,
-        display: prevErrors.totalLength.display && !!totalLengthError,
-      },
-      maxSpeed: {
-        message: maxSpeedError,
-        display: prevErrors.maxSpeed.display && !!maxSpeedError,
+  const handleBlurError = (field: keyof ConsistErrors, error?: string) => {
+    setConsistErrors((prev) => ({
+      ...prev,
+      [field]: {
+        message: error,
+        display: !!error,
+        type: error === t('consist.errors.missingValue') ? 'missing' : 'invalid',
       },
     }));
-  }, [rollingStock, towedRollingStock, totalMass, totalLength, maxSpeed]);
+  };
+
+  const totalMassError = useMemo(
+    () =>
+      getMissingFieldMessage(totalMass) ??
+      validateTotalMass({
+        tractionEngineMass: rollingStock?.mass,
+        towedMass: towedRollingStock?.mass,
+        totalMass,
+      }),
+    [totalMass]
+  );
+
+  const totalLengthError = useMemo(
+    () =>
+      getMissingFieldMessage(totalLength) ??
+      validateTotalLength({
+        tractionEngineLength: rollingStock?.length,
+        towedLength: towedRollingStock?.length,
+        totalLength,
+      }),
+    [totalLength]
+  );
+
+  const maxSpeedError = useMemo(
+    () => getMissingFieldMessage(maxSpeed) ?? validateMaxSpeed(maxSpeed, rollingStock?.max_speed),
+    [maxSpeed]
+  );
+
+  useEffect(() => {
+    const errors = {
+      totalMass: totalMassError,
+      totalLength: totalLengthError,
+      maxSpeed: maxSpeedError,
+    };
+
+    consistErrorFields.forEach((field) => {
+      setConsistErrors((prev) => ({
+        ...prev,
+        [field]: {
+          ...prev[field],
+          display:
+            prev[field].display &&
+            (prev[field].type === 'missing'
+              ? // Hide tooltip if the error was a missing one and is fixed regardless if the fied is still invalid
+                !!(errors[field] === t('consist.errors.missingValue'))
+              : !!errors[field]),
+        },
+      }));
+    });
+  }, [totalMassError, totalLengthError, maxSpeedError]);
 
   return (
     <StdcmCard
@@ -218,13 +253,10 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           type="number"
           min={0}
           value={totalMass ?? ''}
-          onChange={onTotalMassChange}
-          onBlur={() => {
-            setConsistErrors({
-              ...consistErrors,
-              totalMass: { ...consistErrors.totalMass, display: !!consistErrors.totalMass.message },
-            });
+          onChange={(e) => {
+            onTotalMassChange(e);
           }}
+          onBlur={() => handleBlurError('totalMass', totalMassError)}
           disabled={disabled}
           statusWithMessage={massFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
@@ -237,16 +269,10 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           type="number"
           min={0}
           value={totalLength ?? ''}
-          onChange={onTotalLengthChange}
-          onBlur={() => {
-            setConsistErrors({
-              ...consistErrors,
-              totalLength: {
-                ...consistErrors.totalLength,
-                display: !!consistErrors.totalLength.message,
-              },
-            });
+          onChange={(e) => {
+            onTotalLengthChange(e);
           }}
+          onBlur={() => handleBlurError('totalLength', totalLengthError)}
           disabled={disabled}
           statusWithMessage={lengthFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('length')}
@@ -269,13 +295,10 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           type="number"
           min={0}
           value={maxSpeed ?? ''}
-          onChange={onMaxSpeedChange}
-          onBlur={() => {
-            setConsistErrors({
-              ...consistErrors,
-              maxSpeed: { ...consistErrors.maxSpeed, display: !!consistErrors.maxSpeed.message },
-            });
+          onChange={(e) => {
+            onMaxSpeedChange(e);
           }}
+          onBlur={() => handleBlurError('maxSpeed', maxSpeedError)}
           disabled={disabled}
           statusWithMessage={speedFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('speed')}

@@ -2,12 +2,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useStdcmConsist from 'applications/stdcm/hooks/useStdcmConsist';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
-import filterMissingFields from 'applications/stdcm/utils/filterMissingFields';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -32,7 +31,7 @@ import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
-import type { StdcmConfigErrors } from '../../types';
+import type { StdcmConfigErrors, ConsistErrors } from '../../types';
 import StdcmSimulationParams from '../StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
@@ -88,7 +87,6 @@ const StdcmConfig = ({
   const destination = useSelector(getStdcmDestination);
   const rollingStockId = useSelector(getStdcmRollingStockID);
   const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
-  const { totalMass, totalLength, maxSpeed } = useStdcmConsist();
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
@@ -103,6 +101,12 @@ const StdcmConfig = ({
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
+  const [consistErrors, setConsistErrors] = useState<ConsistErrors>({
+    totalMass: { message: undefined, display: false, type: 'missing' },
+    totalLength: { message: undefined, display: false, type: 'missing' },
+    maxSpeed: { message: undefined, display: false, type: 'missing' },
+  });
+
   const disabled = isPending || retainedSimulationIndex !== undefined;
 
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
@@ -112,7 +116,8 @@ const StdcmConfig = ({
       t,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
-      prevFormErros: formErrors,
+      prevFormErrors: formErrors,
+      consistErrors,
       shouldCheckMandatoryFields: true,
     });
 
@@ -156,10 +161,12 @@ const StdcmConfig = ({
       t,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
-      prevFormErros: formErrors,
+      prevFormErrors: formErrors,
+      consistErrors,
+      shouldCheckMandatoryFields: false,
     });
     setFormErrors(formErrorsStatus);
-  }, [pathfinding, pathSteps, t]);
+  }, [pathfinding, pathSteps, t, consistErrors]);
 
   useEffect(() => {
     if (!infra || infra.state === 'CACHED') {
@@ -193,66 +200,40 @@ const StdcmConfig = ({
   }, [isPathFindingLoading, pathfinding?.status, skipPathfindingStatusMessage]);
 
   useLayoutEffect(() => {
+    const bannerElement = pathfindingBannerRef.current;
+    if (!showMessage || !bannerElement) {
+      return undefined;
+    }
+
     const handleAnimationEnd = () => {
       setShowMessage(false);
     };
 
-    if (!showMessage || formErrors) {
-      return undefined;
-    }
-    pathfindingBannerRef.current!.addEventListener('animationend', handleAnimationEnd);
+    bannerElement.addEventListener('animationend', handleAnimationEnd);
 
     return () => {
-      pathfindingBannerRef.current?.removeEventListener('animationend', handleAnimationEnd);
+      bannerElement.removeEventListener('animationend', handleAnimationEnd);
     };
-  }, [showMessage, formErrors]);
+  }, [showMessage]);
 
   useEffect(() => {
-    if (
-      formErrors?.errorType !== StdcmConfigErrorTypes.MISSING_INFORMATIONS ||
-      !formErrors.errorDetails?.missingFields
-    ) {
-      return;
-    }
-
-    const updatedMissingFields = filterMissingFields({
-      missingFields: formErrors.errorDetails.missingFields,
-      rollingStock,
-      totalMass,
-      totalLength,
-      maxSpeed,
-      origin,
-      destination,
+    const updatedErrors = checkStdcmConfigErrors({
+      t,
+      stdcmConf,
+      prevFormErrors: formErrors,
+      consistErrors,
+      shouldCheckMandatoryFields: false,
     });
 
-    const previousFields = formErrors.errorDetails.missingFields;
-    const hasChanged =
-      previousFields.length !== updatedMissingFields.length ||
-      previousFields.some((field, i) => field !== updatedMissingFields[i]);
-
-    if (updatedMissingFields.length === 0) {
-      setFormErrors(undefined);
+    // Prevent clearing formErrors if pathfindingFailed is still active
+    if (formErrors?.errorType === StdcmConfigErrorTypes.PATHFINDING_FAILED && !updatedErrors) {
       return;
     }
 
-    if (hasChanged) {
-      setFormErrors({
-        errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
-        errorDetails: {
-          missingFields: updatedMissingFields,
-        },
-      });
+    if (!isEqual(updatedErrors, formErrors)) {
+      setFormErrors(updatedErrors);
     }
-  }, [
-    formErrors,
-    rollingStockId,
-    rollingStock,
-    totalMass,
-    totalLength,
-    maxSpeed,
-    origin,
-    destination,
-  ]);
+  }, [t, formErrors, consistErrors, rollingStock, stdcmConf, setFormErrors]);
 
   return (
     <div className="stdcm__body">
@@ -270,7 +251,12 @@ const StdcmConfig = ({
           />
           <div className="stdcm-simulation-inputs">
             <div className="stdcm-consist-container">
-              <StdcmConsist disabled={disabled} isDebugMode={isDebugMode} />
+              <StdcmConsist
+                disabled={disabled}
+                isDebugMode={isDebugMode}
+                consistErrors={consistErrors}
+                setConsistErrors={setConsistErrors}
+              />
             </div>
             <div className="stdcm__separator" />
             <div ref={formRef} className="stdcm-simulation-itinerary">
@@ -314,8 +300,7 @@ const StdcmConfig = ({
                   }
                 />
               </div>
-
-              {!formErrors && showMessage && (
+              {showMessage && (
                 <div className="simulation-status-banner">
                   <div className="banner-content">
                     <div

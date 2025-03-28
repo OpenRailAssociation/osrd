@@ -164,6 +164,10 @@
             display: flex;
             justify-content: space-between;
             padding-top: 18px;
+
+            &:not(:last-child) {
+              margin-bottom: 18px;
+            }
             button {
               border-radius: 5px;
               border: 0.5px solid rgba(121, 118, 113, 1);

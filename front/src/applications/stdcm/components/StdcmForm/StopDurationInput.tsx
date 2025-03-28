@@ -33,7 +33,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
       pathStep.stopFor < new Duration({ minutes: 3 })
         ? {
             status: 'warning' as Status,
-            message: t('trainPath.warningMinStopTime'),
+            message: t('stdcmErrors.routeErrors.viaStopDurationTooShort'),
           }
         : undefined,
     [pathStep.stopType, pathStep.stopFor]

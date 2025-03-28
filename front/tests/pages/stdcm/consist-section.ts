@@ -117,6 +117,23 @@ class ConsistSection {
       await expect(this.speedLimitTagField).toHaveValue(speedLimitTag);
     }
   }
+
+  // Set consist values
+  async setTonnage(value: string): Promise<void> {
+    await handleAndVerifyInput(this.tonnageField, value);
+  }
+
+  async setLength(value: string): Promise<void> {
+    await handleAndVerifyInput(this.lengthField, value);
+  }
+
+  async setMaxSpeed(value: string): Promise<void> {
+    await handleAndVerifyInput(this.maxSpeedField, value);
+  }
+
+  async clearLength(): Promise<void> {
+    await handleAndVerifyInput(this.lengthField, '');
+  }
 }
 
 export default ConsistSection;

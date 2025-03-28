@@ -1,5 +1,7 @@
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
+import type { ConsistErrors } from './types';
+
 export const STDCM_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
   pending: 'PENDING',
@@ -27,3 +29,5 @@ export const COMPOSITION_CODES_MAX_SPEEDS: Record<string, number | undefined> = 
 export const DEFAULT_COMPOSITION_CODE = 'MA100';
 
 export const COMPOSITION_CODES = Object.keys(COMPOSITION_CODES_MAX_SPEEDS);
+
+export const consistErrorFields: (keyof ConsistErrors)[] = ['totalMass', 'totalLength', 'maxSpeed'];

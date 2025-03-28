@@ -12,6 +12,7 @@
         "negative": "Doit être positif.",
         "range": "La vitesse max. doit être comprise entre {{low}} et {{high}}km/h"
       },
+      "missingValue": "Valeur manquante",
       "totalLength": {
         "negative": "Doit être positif.",
         "range": "La longueur totale doit être comprise entre {{low}} et {{high}}m"
@@ -175,8 +176,13 @@
   "simulationSheet": "Fiche de simulation",
   "spaceTimeGraphic": "Graphique Espace-Temps",
   "stdcmErrors": {
-    "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
     "infraNotLoaded": "Infrastructure en cours de chargement",
+    "invalidFields": {
+      "maxSpeed": "la vitesse maximale du convoi",
+      "totalLength": "la longueur totale du convoi",
+      "totalMass": "le poids total du convoi"
+    },
+    "invalidInformations": "Informations invalides pour le calcul :",
     "missingFields": {
       "destination": "la destination",
       "maxSpeed": "la vitesse maximale du convoi",
@@ -185,16 +191,22 @@
       "timeOrigin": "l'heure de départ à l'origine",
       "totalLength": "la longueur totale du convoi",
       "totalMass": "le poids total du convoi",
-      "tractionEngine": "l'engin de traction"
+      "tractionEngine": "l'engin de traction",
+      "vias": "au moins un PR intermédiaire"
     },
     "missingInformations": "Informations manquantes pour le calcul :",
-    "missingLocation": "Localisation manquante",
     "noPaths": "Incompatibilité avec d'autres sillons.",
     "noResults": "Aucun sillon trouvé",
-    "noScheduledPoint": "Le calcul a besoin de l'horaire d'origine ou de celui de la destination.",
     "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
     "requestFailed": "Erreur de calcul Sillon de dernière minute",
-    "zeroLengthPath": "Le chemin ne peut pas avoir de longueur nulle."
+    "routeErrors": {
+      "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
+      "global": "Veuillez vérifier les erreurs suivantes liées au trajet :",
+      "noScheduledPoint": "Le calcul a besoin de l'horaire d'origine ou de celui de la destination.",
+      "viaStopDurationMissing": "Le temps d'arrêt pour le PR intermédiaire.",
+      "viaStopDurationTooShort": "Le temps d'arrêt d'une relève conducteur est d'au moins 3 minutes.",
+      "zeroLengthPath": "Origine et destination ne peuvent pas être identiques."
+    }
   },
   "trainPath": {
     "addVia": "Ajouter un PR intermédiaire",
@@ -220,7 +232,6 @@
     "time": "Heure",
     "tolerance": "Tolérance",
     "type": "Type",
-    "vias": "PR intermédiaire",
-    "warningMinStopTime": "Le temps d'arrêt d'une relève conducteur est d'au moins 3 minutes."
+    "vias": "PR intermédiaire"
   }
 }

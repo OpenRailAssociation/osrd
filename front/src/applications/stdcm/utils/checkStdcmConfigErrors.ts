@@ -11,44 +11,95 @@ import {
   type ConsistErrors,
   type MissingFields,
 } from '../types';
+import filterMissingFields from './filterMissingFields';
+import getInvalidFields from './getInvalidFields';
 
 const checkStdcmConfigErrors = ({
   t,
   pathfindingStatus,
   stdcmConf,
-  prevFormErros,
+  prevFormErrors,
+  consistErrors,
   shouldCheckMandatoryFields,
 }: {
   t: TFunction<'stdcm'>;
   pathfindingStatus?: 'success' | 'failure';
   stdcmConf?: OsrdStdcmConfState;
-  prevFormErros?: StdcmConfigErrors;
+  prevFormErrors?: StdcmConfigErrors;
   consistErrors?: ConsistErrors;
   shouldCheckMandatoryFields?: boolean;
 }): StdcmConfigErrors | undefined => {
   const { stdcmPathSteps, rollingStockID, totalMass, totalLength, maxSpeed } = stdcmConf!;
   const origin = stdcmPathSteps.at(0)!;
+  const vias = stdcmPathSteps.slice(1, -1);
   const destination = stdcmPathSteps.at(-1)!;
+
   const missingFields: MissingFields[] = [];
 
-  if (shouldCheckMandatoryFields) {
-    if (!rollingStockID) missingFields.push('tractionEngine');
-    if (isNil(totalMass)) missingFields.push('totalMass');
-    if (isNil(totalLength)) missingFields.push('totalLength');
-    if (isNil(maxSpeed)) missingFields.push('maxSpeed');
-    if (!origin.location) {
-      missingFields.push('origin');
-    }
-    if (!destination.location) {
-      missingFields.push('destination');
+  missingFields.push(
+    ...filterMissingFields({
+      missingFields: prevFormErrors?.errorDetails?.missingFields,
+      rollingStockID,
+      totalMass,
+      totalLength,
+      maxSpeed,
+      origin,
+      vias,
+      destination,
+      checkAllFields: shouldCheckMandatoryFields,
+    })
+  );
+
+  let invalidFields = consistErrors ? getInvalidFields(consistErrors) : [];
+
+  if (!shouldCheckMandatoryFields) {
+    const prevInvalid = prevFormErrors?.errorDetails?.invalidFields || [];
+    invalidFields = invalidFields.filter((field) =>
+      prevInvalid.some((prev) => prev.fieldName === field.fieldName)
+    );
+  }
+
+  let routeErrors: StdcmConfigErrorTypes[] = [];
+  const routeErrorDetails: { originTime?: string; destinationTime?: string } = {};
+
+  if (origin.location && destination.location) {
+    if (
+      origin.location.uic === destination.location.uic &&
+      origin.location.secondary_code === destination.location.secondary_code
+    ) {
+      routeErrors.push(StdcmConfigErrorTypes.ZERO_LENGTH_PATH);
     }
 
-    if (missingFields.length > 0) {
-      return {
-        errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
-        errorDetails: { missingFields },
-      };
+    const isOriginRespectDestinationSchedule =
+      !origin.isVia && origin.arrivalType === ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE;
+    const isDestinationASAP =
+      !destination.isVia && destination.arrivalType === ArrivalTimeTypes.ASAP;
+
+    if (isOriginRespectDestinationSchedule && isDestinationASAP) {
+      routeErrors.push(StdcmConfigErrorTypes.NO_SCHEDULED_POINT);
     }
+
+    const areBothPointsScheduled =
+      !origin.isVia &&
+      !destination.isVia &&
+      origin.arrivalType === ArrivalTimeTypes.PRECISE_TIME &&
+      destination.arrivalType === ArrivalTimeTypes.PRECISE_TIME;
+
+    if (areBothPointsScheduled) {
+      routeErrors.push(StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED);
+      routeErrorDetails.originTime = origin.arrival
+        ? t('leaveAt', { time: dateToHHMMSS(origin.arrival, { withoutSeconds: true }) })
+        : t('departureTime');
+      routeErrorDetails.destinationTime = destination.arrival
+        ? t('arriveAt', { time: dateToHHMMSS(destination.arrival, { withoutSeconds: true }) })
+        : t('destinationTime');
+    }
+  }
+
+  if (pathfindingStatus === 'failure') {
+    return {
+      errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED,
+    };
   }
 
   if (origin.isVia) {
@@ -58,56 +109,72 @@ const checkStdcmConfigErrors = ({
     throw new Error('Last step can not be a via');
   }
 
-  if (
-    origin.location?.uic === destination.location?.uic &&
-    origin.location?.secondary_code === destination.location?.secondary_code
-  ) {
-    return { errorType: StdcmConfigErrorTypes.ZERO_LENGTH_PATH };
+  stdcmPathSteps.forEach((step) => {
+    if (step.isVia) {
+      const { stopType, stopFor } = step;
+
+      if ((stopType === 'driverSwitch' || stopType === 'serviceStop') && isNil(stopFor)) {
+        routeErrors.push(StdcmConfigErrorTypes.VIA_STOP_DURATION_MISSING);
+      }
+
+      if (stopType === 'driverSwitch' && !isNil(stopFor) && stopFor.total('minute') < 3) {
+        routeErrors.push(StdcmConfigErrorTypes.VIA_STOP_DURATION_TOO_SHORT);
+      }
+
+      if (stopType === 'serviceStop' && stopFor?.total('minute') === 0) {
+        routeErrors.push(StdcmConfigErrorTypes.VIA_STOP_DURATION_MISSING);
+      }
+    }
+  });
+
+  const prevRouteErrors = prevFormErrors?.errorDetails?.routeErrors || [];
+
+  if (!shouldCheckMandatoryFields) {
+    const keptErrors: StdcmConfigErrorTypes[] = [];
+
+    for (const error of routeErrors) {
+      if (prevRouteErrors.includes(error)) {
+        keptErrors.push(error);
+      }
+    }
+
+    routeErrors = keptErrors;
   }
 
-  if (pathfindingStatus && pathfindingStatus === 'failure') {
-    return { errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED };
+  const finalMissingFields = missingFields.length > 0 ? missingFields : undefined;
+  const finalInvalidFields = invalidFields.length > 0 ? invalidFields : undefined;
+  const finalRouteErrors = routeErrors.length > 0 ? routeErrors : undefined;
+
+  const stillHasErrors = !!finalMissingFields || !!finalInvalidFields || !!finalRouteErrors;
+
+  if (!stillHasErrors) {
+    return undefined;
   }
 
-  const isOriginRespectDestinationSchedule =
-    origin.arrivalType === ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE;
+  const activeErrorTypes = [finalMissingFields, finalInvalidFields, finalRouteErrors].filter(
+    Boolean
+  ).length;
 
-  const isDestinationASAP = destination.arrivalType === ArrivalTimeTypes.ASAP;
+  let errorType: StdcmConfigErrorTypes;
 
-  const areBothPointsNotSchedule = isOriginRespectDestinationSchedule && isDestinationASAP;
-
-  if (areBothPointsNotSchedule) {
-    return { errorType: StdcmConfigErrorTypes.NO_SCHEDULED_POINT };
+  if (activeErrorTypes > 1) {
+    errorType = StdcmConfigErrorTypes.MULTIPLE_ERRORS;
+  } else if (finalMissingFields) {
+    errorType = StdcmConfigErrorTypes.MISSING_INFORMATIONS;
+  } else if (finalInvalidFields) {
+    errorType = StdcmConfigErrorTypes.INVALID_FIELDS;
+  } else {
+    const [firstRouteError] = routeErrors;
+    errorType = firstRouteError;
   }
 
-  const areBothPointsScheduled =
-    origin.arrivalType === ArrivalTimeTypes.PRECISE_TIME &&
-    destination.arrivalType === ArrivalTimeTypes.PRECISE_TIME;
-
-  if (areBothPointsScheduled) {
-    return {
-      errorType: StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED,
-      errorDetails: {
-        originTime: origin?.arrival
-          ? t('leaveAt', { time: dateToHHMMSS(origin.arrival, { withoutSeconds: true }) })
-          : t('departureTime'),
-        destinationTime: destination?.arrival
-          ? t('arriveAt', { time: dateToHHMMSS(destination.arrival, { withoutSeconds: true }) })
-          : t('destinationTime'),
-      },
-    };
-  }
-
-  const isOnePointScheduledWithoutTime =
-    (origin.arrivalType === ArrivalTimeTypes.PRECISE_TIME && !origin.arrival) ||
-    (destination.arrivalType === ArrivalTimeTypes.PRECISE_TIME && !destination.arrival);
-
-  if (isOnePointScheduledWithoutTime) {
-    return { errorType: StdcmConfigErrorTypes.NO_SCHEDULED_POINT };
-  }
-  return prevFormErros?.errorType === StdcmConfigErrorTypes.MISSING_INFORMATIONS
-    ? prevFormErros
-    : undefined;
+  return {
+    errorType,
+    errorDetails: {
+      ...(finalMissingFields && { missingFields: finalMissingFields }),
+      ...(finalInvalidFields && { invalidFields: finalInvalidFields }),
+      ...(finalRouteErrors && { routeErrors: finalRouteErrors, ...routeErrorDetails }),
+    },
+  };
 };
-
 export default checkStdcmConfigErrors;
