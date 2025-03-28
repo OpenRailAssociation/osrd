@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 import requests
@@ -284,7 +284,7 @@ def test_mrsp_sources(
 
 
 def _get_train_schedule_simulation_response(
-    infra: Infra, timetable_id: int, train_schedules_payload: List[Dict[str, Any]]
+    infra: Infra, timetable_id: int, train_schedules_payload: list[dict[str, Any]]
 ):
     ts_response = requests.post(
         f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",

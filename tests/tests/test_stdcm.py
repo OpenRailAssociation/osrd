@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
@@ -435,7 +435,7 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
     }
 
 
-def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: Dict[str, Any]):
+def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: dict[str, Any]):
     stdcm_response = requests.post(
         f"{EDITOAST_URL}/timetable/{timetable_id}/stdcm/?infra={infra.id}",
         json=stdcm_payload,

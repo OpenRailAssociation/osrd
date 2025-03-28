@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
-from typing import List
 
 from railjson_generator import (
     ApplicableDirection,
@@ -81,7 +80,7 @@ class Signal:
     sight_distance: int = default_sight_distance
 
 
-raw_signals: List[Signal] = [
+raw_signals: list[Signal] = [
     Signal("s.2.1500", t_2, 1_500, False),
     Signal("s.takeover.start.1", t_takeover, 1, True),
     # start.1 -> start.2 : needs to be at least as long as the new train

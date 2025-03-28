@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Mapping, Optional
+from collections.abc import Iterable, Iterator, Mapping
 
 import pytest
 import requests
@@ -171,8 +171,8 @@ TestRollingStock.__test__ = False
 
 def create_rolling_stock(
     rolling_stock_json_path: Path,
-    test_rolling_stocks: Optional[List[TestRollingStock]] = None,
-) -> List[int]:
+    test_rolling_stocks: list[TestRollingStock] | None = None,
+) -> list[int]:
     if test_rolling_stocks is None:
         payload = json.loads(rolling_stock_json_path.read_text())
         response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
@@ -253,7 +253,7 @@ def west_to_south_east_path(
 def west_to_south_east_simulation(
     small_scenario: Scenario,
     fast_rolling_stock: int,
-) -> Iterator[Dict]:
+) -> Iterator[dict]:
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = requests.post(
@@ -280,7 +280,7 @@ def west_to_south_east_simulation(
 def west_to_south_east_paced_train(
     small_scenario: Scenario,
     fast_rolling_stock: int,
-) -> Iterator[Dict]:
+) -> Iterator[dict]:
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = requests.post(
@@ -311,7 +311,7 @@ def west_to_south_east_paced_train(
 def west_to_south_east_paced_trains(
     small_scenario: Scenario,
     fast_rolling_stock: int,
-) -> Iterator[Dict]:
+) -> Iterator[dict]:
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
 
@@ -362,7 +362,7 @@ def west_to_south_east_paced_trains(
 def west_to_south_east_etcs_simulation(
     etcs_scenario: Scenario,
     etcs_rolling_stock: int,
-) -> Iterator[Dict]:
+) -> Iterator[dict]:
     rolling_stock_response = requests.get(
         EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
     )
@@ -390,7 +390,7 @@ def west_to_south_east_etcs_simulation(
 def west_to_south_east_simulations(
     small_scenario: Scenario,
     fast_rolling_stock: int,
-) -> Iterator[Dict]:
+) -> Iterator[dict]:
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
 
