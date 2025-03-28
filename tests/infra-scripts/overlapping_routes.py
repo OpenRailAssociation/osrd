@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
-from typing import List
 
 from railjson_generator import Direction, InfraBuilder, get_output_dir
 from railjson_generator.schema.infra.track_section import TrackSection
@@ -65,7 +64,7 @@ class Signal:
     is_route_delimiter: bool
 
 
-raw_signals: List[Signal] = [
+raw_signals: list[Signal] = [
     Signal("s.a1.nf", t_a1, 900, True),
     Signal("s.a2.nf", t_a2, 900, True),
     Signal("s.center.1", t_center, 4_000, False),

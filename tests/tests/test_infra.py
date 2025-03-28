@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any
+from collections.abc import Iterable, Mapping
 
 import pytest
 import requests
@@ -13,7 +14,7 @@ class _InfraDetails:
     name: str
     railjson_version: str
     version: str
-    generated_version: Optional[str]
+    generated_version: str | None
     locked: bool
     created: str
     modified: str
@@ -26,8 +27,8 @@ class _InfraResponse:
     page_size: int
     page_count: int
     current: int
-    previous: Optional[int]
-    next: Optional[int]
+    previous: int | None
+    next: int | None
     results: Iterable[Mapping[str, Any]]
 
 

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 import requests
 
@@ -18,7 +17,7 @@ class _Project:
     creation_date: str
     last_modification: str
     tags: list[str]
-    image: Optional[int]
+    image: int | None
 
 
 @dataclass(frozen=True)
@@ -30,9 +29,9 @@ class _Study:
     service_code: str
     creation_date: str
     last_modification: str
-    start_date: Optional[str]
-    expected_end_date: Optional[str]
-    actual_end_date: Optional[str]
+    start_date: str | None
+    expected_end_date: str | None
+    actual_end_date: str | None
     budget: int
     tags: list[str]
     state: str
@@ -48,7 +47,7 @@ class _ScenarioResponse:
     description: str
     timetable_id: int
     infra_id: int
-    electrical_profile_set_id: Optional[int]
+    electrical_profile_set_id: int | None
     trains_count: int
     paced_trains_count: int
     creation_date: str

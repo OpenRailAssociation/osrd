@@ -1,7 +1,7 @@
 import bisect
 import json
 from collections.abc import Sequence
-from typing import Any, Dict
+from typing import Any
 
 import requests
 
@@ -832,14 +832,14 @@ def _assert_equal_speeds(left, right):
 
 
 def _get_current_or_next_speed_at(
-    simulation_final_output: Dict[str, Any], position: int
+    simulation_final_output: dict[str, Any], position: int
 ) -> int:
     idx = bisect.bisect_left(simulation_final_output["positions"], position)
     return simulation_final_output["speeds"][idx]
 
 
 def _get_current_or_prev_speed_at(
-    simulation_final_output: Dict[str, Any], position: int
+    simulation_final_output: dict[str, Any], position: int
 ) -> int:
     idx = bisect.bisect_left(simulation_final_output["positions"], position)
     if simulation_final_output["positions"][idx] > position and idx > 0:

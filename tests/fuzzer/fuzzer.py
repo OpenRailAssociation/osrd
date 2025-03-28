@@ -8,7 +8,8 @@ from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from functools import cache
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+from typing import TypeVar
+from collections.abc import Iterable
 
 import requests
 from osrd_schemas.switch_type import builtin_node_types
@@ -41,10 +42,10 @@ def run(
     scenario: Scenario,
     scenario_ttl: int = 20,
     n_test: int = 1000,
-    log_folder: Optional[Path] = None,
-    seed: Optional[int] = None,
-    rolling_stock_name: Optional[str] = None,
+    log_folder: Path | None = None,
     infra_name: str = _INFRA_NAME,
+    seed: int | None = None,
+    rolling_stock_name: str | None = None,
 ):
     """
     Runs every test
@@ -152,7 +153,7 @@ class _TrackEndpoint:
     endpoint: _Endpoint
 
     @staticmethod
-    def from_dict(obj: Dict) -> "_TrackEndpoint":
+    def from_dict(obj: dict[str, str]) -> "_TrackEndpoint":
         return _TrackEndpoint(
             obj["track"], _Endpoint(_Endpoint._member_map_[obj["endpoint"]])
         )
@@ -160,9 +161,9 @@ class _TrackEndpoint:
 
 @dataclass
 class _InfraGraph:
-    RJSInfra: Dict
-    tracks: Dict[str, Dict] = field(default_factory=dict)
-    links: Dict[_TrackEndpoint, List[_TrackEndpoint]] = field(
+    RJSInfra: dict
+    tracks: dict[str, dict] = field(default_factory=dict)
+    links: dict[_TrackEndpoint, list[_TrackEndpoint]] = field(
         default_factory=lambda: defaultdict(list)
     )
 
@@ -206,8 +207,8 @@ def _run_test(
     editoast_url: str,
     scenario: Scenario,
     infra_name: str,
-    prelude: List,
-    rolling_stock_name: Optional[str],
+    prelude: list,
+    rolling_stock_name: str | None,
 ):
     """
     Runs a single random test
@@ -238,8 +239,8 @@ def _test_new_train(
     scenario: Scenario,
     rolling_stock: str,
     infra_name: str,
-    path: List[Tuple[str, float]],
-    prelude: List,
+    path: list[tuple[str, float]],
+    prelude: list,
 ):
     """
     Try to create a new train on the given path.
@@ -278,8 +279,8 @@ def _test_stdcm(
     scenario: Scenario,
     rolling_stock: int,
     infra_name: str,
-    path: List[Tuple[str, float]],
-    prelude: List,
+    path: list[tuple[str, float]],
+    prelude: list,
 ):
     """
     Try to run an STDCM search on the given path.
@@ -306,7 +307,7 @@ def _test_stdcm(
     print("test PASSED")
 
 
-def _make_stdcm_payload(path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
+def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> dict:
     """
     Creates a payload for an STDCM request
     """
@@ -388,8 +389,8 @@ def _random_set_element(s: Iterable[U]) -> U:
 
 
 def _make_steps_on_track(
-    track: Dict, endpoint: _Endpoint, number: float
-) -> List[float]:
+    track: dict, endpoint: _Endpoint, number: float
+) -> list[float]:
     """
     Generates a random list of steps on a route
     :return: Iterable of (edge id, edge offset, offset from the start)
@@ -404,7 +405,7 @@ def _make_steps_on_track(
     return res
 
 
-def _make_path(infra: _InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
+def _make_path(infra: _InfraGraph) -> tuple[list[tuple[str, float]], float]:
     """
     Generates a path in the infra following the route graph. The path may only have a single element
     :param infra: infra
@@ -447,7 +448,7 @@ def _make_path(infra: _InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
             tmp_path_length += track["length"]
 
         # Find next track
-        neighbors: List[_TrackEndpoint] = infra.links[
+        neighbors: list[_TrackEndpoint] = infra.links[
             _TrackEndpoint(track_id, endpoint)
         ]
         if len(neighbors) == 0:
@@ -459,7 +460,7 @@ def _make_path(infra: _InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
     return res, total_path_length
 
 
-def _make_valid_path(infra: _InfraGraph) -> List[Tuple[str, float]]:
+def _make_valid_path(infra: _InfraGraph) -> list[tuple[str, float]]:
     """
     Generates a path with at least two steps
     :param infra: infra graph
@@ -471,7 +472,7 @@ def _make_valid_path(infra: _InfraGraph) -> List[Tuple[str, float]]:
             return path
 
 
-def _convert_stop_stdcm(stop: Tuple[str, float]) -> Dict:
+def _convert_stop_stdcm(stop: tuple[str, float]) -> dict:
     """
     Converts a stop to be in the stdcm payload
     :param stop: (track, offset)
@@ -484,7 +485,7 @@ def _convert_stop_stdcm(stop: Tuple[str, float]) -> Dict:
     }
 
 
-def _convert_stop(stop: Tuple[str, float], i: int) -> Dict:
+def _convert_stop(stop: tuple[str, float], i: int) -> dict:
     """
     Converts a stop to be in the schedule payload
     :param stop: (track, offset)
@@ -513,7 +514,7 @@ def _make_random_margin_value() -> str:
     return f"{random.randint(0, 7)}min/100km"
 
 
-def _make_random_margins(n_steps: int) -> Dict:
+def _make_random_margins(n_steps: int) -> dict:
     transitions = []
     i = 1
     while i < n_steps - 3:
@@ -527,9 +528,9 @@ def _make_random_margins(n_steps: int) -> Dict:
 
 
 def _make_payload_schedule(
-    path: List[Tuple[str, float]],
+    path: list[tuple[str, float]],
     rolling_stock: str,
-) -> List:
+) -> list:
     """
     Makes the payload for the simulation
     :param path: path id

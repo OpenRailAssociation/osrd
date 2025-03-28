@@ -1,5 +1,4 @@
 import json
-from typing import Tuple
 
 import requests
 
@@ -20,7 +19,7 @@ def create_op_study(editoast_url, project_id: int) -> int:
 
 def create_scenario(
     editoast_url: str, infra_id: int, project_id: int, op_study_id: int
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     # Create the timetable
     r = requests.post(editoast_url + "/timetable/")
     if r.status_code // 100 != 2:

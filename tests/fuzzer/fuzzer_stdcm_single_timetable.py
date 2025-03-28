@@ -3,7 +3,7 @@ import json
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Union
+from collections.abc import Iterable
 
 import requests
 
@@ -37,9 +37,9 @@ Usage: `poetry run python -m fuzzer.fuzzer_stdcm_single_timetable`
 
 @dataclass
 class STDCMException(Exception):
-    error: Union[str, Dict]
-    status_code: Optional[int] = None
-    payload: Optional[Dict] = None
+    error: str | dict
+    status_code: int | None = None
+    payload: dict | None = None
 
 
 @dataclass
@@ -57,8 +57,8 @@ def run(
     editoast_url: str,
     scenario: Scenario,
     n_test: int = 1000,
-    log_folder: Optional[Path] = None,
-    seed: Optional[int] = None,
+    log_folder: Path | None = None,
+    seed: int | None = None,
 ):
     """
     Run the given number of tests, logging errors in the given folder as json files
@@ -93,7 +93,7 @@ def run(
                     )
 
 
-def _get_train_ids(editoast_url: str, scenario: Scenario) -> List[int]:
+def _get_train_ids(editoast_url: str, scenario: Scenario) -> list[int]:
     """
     Fetch all the train IDs in the scenario
     """
@@ -150,7 +150,7 @@ def _make_op_list(editoast_url, infra) -> Iterable[int]:
 
 def _test_stdcm(
     editoast_url: str,
-    op_list: List[int],
+    op_list: list[int],
     scenario: Scenario,
     timetable_range: TimetableTimeRange,
 ):
@@ -182,8 +182,8 @@ def _test_stdcm(
 
 
 def _make_stdcm_payload(
-    op_list: List[int], rolling_stock: int, timetable_range: TimetableTimeRange
-) -> Dict:
+    op_list: list[int], rolling_stock: int, timetable_range: TimetableTimeRange
+) -> dict:
     """
     Generate a random stdcm payload
     """
@@ -196,7 +196,7 @@ def _make_stdcm_payload(
     return res
 
 
-def _make_steps(op_list: List[int], timetable_range: TimetableTimeRange) -> List[Dict]:
+def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list[dict]:
     """
     Generate steps for the stdcm payloads
     """

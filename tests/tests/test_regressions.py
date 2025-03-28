@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import pytest
 import requests
@@ -34,8 +33,8 @@ def _load_infra(editoast_url: str, infra_id: int):
 
 
 def _schedule_with_payload(
-    editoast_url: str, payload: Dict, accept_400: bool, scenario: Scenario
-) -> Optional[int]:
+    editoast_url: str, payload: dict, accept_400: bool, scenario: Scenario
+) -> int | None:
     """
     Send a schedule request with the given payload, raises an error if the request failed (unless we accept 400s).
     Returns the schedule id.
@@ -50,7 +49,7 @@ def _schedule_with_payload(
     return r.json()[0]["id"]
 
 
-def _stdcm_with_payload(editoast_url: str, payload: Dict, scenario: Scenario):
+def _stdcm_with_payload(editoast_url: str, payload: dict, scenario: Scenario):
     """
     Send a stdcm request with the given payload, raises an error if the request failed.
     """
@@ -82,7 +81,7 @@ def _check_result(editoast_url: str, schedule_id: int, infra_id: int):
         )
 
 
-def _apply_prelude(prelude: List, editoast_url: str, scenario: Scenario):
+def _apply_prelude(prelude: list, editoast_url: str, scenario: Scenario):
     """
     Send the requests from the test prelude to fill the timetable with trains
     """

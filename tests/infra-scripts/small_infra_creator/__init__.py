@@ -6,7 +6,8 @@ For more information, and a diagram of this infrastructure, see:
 https://osrd.fr/en/docs/explanation/models/data-models-full-example/
 """
 
-from typing import Mapping, NamedTuple, Optional, Tuple
+from typing import NamedTuple
+from collections.abc import Mapping
 
 from osrd_schemas.infra import LoadingGaugeType, Switch
 from railjson_generator import (
@@ -24,9 +25,9 @@ def place_regular_signals_detectors(
     track_section: TrackSection,
     label_suffix: str,
     signaling_system: str,
-    prefered_direction: Optional[Direction] = None,
+    prefered_direction: Direction | None = None,
     min_offset: float = 0,
-    max_offset: Optional[float] = None,
+    max_offset: float | None = None,
     period: float = 1500,
 ):
     """Place signals and detectors regularly on the track section.
@@ -70,7 +71,7 @@ def place_regular_signals_detectors(
 
 
 def add_signal_on_ports(
-    switch: Switch, ports: Mapping[str, Tuple[str, str]], signaling_system: str
+    switch: Switch, ports: Mapping[str, tuple[str, str]], signaling_system: str
 ):
     """Add signals and detectors to given ports.
     Args:
