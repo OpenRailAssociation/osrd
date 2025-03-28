@@ -47,7 +47,7 @@ export const formatEditoastTrainIdToPacedTrainId = (trainId: number): PacedTrain
  * Given a paced train id in the Editoast format (used for api),
  * returns the occurrence id with a OccurrenceId format (used across the front).
  */
-export const formatEditoastTrainIdToOccurrenceId = ({
+export const formatPacedTrainIdToOccurrenceId = ({
   pacedTrainId,
   occurrenceIndex,
 }: {

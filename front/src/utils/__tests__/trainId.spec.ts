@@ -4,7 +4,7 @@ import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdc
 
 import {
   formatEditoastTrainIdToTrainScheduleId,
-  formatEditoastTrainIdToOccurrenceId,
+  formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
@@ -28,11 +28,11 @@ describe('formatEditoastTrainIdToPacedTrainId', () => {
   });
 });
 
-describe('formatEditoastTrainIdToOccurrenceId', () => {
+describe('formatPacedTrainIdToOccurrenceId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
     const pacedTrainId = 'paced-123' as PacedTrainId;
     const occurrenceIndex = 1;
-    const result = formatEditoastTrainIdToOccurrenceId({ pacedTrainId, occurrenceIndex });
+    const result = formatPacedTrainIdToOccurrenceId({ pacedTrainId, occurrenceIndex });
     expect(result).toBe(`occurrence-${occurrenceIndex}-${pacedTrainId}`);
   });
 });

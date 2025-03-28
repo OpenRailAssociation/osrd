@@ -11,7 +11,6 @@ import ResizableSection from 'common/ResizableSection';
 import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-  type TrainSpaceTimeDataWithPaced,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { getWorkScheduleGroupId } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -73,9 +72,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
               <div className="chart-container mt-2">
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={pathProperties.manchetteOperationalPoints}
-                  projectPathTrainResult={
-                    projectedData.spaceTimeData as TrainSpaceTimeDataWithPaced[]
-                  }
+                  projectPathTrainResult={projectedData.spaceTimeData}
                   selectedTrainScheduleId={STDCM_TRAIN_TIMETABLE_ID}
                   workSchedules={workSchedules}
                   projectionLoaderData={projectedData.projectionLoaderData}

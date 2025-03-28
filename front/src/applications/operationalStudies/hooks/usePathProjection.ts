@@ -48,13 +48,14 @@ const usePathProjection = (infra: InfraWithState) => {
     );
 
   const path = useMemo(() => {
+    if (!trainIdUsedForProjection) {
+      return undefined;
+    }
     const projectionPathResult =
       trainIdUsedForProjection && isTrainSchedule(trainIdUsedForProjection)
         ? trainScheduleProjectionPathResult
         : pacedTrainProjectionPathResult;
-    return projectionPathResult && projectionPathResult?.status === 'success'
-      ? projectionPathResult
-      : undefined;
+    return projectionPathResult?.status === 'success' ? projectionPathResult : undefined;
   }, [trainScheduleProjectionPathResult, pacedTrainProjectionPathResult]);
 
   const pathProperties = usePathProperties(infra.id, path, ['geometry']);

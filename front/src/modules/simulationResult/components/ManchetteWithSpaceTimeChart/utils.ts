@@ -39,8 +39,8 @@ const getPathStyle = (
       }
       // Other occurrences from the same paced
       if (
-        getPacedTrainIdFromOccurrenceId(path.id as OccurrenceId) ===
-        getPacedTrainIdFromOccurrenceId(selectedPathId)
+        isOccurrence(path.id) &&
+        getPacedTrainIdFromOccurrenceId(path.id) === getPacedTrainIdFromOccurrenceId(selectedPathId)
       ) {
         return {
           color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,

@@ -116,7 +116,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   useEffect(() => {
     if (timetableItems && projectionPath?.path && allTimetableItemsLoaded) {
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
       const trainIds = timetableItems.map((timetableItem) => timetableItem.id);
       setTimetableItemIdsToProject(new Set(trainIds));
     }

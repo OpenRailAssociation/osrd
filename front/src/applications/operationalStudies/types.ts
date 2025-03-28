@@ -95,6 +95,7 @@ export type TrainSpaceTimeData = {
     times: number[];
   }[];
   departureTime: Date;
+  paced?: PacedTrain['paced'];
 } & { signalUpdates: ProjectPathTrainResult['signal_updates'] };
 
 export type PositionData<T extends 'gradient' | 'radius'> = {

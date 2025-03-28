@@ -7,11 +7,15 @@ import type {
   TimetableItemWithTimetableId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
-import { formatEditoastTrainIdToOccurrenceId, isPacedTrain } from 'utils/trainId';
+import {
+  formatPacedTrainIdToOccurrenceId,
+  isPacedTrain,
+  isPacedTrainResponseWithPacedTrainId,
+} from 'utils/trainId';
 
 const upsertNewProjectedTrains = (
   projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
-  projectedTrainsToUpsert: Map<TrainScheduleId | PacedTrainId, ProjectPathTrainResult>,
+  projectedTrainsToUpsert: Map<TimetableItemId, ProjectPathTrainResult>,
   trainSchedulesById: Map<TimetableItemId, TimetableItemWithTimetableId>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
@@ -21,15 +25,16 @@ const upsertNewProjectedTrains = (
     const matchingTrain = trainSchedulesById.get(trainIdKey);
     const projectedTrain = {
       id: isPacedTrain(trainIdKey)
-        ? formatEditoastTrainIdToOccurrenceId({ pacedTrainId: trainIdKey, occurrenceIndex: 0 })
+        ? formatPacedTrainIdToOccurrenceId({ pacedTrainId: trainIdKey, occurrenceIndex: 0 })
         : trainIdKey,
       name: matchingTrain?.train_name || 'Train name not found',
       departureTime: new Date(trainData.departure_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates,
-      paced: isPacedTrain(trainIdKey)
-        ? (matchingTrain as PacedTrainResponseWithPacedTrainId)?.paced
-        : undefined,
+      paced:
+        matchingTrain && isPacedTrainResponseWithPacedTrainId(matchingTrain)
+          ? matchingTrain.paced
+          : undefined,
     };
 
     newProjectedTrains.set(trainIdKey, projectedTrain);

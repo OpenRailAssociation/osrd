@@ -55,18 +55,9 @@ import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
-export type TrainSpaceTimeDataWithPaced = TrainSpaceTimeData & {
-  paced:
-    | {
-        duration: string;
-        step: string;
-      }
-    | undefined;
-};
-
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: OperationalPoint[];
-  projectPathTrainResult: TrainSpaceTimeDataWithPaced[];
+  projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: TrainId;
   selectedTrainId?: TrainId;
   waypointsPanelData?: WaypointsPanelData;
@@ -123,24 +114,21 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       projectPathTrainResult.flatMap((train) => {
         if (isOccurrence(train.id) && train.paced) {
           const pacedTrainId = getPacedTrainIdFromOccurrenceId(train.id);
-          const occurrencesCount = Math.ceil(
-            Duration.parse(train.paced.duration).ms / Duration.parse(train.paced.step).ms
-          );
+          const stepInMs = Duration.parse(train.paced.step).ms;
+          const occurrencesCount = Math.ceil(Duration.parse(train.paced.duration).ms / stepInMs);
           const occurrences = [];
           for (let i = 0; i < occurrencesCount; i += 1) {
             const occurrenceStartTime = dayjs(train.departureTime)
-              .add(i * Duration.parse(train.paced.step).ms, 'ms')
+              .add(i * stepInMs, 'ms')
               .toDate();
             occurrences.push({
+              ...train,
               id: `occurrence-${i}-${pacedTrainId}` as OccurrenceId,
               name: computeOccurrenceName(train.name, i),
               departureTime: occurrenceStartTime,
             });
           }
-          return occurrences.map((occurrence) => ({
-            ...train,
-            ...occurrence,
-          }));
+          return occurrences;
         }
         return {
           ...train,
