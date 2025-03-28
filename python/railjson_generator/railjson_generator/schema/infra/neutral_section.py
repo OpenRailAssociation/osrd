@@ -9,10 +9,8 @@ from railjson_generator.schema.infra.track_section import TrackSection
 
 
 def _neutral_section_id():
-    # pytype: disable=name-error
     res = f"neutral_section.{NeutralSection._index}"
     NeutralSection._index += 1
-    # pytype: enable=name-error
     return res
 
 

@@ -15,10 +15,8 @@ from railjson_generator.schema.simulation.stop import Stop
 
 
 def _train_id():
-    # pytype: disable=name-error
     res = f"train.{TrainSchedule._index}"
     TrainSchedule._index += 1
-    # pytype: enable=name-error
     return res
 
 
@@ -86,10 +84,8 @@ class TrainSchedule:
 
 
 def _group_id():
-    # pytype: disable=name-error
     res = f"group.{TrainScheduleGroup._index}"
     TrainScheduleGroup._index += 1
-    # pytype: enable=name-error
     return res
 
 

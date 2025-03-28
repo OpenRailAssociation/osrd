@@ -21,10 +21,8 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypo
 
 
 def _track_id():
-    # pytype: disable=name-error
     res = f"track.{TrackSection._index}"
     TrackSection._index += 1
-    # pytype: enable=name-error
     return res
 
 
