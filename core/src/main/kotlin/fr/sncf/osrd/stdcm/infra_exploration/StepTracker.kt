@@ -98,6 +98,11 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
         return seenSteps.drop(nStepsExcludingLookahead)
     }
 
+    /** Returns all the steps excluding lookahead, in order. */
+    fun getReachedSteps(): List<LocatedStep> {
+        return getSeenSteps().take(nStepsExcludingLookahead)
+    }
+
     fun clone(): StepTracker {
         // If clone() performances become an issue,
         // reachedSteps can be changed to an AppendOnlyLinkedList
@@ -113,6 +118,7 @@ data class LocatedStep(
     val travelledPathOffset: Offset<TravelledPath>,
     val location: PathfindingEdgeLocationId<Block>,
     val originalStep: STDCMStep,
+    val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)
 ) {
     init {
         assert(originalStep.locations.contains(location))

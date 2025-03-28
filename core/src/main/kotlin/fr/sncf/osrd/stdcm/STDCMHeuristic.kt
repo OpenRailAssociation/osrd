@@ -8,10 +8,10 @@ import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.util.*
@@ -22,18 +22,17 @@ import org.slf4j.LoggerFactory
 
 data class STDCMAStarHeuristic(
     val blockInfra: BlockInfra,
-    val steps: List<STDCMStep>,
     val remainingTimeEstimations: List<MutableMap<BlockId, Double>>,
+    val nPlannedSteps: Int,
     val mrspBuilder: CachedBlockMRSPBuilder,
     val bestTravelTime: Double,
 ) {
     /**
-     * This function defines a function that can be used as a heuristic for an A* pathfinding. It
-     * takes an edge, and offset on this edge, and a number of passed steps as input, and returns an
-     * estimation of the remaining time needed to get to the end.
+     * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
+     * and offset on this edge, and a step tracker as input, and returns an estimation of the
+     * remaining time needed to get to the end.
      */
-    fun invoke(edge: STDCMEdge, offset: Offset<Block>?, nPassedSteps: Int): Double {
-        if (nPassedSteps >= steps.size - 1) return 0.0
+    fun invoke(edge: STDCMEdge, offset: Offset<Block>?, stepTracker: StepTracker): Double {
         val lookahead = edge.infraExplorer.getLookahead()
         val currentBlock = edge.block
         val allBlocks = mutableListOf(currentBlock)
@@ -47,8 +46,7 @@ data class STDCMAStarHeuristic(
         val expectedIndex =
             getExpectedStepIndex(
                 allBlocks.dropLast(1),
-                offset ?: edge.blockOffsetFromEdge(edge.length),
-                nPassedSteps
+                stepTracker,
             )
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
@@ -73,35 +71,20 @@ data class STDCMAStarHeuristic(
     /** Returns the numbers of passed waypoints at the end of the block list */
     private fun getExpectedStepIndex(
         blocks: List<BlockId>,
-        firstOffset: Offset<Block>,
-        currentIndex: Int
+        stepTracker: StepTracker,
     ): Int {
-        var stepIndex = currentIndex
-        var blockIndex = 0
-        var currentOffset = firstOffset
-        while (true) {
-            if (stepIndex >= steps.size - 2 || blockIndex >= blocks.size) {
-                return stepIndex
-            }
-            val nextLocations = steps[stepIndex + 1].locations
-            val locationOnBlock =
-                nextLocations.firstOrNull {
-                    it.edge == blocks[blockIndex] && it.offset >= currentOffset
-                }
-            if (locationOnBlock != null) {
-                // Step passed on the block
-                stepIndex++
-                currentOffset = locationOnBlock.offset
-            } else {
-                // Move on to the next block
-                blockIndex++
-                currentOffset = Offset(0.meters)
-            }
+        val stepTrackerCopy = stepTracker.clone()
+        for (block in blocks) {
+            stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
         }
+        val nPlannedSteps = stepTrackerCopy.getReachedSteps().count { it.isPlanned }
+        val res = max(0, nPlannedSteps - 1) // Accounts for the departure step
+        return res
     }
 }
+
 /**
- * This file implements the A* heuristic used by STDCM.
+ * This class builds the A* heuristic used by STDCM.
  *
  * Starting at the destination and going backwards in every direction, we cache for each block the
  * minimum time it would take to reach the destination. The remaining time is estimated using the
@@ -166,10 +149,10 @@ class STDCMHeuristicBuilder(
 
         return STDCMAStarHeuristic(
             blockInfra,
-            steps,
             remainingTimeEstimations,
+            steps.size,
             mrspBuilder,
-            bestTravelTime
+            bestTravelTime,
         )
     }
 

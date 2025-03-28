@@ -74,11 +74,7 @@ data class STDCMEdge(
                 null,
                 null,
                 previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(
-                    this,
-                    null,
-                    stepTracker.nStepsExcludingLookahead
-                ),
+                graph.remainingTimeEstimator.invoke(this, null, stepTracker),
             )
         } else {
             // New edge on the same block, after a stop
@@ -102,11 +98,7 @@ data class STDCMEdge(
                 stopDuration,
                 nextStop.originalStep.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(
-                    this,
-                    locationOnEdge,
-                    stepTracker.nStepsExcludingLookahead
-                ),
+                graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),
             )
         }
     }
