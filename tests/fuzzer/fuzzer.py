@@ -42,9 +42,9 @@ def run(
     scenario_ttl: int = 20,
     n_test: int = 1000,
     log_folder: Optional[Path] = None,
-    infra_name: Optional[str] = None,
     seed: Optional[int] = None,
     rolling_stock_name: Optional[str] = None,
+    infra_name: str = _INFRA_NAME,
 ):
     """
     Runs every test
@@ -153,7 +153,9 @@ class _TrackEndpoint:
 
     @staticmethod
     def from_dict(obj: Dict) -> "_TrackEndpoint":
-        return _TrackEndpoint(obj["track"], _Endpoint._member_map_[obj["endpoint"]])
+        return _TrackEndpoint(
+            obj["track"], _Endpoint(_Endpoint._member_map_[obj["endpoint"]])
+        )
 
 
 @dataclass
@@ -354,13 +356,13 @@ def _get_random_rolling_stock(editoast_url: str) -> _RollingStock:
     return _RollingStock(rolling_stock["name"], rolling_stock["id"])
 
 
-def _make_graph(editoast_url: str, infra: int) -> _InfraGraph:
+def _make_graph(editoast_url: str, infra_id: int) -> _InfraGraph:
     """
     Makes a graph from the infra
     :param editoast_url: editoast url
     :param infra: infra id
     """
-    url = editoast_url + f"infra/{infra}/railjson/"
+    url = editoast_url + f"infra/{infra_id}/railjson/"
     r = _get_with_timeout(url)
     infra = r.json()
     graph = _InfraGraph(infra)

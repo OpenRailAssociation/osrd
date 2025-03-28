@@ -170,7 +170,8 @@ def _test_stdcm(
         if r.status_code // 100 != 2:
             is_json = "application/json" in r.headers.get("Content-Type", "")
             raise STDCMException(
-                error=r.json() if is_json else r.content, status_code=r.status_code
+                error=r.json() if is_json else str(r.content),
+                status_code=r.status_code,
             )
     except STDCMException as e:
         e.payload = stdcm_payload

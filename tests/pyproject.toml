@@ -14,10 +14,10 @@ requests = "^2.32.2"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "0.11.2"
-pytype = { platform = "linux", version = "^2023.10.17" }
+pyright = "1.1.393"
 
-[tool.pytype]
-inputs = ["fuzzer", "infra-scripts", "tests"]
+[tool.pyright]
+include = ["../python/osrd_schemas"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
