@@ -36,14 +36,54 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
             "rt.DH2->buffer_stop.7",
         ],
         "track_section_ranges": [
-            {"track_section": "TA2", "begin": 837034, "end": 1950000, "direction": "START_TO_STOP"},
-            {"track_section": "TA5", "begin": 0, "end": 50000, "direction": "START_TO_STOP"},
-            {"track_section": "TA7", "begin": 0, "end": 10000000, "direction": "START_TO_STOP"},
-            {"track_section": "TC2", "begin": 0, "end": 1000000, "direction": "START_TO_STOP"},
-            {"track_section": "TD1", "begin": 0, "end": 25000000, "direction": "START_TO_STOP"},
-            {"track_section": "TD3", "begin": 0, "end": 3000000, "direction": "START_TO_STOP"},
-            {"track_section": "TH0", "begin": 0, "end": 1000000, "direction": "START_TO_STOP"},
-            {"track_section": "TH1", "begin": 0, "end": 4386000, "direction": "START_TO_STOP"},
+            {
+                "track_section": "TA2",
+                "begin": 837034,
+                "end": 1950000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TA5",
+                "begin": 0,
+                "end": 50000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TA7",
+                "begin": 0,
+                "end": 10000000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TC2",
+                "begin": 0,
+                "end": 1000000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TD1",
+                "begin": 0,
+                "end": 25000000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TD3",
+                "begin": 0,
+                "end": 3000000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TH0",
+                "begin": 0,
+                "end": 1000000,
+                "direction": "START_TO_STOP",
+            },
+            {
+                "track_section": "TH1",
+                "begin": 0,
+                "end": 4386000,
+                "direction": "START_TO_STOP",
+            },
         ],
         "length": 45548966,
         "path_item_positions": [0, 45548966],
@@ -51,11 +91,16 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
 )
 
 
-def assert_track_ranges_are_equals(track_ranges: Sequence[Any], expected_track_ranges: Sequence[Any]):
+def assert_track_ranges_are_equals(
+    track_ranges: Sequence[Any], expected_track_ranges: Sequence[Any]
+):
     assert len(track_ranges) == len(expected_track_ranges)
 
     for i in range(len(track_ranges)):
-        assert track_ranges[i]["track_section"] == expected_track_ranges[i]["track_section"]
+        assert (
+            track_ranges[i]["track_section"]
+            == expected_track_ranges[i]["track_section"]
+        )
         assert track_ranges[i]["begin"] == expected_track_ranges[i]["begin"]
         assert track_ranges[i]["end"] == expected_track_ranges[i]["end"]
         assert track_ranges[i]["direction"] == expected_track_ranges[i]["direction"]
@@ -63,10 +108,16 @@ def assert_track_ranges_are_equals(track_ranges: Sequence[Any], expected_track_r
 
 def test_west_to_south_east_path(west_to_south_east_path: Path):
     assert west_to_south_east_path.status == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.status
-    assert west_to_south_east_path.length == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.length, rel=1e-3)
+    assert west_to_south_east_path.length == pytest.approx(
+        _EXPECTED_WEST_TO_SOUTH_EAST_PATH.length, rel=1e-3
+    )
     assert west_to_south_east_path.routes == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.routes
     assert west_to_south_east_path.blocks == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.blocks
-    assert west_to_south_east_path.path_item_positions == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.path_item_positions
+    assert (
+        west_to_south_east_path.path_item_positions
+        == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.path_item_positions
+    )
     assert_track_ranges_are_equals(
-        west_to_south_east_path.track_section_ranges, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.track_section_ranges
+        west_to_south_east_path.track_section_ranges,
+        _EXPECTED_WEST_TO_SOUTH_EAST_PATH.track_section_ranges,
     )

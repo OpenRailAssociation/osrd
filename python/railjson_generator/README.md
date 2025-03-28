@@ -97,17 +97,15 @@ poetry run pytest
 
 ## Linting
 
-Use pflake8 and pyright to check for style issues and potential errors.
 Use ruff and pyright to check for style issues and potential errors.
 
 ```sh
-$ poetry run pflake8 --config ./pyproject.toml
+$ poetry run ruff check
 $ poetry run pyright
 ```
 
-Use black and isort to fix formatting.
+Use ruff to fix formatting.
 
 ```sh
-$ poetry run black .
-$ poetry run isort .
+$ poetry run ruff format
 ```

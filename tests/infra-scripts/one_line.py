@@ -24,15 +24,21 @@ for i, track in enumerate(tracks):
 # Add links
 for first_track, second_track in zip(tracks[:-1], tracks[1:]):
     first_endpoint = first_track.begin() if first_track.inverted else first_track.end()
-    second_endpoint = second_track.end() if second_track.inverted else second_track.begin()
+    second_endpoint = (
+        second_track.end() if second_track.inverted else second_track.begin()
+    )
     builder.add_link(first_endpoint, second_endpoint)
 
 # Add detector and signals
 for track in tracks:
     detector = track.add_detector(position=500)
-    signal = track.add_signal(detector.position, ApplicableDirection.START_TO_STOP, is_route_delimiter=True)
+    signal = track.add_signal(
+        detector.position, ApplicableDirection.START_TO_STOP, is_route_delimiter=True
+    )
     signal.add_logical_signal("BAL", settings={"Nf": "true"})
-    signal = track.add_signal(detector.position, ApplicableDirection.STOP_TO_START, is_route_delimiter=True)
+    signal = track.add_signal(
+        detector.position, ApplicableDirection.STOP_TO_START, is_route_delimiter=True
+    )
     signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 # Build infra

@@ -5,6 +5,7 @@ This script generates an infrastructure of reasonable size containing all object
 For more information, and a diagram of this infrastructure, see:
 https://osrd.fr/en/docs/explanation/models/data-models-full-example/
 """
+
 from typing import Mapping, NamedTuple, Optional, Tuple
 
 from osrd_schemas.infra import LoadingGaugeType, Switch
@@ -67,7 +68,9 @@ def place_regular_signals_detectors(
             signal.add_logical_signal(signaling_system, settings={"Nf": "false"})
 
 
-def add_signal_on_ports(switch: Switch, ports: Mapping[str, Tuple[str, str]], signaling_system: str):
+def add_signal_on_ports(
+    switch: Switch, ports: Mapping[str, Tuple[str, str]], signaling_system: str
+):
     """Add signals and detectors to given ports.
     Args:
         ports: A dictionary of port names to (detector_label, signal_label) pairs.
@@ -78,8 +81,12 @@ def add_signal_on_ports(switch: Switch, ports: Mapping[str, Tuple[str, str]], si
 
     for port, (det_label, sig_label) in ports.items():
         switch.add_detector_on_port(port, DETECTOR_TO_SWITCH, label=det_label)
-        signal = switch.add_signal_on_port(port, SIGNAL_TO_SWITCH, label=sig_label, is_route_delimiter=True)
-        signal.add_logical_signal(signaling_system=signaling_system, settings={"Nf": "true"})
+        signal = switch.add_signal_on_port(
+            port, SIGNAL_TO_SWITCH, label=sig_label, is_route_delimiter=True
+        )
+        signal.add_logical_signal(
+            signaling_system=signaling_system, settings={"Nf": "true"}
+        )
 
 
 class ScenarioData(NamedTuple):
@@ -115,14 +122,26 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     # track sections
     ta0 = builder.add_track_section(length=2000, label="TA0", **V1, **west_parking)
     ta1 = builder.add_track_section(length=1950, label="TA1", **V2, **west_parking)
-    ta2 = builder.add_track_section(length=1950, label="TA2", track_name="A", track_number=3, **west_parking)
-    ta3 = builder.add_track_section(length=50, label="TA3", track_name="J1", track_number=4, **west_parking)
+    ta2 = builder.add_track_section(
+        length=1950, label="TA2", track_name="A", track_number=3, **west_parking
+    )
+    ta3 = builder.add_track_section(
+        length=50, label="TA3", track_name="J1", track_number=4, **west_parking
+    )
     ta4 = builder.add_track_section(length=50, label="TA4", **V2, **west_parking)
-    ta5 = builder.add_track_section(length=50, label="TA5", track_name="J2", track_number=3, **west_parking)
-    ta6 = builder.add_track_section(length=10000, label="TA6", **V1, **west_to_east_road)
-    ta7 = builder.add_track_section(length=10000, label="TA7", **V2, **west_to_east_road)
+    ta5 = builder.add_track_section(
+        length=50, label="TA5", track_name="J2", track_number=3, **west_parking
+    )
+    ta6 = builder.add_track_section(
+        length=10000, label="TA6", **V1, **west_to_east_road
+    )
+    ta7 = builder.add_track_section(
+        length=10000, label="TA7", **V2, **west_to_east_road
+    )
     # I create this track section here to be able to add points using it
-    tb0 = builder.add_track_section(length=3000, label="TB0", track_name="A", track_number=1, **south_west_parking)
+    tb0 = builder.add_track_section(
+        length=3000, label="TB0", track_name="A", track_number=1, **south_west_parking
+    )
     # switches
     pa0 = builder.add_point_switch(
         label="PA0",
@@ -138,7 +157,9 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         left=tb0.end(),
         right=ta2.end(),
     )
-    add_signal_on_ports(pa1, {"B1": ("DB0", "SB0"), "B2": ("DA1", "SA1")}, signaling_system)
+    add_signal_on_ports(
+        pa1, {"B1": ("DB0", "SB0"), "B2": ("DA1", "SA1")}, signaling_system
+    )
     pa1.set_coords(-0.37, LAT_1 - LAT_LINE_SPACE)
     pa2 = builder.add_point_switch(
         label="PA2",
@@ -146,7 +167,9 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         left=ta3.end(),
         right=ta0.end(),
     )
-    add_signal_on_ports(pa2, {"A": ("DA3", "SA3"), "B2": ("DA2", "SA2")}, signaling_system)
+    add_signal_on_ports(
+        pa2, {"A": ("DA3", "SA3"), "B2": ("DA2", "SA2")}, signaling_system
+    )
     pa2.set_coords(-0.365, LAT_0)
     pa3 = builder.add_point_switch(
         label="PA3",
@@ -164,8 +187,12 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     ta4.add_detector(label="DA8", position=ta4.length / 2)
     ta5.add_detector(label="DA9", position=ta5.length / 2)
     # Extra signals
-    place_regular_signals_detectors(ta6, "A6", signaling_system, Direction.START_TO_STOP, 200, -200)
-    place_regular_signals_detectors(ta7, "A7", signaling_system, Direction.STOP_TO_START, 200, -200)
+    place_regular_signals_detectors(
+        ta6, "A6", signaling_system, Direction.START_TO_STOP, 200, -200
+    )
+    place_regular_signals_detectors(
+        ta7, "A7", signaling_system, Direction.STOP_TO_START, 200, -200
+    )
     # Station
     west = builder.add_operational_point(label="West_station", trigram="WS", uic=2)
     west.add_part(ta0, 700)
@@ -192,19 +219,37 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     #  Around station B: South-West
     # ================================
     tb0.set_remaining_coords([(-0.4, 49.49), (-0.373, 49.49), (-0.37, 49.492)])
-    south_west = builder.add_operational_point(label="South_West_station", trigram="SWS", uic=1)
+    south_west = builder.add_operational_point(
+        label="South_West_station", trigram="SWS", uic=1
+    )
     south_west.add_part(tb0, 500)
     # ================================
     #  Around station C: Mid - West
     # ================================
     # track sections
-    tc0 = builder.add_track_section(length=1050, label="TC0", track_name="V1bis", track_number=3, **west_to_east_road)
+    tc0 = builder.add_track_section(
+        length=1050,
+        label="TC0",
+        track_name="V1bis",
+        track_number=3,
+        **west_to_east_road,
+    )
     tc1 = builder.add_track_section(length=1000, label="TC1", **V1, **west_to_east_road)
     tc2 = builder.add_track_section(length=1000, label="TC2", **V2, **west_to_east_road)
-    tc3 = builder.add_track_section(length=1050, label="TC3", track_name="V2bis", track_number=4, **west_to_east_road)
+    tc3 = builder.add_track_section(
+        length=1050,
+        label="TC3",
+        track_name="V2bis",
+        track_number=4,
+        **west_to_east_road,
+    )
     # I have to create them here in order to create switches
-    td0 = builder.add_track_section(length=25000, label="TD0", **V1, **west_to_east_road)
-    td1 = builder.add_track_section(length=25000, label="TD1", **V2, **west_to_east_road)
+    td0 = builder.add_track_section(
+        length=25000, label="TD0", **V1, **west_to_east_road
+    )
+    td1 = builder.add_track_section(
+        length=25000, label="TD1", **V2, **west_to_east_road
+    )
     # Switches
     pc0 = builder.add_point_switch(
         label="PC0",
@@ -270,10 +315,16 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         signaling_system,
     )
     pc3.set_coords(-0.296, LAT_1)
-    tc0.set_remaining_coords([(-0.309, LAT_0 + LAT_LINE_SPACE), (-0.297, LAT_0 + LAT_LINE_SPACE)])
-    tc3.set_remaining_coords([(-0.309, LAT_1 - LAT_LINE_SPACE), (-0.297, LAT_1 - LAT_LINE_SPACE)])
+    tc0.set_remaining_coords(
+        [(-0.309, LAT_0 + LAT_LINE_SPACE), (-0.297, LAT_0 + LAT_LINE_SPACE)]
+    )
+    tc3.set_remaining_coords(
+        [(-0.309, LAT_1 - LAT_LINE_SPACE), (-0.297, LAT_1 - LAT_LINE_SPACE)]
+    )
     # Station
-    mid_west = builder.add_operational_point(label="Mid_West_station", trigram="MWS", uic=3)
+    mid_west = builder.add_operational_point(
+        label="Mid_West_station", trigram="MWS", uic=3
+    )
     mid_west.add_part(tc0, 550)
     mid_west.add_part(tc1, 550)
     mid_west.add_part(tc2, 450)
@@ -284,9 +335,13 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     # track sections
     td2 = builder.add_track_section(length=2000, label="TD2", **V1, **west_to_east_road)
     td3 = builder.add_track_section(length=3000, label="TD3", **V2, **west_to_east_road)
-    te0 = builder.add_track_section(length=1500, label="TE0", **V1, **north_to_south_loop)
+    te0 = builder.add_track_section(
+        length=1500, label="TE0", **V1, **north_to_south_loop
+    )
     tf0 = builder.add_track_section(length=3, label="TF0", **V1, **north_to_south_loop)
-    tf1 = builder.add_track_section(length=6500, label="TF1", **V1, **north_to_south_loop)
+    tf1 = builder.add_track_section(
+        length=6500, label="TF1", **V1, **north_to_south_loop
+    )
     # switches
     pd0 = builder.add_crossing(
         label="PD0",
@@ -322,10 +377,16 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         signaling_system,
     )
     pd1.set_coords(-0.172, LAT_1)
-    place_regular_signals_detectors(td0, "D0", signaling_system, Direction.START_TO_STOP, 200, -200)
-    place_regular_signals_detectors(td1, "D1", signaling_system, Direction.STOP_TO_START, 200, -200)
+    place_regular_signals_detectors(
+        td0, "D0", signaling_system, Direction.START_TO_STOP, 200, -200
+    )
+    place_regular_signals_detectors(
+        td1, "D1", signaling_system, Direction.STOP_TO_START, 200, -200
+    )
     # Station
-    mid_east = builder.add_operational_point(label="Mid_East_station", trigram="MES", uic=4)
+    mid_east = builder.add_operational_point(
+        label="Mid_East_station", trigram="MES", uic=4
+    )
     mid_east.add_part(td0, 14000)
     mid_east.add_part(td1, 14000)
     # Slopes
@@ -345,9 +406,19 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     #  Around station E: North
     # ================================
     # track sections
-    te1 = builder.add_track_section(length=2000, label="TE1", track_name="V1bis", track_number=2, **north_to_south_loop)
-    te2 = builder.add_track_section(length=2050, label="TE2", **V1, **north_to_south_loop)
-    te3 = builder.add_track_section(length=2000, label="TE3", **V1, **north_to_south_loop)
+    te1 = builder.add_track_section(
+        length=2000,
+        label="TE1",
+        track_name="V1bis",
+        track_number=2,
+        **north_to_south_loop,
+    )
+    te2 = builder.add_track_section(
+        length=2050, label="TE2", **V1, **north_to_south_loop
+    )
+    te3 = builder.add_track_section(
+        length=2000, label="TE3", **V1, **north_to_south_loop
+    )
     tg0 = builder.add_track_section(length=1000, label="TG0", **V1, **west_to_east_road)
     # switches
     pe0 = builder.add_point_switch(
@@ -425,7 +496,9 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     tf1.set_remaining_coords([(-0.172, 49.47), (-0.167, 49.466), (-0.135, 49.466)])
     south = builder.add_operational_point(label="South_station", trigram="SS", uic=6)
     south.add_part(tf1, 4300)
-    place_regular_signals_detectors(tf1, "F1", signaling_system, min_offset=200, max_offset=4300)
+    place_regular_signals_detectors(
+        tf1, "F1", signaling_system, min_offset=200, max_offset=4300
+    )
     # Curves
     tf1.add_curve(begin=3100, end=4400, curve=9500)
     # ================================
@@ -434,16 +507,24 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     # track sections
     tg1 = builder.add_track_section(length=4000, label="TG1", **V1, **north_east_road)
     tg2 = builder.add_track_section(length=3000, label="TG2", **V2, **north_east_road)
-    tg3 = builder.add_track_section(length=50, label="TG3", track_name="J4", track_number=3, **north_east_parking)
-    tg4 = builder.add_track_section(length=2000, label="TG4", **V1, **north_east_parking)
-    tg5 = builder.add_track_section(length=2000, label="TG5", **V2, **north_east_parking)
+    tg3 = builder.add_track_section(
+        length=50, label="TG3", track_name="J4", track_number=3, **north_east_parking
+    )
+    tg4 = builder.add_track_section(
+        length=2000, label="TG4", **V1, **north_east_parking
+    )
+    tg5 = builder.add_track_section(
+        length=2000, label="TG5", **V2, **north_east_parking
+    )
     pg0 = builder.add_point_switch(
         label="PG0",
         base=tg1.end(),
         left=tg4.begin(),
         right=tg3.begin(),
     )
-    add_signal_on_ports(pg0, {"A": ("DG3", "SG3"), "B1": ("DG5", "SG5")}, signaling_system)
+    add_signal_on_ports(
+        pg0, {"A": ("DG3", "SG3"), "B1": ("DG5", "SG5")}, signaling_system
+    )
     pg0.set_coords(-0.1082, LAT_4)
     pg1 = builder.add_point_switch(
         label="PG1",
@@ -451,21 +532,29 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         left=tg2.end(),
         right=tg3.end(),
     )
-    add_signal_on_ports(pg1, {"A": ("DG6", "SG6"), "B1": ("DG4", "SG4")}, signaling_system)
+    add_signal_on_ports(
+        pg1, {"A": ("DG6", "SG6"), "B1": ("DG4", "SG4")}, signaling_system
+    )
     pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
     tg4.set_remaining_coords([(-0.09, LAT_4)])
     tg5.set_remaining_coords([(-0.09, LAT_4 - LAT_LINE_SPACE)])
     tg3.add_detector(label="DG7", position=tg3.length / 2)
-    north_east = builder.add_operational_point(label="North_East_station", trigram="NES", uic=7)
+    north_east = builder.add_operational_point(
+        label="North_East_station", trigram="NES", uic=7
+    )
     north_east.add_part(tg4, 1550)
     north_east.add_part(tg5, 1500)
-    place_regular_signals_detectors(tg1, "G1", signaling_system, min_offset=200, max_offset=-200)
+    place_regular_signals_detectors(
+        tg1, "G1", signaling_system, min_offset=200, max_offset=-200
+    )
     # ================================
     #  Around station H: South-East
     # ================================
     # track sections
     th0 = builder.add_track_section(length=1000, label="TH0", **V2, **west_to_east_road)
-    th1 = builder.add_track_section(length=5000, label="TH1", **V1, **south_east_parking)
+    th1 = builder.add_track_section(
+        length=5000, label="TH1", **V1, **south_east_parking
+    )
     place_regular_signals_detectors(th1, "H1", signaling_system, min_offset=200)
     # switches
     ph0 = builder.add_double_slip_switch(
@@ -522,41 +611,65 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
         ]
     )
     th0.set_remaining_coords([(-0.1346, LAT_1)])
-    th1.set_remaining_coords([(-0.115, 49.497), (-0.115, 49.487), (-0.11, 49.484), (-0.09, 49.484)])
+    th1.set_remaining_coords(
+        [(-0.115, 49.497), (-0.115, 49.487), (-0.11, 49.484), (-0.09, 49.484)]
+    )
     # Station
-    south_east = builder.add_operational_point(label="South_East_station", trigram="SES", uic=8)
+    south_east = builder.add_operational_point(
+        label="South_East_station", trigram="SES", uic=8
+    )
     south_east.add_part(th1, 4400)
     # ================================
     #  Speed sections
     # ================================
-    speed_0 = builder.add_speed_section(300 / 3.6, speed_limit_by_tag={"HLP": 250 / 3.6})
+    speed_0 = builder.add_speed_section(
+        300 / 3.6, speed_limit_by_tag={"HLP": 250 / 3.6}
+    )
     for track_section in builder.infra.track_sections:
-        speed_0.add_track_range(track_section, 0, track_section.length, ApplicableDirection.BOTH)
-    speed_1 = builder.add_speed_section(142 / 3.6, speed_limit_by_tag={"E32C": 100 / 3.6})
+        speed_0.add_track_range(
+            track_section, 0, track_section.length, ApplicableDirection.BOTH
+        )
+    speed_1 = builder.add_speed_section(
+        142 / 3.6, speed_limit_by_tag={"E32C": 100 / 3.6}
+    )
     speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
     speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
-    speed_2 = builder.add_speed_section(112 / 3.6, speed_limit_by_tag={"MA100": 80 / 3.6})
+    speed_2 = builder.add_speed_section(
+        112 / 3.6, speed_limit_by_tag={"MA100": 80 / 3.6}
+    )
     speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
     # ================================
     #  Electrifications
     # ================================
-    electrified_tracks_25000 = [t for t in builder.infra.track_sections if t not in {td1, ta0}]
-    builder.infra.electrifications.append(Electrification("electrification_25k", "25000V", electrified_tracks_25000))
-    builder.infra.electrifications.append(Electrification("electrification_1.5k", "1500V", [ta0]))
+    electrified_tracks_25000 = [
+        t for t in builder.infra.track_sections if t not in {td1, ta0}
+    ]
+    builder.infra.electrifications.append(
+        Electrification("electrification_25k", "25000V", electrified_tracks_25000)
+    )
+    builder.infra.electrifications.append(
+        Electrification("electrification_1.5k", "1500V", [ta0])
+    )
     # ================================
     #  Neutral sections
     # ================================
     lower_pantograph_section_1 = builder.add_neutral_section(lower_pantograph=True)
-    lower_pantograph_section_1.add_announcement_track_range(tg1, 3500, tg1.length, Direction.START_TO_STOP)
+    lower_pantograph_section_1.add_announcement_track_range(
+        tg1, 3500, tg1.length, Direction.START_TO_STOP
+    )
     lower_pantograph_section_1.add_track_range(tg4, 0, 500, Direction.START_TO_STOP)
     lower_pantograph_section_1.add_track_range(ta6, 0, 10, Direction.START_TO_STOP)
     lower_pantograph_section_2 = builder.add_neutral_section(lower_pantograph=True)
-    lower_pantograph_section_2.add_announcement_track_range(ta0, 1850, 1960, Direction.START_TO_STOP)
+    lower_pantograph_section_2.add_announcement_track_range(
+        ta0, 1850, 1960, Direction.START_TO_STOP
+    )
     lower_pantograph_section_2.add_track_range(ta0, 1960, 2000, Direction.START_TO_STOP)
     keep_pantograph_section_3 = builder.add_neutral_section(lower_pantograph=False)
     keep_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_STOP)
     keep_pantograph_section_4 = builder.add_neutral_section(lower_pantograph=False)
-    keep_pantograph_section_4.add_announcement_track_range(ta0, 1990, 2000, Direction.STOP_TO_START)
+    keep_pantograph_section_4.add_announcement_track_range(
+        ta0, 1990, 2000, Direction.STOP_TO_START
+    )
     keep_pantograph_section_4.add_track_range(ta0, 1850, 1990, Direction.STOP_TO_START)
     # ================================
     # Produce the railjson
@@ -582,7 +695,8 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     for power_class, boundaries in ep_boundaries.items():
         for i, (start, end) in enumerate(boundaries):
             ep = external_inputs.add_electrical_profile(
-                value=EP_VALUES[min(i, len(boundaries) - i - 1)], power_class=power_class
+                value=EP_VALUES[min(i, len(boundaries) - i - 1)],
+                power_class=power_class,
             )
             ep.add_track_range(ta6, start * 1000, end * 1000)
 
@@ -590,7 +704,10 @@ def create_small_infra(signaling_system: str) -> ScenarioData:
     ep_o.add_track_range(ta0, 0, ta0.length)
     # We voluntarily leave ta0 empty for other power classes
 
-    other_eps = [external_inputs.add_electrical_profile(value="25000V", power_class=str(i)) for i in range(1, 6)]
+    other_eps = [
+        external_inputs.add_electrical_profile(value="25000V", power_class=str(i))
+        for i in range(1, 6)
+    ]
     for track_section in electrified_tracks_25000:
         if track_section is ta6:
             continue

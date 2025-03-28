@@ -4,6 +4,7 @@
 This script generates an infrastructure containing ERTMS ETCS Level 2 signals.
 This is derived from small_infra.
 """
+
 from railjson_generator import get_output_dir
 from small_infra_creator import create_small_infra
 

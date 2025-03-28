@@ -100,7 +100,9 @@ def _get_train_ids(editoast_url: str, scenario: Scenario) -> List[int]:
     page = 1
     res = []
     while page is not None:
-        r = requests.get(f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}")
+        r = requests.get(
+            f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}"
+        )
         r.raise_for_status()
         parsed = r.json()
         for schedule in parsed["results"]:
@@ -120,7 +122,9 @@ def _build_timetable_range(editoast_url, scenario) -> TimetableTimeRange:
     for train_id in train_ids:
         r = requests.get(f"{editoast_url}/train_schedule/{train_id}")
         r.raise_for_status()
-        start_time = datetime.datetime.strptime(r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ")
+        start_time = datetime.datetime.strptime(
+            r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ"
+        )
         start_time = start_time.astimezone(datetime.timezone.utc)
         train_times.append(start_time)
     if not train_times:
@@ -130,7 +134,9 @@ def _build_timetable_range(editoast_url, scenario) -> TimetableTimeRange:
             end=t,
         )
     else:
-        return TimetableTimeRange(start=min(train_times), end=max(train_times) + datetime.timedelta(hours=3))
+        return TimetableTimeRange(
+            start=min(train_times), end=max(train_times) + datetime.timedelta(hours=3)
+        )
 
 
 def _make_op_list(editoast_url, infra) -> Iterable[int]:
@@ -142,7 +148,12 @@ def _make_op_list(editoast_url, infra) -> Iterable[int]:
         yield op["extensions"]["identifier"]["uic"]
 
 
-def _test_stdcm(editoast_url: str, op_list: List[int], scenario: Scenario, timetable_range: TimetableTimeRange):
+def _test_stdcm(
+    editoast_url: str,
+    op_list: List[int],
+    scenario: Scenario,
+    timetable_range: TimetableTimeRange,
+):
     """
     Run a single test instance
     """
@@ -151,13 +162,16 @@ def _test_stdcm(editoast_url: str, op_list: List[int], scenario: Scenario, timet
         rolling_stock = _get_random_rolling_stock(editoast_url)
         stdcm_payload = _make_stdcm_payload(op_list, rolling_stock.id, timetable_range)
         r = requests.post(
-            editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
+            editoast_url
+            + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
             json=stdcm_payload,
             timeout=_TIMEOUT,
         )
         if r.status_code // 100 != 2:
             is_json = "application/json" in r.headers.get("Content-Type", "")
-            raise STDCMException(error=r.json() if is_json else r.content, status_code=r.status_code)
+            raise STDCMException(
+                error=r.json() if is_json else r.content, status_code=r.status_code
+            )
     except STDCMException as e:
         e.payload = stdcm_payload
         raise e
@@ -166,7 +180,9 @@ def _test_stdcm(editoast_url: str, op_list: List[int], scenario: Scenario, timet
     print("test PASSED")
 
 
-def _make_stdcm_payload(op_list: List[int], rolling_stock: int, timetable_range: TimetableTimeRange) -> Dict:
+def _make_stdcm_payload(
+    op_list: List[int], rolling_stock: int, timetable_range: TimetableTimeRange
+) -> Dict:
     """
     Generate a random stdcm payload
     """

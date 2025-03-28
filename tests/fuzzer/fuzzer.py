@@ -71,7 +71,14 @@ def run(
         time.sleep(0.1)
 
         try:
-            _run_test(infra_graph, editoast_url, scenario, infra_name, prelude, rolling_stock_name)
+            _run_test(
+                infra_graph,
+                editoast_url,
+                scenario,
+                infra_name,
+                prelude,
+                rolling_stock_name,
+            )
         except Exception as e:
             if log_folder is None:
                 raise e
@@ -79,7 +86,12 @@ def run(
                 print(e)
                 log_folder.mkdir(exist_ok=True)
                 with open(str(log_folder / f"{i}.json"), "w") as f:
-                    print(json.dumps(e.args[0], indent=4, default=lambda o: "<not serializable>"), file=f)
+                    print(
+                        json.dumps(
+                            e.args[0], indent=4, default=lambda o: "<not serializable>"
+                        ),
+                        file=f,
+                    )
 
         # Let's reset the scenario (empty timetable) so we can keep a
         # manageable/reproducible state.
@@ -148,7 +160,9 @@ class _TrackEndpoint:
 class _InfraGraph:
     RJSInfra: Dict
     tracks: Dict[str, Dict] = field(default_factory=dict)
-    links: Dict[_TrackEndpoint, List[_TrackEndpoint]] = field(default_factory=lambda: defaultdict(list))
+    links: Dict[_TrackEndpoint, List[_TrackEndpoint]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
 
     def link(self, a: _TrackEndpoint, b: _TrackEndpoint):
         self.links[a].append(b)
@@ -210,7 +224,9 @@ def _run_test(
     path = _make_valid_path(infra)
 
     if random.randint(0, 1) == 1:
-        _test_new_train(editoast_url, scenario, rolling_stock.name, infra_name, path, prelude)
+        _test_new_train(
+            editoast_url, scenario, rolling_stock.name, infra_name, path, prelude
+        )
     else:
         _test_stdcm(editoast_url, scenario, rolling_stock.id, infra_name, path, prelude)
 
@@ -241,7 +257,9 @@ def _test_new_train(
         )
 
     sim_id = r.json()[0]["id"]
-    r = _get_with_timeout(editoast_url + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}")
+    r = _get_with_timeout(
+        editoast_url + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}"
+    )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(
             _ErrorType.RESULT,
@@ -268,14 +286,21 @@ def _test_stdcm(
     print("testing stdcm")
     stdcm_payload = _make_stdcm_payload(path, rolling_stock)
     r = _post_with_timeout(
-        editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}", json=stdcm_payload
+        editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
+        json=stdcm_payload,
     )
     if r.status_code // 100 != 2:
         content = r.content.decode("utf-8")
         if r.status_code // 100 == 4 and "No path could be found" in content:
             print("ignore: no path found")
             return
-        _make_error(_ErrorType.STDCM, r, infra_name, stdcm_payload=stdcm_payload, prelude=prelude)
+        _make_error(
+            _ErrorType.STDCM,
+            r,
+            infra_name,
+            stdcm_payload=stdcm_payload,
+            prelude=prelude,
+        )
     print("test PASSED")
 
 
@@ -309,7 +334,9 @@ def _get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> _RollingSt
     :param rolling_stock_name: name of the rolling stock
     :return: ID the rolling stock
     """
-    return _RollingStock(rolling_stock_name, conftest.get_rolling_stock(editoast_url, rolling_stock_name))
+    return _RollingStock(
+        rolling_stock_name, conftest.get_rolling_stock(editoast_url, rolling_stock_name)
+    )
 
 
 def _get_random_rolling_stock(editoast_url: str) -> _RollingStock:
@@ -358,7 +385,9 @@ def _random_set_element(s: Iterable[U]) -> U:
     return random.choice(list(s))
 
 
-def _make_steps_on_track(track: Dict, endpoint: _Endpoint, number: float) -> List[float]:
+def _make_steps_on_track(
+    track: Dict, endpoint: _Endpoint, number: float
+) -> List[float]:
     """
     Generates a random list of steps on a route
     :return: Iterable of (edge id, edge offset, offset from the start)
@@ -416,7 +445,9 @@ def _make_path(infra: _InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
             tmp_path_length += track["length"]
 
         # Find next track
-        neighbors: List[_TrackEndpoint] = infra.links[_TrackEndpoint(track_id, endpoint)]
+        neighbors: List[_TrackEndpoint] = infra.links[
+            _TrackEndpoint(track_id, endpoint)
+        ]
         if len(neighbors) == 0:
             break
         neighbor: _TrackEndpoint = _random_set_element(neighbors)
@@ -464,7 +495,9 @@ def _convert_stop(stop: Tuple[str, float], i: int) -> Dict:
 def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
-    _raise_if_error(_delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/"))
+    _raise_if_error(
+        _delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/")
+    )
 
     # Create a timetable
     r = _post_with_timeout(editoast_url + "/timetable/", json={})
@@ -523,7 +556,9 @@ def _make_random_time():
     """
     Generate a random datetime. All values will be within the same 24h
     """
-    start = datetime.datetime(year=2024, month=1, day=1, tzinfo=datetime.timezone.utc)  # Arbitrary date
+    start = datetime.datetime(
+        year=2024, month=1, day=1, tzinfo=datetime.timezone.utc
+    )  # Arbitrary date
     date = start + datetime.timedelta(seconds=(random.randint(0, 3600 * 24)))
     return date.isoformat()
 
@@ -564,7 +599,9 @@ def _raise_if_error(response: Response) -> Response:
     Similar to response.raise_for_status(), but includes the response content in the message
     """
     if response.status_code // 100 != 2:
-        raise RuntimeError(f"status code: {response.status_code}, content: {response.content.decode('UTF-8')}")
+        raise RuntimeError(
+            f"status code: {response.status_code}, content: {response.content.decode('UTF-8')}"
+        )
     return response
 
 
@@ -582,7 +619,9 @@ if __name__ == "__main__":
         try:
             _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME)
         except ValueError:
-            conftest.create_rolling_stock(conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None)
+            conftest.create_rolling_stock(
+                conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None
+            )
     run(
         _EDITOAST_URL,
         new_scenario,

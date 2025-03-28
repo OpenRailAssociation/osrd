@@ -33,12 +33,16 @@ def _load_infra(editoast_url: str, infra_id: int):
         raise RuntimeError(f"Infra load {r.status_code}: {r.content}")
 
 
-def _schedule_with_payload(editoast_url: str, payload: Dict, accept_400: bool, scenario: Scenario) -> Optional[int]:
+def _schedule_with_payload(
+    editoast_url: str, payload: Dict, accept_400: bool, scenario: Scenario
+) -> Optional[int]:
     """
     Send a schedule request with the given payload, raises an error if the request failed (unless we accept 400s).
     Returns the schedule id.
     """
-    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedules/", json=payload)
+    r = requests.post(
+        editoast_url + f"/timetable/{scenario.timetable}/train_schedules/", json=payload
+    )
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and accept_400:
             return None
@@ -50,7 +54,9 @@ def _stdcm_with_payload(editoast_url: str, payload: Dict, scenario: Scenario):
     """
     Send a stdcm request with the given payload, raises an error if the request failed.
     """
-    url = editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}"
+    url = (
+        editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}"
+    )
     r = requests.post(url, json=payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
@@ -67,9 +73,13 @@ def _check_result(editoast_url: str, schedule_id: int, infra_id: int):
     """
     Get the /result/ of the given train id. The function doesn't return anything, it just raises any error
     """
-    r = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation/?infra_id={infra_id}")
+    r = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation/?infra_id={infra_id}"
+    )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
+        raise RuntimeError(
+            f"Schedule error {r.status_code}: {r.content}, id={schedule_id}"
+        )
 
 
 def _apply_prelude(prelude: List, editoast_url: str, scenario: Scenario):
@@ -80,7 +90,9 @@ def _apply_prelude(prelude: List, editoast_url: str, scenario: Scenario):
         assert "schedule_payload" in train
 
         schedule_payload = train["schedule_payload"]
-        schedule_id = _schedule_with_payload(editoast_url, schedule_payload, accept_400=False, scenario=scenario)
+        schedule_id = _schedule_with_payload(
+            editoast_url, schedule_payload, accept_400=False, scenario=scenario
+        )
 
         _check_result(editoast_url, schedule_id, scenario.infra)
 
@@ -106,7 +118,9 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
 
     payload = fuzzer_output["schedule_payload"]
-    schedule_id = _schedule_with_payload(EDITOAST_URL, payload, stop_after_schedule, scenario)
+    schedule_id = _schedule_with_payload(
+        EDITOAST_URL, payload, stop_after_schedule, scenario
+    )
     if stop_after_schedule:
         return
 
@@ -115,4 +129,6 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
 
 @pytest.mark.parametrize("file_name", REGRESSION_TESTS_JSON_FILES)
 def test_regressions(file_name: str, small_scenario: Scenario, fast_rolling_stock: int):
-    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario, fast_rolling_stock)
+    _reproduce_test(
+        REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario, fast_rolling_stock
+    )

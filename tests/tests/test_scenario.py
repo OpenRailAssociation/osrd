@@ -71,7 +71,10 @@ def test_get_scenario(small_scenario: Scenario):
         del res["project"]
         del res["study"]
         scenario = _ScenarioResponse(
-            **res, project=_Project(**project), study=_Study(**study), electrical_profile_set_id=None
+            **res,
+            project=_Project(**project),
+            study=_Study(**study),
+            electrical_profile_set_id=None,
         )
         assert scenario.name == "_@Test integration scenario"
     else:
