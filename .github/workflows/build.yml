@@ -249,7 +249,7 @@ jobs:
       - name: Install railjson_generator dependencies
         run: |
           cd python/railjson_generator
-          poetry install --extras=check
+          poetry sync --extras=check --no-interaction
 
       - name: Ruff
         run: |
@@ -338,7 +338,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -347,7 +347,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd tests
-          poetry install
+          poetry sync --extras=check --no-interaction
       - name: Ruff
         run: |
           cd tests
@@ -373,7 +373,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd python/osrd_schemas
-          poetry install --extras=check
+          poetry sync --extras=check --no-interaction
       - name: Ruff
         run: |
           cd python/osrd_schemas
@@ -413,7 +413,7 @@ jobs:
       - name: Check infra_schema.json sync
         run: |
           cd python/osrd_schemas
-          poetry install --no-interaction --no-root
+          poetry sync --no-interaction
           poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
           diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
 
@@ -871,7 +871,7 @@ jobs:
           docker load --input ./osrd-core.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -880,7 +880,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd tests
-          poetry install
+          poetry sync --no-interaction
 
       - name: Startup the test infrastructure
         id: start_integration_worker
