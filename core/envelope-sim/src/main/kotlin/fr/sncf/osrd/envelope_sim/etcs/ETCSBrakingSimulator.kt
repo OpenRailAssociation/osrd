@@ -59,7 +59,6 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         endsOfAuthority: Collection<EndOfAuthority>
     ): Envelope {
         if (endsOfAuthority.isEmpty()) return envelope
-        // TODO: compute curve at SvL and intersect
         return addBrakingCurvesAtEOAs(envelope, context, endsOfAuthority)
     }
 }
