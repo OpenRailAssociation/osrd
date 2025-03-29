@@ -20,12 +20,86 @@ import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-/**
- * This typealias defines a function that can be used as a heuristic for an A* pathfinding. It takes
- * an edge, and offset on this edge, and a number of passed steps as input, and returns an
- * estimation of the remaining time needed to get to the end.
- */
-typealias STDCMAStarHeuristic = (STDCMEdge, Offset<Block>?, Int) -> Double
+data class STDCMAStarHeuristic(
+    val blockInfra: BlockInfra,
+    val steps: List<STDCMStep>,
+    val remainingTimeEstimations: List<MutableMap<BlockId, Double>>,
+    val mrspBuilder: CachedBlockMRSPBuilder,
+    val bestTravelTime: Double,
+) {
+    /**
+     * This function defines a function that can be used as a heuristic for an A* pathfinding. It
+     * takes an edge, and offset on this edge, and a number of passed steps as input, and returns an
+     * estimation of the remaining time needed to get to the end.
+     */
+    fun invoke(edge: STDCMEdge, offset: Offset<Block>?, nPassedSteps: Int): Double {
+        if (nPassedSteps >= steps.size - 1) return 0.0
+        val lookahead = edge.infraExplorer.getLookahead()
+        val currentBlock = edge.block
+        val allBlocks = mutableListOf(currentBlock)
+        allBlocks.addAll(lookahead)
+
+        // We don't consider the time of the last lookahead block to avoid issues
+        // if it contains the destination, and we don't need it (the destination is
+        // already locked-in).
+
+        // Account for the steps that will be passed in the lookahead
+        val expectedIndex =
+            getExpectedStepIndex(
+                allBlocks.dropLast(1),
+                offset ?: edge.blockOffsetFromEdge(edge.length),
+                nPassedSteps
+            )
+        if (expectedIndex >= remainingTimeEstimations.size) return 0.0
+
+        val timeAfterStartOfLastBlock =
+            remainingTimeEstimations[expectedIndex][allBlocks.last()]
+                ?: return Double.POSITIVE_INFINITY
+
+        // Compute the time it takes from the current point until the start
+        // of the last block of the lookahead, then from that point the destination.
+        var timeUntilStartOfLastBlock = 0.0
+        for (j in 0 until allBlocks.size - 1) {
+            timeUntilStartOfLastBlock += mrspBuilder.getBlockTime(allBlocks[j], null)
+        }
+        val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset)
+        timeUntilStartOfLastBlock -= timeSinceFirstBlock
+
+        val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
+
+        return remainingTime
+    }
+
+    /** Returns the numbers of passed waypoints at the end of the block list */
+    private fun getExpectedStepIndex(
+        blocks: List<BlockId>,
+        firstOffset: Offset<Block>,
+        currentIndex: Int
+    ): Int {
+        var stepIndex = currentIndex
+        var blockIndex = 0
+        var currentOffset = firstOffset
+        while (true) {
+            if (stepIndex >= steps.size - 2 || blockIndex >= blocks.size) {
+                return stepIndex
+            }
+            val nextLocations = steps[stepIndex + 1].locations
+            val locationOnBlock =
+                nextLocations.firstOrNull {
+                    it.edge == blocks[blockIndex] && it.offset >= currentOffset
+                }
+            if (locationOnBlock != null) {
+                // Step passed on the block
+                stepIndex++
+                currentOffset = locationOnBlock.offset
+            } else {
+                // Move on to the next block
+                blockIndex++
+                currentOffset = Offset(0.meters)
+            }
+        }
+    }
+}
 /**
  * This file implements the A* heuristic used by STDCM.
  *
@@ -51,7 +125,7 @@ class STDCMHeuristicBuilder(
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     @WithSpan(value = "Initializing STDCM heuristic", kind = SpanKind.SERVER)
-    fun build(): Pair<STDCMAStarHeuristic, Double> {
+    fun build(): STDCMAStarHeuristic {
         logger.info("Start building STDCM heuristic...")
         // One map per number of reached pathfinding step
         // maps[n][block] = min time it takes to go from the start of the block to the destination,
@@ -90,42 +164,13 @@ class STDCMHeuristicBuilder(
             "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.toInt()} seconds"
         )
 
-        val heuristic: STDCMAStarHeuristic = res@{ edge, offset, nPassedSteps ->
-            if (nPassedSteps >= steps.size - 1) return@res 0.0
-            val lookahead = edge.infraExplorer.getLookahead()
-            val currentBlock = edge.block
-            val allBlocks = mutableListOf(currentBlock)
-            allBlocks.addAll(lookahead)
-
-            // We don't consider the time of the last lookahead block to avoid issues
-            // if it contains the destination, and we don't need it (the destination is
-            // already locked-in).
-
-            // Account for the steps that will be passed in the lookahead
-            val expectedIndex =
-                getExpectedStepIndex(
-                    allBlocks.subList(0, allBlocks.size - 1),
-                    offset ?: edge.blockOffsetFromEdge(edge.length),
-                    nPassedSteps
-                )
-
-            val timeAfterStartOfLastBlock =
-                remainingTimeEstimations[expectedIndex][allBlocks.last()]
-                    ?: return@res Double.POSITIVE_INFINITY
-
-            // Compute the time it takes from the current point until the start
-            // of the last block of the lookahead, then from that point the destination.
-            var timeUntilStartOfLastBlock = 0.0
-            for (j in 0 until allBlocks.size - 1) timeUntilStartOfLastBlock +=
-                mrspBuilder.getBlockTime(allBlocks[j], null)
-            val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset)
-            timeUntilStartOfLastBlock -= timeSinceFirstBlock
-
-            val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
-
-            return@res remainingTime
-        }
-        return Pair(heuristic, bestTravelTime)
+        return STDCMAStarHeuristic(
+            blockInfra,
+            steps,
+            remainingTimeEstimations,
+            mrspBuilder,
+            bestTravelTime
+        )
     }
 
     /** Describes a pending block, ready to be added to the cached blocks. */
@@ -197,35 +242,5 @@ class STDCMHeuristicBuilder(
             newIndex,
             remainingTimeWithStops + mrspBuilder.getBlockTime(block, offset)
         )
-    }
-
-    /** Returns the numbers of passed waypoints at the end of the block list */
-    private fun getExpectedStepIndex(
-        blocks: List<BlockId>,
-        firstOffset: Offset<Block>,
-        currentIndex: Int
-    ): Int {
-        var stepIndex = currentIndex
-        var blockIndex = 0
-        var currentOffset = firstOffset
-        while (true) {
-            if (stepIndex >= steps.size - 2 || blockIndex >= blocks.size) {
-                return stepIndex
-            }
-            val nextLocations = steps[stepIndex + 1].locations
-            val locationOnBlock =
-                nextLocations.firstOrNull {
-                    it.edge == blocks[blockIndex] && it.offset >= currentOffset
-                }
-            if (locationOnBlock != null) {
-                // Step passed on the block
-                stepIndex++
-                currentOffset = locationOnBlock.offset
-            } else {
-                // Move on to the next block
-                blockIndex++
-                currentOffset = Offset(0.meters)
-            }
-        }
     }
 }

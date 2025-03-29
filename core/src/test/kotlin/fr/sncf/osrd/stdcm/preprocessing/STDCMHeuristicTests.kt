@@ -74,7 +74,6 @@ class STDCMHeuristicTests {
                     SimpleRollingStock.STANDARD_TRAIN,
                 )
                 .build()
-                .first
 
         assertEquals(
             400.0 - 50.0,
@@ -154,7 +153,6 @@ class STDCMHeuristicTests {
                     SimpleRollingStock.STANDARD_TRAIN,
                 )
                 .build()
-                .first
 
         for (i in 1 until blocks.size) {
             val lookahead = mutableListOf<BlockId>()

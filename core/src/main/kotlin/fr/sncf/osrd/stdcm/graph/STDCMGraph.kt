@@ -62,7 +62,7 @@ class STDCMGraph(
         assert(standardAllowance !is FixedTime) {
             "Standard allowance cannot be a flat time for STDCM trains"
         }
-        val heuristicBuilderResult =
+        remainingTimeEstimator =
             STDCMHeuristicBuilder(
                     fullInfra.blockInfra,
                     fullInfra.rawInfra,
@@ -72,8 +72,7 @@ class STDCMGraph(
                     temporarySpeedLimitManager,
                 )
                 .build()
-        remainingTimeEstimator = heuristicBuilderResult.first
-        bestPossibleTime = heuristicBuilderResult.second
+        bestPossibleTime = remainingTimeEstimator.bestTravelTime
     }
 
     /**
