@@ -1,29 +1,28 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
+import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
+import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
+import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.TimeData
-import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.*
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.cactoos.list.ListOf
-import org.junit.jupiter.api.Disabled
 
 class STDCMHeuristicTests {
 
-    @Disabled // TODO
     @Test
     fun multipleStepsTest() {
         /*
@@ -79,34 +78,32 @@ class STDCMHeuristicTests {
                 )
                 .build()
 
-        assertEquals(
-            400.0 - 50.0,
-            getLocationRemainingTime(infra, blocks[0], 50.meters, 0, heuristic)
-        )
-        assertEquals(
-            400.0 - 85.0,
-            getLocationRemainingTime(infra, blocks[0], 85.meters, 0, heuristic)
-        )
+        // Current block = 0
+        var explorer =
+            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+
+        assertEquals(400.0 - 50.0, getLocationRemainingTime(infra, explorer, 50.meters, heuristic))
+        assertEquals(400.0 - 85.0, getLocationRemainingTime(infra, explorer, 85.meters, heuristic))
+
+        // Current block = 1
+        explorer = explorer.cloneAndExtendLookahead().single().moveForward()
         assertEquals(
             400.0 - 100.0 - 25.0,
-            getLocationRemainingTime(infra, blocks[1], 25.meters, 1, heuristic)
+            getLocationRemainingTime(infra, explorer, 25.meters, heuristic)
         )
         assertEquals(
             400.0 - 100.0 - 75.0,
-            getLocationRemainingTime(infra, blocks[1], 75.meters, 2, heuristic)
+            getLocationRemainingTime(infra, explorer, 75.meters, heuristic)
         )
-        assertEquals(
-            400.0 - 200.0,
-            getLocationRemainingTime(infra, blocks[2], 0.meters, 3, heuristic)
-        )
-        assertEquals(0.0, getLocationRemainingTime(infra, blocks[3], null, 3, heuristic))
-        assertEquals(
-            Double.POSITIVE_INFINITY,
-            getLocationRemainingTime(infra, blocks[3], 0.meters, 0, heuristic)
-        )
+
+        // Current block = 2
+        explorer = explorer.cloneAndExtendLookahead().single().moveForward()
+        assertEquals(400.0 - 200.0, getLocationRemainingTime(infra, explorer, 0.meters, heuristic))
+
+        explorer = explorer.cloneAndExtendLookahead().single().moveForward()
+        assertEquals(0.0, getLocationRemainingTime(infra, explorer, null, heuristic))
     }
 
-    @Disabled // TODO
     @Test
     fun lookaheadTest() {
         /*
@@ -159,35 +156,45 @@ class STDCMHeuristicTests {
                 )
                 .build()
 
+        var explorer =
+            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+
         for (i in 1 until blocks.size) {
-            val lookahead = mutableListOf<BlockId>()
-            for (j in 1 ..< i) {
-                lookahead.add(blocks[j])
-            }
+            explorer =
+                explorer
+                    .cloneAndExtendLookahead()
+                    .filter { candidate -> candidate.getLookahead().all { blocks.contains(it) } }
+                    .single()
+
             // While the lookahead is on the right path, the remaining distance shouldn't change
             assertEquals(
                 400.0 - 50.0 - 50.0,
                 getLocationRemainingTime(
                     infra,
-                    blocks[0],
+                    explorer,
                     50.meters,
-                    0,
                     heuristics,
-                    lookahead = lookahead
                 )
             )
         }
 
+        var wrongPathExplorer =
+            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+        for (i in 0 ..< 2) {
+            wrongPathExplorer =
+                wrongPathExplorer
+                    .cloneAndExtendLookahead()
+                    .filter { explorer -> explorer.getLookahead().last() != blocks[1] }
+                    .single()
+        }
         // Lookahead on the wrong path, no possible result
         assertEquals(
             Double.POSITIVE_INFINITY,
             getLocationRemainingTime(
                 infra,
-                blocks[0],
+                wrongPathExplorer,
                 50.meters,
-                0,
                 heuristics,
-                lookahead = listOf(alternativeBlocks.first())
             )
         )
     }
@@ -198,28 +205,10 @@ class STDCMHeuristicTests {
      */
     private fun getLocationRemainingTime(
         infra: DummyInfra,
-        block: BlockId,
-        nodeOffsetOnEdge: Distance?,
-        nbPassedSteps: Int,
+        infraExplorer: InfraExplorer,
+        offset: Distance?,
         heuristic: STDCMAStarHeuristic,
-        lookahead: List<BlockId> = listOf()
     ): Double {
-        var explorer =
-            initInfraExplorerWithEnvelope(
-                    infra.fullInfra(),
-                    PathfindingEdgeLocationId(block, Offset(0.meters)),
-                    SimpleRollingStock.STANDARD_TRAIN
-                )
-                .first()
-
-        // Extend the lookahead to include the blocks given as parameters
-        while (!lookahead.all { explorer.getLookahead().contains(it) }) {
-            explorer =
-                explorer.cloneAndExtendLookahead().first { newExplorer ->
-                    newExplorer.getLookahead().all { lookahead.contains(it) }
-                }
-        }
-
         val defaultTimeData =
             TimeData(
                 earliestReachableTime = 0.0,
@@ -230,11 +219,25 @@ class STDCMHeuristicTests {
                 stopTimeData = listOf(),
                 maxFirstDepartureDelaying = 0.0,
             )
+        val withEnvelope =
+            InfraExplorerWithEnvelopeImpl(
+                infraExplorer,
+                appendOnlyLinkedListOf(),
+                SpacingRequirementAutomaton(
+                    infra,
+                    infra.fullInfra().loadedSignalInfra,
+                    infra,
+                    infra.fullInfra().signalingSimulator,
+                    IncrementalRequirementEnvelopeAdapter(STANDARD_TRAIN, null, false),
+                    infraExplorer.getIncrementalPath(),
+                ),
+                STANDARD_TRAIN,
+            )
         val defaultNode =
             STDCMNode(
                 defaultTimeData,
                 0.0,
-                explorer,
+                withEnvelope,
                 null,
                 Offset(0.meters),
                 null,
@@ -245,8 +248,8 @@ class STDCMHeuristicTests {
         val defaultEdge =
             STDCMEdge(
                 defaultTimeData,
-                explorer,
-                explorer,
+                withEnvelope,
+                withEnvelope,
                 defaultNode,
                 Offset(0.meters),
                 false,
@@ -257,18 +260,18 @@ class STDCMHeuristicTests {
                 null,
             )
 
-        val dummySteps =
-            List(nbPassedSteps) {
-                STDCMStep(ListOf(PathfindingEdgeLocationId(BlockId(0U), Offset.zero())))
-            }
-        val dummyStepTracker = StepTracker(dummySteps)
-        dummyStepTracker.exploreBlockRange(BlockId(0U), Offset.zero(), Offset.zero())
-        dummyStepTracker.moveForward(BlockId(0U), Offset.zero(), Offset.zero())
+        val stepTracker = infraExplorer.getStepTracker().clone()
+        for (block in infraExplorer.getPredecessorBlocks().toList()) {
+            stepTracker.moveForward(block, Offset.zero(), infra.getBlockLength(block))
+        }
+        val blockOffset =
+            offset?.let { Offset(it) } ?: infra.getBlockLength(infraExplorer.getCurrentBlock())
+        stepTracker.moveForward(infraExplorer.getCurrentBlock(), Offset.zero(), blockOffset)
 
         return heuristic.invoke(
             defaultEdge,
-            nodeOffsetOnEdge?.let { Offset(it) },
-            dummyStepTracker,
+            offset?.let { Offset(it) },
+            stepTracker,
         )
     }
 }
