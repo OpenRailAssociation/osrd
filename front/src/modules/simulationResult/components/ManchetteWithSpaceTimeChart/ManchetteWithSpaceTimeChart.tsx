@@ -102,6 +102,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
 
+  const [previousPanning, setPreviousPanning] = useState(false);
+
   useEffect(() => {
     setTmpSelectedTrain(selectedTrainScheduleId);
   }, [selectedTrainScheduleId]);
@@ -301,7 +303,12 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }
 
     // if not dragging, we check if we should start dragging
+    // Only a mouse hover that starts already over a path should register
+    // if we start panning, and then the mouse hovers over the path,
+    // it should continue just sliding the chart, not start dragging the train path
     if (
+      isPanning &&
+      !previousPanning &&
       !zoomMode &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
@@ -323,6 +330,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
     // if no hovered train, we pan normally
     spaceTimeChartProps.onPan(payload);
+
+    if (isPanning !== previousPanning) {
+      setPreviousPanning(isPanning);
+    }
   };
 
   const waypointMenuData = useWaypointMenu(waypointsPanelData);
