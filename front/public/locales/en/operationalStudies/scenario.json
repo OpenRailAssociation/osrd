@@ -124,7 +124,5 @@
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
   "Routing": "Itineraries",
-  "Spacing": "Spacing",
-  "uniqueTrainSchedule": "Unique train schedule",
-  "stepXmin": "Step {{minutes}}min"
+  "Spacing": "Spacing"
 }

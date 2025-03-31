@@ -13,10 +13,10 @@ import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
-  DEFAULT_PACED_TRAINRUN_FREQUENCY_IDS,
+  DEFAULT_PACED_TRAIN_FREQUENCY_IDS,
   DEFAULT_TRAINRUN_TIME_CATEGORY,
   UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
-  UNIQUE_TRAINRUN_FREQUENCY_ID,
+  TRAIN_SCHEDULE_FREQUENCY_ID,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
@@ -180,10 +180,10 @@ export const getSavedMacroNodes = async (
 export const getTrainrunTimeCategoryFromFrequency = (
   trainrunFrequency: TrainrunFrequency
 ): TrainrunTimeCategory => {
-  if (trainrunFrequency.id === UNIQUE_TRAINRUN_FREQUENCY_ID) {
+  if (trainrunFrequency.id === TRAIN_SCHEDULE_FREQUENCY_ID) {
     return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
   }
-  if (!DEFAULT_PACED_TRAINRUN_FREQUENCY_IDS.includes(trainrunFrequency.id)) {
+  if (!DEFAULT_PACED_TRAIN_FREQUENCY_IDS.includes(trainrunFrequency.id)) {
     return CUSTOM_TRAINRUN_TIME_CATEGORY;
   }
   return DEFAULT_TRAINRUN_TIME_CATEGORY;
@@ -211,7 +211,7 @@ export const getTrainrunFrequencyFromTimetableItem = (
   state: MacroEditorState
 ): TrainrunFrequency => {
   if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-    return getFrequencyFromFrequencyId(state, UNIQUE_TRAINRUN_FREQUENCY_ID);
+    return getFrequencyFromFrequencyId(state, TRAIN_SCHEDULE_FREQUENCY_ID);
   }
   const stepInMinutes = Duration.parse(timetableItem.paced.step).total('minute');
   const trainrunFrequency = state.trainrunFrequencies.find((f) => f.frequency === stepInMinutes);

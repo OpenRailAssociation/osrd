@@ -52,7 +52,7 @@ const getNgeTrainrunFrequencies = (state: MacroEditorState, t: TFunction): Train
           order: 0, // temporary order
           frequency: stepInMinutes,
           offset: 0,
-          name: t('stepXmin', { minutes: stepInMinutes }),
+          name: t('operationalStudies/macroEditor/stepXmin', { minutes: stepInMinutes }),
           shortName: `${stepInMinutes}`,
           linePatternRef: '60',
         };
