@@ -818,6 +818,9 @@ jobs:
             npm run i18n-checker
           exit $(docker wait front-i18n-checker)
 
+      - name: Check for i18n keys order
+        run: ./front/scripts/i18n-order-checker.sh
+
       - name: Execute tests within container
         run: |
           docker run --name=front-test --net=host -v $PWD/output:/output \
