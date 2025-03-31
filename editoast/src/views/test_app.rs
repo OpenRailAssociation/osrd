@@ -19,7 +19,6 @@ use editoast_common::tracing::TracingConfig;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::executor::block_on;
-use futures::future::BoxFuture;
 use opentelemetry_sdk::error::OTelSdkResult;
 use opentelemetry_sdk::trace::SpanData;
 use opentelemetry_sdk::trace::SpanExporter;
@@ -61,7 +60,7 @@ impl NoopSpanExporter {
 }
 
 impl SpanExporter for NoopSpanExporter {
-    fn export(&mut self, _: Vec<SpanData>) -> BoxFuture<'static, OTelSdkResult> {
+    fn export(&self, _: Vec<SpanData>) -> impl std::future::Future<Output = OTelSdkResult> + Send {
         Box::pin(std::future::ready(Ok(())))
     }
 }
