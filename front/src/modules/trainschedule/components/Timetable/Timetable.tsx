@@ -68,10 +68,13 @@ const Timetable = ({
     setShowTrainDetails(!showTrainDetails);
   };
 
-  const removeAndUnselectTrains = useCallback((timetableItemIds: TimetableItemId[]) => {
-    removeTimetableItems(timetableItemIds);
-    setSelectedTimetableItemIds([]);
-  }, []);
+  const removeAndUnselectTrains = useCallback(
+    (timetableItemIds: TimetableItemId[]) => {
+      removeTimetableItems(timetableItemIds);
+      setSelectedTimetableItemIds([]);
+    },
+    [removeTimetableItems, setSelectedTimetableItemIds]
+  );
 
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
