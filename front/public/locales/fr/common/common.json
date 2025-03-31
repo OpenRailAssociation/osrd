@@ -11,17 +11,17 @@
     "zoom-in": "Agrandir",
     "zoom-out": "Réduire"
   },
-  "navigation": {
-    "next": "Suivant",
-    "previous": "Précédent",
-    "goBack": "Retour à  la page précédente",
-    "goHome": "Retour à la page d'accueil"
-  },
-  "begin": "Début",
-  "end": "Fin",
-  "value": "Valeur",
   "authorization": {
     "permission": "Permission",
     "permissionDenied": "Vous n'avez pas la permission de réaliser cette action"
-  }
+  },
+  "begin": "Début",
+  "end": "Fin",
+  "navigation": {
+    "goBack": "Retour à  la page précédente",
+    "goHome": "Retour à la page d'accueil",
+    "next": "Suivant",
+    "previous": "Précédent"
+  },
+  "value": "Valeur"
 }

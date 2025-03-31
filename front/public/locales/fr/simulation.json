@@ -42,6 +42,7 @@
   "resetTimer": "Réinitialiser le compteur",
   "rotate": "Pivoter le graphique",
   "simplify": "Simplification des données",
+  "simulationSheet": "Fiche de simulation",
   "speedLimitComposition": "Composition",
   "speedSpaceChart": "Graphique Espace Vitesse",
   "speedSpaceSettings": {
@@ -57,7 +58,6 @@
     "temporarySpeedLimits": "Limites temporaires de vit.",
     "tractionStatus": "Statut de la traction"
   },
-  "simulationSheet": "Fiche de simulation",
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Lieu",

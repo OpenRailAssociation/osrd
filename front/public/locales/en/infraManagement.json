@@ -20,10 +20,10 @@
   "createInfra": "Create",
   "deleteConfirm": "Do you wish to delete the infrastructure?",
   "errorMessages": {
+    "noEmptyName": "Please fill out a name",
     "noExistingInfra": "No infrastructure available",
     "unableToRetrieveInfra": "Impossible to load infrastructure",
-    "unableToRetrieveInfraList": "Impossible to load infrastructure list",
-    "noEmptyName": "Please fill out a name"
+    "unableToRetrieveInfraList": "Impossible to load infrastructure list"
   },
   "goToEditionMode": "Edit",
   "goToStandardMode": "Back to the selection",
@@ -37,9 +37,9 @@
   "infraDeleted": "The {{name}} infrastructure has been deleted.",
   "infraManagement": "Infrastructures management",
   "infraName": "Infrastructure name",
-  "infrasFound_zero": "No infrastructure found",
   "infrasFound_one": "{{count}} infrastructure found",
   "infrasFound_other": "{{count}} infrastructures found",
+  "infrasFound_zero": "No infrastructure found",
   "infrastructure": "Infrastructure",
   "locked": "Locked",
   "no": "No",

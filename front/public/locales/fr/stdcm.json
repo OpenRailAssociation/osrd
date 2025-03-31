@@ -3,32 +3,32 @@
   "arriveAt": "Arriver à {{ time }}",
   "cancelRequest": "Annuler la requête",
   "consist": {
-    "consist": "Convoi",
     "compositionCode": "code de composition",
-    "length": "Longueur",
-    "tonnage": "Tonnage",
-    "maxSpeed": "Vitesse max.",
-    "tractionEngine": "Engin de traction",
-    "towedRollingStock": "Matériel remorqué",
+    "consist": "Convoi",
     "errors": {
-      "totalMass": {
+      "maxSpeed": {
         "negative": "Doit être positif.",
-        "range": "Le tonnage total doit être compris entre {{low}} et {{high}}t"
+        "range": "La vitesse max. doit être comprise entre {{low}} et {{high}}km/h"
       },
       "totalLength": {
         "negative": "Doit être positif.",
         "range": "La longueur totale doit être comprise entre {{low}} et {{high}}m"
       },
-      "maxSpeed": {
+      "totalMass": {
         "negative": "Doit être positif.",
-        "range": "La vitesse max. doit être comprise entre {{low}} et {{high}}km/h"
+        "range": "Le tonnage total doit être compris entre {{low}} et {{high}}t"
       }
     },
     "info": {
-      "totalMass": "Le poids a été mis à jour en fonction des nouvelles données de convoi.",
+      "maxSpeed": "La vitesse maximale a été mise à jour en fonction des nouvelles données de convoi.",
       "totalLength": "La longueur a été mise à jour en fonction des nouvelles données de convoi.",
-      "maxSpeed": "La vitesse maximale a été mise à jour en fonction des nouvelles données de convoi."
-    }
+      "totalMass": "Le poids a été mis à jour en fonction des nouvelles données de convoi."
+    },
+    "length": "Longueur",
+    "maxSpeed": "Vitesse max.",
+    "tonnage": "Tonnage",
+    "towedRollingStock": "Matériel remorqué",
+    "tractionEngine": "Engin de traction"
   },
   "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",
   "debug": {
@@ -39,8 +39,8 @@
   "find": "Trouver",
   "form": {
     "datePickerErrors": {
-      "invalidInput": "Saississez une date au format dd/mm/yy",
-      "invalidDate": "Renseignez une date entre le {{startDate}} et le {{endDate}}"
+      "invalidDate": "Renseignez une date entre le {{startDate}} et le {{endDate}}",
+      "invalidInput": "Saississez une date au format dd/mm/yy"
     },
     "incompleteForm": "Formulaire incomplet",
     "viaNotDefined": "Au moins une localisation n'est pas renseignée"
@@ -59,8 +59,8 @@
     "writeButton": "Écrire"
   },
   "noConfigurationFound": {
-    "title": "Un problème de configuration vous empêche de faire une recherche",
-    "text": "Veuillez contacter l'équipe de maintenance pour qu'elle puisse vous remettre sur les rails."
+    "text": "Veuillez contacter l'équipe de maintenance pour qu'elle puisse vous remettre sur les rails.",
+    "title": "Un problème de configuration vous empêche de faire une recherche"
   },
   "noCorrespondingResults": "Aucun résultat ne correspond à votre recherche.",
   "notificationTitle": "Périmètre actuel du démonstrateur : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
@@ -70,39 +70,35 @@
   },
   "pleaseWait": "Veuillez patientez…",
   "simulation": {
+    "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
     "calculatingSimulation": "Calcul en cours...",
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
-    "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
     "modifySearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
     "pendingSimulation": "simulation en cours",
     "results": {
       "changeCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
+      "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
+      "conflictsTitle": "Voici les problèmes rencontrés au moment du calcul sur le chemin le plus court :",
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
-      "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
-      "simulationUpstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>après</underline> l’heure de départ a été augmentée.",
-      "simulationsWithConflicts": "Deux\u00A0autres\u00A0simulations ont\u00A0été\u00A0calculées automatiquement sur\u00A0la\u00A0base de\u00A0cette\u00A0configuration.",
       "formatCreationDate": "{{day}}/{{month}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "et joignez ce document à votre demande GESICO.",
       "notFound": "Aucun passage n'a été trouvé pour cette configuration",
-      "conflictsTitle": "Voici les problèmes rencontrés au moment du calcul sur le chemin le plus court :",
-      "trackConflict": "conflit avec un autre sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
-      "trackConflictSameDay": "conflit avec un sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}",
       "remainingTrackConflicts": "{{count}} autres conflits avec d'autres sillons",
       "remainingTrackConflicts_one": "un autre conflit avec un autre sillon",
       "remainingWorkConflicts": "{{count}} autres travaux en conflit",
       "remainingWorkConflicts_one": "un autre conflit avec des travaux",
-      "workConflictSameDay": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}",
-      "workConflict": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
-      "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "retainThisSimulation": "Retenir cette simulation",
+      "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
       "simulationName": {
-        "withOutputs": "Simulation n°{{id}}",
-        "withoutOutputs": "Pas de capacité"
+        "withoutOutputs": "Pas de capacité",
+        "withOutputs": "Simulation n°{{id}}"
       },
       "simulationSelected": "Vous avez retenu cette simulation",
+      "simulationsWithConflicts": "Deux autres simulations ont été calculées automatiquement sur la base de cette configuration.",
+      "simulationUpstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>après</underline> l’heure de départ a été augmentée.",
       "startNewQuery": "Démarrez une nouvelle requête",
       "startNewQueryFromCurrent": "Démarrez une nouvelle requête à partir de celle-ci",
       "status": {
@@ -110,6 +106,8 @@
         "errorMessage": "Nous sommes désolés de ne pas avoir pu traiter votre demande. L’équipe LMR a été notifiée et prendra connaissance de la situation dès que possible.",
         "failed": "Un problème technique est survenu"
       },
+      "trackConflict": "conflit avec un autre sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
+      "trackConflictSameDay": "conflit avec un sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}",
       "upgrade": {
         "arrivalIncompatible": "Heure arrivée incompatible",
         "helpUs": "Aidez-nous à améliorer {{stdcmName}}",
@@ -117,7 +115,9 @@
         "reason": "Cette simulation ne répond pas à vos besoin car ...",
         "startIncompatible": "Heure départ incompatible",
         "unqualifiedDriver": "Conducteur non habilité"
-      }
+      },
+      "workConflict": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
+      "workConflictSameDay": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}"
     },
     "stopCalculation": "Arrêter"
   },
@@ -129,13 +129,13 @@
     "infraNotLoaded": "Infrastructure en cours de chargement",
     "missingFields": {
       "destination": "la destination",
+      "maxSpeed": "la vitesse maximale du convoi",
       "origin": "l'origine",
       "timeDestination": "l'heure d'arrivée à la destination",
       "timeOrigin": "l'heure de départ à l'origine",
-      "tractionEngine": "l'engin de traction",
-      "totalMass": "le poids total du convoi",
       "totalLength": "la longueur totale du convoi",
-      "maxSpeed": "la vitesse maximale du convoi"
+      "totalMass": "le poids total du convoi",
+      "tractionEngine": "l'engin de traction"
     },
     "missingInformations": "Informations manquantes pour le calcul :",
     "missingLocation": "Localisation manquante",
@@ -165,8 +165,8 @@
     "stopFor": "Temps d'arrêt minimum",
     "stopType": {
       "driverSwitch": "relève conducteur",
-      "passageTime": "passage",
       "overtake": "dépassement",
+      "passageTime": "passage",
       "serviceStop": "arrêt de service"
     },
     "time": "Heure",

@@ -1,23 +1,26 @@
 {
-  "editScenario": "Szenario bearbeiten",
+  "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
+  "conflictsCount_one": "1 Konflikt",
+  "conflictsCount_other": "{{count}} Konflikte",
+  "conflictsCount_zero": "Keine Konflikte",
   "description": {
-    "electricalProfileWithName": "Bahnstromprofile: {{name}} | ID{{id}}",
-    "electricalProfileWithId": "Bahnstromprofile: ID{{id}}"
+    "electricalProfileWithId": "Bahnstromprofile: ID{{id}}",
+    "electricalProfileWithName": "Bahnstromprofile: {{name}} | ID{{id}}"
   },
   "displayTrainsWithDetails": "Zugdetails anzeigen/verbergen",
+  "editScenario": "Szenario bearbeiten",
   "electricalProfileSet": "Bahnstromprofil-Satz",
   "errorMessages": {
     "error": "Ein Fehler ist aufgetreten",
     "hardErrorInfra": "Das Netz enthält Fehler und kann ohne vorherige Korrektur nicht benutzt werden.",
     "softErrorInfra": "Die Anwendung ist nicht verfügbar, ein Serverfehler ist aufgetreten, bitte versuchen Sie es später erneut.",
     "unableToCreateScenarioMessage": "Szenario erstellen nicht möglich.",
-    "unableToLoadInfra": "Ladefehler, Neustart in Aufbau ({{reloadCount}})",
-    "unableToUpdateScenarioMessage": "Szenario ändern nicht möglich.",
     "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich.",
-    "unableToDuplicateATrain": "Zug duplizieren nicht möglich."
+    "unableToDuplicateATrain": "Zug duplizieren nicht möglich.",
+    "unableToLoadInfra": "Ladefehler, Neustart in Aufbau ({{reloadCount}})",
+    "unableToUpdateScenarioMessage": "Szenario ändern nicht möglich."
   },
   "filterPlaceholder": "Filter, Tags",
-  "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
   "infraLoadingState": "{{step}}/3",
   "infrastructure": "Netz",
   "lessDetails": "Weniger Details",
@@ -32,10 +35,11 @@
   "pacedTrain_one": "1 Dienstleistung",
   "pacedTrain_other": "{{count}} Dienstleistungen",
   "pacedTrain_zero": "Keine Dienstleistung",
+  "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(pacedTrain, { 'count': {{totalPacedTrainCount}} }) und {{trainCount}}/$t(train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
   "pacedTrainCount_one": "1/$t(pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
   "pacedTrainCount_other": "{{count}}/$t(pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
   "pacedTrainCount_zero": "$t(pacedTrain, { 'count': {{totalCount}} })",
-  "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(pacedTrain, { 'count': {{totalPacedTrainCount}} }) und {{trainCount}}/$t(train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
+  "Routing": "Reiserouten",
   "scenarioCancel": "Abbrechen",
   "scenarioCreateButton": "Szenario erstellen",
   "scenarioCreationTitle": "Szenario erstellen",
@@ -52,6 +56,7 @@
   "scenarioTags": "Tags",
   "scenarioUpdated": "Änderung erfolgreich!",
   "scenarioUpdatedDetails": "Szenario {{ name }} ist geändert worden.",
+  "Spacing": "Abstand",
   "timetable": {
     "addTrainScheduleOrPacedTrain": "Hinzufügen",
     "advancedFilterLabel": "Schienenfahrzeug",
@@ -61,9 +66,9 @@
     "copy": "Kopieren",
     "delete": "Löschen",
     "deleteSelection": "Ausgewählte Züge löschen",
+    "duplicate": "Duplizieren",
     "export": "Exportieren",
     "exportSelection": "Ausgewählte Züge exportieren",
-    "duplicate": "Duplizieren",
     "filterLabel": "Name, Label",
     "importTrainSchedule": "Importieren",
     "invalid": {
@@ -103,15 +108,10 @@
     "validityFilter": "Gültigkeit der Züge"
   },
   "toggleTimetable": "Fahrplan umschalten",
-  "trainCount_one": "1/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
-  "trainCount_other": "{{count}}/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
-  "trainCount_zero": "$t(train, { 'count': {{totalCount}} })",
   "train_one": "1 Zug",
   "train_other": "{{count}} Züge",
   "train_zero": "Kein Zug",
-  "conflictsCount_one": "1 Konflikt",
-  "conflictsCount_other": "{{count}} Konflikte",
-  "conflictsCount_zero": "Keine Konflikte",
-  "Routing": "Reiserouten",
-  "Spacing": "Abstand"
+  "trainCount_one": "1/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
+  "trainCount_other": "{{count}}/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
+  "trainCount_zero": "$t(train, { 'count': {{totalCount}} })"
 }

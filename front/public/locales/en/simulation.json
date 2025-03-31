@@ -42,6 +42,7 @@
   "resetTimer": "Reset timer",
   "rotate": "Rotate the chart",
   "simplify": "Data simplification",
+  "simulationSheet": "Simulation sheet",
   "speedLimitComposition": "Composition",
   "speedSpaceChart": "Speed Space Chart",
   "speedSpaceSettings": {
@@ -57,7 +58,6 @@
     "temporarySpeedLimits": "Temporary speed limits",
     "tractionStatus": "Traction status"
   },
-  "simulationSheet": "Simulation sheet",
   "start": "Departure",
   "stop": "Arrival",
   "stopPlace": "Place",

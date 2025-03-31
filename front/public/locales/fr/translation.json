@@ -15,6 +15,12 @@
     "edit": "Éditer",
     "erase": "Effacer",
     "error": "Une erreur est survenue",
+    "failure": {
+      "save": {
+        "text": "Vos modifications n'ont pas été publiées",
+        "title": "Echec de l'enregistrement des modifications"
+      }
+    },
     "filter": "Filtrer",
     "help": "Aide",
     "help-display": "Afficher l'aide",
@@ -32,53 +38,49 @@
     "selected": "déjà sélectionné",
     "settings": "Paramètres",
     "sort": "Tri",
-    "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
-    "train(s)": "train(s)",
-    "validate": "Valider",
-    "yes": "Oui",
-    "zoom-in": "Zoomer",
-    "zoom-out": "Dézoomer",
-    "zoom-reset": "Réinitialiser le zoom",
     "success": {
       "save": {
-        "title": "Modifications enregistrées",
-        "text": "Vos modifications ont été publiées"
+        "text": "Vos modifications ont été publiées",
+        "title": "Modifications enregistrées"
       }
     },
-    "failure": {
-      "save": {
-        "title": "Echec de l'enregistrement des modifications",
-        "text": "Vos modifications n'ont pas été publiées"
-      }
-    },
+    "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
+    "train(s)": "train(s)",
     "units": {
       "day": "j",
       "hour": "h",
       "km": "km",
       "minute": "min"
-    }
+    },
+    "validate": "Valider",
+    "yes": "Oui",
+    "zoom-in": "Zoomer",
+    "zoom-out": "Dézoomer",
+    "zoom-reset": "Réinitialiser le zoom"
   },
   "Editor": {
+    "directions": {
+      "BOTH": "Les deux",
+      "START_TO_STOP": "Départ vers arrivée",
+      "STOP_TO_START": "Arrivée vers départ"
+    },
     "entities": {
       "errors-linked": "Anomalies liées"
-    },
-    "directions": {
-      "START_TO_STOP": "Départ vers arrivée",
-      "STOP_TO_START": "Arrivée vers départ",
-      "BOTH": "Les deux"
     },
     "errors": {
       "length-number-and-required": "La distance est un champs numérique requis",
       "length-out-of-sync-with-geometry": "La distance renseignée est trop éloignée de celle de la géométrie (Doit être compris entre {{min}} et {{max}})"
     },
     "infra-errors": {
-      "label": {
-        "title_other": "{{count}} anomalies",
-        "title_zero": "Aucune anomalie",
-        "title_one": "{{count}} anomalie",
-        "title-with-filter_other": "{{count}} anomalies sur {{total}}",
-        "title-with-filter_zero": "aucune anomalie sur {{total}}",
-        "title-with-filter_one": "{{count}} anomalie sur {{total}}"
+      "corrector-modal": {
+        "create-actions": "{{creation_count}} créations d’objets",
+        "delete-actions": "{{deletion_count}} suppressions d’objets",
+        "loading-loader": "Calcul des corrections possibles",
+        "saving-loader": "Corrections en cours d'application sur l’infrastructure",
+        "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
+        "title": "Correcteur automatique d’anomalies",
+        "total-fixes_zero": "Aucune correction trouvée",
+        "update-actions": "{{update_count}} modifications d’objets existants"
       },
       "error-level": {
         "all": "Tout",
@@ -88,101 +90,99 @@
       "error-type": {
         "all": "Tout",
         "duplicated_group": {
-          "name": "Duplication configuration d’aiguille",
-          "description": "Le type d’aiguille « {{obj_id}} » contient un doublon de configuration « {{original_group_path}} »"
+          "description": "Le type d’aiguille « {{obj_id}} » contient un doublon de configuration « {{original_group_path}} »",
+          "name": "Duplication configuration d’aiguille"
         },
         "empty_object": {
-          "name": "Objet vide",
-          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » vide"
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » vide",
+          "name": "Objet vide"
         },
         "invalid_group": {
-          "name": "Position de l'aiguille invalide",
-          "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{switch_type}} » qui n’existe pas"
+          "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{switch_type}} » qui n’existe pas",
+          "name": "Position de l'aiguille invalide"
         },
         "invalid_reference": {
-          "name": "Référence invalide",
-          "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas"
+          "description": "L’object « {{obj_id}} » référence l’objet « {{reference.obj_id}} » qui n’existe pas",
+          "name": "Référence invalide"
         },
         "invalid_route": {
-          "name": "Itinéraire invalide",
-          "description": "La route « {{obj_id}} » est invalide, le chemin demandé n’est pas consistant"
+          "description": "La route « {{obj_id}} » est invalide, le chemin demandé n’est pas consistant",
+          "name": "Itinéraire invalide"
         },
         "invalid_switch_ports": {
-          "name": "Branche d’aiguille ou de nœud invalide",
-          "description": "L’aiguille/le nœud « {{obj_id}} » présente une branche qui n’est pas compatible avec son type d’aiguille/nœud (qui n’existe pas dans son type d’aiguille/nœud)"
-        },
-        "missing_route": {
-          "name": "Itinéraire manquant",
-          "description": "La voie « {{obj_id}} » n’a aucun itinéraire associé"
+          "description": "L’aiguille/le nœud « {{obj_id}} » présente une branche qui n’est pas compatible avec son type d’aiguille/nœud (qui n’existe pas dans son type d’aiguille/nœud)",
+          "name": "Branche d’aiguille ou de nœud invalide"
         },
         "missing_buffer_stop": {
-          "name": "Heurtoir manquant",
-          "description": "L'extrémité « {{endpoint}} » de la voie « {{obj_id}} » n'a pas de heurtoir"
+          "description": "L'extrémité « {{endpoint}} » de la voie « {{obj_id}} » n'a pas de heurtoir",
+          "name": "Heurtoir manquant"
         },
-        "object_out_of_path": {
-          "name": "Objet en dehors de l'itinéraire",
-          "description": "L’aiguille/le nœud ou le détecteur « {{obj_id}} » de l’itineraire « {{reference.obj_id}} » n’est pas contenu/contenue dans le chemin correspondant"
-        },
-        "odd_buffer_stop_location": {
-          "name": "Position d'heurtoir étrange",
-          "description": "L'heurtoir « {{obj_id}} » se trouve à une position étrange"
-        },
-        "out_of_range": {
-          "name": "Valeur invalide",
-          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle [{{expected_range}}]."
-        },
-        "overlapping_speed_sections": {
-          "name": "Superposition de limites de vitesse",
-          "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »"
-        },
-        "overlapping_switches": {
-          "name": "Superposition d’aiguilles/nœuds",
-          "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
-        },
-        "overlapping_electrifications": {
-          "name": "Superposition de caténaires",
-          "description": "La caténaire « {{obj_id}} » se superpose à la caténaire « {{reference.obj_id}} »"
-        },
-        "unknown_port_name": {
-          "name": "Nom de branche inconnu",
-          "description": "L’aiguille/le noeud « {{obj_id}} » présente la branche « {{port_name}} » qui n’est pas existante"
-        },
-        "unused_port": {
-          "name": "Branche non utilisée",
-          "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type"
+        "missing_route": {
+          "description": "La voie « {{obj_id}} » n’a aucun itinéraire associé",
+          "name": "Itinéraire manquant"
         },
         "node_endpoints_not_unique": {
-          "name": "Extrémité de voie de nœud non unique",
-          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »"
+          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »",
+          "name": "Extrémité de voie de nœud non unique"
+        },
+        "object_out_of_path": {
+          "description": "L’aiguille/le nœud ou le détecteur « {{obj_id}} » de l’itineraire « {{reference.obj_id}} » n’est pas contenu/contenue dans le chemin correspondant",
+          "name": "Objet en dehors de l'itinéraire"
+        },
+        "odd_buffer_stop_location": {
+          "description": "L'heurtoir « {{obj_id}} » se trouve à une position étrange",
+          "name": "Position d'heurtoir étrange"
+        },
+        "out_of_range": {
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle [{{expected_range}}].",
+          "name": "Valeur invalide"
+        },
+        "overlapping_electrifications": {
+          "description": "La caténaire « {{obj_id}} » se superpose à la caténaire « {{reference.obj_id}} »",
+          "name": "Superposition de caténaires"
+        },
+        "overlapping_speed_sections": {
+          "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »",
+          "name": "Superposition de limites de vitesse"
+        },
+        "overlapping_switches": {
+          "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies",
+          "name": "Superposition d’aiguilles/nœuds"
+        },
+        "unknown_port_name": {
+          "description": "L’aiguille/le noeud « {{obj_id}} » présente la branche « {{port_name}} » qui n’est pas existante",
+          "name": "Nom de branche inconnu"
+        },
+        "unused_port": {
+          "description": "La branche « {{port_name}} » déclarée dans le type d’aiguille/nœud « {{obj_id}} » n’est pas utilisée dans les configurations de ce type",
+          "name": "Branche non utilisée"
         }
       },
       "infra-locked": "Attention, vous ne pourrez pas sauvegarder de modification.",
       "infra-readonly": "Attention, vous êtes en lecture seule sur cette infra",
+      "label": {
+        "title-with-filter_one": "{{count}} anomalie sur {{total}}",
+        "title-with-filter_other": "{{count}} anomalies sur {{total}}",
+        "title-with-filter_zero": "aucune anomalie sur {{total}}",
+        "title_one": "{{count}} anomalie",
+        "title_other": "{{count}} anomalies",
+        "title_zero": "Aucune anomalie"
+      },
       "list": {
         "filter-type": "Type d'anomalie",
+        "goto-error": "Sélectionner et viualiser sur la carte",
         "total-all": "{{count}} erreurs et avertissements trouvés",
         "total-all_one": "Une erreur ou un avertissement trouvé",
         "total-all_zero": "Aucune erreur ni avertissement trouvé",
-        "total-warnings": "{{count}} avertissements trouvés",
-        "total-warnings_zero": "Aucun avertissement trouvé",
-        "total-warnings_one": "Un avertissement trouvés",
         "total-errors": "{{count}} erreurs trouvées",
         "total-errors_one": "Une erreur trouvée",
         "total-errors_zero": "Aucune erreur trouvée",
-        "goto-error": "Sélectionner et viualiser sur la carte"
+        "total-warnings": "{{count}} avertissements trouvés",
+        "total-warnings_one": "Un avertissement trouvés",
+        "total-warnings_zero": "Aucun avertissement trouvé"
       },
       "modal": {
         "title": "Anomalies de l'infrastructure {{id}}"
-      },
-      "corrector-modal": {
-        "title": "Correcteur automatique d’anomalies",
-        "loading-loader": "Calcul des corrections possibles",
-        "saving-loader": "Corrections en cours d'application sur l’infrastructure",
-        "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
-        "create-actions": "{{creation_count}} créations d’objets",
-        "update-actions": "{{update_count}} modifications d’objets existants",
-        "delete-actions": "{{deletion_count}} suppressions d’objets",
-        "total-fixes_zero": "Aucune correction trouvée"
       }
     },
     "item-statuses": {
@@ -191,28 +191,28 @@
     },
     "layers": {
       "buffer_stops": "Heurtoirs",
-      "electrifications": "Électrification",
       "detectors": "Détecteurs",
+      "electrifications": "Électrification",
       "errors": "Erreurs",
+      "neutral_sections": "BP/CC",
+      "operational_points": "Points remarquables",
+      "platforms": "Quais",
       "psl-psl_signs": "Limitations permanentes de vitesse",
-      "sncf_psl": "Limitations permanentes de vitesse",
       "routes": "Itinéraires",
       "signals": "Signaux",
-      "switches": "Aiguillages",
-      "track_sections": "Sections de voie",
-      "speed_sections": "Vitesses de ligne",
+      "sncf_psl": "Limitations permanentes de vitesse",
       "speed_limits": "Vitesses de ligne",
-      "platforms": "Quais",
-      "neutral_sections": "BP/CC",
-      "operational_points": "Points remarquables"
+      "speed_sections": "Vitesses de ligne",
+      "switches": "Aiguillages",
+      "track_sections": "Sections de voie"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
       "layer-selected-items_one": "Un élément sélectionné",
       "layer-selected-items_other": "{{count}} éléments sélectionnés",
+      "noSpeedLimitByTag": "Aucun code de composition",
       "selection-warning_one": "Un élément a été désélectionné.",
-      "selection-warning_other": "{{count}} éléments ont été désélectionnés.",
-      "noSpeedLimitByTag": "Aucun code de composition"
+      "selection-warning_other": "{{count}} éléments ont été désélectionnés."
     },
     "linear-metadata": {
       "help": "Ce composant vous permet de visualiser et modifier un habillage linéaire. Vous pouvez zoomer dans la visualisation via les boutons prévus à cet effet ou avec la molette de la souris, et vous déplacer via un drag'n'drop. Pour modifier la taille d'un segment, il vous suffit de cliquer dessus, le formulaire d'édition s'affichera en dessous. Vous pouvez aussi cliquer sur une bordure d'un segment, et tout en gardant le doigt appuyé, déplacer la bordure avec la sourie.",
@@ -223,22 +223,22 @@
     },
     "nav": {
       "choose-infra": "Choisissez une infrastructure",
-      "infra-errors-list": "Gestion et affichage des anomalies",
       "infra-error-corrector": "Correcteur automatique d’anomalies",
-      "toggle-layers": "Choisir les types d'éléments à afficher",
+      "infra-errors-list": "Gestion et affichage des anomalies",
+      "map-layers": "Paramètres cartographiques",
       "osrd-layers": "Couches de données",
       "speed-limits": "Limitations de vitesse par code de composition",
-      "map-layers": "Paramètres cartographiques"
+      "toggle-layers": "Choisir les types d'éléments à afficher"
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
-      "Electrification": "Électrification",
       "Detector": "Détecteur",
+      "Electrification": "Électrification",
       "Route": "Itinéraire",
       "Signal": "Signal",
+      "SpeedSection": "Vitesse limite",
       "Switch": "Aiguillage",
-      "TrackSection": "Section de voie",
-      "SpeedSection": "Vitesse limite"
+      "TrackSection": "Section de voie"
     },
     "tools": {
       "buffer-stop-edition": {
@@ -251,24 +251,6 @@
         },
         "label": "Outil \"Heurtoir\""
       },
-      "electrification-edition": {
-        "actions": {
-          "confirm-delete-electrification": "Êtes-vous sûr(e) de vouloir supprimer l'électrification ?",
-          "delete-electrification": "Supprimer l'électrification",
-          "new-electrification": "Créer une nouvelle électrification",
-          "reset-electrification": "Annuler les modifications en cours",
-          "save-electrification": "Sauvegarder l'électrification"
-        },
-        "help": {
-          "init": "Cliquez sur une section de voie pour l'associer à l'électrification",
-          "add-track": "Ajouter la section '{{track.id}}' à l'électrification {{voltage}}",
-          "remove-range": "Supprimer la section de l'électrification {{voltage}}"
-        },
-        "add-new-electrification": "Ajouter une nouvelle électrification",
-        "electrifications": "Électrification",
-        "electrification-default": "Électrification par défaut",
-        "label": "Outil \"Électrification\""
-      },
       "detector-edition": {
         "actions": {
           "confirm-delete-entity": "Êtes-vous sûr(e) de vouloir supprimer le détecteur ?",
@@ -278,6 +260,24 @@
           "save-entity": "Sauvegarder le détecteur"
         },
         "label": "Outil \"Détecteur\""
+      },
+      "electrification-edition": {
+        "actions": {
+          "confirm-delete-electrification": "Êtes-vous sûr(e) de vouloir supprimer l'électrification ?",
+          "delete-electrification": "Supprimer l'électrification",
+          "new-electrification": "Créer une nouvelle électrification",
+          "reset-electrification": "Annuler les modifications en cours",
+          "save-electrification": "Sauvegarder l'électrification"
+        },
+        "add-new-electrification": "Ajouter une nouvelle électrification",
+        "electrification-default": "Électrification par défaut",
+        "electrifications": "Électrification",
+        "help": {
+          "add-track": "Ajouter la section '{{track.id}}' à l'électrification {{voltage}}",
+          "init": "Cliquez sur une section de voie pour l'associer à l'électrification",
+          "remove-range": "Supprimer la section de l'électrification {{voltage}}"
+        },
+        "label": "Outil \"Électrification\""
       },
       "point-edition": {
         "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés.",
@@ -292,18 +292,16 @@
         "routes-starting-from": "Partant de..."
       },
       "range-edition": {
-        "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
-        "linked-track-sections": "Sections de voie associées",
+        "edit-track-range-start": "Modifier le point de départ",
         "empty-linked-track-section": "Cliquez sur une section de voie pour l'associer",
+        "linked-track-sections": "Sections de voie associées",
         "only-show-n": "Ne montrer que les {{count}} premières sections de voie",
         "show-more-ranges_one": "Voir une section de voie de plus",
         "show-more-ranges_other": "Voir {{count}} sections de voie de plus"
       },
       "routes-edition": {
         "actions": {
-          "save-route": "Sauvegarder l'itinéraire",
-          "reset-route": "Réinitialiser l'itinéraire",
           "delete-route": "Supprimer l'itinéraire",
           "new-route": "Créer un nouvel itinéraire",
           "pick-entry_point": "Outil de sélection du point de départ",
@@ -311,7 +309,9 @@
           "pick-entry_point-update": "Modifier le point de départ sélectionné",
           "pick-exit_point": "Outil de sélection du point d'arrivée",
           "pick-exit_point-cancel": "Annuler la sélection du point d'arrivée",
-          "pick-exit_point-update": "Modifier le point d'arrivée sélectionné"
+          "pick-exit_point-update": "Modifier le point d'arrivée sélectionné",
+          "reset-route": "Réinitialiser l'itinéraire",
+          "save-route": "Sauvegarder l'itinéraire"
         },
         "alternative-routes": "Créer un itinéraire similaire",
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
@@ -384,9 +384,9 @@
         "label": "Outil \"Sélection\"",
         "linked-to-line_one": "associé à la section de voie",
         "linked-to-line_other": "associé aux sections de voie",
-        "linked-to-n-lines_zero": "relatif à aucune section de voie",
         "linked-to-n-lines_one": "relatif à une section de voie",
         "linked-to-n-lines_other": "relatif à {{count}} sections de voie",
+        "linked-to-n-lines_zero": "relatif à aucune section de voie",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
@@ -426,21 +426,21 @@
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
         "new-tag": "Code de composition",
         "ralen-30-60": "Limitations de vitesse par itinéraire",
+        "remove-track-range": "Cliquer pour détacher de :",
         "search-routes": "Rechercher des itinéraires compatibles",
         "select-route": "Sélectionner un itinéraire",
         "select-switches-to-get-route": "Sélectionner des aiguillages et leur position pour rechercher les itinéraires",
-        "sign-direction": "Direction",
         "sign-category": "Panneau(x) {{signType}}",
+        "sign-direction": "Direction",
         "sign-kp": "Point kilométrique",
-        "sign-select": "Sélectionner",
-        "sign-remove": "Supprimer le panneau",
         "sign-position": "Position",
+        "sign-remove": "Supprimer le panneau",
+        "sign-select": "Sélectionner",
+        "sign-side": "Côté",
         "sign-track-id": "Track section id",
         "sign-type": "Type",
-        "sign-side": "Côté",
         "sign-value": "Vitesse",
         "signs-section-list": "Liste des panneaux de la section",
-        "remove-track-range": "Cliquer pour détacher de :",
         "speed-limits": "Limitations de vitesse",
         "toggle-psl": "Limitations permanentes de vitesse",
         "toggle-psl-help": "Cliquez d'abord sur une section de voie pour pouvoir activer cette option"
@@ -479,6 +479,10 @@
           "save-line": "Sauvegarder la voie",
           "toggle-anchoring": "Activer / désactiver l'ancrage automatique"
         },
+        "attached-electrifications": "Électrification",
+        "attached-speed-sections": "Vitesses limites",
+        "default-electrifications-error": "Une erreur est survenue lors du chargement des électrifications liées à cette section de voie.",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de voie.",
         "help": {
           "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de voie. Cliquez sur la voie pour ajouter un point intermédiaire.",
           "add-point": "Cliquez pour ajouter un point au bout de la section de voie.",
@@ -486,10 +490,6 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "attached-electrifications": "Électrification",
-        "attached-speed-sections": "Vitesses limites",
-        "default-electrifications-error": "Une erreur est survenue lors du chargement des électrifications liées à cette section de voie.",
-        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de voie.",
         "label": "Outil \"Voie\"",
         "no-linked-electrification": "Aucune électrification renseignée",
         "no-linked-speed-section": "Aucune vitesse limite renseignée",
@@ -498,22 +498,22 @@
         "show-more-ranges_other": "Voir {{count}} résultats de plus"
       },
       "track-split": {
-        "title": "Découpe",
-        "label": "Outil de division de section de voie",
-        "offset": {
-          "label": "Position",
-          "description": "Distance entre le point et le début de la section de voie (en mètres)",
-          "error": "La position doit être un nombre compris entre 1 et {{max}}"
-        },
         "actions": {
           "save": "Sauvegarder la division"
         },
         "help": {
-          "move": "Cliquer pour valider le déplacement, ou appuyer sur 'esc' pour annuler",
+          "default": "Cliquer sur le point de division sur la carte, ou renseigner sa position par rapport au début de la section de voie dans le formulaire",
           "hover": "Cliquer sur le point pour pouvoir le déplacer",
-          "split": "Cliquer sur la section de voie pour le diviser à cette localisation",
-          "default": "Cliquer sur le point de division sur la carte, ou renseigner sa position par rapport au début de la section de voie dans le formulaire"
-        }
+          "move": "Cliquer pour valider le déplacement, ou appuyer sur 'esc' pour annuler",
+          "split": "Cliquer sur la section de voie pour le diviser à cette localisation"
+        },
+        "label": "Outil de division de section de voie",
+        "offset": {
+          "description": "Distance entre le point et le début de la section de voie (en mètres)",
+          "error": "La position doit être un nombre compris entre 1 et {{max}}",
+          "label": "Position"
+        },
+        "title": "Découpe"
       }
     }
   },

@@ -1,6 +1,4 @@
 {
-  "help": "Help",
-  "backToIndex": "help index",
   "asu": [
     {
       "title": "Application name",
@@ -20,9 +18,10 @@
     }
   ],
   "asuLink": "ASU support link",
+  "backToIndex": "help index",
+  "help": "Help",
   "sections": {
     "application": {
-      "title": "The application",
       "content": [
         {
           "type": "text",
@@ -33,7 +32,6 @@
           "value": "LMR allows you to:"
         },
         {
-          "type": "list",
           "items": [
             {
               "value": "Carry out fully independent last-minute capacity search simulations"
@@ -41,12 +39,12 @@
             {
               "value": "Download an LMR simulation sheet"
             }
-          ]
+          ],
+          "type": "list"
         }
       ],
       "subSections": [
         {
-          "title": "Improvements",
           "content": [
             {
               "type": "text",
@@ -60,21 +58,22 @@
               "type": "text",
               "value": "<a href='mailto:supportclients.SI@sncf.fr' target=\"_blank\">Contact us</a>"
             }
-          ]
+          ],
+          "title": "Improvements"
         },
         {
-          "title": "Design",
           "content": [
             {
               "type": "text",
               "value": "Last Minute Request is part of a wider programme dedicated to facilitating rail operations planning: Open Source Railway Designer. The simulation engine, OSRD, is fed by a representation of the rail network, the various types of rolling stocks, train schedules, and works schedules. SNCF Réseau and other European infrastructure managers are participating in this effort, which is being led by a team of engineers, developers and managers who are passionate about trains."
             }
-          ]
+          ],
+          "title": "Design"
         }
-      ]
+      ],
+      "title": "The application"
     },
     "convoy": {
-      "title": "The consist",
       "content": [
         {
           "type": "text",
@@ -87,45 +86,101 @@
       ],
       "subSections": [
         {
-          "title": "Traction unit",
           "content": [
             {
               "type": "text",
               "value": "Enter the first few letters to find the locomotive(s) for your consist in the catalogue."
             }
-          ]
+          ],
+          "title": "Traction unit"
         },
         {
-          "title": "Towed rolling stock",
           "content": [
             {
               "type": "text",
               "value": "In the same way as for the traction unit, enter the first few letters to find the equipment that will make up your consist."
             }
-          ]
+          ],
+          "title": "Towed rolling stock"
         },
         {
-          "title": "Weight, length, max. speed",
           "content": [
             {
               "type": "text",
               "value": "Indicate the total weight of your consist (in tons), the total length (in meters) and the maximum speed (in km/h)."
             }
-          ]
+          ],
+          "title": "Weight, length, max. speed"
         },
         {
-          "title": "Composition code",
           "content": [
             {
               "type": "text",
               "value": "Select your consist's composition code from the list."
             }
-          ]
+          ],
+          "title": "Composition code"
         }
-      ]
+      ],
+      "title": "The consist"
+    },
+    "faq": {
+      "content": [
+        {
+          "questions": [
+            {
+              "answer": "A simulation sheet is a document presenting the simulation information as well as the timetable of the proposal made by LMR.",
+              "question": "What is a simulation sheet?"
+            },
+            {
+              "answer": "LMR does not create capacity. The tool only proposes a path according to your needs and the residual capacity available at the time of your simulation.",
+              "question": "LMR is not offering me a train path, why?"
+            },
+            {
+              "answer": "An LMR simulation does not block capacity. The simulation only allows the user to know what capacity is available.",
+              "question": "When I run my simulation, is the capacity blocked?"
+            },
+            {
+              "answer": "LMR does not allow requests for turnarounds. These developments will nevertheless be taken into account for future versions of the app.",
+              "question": "Is it possible to make requests for turnarounds in the app?"
+            },
+            {
+              "answer": "LMR does not take side tracks into account yet. These developments will nevertheless be taken into account for future versions of the tool.",
+              "question": "Does the tool take side tracks into account?"
+            }
+          ],
+          "type": "faq"
+        }
+      ],
+      "title": "Frequently asked questions"
+    },
+    "glossary": {
+      "content": [
+        {
+          "definitions": [
+            {
+              "definition": "Permanent Code",
+              "term": "CI"
+            },
+            {
+              "definition": "Worksite Code",
+              "term": "CH"
+            },
+            {
+              "definition": "Last Minute Request",
+              "term": "LMR"
+            },
+            {
+              "definition": "Operational Point",
+              "term": "OP"
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "title": "Glossary"
     },
     "path": {
-      "title": "The route",
       "content": [
         {
           "type": "text",
@@ -146,7 +201,6 @@
       ],
       "subSections": [
         {
-          "title": "Previous path",
           "content": [
             {
               "type": "text",
@@ -160,10 +214,10 @@
               "type": "text",
               "value": "Once you have selected your train path, the origin information is pre-filled with a 30-minute margin on the departure time. All fields can still be modified."
             }
-          ]
+          ],
+          "title": "Previous path"
         },
         {
-          "title": "Origin",
           "content": [
             {
               "type": "text",
@@ -177,10 +231,10 @@
               "type": "text",
               "value": "If you want to impose a timetable on the destination rather than the origin, replace ‘precise timetable’ with ‘respect destination time’, and enter the times in the destination block."
             }
-          ]
+          ],
+          "title": "Origin"
         },
         {
-          "title": "Intermediate OP",
           "content": [
             {
               "type": "text",
@@ -194,10 +248,10 @@
               "type": "text",
               "value": "N.B.: Turnarounds are not yet taken into account in the app."
             }
-          ]
+          ],
+          "title": "Intermediate OP"
         },
         {
-          "title": "Destination",
           "content": [
             {
               "type": "text",
@@ -211,21 +265,22 @@
               "type": "text",
               "value": "N.B.: You must enter either an origin time or a destination timetable, not both."
             }
-          ]
+          ],
+          "title": "Destination"
         },
         {
-          "title": "Posterior path",
           "content": [
             {
               "type": "text",
               "value": "Optional, it works in the same way as the previous path but acts on the destination rather than the origin."
             }
-          ]
+          ],
+          "title": "Posterior path"
         }
-      ]
+      ],
+      "title": "The route"
     },
     "result": {
-      "title": "The result of the calculation",
       "content": [
         {
           "type": "text",
@@ -234,7 +289,6 @@
       ],
       "subSections": [
         {
-          "title": "Path simulation",
           "content": [
             {
               "type": "text",
@@ -248,74 +302,20 @@
               "type": "text",
               "value": "If the simulated path does not suit you, go back to the form and adjust the parameters of your request to run a new simulation. This will then appear next to the previous one once the calculation has been completed."
             }
-          ]
+          ],
+          "title": "Path simulation"
         },
         {
-          "title": "No capacity",
           "content": [
             {
               "type": "text",
               "value": "If no train path has been found, you will be informed of the various conflicts encountered with other train paths or work. Here again, you can go back to the form to adjust the parameters of your request and run a simulation again."
             }
-          ]
+          ],
+          "title": "No capacity"
         }
-      ]
-    },
-    "glossary": {
-      "title": "Glossary",
-      "content": [
-        {
-          "type": "definitions",
-          "definitions": [
-            {
-              "term": "CI",
-              "definition": "Permanent Code"
-            },
-            {
-              "term": "CH",
-              "definition": "Worksite Code"
-            },
-            {
-              "term": "LMR",
-              "definition": "Last Minute Request"
-            },
-            {
-              "term": "OP",
-              "definition": "Operational Point"
-            }
-          ]
-        }
-      ]
-    },
-    "faq": {
-      "title": "Frequently asked questions",
-      "content": [
-        {
-          "type": "faq",
-          "questions": [
-            {
-              "question": "What is a simulation sheet?",
-              "answer": "A simulation sheet is a document presenting the simulation information as well as the timetable of the proposal made by LMR."
-            },
-            {
-              "question": "LMR is not offering me a train path, why?",
-              "answer": "LMR does not create capacity. The tool only proposes a path according to your needs and the residual capacity available at the time of your simulation."
-            },
-            {
-              "question": "When I run my simulation, is the capacity blocked?",
-              "answer": "An LMR simulation does not block capacity. The simulation only allows the user to know what capacity is available."
-            },
-            {
-              "question": "Is it possible to make requests for turnarounds in the app?",
-              "answer": "LMR does not allow requests for turnarounds. These developments will nevertheless be taken into account for future versions of the app."
-            },
-            {
-              "question": "Does the tool take side tracks into account?",
-              "answer": "LMR does not take side tracks into account yet. These developments will nevertheless be taken into account for future versions of the tool."
-            }
-          ]
-        }
-      ]
+      ],
+      "title": "The result of the calculation"
     }
   }
 }

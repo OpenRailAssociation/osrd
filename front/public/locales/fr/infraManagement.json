@@ -2,8 +2,8 @@
   "actions": {
     "cancel": "Annuler",
     "check": "Valider",
-    "copy": "Dupliquer",
     "collapse": "réduire",
+    "copy": "Dupliquer",
     "delete": "Supprimer",
     "details": "détails",
     "export": "Exporter au format RailJSON",
@@ -20,10 +20,10 @@
   "createInfra": "Création",
   "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
   "errorMessages": {
+    "noEmptyName": "Veuillez renseigner un nom",
     "noExistingInfra": "Aucune intrastructure disponible",
     "unableToRetrieveInfra": "Récupération infra impossible",
-    "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
-    "noEmptyName": "Veuillez renseigner un nom"
+    "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
   },
   "goToEditionMode": "Éditer",
   "goToStandardMode": "Retour à la sélection",
@@ -37,9 +37,9 @@
   "infraDeleted": "L'infrastructure {{name}} a bien été supprimée.",
   "infraManagement": "Gestion des infrastructures",
   "infraName": "Nom de l'infrastructure",
-  "infrasFound_zero": "Aucune infrastructure trouvée",
   "infrasFound_one": "{{count}} infrastructure trouvée",
   "infrasFound_other": "{{count}} infrastructures trouvées",
+  "infrasFound_zero": "Aucune infrastructure trouvée",
   "infrastructure": "Infrastructure",
   "locked": "Verrouillée",
   "no": "Non",

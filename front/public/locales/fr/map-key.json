@@ -3,8 +3,8 @@
   "directCurrent": "Continu",
   "electrifications": "Électrification",
   "keyTitle": "Légende",
-  "speedlimit": "Vitesse",
-  "neutral_sections": "BP / CC",
   "lower_pantograph": "Zone « baissez panto »",
+  "neutral_sections": "BP / CC",
+  "speedlimit": "Vitesse",
   "switch_off": "Coupez Courant"
 }
