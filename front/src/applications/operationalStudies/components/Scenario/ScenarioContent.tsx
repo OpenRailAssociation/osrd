@@ -67,7 +67,7 @@ const ScenarioContent = ({
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
-  const dtoImport = useCallback(async () => {
+  const refreshNge = useCallback(async () => {
     const timetablePromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
         { timetableId: scenario?.timetable_id },
@@ -87,17 +87,17 @@ const ScenarioContent = ({
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItemWithTimetableId[]) => {
       upsertTimetableItems(updatedTimetableItems);
-      dtoImport();
+      refreshNge();
     },
-    [upsertTimetableItems, dtoImport]
+    [upsertTimetableItems, refreshNge]
   );
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      dtoImport();
+      refreshNge();
     },
-    [removeTimetableItems, dtoImport]
+    [removeTimetableItems, refreshNge]
   );
 
   const toggleMicroMacroButton = useCallback(
@@ -108,7 +108,7 @@ const ScenarioContent = ({
       }
       if (!isMacro && isMacroMode) {
         setNGEIsLoading(true);
-        dtoImport();
+        refreshNge();
       }
     },
     [isMacro, setIsMacro, collapsedTimetable]
