@@ -3,7 +3,7 @@ import type { Feature, Point } from 'geojson';
 import { describe, it, expect } from 'vitest';
 
 import type { GeoJsonLineString as LineString } from 'common/api/osrdEditoastApi';
-import { getTangent, getCurrentBearing, nearestPointOnLine } from 'utils/geometry';
+import { getTangent, nearestPointOnLine } from 'utils/geometry';
 
 import lineNorthenLatitude from './assets/line-northern-latitude.json';
 import linePointOnLeft from './assets/line-point-on-left.json';
@@ -47,40 +47,6 @@ describe('getTangent', () => {
       const expected = featureCollection([point([0, 0]), point([1, 0.5])]);
       expect(result).toEqual(expected);
     });
-  });
-});
-
-describe('getCurrentBearing', () => {
-  const lines: Array<[Array<[number, number]>, number]> = [
-    [
-      [
-        [0, 0],
-        [0.5, 0],
-      ],
-      90,
-    ],
-    [
-      [
-        [0, 0],
-        [0.5, 0],
-        [1, 0.5],
-      ],
-      45,
-    ],
-    [
-      [
-        [0, 0],
-        [0.5, 0],
-        [1, 0.5],
-        [1, 1],
-      ],
-      0,
-    ],
-  ];
-  it.each(lines)('should return bearing', (l, expected) => {
-    const line = lineString(l);
-    const result = getCurrentBearing(line);
-    expect(result).toBeCloseTo(expected, 2);
   });
 });
 
