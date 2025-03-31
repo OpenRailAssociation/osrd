@@ -6,6 +6,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import { type ReportTrain, type TrackSection } from 'common/api/osrdEditoastApi';
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -108,11 +109,15 @@ export const formatOperationalPoints = (
 
     // Get duration
     let stepDuration = Duration.zero;
-    const correspondingStep = timetableItem.path.find(
-      (step) =>
-        'uic' in step &&
-        step.uic === op.extensions?.identifier?.uic &&
-        step.secondary_code === op.extensions.sncf?.ch
+    const correspondingStep = timetableItem.path.find((step) =>
+      matchPathStepAndOp(step, {
+        opId: op.id,
+        uic: op.extensions?.identifier?.uic,
+        ch: op.extensions?.sncf?.ch,
+        trigram: op.extensions?.sncf?.trigram,
+        track: op.part.track,
+        offsetOnTrack: op.part.position,
+      })
     );
     if (correspondingStep) {
       const correspondingSchedule = timetableItem.schedule?.find(
