@@ -53,7 +53,7 @@ public class ValidateInfra implements CliCommand {
 
     /** Parse the RailJSON file at the given Path */
     @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "that's a spotbugs bug :)")
-    private static RJSInfra parseRailJSONFromFile(String path) throws IOException {
+    static RJSInfra parseRailJSONFromFile(String path) throws IOException {
         try (var fileSource = Okio.source(Path.of(path));
                 var bufferedSource = Okio.buffer(fileSource)) {
             var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);

@@ -27,7 +27,7 @@ import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 
 class SimulationEndpoint(
-    private val infraManager: InfraManager,
+    private val infraManager: InfraProvider,
     private val electricalProfileSetManager: ElectricalProfileSetManager
 ) : Take {
     override fun act(req: Request): Response {
