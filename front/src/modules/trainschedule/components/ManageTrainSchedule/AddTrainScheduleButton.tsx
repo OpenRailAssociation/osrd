@@ -34,7 +34,6 @@ type AddTrainScheduleButtonProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
-  dtoImport: () => void;
   isPacedTrainMode: boolean;
 };
 
@@ -42,7 +41,6 @@ const AddTrainScheduleButton = ({
   infraState,
   setIsWorking,
   upsertTimetableItems,
-  dtoImport,
   isPacedTrainMode,
 }: AddTrainScheduleButtonProps) => {
   const dispatch = useAppDispatch();
@@ -169,7 +167,6 @@ const AddTrainScheduleButton = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
-    dtoImport();
   };
 
   return (

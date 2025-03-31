@@ -45,7 +45,6 @@ type ImportTimetableItemTrainsListProps = {
   trainsJsonData: TimetableJsonPayload;
   trainsXmlData: ImportedTrainSchedule[];
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
-  dtoImport: () => void;
 };
 
 const ImportTimetableItemTrainsList = ({
@@ -55,7 +54,6 @@ const ImportTimetableItemTrainsList = ({
   trainsJsonData,
   trainsXmlData,
   upsertTimetableItems,
-  dtoImport,
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTimetableItem', 'translation']);
 
@@ -132,7 +130,7 @@ const ImportTimetableItemTrainsList = ({
       }
 
       upsertTimetableItems([...formattedTrainSchedules, ...formattedPacedTrains]);
-      dtoImport();
+
       dispatch(
         setSuccess({
           title: t('success'),

@@ -42,7 +42,6 @@ const useUpdateTimetableItem = (
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void,
   setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void,
-  dtoImport: () => void,
   trainIdToEdit?: TimetableItemId,
   selectedTrainId?: TrainId
 ) => {
@@ -183,7 +182,6 @@ const useUpdateTimetableItem = (
     }
 
     // dispatch success and update the selected train id
-    dtoImport();
     dispatch(
       setSuccess({
         title: isPacedTrain(trainIdToEdit) ? t('pacedTrainUpdated') : t('trainScheduleUpdated'),

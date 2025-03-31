@@ -40,7 +40,6 @@ type TrainScheduleItemProps = {
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
-  dtoImport: () => void;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
 };
 
@@ -53,7 +52,6 @@ const TrainScheduleItem = ({
   upsertTrainSchedules,
   removeTrains,
   projectionPathIsUsed,
-  dtoImport,
   selectTrainToEdit,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -81,7 +79,6 @@ const TrainScheduleItem = ({
       .unwrap()
       .then(() => {
         removeTrains([train.id]);
-        dtoImport();
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.name }),
@@ -132,7 +129,6 @@ const TrainScheduleItem = ({
           id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResponse.id),
         };
         upsertTrainSchedules([formattedTrainScheduleResponse]);
-        dtoImport();
         dispatch(
           setSuccess({
             title: t('timetable.trainAdded'),

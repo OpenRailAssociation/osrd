@@ -29,7 +29,6 @@ type TimetableManageTrainScheduleProps = {
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
   infraState?: InfraState;
   setItemIdToEdit: (itemIdToEdit?: TimetableItemId) => void;
-  dtoImport: () => void;
 };
 
 const TimetableManageTrainSchedule = ({
@@ -40,7 +39,6 @@ const TimetableManageTrainSchedule = ({
   infraState,
   itemIdToEdit,
   setItemIdToEdit,
-  dtoImport,
 }: TimetableManageTrainScheduleProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
@@ -61,7 +59,6 @@ const TimetableManageTrainSchedule = ({
     upsertTimetableItems,
     removeTimetableItems,
     setItemIdToEdit,
-    dtoImport,
     itemIdToEdit,
     selectedTrainId
   );
@@ -129,7 +126,6 @@ const TimetableManageTrainSchedule = ({
                 infraState={infraState}
                 setIsWorking={setIsWorking}
                 upsertTimetableItems={upsertTimetableItems}
-                dtoImport={dtoImport}
                 isPacedTrainMode={editingTrainIsPacedTrain}
               />
             )}
