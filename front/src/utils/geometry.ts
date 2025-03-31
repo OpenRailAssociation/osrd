@@ -1,5 +1,4 @@
 import along from '@turf/along';
-import bearing from '@turf/bearing';
 import turfDistance from '@turf/distance';
 import { point, featureCollection, lineString, type Units } from '@turf/helpers';
 import { getCoord } from '@turf/invariant';
@@ -37,12 +36,6 @@ export function getTangent(
   const point1 = point(line.geometry.coordinates[index1]);
   const point2 = point(line.geometry.coordinates[index2]);
   return featureCollection([point1, point2]);
-}
-
-export function getCurrentBearing(line: Feature<LineString>) {
-  const { coordinates } = line.geometry;
-  const l = line.geometry.coordinates.length;
-  return bearing(coordinates[l - 2], coordinates[l - 1]);
 }
 
 export function lengthFromLineCoordinates(coordinates?: Position[]) {
