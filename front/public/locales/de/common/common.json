@@ -11,13 +11,13 @@
     "zoom-in": "Reinzoomen",
     "zoom-out": "Rauszoomen"
   },
-  "navigation": {
-    "next": "Weiter",
-    "previous": "Zurück",
-    "goBack": "Zur letzten Seite",
-    "goHome": "Zur Startseite"
-  },
   "begin": "Start",
   "end": "Ende",
+  "navigation": {
+    "goBack": "Zur letzten Seite",
+    "goHome": "Zur Startseite",
+    "next": "Weiter",
+    "previous": "Zurück"
+  },
   "value": "Wert"
 }

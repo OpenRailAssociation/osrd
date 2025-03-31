@@ -1,47 +1,47 @@
 {
+  "allowanceByInterval": "Margins by intervals",
+  "allowanceGlobalType": {
+    "engineering": "Construction",
+    "standard": "Standard"
+  },
+  "allowanceModified": {
+    "anyAllowanceModificationError": "Error when updating margin",
+    "anyAllowanceModified": "Margin changed",
+    "standardAllowanceAdd": "Recovery margin added / changed",
+    "standardAllowanceDel": "Recovery margin deleted"
+  },
+  "allowanceType": "Distribution",
+  "allowanceTypes": {
+    "percentage": "Percentage",
+    "time": "Time",
+    "time_per_distance": "Time/Distance"
+  },
   "apply": "Apply",
   "baseTrainSchedule": "Base",
+  "begin_position": "Started",
   "blocks": "Blocks",
+  "distributions": {
+    "linear": "Linear",
+    "mareco": "Mareco"
+  },
+  "ecoAllowanceByInterval": "Theoretical running profile to save energy by intervals",
   "ecoTrainSchedule": "Energy saving",
   "end_position": "End",
+  "engineeringAllowances": "Time allowance",
   "errors": {
     "allowances": "Margin calculation error",
     "eco": "Margin \"ECO\" calculation error"
   },
   "from": "From",
-  "begin_position": "Started",
-  "marecoWholePath": "Theoretical running profile to save energy (full path)",
-  "standardAllowancesWholePath": "Recovery margin",
-  "engineeringAllowances": "Time allowance",
-  "margedTrainSchedule": "With margins",
-  "allowanceByInterval": "Margins by intervals",
-  "ecoAllowanceByInterval": "Theoretical running profile to save energy by intervals",
-  "allowanceModified": {
-    "standardAllowanceAdd": "Recovery margin added / changed",
-    "standardAllowanceDel": "Recovery margin deleted",
-    "anyAllowanceModified": "Margin changed",
-    "anyAllowanceModificationError": "Error when updating margin"
-  },
-  "specificValuesOnIntervals": "Specific values for intervals",
-  "allowanceGlobalType": {
-    "standard": "Standard",
-    "engineering": "Construction"
-  },
-  "distributions": {
-    "mareco": "Mareco",
-    "linear": "Linear"
-  },
-  "perDefaultValue": "Default value",
-  "allowanceType": "Distribution",
-  "units": "Units",
-  "allowanceTypes": {
-    "time": "Time",
-    "percentage": "Percentage",
-    "time_per_distance": "Time/Distance"
-  },
-  "standardAllowance": "Recovery margin",
   "gridMarginBeforeAfter": "Timetable margin before/after",
+  "marecoWholePath": "Theoretical running profile to save energy (full path)",
+  "margedTrainSchedule": "With margins",
   "op": "op",
+  "perDefaultValue": "Default value",
+  "specificValuesOnIntervals": "Specific values for intervals",
+  "standardAllowance": "Recovery margin",
+  "standardAllowancesWholePath": "Recovery margin",
   "to": "to",
-  "trainSchedules": "Working type"
+  "trainSchedules": "Working type",
+  "units": "Units"
 }

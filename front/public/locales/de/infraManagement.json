@@ -18,10 +18,10 @@
   "createInfra": "Erstellen",
   "deleteConfirm": "Wollen Sie das Betriebsnetz löschen?",
   "errorMessages": {
+    "noEmptyName": "Bitte geben Sie einen Namen ein",
     "noExistingInfra": "Kein Betriebsnetz verfügbar",
     "unableToRetrieveInfra": "Betriebsnetz kann nicht geladen werden",
-    "unableToRetrieveInfraList": "Betriebsnetzliste kann nicht geladen werden",
-    "noEmptyName": "Bitte geben Sie einen Namen ein"
+    "unableToRetrieveInfraList": "Betriebsnetzliste kann nicht geladen werden"
   },
   "goToEditionMode": "Bearbeiten",
   "goToStandardMode": "Zurück zur Auswahl",
@@ -29,9 +29,9 @@
   "infraDeleted": "Das Betriebsnetz „{{name}}“ wurde gelöscht.",
   "infraManagement": "Betriebsnetzverwalter",
   "infraName": "Betriebsnetzname",
-  "infrasFound_zero": "Kein Betriebsnetz gefunden",
   "infrasFound_one": "Ein Betriebsnetz gefunden",
   "infrasFound_other": "{{count}} Betriebsnetze gefunden",
+  "infrasFound_zero": "Kein Betriebsnetz gefunden",
   "infrastructure": "Betriebsnetz",
   "locked": "Gesperrt",
   "no": "Nein",

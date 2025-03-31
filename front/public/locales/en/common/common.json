@@ -11,17 +11,17 @@
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out"
   },
-  "navigation": {
-    "next": "Next",
-    "previous": "Previous",
-    "goBack": "Back to previous page",
-    "goHome": "Go to home page"
-  },
-  "begin": "Start",
-  "end": "End",
-  "value": "value",
   "authorization": {
     "permission": "Permission",
     "permissionDenied": "You don't have permission to perform this action"
-  }
+  },
+  "begin": "Start",
+  "end": "End",
+  "navigation": {
+    "goBack": "Back to previous page",
+    "goHome": "Go to home page",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "value": "value"
 }

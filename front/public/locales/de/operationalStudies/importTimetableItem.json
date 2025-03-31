@@ -9,15 +9,11 @@
     "error": "Ein Fehler ist aufgetreten",
     "errorEmptyFile": "Leere Datei",
     "errorImport": "Datei konnte nicht zu TrainSchedule (Zugfahrplan) konvertiert werden",
+    "errorInvalidFile": "Ungültige Datei.",
     "errorNoDate": "Sie müssen ein Datum angeben.",
     "errorNoFrom": "Sie müssen einen Herkunftsort angeben.",
     "errorNoTo": "Sie müssen einen Zielort angeben.",
-    "errorSameFromTo": "Herkunfts- und Zielort müssen sich unterscheiden.",
-    "errorInvalidFile": "Ungültige Datei."
-  },
-  "warningMessages": {
-    "warning": "Warnung",
-    "warningFilteredStepImport": "Es wurden einige ungültige Schritte entfernt, um den Import für Züge zu erlauben: {{trainNumbers}}"
+    "errorSameFromTo": "Herkunfts- und Zielort müssen sich unterscheiden."
   },
   "failure": "Operation fehlgeschlagen",
   "from": "Herkunft",
@@ -30,11 +26,15 @@
   "selectStation": "Betriebsstelle auswählen",
   "startTime": "START",
   "status": {
-    "invalidTrainSchedules_one": "Ungültiger Zugfahrplan.",
     "invalidTrainSchedules": "Ungültige Zugfahrpläne.",
-    "successfulImport_one": "Ein Zug wurde importiert.",
-    "successfulImport": "Alle Züge wurden importiert."
+    "invalidTrainSchedules_one": "Ungültiger Zugfahrplan.",
+    "successfulImport": "Alle Züge wurden importiert.",
+    "successfulImport_one": "Ein Zug wurde importiert."
   },
   "success": "Operation erfolgreich",
-  "to": "Ziel"
+  "to": "Ziel",
+  "warningMessages": {
+    "warning": "Warnung",
+    "warningFilteredStepImport": "Es wurden einige ungültige Schritte entfernt, um den Import für Züge zu erlauben: {{trainNumbers}}"
+  }
 }

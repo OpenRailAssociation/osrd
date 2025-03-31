@@ -3,32 +3,32 @@
   "arriveAt": "Arrive at {{ time }}",
   "cancelRequest": "Cancel request",
   "consist": {
-    "consist": "Consist",
     "compositionCode": "Composition code",
-    "length": "Length",
-    "tonnage": "Tonnage",
-    "maxSpeed": "Max speed",
-    "tractionEngine": "Traction engine",
-    "towedRollingStock": "Towed rolling stock",
+    "consist": "Consist",
     "errors": {
-      "totalMass": {
+      "maxSpeed": {
         "negative": "Must be positive.",
-        "range": "The total weight must be between {{low}} and {{high}}t"
+        "range": "The max speed must be between {{low}} and {{high}}km/h"
       },
       "totalLength": {
         "negative": "Must be positive.",
         "range": "The total length must be between {{low}} and {{high}}m"
       },
-      "maxSpeed": {
+      "totalMass": {
         "negative": "Must be positive.",
-        "range": "The max speed must be between {{low}} and {{high}}km/h"
+        "range": "The total weight must be between {{low}} and {{high}}t"
       }
     },
     "info": {
-      "totalMass": "The weight has been updated to reflect the new consist data.",
+      "maxSpeed": "The max speed has been updated to reflect the new consist data.",
       "totalLength": "The length has been updated to reflect the new consist data.",
-      "maxSpeed": "The max speed has been updated to reflect the new consist data."
-    }
+      "totalMass": "The weight has been updated to reflect the new consist data."
+    },
+    "length": "Length",
+    "maxSpeed": "Max speed",
+    "tonnage": "Tonnage",
+    "towedRollingStock": "Towed rolling stock",
+    "tractionEngine": "Traction engine"
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
   "debug": {
@@ -39,8 +39,8 @@
   "find": "Find",
   "form": {
     "datePickerErrors": {
-      "invalidInput": "The date must be formatted as dd/mm/yy",
-      "invalidDate": "Select a date between {{startDate}} and {{endDate}}"
+      "invalidDate": "Select a date between {{startDate}} and {{endDate}}",
+      "invalidInput": "The date must be formatted as dd/mm/yy"
     },
     "incompleteForm": "Incomplete form",
     "viaNotDefined": "Au moins une localisation n'est pas renseignée"
@@ -59,8 +59,8 @@
     "writeButton": "Write"
   },
   "noConfigurationFound": {
-    "title": "A configuration problem prevents you from performing a search",
-    "text": "Please contact the maintenance team so they can get you back on track."
+    "text": "Please contact the maintenance team so they can get you back on track.",
+    "title": "A configuration problem prevents you from performing a search"
   },
   "noCorrespondingResults": "No results matching your search.",
   "notificationTitle": "Current scope: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
@@ -70,39 +70,35 @@
   },
   "pleaseWait": "Please wait…",
   "simulation": {
+    "additionalResults": "No results were found for your request; alternative options are being computed",
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
-    "additionalResults": "No results were found for your request; alternative options are being computed",
     "modifySearchCriteria": "You can modify your search criteria to find a solution.",
     "pendingSimulation": "Simulation in progress",
     "results": {
       "changeCriteria": "You can modify your search criterias to find a solution.",
+      "changeSearchCriteria": "You can modify your search criteria to find a solution.",
+      "conflictsTitle": "Here are the problems encountered when calculating the shortest path:",
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
-      "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
-      "simulationUpstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>after</underline> departure time was increased.",
-      "simulationsWithConflicts": "Two\u00A0other\u00A0simulations were\u00A0automatically\u00A0computed based\u00A0on this\u00A0configuration.",
       "formatCreationDate": "{{month}}/{{day}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "and attach this document to your GESICO request.",
       "notFound": "No path was found for this configuration",
-      "conflictsTitle": "Here are the problems encountered when calculating the shortest path:",
-      "trackConflict": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
-      "trackConflictSameDay": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}",
       "remainingTrackConflicts": "{{count}} other conflicts with other train paths",
       "remainingTrackConflicts_one": "one other conflict with another train path",
       "remainingWorkConflicts": "{{count}} other works in conflict",
       "remainingWorkConflicts_one": "one other work in conflict",
-      "workConflictSameDay": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}",
-      "workConflict": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
-      "changeSearchCriteria": "You can modify your search criteria to find a solution.",
       "retainThisSimulation": "Retain this simulation",
+      "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
       "simulationName": {
-        "withOutputs": "Simulation n°{{id}}",
-        "withoutOutputs": "No capacity"
+        "withoutOutputs": "No capacity",
+        "withOutputs": "Simulation n°{{id}}"
       },
       "simulationSelected": "You have selected this simulation",
+      "simulationsWithConflicts": "Two other simulations were automatically computed based on this configuration.",
+      "simulationUpstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>after</underline> departure time was increased.",
       "startNewQuery": "Start a new query",
       "startNewQueryFromCurrent": "Start a new query from the current one",
       "status": {
@@ -110,6 +106,8 @@
         "errorMessage": "We are sorry that we could not process your request. The LMR team has been notified and will be aware of the situation as soon as possible.",
         "failed": "A technical issue has occurred"
       },
+      "trackConflict": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
+      "trackConflictSameDay": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}",
       "upgrade": {
         "arrivalIncompatible": "Arrival time incompatible",
         "helpUs": "Help us improve {{stdcmName}}",
@@ -117,7 +115,9 @@
         "reason": "This simulation does not meet your needs because ...",
         "startIncompatible": "Departure time incompatible",
         "unqualifiedDriver": "Unqualified driver"
-      }
+      },
+      "workConflict": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
+      "workConflictSameDay": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}"
     },
     "stopCalculation": "Stop"
   },
@@ -129,13 +129,13 @@
     "infraNotLoaded": "Infrastructure is loading",
     "missingFields": {
       "destination": "the destination",
+      "maxSpeed": "the maximum speed of the consist",
       "origin": "the origin",
       "timeDestination": "the arrival time at the destination",
       "timeOrigin": "the departure time at the origin",
-      "tractionEngine": "the traction engine",
-      "totalMass": "the total mass of the consist",
       "totalLength": "the total length of the consist",
-      "maxSpeed": "the maximum speed of the consist"
+      "totalMass": "the total mass of the consist",
+      "tractionEngine": "the traction engine"
     },
     "missingInformations": "Missing informations for calculation:",
     "missingLocation": "Missing location",
@@ -165,8 +165,8 @@
     "stopFor": "Minimum stop time",
     "stopType": {
       "driverSwitch": "driver switch",
-      "passageTime": "passage time",
       "overtake": "overtake",
+      "passageTime": "passage time",
       "serviceStop": "service stop"
     },
     "time": "Time",

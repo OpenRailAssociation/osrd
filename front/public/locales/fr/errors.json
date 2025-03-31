@@ -6,13 +6,19 @@
   "502": "Erreurs serveur",
   "503": "Erreurs serveur",
   "504": "Le serveur n'a pas répondu.",
-  "default": "Une erreur est survenue.",
-  "pageNotFound": "La page que vous recherchez n'existe pas.",
   "core": {
     "assert_error": "Assertion échouée à {{file_location}}: {{assert_message}}",
     "missing_last_stdcm_stop": "Les requêtes STDCM ne finissant pas par un arrêt ne sont pas actuellement supportées"
   },
+  "default": "Une erreur est survenue.",
   "editoast": {
+    "app_health": {
+      "Core": "Erreur de core",
+      "Database": "Erreur de base de données",
+      "Openfga": "Erreur d'OpenFGA",
+      "Timeout": "Le serveur n'a pas répondu à temps",
+      "Valkey": "Erreur de Valkey"
+    },
     "attached": {
       "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
@@ -22,11 +28,11 @@
       "Authz": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
-      "NoSuchUser": "Utilisateur inconnu",
-      "Unauthorized": "Utilisateur non authentifié",
       "Forbidden": "Accès refusé",
       "ForbiddenImpersonation": "Usurpation refusée",
-      "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu"
+      "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
+      "NoSuchUser": "Utilisateur inconnu",
+      "Unauthorized": "Utilisateur non authentifié"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
@@ -38,13 +44,19 @@
       "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: un doublon existe déjà",
       "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
     },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "La longueur d'un chemin ne peut pas être nulle."
+      }
+    },
     "coreclient": {
       "BrokenPipe": "Core: connexion interrompue. Nouvelle tentative.",
       "CannotExtractResponseBody": "Core: Impossible d'extraire le corps de la réponse : {{msg}}",
       "CoreResponseFormatError": "Core: impossible d'analyser la réponse '{{msg}}'",
-      "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu",
-      "MqClientError": "Core: erreur du client MQ"
+      "MqClientError": "Core: erreur du client MQ",
+      "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu"
     },
+    "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
     "delimited_area": {
       "InvalidLocations": "Certaines localisations sont invalides"
     },
@@ -52,7 +64,6 @@
       "Database": "Erreur interne (base de données)",
       "NotFound": "Document '{{document_key}}' non trouvé"
     },
-    "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
     "electrical_profiles": {
       "NotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé"
     },
@@ -62,12 +73,8 @@
     "geometry": {
       "UnexpectedGeometry": "Géometrie {{expected}} attendue mais {{actual}} reçue"
     },
-    "infra_cache": {
-      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' introuvable dans le cache de l'infrastructure"
-    },
     "infra": {
       "Database": "Erreur interne",
-      "NotFound": "Infrastructure '{{infra_id}}' n'existe pas",
       "edition": {
         "InfraIsLocked": "Infrastructure verrouillée",
         "SplitTrackSectionBadOffset": "La distance pour scinder la section de voie '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
@@ -78,6 +85,7 @@
       "lines": {
         "LineNotFound": "Aucune ligne trouvée avec le code {{line_code}}"
       },
+      "NotFound": "Infrastructure '{{infra_id}}' n'existe pas",
       "objects": {
         "DuplicateIdsProvided": "Identifiants d'objet fournis en double",
         "ObjectIdNotFound": "Objet '{{object_id}}' non trouvé"
@@ -88,10 +96,8 @@
         "StartingTrackLocationNotFound": "Localisation du début de la section non trouvé"
       }
     },
-    "core": {
-      "pathfinding": {
-        "ZeroLengthPath": "La longueur d'un chemin ne peut pas être nulle."
-      }
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' introuvable dans le cache de l'infrastructure"
     },
     "infra_state": {
       "FetchError": "Erreur de récupération de l'état de chargement de l'infrastructure"
@@ -112,6 +118,12 @@
       "InvalidPatch": "Une erreur de correctif JSON est survenue",
       "ModifyId": "L'opération de mise à jour tente de modifier l'ID de l'objet, ce qui est interdit",
       "ObjectNotFound": "Objet '{{obj_id}}' non trouvé dans l'infrastructure '{{infra_id}}'"
+    },
+    "paced_train": {
+      "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
+      "Database": "Erreur interne (base de données)",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "NotFound": "Mission '{{paced_train_id}}' non trouvée"
     },
     "pagination": {
       "InvalidPage": "Le numéro de page '{{page}}' est invalide",
@@ -141,33 +153,24 @@
     "railjson": {
       "UnsupportedVersion": "Version de railjson non supportée"
     },
-    "valkey": {
-      "Url": "Url invalide '{{url}}'"
-    },
     "rollingstocks": {
       "BasePowerClassEmpty": "La classe de puissance par défaut ne peut être vide",
       "CannotCreateCompoundImage": "Impossible de créer l'image composée",
       "CannotReadImage": "Impossible de lire l'image",
       "Database": "Erreur interne (base de données)",
-      "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà",
+      "IsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
+      "IsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé",
       "KeyNotFound": "Matériel roulant '{{rolling_stock_key.key}}' non trouvé",
       "LiveryMultipartError": "Requête multipart invalide pour upload de livrée",
-      "IsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
-      "IsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
-    },
-    "towedrollingstocks": {
-      "Database": "Erreur interne",
-      "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
-      "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
+      "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà"
     },
     "scenario": {
       "Database": "Erreur interne (base de données)",
-      "NotFound": "Scénario non trouvé",
       "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
+      "NotFound": "Scénario non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "search": {
-      "SearchEngineError": "Erreur interne du moteur de recherche",
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",
       "ArgTypeMismatch": "Argument de type {{expected}} attendu à la position {{arg_pos}}, mais {{actual}} reçu",
       "EmptyArray": "Les tableaux vides sont interdits",
@@ -178,6 +181,7 @@
       "ObjectType": "Le type de l'objet est invalide",
       "QueryAst": "Une requête de type booléen est attendue",
       "RuntimeTypeCheckFail": "Type attendu {{expected}}, mais reçu '{{value}}' de type {{actual}} à la place",
+      "SearchEngineError": "Erreur interne du moteur de recherche",
       "UndefinedFunction": "Fonction non définie",
       "UndefinedOverload": "Aucune surcharge appropriée",
       "UnexpectedArg": "Argument inattendu trouvé",
@@ -197,68 +201,64 @@
     },
     "stdcm": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'",
+      "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
-      "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
-      "TrainSimulationFail": "Échec de la simulation du train",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
-      "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'"
+      "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
+      "TrainSimulationFail": "Échec de la simulation du train"
     },
     "stdcm_log": {
+      "MissingIdAndTraceId": "STDCM Log n'a pas pu être trouvée sans spécifier un 'id' ou un 'trace_id'",
       "NotFound": "STDCM Log '{{id}}' n'a pas pu être trouvée",
-      "TraceIdNotFound": "STDCM Log '{{trace_id}}' n'a pas pu être trouvée",
-      "MissingIdAndTraceId": "STDCM Log n'a pas pu être trouvée sans spécifier un 'id' ou un 'trace_id'"
+      "TraceIdNotFound": "STDCM Log '{{trace_id}}' n'a pas pu être trouvée"
     },
     "study": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Etude '{{study_id}}' non trouvée",
       "StartDateAfterEndDate": "La date de début de l'étude doit commencer avant sa date de fin"
     },
+    "temporary_speed_limit": {
+      "Database": "Erreur interne (base de données)",
+      "NameAlreadyUsed": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
+    },
     "timetable": {
       "Database": "Erreur interne (base de données)",
-      "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id: '{{train_id}}'"
+    },
+    "towedrollingstocks": {
+      "Database": "Erreur interne",
+      "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
+      "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
     },
     "train_schedule": {
       "BatchShouldHaveSameTimetable": "Le lot doit avoir une grille horaire identique",
       "BatchTrainScheduleNotFound": "Certaines circulations sont introuvables",
       "Database": "Erreur interne (base de données)",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NoSimulation": "Aucune simulation fournie",
-      "NoTrainSchedules": "Aucune circulation de train fournie",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
+      "NoTrainSchedules": "Aucune circulation de train fournie",
       "PathNotFound": "Chemin '{{path_id}}' non trouvé",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
-    },
-    "paced_train": {
-      "Database": "Erreur interne (base de données)",
-      "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
-      "NotFound": "Mission '{{paced_train_id}}' non trouvée",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
+      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
+    },
+    "valkey": {
+      "Url": "Url invalide '{{url}}'"
     },
     "work_schedule": {
       "Database": "Erreur interne (base de données)",
       "NameAlreadyUsed": "Un groupe de planches travaux avec le nom '{{name}}' existe déjà",
       "WorkScheduleGroupNotFound": "Le groupe de planche travaux avec l'id {{id}} n'existe pas"
-    },
-    "temporary_speed_limit": {
-      "Database": "Erreur interne (base de données)",
-      "NameAlreadyUsed": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
-    },
-    "app_health": {
-      "Timeout": "Le serveur n'a pas répondu à temps",
-      "Database": "Erreur de base de données",
-      "Valkey": "Erreur de Valkey",
-      "Core": "Erreur de core",
-      "Openfga": "Erreur d'OpenFGA"
     }
-  }
+  },
+  "pageNotFound": "La page que vous recherchez n'existe pas."
 }

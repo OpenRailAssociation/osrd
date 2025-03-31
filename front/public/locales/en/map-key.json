@@ -3,8 +3,8 @@
   "directCurrent": "DC",
   "electrifications": "Electrification",
   "keyTitle": "Legend",
-  "speedlimit": "Speed",
-  "neutral_sections": "Dead sections",
   "lower_pantograph": "\"Baissez-panto\" zone",
+  "neutral_sections": "Dead sections",
+  "speedlimit": "Speed",
   "switch_off": "Switch-off power"
 }

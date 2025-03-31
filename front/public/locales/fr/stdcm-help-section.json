@@ -1,6 +1,4 @@
 {
-  "help": "Aide",
-  "backToIndex": "index de l'aide",
   "asu": [
     {
       "title": "Nom de l'application",
@@ -20,9 +18,10 @@
     }
   ],
   "asuLink": "Lien vers le support ASU",
+  "backToIndex": "index de l'aide",
+  "help": "Aide",
   "sections": {
     "application": {
-      "title": "L'application",
       "content": [
         {
           "type": "text",
@@ -33,7 +32,6 @@
           "value": "LMR permet de :"
         },
         {
-          "type": "list",
           "items": [
             {
               "value": "Réaliser des simulations de recherche de capacité de dernière minute en totale autonomie"
@@ -41,12 +39,12 @@
             {
               "value": "Joindre aux demandes de création de sillon de dernière minute dans GESICO, une fiche de simulation LMR permettant de simplifier les gestes métier des horairistes"
             }
-          ]
+          ],
+          "type": "list"
         }
       ],
       "subSections": [
         {
-          "title": "Périmètre",
           "content": [
             {
               "type": "text",
@@ -56,10 +54,10 @@
               "type": "text",
               "value": "Vos requêtes sont pour le moment possibles uniquement entre Perrigny et Miramas, entre J-7 et J-1 17 heures, et ne prennent pas en compte les ATEs, matières dangereuses, et gabarits GB."
             }
-          ]
+          ],
+          "title": "Périmètre"
         },
         {
-          "title": "Améliorations",
           "content": [
             {
               "type": "text",
@@ -69,21 +67,22 @@
               "type": "text",
               "value": "<a href='mailto:supportclients.SI@sncf.fr' target=\"_blank\">Contactez-nous</a>"
             }
-          ]
+          ],
+          "title": "Améliorations"
         },
         {
-          "title": "Conception",
           "content": [
             {
               "type": "text",
               "value": "Last Minute Request fait partie d’un programme plus large dédié à faciliter la planification de l’opérationnel ferroviaire : Open Source Railway Designer. Le moteur de simulation, OSRD, est nourri par une représentation du réseau ferré, des différents matériels roulants, et des calendriers de circulations et travaux. SNCF Réseau et d’autres gestionnaires d’infrastructures européens participent à cet effort porté par une équipe d’ingénieurs, de développeurs et d’encadrants passionnés par le train."
             }
-          ]
+          ],
+          "title": "Conception"
         }
-      ]
+      ],
+      "title": "L'application"
     },
     "convoy": {
-      "title": "Le convoi",
       "content": [
         {
           "type": "text",
@@ -96,45 +95,125 @@
       ],
       "subSections": [
         {
-          "title": "Engin de traction",
           "content": [
             {
               "type": "text",
               "value": "Indiquez les premières lettres pour trouver la ou les locomotives de votre convoi dans le catalogue."
             }
-          ]
+          ],
+          "title": "Engin de traction"
         },
         {
-          "title": "Matériel remorqué",
           "content": [
             {
               "type": "text",
               "value": "De la même façon que pour l'engin de traction, indiquez les premières lettres pour retrouver le matériel qui composera votre convoi."
             }
-          ]
+          ],
+          "title": "Matériel remorqué"
         },
         {
-          "title": "Tonnage, longueur, vitesse max.",
           "content": [
             {
               "type": "text",
               "value": "Indiquez le tonnage total de votre convoi (en tonnes), la longueur totale (en mètres), et la vitesse maximale (en km/h)."
             }
-          ]
+          ],
+          "title": "Tonnage, longueur, vitesse max."
         },
         {
-          "title": "Code de composition",
           "content": [
             {
               "type": "text",
               "value": "Sélectionnez le code de composition de votre convoi parmi la liste."
             }
-          ]
+          ],
+          "title": "Code de composition"
         }
-      ]
+      ],
+      "title": "Le convoi"
+    },
+    "faq": {
+      "content": [
+        {
+          "questions": [
+            {
+              "answer": "Une fiche de simulation est un document présentant les informations de la simulation ainsi que le jalonnement horairisé de la proposition faite par LMR. La fiche peut être téléchargée par l’utilisateur et ensuite introduite dans une demande GESICO pour une prise en compte et vérification par l’horairiste.",
+              "question": "Qu’est-ce qu’une fiche de simulation ?"
+            },
+            {
+              "answer": "Une fois votre fiche de simulation jointe à la demande dans GESICO, l’horairiste procède à une étape de validation prenant en compte des paramètres tels que la capacité en gare, l’horodatage et autres règles d’exploitation. Si après vérification le sillon ne peut plus être attribué, il sera refusé.",
+              "question": "J’ai joint une fiche de simulation et mon sillon est refusé, pourquoi ?"
+            },
+            {
+              "answer": "LMR ne créé pas de la capacité. L’outil ne vous propose un sillon qu’en fonction de votre besoin et de la capacité résiduelle disponible au moment de votre simulation.",
+              "question": "LMR ne me propose pas de sillon, pourquoi ?"
+            },
+            {
+              "answer": "LMR est un outil de simulation. Il ne permet en aucun cas de faire des demandes de SDM mais uniquement des requêtes de simulation. Les demandes de SDM se font dans GESICO avec la possibilité de joindre une fiche de simulation issue de LMR.",
+              "question": "Puis-je passer par LMR pour passer une commande de création de sillon ?"
+            },
+            {
+              "answer": "Non, pour le moment les simulations se font uniquement pour des sillons simples, sans prescription de sécurité.",
+              "question": "Est-il possible de simuler une demande de sillon intégrant un ATE ?"
+            },
+            {
+              "answer": "Une simulation LMR ne bloque pas la capacité. La simulation permet uniquement à l’utilisateur de savoir quelle est la capacité disponible et ensuite de faire une demande « éclairée » dans l’outil GESICO.",
+              "question": "Quand j’ai fait ma simulation, est-ce que la capacité est bloquée ?"
+            },
+            {
+              "answer": "Le périmètre du démonstrateur est limité uniquement à l’OD Perrigny-Miramas. Toutefois, des développements d’extension de l’OD sont prévus ultérieurement.",
+              "question": "Est-ce possible de faire une simulation sur une Origine Destination en dehors de Perrigny-Miramas ?"
+            },
+            {
+              "answer": "Le périmètre du démonstrateur est limité entre J-7 et J-1 17h, c’est-à-dire uniquement pour des sillons de dernière minute.",
+              "question": "Est-ce possible de faire une simulation à J-10 ?"
+            },
+            {
+              "answer": "Dans le cadre du démonstrateur, l’outil LMR ne permet pas de faire des demandes de rebroussement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil.",
+              "question": "Existe-t-il une possibilité de faire des demandes de rebroussement dans l’outil ?"
+            },
+            {
+              "answer": "Dans le cadre du démonstrateur, LMR ne prend pas en compte les voies d’évitement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil.",
+              "question": "L’outil prend-t-il en compte les voies d’évitement ?"
+            }
+          ],
+          "type": "faq"
+        }
+      ],
+      "title": "Foire aux questions"
+    },
+    "glossary": {
+      "content": [
+        {
+          "definitions": [
+            {
+              "definition": "Code Immuable",
+              "term": "CI"
+            },
+            {
+              "definition": "Code Chantier",
+              "term": "CH"
+            },
+            {
+              "definition": "Last Minute Request",
+              "term": "LMR"
+            },
+            {
+              "definition": "Point Remarquable",
+              "term": "PR"
+            },
+            {
+              "definition": "Sillon de Dernière Minute",
+              "term": "SDM"
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "title": "Glossaire"
     },
     "path": {
-      "title": "Le parcours",
       "content": [
         {
           "type": "text",
@@ -155,7 +234,6 @@
       ],
       "subSections": [
         {
-          "title": "Sillon antérieur",
           "content": [
             {
               "type": "text",
@@ -169,10 +247,10 @@
               "type": "text",
               "value": "Une fois votre sillon sélectionné, les informations de l'origine sont pré-remplies avec une marge de 30 minutes sur l'horaire de départ. Tous les champs restent néanmoins modifiables."
             }
-          ]
+          ],
+          "title": "Sillon antérieur"
         },
         {
-          "title": "Origine",
           "content": [
             {
               "type": "text",
@@ -186,10 +264,10 @@
               "type": "text",
               "value": "Si vous souhaitez imposer un horaire à la destination plutôt qu'à l'origine, remplacez \"horaire précis\" par \"respecter l'horaire de destination\", et indiquez les horaires dans le bloc de la destination."
             }
-          ]
+          ],
+          "title": "Origine"
         },
         {
-          "title": "PR intermédiaire",
           "content": [
             {
               "type": "text",
@@ -203,10 +281,10 @@
               "type": "text",
               "value": "N.B. : Les rebroussements ne sont pas encore pris en compte dans l'outil."
             }
-          ]
+          ],
+          "title": "PR intermédiaire"
         },
         {
-          "title": "Destination",
           "content": [
             {
               "type": "text",
@@ -220,21 +298,22 @@
               "type": "text",
               "value": "N.B. : Il faut renseigner soit un horaire d’origine soit un horaire de destination, pas les deux."
             }
-          ]
+          ],
+          "title": "Destination"
         },
         {
-          "title": "Sillon postérieur",
           "content": [
             {
               "type": "text",
               "value": "Optionnel, il fonctionne de la même façon que le sillon antérieur mais agit sur la destination plutôt que sur l'origine."
             }
-          ]
+          ],
+          "title": "Sillon postérieur"
         }
-      ]
+      ],
+      "title": "Le parcours"
     },
     "result": {
-      "title": "Le résultat du calcul",
       "content": [
         {
           "type": "text",
@@ -243,7 +322,6 @@
       ],
       "subSections": [
         {
-          "title": "La simulation de sillon",
           "content": [
             {
               "type": "text",
@@ -257,98 +335,20 @@
               "type": "text",
               "value": "Si le sillon simulé ne vous convient pas, remontez dans le formulaire et ajustez les paramètres de votre demande pour lancer une nouvelle simulation. Celle-ci apparaîtra alors à côté de la précédente une fois le calcul terminé."
             }
-          ]
+          ],
+          "title": "La simulation de sillon"
         },
         {
-          "title": "Pas de capacité",
           "content": [
             {
               "type": "text",
               "value": "Dans le cas où aucun sillon n'a pu être trouvé, vous êtes informés des différents conflits rencontrés avec d'autres sillons ou travaux. Vous pouvez là aussi remonter dans le formulaire pour ajuster les paramètres de votre demande et relancer une simulation."
             }
-          ]
+          ],
+          "title": "Pas de capacité"
         }
-      ]
-    },
-    "glossary": {
-      "title": "Glossaire",
-      "content": [
-        {
-          "type": "definitions",
-          "definitions": [
-            {
-              "term": "CI",
-              "definition": "Code Immuable"
-            },
-            {
-              "term": "CH",
-              "definition": "Code Chantier"
-            },
-            {
-              "term": "LMR",
-              "definition": "Last Minute Request"
-            },
-            {
-              "term": "PR",
-              "definition": "Point Remarquable"
-            },
-            {
-              "term": "SDM",
-              "definition": "Sillon de Dernière Minute"
-            }
-          ]
-        }
-      ]
-    },
-    "faq": {
-      "title": "Foire aux questions",
-      "content": [
-        {
-          "type": "faq",
-          "questions": [
-            {
-              "question": "Qu’est-ce qu’une fiche de simulation ?",
-              "answer": "Une fiche de simulation est un document présentant les informations de la simulation ainsi que le jalonnement horairisé de la proposition faite par LMR. La fiche peut être téléchargée par l’utilisateur et ensuite introduite dans une demande GESICO pour une prise en compte et vérification par l’horairiste."
-            },
-            {
-              "question": "J’ai joint une fiche de simulation et mon sillon est refusé, pourquoi ?",
-              "answer": "Une fois votre fiche de simulation jointe à la demande dans GESICO, l’horairiste procède à une étape de validation prenant en compte des paramètres tels que la capacité en gare, l’horodatage et autres règles d’exploitation. Si après vérification le sillon ne peut plus être attribué, il sera refusé."
-            },
-            {
-              "question": "LMR ne me propose pas de sillon, pourquoi ?",
-              "answer": "LMR ne créé pas de la capacité. L’outil ne vous propose un sillon qu’en fonction de votre besoin et de la capacité résiduelle disponible au moment de votre simulation."
-            },
-            {
-              "question": "Puis-je passer par LMR pour passer une commande de création de sillon ?",
-              "answer": "LMR est un outil de simulation. Il ne permet en aucun cas de faire des demandes de SDM mais uniquement des requêtes de simulation. Les demandes de SDM se font dans GESICO avec la possibilité de joindre une fiche de simulation issue de LMR."
-            },
-            {
-              "question": "Est-il possible de simuler une demande de sillon intégrant un ATE ?",
-              "answer": "Non, pour le moment les simulations se font uniquement pour des sillons simples, sans prescription de sécurité."
-            },
-            {
-              "question": "Quand j’ai fait ma simulation, est-ce que la capacité est bloquée ?",
-              "answer": "Une simulation LMR ne bloque pas la capacité. La simulation permet uniquement à l’utilisateur de savoir quelle est la capacité disponible et ensuite de faire une demande « éclairée » dans l’outil GESICO."
-            },
-            {
-              "question": "Est-ce possible de faire une simulation sur une Origine Destination en dehors de Perrigny-Miramas ?",
-              "answer": "Le périmètre du démonstrateur est limité uniquement à l’OD Perrigny-Miramas. Toutefois, des développements d’extension de l’OD sont prévus ultérieurement."
-            },
-            {
-              "question": "Est-ce possible de faire une simulation à J-10 ?",
-              "answer": "Le périmètre du démonstrateur est limité entre J-7 et J-1 17h, c’est-à-dire uniquement pour des sillons de dernière minute."
-            },
-            {
-              "question": "Existe-t-il une possibilité de faire des demandes de rebroussement dans l’outil ?",
-              "answer": "Dans le cadre du démonstrateur, l’outil LMR ne permet pas de faire des demandes de rebroussement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil."
-            },
-            {
-              "question": "L’outil prend-t-il en compte les voies d’évitement ?",
-              "answer": "Dans le cadre du démonstrateur, LMR ne prend pas en compte les voies d’évitement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil."
-            }
-          ]
-        }
-      ]
+      ],
+      "title": "Le résultat du calcul"
     }
   }
 }
