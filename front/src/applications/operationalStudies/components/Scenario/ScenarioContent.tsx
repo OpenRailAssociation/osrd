@@ -83,17 +83,21 @@ const ScenarioContent = ({
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItemWithTimetableId[]) => {
       upsertTimetableItems(updatedTimetableItems);
-      refreshNge();
+      if (isMacro) {
+        refreshNge();
+      }
     },
-    [upsertTimetableItems, refreshNge]
+    [upsertTimetableItems, refreshNge, isMacro]
   );
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      refreshNge();
+      if (isMacro) {
+        refreshNge();
+      }
     },
-    [removeTimetableItems, refreshNge]
+    [removeTimetableItems, refreshNge, isMacro]
   );
 
   const toggleMicroMacroButton = useCallback(
