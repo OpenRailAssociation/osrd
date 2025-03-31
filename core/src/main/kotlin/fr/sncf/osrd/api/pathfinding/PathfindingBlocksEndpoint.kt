@@ -2,7 +2,7 @@ package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.graph.*
@@ -52,7 +52,7 @@ class NoPathFoundException(val response: PathfindingBlockResponse) : Exception()
 
 val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
 
-class PathfindingBlocksEndpoint(private val infraManager: InfraManager) : Take {
+class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request): Response {
         val body = RqPrint(req).printBody()
         val request =

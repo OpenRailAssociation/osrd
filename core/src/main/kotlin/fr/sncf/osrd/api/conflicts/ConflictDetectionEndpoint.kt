@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.conflicts
 
 import fr.sncf.osrd.api.ExceptionHandler
-import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.parseTrainsRequirements
 import fr.sncf.osrd.api.parseWorkSchedulesRequest
 import fr.sncf.osrd.conflicts.Conflict
@@ -19,7 +19,7 @@ import org.takes.rs.RsText
 import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 
-class ConflictDetectionEndpoint(private val infraManager: InfraManager) : Take {
+class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request?): Response {
         val recorder = DiagnosticRecorderImpl(false)
         return try {

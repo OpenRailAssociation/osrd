@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.project_signals
 
 import fr.sncf.osrd.api.ExceptionHandler
-import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signal_projection.projectSignals
 import fr.sncf.osrd.sim_infra.api.convertBlockPath
@@ -16,7 +16,7 @@ import org.takes.rs.RsText
 import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 
-class SignalProjectionEndpoint(private val infraManager: InfraManager) : Take {
+class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request?): Response {
         val recorder = DiagnosticRecorderImpl(false)
         return try {

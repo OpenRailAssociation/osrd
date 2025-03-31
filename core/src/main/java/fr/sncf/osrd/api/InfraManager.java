@@ -18,7 +18,7 @@ import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InfraManager extends APIClient {
+public class InfraManager extends APIClient implements InfraProvider {
     static final Logger logger = LoggerFactory.getLogger(InfraManager.class);
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
@@ -198,7 +198,7 @@ public class InfraManager extends APIClient {
         return infraCache.remove(infraId);
     }
 
-    /** Get an infra given an id */
+    @Override
     public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws OSRDError, InterruptedException {
         try {

@@ -4,13 +4,18 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.squareup.moshi.JsonAdapter
 import fr.sncf.osrd.api.ElectricalProfileSetManager
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.InfraProvider
+import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.pathfinding.pathfindingRequestAdapter
 import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.standalone_sim.SimulationRequest
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
+import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
 import java.io.IOException
 import java.nio.file.Path
@@ -53,13 +58,20 @@ class ReproduceRequest : CliCommand {
         description = "The HTTP Authorization header sent to editoast"
     )
     private var editoastAuthorization = "x-osrd-skip-authz"
-    private val logger: Logger = LoggerFactory.getLogger("Pathfinding")
+    @Parameter(
+        names = ["--railjson"],
+        description = "Path to the railjson infra file, overriding the id given in the request"
+    )
+    private var railjson: String? = null
+    private val logger: Logger = LoggerFactory.getLogger("ReproduceRequest")
 
     @ExcludeFromGeneratedCodeCoverage
     override fun run(): Int {
         try {
             val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
-            val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
+            val infraManager =
+                if (railjson != null) FileInfraProvider(railjson!!)
+                else InfraManager(editoastUrl, editoastAuthorization, httpClient)
 
             fun <T> loadRequest(path: String, adapter: JsonAdapter<T>): T {
                 val fileSource = Path.of(path).source()
@@ -91,5 +103,21 @@ class ReproduceRequest : CliCommand {
             throw RuntimeException(e)
         }
         return 0
+    }
+}
+
+/**
+ * Implement the InfraProvider interface using a railjson file. Used to reproduce requests without
+ * needing to run any other part of the stack.
+ */
+data class FileInfraProvider(val path: String) : InfraProvider {
+    override fun getInfra(
+        infraId: String?,
+        expectedVersion: String?,
+        diagnosticRecorder: DiagnosticRecorder?
+    ): FullInfra {
+        val rjs = parseRailJSONFromFile(path)
+        val signalingSimulator = makeSignalingSimulator()
+        return FullInfra.fromRJSInfra(rjs, signalingSimulator)
     }
 }

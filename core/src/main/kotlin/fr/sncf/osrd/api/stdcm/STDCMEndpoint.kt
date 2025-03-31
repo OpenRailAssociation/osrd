@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
@@ -61,7 +60,7 @@ import org.takes.rs.RsText
 import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 
-class STDCMEndpoint(private val infraManager: InfraManager) : Take {
+class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
         // Parse request input
