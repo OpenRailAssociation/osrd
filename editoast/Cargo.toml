@@ -106,7 +106,7 @@ uuid = { version = "1.15.1", features = ["serde", "v4"] }
 [dependencies]
 anyhow = "1.0"
 approx = "0.5.1"
-axum = { version = "0.8.1", default-features = false, features = [
+axum = { version = "0.8.3", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
@@ -217,7 +217,7 @@ validator = { version = "0.19.0", features = ["derive"] }
 
 [dev-dependencies]
 async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
-axum = { version = "0.8.1", default-features = false, features = [
+axum = { version = "0.8.3", default-features = false, features = [
   "macros",
   "multipart",
   "tracing",
