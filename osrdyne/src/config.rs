@@ -70,16 +70,18 @@ impl Default for OsrdyneConfig {
     }
 }
 
-pub fn parse_config(file: Option<PathBuf>) -> Result<OsrdyneConfig, figment::Error> {
+pub fn parse_config(file: Option<PathBuf>) -> Result<OsrdyneConfig, Box<figment::Error>> {
     let provider = if let Some(file) = file {
         info!(file = %file.display(), "load configuration file");
         Yaml::file_exact(file)
     } else {
         Yaml::file("osrdyne.yml")
     };
-    Figment::from(Serialized::defaults(OsrdyneConfig::default()))
-        .merge(provider)
-        // We use `__` as a separator for nested keys
-        .merge(Env::prefixed("OSRDYNE__").split("__"))
-        .extract()
+    Ok(
+        Figment::from(Serialized::defaults(OsrdyneConfig::default()))
+            .merge(provider)
+            // We use `__` as a separator for nested keys
+            .merge(Env::prefixed("OSRDYNE__").split("__"))
+            .extract()?,
+    )
 }

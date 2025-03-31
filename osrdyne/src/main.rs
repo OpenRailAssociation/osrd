@@ -1,8 +1,11 @@
 use lapin::Connection;
 use lapin::ConnectionProperties;
 use opentelemetry::trace::TracerProvider;
+use opentelemetry_otlp::SpanExporter;
 use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::resource::EnvResourceDetector;
+use opentelemetry_sdk::resource::ResourceDetector;
 use opentelemetry_sdk::resource::SdkProvidedResourceDetector;
 use opentelemetry_sdk::resource::TelemetryResourceDetector;
 use std::collections::BTreeMap;
@@ -227,26 +230,24 @@ fn init_tracing(config: &OsrdyneConfig) {
         .boxed();
 
     let otlp_layer = config.opentelemetry.as_ref().map(|otel| {
-        let exporter = opentelemetry_otlp::new_exporter()
-            .tonic()
-            .with_endpoint(otel.endpoint.as_str());
+        let exporter = SpanExporter::builder()
+            .with_tonic()
+            .with_endpoint(otel.endpoint.as_str())
+            .build()
+            .expect("failed to create OTLP exporter");
 
-        let resource = opentelemetry_sdk::Resource::from_detectors(
-            Duration::from_secs(10),
-            vec![
-                Box::new(SdkProvidedResourceDetector),
+        let resource = Resource::builder()
+            .with_detectors(&[
+                Box::new(SdkProvidedResourceDetector) as Box<dyn ResourceDetector>,
                 Box::new(TelemetryResourceDetector),
                 Box::new(EnvResourceDetector::new()),
-            ],
-        );
-        let trace_config = opentelemetry_sdk::trace::Config::default().with_resource(resource);
+            ])
+            .build();
 
-        let otlp_tracer_provider = opentelemetry_otlp::new_pipeline()
-            .tracing()
-            .with_exporter(exporter)
-            .with_trace_config(trace_config)
-            .install_batch(opentelemetry_sdk::runtime::Tokio)
-            .expect("Failed to initialize Opentelemetry tracer");
+        let otlp_tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
+            .with_resource(resource)
+            .with_batch_exporter(exporter)
+            .build();
 
         let otlp_tracer = otlp_tracer_provider.tracer(
             std::env::var("OTEL_SERVICE_NAME").unwrap_or_else(|_| String::from("osrd-osrdyne")),
