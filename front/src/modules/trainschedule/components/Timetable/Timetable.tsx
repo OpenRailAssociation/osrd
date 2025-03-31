@@ -40,7 +40,6 @@ type TimetableProps = {
   itemIdToEdit?: TimetableItemId;
   timetableItems?: TimetableItemWithTimetableId[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
-  dtoImport: () => void;
 };
 
 const formatDepartureDate = (d: Date) => dayjs(d).locale(i18n.language).format('dddd D MMMM YYYY');
@@ -55,7 +54,6 @@ const Timetable = ({
   itemIdToEdit,
   timetableItems = [],
   timetableItemsWithDetails,
-  dtoImport,
 }: TimetableProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
@@ -73,7 +71,6 @@ const Timetable = ({
   const removeAndUnselectTrains = useCallback((timetableItemIds: TimetableItemId[]) => {
     removeTimetableItems(timetableItemIds);
     setSelectedTimetableItemIds([]);
-    dtoImport();
   }, []);
 
   const { filteredTimetableItems, ...timetableFilters } =
@@ -188,7 +185,6 @@ const Timetable = ({
                   projectionPathIsUsed={
                     infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
                   }
-                  dtoImport={dtoImport}
                 />
               ) : (
                 <PacedTrainItem
@@ -201,8 +197,6 @@ const Timetable = ({
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
-                  // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612
-                  // dtoImport={dtoImport}
                 />
               )}
             </div>

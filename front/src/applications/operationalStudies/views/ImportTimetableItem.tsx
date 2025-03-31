@@ -19,14 +19,9 @@ import { useAppDispatch } from 'store';
 type ImportTimetableItemProps = {
   timetableId: number;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
-  dtoImport: () => void;
 };
 
-const ImportTimetableItem = ({
-  timetableId,
-  upsertTimetableItems,
-  dtoImport,
-}: ImportTimetableItemProps) => {
+const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimetableItemProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
@@ -68,7 +63,6 @@ const ImportTimetableItem = ({
         trainsJsonData={trainsJsonData}
         trainsXmlData={trainsXmlData}
         upsertTimetableItems={upsertTimetableItems}
-        dtoImport={dtoImport}
       />
     </main>
   ) : (

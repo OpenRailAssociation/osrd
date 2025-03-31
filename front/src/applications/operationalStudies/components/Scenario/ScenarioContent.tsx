@@ -22,7 +22,11 @@ import { Loader } from 'common/Loaders';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
-import type { TimetableItemId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemId,
+  TrainScheduleResponseWithTrainId,
+  TimetableItemWithTimetableId,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import ScenarioDescription from './ScenarioDescription';
@@ -79,6 +83,22 @@ const ScenarioContent = ({
     macroEditorState.current = state;
     setNgeDto(dto);
   }, [dispatch, scenario, scenario.timetable_id]);
+
+  const upsertTimetableItemsWithNge = useCallback(
+    (updatedTimetableItems: TimetableItemWithTimetableId[]) => {
+      upsertTimetableItems(updatedTimetableItems);
+      dtoImport();
+    },
+    [upsertTimetableItems, dtoImport]
+  );
+
+  const removeTimetableItemsWithNge = useCallback(
+    (timetableItemIds: TimetableItemId[]) => {
+      removeTimetableItems(timetableItemIds);
+      dtoImport();
+    },
+    [removeTimetableItems, dtoImport]
+  );
 
   const toggleMicroMacroButton = useCallback(
     (isMacroMode: boolean) => {
@@ -139,25 +159,23 @@ const ScenarioContent = ({
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    upsertTimetableItems={upsertTimetableItems}
-                    removeTimetableItems={removeTimetableItems}
+                    upsertTimetableItems={upsertTimetableItemsWithNge}
+                    removeTimetableItems={removeTimetableItemsWithNge}
                     itemIdToEdit={itemIdToEdit}
                     setItemIdToEdit={setItemIdToEdit}
                     infraState={infra.state}
-                    dtoImport={dtoImport}
                   />
                 )}
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   infraState={infra.state}
                   conflicts={conflicts}
-                  upsertTimetableItems={upsertTimetableItems}
-                  removeTimetableItems={removeTimetableItems}
+                  upsertTimetableItems={upsertTimetableItemsWithNge}
+                  removeTimetableItems={removeTimetableItemsWithNge}
                   setItemIdToEdit={setItemIdToEdit}
                   itemIdToEdit={itemIdToEdit}
                   timetableItems={timetableItems}
                   timetableItemsWithDetails={timetableItemsWithDetails}
-                  dtoImport={dtoImport}
                 />
               </>
             )}
@@ -206,8 +224,7 @@ const ScenarioContent = ({
             <div className="scenario-managetrainschedule">
               <ImportTimetableItem
                 timetableId={scenario.timetable_id}
-                upsertTimetableItems={upsertTimetableItems}
-                dtoImport={dtoImport}
+                upsertTimetableItems={upsertTimetableItemsWithNge}
               />
             </div>
           )}
