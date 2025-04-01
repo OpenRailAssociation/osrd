@@ -31,7 +31,7 @@ const StdcmWarningBox = ({
 
   useEffect(() => {
     if (errorType && errorType !== StdcmConfigErrorTypes.MISSING_LOCATION && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [errorType]);
 
