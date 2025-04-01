@@ -12,6 +12,12 @@ class IncrementalRequirementEnvelopeAdapter(
     private val rollingStock: PhysicsRollingStock,
     private val envelopeWithStops: EnvelopeInterpolate?,
     override var simulationComplete: Boolean,
+
+    // If set to true, we consider that the train doesn't leave its current stop (yet).
+    // Used to evaluate conflicts up to a stop, including the stop itself,
+    // but without considering the reservation on blocks/routes after the stop
+    // (especially to avoid being bothered by the reservation margin before restarting after a stop
+    // on closed signal).
     private val infiniteLastStop: Boolean = false,
 ) : IncrementalRequirementCallbacks {
     override fun maxSpeedInRange(
@@ -46,6 +52,9 @@ class IncrementalRequirementEnvelopeAdapter(
             pastStop = endPos
         }
         if (pastStop == endPos && infiniteLastStop) {
+            // The requested stop is at the end of the simulated path,
+            // and the requested behavior is to make that stop "infinite"
+            // (pushing next reservation's start-time to "never").
             return Double.POSITIVE_INFINITY
         }
         return envelopeWithStops.interpolateDepartureFrom(pastStop)
@@ -96,6 +105,7 @@ class IncrementalRequirementEnvelopeAdapter(
             rollingStock,
             envelopeWithStops, // This is effectively read-only, we don't need a deep copy here
             simulationComplete,
+            infiniteLastStop,
         )
     }
 }

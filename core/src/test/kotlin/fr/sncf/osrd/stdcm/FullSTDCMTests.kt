@@ -296,7 +296,9 @@ class FullSTDCMTests {
                 .setMaxRunTime(Double.POSITIVE_INFINITY)
                 .setMaxDepartureDelay(0.0)
                 .run()!!
-        assertTrue(res.stopResults.first().duration > 5_000.0)
+        assertTrue(res.stopResults.first().duration > 5_000.0) {
+            "if a solution can be found without lengthening the stop, the test itself is broken"
+        }
     }
 
     private fun plannedTimingDataArg(): Stream<Arguments> {

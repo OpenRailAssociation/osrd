@@ -4,6 +4,7 @@ import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
@@ -213,6 +214,24 @@ data class BlockAvailability(
             if (needFullRequirements) infraExplorer.getFullSpacingRequirements()
             else infraExplorer.getSpacingRequirements()
 
+        // Ensures that we account for the 20s margin where a train must see a green signal before
+        // its departure: when the current segment starts at a stop, we want to consider conflicts
+        // up to 20s before the "start time".
+        val startsAtStop =
+            infraExplorer
+                .getStepTracker()
+                .getSeenSteps()
+                .drop(1) // Skip departure step
+                .filter { it.originalStep.stop }
+                .map {
+                    infraExplorer.getIncrementalPath().fromTravelledPath(it.travelledPathOffset)
+                }
+                .contains(startOffset)
+        var minRelevantTime = startTime
+        if (startsAtStop) {
+            minRelevantTime -= CLOSED_SIGNAL_RESERVATION_MARGIN
+        }
+
         // Modify the spacing requirements to adjust for the start time,
         // and filter out the ones that are outside the relevant time range
         val shiftedSpacingRequirements =
@@ -220,7 +239,7 @@ data class BlockAvailability(
                 .map {
                     SpacingRequirement(
                         it.zone,
-                        max(pathStartTime + it.beginTime, startTime),
+                        max(pathStartTime + it.beginTime, minRelevantTime),
                         min(pathStartTime + it.endTime, endTime),
                         it.isComplete
                     )
