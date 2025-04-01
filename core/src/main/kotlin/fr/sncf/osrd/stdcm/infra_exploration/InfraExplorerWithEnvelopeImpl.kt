@@ -105,7 +105,8 @@ data class InfraExplorerWithEnvelopeImpl(
                     IncrementalRequirementEnvelopeAdapter(
                         rollingStock,
                         EnvelopeConcat.from(listOf(envelope)),
-                        true
+                        true,
+                        endAtStop(),
                     ),
                     getIncrementalPath(),
                 ),
@@ -142,7 +143,8 @@ data class InfraExplorerWithEnvelopeImpl(
             IncrementalRequirementEnvelopeAdapter(
                 rollingStock,
                 getFullEnvelope(),
-                simulationComplete
+                simulationComplete,
+                endAtStop(),
             )
         val updatedRequirements =
             spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
@@ -164,7 +166,8 @@ data class InfraExplorerWithEnvelopeImpl(
                 IncrementalRequirementEnvelopeAdapter(
                     rollingStock,
                     getFullEnvelope(),
-                    simulationComplete
+                    simulationComplete,
+                    endAtStop(),
                 ),
                 getIncrementalPath(),
             )
@@ -197,7 +200,14 @@ data class InfraExplorerWithEnvelopeImpl(
             spacingRequirementAutomaton.clone(),
             rollingStock,
             stopTimeData,
-            spacingRequirementsCache
+            spacingRequirementsCache,
         )
+    }
+
+    override fun endAtStop(): Boolean {
+        val steps = getStepTracker().getSeenSteps()
+        return steps
+            .filter { it.originalStep.stop }
+            .any { it.travelledPathOffset == getSimulatedLength() }
     }
 }

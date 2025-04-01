@@ -39,7 +39,6 @@ import fr.sncf.osrd.utils.units.Offset
  * `Offset<TravelledPath>` using the underlying incremental path.
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
-
     /** Access the full envelope from the train start. */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
@@ -86,6 +85,8 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope>
 
     override fun moveForward(): InfraExplorerWithEnvelope
+
+    fun endAtStop(): Boolean
 }
 
 /** Init all InfraExplorersWithEnvelope starting at the given location. */
