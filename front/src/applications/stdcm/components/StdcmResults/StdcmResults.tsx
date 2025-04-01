@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -12,6 +12,7 @@ import {
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   getRetainedSimulationIndex,
@@ -85,6 +86,45 @@ const StdcmResults = ({
     return extractMarkersInfo(outputs.results.simulationPathSteps);
   }, [hasSimulationResults, outputs]);
 
+  const [refSchedule, setRefSchedules] = useState<string[]>([]);
+
+  const [postRefSchedules] = osrdEditoastApi.endpoints.postSimilarSchedules.useMutation();
+  const requestTrainSchedules = async () => {
+    const { consist, pathSteps } = selectedSimulation.inputs;
+    if (!consist) {
+      return;
+    }
+    const key = (uic: number, ch: string) => `${uic}-${ch}`;
+    const stops = pathSteps.reduce((acc, ps) => {
+      const k = key(ps.location?.uic ?? -1, ps.location?.secondary_code ?? '');
+      acc.set(k, !ps.isVia || (ps.stopFor !== undefined && ps.stopFor.ms > 0));
+      return acc;
+    }, new Map<string, boolean>());
+    const waypoints =
+      selectedSimulation.outputs?.pathProperties.manchetteOperationalPoints?.map(
+        ({ extensions }) => {
+          const k = key(extensions?.identifier?.uic ?? -1, extensions?.sncf?.ch ?? '');
+          return {
+            ci: extensions?.sncf?.ci ?? -1,
+            ch: extensions?.sncf?.ch ?? '',
+            stop: stops.get(k) ?? false,
+          };
+        }
+      ) ?? [];
+    const request = {
+      rolling_stock: {
+        name: consist.tractionEngine?.name ?? '',
+        towed_rolling_stock: consist.towedRollingStock?.name,
+        speed_limit_tag: consist.speedLimitByTag,
+        weight: consist.totalMass,
+      },
+      waypoints,
+    };
+    const response = await postRefSchedules({ body: request });
+    const ids = response.data?.similar_schedules.map((s) => s.schedule_id);
+    setRefSchedules(ids ?? ['Aucun sillon de référence trouvé T_T']);
+  };
+
   return (
     <>
       <StdcmSimulationNavigator
@@ -120,6 +160,19 @@ const StdcmResults = ({
                   />
                   {isSelectedSimulationRetained && (
                     <div className="get-simulation">
+                      <Button
+                        style={{ marginTop: '20px' }}
+                        label="L'avion c'est quand même mieux..."
+                        variant="Destructive"
+                        onClick={async () => requestTrainSchedules()}
+                      />
+                      {refSchedule.length > 0 && (
+                        <ul>
+                          {refSchedule.map((schedule, index) => (
+                            <li key={index}>{schedule}</li>
+                          ))}
+                        </ul>
+                      )}
                       <div className="download-simulation">
                         <PDFDownloadLink
                           document={
