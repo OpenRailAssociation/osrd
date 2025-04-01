@@ -2634,6 +2634,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
+  /ref_schedules:
+    post:
+      tags:
+      - ref_schedules
+      - stdcm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - rolling_stock
+              - waypoints
+              properties:
+                rolling_stock:
+                  type: object
+                  required:
+                  - name
+                  properties:
+                    name:
+                      type: string
+                    speed_limit_tag:
+                      type: string
+                      nullable: true
+                    towed_rolling_stock:
+                      type: string
+                      nullable: true
+                    weight:
+                      type: integer
+                      format: int64
+                      nullable: true
+                      minimum: 0
+                waypoints:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - ci
+                    - ch
+                    - stop
+                    properties:
+                      ch:
+                        type: string
+                      ci:
+                        type: integer
+                        format: int64
+                      stop:
+                        type: boolean
+        required: true
+      responses:
+        '200':
+          description: A combination of reference train schedules identifiers similar to the provided schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+              - '0098'
+              - '1234'
   /rolling_stock:
     post:
       tags:

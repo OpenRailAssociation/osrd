@@ -17,6 +17,8 @@ export const addTagTypes = [
   'projects',
   'studies',
   'scenarios',
+  'ref_schedules',
+  'stdcm',
   'rolling_stock_livery',
   'search',
   'similar_schedules',
@@ -770,6 +772,10 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['scenarios'],
+      }),
+      postRefSchedules: build.mutation<PostRefSchedulesApiResponse, PostRefSchedulesApiArg>({
+        query: (queryArg) => ({ url: `/ref_schedules`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['ref_schedules', 'stdcm'],
       }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
@@ -1870,6 +1876,23 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNo
   studyId: number;
   scenarioId: number;
   nodeId: number;
+};
+export type PostRefSchedulesApiResponse =
+  /** status 200 A combination of reference train schedules identifiers similar to the provided schedule */ string[];
+export type PostRefSchedulesApiArg = {
+  body: {
+    rolling_stock: {
+      name: string;
+      speed_limit_tag?: string | null;
+      towed_rolling_stock?: string | null;
+      weight?: number | null;
+    };
+    waypoints: {
+      ch: string;
+      ci: number;
+      stop: boolean;
+    }[];
+  };
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
