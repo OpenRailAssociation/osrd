@@ -105,6 +105,7 @@ class ViaSection extends STDCMPage {
       await expect(this.getViaCI(viaNumber)).toBeVisible();
       await this.getViaCI(viaNumber).fill(ciSearchText);
       await selectedSuggestion.waitFor();
+      await this.page.waitForTimeout(EXPLICIT_UI_STABILITY_TIMEOUT); // TODO: Remove the timeout and find a better alternative
       await selectedSuggestion.click();
       await this.getViaCH(viaNumber).click({ trial: true });
       await expect(this.getViaCH(viaNumber)).toHaveValue(DEFAULT_DETAILS.chValue);
