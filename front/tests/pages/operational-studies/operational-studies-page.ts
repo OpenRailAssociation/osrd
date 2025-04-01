@@ -4,6 +4,7 @@ import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
+import { createDateInSpecialTimeZone } from '../../utils/date-utils';
 import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../utils/types';
 import CommonPage from '../common-page';
 
@@ -186,9 +187,11 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.returnSimulationResultButton).toBeVisible();
     await expect(this.trainNameInput).toBeVisible();
-
     await expect(this.startTimeField).toBeVisible();
-    const startTimeDate = new Date(await this.startTimeField.inputValue());
+    const startTimeDate = createDateInSpecialTimeZone(
+      await this.startTimeField.inputValue(),
+      'Europe/Paris'
+    ).toDate();
     const scenarioCreationDate = new Date(date);
     const isSameDate =
       startTimeDate.getFullYear() === scenarioCreationDate.getFullYear() &&
