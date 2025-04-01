@@ -136,6 +136,7 @@ const StcdmResultsTable = ({
             onClick={toggleShowAllOP}
           />
         </div>
+        {/* <img width="30%" src={train} onClick={() => alert('hello')} /> */}
         <div className="button-get-simulation">
           {!isSimulationRetained ? (
             <Button
