@@ -122,7 +122,7 @@
     "eslint-plugin-only-warn": "^1.1.0",
     "eslint-plugin-prettier": "^5.2.5",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-vitest": "^0.3.21",
     "glob": "^11.0.1",
     "happy-dom": "^17.4.4",
