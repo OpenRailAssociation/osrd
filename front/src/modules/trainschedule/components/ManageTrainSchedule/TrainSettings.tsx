@@ -25,6 +25,7 @@ import { useAppDispatch } from 'store';
 import { parseLocalDateTime, formatLocalDateTime } from 'utils/date';
 import { useDebounce } from 'utils/helpers';
 import { isInvalidFloatNumber } from 'utils/numbers';
+import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 export default function TrainSettings() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -89,6 +90,9 @@ export default function TrainSettings() {
             !name ? `${t('errorMessages.requiredField')}` : `${t('errorMessages.nameLengthLimit')}`
           }
           noMargin
+          inputProps={{
+            maxLength: SMALL_INPUT_MAX_LENGTH,
+          }}
         />
       </div>
       <div className="col-xl-4 col-lg-5 pr-2">

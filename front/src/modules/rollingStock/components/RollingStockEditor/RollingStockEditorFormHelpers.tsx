@@ -23,6 +23,7 @@ import type {
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
+import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -55,6 +56,9 @@ const RollingStockEditorMetadataFormColumn = ({
             sm
             isFlex
             key={index}
+            inputProps={{
+              maxLength: SMALL_INPUT_MAX_LENGTH,
+            }}
           />
         );
       })}
