@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
-import type { OccurrenceId } from 'reducers/osrdconf/types';
+import { formatPacedTrainIdToOccurrenceId } from 'utils/trainId';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
@@ -33,7 +33,7 @@ const useOccurrences = ({
         .add(i * paced.step.ms, 'ms')
         .toDate();
       computedOccurrences.push({
-        id: `occurrence-${i}-${id}` as OccurrenceId,
+        id: formatPacedTrainIdToOccurrenceId(id, i),
         trainName: computeOccurrenceName(name, i),
         rollingStock,
         startTime: occurrenceStartTime,
