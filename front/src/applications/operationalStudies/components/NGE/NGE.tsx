@@ -10,6 +10,7 @@ import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronten
 
 import i18n from 'i18n';
 
+import { EMPTY_DTO } from './consts';
 import type { NetzgrafikDto, NGEEvent } from './types';
 
 interface NGEElement extends HTMLElement {
@@ -53,7 +54,10 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
     const frame = frameRef.current!;
 
     const handleFrameLoad = () => {
+      // Set the initial DTO as an empty state to avoid blinking with the
+      // default sample nodes
       const ngeRoot = frame.contentDocument!.createElement('sbb-root') as NGEElement;
+      ngeRoot.netzgrafikDto = EMPTY_DTO;
       frame.contentDocument!.body.appendChild(ngeRoot);
       setNgeRootElement(ngeRoot);
 
