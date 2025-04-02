@@ -33,6 +33,10 @@ class NeutralSection:
 
     _index = 0
 
+    @staticmethod
+    def reset_index():
+        NeutralSection._index = 0
+
     def add_track_range(
         self, track: TrackSection, begin: float, end: float, direction: Direction
     ):

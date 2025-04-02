@@ -1,8 +1,27 @@
-import subprocess
+from importlib.machinery import ModuleSpec
+import importlib.util
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from types import ModuleType
 from typing import Iterable
+
+
+def import_module_from_path(module_name: str, file_path: Path) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    assert isinstance(spec, ModuleSpec)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+small_infra_creator_module = import_module_from_path(
+    "small_infra_creator",
+    Path("../../tests/infra-scripts/small_infra_creator/__init__.py"),
+)
+sys.modules["small_infra_creator"] = small_infra_creator_module
 
 
 def run_script(gen_script: Path, output_dir: Path):
@@ -11,7 +30,11 @@ def run_script(gen_script: Path, output_dir: Path):
     script_output = output_dir / script_name
     script_output.mkdir(parents=True, exist_ok=True)
     print("running generation script", script_name)
-    subprocess.run([sys.executable, gen_script, script_output], check=True)
+    module = import_module_from_path(script_name, gen_script)
+    module.scenario_data.infra.save(script_output / "infra.json")
+    module.scenario_data.external_inputs.save(
+        script_output / "external_generated_inputs.json"
+    )
 
 
 def main(scripts: Iterable[Path], output_dir: Path):

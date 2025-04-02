@@ -21,6 +21,10 @@ class BufferStop:
 
     _index = 0
 
+    @staticmethod
+    def reset_index():
+        BufferStop._index = 0
+
     @property
     def id(self):
         return self.label
@@ -53,6 +57,10 @@ class Detector:
     label: str = field(default_factory=_detector_id)
 
     _index = 0
+
+    @staticmethod
+    def reset_index():
+        Detector._index = 0
 
     @property
     def id(self):
