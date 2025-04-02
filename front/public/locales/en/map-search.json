@@ -17,19 +17,19 @@
   "placeholdername": "Name, label, CI code",
   "placeholdersignal": "Signal name",
   "reset": "Reset",
+  "resultsCountTooMuch": "There are more than 100 results, please refine your search.",
   "resultsCount_one": "1 result",
   "resultsCount_other": "{{ count }} results",
   "resultsCount_zero": "No results",
-  "resultsCountTooMuch": "There are more than 100 results, please refine your search.",
   "search": "Search",
   "signal": "Signal",
-  "signalbox": "Switchbox",
   "signalSettings": {
+    "Nf": "Not crossable",
     "distant": "Far",
-    "is_430": "430",
-    "Nf": "Not crossable"
+    "is_430": "430"
   },
   "signalSystem": "Signalling system",
+  "signalbox": "Switchbox",
   "trackname": "Track",
   "type": "Type"
 }

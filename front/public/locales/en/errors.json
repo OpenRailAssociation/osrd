@@ -12,6 +12,7 @@
   },
   "default": "An error has occurred.",
   "editoast": {
+    "DatabaseAccessError": "Database access fatal error",
     "app_health": {
       "Core": "Core is in error",
       "Database": "Database is in error",
@@ -56,7 +57,6 @@
       "MqClientError": "Core: MQ client error",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
-    "DatabaseAccessError": "Database access fatal error",
     "delimited_area": {
       "InvalidLocations": "Some locations are invalid"
     },
@@ -75,6 +75,7 @@
     },
     "infra": {
       "Database": "Internal error",
+      "NotFound": "Infrastructure '{{infra_id}}' could not be found",
       "edition": {
         "InfraIsLocked": "Infrastructure is locked",
         "SplitTrackSectionBadOffset": "Distance to split track section '{{tracksection_id}}' in infrastructure '{{infra_id}}' is invalid. It must be between 0 and {{tracksection_length}} meters."
@@ -85,7 +86,6 @@
       "lines": {
         "LineNotFound": "No line with code {{line_code}} found"
       },
-      "NotFound": "Infrastructure '{{infra_id}}' could not be found",
       "objects": {
         "DuplicateIdsProvided": "Duplicate object ids provided",
         "ObjectIdNotFound": "Object '{{object_id}}' not found"
@@ -238,8 +238,8 @@
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "NoSimulation": "No simulation given",
-      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
       "NoTrainSchedules": "No train schedules given",
+      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
       "PathNotFound": "Path '{{path_id}}' could not be found",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",

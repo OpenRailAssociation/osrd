@@ -6,7 +6,6 @@
   "cancelAction": "Would you like to cancel this action?",
   "cancelUpdateRollingStock": "Do you really want to cancel your changes?",
   "categoriesOptions": {
-    "choose": "Choose a category",
     "COMMUTER_TRAIN": "Commuter Train",
     "FAST_FREIGHT_TRAIN": "Fast Freight Train",
     "FREIGHT_TRAIN": "Freight Train",
@@ -16,7 +15,8 @@
     "REGIONAL_TRAIN": "Regional Train",
     "TOURISTIC_TRAIN": "Touristic Train",
     "TRAM_TRAIN": "Tram-Train",
-    "WORK_TRAIN": "Work Train"
+    "WORK_TRAIN": "Work Train",
+    "choose": "Choose a category"
   },
   "chooseRollingStock": "Select a rolling stock to display informations",
   "comfort": "Comfort",
@@ -47,8 +47,8 @@
   "detail": "Detail",
   "effort": "Effort (kN)",
   "electric": "Electric",
-  "electricalProfiles": "Electrical Profiles",
   "electricOnly": "Electric only",
+  "electricalProfiles": "Electrical Profiles",
   "equipement": "Equipment",
   "errorMessages": {
     "invalidConversion": "Invalid conversion",

@@ -1,51 +1,4 @@
 {
-  "__main____BalSystem__ConditionalParameters": {
-    "properties": {
-      "on_route": {
-        "description": "Route for which those parameters are active",
-        "title": "On Route"
-      },
-      "parameters": {
-        "description": "BAL signal parameters"
-      }
-    },
-    "title": "Conditional Parameters"
-  },
-  "__main____BalSystem__Parameters": {
-    "properties": {
-      "jaune_cli": {
-        "description": "Is the signal yellow blinking"
-      }
-    },
-    "title": "Parameters"
-  },
-  "__main____BalSystem__Settings": {
-    "properties": {
-      "Nf": {
-        "description": "Signal non franchissable"
-      }
-    },
-    "title": "Paramètres BAL"
-  },
-  "__main____BaprSystem__Settings": {
-    "properties": {
-      "distant": {
-        "description": "Signal distant"
-      },
-      "Nf": {
-        "description": "Signal non franchissable"
-      }
-    },
-    "title": "Paramètres BAPR"
-  },
-  "__main____TvmSystem__Settings": {
-    "properties": {
-      "is_430": {
-        "description": "TVM-430"
-      }
-    },
-    "title": "Paramètres TVM"
-  },
   "ApplicableDirections": {
     "description": "Used to determine the direction of application of certain objects.",
     "title": "Applicable directions"
@@ -352,56 +305,6 @@
       }
     }
   },
-  "properties": {
-    "buffer_stops": {
-      "description": "Heurtoirs de l’infrastructure",
-      "title": "Buffer stops"
-    },
-    "detectors": {
-      "description": "Détecteurs de l’infrastructure",
-      "title": "Detectors"
-    },
-    "electrifications": {
-      "description": "Caténaires de l’infrastructure ",
-      "title": "Caténaires"
-    },
-    "neutral_sections": {
-      "description": "Sections neutres de l’infrastructure",
-      "title": "Sections neutres"
-    },
-    "operational_points": {
-      "description": "Liste des points remarquables de l’infrastructure",
-      "title": "Operational points"
-    },
-    "routes": {
-      "description": "Itinéraires de l’infrastructure",
-      "title": "Routes"
-    },
-    "signals": {
-      "description": "Signaux de l’infrastructure",
-      "title": "Signals"
-    },
-    "speed_sections": {
-      "description": "Limites de vitesse de l’infrastructure",
-      "title": "Speed limits"
-    },
-    "switch_types": {
-      "description": "Types d’aiguille de l’infrastructure",
-      "title": "Types d’aiguille"
-    },
-    "switches": {
-      "description": "Aiguilles de l’infrastructure",
-      "title": "Aiguilles"
-    },
-    "track_section_links": {
-      "description": "Raccordements de la section de voie de l’infrastructure",
-      "title": "Raccordements de la section de voie"
-    },
-    "track_sections": {
-      "description": "section de voie de l’infrastructure",
-      "title": "section de voie"
-    }
-  },
   "Route": {
     "description": "Décrit des itinéraires sur l’infrastructure.",
     "properties": {
@@ -491,9 +394,6 @@
     },
     "title": "Signal"
   },
-  "SignalingSystem": {
-    "title": "Signalling system"
-  },
   "SignalSncfExtension": {
     "properties": {
       "kp": {
@@ -516,6 +416,9 @@
         "title": "Value"
       }
     }
+  },
+  "SignalingSystem": {
+    "title": "Signalling system"
   },
   "Slope": {
     "description": "Correspond au gradient d’élévation d’une partie d’une section de voie. Le gradient peut être positif (cas d’une rampe) ou négatif (cas d’une pente).",
@@ -702,5 +605,102 @@
       }
     },
     "title": "Signalisation TVM"
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On Route"
+      },
+      "parameters": {
+        "description": "BAL signal parameters"
+      }
+    },
+    "title": "Conditional Parameters"
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": "Is the signal yellow blinking"
+      }
+    },
+    "title": "Parameters"
+  },
+  "__main____BalSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Signal non franchissable"
+      }
+    },
+    "title": "Paramètres BAL"
+  },
+  "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Signal non franchissable"
+      },
+      "distant": {
+        "description": "Signal distant"
+      }
+    },
+    "title": "Paramètres BAPR"
+  },
+  "__main____TvmSystem__Settings": {
+    "properties": {
+      "is_430": {
+        "description": "TVM-430"
+      }
+    },
+    "title": "Paramètres TVM"
+  },
+  "properties": {
+    "buffer_stops": {
+      "description": "Heurtoirs de l’infrastructure",
+      "title": "Buffer stops"
+    },
+    "detectors": {
+      "description": "Détecteurs de l’infrastructure",
+      "title": "Detectors"
+    },
+    "electrifications": {
+      "description": "Caténaires de l’infrastructure ",
+      "title": "Caténaires"
+    },
+    "neutral_sections": {
+      "description": "Sections neutres de l’infrastructure",
+      "title": "Sections neutres"
+    },
+    "operational_points": {
+      "description": "Liste des points remarquables de l’infrastructure",
+      "title": "Operational points"
+    },
+    "routes": {
+      "description": "Itinéraires de l’infrastructure",
+      "title": "Routes"
+    },
+    "signals": {
+      "description": "Signaux de l’infrastructure",
+      "title": "Signals"
+    },
+    "speed_sections": {
+      "description": "Limites de vitesse de l’infrastructure",
+      "title": "Speed limits"
+    },
+    "switch_types": {
+      "description": "Types d’aiguille de l’infrastructure",
+      "title": "Types d’aiguille"
+    },
+    "switches": {
+      "description": "Aiguilles de l’infrastructure",
+      "title": "Aiguilles"
+    },
+    "track_section_links": {
+      "description": "Raccordements de la section de voie de l’infrastructure",
+      "title": "Raccordements de la section de voie"
+    },
+    "track_sections": {
+      "description": "section de voie de l’infrastructure",
+      "title": "section de voie"
+    }
   }
 }

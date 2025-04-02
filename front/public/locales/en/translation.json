@@ -1,63 +1,4 @@
 {
-  "common": {
-    "and": "and",
-    "asc": "Ascending",
-    "back": "Back",
-    "cancel": "Cancel",
-    "change": "Change",
-    "close": "Close",
-    "confirm": "Confirm",
-    "delete": "Delete",
-    "description": "Description",
-    "download": "Download",
-    "dsc": "Descending",
-    "duplicate": "Duplicate",
-    "edit": "Edit",
-    "erase": "Erase",
-    "error": "An error has occurred",
-    "failure": {
-      "save": {
-        "text": "Failed to publish your modifications",
-        "title": "Failed to save modifications"
-      }
-    },
-    "filter": "Filter",
-    "help": "Help",
-    "help-display": "Show help",
-    "help-legend": "Show legend",
-    "itinerary": "Route",
-    "leaveEditionMode": "You are about to exit edit mode, any unsaved changes will be lost.",
-    "loading": "Loading...",
-    "next": "Next",
-    "no": "No",
-    "open": "Open",
-    "previous": "Previous",
-    "reset-north": "Reset camera",
-    "save": "Save",
-    "search": "Search",
-    "selected": "already selected",
-    "settings": "Settings",
-    "sort": "Sort",
-    "success": {
-      "save": {
-        "text": "Your modifications have been published",
-        "title": "Modifications saved"
-      }
-    },
-    "toggleInfraErrors": "Toggler infra errors layer",
-    "train(s)": "train(s)",
-    "units": {
-      "day": "d",
-      "hour": "h",
-      "km": "km",
-      "minute": "min"
-    },
-    "validate": "Save",
-    "yes": "Yes",
-    "zoom-in": "Zoom in",
-    "zoom-out": "Zoom out",
-    "zoom-reset": "Reset zoom"
-  },
   "Editor": {
     "directions": {
       "BOTH": "Both",
@@ -532,6 +473,65 @@
         "title": "Split"
       }
     }
+  },
+  "common": {
+    "and": "and",
+    "asc": "Ascending",
+    "back": "Back",
+    "cancel": "Cancel",
+    "change": "Change",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "description": "Description",
+    "download": "Download",
+    "dsc": "Descending",
+    "duplicate": "Duplicate",
+    "edit": "Edit",
+    "erase": "Erase",
+    "error": "An error has occurred",
+    "failure": {
+      "save": {
+        "text": "Failed to publish your modifications",
+        "title": "Failed to save modifications"
+      }
+    },
+    "filter": "Filter",
+    "help": "Help",
+    "help-display": "Show help",
+    "help-legend": "Show legend",
+    "itinerary": "Route",
+    "leaveEditionMode": "You are about to exit edit mode, any unsaved changes will be lost.",
+    "loading": "Loading...",
+    "next": "Next",
+    "no": "No",
+    "open": "Open",
+    "previous": "Previous",
+    "reset-north": "Reset camera",
+    "save": "Save",
+    "search": "Search",
+    "selected": "already selected",
+    "settings": "Settings",
+    "sort": "Sort",
+    "success": {
+      "save": {
+        "text": "Your modifications have been published",
+        "title": "Modifications saved"
+      }
+    },
+    "toggleInfraErrors": "Toggler infra errors layer",
+    "train(s)": "train(s)",
+    "units": {
+      "day": "d",
+      "hour": "h",
+      "km": "km",
+      "minute": "min"
+    },
+    "validate": "Save",
+    "yes": "Yes",
+    "zoom-in": "Zoom in",
+    "zoom-out": "Zoom out",
+    "zoom-reset": "Reset zoom"
   },
   "jsonUpload": {
     "badJSON": "The JSON file is malformed",

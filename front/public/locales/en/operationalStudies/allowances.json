@@ -13,10 +13,10 @@
   "cancel": "Cancel",
   "deleteAllowance": "Delete this allowance",
   "distribution": {
-    "linear": "Linear",
     "LINEAR": "Linear",
-    "mareco": "Mareco",
-    "MARECO": "Mareco"
+    "MARECO": "Mareco",
+    "linear": "Linear",
+    "mareco": "Mareco"
   },
   "engineeringAllowances": "Engineering allowance",
   "missingPathFinding": "Please define a path before specifying margins",

@@ -93,12 +93,12 @@
       "retainThisSimulation": "Retain this simulation",
       "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
       "simulationName": {
-        "withoutOutputs": "No capacity",
-        "withOutputs": "Simulation n°{{id}}"
+        "withOutputs": "Simulation n°{{id}}",
+        "withoutOutputs": "No capacity"
       },
       "simulationSelected": "You have selected this simulation",
-      "simulationsWithConflicts": "Two other simulations were automatically computed based on this configuration.",
       "simulationUpstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>after</underline> departure time was increased.",
+      "simulationsWithConflicts": "Two other simulations were automatically computed based on this configuration.",
       "startNewQuery": "Start a new query",
       "startNewQueryFromCurrent": "Start a new query from the current one",
       "status": {

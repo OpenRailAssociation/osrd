@@ -17,19 +17,19 @@
   "placeholdername": "Nom, appelation, libellé, code CI",
   "placeholdersignal": "Nom du signal",
   "reset": "Réinitialiser",
+  "resultsCountTooMuch": "Il y a plus de 100 résultats, merci d'affiner votre recherche.",
   "resultsCount_one": "1 résultat",
   "resultsCount_other": "{{ count }} résultats",
   "resultsCount_zero": "Aucun résultat",
-  "resultsCountTooMuch": "Il y a plus de 100 résultats, merci d'affiner votre recherche.",
   "search": "Rechercher",
   "signal": "Signal",
-  "signalbox": "Poste",
   "signalSettings": {
+    "Nf": "Non franchissable",
     "distant": "Distant",
-    "is_430": "430",
-    "Nf": "Non franchissable"
+    "is_430": "430"
   },
   "signalSystem": "Système de signalisation",
+  "signalbox": "Poste",
   "trackname": "Voie",
   "type": "Type"
 }
