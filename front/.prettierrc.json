@@ -4,6 +4,7 @@
   "arrowParens": "always",
   "proseWrap": "always",
   "trailingComma": "es5",
+  "plugins": ["prettier-plugin-tailwindcss"],
   "overrides": [
     {
       "files": ["*.jsonc", ".eslintrc", "tsconfig*.json"],
