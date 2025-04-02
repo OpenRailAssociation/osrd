@@ -1,9 +1,8 @@
-import type { Action, Reducer, ReducersMapObject, AnyAction } from 'redux';
-import type { PersistConfig } from 'redux-persist';
-import { createTransform, persistCombineReducers, persistReducer } from 'redux-persist';
+import type { Action, ReducersMapObject } from 'redux';
+import { createTransform, persistCombineReducers } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import createCompressor from 'redux-persist-transform-compress';
-import { createFilter } from 'redux-persist-transform-filter';
+import { createFilter, createBlacklistFilter } from 'redux-persist-transform-filter';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
@@ -53,11 +52,18 @@ const userWhiteList = ['account', 'userPreferences', 'impersonatedUser'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 
-const saveMapFilter = createFilter('map', mapWhiteList);
+const operationalStudiesConfBlackList = ['usingSpeedLimits'];
 
-const saveUserFilter = createFilter('user', userWhiteList);
+const saveMapFilter = createFilter(mapSlice.name, mapWhiteList);
 
-const saveMainFilter = createFilter('main', mainWhiteList);
+const saveUserFilter = createFilter(userSlice.name, userWhiteList);
+
+const saveMainFilter = createFilter(mainSlice.name, mainWhiteList);
+
+const operationalStudiesFilter = createBlacklistFilter(
+  operationalStudiesConfSlice.name,
+  operationalStudiesConfBlackList
+);
 
 // Deserialize date strings coming from local storage
 const operationalStudiesDateTransform = createTransform(
@@ -66,23 +72,19 @@ const operationalStudiesDateTransform = createTransform(
     startTime,
     interval,
     timeWindow,
+    pathSteps,
     ...outboundState
   }: {
     startTime: string;
     interval: string;
     timeWindow: string;
+    pathSteps: ({ arrival: string; stopFor: string } | null)[];
   }) => ({
     ...outboundState,
     startTime: new Date(startTime),
     interval: Duration.parse(interval),
     timeWindow: Duration.parse(timeWindow),
-  }),
-  { whitelist: ['operationalStudiesConf'] }
-);
-const pathStepsTransform = createTransform(
-  null,
-  (pathSteps: ({ arrival: string; stopFor: string } | null)[]) =>
-    pathSteps.map((pathStep) => {
+    pathSteps: pathSteps.map((pathStep) => {
       if (!pathStep) return null;
 
       return {
@@ -91,25 +93,24 @@ const pathStepsTransform = createTransform(
         stopFor: pathStep.stopFor ? Duration.parse(pathStep.stopFor) : null,
       };
     }),
-  { whitelist: ['pathSteps'] }
+  }),
+  {
+    whitelist: [operationalStudiesConfSlice.name],
+  }
 );
-
-// Useful to only blacklist a sub-propertie of osrdconf
-const buildOsrdConfPersistConfig = <T extends OperationalStudiesConfState | OsrdStdcmConfState>(
-  slice: ConfSlice
-): PersistConfig<T> => ({
-  key: slice.name,
-  storage,
-  transforms: [operationalStudiesDateTransform, pathStepsTransform],
-  blacklist: ['usingSpeedLimits'],
-});
 
 export const persistConfig = {
   key: 'root',
   storage,
-  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter],
-  blacklist: [stdcmConfSlice.name, operationalStudiesConfSlice.name],
-  whitelist: ['user', 'map', 'main', 'simulation', 'mapViewer'],
+  transforms: [
+    compressor,
+    saveMapFilter,
+    saveUserFilter,
+    saveMainFilter,
+    operationalStudiesFilter,
+    operationalStudiesDateTransform,
+  ],
+  blacklist: [stdcmConfSlice.name],
 };
 
 type AllActions = Action;
@@ -156,13 +157,10 @@ export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
   [mapSlice.name]: mapReducer,
   [mapViewerSlice.name]: mapViewerReducer,
-  [editorSlice.name]: editorReducer as Reducer<EditorState, AnyAction>,
+  [editorSlice.name]: editorReducer,
   [mainSlice.name]: mainReducer,
   [stdcmConfSlice.name]: stdcmConfReducer,
-  [operationalStudiesConfSlice.name]: persistReducer(
-    buildOsrdConfPersistConfig<OperationalStudiesConfState>(operationalStudiesConfSlice),
-    operationalStudiesConfReducer
-  ) as unknown as Reducer<OperationalStudiesConfState, AnyAction>,
+  [operationalStudiesConfSlice.name]: operationalStudiesConfReducer,
   [simulationResultsSlice.name]: simulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
