@@ -69,6 +69,10 @@ class Signal:
 
     _index = 0
 
+    @staticmethod
+    def reset_index():
+        Signal._index = 0
+
     def add_logical_signal(self, *args, **kwargs) -> LogicalSignal:
         signal = LogicalSignal(*args, **kwargs)
         self.logical_signals.append(signal)

@@ -53,6 +53,10 @@ class TrackSection:
     curves: List[Curve] = field(default_factory=list)
     loading_gauge_limits: List[LoadingGaugeLimit] = field(default_factory=list)
 
+    @staticmethod
+    def reset_index():
+        TrackSection._index = 0
+
     def begin(self):
         return TrackEndpoint(self, Endpoint.BEGIN)
 

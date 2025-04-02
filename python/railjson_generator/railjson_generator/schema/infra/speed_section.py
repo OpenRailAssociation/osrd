@@ -24,6 +24,10 @@ class SpeedSection:
 
     _index = 0
 
+    @staticmethod
+    def reset_index():
+        SpeedSection._index = 0
+
     def add_track_range(self, track, begin, end, applicable_directions):
         self.track_ranges.append(
             ApplicableDirectionsTrackRange(

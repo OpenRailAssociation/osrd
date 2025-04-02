@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Iterable, Optional, Tuple
 
 from .schema.infra.endpoint import TrackEndpoint
-from .schema.infra.infra import Infra
+from .schema.infra.infra import BufferStop, Infra, Switch, Detector
 from .schema.infra.neutral_section import NeutralSection
 from .schema.infra.operational_point import OperationalPoint
 from .schema.infra.route import Route
@@ -14,7 +14,7 @@ from .schema.infra.switch import (
     PointSwitch,
     SwitchGroup,
 )
-from .schema.infra.track_section import TrackSection
+from .schema.infra.track_section import Signal, TrackSection
 from .utils import generate_routes
 
 
@@ -60,6 +60,15 @@ class InfraBuilder:
     """
 
     infra: Infra = field(default_factory=Infra)
+
+    def __post_init__(self):
+        BufferStop.reset_index()
+        Detector.reset_index()
+        NeutralSection.reset_index()
+        Signal.reset_index()
+        SpeedSection.reset_index()
+        Switch.reset_index()
+        TrackSection.reset_index()
 
     def add_track_section(self, *args, **kwargs) -> TrackSection:
         """Build a track section, add it to the infra, and return it."""

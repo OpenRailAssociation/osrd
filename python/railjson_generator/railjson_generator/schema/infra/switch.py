@@ -36,6 +36,10 @@ class Switch:
     label: str = field(default_factory=_switch_id)
     delay: float = field(default=0)
 
+    @staticmethod
+    def reset_index():
+        Switch._index = 0
+
     def set_coords(self, x: float, y: float):
         for port_name in self.PORT_NAMES:
             getattr(self, port_name).set_coords(x, y)

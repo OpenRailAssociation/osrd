@@ -93,7 +93,7 @@ def add_signal_on_ports(
 
 class ScenarioData(NamedTuple):
     infra: Infra
-    external_inputs: ExternalGeneratedInputs
+    external_inputs: ExternalGeneratedInputs = ExternalGeneratedInputs()
 
 
 def create_small_infra(signaling_system: str) -> ScenarioData:
