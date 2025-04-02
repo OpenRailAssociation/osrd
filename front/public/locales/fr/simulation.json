@@ -1,4 +1,6 @@
 {
+  "ManualOffset": "Ajout de secondes au train",
+  "ModalEdit": "Édition d'un train",
   "allowances": "Marges",
   "departureTime": "Départ",
   "electricalProfiles": {
@@ -23,9 +25,7 @@
   "manchetteSettings": {
     "waypointsVisibility": "Modifier la visibilité des PRs"
   },
-  "ManualOffset": "Ajout de secondes au train",
   "map": "Carte",
-  "ModalEdit": "Édition d'un train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
@@ -52,8 +52,8 @@
     "powerRestrictions": "Restrictions de puissance",
     "reticleInfos": "Infos réticule",
     "slopes": "Déclivités",
-    "speedLimits": "Limites de vitesse",
     "speedLimitTags": "Codes de composition",
+    "speedLimits": "Limites de vitesse",
     "steps": "Points remarquables",
     "temporarySpeedLimits": "Limites temporaires de vit.",
     "tractionStatus": "Statut de la traction"

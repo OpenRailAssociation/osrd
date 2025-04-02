@@ -13,10 +13,10 @@
   "cancel": "Annuler",
   "deleteAllowance": "Supprimer cette marge",
   "distribution": {
-    "linear": "Linéaire",
     "LINEAR": "Linéaire",
-    "mareco": "Mareco",
-    "MARECO": "Mareco"
+    "MARECO": "Mareco",
+    "linear": "Linéaire",
+    "mareco": "Mareco"
   },
   "engineeringAllowances": "Marges de construction",
   "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",

@@ -1,4 +1,6 @@
 {
+  "Routing": "Reiserouten",
+  "Spacing": "Abstand",
   "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
   "conflictsCount_one": "1 Konflikt",
   "conflictsCount_other": "{{count}} Konflikte",
@@ -32,14 +34,13 @@
   "pacedTrain": {
     "pacedTrain": "Taktleistung"
   },
-  "pacedTrain_one": "1 Dienstleistung",
-  "pacedTrain_other": "{{count}} Dienstleistungen",
-  "pacedTrain_zero": "Keine Dienstleistung",
   "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(pacedTrain, { 'count': {{totalPacedTrainCount}} }) und {{trainCount}}/$t(train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
   "pacedTrainCount_one": "1/$t(pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
   "pacedTrainCount_other": "{{count}}/$t(pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
   "pacedTrainCount_zero": "$t(pacedTrain, { 'count': {{totalCount}} })",
-  "Routing": "Reiserouten",
+  "pacedTrain_one": "1 Dienstleistung",
+  "pacedTrain_other": "{{count}} Dienstleistungen",
+  "pacedTrain_zero": "Keine Dienstleistung",
   "scenarioCancel": "Abbrechen",
   "scenarioCreateButton": "Szenario erstellen",
   "scenarioCreationTitle": "Szenario erstellen",
@@ -56,7 +57,6 @@
   "scenarioTags": "Tags",
   "scenarioUpdated": "Änderung erfolgreich!",
   "scenarioUpdatedDetails": "Szenario {{ name }} ist geändert worden.",
-  "Spacing": "Abstand",
   "timetable": {
     "addTrainScheduleOrPacedTrain": "Hinzufügen",
     "advancedFilterLabel": "Schienenfahrzeug",
@@ -108,10 +108,10 @@
     "validityFilter": "Gültigkeit der Züge"
   },
   "toggleTimetable": "Fahrplan umschalten",
-  "train_one": "1 Zug",
-  "train_other": "{{count}} Züge",
-  "train_zero": "Kein Zug",
   "trainCount_one": "1/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
   "trainCount_other": "{{count}}/$t(train, { 'count': {{totalCount}} }) ausgewählt.",
-  "trainCount_zero": "$t(train, { 'count': {{totalCount}} })"
+  "trainCount_zero": "$t(train, { 'count': {{totalCount}} })",
+  "train_one": "1 Zug",
+  "train_other": "{{count}} Züge",
+  "train_zero": "Kein Zug"
 }

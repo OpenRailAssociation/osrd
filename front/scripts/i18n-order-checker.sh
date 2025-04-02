@@ -12,18 +12,10 @@ elif [ "$#" -ne 0 ]; then
     exit 1
 fi
 
-if ! jq_version=$(jq --version 2>/dev/null | cut -d- -f2) || [ "$(printf '%s\n%s' "$jq_version" "1.6" | sort -V | head -n1)" != "1.6" ]; then
-    echo "Error: jq 1.6 or higher is required. Please install jq 1.6 or higher using your package manager to continue." >&2
+if ! command -v jq >/dev/null 2>&1; then
+    echo "Error: jq is required but cannot be found. Please install jq using your package manager to continue." >&2
     exit 1
 fi
-
-JQ_CASE_INSENSITIVE_DEEP_SORT='
-def sort_keys_ci:
-  to_entries | sort_by(.key | ascii_downcase) | from_entries;
-
-walk(
-  if type == "object" then sort_keys_ci else . end
-)'
 
 LOCALES_DIR="$(realpath "$(dirname "$0")/../public/locales")"
 mapfile -d '' files < <(find "$LOCALES_DIR" -type f -name '*.json' -print0)
@@ -31,7 +23,7 @@ mapfile -d '' files < <(find "$LOCALES_DIR" -type f -name '*.json' -print0)
 UNSORTED=false
 
 for file in "${files[@]}"; do
-    sorted=$(jq "$JQ_CASE_INSENSITIVE_DEEP_SORT" "$file") || {
+    sorted=$(jq -S . "$file") || {
         echo "❌ Failed to parse $file"
         UNSORTED=true
         continue

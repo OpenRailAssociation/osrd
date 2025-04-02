@@ -93,12 +93,12 @@
       "retainThisSimulation": "Retenir cette simulation",
       "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
       "simulationName": {
-        "withoutOutputs": "Pas de capacité",
-        "withOutputs": "Simulation n°{{id}}"
+        "withOutputs": "Simulation n°{{id}}",
+        "withoutOutputs": "Pas de capacité"
       },
       "simulationSelected": "Vous avez retenu cette simulation",
-      "simulationsWithConflicts": "Deux autres simulations ont été calculées automatiquement sur la base de cette configuration.",
       "simulationUpstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>après</underline> l’heure de départ a été augmentée.",
+      "simulationsWithConflicts": "Deux autres simulations ont été calculées automatiquement sur la base de cette configuration.",
       "startNewQuery": "Démarrez une nouvelle requête",
       "startNewQueryFromCurrent": "Démarrez une nouvelle requête à partir de celle-ci",
       "status": {

@@ -1,4 +1,6 @@
 {
+  "ManualOffset": "Add seconds to the train",
+  "ModalEdit": "Train edition",
   "allowances": "Allowances",
   "departureTime": "Departure",
   "electricalProfiles": {
@@ -23,9 +25,7 @@
   "manchetteSettings": {
     "waypointsVisibility": "show/hide OP"
   },
-  "ManualOffset": "Add seconds to the train",
   "map": "Map",
-  "ModalEdit": "Train edition",
   "name": "Name",
   "noData": "No available data",
   "null": "Location not specified",
@@ -52,8 +52,8 @@
     "powerRestrictions": "Power restrictions",
     "reticleInfos": "Reticle infos",
     "slopes": "Slopes",
-    "speedLimits": "Speed limits",
     "speedLimitTags": "Speed limit tags",
+    "speedLimits": "Speed limits",
     "steps": "operational points",
     "temporarySpeedLimits": "Temporary speed limits",
     "tractionStatus": "Traction status"

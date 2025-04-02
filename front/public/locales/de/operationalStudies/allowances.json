@@ -13,10 +13,10 @@
   "cancel": "Abbrechen",
   "deleteAllowance": "Zeitpuffer löschen",
   "distribution": {
-    "linear": "Linear",
     "LINEAR": "Linear",
-    "mareco": "Mareco",
-    "MARECO": "Mareco"
+    "MARECO": "Mareco",
+    "linear": "Linear",
+    "mareco": "Mareco"
   },
   "engineeringAllowances": "Baulicher Toleranzbereich",
   "missingPathFinding": "Bitte setzen Sie vor Abschluss des Zeitpuffers einen Pfad.",

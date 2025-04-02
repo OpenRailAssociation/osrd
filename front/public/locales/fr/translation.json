@@ -1,63 +1,4 @@
 {
-  "common": {
-    "and": "et",
-    "asc": "Ascendant",
-    "back": "Retour",
-    "cancel": "Annuler",
-    "change": "Changer",
-    "close": "Fermer",
-    "confirm": "Confirmer",
-    "delete": "Supprimer",
-    "description": "Description",
-    "download": "Télécharger",
-    "dsc": "Descendant",
-    "duplicate": "Dupliquer",
-    "edit": "Éditer",
-    "erase": "Effacer",
-    "error": "Une erreur est survenue",
-    "failure": {
-      "save": {
-        "text": "Vos modifications n'ont pas été publiées",
-        "title": "Echec de l'enregistrement des modifications"
-      }
-    },
-    "filter": "Filtrer",
-    "help": "Aide",
-    "help-display": "Afficher l'aide",
-    "help-legend": "Afficher la légende",
-    "itinerary": "Itinéraire",
-    "leaveEditionMode": "Vous êtes sur le point de quitter le mode édition, toute modification non sauvegardée sera perdue.",
-    "loading": "Chargement…",
-    "next": "Suivant",
-    "no": "Non",
-    "open": "Ouvrir",
-    "previous": "Précedent",
-    "reset-north": "Réinitialiser la caméra",
-    "save": "Sauvegarder",
-    "search": "Rechercher",
-    "selected": "déjà sélectionné",
-    "settings": "Paramètres",
-    "sort": "Tri",
-    "success": {
-      "save": {
-        "text": "Vos modifications ont été publiées",
-        "title": "Modifications enregistrées"
-      }
-    },
-    "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
-    "train(s)": "train(s)",
-    "units": {
-      "day": "j",
-      "hour": "h",
-      "km": "km",
-      "minute": "min"
-    },
-    "validate": "Valider",
-    "yes": "Oui",
-    "zoom-in": "Zoomer",
-    "zoom-out": "Dézoomer",
-    "zoom-reset": "Réinitialiser le zoom"
-  },
   "Editor": {
     "directions": {
       "BOTH": "Les deux",
@@ -516,6 +457,65 @@
         "title": "Découpe"
       }
     }
+  },
+  "common": {
+    "and": "et",
+    "asc": "Ascendant",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "change": "Changer",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "description": "Description",
+    "download": "Télécharger",
+    "dsc": "Descendant",
+    "duplicate": "Dupliquer",
+    "edit": "Éditer",
+    "erase": "Effacer",
+    "error": "Une erreur est survenue",
+    "failure": {
+      "save": {
+        "text": "Vos modifications n'ont pas été publiées",
+        "title": "Echec de l'enregistrement des modifications"
+      }
+    },
+    "filter": "Filtrer",
+    "help": "Aide",
+    "help-display": "Afficher l'aide",
+    "help-legend": "Afficher la légende",
+    "itinerary": "Itinéraire",
+    "leaveEditionMode": "Vous êtes sur le point de quitter le mode édition, toute modification non sauvegardée sera perdue.",
+    "loading": "Chargement…",
+    "next": "Suivant",
+    "no": "Non",
+    "open": "Ouvrir",
+    "previous": "Précedent",
+    "reset-north": "Réinitialiser la caméra",
+    "save": "Sauvegarder",
+    "search": "Rechercher",
+    "selected": "déjà sélectionné",
+    "settings": "Paramètres",
+    "sort": "Tri",
+    "success": {
+      "save": {
+        "text": "Vos modifications ont été publiées",
+        "title": "Modifications enregistrées"
+      }
+    },
+    "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
+    "train(s)": "train(s)",
+    "units": {
+      "day": "j",
+      "hour": "h",
+      "km": "km",
+      "minute": "min"
+    },
+    "validate": "Valider",
+    "yes": "Oui",
+    "zoom-in": "Zoomer",
+    "zoom-out": "Dézoomer",
+    "zoom-reset": "Réinitialiser le zoom"
   },
   "jsonUpload": {
     "badJSON": "Le fichier JSON est malformé",

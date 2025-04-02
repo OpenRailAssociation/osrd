@@ -12,6 +12,7 @@
   },
   "default": "Une erreur est survenue.",
   "editoast": {
+    "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
     "app_health": {
       "Core": "Erreur de core",
       "Database": "Erreur de base de données",
@@ -56,7 +57,6 @@
       "MqClientError": "Core: erreur du client MQ",
       "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu"
     },
-    "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
     "delimited_area": {
       "InvalidLocations": "Certaines localisations sont invalides"
     },
@@ -75,6 +75,7 @@
     },
     "infra": {
       "Database": "Erreur interne",
+      "NotFound": "Infrastructure '{{infra_id}}' n'existe pas",
       "edition": {
         "InfraIsLocked": "Infrastructure verrouillée",
         "SplitTrackSectionBadOffset": "La distance pour scinder la section de voie '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
@@ -85,7 +86,6 @@
       "lines": {
         "LineNotFound": "Aucune ligne trouvée avec le code {{line_code}}"
       },
-      "NotFound": "Infrastructure '{{infra_id}}' n'existe pas",
       "objects": {
         "DuplicateIdsProvided": "Identifiants d'objet fournis en double",
         "ObjectIdNotFound": "Objet '{{object_id}}' non trouvé"
@@ -241,8 +241,8 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NoSimulation": "Aucune simulation fournie",
-      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
       "NoTrainSchedules": "Aucune circulation de train fournie",
+      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
       "PathNotFound": "Chemin '{{path_id}}' non trouvé",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",

@@ -6,7 +6,6 @@
   "cancelAction": "Souhaitez-vous annuler cette action ?",
   "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
   "categoriesOptions": {
-    "choose": "Choisissez une catégorie",
     "COMMUTER_TRAIN": "Train suburbain",
     "FAST_FREIGHT_TRAIN": "Train de fret rapide",
     "FREIGHT_TRAIN": "Train de fret",
@@ -16,7 +15,8 @@
     "REGIONAL_TRAIN": "Train régional",
     "TOURISTIC_TRAIN": "Train touristique",
     "TRAM_TRAIN": "Tram-train",
-    "WORK_TRAIN": "Train de travaux"
+    "WORK_TRAIN": "Train de travaux",
+    "choose": "Choisissez une catégorie"
   },
   "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
   "comfort": "Confort",
@@ -47,9 +47,9 @@
   "detail": "Détail",
   "effort": "Effort (kN)",
   "electric": "Électrique",
+  "electricOnly": "Uniquement électrique",
   "electricalPowerStartupTime": "Temps de reprise de courant",
   "electricalProfiles": "Profils électriques",
-  "electricOnly": "Uniquement électrique",
   "equipement": "Équipement",
   "errorMessages": {
     "invalidConversion": "Conversion invalide",
