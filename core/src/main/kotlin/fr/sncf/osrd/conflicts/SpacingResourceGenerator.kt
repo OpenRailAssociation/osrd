@@ -11,9 +11,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.min
-import mu.KotlinLogging
-
-private val logger = KotlinLogging.logger {}
 
 /*
  * ```
