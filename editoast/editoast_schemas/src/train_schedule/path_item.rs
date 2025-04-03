@@ -81,3 +81,20 @@ pub enum OperationalPointIdentifier {
         secondary_code: Option<String>,
     },
 }
+
+impl PathItem {
+    pub fn op_id(&self) -> Option<&Identifier> {
+        match &self.location {
+            PathItemLocation::OperationalPointReference(op) => match &op.reference {
+                OperationalPointIdentifier::OperationalPointId { operational_point } => {
+                    Some(operational_point)
+                }
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+    pub fn eq_op_id(&self, op: &Identifier) -> bool {
+        self.op_id().is_some_and(|id| id == op)
+    }
+}

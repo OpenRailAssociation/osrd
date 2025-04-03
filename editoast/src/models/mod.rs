@@ -19,6 +19,7 @@ pub mod prelude;
 pub mod project;
 pub mod railjson;
 pub mod rolling_stock;
+pub mod reference_schedule;
 pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
 pub mod scenario;

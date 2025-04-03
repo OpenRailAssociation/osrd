@@ -19,6 +19,7 @@ export const addTagTypes = [
   'scenarios',
   'ref_schedules',
   'stdcm',
+  'sncf',
   'rolling_stock_livery',
   'search',
   'similar_schedules',
@@ -775,7 +776,18 @@ const injectedRtkApi = api
       }),
       postRefSchedules: build.mutation<PostRefSchedulesApiResponse, PostRefSchedulesApiArg>({
         query: (queryArg) => ({ url: `/ref_schedules`, method: 'POST', body: queryArg.body }),
-        invalidatesTags: ['ref_schedules', 'stdcm'],
+        invalidatesTags: ['ref_schedules', 'stdcm', 'sncf'],
+      }),
+      putRefSchedulesLoadTimetable: build.mutation<
+        PutRefSchedulesLoadTimetableApiResponse,
+        PutRefSchedulesLoadTimetableApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/ref_schedules/load_timetable`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['ref_schedules', 'timetable', 'sncf'],
       }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
@@ -1882,16 +1894,23 @@ export type PostRefSchedulesApiResponse =
 export type PostRefSchedulesApiArg = {
   body: {
     rolling_stock: {
+      mass?: number | null;
       name: string;
       speed_limit_tag?: string | null;
       towed_rolling_stock?: string | null;
-      weight?: number | null;
     };
     waypoints: {
       ch: string;
       ci: number;
       stop: boolean;
     }[];
+  };
+};
+export type PutRefSchedulesLoadTimetableApiResponse = unknown;
+export type PutRefSchedulesLoadTimetableApiArg = {
+  body: {
+    infra_id: number;
+    timetable_id: number;
   };
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
