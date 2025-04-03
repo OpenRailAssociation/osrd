@@ -5,14 +5,13 @@ import type {
   PacedTrain,
   PathProperties,
   PathfindingResultSuccess,
-  ProjectPathTrainResult,
   RollingStockWithLiveries,
   SimulationResponse,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { TimetableItemWithTimetableId, TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -82,20 +81,6 @@ export type ManageTrainSchedulePathProperties = {
   trackSectionRanges: NonNullable<PathfindingResultSuccess['track_section_ranges']>;
   incompatibleConstraints?: IncompatibleConstraints;
 };
-
-/**
- * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
- */
-// TODO: reuse the type from osrd-ui/ui-manchette
-export type TrainSpaceTimeData = {
-  id: TrainId;
-  name: string;
-  spaceTimeCurves: {
-    positions: number[];
-    times: number[];
-  }[];
-  departureTime: Date;
-} & { signalUpdates: ProjectPathTrainResult['signal_updates'] };
 
 export type PositionData<T extends 'gradient' | 'radius'> = {
   [key in T]: number;

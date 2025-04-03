@@ -6,17 +6,34 @@ import type {
   OperationalPoint,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
-  TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
 import type {
   PathProperties,
   PathfindingResultSuccess,
+  ProjectPathTrainResult,
   RollingStockWithLiveries,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemWithTimetableId, TrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
+// Space Time Chart
+/**
+ * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
+ */
+// TODO: reuse the type from osrd-ui/ui-manchette
+export type TrainSpaceTimeData = {
+  id: TrainId;
+  name: string;
+  spaceTimeCurves: {
+    positions: number[];
+    times: number[];
+  }[];
+  departureTime: Date;
+  signalUpdates: ProjectPathTrainResult['signal_updates'];
+};
+
+// Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
 
 export type SpeedSpaceChartData = {

@@ -16,7 +16,7 @@ import useProjectedConflicts from 'modules/simulationResult/components/SpaceTime
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/useFormattedOperationalPoints';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
-import type { ProjectionData } from 'modules/simulationResult/types';
+import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -27,7 +27,6 @@ import { useAppDispatch } from 'store';
 import { isTrainSchedule } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
-import type { TrainSpaceTimeData } from '../types';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;

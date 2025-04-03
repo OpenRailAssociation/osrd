@@ -1,5 +1,5 @@
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
+import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type {
   TimetableItemId,
   TimetableItemWithTimetableId,

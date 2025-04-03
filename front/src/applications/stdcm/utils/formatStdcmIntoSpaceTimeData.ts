@@ -1,4 +1,4 @@
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 
 import { STDCM_TRAIN_TIMETABLE_ID } from '../consts';
 import type { StdcmSuccessResponse } from '../types';

@@ -25,7 +25,7 @@ import cx from 'classnames';
 import { compact } from 'lodash';
 import { createPortal } from 'react-dom';
 
-import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type { OperationalPoint } from 'applications/operationalStudies/types';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import OSRDMenu from 'common/OSRDMenu';
@@ -34,6 +34,7 @@ import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,
   LayerRangeData,
+  TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
