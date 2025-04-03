@@ -152,3 +152,11 @@ describe('getOccurrenceIndexFromOccurrenceId', () => {
     );
   });
 });
+
+describe('getPacedTrainIdFromOccurrenceId', () => {
+  it('should return the paced train ID', () => {
+    const occurrenceId = 'occurrence-1-paced-123' as OccurrenceId;
+    const result = getOccurrenceIndexFromOccurrenceId(occurrenceId);
+    expect(result).toBe('paced-123');
+  });
+});
