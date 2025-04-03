@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -61,4 +62,33 @@ fun trainPathZonePathOffset(
         prevChunksLength += len
     }
     throw RuntimeException("Unreachable (couldn't find first chunk in zone path list)")
+}
+
+/** Compute the block offset of a chunk on a block pathfinding edge. */
+fun getBlockChunkOffset(
+    blockInfra: BlockInfra,
+    rawInfra: RawSignalingInfra,
+    chunk: DirTrackChunkId,
+    range: PathfindingEdgeRangeId<Block>
+): Offset<Block> {
+    var offset = Offset<Block>(0.meters)
+    for (dirChunkId in blockInfra.getTrackChunksFromBlock(range.edge)) {
+        if (dirChunkId == chunk) break
+        offset += rawInfra.getTrackChunkLength(dirChunkId.value).distance
+    }
+    return offset
+}
+
+/** Compute the route offset of a chunk on a route. */
+fun getRouteChunkOffset(
+    rawInfra: RawSignalingInfra,
+    routeStaticIdx: RouteId,
+    chunk: DirTrackChunkId
+): Offset<Route> {
+    var offset = Offset<Route>(0.meters)
+    for (dirChunkId in rawInfra.getChunksOnRoute(routeStaticIdx)) {
+        if (dirChunkId == chunk) break
+        offset += rawInfra.getTrackChunkLength(dirChunkId.value).distance
+    }
+    return offset
 }
