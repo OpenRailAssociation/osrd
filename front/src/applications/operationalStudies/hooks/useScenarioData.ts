@@ -10,6 +10,8 @@ import {
   type SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
+import useLazyLoadTimetableItems from 'modules/simulationResult/hooks/useLazyLoadTimetableItems';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainResponseWithPacedTrainId,
@@ -30,9 +32,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import useAutoUpdateProjection from './useAutoUpdateProjection';
-import useLazyLoadTimetableItems from './useLazyLoadTimetableItems';
 import usePathProjection from './usePathProjection';
-import formatTimetableItemSummaries from '../helpers/formatTimetableItemSummaries';
 
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
