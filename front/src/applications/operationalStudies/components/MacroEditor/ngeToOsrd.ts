@@ -146,7 +146,7 @@ const createPathItemFromNode = async (
   ).unwrap()) as SearchResultItemOperationalPoint[];
 
   let opFound = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
-  if (!opFound) opFound = searchResults.find((op) => op.ch === '');
+  opFound ??= searchResults.find((op) => op.ch === '');
   finalSecondaryCode = opFound?.ch;
 
   return {

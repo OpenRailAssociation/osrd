@@ -57,7 +57,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       state.rollingStockID = action.payload;
     },
     updateSpeedLimitByTag(state: Draft<S>, action: PayloadAction<S['speedLimitByTag'] | null>) {
-      state.speedLimitByTag = action.payload === null ? undefined : action.payload;
+      state.speedLimitByTag = action.payload ?? undefined;
     },
   };
 }

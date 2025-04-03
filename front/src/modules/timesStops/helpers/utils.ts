@@ -188,9 +188,7 @@ export function updateRowTimesAndMargin(
     newRowData.arrival = undefined;
     // As we put 0% by default for origin's margin, if the user removes a margin without
     // replacing it to 0% (undefined), we change it to 0%
-    if (!newRowData.theoreticalMargin) {
-      newRowData.theoreticalMargin = '0%';
-    }
+    newRowData.theoreticalMargin ??= '0%';
   }
   // Remove second unit in stopFor if inputted by mistake
   if (newRowData.stopFor && /^[0-9]+ *s$/i.test(newRowData.stopFor)) {
