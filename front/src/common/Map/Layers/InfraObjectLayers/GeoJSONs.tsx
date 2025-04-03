@@ -161,7 +161,7 @@ function adaptFilter(
     // so that we can clean it later:
     console.warn(
       `The filter "${
-        layer.id || JSON.stringify(layer)
+        layer.id ?? JSON.stringify(layer)
       }" is a LegacyFilterSpecification. It should be an ExpressionFilterSpecification instead.`,
       layer.filter
     );
@@ -529,7 +529,7 @@ const GeoJSONs = ({
                 layers: source
                   .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
                   .map((layer) =>
-                    adaptFilter(layer, (hidden || []).concat(selection || []), [], renderAll)
+                    adaptFilter(layer, (hidden ?? []).concat(selection ?? []), [], renderAll)
                   ),
               },
               {
@@ -538,7 +538,7 @@ const GeoJSONs = ({
                 layerOrder: LAYER_ENTITIES_ORDERS[source.entityType],
                 layers: source
                   .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
-                  .map((layer) => adaptFilter(layer, hidden || [], selection || [], renderAll)),
+                  .map((layer) => adaptFilter(layer, hidden ?? [], selection ?? [], renderAll)),
               },
             ]
           : []

@@ -139,13 +139,13 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    */
   useEffect(() => {
     const nData = cropForDatavizViewbox(data, viewBox);
-    const nFullLength = (last(nData)?.end || 0) - (head(nData)?.begin || 0);
+    const nFullLength = (last(nData)?.end ?? 0) - (head(nData)?.begin ?? 0);
     const croppedAdditionalData = cropForDatavizViewbox(
-      additionalData || [],
+      additionalData ?? [],
       viewBox
     ) as LinearMetadataItem[] as AdditionalDataItem[];
     const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-      operationalPoints || [],
+      operationalPoints ?? [],
       viewBox,
       wrapper,
       nFullLength
@@ -163,7 +163,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   useEffect(() => {
     if (fullLength > 0) {
       const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-        operationalPoints || [],
+        operationalPoints ?? [],
         viewBox,
         wrapper,
         fullLength
@@ -182,7 +182,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       clearTimeout(debounceTimeoutId);
       debounceTimeoutId = setTimeout(() => {
         const nOperationalPoints = cropOperationPointsForDatavizViewbox(
-          operationalPoints || [],
+          operationalPoints ?? [],
           viewBox,
           wrapper,
           fullLength
@@ -324,7 +324,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         {/* Display the operational points */}
         {operationalPoints4viz.map((operationalPoint, index) => (
           <div
-            key={`op-${operationalPoint.id || index}`}
+            key={`op-${operationalPoint.id ?? index}`}
             className="operational-point"
             style={{
               position: 'absolute',
@@ -456,17 +456,17 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       {/* Display the X axis */}
       {options.resizingScale && wrapper.current ? (
         <ResizingScale
-          begin={head(data4viz)?.begin || 0}
-          end={last(data4viz)?.end || 0}
+          begin={head(data4viz)?.begin ?? 0}
+          end={last(data4viz)?.end ?? 0}
           wrapper={wrapper.current}
         />
       ) : (
         <SimpleScale
           className="scale-x"
-          begin={head(data4viz)?.begin || 0}
-          end={last(data4viz)?.end || 0}
-          min={head(data)?.begin || 0}
-          max={last(data)?.end || 0}
+          begin={head(data4viz)?.begin ?? 0}
+          end={last(data4viz)?.end ?? 0}
+          min={head(data)?.begin ?? 0}
+          max={last(data)?.end ?? 0}
         />
       )}
     </div>

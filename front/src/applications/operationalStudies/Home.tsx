@@ -116,7 +116,7 @@ const HomeOperationalStudies = () => {
         console.error('filter projetcs error : ', error);
       }
     } else {
-      setProjectsList(allProjects?.results || []);
+      setProjectsList(allProjects?.results ?? []);
     }
     setIsLoading(false);
   };

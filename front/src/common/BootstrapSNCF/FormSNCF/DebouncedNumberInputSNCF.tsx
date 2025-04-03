@@ -61,7 +61,7 @@ const DebouncedNumberInputSNCF = ({
         onChange={(e) => {
           setValue(e.target.value !== '' ? parseFloat(e.target.value) : null);
         }}
-        value={value !== null ? value : ''}
+        value={value ?? ''}
         sm={sm}
       />
     </div>

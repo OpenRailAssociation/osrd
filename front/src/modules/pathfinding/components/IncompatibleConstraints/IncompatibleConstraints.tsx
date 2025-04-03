@@ -135,7 +135,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
         ? pathProperties.incompatibleConstraints
         : undefined;
 
-    const dataPairs = Object.entries(data || {});
+    const dataPairs = Object.entries(data ?? {});
 
     // Set filters (and remove constrainst without items)
     setFiltersConstraintState(
@@ -150,7 +150,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
     const turfLength = pathProperties?.geometry
       ? length(feature(pathProperties?.geometry as LineString), { units: 'millimeters' })
       : 0;
-    const ratio = turfLength / (pathProperties?.length || turfLength);
+    const ratio = turfLength / (pathProperties?.length ?? turfLength);
     const nextConstraints = dataPairs
       .map(([key, value]) =>
         value.map((e) => {

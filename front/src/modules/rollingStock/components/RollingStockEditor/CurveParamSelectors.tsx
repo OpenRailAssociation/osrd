@@ -93,7 +93,7 @@ const CurveParamSelectors = ({
     osrdEditoastApi.endpoints.getRollingStockPowerRestrictions.useQuery();
 
   const [powerRestrictionList, setPowerRestrictionList] = useState<string[]>(
-    powerRestrictionCodes || []
+    powerRestrictionCodes ?? []
   );
 
   const extraColumnData = useMemo(
@@ -114,7 +114,7 @@ const CurveParamSelectors = ({
 
   const tractionModeOptions = useMemo(() => {
     const { tractionModes: alreadySelectedModes } = rollingstockParams;
-    return [...(availableModes || []), THERMAL_TRACTION_IDENTIFIER]
+    return [...(availableModes ?? []), THERMAL_TRACTION_IDENTIFIER]
       .filter((mode) => !alreadySelectedModes.includes(mode))
       .map((tractionMode) => ({
         id: tractionMode,
@@ -274,7 +274,7 @@ const CurveParamSelectors = ({
         <Selector
           title={t('tractionModes')}
           displayedItems={translateItemsList(t, rollingstockParams.tractionModes)}
-          selectedItem={selectedTractionMode || undefined}
+          selectedItem={selectedTractionMode ?? undefined}
           onItemSelected={(item: string | null) => {
             selectedParamsSetter('tractionMode', item);
           }}

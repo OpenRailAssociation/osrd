@@ -131,7 +131,7 @@ const StdcmResults = ({
                             simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
                           />
                         }
-                        fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
+                        fileName={`${deploymentSettings?.stdcmName ?? 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
                       >
                         <Button
                           data-testid="download-simulation-button"

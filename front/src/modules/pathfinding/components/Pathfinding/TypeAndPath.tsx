@@ -77,7 +77,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   const debouncedInputText = useDebounce(inputText.trimEnd(), 500);
 
   const activeElement = document.activeElement as HTMLInputElement;
-  const cursorIndex = activeElement.selectionStart || 0;
+  const cursorIndex = activeElement.selectionStart ?? 0;
   const sortedSearchResults = [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   const [initialCursorPositionRem, setInitialCursorPositionRem] = useState(0);
   const [trigramCount, setTrigramCount] = useState(0);
@@ -91,7 +91,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
       setSearch('');
     } else {
       const currentWord = findCurrentWord(trimmedTextStart, newCursorPosition);
-      setSearch(currentWord || '');
+      setSearch(currentWord ?? '');
       setCursorPosition(newCursorPosition);
     }
   };
@@ -148,7 +148,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
           const operationalPoints = [...results] as SearchResultItemOperationalPoint[];
           setOpList(
             opTrigrams.map(
-              (trigram) => operationalPoints.find((op) => op.trigram === trigram) || { trigram }
+              (trigram) => operationalPoints.find((op) => op.trigram === trigram) ?? { trigram }
             ) as SearchResultItemOperationalPoint[]
           );
         });

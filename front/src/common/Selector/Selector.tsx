@@ -40,7 +40,7 @@ const SelectorItem = <T extends string | null>({
     updateData: (newData: { [key: string]: string }) => void;
   };
 }) => {
-  const inputValue = extraColumn?.data[item.id!] || '';
+  const inputValue = extraColumn?.data[item.id!] ?? '';
   const isDisabled = isDefaultItem || !extraColumn;
   const isWarning = inputValue === '' && !isDisabled;
 

@@ -47,7 +47,7 @@ export default function SpeedLimitByTagSelector({
         <Select
           disabled={disabled}
           id="speed-limit-by-tag-selector"
-          value={speedLimitByTag || ''}
+          value={speedLimitByTag ?? ''}
           label={t('speedLimitByTagAbbrev')}
           // The placeHolder is only displayed in operationalStudies and in debug mode in stdcm
           placeholder={showPlaceHolder ? t('noSpeedLimitByTag') : undefined}

@@ -115,7 +115,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
         <div className="flex-grow-1 flex-shrink-1 mr-2">
           {trackSection ? (
             <span>
-              {trackSection?.properties?.extensions?.sncf?.line_name || trackSection.properties.id}
+              {trackSection?.properties?.extensions?.sncf?.line_name ?? trackSection.properties.id}
             </span>
           ) : (
             <span className="text-danger font-weight-bold">

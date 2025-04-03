@@ -60,7 +60,7 @@ const DropdownSNCF = ({
           <button
             data-testid="dropdown-sncf"
             ref={ref as LegacyRef<HTMLButtonElement>}
-            className={className || `${type} btn dropdown-toggle toolbar-item-spacing`}
+            className={className ?? `${type} btn dropdown-toggle toolbar-item-spacing`}
             type="button"
             onClick={() => !isDropdownShown && setIsDropdownShown(true)}
           >

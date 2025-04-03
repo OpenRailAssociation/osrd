@@ -65,7 +65,7 @@ type Icon2SVGProps = {
 };
 
 export const Icon2SVG = ({ file, altName, style, className }: Icon2SVGProps) => (
-  <img className={className || 'icon-to-svg'} src={file} alt={altName} style={style} />
+  <img className={className ?? 'icon-to-svg'} src={file} alt={altName} style={style} />
 );
 
 const MapSettingsLayers = () => (

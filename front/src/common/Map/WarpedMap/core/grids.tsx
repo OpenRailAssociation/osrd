@@ -213,8 +213,8 @@ export function straightenGrid(
   steps: number,
   settings?: { force?: number; iterations?: number }
 ): GridFeature {
-  const force = clamp(settings?.force || 0.5, 0, 1);
-  const iterations = Math.max(1, settings?.iterations || 1);
+  const force = clamp(settings?.force ?? 0.5, 0, 1);
+  const iterations = Math.max(1, settings?.iterations ?? 1);
 
   if (iterations > 1) {
     let iter = grid;

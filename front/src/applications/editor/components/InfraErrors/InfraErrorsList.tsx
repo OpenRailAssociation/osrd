@@ -120,7 +120,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
             aria-label={t('Editor.infra-errors.list.filter-type')}
             id="filterType"
             className="form-control"
-            value={filterType || 'all'}
+            value={filterType ?? 'all'}
             onChange={(e) => {
               dispatch(
                 updateFiltersIssue(infraID, {
@@ -143,7 +143,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
       <div className="error-count my-3">
         {!loading ? (
           <p className="text-center text-info">
-            {t(`Editor.infra-errors.list.total-${filterLevel}`, { count: total || 0 })}
+            {t(`Editor.infra-errors.list.total-${filterLevel}`, { count: total ?? 0 })}
           </p>
         ) : (
           <LoaderFill />

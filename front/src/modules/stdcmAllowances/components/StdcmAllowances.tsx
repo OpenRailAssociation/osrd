@@ -50,7 +50,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
             <InputSNCF
               id="standardAllowanceTypeGridMarginBefore"
               type="number"
-              value={gridMarginBefore?.total('second') || ''}
+              value={gridMarginBefore?.total('second') ?? ''}
               unit={ALLOWANCE_UNITS_KEYS.time}
               onChange={(e) =>
                 dispatch(
@@ -70,7 +70,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
             <InputSNCF
               id="standardAllowanceTypeGridMarginAfter"
               type="number"
-              value={gridMarginAfter?.total('second') || ''}
+              value={gridMarginAfter?.total('second') ?? ''}
               unit={ALLOWANCE_UNITS_KEYS.time}
               onChange={(e) =>
                 dispatch(
@@ -95,7 +95,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
           options={standardAllowanceTypes}
           onChange={onchangeType}
           currentValue={{
-            unit: standardAllowance?.type || 'percentage',
+            unit: standardAllowance?.type ?? 'percentage',
             value: standardAllowance?.value,
           }}
           disabled={disabled}

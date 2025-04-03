@@ -163,7 +163,7 @@ const Project = () => {
           console.error(error);
         }
       } else {
-        setStudiesList(projectStudies?.results || []);
+        setStudiesList(projectStudies?.results ?? []);
       }
     }
     setIsLoading(false);
@@ -289,7 +289,7 @@ const Project = () => {
                   </div>
                 </div>
               </div>
-              {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
+              {(project.funders ?? (project.budget !== 0 && project.budget !== null)) && (
                 <div className="project-details-financials">
                   <div className="project-details-financials-infos">
                     <h3>{t('fundedBy')}</h3>

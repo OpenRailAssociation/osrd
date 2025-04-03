@@ -72,7 +72,7 @@ export const BasePointEditionLayers = ({
     [renderedEntity]
   );
 
-  const type = cleanSymbolType((entity.properties || {}).extensions?.sncf?.installation_type || '');
+  const type = cleanSymbolType((entity.properties || {}).extensions?.sncf?.installation_type ?? '');
   const layers = useMemo(
     () =>
       SourcesDefinitionsIndex[objType](
@@ -86,7 +86,7 @@ export const BasePointEditionLayers = ({
         `editor/${objType}/`
       ).map((layer) =>
         // Quick hack to keep a proper interactive layer:
-        layer?.id?.match(interactiveLayerIDRegex || /-main$/)
+        layer?.id?.match(interactiveLayerIDRegex ?? /-main$/)
           ? { ...layer, id: POINT_LAYER_ID }
           : layer
       ),
@@ -107,7 +107,7 @@ export const BasePointEditionLayers = ({
       />
 
       {/* Edited entity */}
-      <EditorSource layers={layers} data={flatRenderedEntity || featureCollection([])} />
+      <EditorSource layers={layers} data={flatRenderedEntity ?? featureCollection([])} />
       {showPopup && renderedEntity && renderedEntity.geometry.type === 'Point' && (
         <Popup
           className="popup py-2"

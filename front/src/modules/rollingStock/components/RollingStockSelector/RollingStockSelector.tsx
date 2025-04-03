@@ -73,7 +73,7 @@ const RollingStockSelector = ({
                 />
                 <div className="rollingstock-container-img ml-4">
                   <div className="rollingstock-img d-flex align-items-center">
-                    {image || <RollingStock2Img rollingStock={rollingStockSelected} />}
+                    {image ?? <RollingStock2Img rollingStock={rollingStockSelected} />}
                   </div>
                 </div>
                 <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
@@ -87,7 +87,7 @@ const RollingStockSelector = ({
                 />
                 <div className="rollingstock-container-img">
                   <div className="rollingstock-img">
-                    {image || <RollingStock2Img rollingStock={rollingStockSelected} />}
+                    {image ?? <RollingStock2Img rollingStock={rollingStockSelected} />}
                   </div>
                 </div>
                 <div className="rollingstock-minicard-end">

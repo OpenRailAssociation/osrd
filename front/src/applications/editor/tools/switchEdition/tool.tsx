@@ -55,11 +55,11 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             (v, _) => v.length > 1
           );
           return (
-            state.portEditionState.type !== 'idle' ||
-            portWithTracks.length !== portsKeys.length ||
-            !!detectedDuplicates.length ||
-            isLoading ||
-            isInfraLocked ||
+            (state.portEditionState.type !== 'idle' ||
+              portWithTracks.length !== portsKeys.length ||
+              !!detectedDuplicates.length ||
+              isLoading) ??
+            isInfraLocked ??
             false
           );
         },

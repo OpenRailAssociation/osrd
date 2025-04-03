@@ -29,7 +29,7 @@ const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
   >;
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
-  const ranges = entity.properties.track_ranges || [];
+  const ranges = entity.properties.track_ranges ?? [];
   const displayedRanges = showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT);
 
   return (

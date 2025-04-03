@@ -66,7 +66,7 @@ const Map = ({
   const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
 
   const pathGeometry = useMemo(
-    () => geometry || pathProperties?.geometry,
+    () => geometry ?? pathProperties?.geometry,
     [pathProperties, geometry]
   );
 

@@ -237,7 +237,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     spaceTimeChartRef,
     defaultTimeOrigin: 0,
     defaultSpaceOrigin:
-      (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0,
+      (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position ?? 0,
   });
 
   useEffect(() => {
@@ -485,7 +485,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             onClick={handleClick}
             onHoveredChildUpdate={handleHoveredChildUpdate}
             spaceOrigin={
-              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
+              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position ?? 0
             }
           >
             {spaceTimeChartProps.paths.map((path) => (

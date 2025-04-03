@@ -8,7 +8,7 @@ import type { TimeExtraDays } from './types';
 type ReadOnlyTimeProps = CellProps<TimeExtraDays | undefined, string>;
 
 const ReadOnlyTime = ({ rowData }: ReadOnlyTimeProps) => {
-  const { time, daySinceDeparture, dayDisplayed } = rowData || {};
+  const { time, daySinceDeparture, dayDisplayed } = rowData ?? {};
   const { t } = useTranslation('timesStops');
 
   if (!time) {

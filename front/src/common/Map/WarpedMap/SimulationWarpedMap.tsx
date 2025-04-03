@@ -174,7 +174,7 @@ const SimulationWarpedMap = ({
   const warpedItinerary = useMemo(() => {
     if (itineraryState && state.type === 'dataLoaded')
       // we don't clip the path
-      return state.transform(itineraryState, false) || undefined;
+      return state.transform(itineraryState, false) ?? undefined;
     return undefined;
   }, [itineraryState, state]);
 

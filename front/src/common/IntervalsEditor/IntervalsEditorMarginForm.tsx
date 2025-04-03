@@ -53,7 +53,7 @@ const IntervalsEditorMarginForm = ({
           result[selectedIntervalIndex].unit = newUnit;
           setData(result);
         }}
-        value={interval.unit || defaultUnit || head(units)}
+        value={interval.unit ?? defaultUnit ?? head(units)}
       />
     )}
   </div>

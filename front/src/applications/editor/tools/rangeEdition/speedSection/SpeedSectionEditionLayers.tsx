@@ -65,7 +65,7 @@ export const SpeedSectionEditionLayers = () => {
 
     // Dragging an extremity:
     if (interactionState.type === 'moveRangeExtremity') {
-      res.push((entity.properties.track_ranges || [])[interactionState.rangeIndex].track);
+      res.push((entity.properties.track_ranges ?? [])[interactionState.rangeIndex].track);
     }
     // Custom hovered element:
     else if (hoveredItem?.itemType) {
@@ -96,7 +96,7 @@ export const SpeedSectionEditionLayers = () => {
     // generate trackRangeFeatures
     const trackRanges = isSpeedRestriction
       ? Object.values(pick(routeElements, highlightedRoutes)).flatMap((el) => el.trackRanges)
-      : entity.properties?.track_ranges || [];
+      : (entity.properties?.track_ranges ?? []);
     const trackRangeFeatures = trackRanges.flatMap((range, i) =>
       extractTrackRangeFeatures(flatEntity, range, i)
     );
@@ -116,7 +116,7 @@ export const SpeedSectionEditionLayers = () => {
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
-    const trackRanges = entity.properties?.track_ranges || [];
+    const trackRanges = entity.properties?.track_ranges ?? [];
     const trackRangeFeatures = trackRanges.flatMap((range, i) =>
       extractTrackRangeFeatures(flatEntity, range, i)
     );
@@ -148,7 +148,7 @@ export const SpeedSectionEditionLayers = () => {
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
-    const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) || [];
+    const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) ?? [];
     const missingTrackIDs = trackIDs.filter((id) => !trackSectionsCache[id]);
 
     if (missingTrackIDs.length) {
@@ -238,7 +238,7 @@ export const SpeedSectionEditionLayers = () => {
       )}
       {interactionState.type !== 'moveRangeExtremity' &&
         hoveredItem?.type === 'TrackSection' &&
-        !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id) &&
+        !(entity.properties.track_ranges ?? []).find((range) => range.track === hoveredItem.id) &&
         mousePosition && (
           <Popup
             className="popup"

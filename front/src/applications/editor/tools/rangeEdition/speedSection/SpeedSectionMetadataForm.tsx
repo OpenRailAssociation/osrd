@@ -55,7 +55,7 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
       newState.entity = newEntity;
     }
 
-    const speedLimitsByTag = entity.properties.speed_limit_by_tag || {};
+    const speedLimitsByTag = entity.properties.speed_limit_by_tag ?? {};
     let newError: string | undefined;
     if (Object.values(speedLimitsByTag).some((limit) => !limit)) newError = 'empty-limit';
     if (size(speedLimitsByTag) !== tagSpeedLimits.length) newError = 'duplicate-tags';
@@ -80,7 +80,7 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
               className="form-control flex-grow-1 flex-shrink-1"
               id="speed-section.main-limit"
               placeholder=""
-              msSpeed={entity.properties.speed_limit || undefined}
+              msSpeed={entity.properties.speed_limit ?? undefined}
               onChange={(newMsSpeed) => {
                 const newEntity = cloneDeep(entity);
                 newEntity.properties.speed_limit = newMsSpeed;
@@ -154,7 +154,7 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
               state.concat({
                 id: nextId(),
                 tag: getNewSpeedLimitTag(
-                  entity.properties.speed_limit_by_tag || {},
+                  entity.properties.speed_limit_by_tag ?? {},
                   t('Editor.tools.speed-edition.new-tag')
                 ),
                 value: undefined,

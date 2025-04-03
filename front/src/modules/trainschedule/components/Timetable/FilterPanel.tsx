@@ -105,7 +105,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             }}
             options={validityOptions}
             value={
-              validityOptions.find((option) => option.value === validityFilter) ||
+              validityOptions.find((option) => option.value === validityFilter) ??
               validityOptions[0]
             }
           />
@@ -123,7 +123,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             }}
             options={trainTypeOptions}
             value={
-              trainTypeOptions.find((option) => option.value === trainTypeFilter) ||
+              trainTypeOptions.find((option) => option.value === trainTypeFilter) ??
               trainTypeOptions[0]
             }
           />
@@ -159,7 +159,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             value={
               scheduledPointsHonoredOptions.find(
                 (option) => option.value === scheduledPointsHonoredFilter
-              ) || scheduledPointsHonoredOptions[0]
+              ) ?? scheduledPointsHonoredOptions[0]
             }
           />
         </div>

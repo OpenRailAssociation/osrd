@@ -93,7 +93,7 @@ const RollingStockEditorForm = ({
 
   const [powerRestrictionsClass, setPowerRestrictionsClass] = useState<
     RollingStock['power_restrictions']
-  >(rollingStockData?.power_restrictions || {});
+  >(rollingStockData?.power_restrictions ?? {});
 
   const addNewRollingstock = (payload: RollingStockForm) => () => {
     postRollingstock({

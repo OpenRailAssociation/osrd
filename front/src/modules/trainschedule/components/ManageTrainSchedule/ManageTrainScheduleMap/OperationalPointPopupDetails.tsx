@@ -46,8 +46,8 @@ const OperationalPointPopupDetails = ({
         </div>
       </div>
       <Select
-        getOptionLabel={(option) => option?.trackName || t('anyTrack')}
-        getOptionValue={(option) => option?.trackName || ''}
+        getOptionLabel={(option) => option?.trackName ?? t('anyTrack')}
+        getOptionValue={(option) => option?.trackName ?? ''}
         id="select-track"
         onChange={(selectedOption) => setSelectedTrack(selectedOption)}
         options={clickedOp.tracks}

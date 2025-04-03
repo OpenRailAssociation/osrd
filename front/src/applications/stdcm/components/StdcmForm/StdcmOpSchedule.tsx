@@ -118,8 +118,8 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             onDateChange={(e) => {
               onArrivalChange({
                 date: e,
-                hours: arrivalTimeHours || 0,
-                minutes: arrivalTimeMinutes || 0,
+                hours: arrivalTimeHours ?? 0,
+                minutes: arrivalTimeMinutes ?? 0,
               });
             }}
             errorMessages={datePickerErrorMessages}
@@ -131,7 +131,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             minutes={arrivalTimeMinutes}
             onTimeChange={({ hours, minutes }) => {
               onArrivalChange({
-                date: pathStep.arrival || searchDatetimeWindow.begin,
+                date: pathStep.arrival ?? searchDatetimeWindow.begin,
                 hours,
                 minutes,
               });

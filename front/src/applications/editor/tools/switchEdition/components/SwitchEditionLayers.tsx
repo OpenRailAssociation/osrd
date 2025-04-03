@@ -113,7 +113,7 @@ const SwitchEditionLayers = () => {
           position: closest.geometry.coordinates,
           trackSectionId: hoveredTrack.properties.id,
           trackSectionName:
-            hoveredTrack.properties?.extensions?.sncf?.track_name ||
+            hoveredTrack.properties?.extensions?.sncf?.track_name ??
             t('Editor.tools.switch-edition.untitled-track'),
         },
       },

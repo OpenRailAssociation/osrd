@@ -69,7 +69,7 @@ export default function AddOrEditProjectModal({
 }: AddOrEditProjectModalProps) {
   const { t } = useTranslation(['operationalStudies/project', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
-  const [currentProject, setCurrentProject] = useState<ProjectForm>(project || emptyProject);
+  const [currentProject, setCurrentProject] = useState<ProjectForm>(project ?? emptyProject);
   const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
 
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -360,7 +360,7 @@ export default function AddOrEditProjectModal({
               <div className="project-edition-modal-objectives-md-render">
                 <div id="debouncedObjectives">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {debouncedObjectives || ''}
+                    {debouncedObjectives ?? ''}
                   </ReactMarkdown>
                 </div>
               </div>

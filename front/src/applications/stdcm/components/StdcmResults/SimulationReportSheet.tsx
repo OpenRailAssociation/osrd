@@ -107,7 +107,7 @@ const SimulationReportSheet = ({
             <View style={styles.convoyAndRoute.convoyInfo}>
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag ?? '-'}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {consist?.towedRollingStock?.name ?? '-'}
@@ -358,7 +358,7 @@ const SimulationReportSheet = ({
                       >
                         {isNotExtremity && !isViaInSimulationPath && step.name === prevStep.name
                           ? '='
-                          : step.name || 'Unknown'}
+                          : (step.name ?? 'Unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>

@@ -109,9 +109,9 @@ const EditPSLSection = ({
 
   const addSign = (signType: PSL_SIGN_TYPES.ANNOUNCEMENT | PSL_SIGN_TYPES.R) => {
     const newPslExtension = cloneDeep(pslExtension);
-    const trackRanges = entity.properties.track_ranges || [];
+    const trackRanges = entity.properties.track_ranges ?? [];
     if (signType === PSL_SIGN_TYPES.ANNOUNCEMENT) {
-      const speedLimit = entity.properties.speed_limit || 30; // We should not have the value 30, 0 seems more accurate but we can't display it.
+      const speedLimit = entity.properties.speed_limit ?? 30; // We should not have the value 30, 0 seems more accurate but we can't display it.
       newPslExtension.announcement = [
         ...pslExtension.announcement,
         getNewAnnouncementSign(trackRanges, speedLimit),

@@ -209,7 +209,7 @@ function getRangeEditionTool<T extends EditorRange>({
       return 'default';
     },
     onClickMap(e, { setState, state: { entity, interactionState, selectedSwitches } }) {
-      const feature = (e.features || [])[0];
+      const feature = (e.features ?? [])[0];
 
       if (interactionState.type === 'selectSwitch') {
         if (feature && feature.sourceLayer === 'switches') {
@@ -277,14 +277,14 @@ function getRangeEditionTool<T extends EditorRange>({
         } else if (feature.sourceLayer === 'track_sections') {
           const clickedEntity = feature as unknown as TrackSectionEntity;
           if (
-            (entity.properties.track_ranges || []).find(
+            (entity.properties.track_ranges ?? []).find(
               (range) => range.track === clickedEntity.properties.id
             )
           )
             return;
 
           const newEntity = cloneDeep(entity);
-          newEntity.properties.track_ranges = newEntity.properties.track_ranges || [];
+          newEntity.properties.track_ranges = newEntity.properties.track_ranges ?? [];
           newEntity.properties.track_ranges.push({
             track: clickedEntity.properties.id,
             begin: 0,
@@ -307,7 +307,7 @@ function getRangeEditionTool<T extends EditorRange>({
     ) {
       if (interactionState.type === 'moveRangeExtremity') return;
 
-      const feature = (e.features || [])[0];
+      const feature = (e.features ?? [])[0];
       if (!feature) {
         if (hoveredItem) setState({ hoveredItem: null });
         if (hovered) setState({ hovered: null });
@@ -405,7 +405,7 @@ function getRangeEditionTool<T extends EditorRange>({
     },
     onMove(e, { setState, state: { entity, interactionState, hoveredItem, trackSectionsCache } }) {
       if (interactionState.type === 'moveRangeExtremity') {
-        const range = (entity.properties?.track_ranges || [])[interactionState.rangeIndex];
+        const range = (entity.properties?.track_ranges ?? [])[interactionState.rangeIndex];
         if (!range) return;
 
         const trackState = trackSectionsCache[range.track];
@@ -415,7 +415,7 @@ function getRangeEditionTool<T extends EditorRange>({
         const nearestPoint = getNearestPoint([track], e.lngLat.toArray());
 
         const newEntity = cloneDeep(entity);
-        const newRange = (newEntity.properties?.track_ranges || [])[interactionState.rangeIndex];
+        const newRange = (newEntity.properties?.track_ranges ?? [])[interactionState.rangeIndex];
 
         const distanceAlongTrack = approximatePointDistanceForEditoast(
           track,

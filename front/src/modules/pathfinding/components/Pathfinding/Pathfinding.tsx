@@ -83,7 +83,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
         </div>
       ) : (
         <>
-          {(pathfindingState.error || hasInvalidPathStep) && (
+          {(pathfindingState.error ?? hasInvalidPathStep) && (
             <div
               className={cx('content pathfinding-error', {
                 'mt-2': infra && infra.state !== 'CACHED',

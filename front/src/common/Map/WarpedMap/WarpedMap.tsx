@@ -116,7 +116,7 @@ const WarpedMap = ({
     const avgLon = (bbox[0] + bbox[2]) / 2;
     const thinBBox: BBox2d = [avgLon, bbox[1], avgLon, bbox[3]];
     setTimeout(() => {
-      mapRef.fitBounds(boundingBox || thinBBox, { animate: false });
+      mapRef.fitBounds(boundingBox ?? thinBBox, { animate: false });
       mapRef.resize();
     }, 0);
   }, [mapRef, bbox, boundingBox]);
@@ -166,7 +166,7 @@ const WarpedMap = ({
           key={s.id}
           id={s.id}
           layers={s.layers}
-          data={osrdData[s.source] || featureCollection([])}
+          data={osrdData[s.source] ?? featureCollection([])}
           layerOrder={s.order}
         />
       ))}

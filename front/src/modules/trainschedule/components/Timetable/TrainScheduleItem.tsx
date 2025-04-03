@@ -176,7 +176,7 @@ const TrainScheduleItem = ({
       >
         <div
           className={cx('base-info', {
-            warning: train.invalidReason || train.notHonoredReason,
+            warning: train.invalidReason ?? train.notHonoredReason,
             invalid: train.invalidReason,
             'not-honored': train.notHonoredReason,
           })}

@@ -46,7 +46,7 @@ const SpeedSpaceChartContainer = ({
     useState(heightOfSpeedSpaceChart);
 
   const root = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
+  const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth ?? 0);
 
   const speedSpaceChartData = formatData(
     timetableItemSimulation,

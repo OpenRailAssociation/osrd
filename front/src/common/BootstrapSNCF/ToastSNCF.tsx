@@ -29,7 +29,7 @@ function dateToFromAgo(date: Date): string {
         if (time > 0) return `${prefix} ${time} ${name}${time > 1 ? 's' : ''}`;
         return null;
       })
-      .reduce((acc, curr) => (acc === null && curr !== null ? curr : null), null) || 'maintenant'
+      .reduce((acc, curr) => (acc === null && curr !== null ? curr : null), null) ?? 'maintenant'
   );
 }
 
@@ -53,7 +53,7 @@ const ToastSNCF = ({ title, date, type, text }: Notification) => {
         <i className={`icons-size-1x25 ${typeToIcon[type]}`} />
         &nbsp;
         <strong className="mr-auto ml-1" data-testid="toast-SNCF-title">
-          {title || type}
+          {title ?? type}
         </strong>
         {date && <small>{dateToFromAgo(date)}</small>}
         <button

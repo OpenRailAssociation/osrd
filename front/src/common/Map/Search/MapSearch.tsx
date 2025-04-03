@@ -29,10 +29,10 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
       if (map && smoothTravel) {
         map.flyTo({
           center: {
-            lng: value.longitude || map.getCenter().lng,
-            lat: value.latitude || map.getCenter().lat,
+            lng: value.longitude ?? map.getCenter().lng,
+            lat: value.latitude ?? map.getCenter().lat,
           },
-          zoom: value.zoom || map.getZoom(),
+          zoom: value.zoom ?? map.getZoom(),
           essential: true,
         });
       }

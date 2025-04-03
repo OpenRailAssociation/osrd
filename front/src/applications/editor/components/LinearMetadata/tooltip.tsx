@@ -14,7 +14,7 @@ export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
   point,
   schema,
 }: LinearMetadataTooltipProps<T>) => {
-  const properties = Object.keys(schema.properties || {}).filter(
+  const properties = Object.keys(schema.properties ?? {}).filter(
     (i) => !['begin', 'end'].includes(i)
   );
 
@@ -37,7 +37,7 @@ export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
         {properties.map((k) => (
           <div key={k}>
             <span className="mr-3">
-              {((schema.properties || {})[k] as JSONSchema7 | undefined)?.title || k}
+              {((schema.properties ?? {})[k] as JSONSchema7 | undefined)?.title ?? k}
             </span>
             {isNil(item[k]) ? '-' : `${item[k]}`}
           </div>

@@ -308,7 +308,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
 
                   // if index has changed, we need to impact the index modification
                   if (hovered && newIndexMapping[hovered.index] === null) {
-                    setHovered({ ...hovered, index: max([0, hovered.index - 1]) || 0 });
+                    setHovered({ ...hovered, index: max([0, hovered.index - 1]) ?? 0 });
                   }
                   if (selected && newIndexMapping[selected] === null) {
                     setSelected(null);

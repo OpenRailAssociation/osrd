@@ -62,7 +62,7 @@ const emptyStudy: StudyForm = {
 const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyModalProps) => {
   const { t } = useTranslation(['operationalStudies/study', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
-  const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
+  const [currentStudy, setCurrentStudy] = useState<StudyForm>(study ?? emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
   const { updateStudyID } = useOsrdConfActions();
@@ -91,14 +91,14 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const handleStudyInputChange = useInputChange(initialValuesRef, setCurrentStudy, setHasChanges);
 
   const removeTag = (idx: number) => {
-    const newTags = [...(currentStudy.tags || [])];
+    const newTags = [...(currentStudy.tags ?? [])];
     newTags.splice(idx, 1);
     setCurrentStudy({ ...currentStudy, tags: newTags });
     handleStudyInputChange('tags', newTags);
   };
 
   const addTag = (tag: string) => {
-    const updatedTags = [...(currentStudy.tags || []), tag];
+    const updatedTags = [...(currentStudy.tags ?? []), tag];
     setCurrentStudy({ ...currentStudy, tags: updatedTags });
     handleStudyInputChange('tags', updatedTags);
   };
@@ -264,7 +264,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                     value={{
                       id: currentStudy.study_type ?? undefined,
                       label: t(
-                        `studyCategories.${currentStudy.study_type || 'nothingSelected'}`
+                        `studyCategories.${currentStudy.study_type ?? 'nothingSelected'}`
                       ).toString(),
                     }}
                     options={STUDY_TYPES.map((studyType) => ({
@@ -385,7 +385,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('studyServiceCode')}
                 </div>
               }
-              value={currentStudy?.service_code || ''}
+              value={currentStudy?.service_code ?? ''}
               onChange={(e) => handleStudyInputChange('service_code', e.target.value)}
               isInvalid={displayErrors && invalidFields.service_code}
               errorMsg={t('studyServiceCodeInvalid')}
@@ -404,7 +404,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('studyBusinessCode')}
                 </div>
               }
-              value={currentStudy?.business_code || ''}
+              value={currentStudy?.business_code ?? ''}
               onChange={(e) => handleStudyInputChange('business_code', e.target.value)}
               isInvalid={displayErrors && invalidFields.business_code}
               errorMsg={t('studyBusinessCodeInvalid')}
@@ -446,7 +446,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={currentStudy?.tags || []}
+          tags={currentStudy?.tags ?? []}
           removeTag={removeTag}
           title={t('studyTags')}
           color="primary"

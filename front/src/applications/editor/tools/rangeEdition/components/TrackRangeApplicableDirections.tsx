@@ -43,7 +43,7 @@ const TrackRangeApplicableDirections = ({
         value={range.applicable_directions}
         onChange={(e) => {
           const newEntity = cloneDeep(entity);
-          const newRange = (newEntity.properties.track_ranges || [])[index];
+          const newRange = (newEntity.properties.track_ranges ?? [])[index];
           newRange.applicable_directions = e.target.value as ApplicableDirection;
           setState({ entity: newEntity, hoveredItem: null });
         }}

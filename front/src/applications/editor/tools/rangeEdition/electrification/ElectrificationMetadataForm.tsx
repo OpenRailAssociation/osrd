@@ -30,7 +30,7 @@ const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
         </>
       }
       options={voltages}
-      value={entity.properties.voltage || ''}
+      value={entity.properties.voltage ?? ''}
       onChange={(newElectrification) => {
         const newEntity = cloneDeep(entity);
         newEntity.properties.voltage = newElectrification;

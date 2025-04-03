@@ -162,7 +162,7 @@ const RollingStockEditorParameterFormColumn = ({
                 onChange={(value?: string) => {
                   setRollingStockValues({
                     ...rollingStockValues,
-                    [property.title]: value || null,
+                    [property.title]: value ?? null,
                   });
                 }}
               />
@@ -177,7 +177,7 @@ const RollingStockEditorParameterFormColumn = ({
               className={cx(
                 'form-control-container',
                 ' justify-content-between',
-                property.margin || 'mb-4',
+                property.margin ?? 'mb-4',
                 {
                   'd-flex align-items-center':
                     property.title === 'mass' || property.title === 'maxSpeed',

@@ -111,7 +111,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
           <SelectImprovedSNCF
             sm
             withSearch
-            value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
+            value={layersSettings.speedlimittag ?? DEFAULT_SPEED_LIMIT_TAG}
             options={speedLimitsTags}
             onChange={dispatchSetSpeedLimitsTags}
           />

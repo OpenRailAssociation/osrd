@@ -50,7 +50,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: Ta
             tabIndex={0}
             onClick={() => handleTabClick(index)}
           >
-            {tab.title || tab.label}
+            {tab.title ?? tab.label}
           </div>
         ))}
       </div>

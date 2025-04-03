@@ -35,7 +35,7 @@ export default function SelectNewItemButton<
       <button
         type="button"
         className={cx('select-new-item-button', 'mb-2', {
-          disabled: disabled || options.length === 0,
+          disabled: disabled ?? options.length === 0,
         })}
         aria-label="add new item"
         onClick={() => (customOnClick ? customOnClick() : setIsSelectVisible(true))}

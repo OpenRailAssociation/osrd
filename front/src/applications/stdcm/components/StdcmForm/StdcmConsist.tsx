@@ -109,7 +109,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
   });
 
   const getLabel = (rs: LightRollingStockWithLiveries) => {
-    const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
+    const secondPart = rs.metadata?.series ?? rs.metadata?.reference ?? '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
   };
 

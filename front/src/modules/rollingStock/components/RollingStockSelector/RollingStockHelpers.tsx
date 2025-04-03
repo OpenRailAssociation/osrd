@@ -42,13 +42,13 @@ export const RollingStockInfo = ({
         {showSeries && (
           <span className="rollingstock-info-begin">
             <span className="rollingstock-info-series">
-              {metadata?.series ? metadata.series : metadata?.reference || ''}
+              {metadata?.series ?? metadata?.reference ?? ''}
             </span>
-            <RollingStockUnit unit={metadata?.unit || ''} detail={metadata?.detail || ''} />
+            <RollingStockUnit unit={metadata?.unit ?? ''} detail={metadata?.detail ?? ''} />
             <span className="rollingstock-info-subseries">
               {metadata?.series && metadata.series !== metadata.subseries
                 ? metadata.subseries
-                : metadata?.detail || ''}
+                : (metadata?.detail ?? '')}
             </span>
           </span>
         )}

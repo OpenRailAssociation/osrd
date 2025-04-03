@@ -9,7 +9,7 @@ export interface SelectOptionObject {
 }
 
 export function getOptionValue(option: string | SelectOptionObject): string {
-  return isString(option) ? option : option.id || option.label;
+  return isString(option) ? option : (option.id ?? option.label);
 }
 
 export function getOptionLabel(option: string | SelectOptionObject): string {

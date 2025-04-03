@@ -197,7 +197,7 @@ const ImportTimetableItemConfig = ({
 
     trains.forEach((train) => {
       const trainPartRef = train.getElementsByTagName('trainPartRef')[0]?.getAttribute('ref');
-      const trainName = train.getAttribute('name') || '';
+      const trainName = train.getAttribute('name') ?? '';
       if (trainPartRef) {
         trainPartToTrainMap[trainPartRef] = trainName;
       }
@@ -247,7 +247,7 @@ const ImportTimetableItemConfig = ({
     }
 
     trainParts.forEach((train) => {
-      const trainNumber = train.getAttribute('id') || '';
+      const trainNumber = train.getAttribute('id') ?? '';
       const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
       const formationTT = train.getElementsByTagName('formationTT')[0];
       const rollingStockViriato = formationTT?.getAttribute('formationRef');
@@ -260,7 +260,7 @@ const ImportTimetableItemConfig = ({
 
       const lastOcpTT = ocpSteps[ocpSteps.length - 1];
       const lastDepartureTime =
-        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('departure') ||
+        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('departure') ??
         lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('arrival');
       const lastDepartureTimeformatted = lastDepartureTime && cleanTimeFormat(lastDepartureTime);
 

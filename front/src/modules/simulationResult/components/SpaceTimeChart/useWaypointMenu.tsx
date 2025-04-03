@@ -10,7 +10,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
   const { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId } =
-    waypointsPanelData || {};
+    waypointsPanelData ?? {};
   const { t } = useTranslation('simulation');
 
   const [activeWaypointId, setActiveWaypointId] = useState<string>();

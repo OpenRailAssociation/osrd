@@ -50,7 +50,7 @@ const TrackEditionLeftPanel = () => {
   const schema = useMemo(() => {
     let jsonschema = getJsonSchemaForLayer(
       editorState.editorSchema,
-      getLayerForObjectType(editorState.editorSchema, track.objType) || ''
+      getLayerForObjectType(editorState.editorSchema, track.objType) ?? ''
     );
     if (isNil(jsonschema)) return jsonschema;
 

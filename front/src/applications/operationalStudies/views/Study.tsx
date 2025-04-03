@@ -167,7 +167,7 @@ const Study = () => {
           console.error(error);
         }
       } else {
-        setScenariosList(scenarios?.results || []);
+        setScenariosList(scenarios?.results ?? []);
       }
       setIsLoading(false);
     }
@@ -299,8 +299,8 @@ const Study = () => {
                 )}
               </div>
 
-              {(study.service_code ||
-                study.business_code ||
+              {(study.service_code ??
+                study.business_code ??
                 (study.budget !== 0 && study.budget !== null)) && (
                 <div className="study-details-financials">
                   <div className="study-details-financials-infos">

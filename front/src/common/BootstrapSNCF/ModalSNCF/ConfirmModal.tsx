@@ -66,7 +66,7 @@ export const ConfirmModal = ({
           onClick={() => cancel()}
           disabled={disabled}
         >
-          {cancelLabel || t('common.cancel')}
+          {cancelLabel ?? t('common.cancel')}
         </button>
         <button
           type="button"
@@ -74,7 +74,7 @@ export const ConfirmModal = ({
           onClick={() => confirm()}
           disabled={confirmDisabled || disabled}
         >
-          {confirmLabel || t('common.confirm')}
+          {confirmLabel ?? t('common.confirm')}
         </button>
       </div>
     </Modal>

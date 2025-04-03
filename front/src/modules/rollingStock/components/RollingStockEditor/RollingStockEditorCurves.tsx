@@ -103,9 +103,9 @@ const RollingStockEditorCurves = ({
     if (selectedTractionMode && !tractionModes.includes(selectedTractionMode))
       updateSelectedParams('tractionMode', tractionModes[0] || null);
     if (!electricalProfiles.includes(selectedParams.electricalProfile))
-      updateSelectedParams('electricalProfile', electricalProfiles[0] || null);
+      updateSelectedParams('electricalProfile', electricalProfiles[0] ?? null);
     if (!powerRestrictions.includes(selectedParams.powerRestriction))
-      updateSelectedParams('powerRestriction', powerRestrictions[0] || null);
+      updateSelectedParams('powerRestriction', powerRestrictions[0] ?? null);
 
     return {
       comfortLevels,

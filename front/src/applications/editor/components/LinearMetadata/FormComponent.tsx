@@ -86,14 +86,14 @@ const IntervalEditorComponent = (
   // Guess the value field of the linear metadata item
   const valueField = useMemo(() => {
     const itemProperties = (schema?.items
-      ? (schema.items as JSONSchema7).properties || {}
+      ? ((schema.items as JSONSchema7).properties ?? {})
       : {}) as unknown as { [key: string]: JSONSchema7 };
     const field = head(
       Object.keys(itemProperties)
         .filter((e) => !['begin', 'end'].includes(e))
         .map((e) => ({
           name: e,
-          type: itemProperties[e] ? itemProperties[e].type || '' : '',
+          type: itemProperties[e] ? (itemProperties[e].type ?? '') : '',
         }))
         .filter((e) => e.type === 'number' || e.type === 'integer')
         .map((e) => e.name)
@@ -137,7 +137,7 @@ const IntervalEditorComponent = (
   return (
     <div className="linear-metadata">
       <div className="header">
-        <h4 className="control-label m-0">{schema.title || name}</h4>
+        <h4 className="control-label m-0">{schema.title ?? name}</h4>
         <button
           type="button"
           className="btn btn-unstyled p-1 ml-1"
@@ -202,7 +202,7 @@ const IntervalEditorComponent = (
                   setData(result.result);
                   // if index has changed, we need to impact the index modification
                   if (hovered && result.newIndexMapping[hovered.index] === null) {
-                    setHovered({ ...hovered, index: fnMax([0, hovered.index - 1]) || 0 });
+                    setHovered({ ...hovered, index: fnMax([0, hovered.index - 1]) ?? 0 });
                   }
                   if (selected && result.newIndexMapping[selected] === null) {
                     setSelected(null);

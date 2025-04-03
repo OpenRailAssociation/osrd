@@ -97,7 +97,7 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
    */
   useEffect(() => {
     // compute the set of layer needed by the selection
-    const layersMustBeEnabled = (selection || []).reduce((acc, curr) => {
+    const layersMustBeEnabled = (selection ?? []).reduce((acc, curr) => {
       const layerTypes = EDITOAST_TO_LAYER_DICT[curr.objType as EditoastType] || [];
       layerTypes.forEach((layerType) => {
         if (layerType && !acc.has(layerType)) acc.add(layerType);
@@ -193,7 +193,7 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
           <select
             id="speedLimitTag"
             className="form-control"
-            value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
+            value={layersSettings.speedlimittag ?? DEFAULT_SPEED_LIMIT_TAG}
             disabled={!isArray(allSpeedLimitTags) || !selectedLayers.has('speed_sections')}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;

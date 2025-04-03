@@ -43,7 +43,7 @@ export const ElectrificationEditionLayers = () => {
   const selection = useMemo(() => {
     // Dragging an extremity:
     if (interactionState.type === 'moveRangeExtremity')
-      return [(entity.properties.track_ranges || [])[interactionState.rangeIndex].track];
+      return [(entity.properties.track_ranges ?? [])[interactionState.rangeIndex].track];
 
     // Custom hovered element:
     if (hoveredItem?.itemType) return [hoveredItem.track.properties.id];
@@ -54,7 +54,7 @@ export const ElectrificationEditionLayers = () => {
   const electrificationsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
-    const trackRanges = entity.properties?.track_ranges || [];
+    const trackRanges = entity.properties?.track_ranges ?? [];
     const trackRangeFeatures = trackRanges.flatMap((range, i) => {
       const trackState = trackSectionsCache[range.track];
       return trackState?.type === 'success'
@@ -78,7 +78,7 @@ export const ElectrificationEditionLayers = () => {
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
-    const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) || [];
+    const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) ?? [];
     const missingTrackIDs = trackIDs.filter((id) => !trackSectionsCache[id]);
 
     if (missingTrackIDs.length) {
@@ -157,7 +157,7 @@ export const ElectrificationEditionLayers = () => {
       )}
       {interactionState.type !== 'moveRangeExtremity' &&
         hoveredItem?.type === 'TrackSection' &&
-        !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id) &&
+        !(entity.properties.track_ranges ?? []).find((range) => range.track === hoveredItem.id) &&
         mousePosition && (
           <Popup
             className="popup"

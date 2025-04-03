@@ -26,8 +26,8 @@ const getOccupancyBounds = (
   // As javascript new Date() util takes count of the minutes lost since 1/1/1900 (9min and 21s), we have
   // to use sec2d3datetime here as well to set the times on the chart
   const relevantAspect = routeAspects.find((routeAspect) => {
-    const relevantStartTime = sec2d3datetime(routeAspect.time_start) || new Date();
-    const relevantEndTime = sec2d3datetime(routeAspect.time_end) || new Date();
+    const relevantStartTime = sec2d3datetime(routeAspect.time_start) ?? new Date();
+    const relevantEndTime = sec2d3datetime(routeAspect.time_end) ?? new Date();
 
     return (
       relevantStartTime < timePosition &&

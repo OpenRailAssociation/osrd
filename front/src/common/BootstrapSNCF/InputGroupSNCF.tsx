@@ -103,7 +103,7 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
 
   const currentUnitLabel = useMemo(() => {
     const currentUnit = options.find((option) => option.id === currentValue.unit);
-    return currentUnit?.label || currentValue.unit;
+    return currentUnit?.label ?? currentValue.unit;
   }, [options, currentValue.unit]);
 
   return (

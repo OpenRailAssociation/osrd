@@ -40,7 +40,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   const { data: workSchedules } = osrdEditoastApi.endpoints.postWorkSchedulesProjectPath.useQuery(
     {
       body: {
-        path_track_ranges: successfulSimulation?.results.path.track_section_ranges || [],
+        path_track_ranges: successfulSimulation?.results.path.track_section_ranges ?? [],
         work_schedule_group_id: workScheduleGroupId!,
       },
     },

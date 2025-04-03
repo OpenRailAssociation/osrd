@@ -12,8 +12,8 @@ export const FormBeginEndWidget = (props: WidgetProps) => {
           id={id}
           required={required}
           type="number"
-          min={schema.minimum || (options.min as number)}
-          max={schema.maximum || (options.max as number)}
+          min={schema.minimum ?? (options.min as number)}
+          max={schema.maximum ?? (options.max as number)}
           step="any"
           value={value}
           onChange={(e) => onChange(e.target.value)}

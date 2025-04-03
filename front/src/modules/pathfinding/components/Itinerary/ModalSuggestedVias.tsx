@@ -54,7 +54,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
         {isInVias && <small className="pr-2">{idxTrueVia}</small>}
         <i className={`${!isInVias ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
         <span className={cx('mr-1', 'suggested-via-name', { 'reduced-text': isInVias })}>
-          {op.name || ''}
+          {op.name ?? ''}
         </span>
         {op.ch && <span className="suggested-via-ch">{op.ch}</span>}
         {op.uic && <small className="suggested-via-uic text-muted">{formatUicToCi(op.uic)}</small>}

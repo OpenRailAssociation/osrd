@@ -72,7 +72,7 @@ const SimulationReportSheetScenario = ({
             <View style={styles.convoyAndRoute.convoyInfo}>
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag ?? '-'}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>
@@ -87,7 +87,7 @@ const SimulationReportSheetScenario = ({
                 </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('referenceEngine')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {rollingStock.metadata?.reference || '-'}
+                  {rollingStock.metadata?.reference ?? '-'}
                 </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxLength')}</Text>
                 <Text
@@ -134,7 +134,7 @@ const SimulationReportSheetScenario = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableOpWidth}>
                           <TD style={styles.convoyAndRoute.stopTableOpColumn}>
-                            {step.name || 'Unknown'}
+                            {step.name ?? 'Unknown'}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableChWidth}>
@@ -215,7 +215,7 @@ const SimulationReportSheetScenario = ({
                 const isLastStep = index === operationalPointsList.length - 1;
                 const isNotExtremity = !isFirstStep && !isLastStep;
                 const prevStep = operationalPointsList[index - 1];
-                const trackName = step.track_name || '-';
+                const trackName = step.track_name ?? '-';
                 const isWaypoint = path.path_item_positions
                   .slice(1, -1)
                   .some((pos) => pos / 1000 === step.position);
@@ -251,7 +251,7 @@ const SimulationReportSheetScenario = ({
                       >
                         {isNotExtremity && !isWaypoint && step.name === prevStep.name
                           ? '='
-                          : step.name || 'Unknown'}
+                          : (step.name ?? 'Unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>

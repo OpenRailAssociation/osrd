@@ -113,7 +113,7 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
             id="speedLimitTag"
             className="form-control"
             disabled={!selectedLayers.speed_limits}
-            value={selectedLayers.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
+            value={selectedLayers.speedlimittag ?? DEFAULT_SPEED_LIMIT_TAG}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               const newLayers = { ...selectedLayers, speedlimittag: newTag };

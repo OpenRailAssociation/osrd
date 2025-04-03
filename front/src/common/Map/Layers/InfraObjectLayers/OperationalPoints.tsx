@@ -53,7 +53,7 @@ const OperationalPointsLayer = ({
       ],
       'text-font': [
         'case',
-        ['==', ['get', 'id'], operationnalPointId || ''],
+        ['==', ['get', 'id'], operationnalPointId ?? ''],
         ['literal', ['Roboto Bold']],
         ['literal', ['Roboto Condensed']],
       ],
@@ -116,7 +116,7 @@ const OperationalPointsLayer = ({
       ],
       'text-font': [
         'case',
-        ['==', ['get', 'id'], operationnalPointId || ''],
+        ['==', ['get', 'id'], operationnalPointId ?? ''],
         ['literal', ['Roboto Bold']],
         ['literal', ['Roboto Condensed']],
       ],

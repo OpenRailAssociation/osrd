@@ -172,7 +172,7 @@ const PacedTrainItem = ({
       <div
         data-testid="paced-train"
         className={cx('base-info', {
-          warning: pacedTrain.invalidReason || pacedTrain.notHonoredReason,
+          warning: pacedTrain.invalidReason ?? pacedTrain.notHonoredReason,
           invalid: pacedTrain.invalidReason,
           'not-honored': pacedTrain.notHonoredReason,
         })}

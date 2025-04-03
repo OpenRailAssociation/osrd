@@ -42,7 +42,7 @@ const TrackSplitTool: Tool<TrackSplitState> = {
         icon: AiFillSave,
         labelTranslationKey: 'Editor.tools.track-split.actions.save',
         isDisabled({ state, isLoading, isInfraLocked }) {
-          return isLoading || isInfraLocked || false || !isOffsetValid(state.offset, state.track);
+          return isLoading ?? isInfraLocked ?? (false || !isOffsetValid(state.offset, state.track));
         },
         async onClick({ setIsFormSubmited }) {
           if (setIsFormSubmited) {

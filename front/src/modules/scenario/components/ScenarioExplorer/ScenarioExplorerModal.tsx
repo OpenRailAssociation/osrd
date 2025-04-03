@@ -48,7 +48,7 @@ const ScenarioExplorerModal = ({
     {
       selectFromResult: (response) => ({
         ...response,
-        projectsList: response.data?.results || [],
+        projectsList: response.data?.results ?? [],
       }),
     }
   );

@@ -72,10 +72,8 @@ function getPointEditionTool<T extends EditorPoint>({
           labelTranslationKey: `Editor.tools.${id}-edition.actions.save-entity`,
           isDisabled({ isLoading, isInfraLocked, state }) {
             return (
-              !state.entity.properties?.track ||
-              !state.entity.geometry ||
-              isLoading ||
-              isInfraLocked ||
+              (!state.entity.properties?.track || !state.entity.geometry || isLoading) ??
+              isInfraLocked ??
               false
             );
           },

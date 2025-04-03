@@ -69,7 +69,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const infraID = useInfraID();
   const { updateScenarioID } = useOsrdConfActions();
 
-  const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
+  const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario ?? emptyScenario);
 
   const noElectricalProfileSetOption = {
     key: undefined,
@@ -141,14 +141,14 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   );
 
   const removeTag = (idx: number) => {
-    const newTags = [...(currentScenario.tags || [])];
+    const newTags = [...(currentScenario.tags ?? [])];
     newTags.splice(idx, 1);
     setCurrentScenario({ ...currentScenario, tags: newTags });
     handleScenarioInputChange('tags', newTags);
   };
 
   const addTag = (tag: string) => {
-    const newTags = [...(currentScenario.tags || []), tag];
+    const newTags = [...(currentScenario.tags ?? []), tag];
     setCurrentScenario({ ...currentScenario, tags: newTags });
     handleScenarioInputChange('tags', newTags);
   };
@@ -165,10 +165,10 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
       postScenario({
         ...ids,
         scenarioCreateForm: {
-          description: currentScenario.description || '',
+          description: currentScenario.description ?? '',
           infra_id: currentScenario.infra_id,
           name: currentScenario.name,
-          tags: currentScenario.tags || [],
+          tags: currentScenario.tags ?? [],
           timetable_id: timetable.timetable_id,
           electrical_profile_set_id: currentScenario.electrical_profile_set_id,
         },
@@ -295,7 +295,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
                     <span className="font-weight-bold">{t('scenarioName')}</span>
                   </div>
                 }
-                value={currentScenario.name || ''}
+                value={currentScenario.name ?? ''}
                 onChange={(e) => handleScenarioInputChange('name', e.target.value)}
                 isInvalid={displayErrors && invalidFields.name}
                 errorMsg={t('scenarioNameInvalid')}
@@ -312,7 +312,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
                     {t('scenarioDescription')}
                   </div>
                 }
-                value={currentScenario.description || ''}
+                value={currentScenario.description ?? ''}
                 onChange={(e) => handleScenarioInputChange('description', e.target.value)}
                 placeholder={t('scenarioDescriptionPlaceholder')}
                 isInvalid={displayErrors && invalidFields.description}
@@ -346,7 +346,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
             )}
             <ChipsSNCF
               addTag={addTag}
-              tags={currentScenario.tags || []}
+              tags={currentScenario.tags ?? []}
               removeTag={removeTag}
               title={t('scenarioTags')}
               color="teal"

@@ -46,7 +46,7 @@ export function genOSMLayerProps(
 ): FullLayerProps[] {
   const osmStyle = getMapStyle(mapStyle);
   return osmStyle.reduce<FullLayerProps[]>((acc, layer) => {
-    const isShown = get(toggledLayers, filters[layer.id || ''], true);
+    const isShown = get(toggledLayers, filters[layer.id ?? ''], true);
     if (!isShown) {
       return acc;
     }

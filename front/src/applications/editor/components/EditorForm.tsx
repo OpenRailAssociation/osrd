@@ -60,7 +60,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
     [data.objType, editorState.editorSchema]
   );
   const schema = useMemo(
-    () => overrideSchema || getJsonSchemaForLayer(editorState.editorSchema, layer || ''),
+    () => overrideSchema ?? getJsonSchemaForLayer(editorState.editorSchema, layer ?? ''),
     [editorState.editorSchema, layer, overrideSchema]
   );
   if (!schema) throw new Error(`Missing data type for ${layer}`);
@@ -95,7 +95,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         </div>
       )}
       <Form
-        fields={{ ...fields, ...(overrideFields || {}) }}
+        fields={{ ...fields, ...(overrideFields ?? {}) }}
         liveValidate={submited}
         showErrorList={submited ? 'top' : false}
         action={undefined}
@@ -103,7 +103,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         validator={validator}
         method={undefined}
         schema={isFrench ? translatedSchema : schema}
-        uiSchema={overrideUiSchema || {}}
+        uiSchema={overrideUiSchema ?? {}}
         formData={formData}
         formContext={{
           geometry: data.geometry,

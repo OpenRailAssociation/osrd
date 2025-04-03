@@ -146,7 +146,7 @@ const RangeEditionLeftPanel = () => {
     const newEntity = cloneDeep(entity);
     const { properties } = newEntity;
     if (select) {
-      properties.on_routes = toggleElement(properties.on_routes || [], routeId);
+      properties.on_routes = toggleElement(properties.on_routes ?? [], routeId);
       const newRouteExtra = { ...routeExtra };
       const selectedRoutes = pick(routeElements, properties.on_routes);
       const trackRangesBetweenSwitches = Object.values(selectedRoutes).flatMap((els) => {
@@ -243,10 +243,10 @@ const RangeEditionLeftPanel = () => {
             psl_sncf: null,
           };
           if (e.target.checked) {
-            const firstRange = (entity.properties?.track_ranges || [])[0];
+            const firstRange = (entity.properties?.track_ranges ?? [])[0];
             if (!firstRange) return;
             newExtension = {
-              psl_sncf: initialEntity.properties?.extensions?.psl_sncf || {
+              psl_sncf: initialEntity.properties?.extensions?.psl_sncf ?? {
                 announcement: [],
                 r: [],
                 z: {
@@ -328,7 +328,7 @@ const RangeEditionLeftPanel = () => {
           <RouteList
             switchesRouteCandidates={switchesRouteCandidates}
             onRouteSelect={handleRouteClicked(true)}
-            selectedRoutes={entity.properties.on_routes || []}
+            selectedRoutes={entity.properties.on_routes ?? []}
             onRouteHighlight={handleRouteClicked(false)}
             highlightedRoutes={highlightedRoutes}
           />

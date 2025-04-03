@@ -47,7 +47,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
         >
           <strong data-testid="destination-op-info" className="mr-1 text-nowrap">
             {/* If destination doesn't have name, we know that it has been added by click on map and has a track property */}
-            {destination?.name ||
+            {destination?.name ??
               (destination && 'track' in destination && destination.track.split('-')[0])}
           </strong>
         </div>

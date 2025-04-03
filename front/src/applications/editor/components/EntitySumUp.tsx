@@ -126,13 +126,13 @@ function getSumUpContent(
   const type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
-  const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
+  const classes = { ...DEFAULT_CLASSES, ...(classesOverride ?? {}) };
   const sources: string[] = [];
 
   switch (entity.objType) {
     case 'TrackSection': {
       const trackSection = entity as TrackSectionEntity;
-      const attrs = trackSection.properties.extensions?.sncf || {};
+      const attrs = trackSection.properties.extensions?.sncf ?? {};
       if (attrs.track_name) {
         text = attrs.track_name;
         subtexts.push(trackSection.properties.id);
@@ -162,7 +162,7 @@ function getSumUpContent(
             <span className={classes.muted}>
               {t('Editor.tools.select-items.linked-to-line', { count: 1 }).toString()}
             </span>{' '}
-            <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
+            <span>{track.properties?.extensions?.sncf?.line_name ?? track.properties.id}</span>
           </>
         );
       }
@@ -244,7 +244,7 @@ function getSumUpContent(
       subtexts.push(
         <span className={classes.muted}>
           {t('Editor.tools.select-items.linked-to-n-lines', {
-            count: speedSection.properties.track_ranges?.length || 0,
+            count: speedSection.properties.track_ranges?.length ?? 0,
           }).toString()}
         </span>
       );
@@ -266,7 +266,7 @@ function getSumUpContent(
         <>
           <span className={(classes.muted, 'mr-2')}>
             {t('Editor.tools.select-items.linked-to-n-lines', {
-              count: electrificationSection.properties.track_ranges?.length || 0,
+              count: electrificationSection.properties.track_ranges?.length ?? 0,
             }).toString()}
           </span>
           <span className={classes.muted}>{voltage}</span>
@@ -353,13 +353,13 @@ const EntitySumUp = ({ entity, id, objType, classes, status, error }: EntitySumU
   if (state.type === 'error')
     return (
       <div className="text-danger">
-        {state.message || `An error occurred while trying to load ${objType} entity "${id}".`}
+        {state.message ?? `An error occurred while trying to load ${objType} entity "${id}".`}
       </div>
     );
 
   return (
     <>
-      {getSumUpContent(entity || state.entity, state.additionalEntities, t, classes, status)}
+      {getSumUpContent(entity ?? state.entity, state.additionalEntities, t, classes, status)}
       {error && (
         <>
           <InfraErrorIcon className="mr-1" error={error} />
