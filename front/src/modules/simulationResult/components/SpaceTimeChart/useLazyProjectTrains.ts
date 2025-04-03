@@ -9,12 +9,7 @@ import {
   type ProjectPathTrainResult,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import type {
-  PacedTrainId,
-  TimetableItemId,
-  TimetableItemWithTimetableId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';

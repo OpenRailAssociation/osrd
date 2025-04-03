@@ -11,12 +11,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastTrainIdToOccurrenceId,
-  formatPacedTrainIdToEditoastTrainId,
-  isPacedTrain,
-  isTrainSchedule,
-} from 'utils/trainId';
+import { formatPacedTrainIdToOccurrenceId, isPacedTrain, isTrainSchedule } from 'utils/trainId';
 
 /**
  * Automatically select the train to be used for the simulation results display and for the projection.
@@ -35,7 +30,6 @@ const useAutoUpdateProjection = (
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
-
   useEffect(() => {
     if (infra.state !== 'CACHED' || timetableItemIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
@@ -67,9 +61,8 @@ const useAutoUpdateProjection = (
       if (isTrainSchedule(timetableItemIds[0])) {
         dispatch(updateSelectedTrainId(timetableItemIds[0]));
       } else {
-        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(timetableItemIds[0]);
-        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
-          pacedTrainId: editoastPacedTrainId,
+        const occurrenceIdToSelect = formatPacedTrainIdToOccurrenceId({
+          pacedTrainId: timetableItemIds[0],
           occurrenceIndex: 0,
         });
         dispatch(updateSelectedTrainId(occurrenceIdToSelect));
@@ -86,9 +79,9 @@ const useAutoUpdateProjection = (
         dispatch(updateSelectedTrainId(firstValidTrain.id));
       }
       if (isPacedTrain(firstValidTrain.id)) {
-        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(firstValidTrain.id);
-        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
-          pacedTrainId: editoastPacedTrainId,
+        dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
+        const occurrenceIdToSelect = formatPacedTrainIdToOccurrenceId({
+          pacedTrainId: firstValidTrain.id,
           occurrenceIndex: 0,
         });
         dispatch(updateSelectedTrainId(occurrenceIdToSelect));

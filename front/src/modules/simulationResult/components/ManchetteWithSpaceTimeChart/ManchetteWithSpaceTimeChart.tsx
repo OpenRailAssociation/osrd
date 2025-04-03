@@ -37,16 +37,15 @@ import type {
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
-import type {
-  OccurrenceId,
-  TimetableItemId,
-  TrainId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { getPacedTrainIdFromOccurrenceId, isOccurrence } from 'utils/trainId';
+import {
+  formatPacedTrainIdToOccurrenceId,
+  getPacedTrainIdFromOccurrenceId,
+  isOccurrence,
+} from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
 import getPathStyle from './utils';
@@ -58,7 +57,6 @@ import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: OperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
-  selectedTrainScheduleId?: TrainId;
   selectedTrainId?: TrainId;
   waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
@@ -84,7 +82,6 @@ const SPACE_TIME_CHART_DIFF_HEIGHT = 8;
 const ManchetteWithSpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
-  selectedTrainScheduleId,
   waypointsPanelData,
   conflicts = [],
   workSchedules,
@@ -123,7 +120,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               .toDate();
             occurrences.push({
               ...train,
-              id: `occurrence-${i}-${pacedTrainId}` as OccurrenceId,
+              id: formatPacedTrainIdToOccurrenceId({
+                pacedTrainId,
+                occurrenceIndex: i,
+              }),
               name: computeOccurrenceName(train.name, i),
               departureTime: occurrenceStartTime,
             });
@@ -252,8 +252,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   });
 
   useEffect(() => {
-    const trainUsedForProjection = projectPathTrainResult.find(
-      (train) => train.id === selectedProjectionId
+    const trainUsedForProjection = projectPathTrainResult.find((train) =>
+      train.id.includes(selectedProjectionId)
     );
     if (trainUsedForProjection) {
       setTimeOrigin(+trainUsedForProjection.departureTime);
@@ -320,7 +320,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
       const hoveredTrainId = hoveredItem.element.pathId;
-      const train = projectPathTrainResult.find(
+      const train = projectedTrainsAndOccurrences.find(
         (projectedTrain) => projectedTrain.id === hoveredTrainId
       );
       if (train) {
@@ -365,11 +365,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const handleClick: SpaceTimeChartProps['onClick'] = () => {
     if (
       !draggingState &&
-      selectedTrainScheduleId &&
+      selectedTrainId &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      if (selectedTrainScheduleId !== hoveredItem.element.pathId) {
+      if (selectedTrainId !== hoveredItem.element.pathId) {
         const trainId = hoveredItem.element.pathId;
         onTrainClick?.(trainId as TrainId);
       }

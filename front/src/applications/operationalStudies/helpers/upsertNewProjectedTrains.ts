@@ -1,12 +1,6 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
-import type {
-  PacedTrainId,
-  PacedTrainResponseWithPacedTrainId,
-  TimetableItemId,
-  TimetableItemWithTimetableId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import {
   formatPacedTrainIdToOccurrenceId,
   isPacedTrain,

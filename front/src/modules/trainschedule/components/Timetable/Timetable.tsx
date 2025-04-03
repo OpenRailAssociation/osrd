@@ -199,7 +199,7 @@ const Timetable = ({
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
                   isOnEdit={timetableItem.id === itemIdToEdit}
-                  selectedTimeTableItemId={selectedTrainId}
+                  selectedTimetableItemId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
                   setProjectionPath={selectPathProjection}

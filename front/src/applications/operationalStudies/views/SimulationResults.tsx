@@ -10,7 +10,6 @@ import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-  type TrainSpaceTimeDataWithPaced,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
@@ -31,7 +30,6 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isTrainSchedule } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from '../types';
@@ -204,15 +202,8 @@ const SimulationResults = ({
                   {trainIdUsedForProjection && (
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
-                      projectPathTrainResult={
-                        projectPathTrainResult as TrainSpaceTimeDataWithPaced[]
-                      }
+                      projectPathTrainResult={projectPathTrainResult}
                       selectedTrainId={selectedTrainId}
-                      selectedTrainScheduleId={
-                        selectedTimetableItem && isTrainSchedule(selectedTimetableItem.id)
-                          ? selectedTimetableItem.id
-                          : undefined
-                      }
                       waypointsPanelData={{
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,

@@ -51,10 +51,9 @@ const usePathProjection = (infra: InfraWithState) => {
     if (!trainIdUsedForProjection) {
       return undefined;
     }
-    const projectionPathResult =
-      trainIdUsedForProjection && isTrainSchedule(trainIdUsedForProjection)
-        ? trainScheduleProjectionPathResult
-        : pacedTrainProjectionPathResult;
+    const projectionPathResult = isTrainSchedule(trainIdUsedForProjection)
+      ? trainScheduleProjectionPathResult
+      : pacedTrainProjectionPathResult;
     return projectionPathResult?.status === 'success' ? projectionPathResult : undefined;
   }, [trainScheduleProjectionPathResult, pacedTrainProjectionPathResult]);
 

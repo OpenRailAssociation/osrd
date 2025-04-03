@@ -103,7 +103,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     }
   }, [allTimetableItemsLoaded]);
 
-  // TODO Paced trains : adapt this hook in https://github.com/OpenRailAssociation/osrd/issues/10791
   const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
     infraId: scenario.infra_id,
     electricalProfileSetId,
@@ -144,13 +143,11 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     return sortBy(filteredTimetableItemsSummaries, 'startTime');
   }, [timetableItemSummariesById, showPacedTrains]);
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const trainScheduleUsedForProjection = useMemo(
     () => timetableItems?.find((timetableItem) => timetableItem.id === trainIdUsedForProjection),
     [trainIdUsedForProjection, timetableItems]
@@ -161,7 +158,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [timetableItems]
   );
 
-  // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
   useAutoUpdateProjection(infra, timetableItemIds, timetableItemsWithDetails);
 
   useEffect(() => {

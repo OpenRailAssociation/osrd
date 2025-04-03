@@ -1,7 +1,7 @@
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import { PATH_COLORS } from 'modules/simulationResult/consts';
-import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { getPacedTrainIdFromOccurrenceId, isOccurrence } from 'utils/trainId';
 
 const getPathStyle = (

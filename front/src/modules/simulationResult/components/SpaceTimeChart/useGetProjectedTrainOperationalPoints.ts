@@ -9,7 +9,12 @@ import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import { osrdEditoastApi, type PathProperties } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
-import { formatTrainScheduleIdToEditoastTrainId, isTrainSchedule } from 'utils/trainId';
+import {
+  formatPacedTrainIdToEditoastTrainId,
+  formatTrainScheduleIdToEditoastTrainId,
+  isPacedTrain,
+  isTrainSchedule,
+} from 'utils/trainId';
 
 const useGetProjectedTrainOperationalPoints = ({
   infraId,
@@ -29,33 +34,59 @@ const useGetProjectedTrainOperationalPoints = ({
     useState<OperationalPoint[]>(operationalPoints);
 
   // TODO Paced train : update this in https://github.com/OpenRailAssociation/osrd/issues/10613
-  const editoastTrainIdUsedForProjection = useMemo(
-    () =>
-      trainIdUsedForProjection && isTrainSchedule(trainIdUsedForProjection)
-        ? formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection)
-        : undefined,
-    [trainIdUsedForProjection]
-  );
-
-  const { data: pathfindingResult } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
-    {
-      id: editoastTrainIdUsedForProjection!,
-      infraId: infraId!,
-    },
-    {
-      skip:
-        !editoastTrainIdUsedForProjection ||
-        !infraId ||
-        editoastTrainIdUsedForProjection === STDCM_TRAIN_ID,
+  const editoastTrainIdUsedForProjection = useMemo(() => {
+    if (!trainIdUsedForProjection) return undefined;
+    if (isTrainSchedule(trainIdUsedForProjection)) {
+      return formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection);
     }
-  );
+    return formatPacedTrainIdToEditoastTrainId(trainIdUsedForProjection);
+  }, [trainIdUsedForProjection]);
+
+  const { data: trainSchedulePathfindingResult } =
+    osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
+      {
+        id: editoastTrainIdUsedForProjection!,
+        infraId: infraId!,
+      },
+      {
+        skip:
+          !editoastTrainIdUsedForProjection ||
+          !infraId ||
+          editoastTrainIdUsedForProjection === STDCM_TRAIN_ID ||
+          (trainIdUsedForProjection && !isTrainSchedule(trainIdUsedForProjection)),
+      }
+    );
+
+  const { data: pacedTrainPathfindingResult } =
+    osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(
+      {
+        id: editoastTrainIdUsedForProjection!,
+        infraId: infraId!,
+      },
+      {
+        skip:
+          !editoastTrainIdUsedForProjection ||
+          !infraId ||
+          editoastTrainIdUsedForProjection === STDCM_TRAIN_ID ||
+          (trainIdUsedForProjection && !isPacedTrain(trainIdUsedForProjection)),
+      }
+    );
 
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
 
+  const pathfindingResult = useMemo(() => {
+    if (!trainIdUsedForProjection) return undefined;
+    if (isTrainSchedule(trainIdUsedForProjection)) {
+      return trainSchedulePathfindingResult;
+    }
+    return pacedTrainPathfindingResult;
+  }, [trainSchedulePathfindingResult, pacedTrainPathfindingResult, trainIdUsedForProjection]);
+
   useEffect(() => {
     const getOperationalPoints = async () => {
-      if (infraId && trainScheduleUsedForProjection && pathfindingResult?.status === 'success') {
+      if (!trainIdUsedForProjection) return;
+      if (trainScheduleUsedForProjection && infraId && pathfindingResult?.status === 'success') {
         const { operational_points } = await postPathProperties({
           infraId,
           props: ['operational_points'],

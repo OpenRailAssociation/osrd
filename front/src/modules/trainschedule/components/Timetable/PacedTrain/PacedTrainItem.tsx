@@ -41,7 +41,7 @@ type PacedTrainItemProps = {
   pacedTrain: PacedTrainWithDetails;
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
-  selectedTrainId?: TrainId;
+  selectedTimetableItemId?: TrainId;
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
@@ -56,7 +56,7 @@ const PacedTrainItem = ({
   isOnEdit,
   isProjectionPathUsed,
   selectPacedTrainToEdit,
-  selectedTrainId,
+  selectedTimetableItemId,
   upsertTimetableItems,
   removePacedTrains,
   setProjectionPath,
@@ -79,7 +79,7 @@ const PacedTrainItem = ({
   }, []);
 
   const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
-    const hasOccurrenceSelected = selectedTrainId?.includes(pacedTrain.id);
+    const hasOccurrenceSelected = selectedTimetableItemId?.includes(pacedTrain.id);
     if (hasOccurrenceSelected) {
       // we need to set selectedTrainId to undefined, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
@@ -252,7 +252,7 @@ const PacedTrainItem = ({
           selectPathProjection={() => setProjectionPath(pacedTrain.id)}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}
+          deleteTimetableItem={() => deletePacedTrain(selectedTimetableItemId)}
         />
       </div>
       <div className="occurrences">
@@ -260,7 +260,7 @@ const PacedTrainItem = ({
           <OccurrenceItem
             occurrence={occurrence}
             key={occurrence.id}
-            isSelected={selectedTrainId === occurrence.id}
+            isSelected={selectedTimetableItemId === occurrence.id}
             nextOccurrence={occurrences[index + 1]}
             isValid={pacedTrain.isValid}
             selectOccurrence={selectOccurrence}
