@@ -4,40 +4,27 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.*
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
-import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
-import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
-import fr.sncf.osrd.standalone_sim.result.ResultStops
-import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
 import kotlin.math.abs
-import mu.KotlinLogging
-
-private val logger = KotlinLogging.logger {}
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -78,174 +65,6 @@ fun deprecatedRecoverBlockPath(
         )
     assert(blockPaths.isNotEmpty())
     return blockPaths[0].toList() // TODO: have a better way to choose the block path
-}
-
-/** Use an already computed envelope to extract various metadata about a trip. */
-fun run(
-    envelope: Envelope,
-    trainPath: PathProperties,
-    chunkPath: ChunkPath,
-    schedule: StandaloneTrainSchedule,
-    fullInfra: FullInfra
-): ResultTrain {
-    assert(envelope.continuous)
-
-    val rawInfra = fullInfra.rawInfra
-    val loadedSignalInfra = fullInfra.loadedSignalInfra
-    val blockInfra = fullInfra.blockInfra
-    val simulator = fullInfra.signalingSimulator
-
-    // get a new generation route path
-    val routePath = fullInfra.blockInfra.chunksToRoutes(rawInfra, chunkPath.chunks)
-
-    // recover blocks from the route paths
-    val detailedBlockPath = deprecatedRecoverBlockPath(simulator, fullInfra, routePath)
-    val blockPath = mutableStaticIdxArrayListOf<Block>()
-    for (block in detailedBlockPath) blockPath.add(block.block)
-
-    // Compute speeds, head and tail positions
-    val envelopeWithStops = EnvelopeStopWrapper(envelope, schedule.stops)
-    val trainLength = schedule.rollingStock.length
-    var speeds = ArrayList<ResultSpeed>()
-    var headPositions = ArrayList<ResultPosition>()
-    for (point in envelopeWithStops.iteratePoints()) {
-        speeds.add(ResultSpeed(point.time, point.speed, point.position))
-        headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
-    }
-
-    // Simplify data
-    speeds = simplifySpeeds(speeds)
-    headPositions = simplifyPositions(headPositions)
-
-    // Compute stops
-    val stops = ArrayList<ResultStops>()
-    for (stop in schedule.stops) {
-        val stopTime = envelopeWithStops.interpolateArrivalAt(stop.position)
-        stops.add(ResultStops(stopTime, stop.position, stop.duration))
-    }
-
-    // Compute signal updates
-    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath).distance
-    val pathOffsetBuilder = PathOffsetBuilder(startOffset)
-    var blockPathLength = 0.meters
-    for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance
-    val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
-
-    val pathSignals =
-        pathSignalsInEnvelope(pathOffsetBuilder, blockPath, blockInfra, envelopeWithStops)
-    val zoneOccupationChangeEvents =
-        zoneOccupationChangeEvents(
-            pathOffsetBuilder,
-            blockPath,
-            blockInfra,
-            envelopeWithStops,
-            rawInfra,
-            trainLength
-        )
-
-    val zoneUpdates =
-        zoneOccupationChangeEvents.map {
-            ResultTrain.ZoneUpdate(
-                rawInfra.getZoneName(it.zone),
-                it.time.seconds,
-                it.offset.distance.meters,
-                it.isEntry
-            )
-        }
-
-    val signalSightings = mutableListOf<SignalSighting>()
-    for ((i, pathSignal) in pathSignals.withIndex()) {
-        val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
-        var sightOffset =
-            Offset.max(
-                Offset.zero(),
-                pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)
-            )
-        if (i > 0) {
-            val previousSignalOffset = pathSignals[i - 1].pathOffset
-            sightOffset = Offset.max(sightOffset, previousSignalOffset)
-        }
-        signalSightings.add(
-            SignalSighting(
-                rawInfra.getPhysicalSignalName(
-                    loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
-                ),
-                envelopeWithStops.interpolateArrivalAt(sightOffset.distance.meters),
-                sightOffset.distance.meters,
-                "VL" // TODO: find out the real state
-            )
-        )
-    }
-
-    // Compute energy consumed
-    val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
-    val mechanicalEnergyConsumed =
-        EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
-
-    val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
-    val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(schedule.rollingStock, envelopeWithStops, true)
-    val spacingGenerator =
-        SpacingRequirementAutomaton(
-            rawInfra,
-            loadedSignalInfra,
-            blockInfra,
-            simulator,
-            envelopeAdapter,
-            incrementalPath
-        )
-    val pathStops =
-        schedule.stops.map {
-            PathStop(
-                pathOffsetBuilder.fromTravelledPath(Offset(it.position.meters)),
-                it.receptionSignal
-            )
-        }
-    val fragmentStops =
-        pathStops.map {
-            // All blocks are in the fragment, Offset<Path> == Offset<FragmentBlocks> here
-            val fragmentOffset = it.pathOffset.cast<FragmentBlocks>()
-            FragmentStop(fragmentOffset, it.receptionSignal)
-        }
-    incrementalPath.extend(
-        PathFragment(
-            routePath,
-            blockPath,
-            fragmentStops,
-            containsStart = true,
-            containsEnd = true,
-            startOffset,
-            endOffset
-        )
-    )
-    // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processPathUpdate() as SpacingRequirements
-
-    val routingRequirements =
-        routingRequirements(
-            pathOffsetBuilder,
-            simulator,
-            routePath,
-            blockPath,
-            detailedBlockPath,
-            pathStops.filter { it.receptionSignal.isStopOnClosedSignal },
-            loadedSignalInfra,
-            blockInfra,
-            envelopeWithStops,
-            rawInfra,
-            schedule.rollingStock,
-        )
-
-    return ResultTrain(
-        speeds,
-        headPositions,
-        stops,
-        mechanicalEnergyConsumed,
-        signalSightings,
-        zoneUpdates,
-        spacingRequirements.requirements,
-        routingRequirements,
-    )
 }
 
 fun getBlockOffsets(

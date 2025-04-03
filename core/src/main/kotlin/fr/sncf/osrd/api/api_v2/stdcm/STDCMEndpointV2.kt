@@ -248,7 +248,7 @@ fun buildTemporarySpeedLimitManager(
     infra: FullInfra,
     speedLimits: Collection<STDCMTemporarySpeedLimit>
 ): TemporarySpeedLimitManager {
-    var outputSpeedLimits: MutableMap<DirTrackChunkId, DistanceRangeMap<SpeedLimitProperty>> =
+    val outputSpeedLimits: MutableMap<DirTrackChunkId, DistanceRangeMap<SpeedLimitProperty>> =
         mutableMapOf()
     for (speedLimit in speedLimits) {
         for (trackRange in speedLimit.trackRanges) {
@@ -262,9 +262,9 @@ fun buildTemporarySpeedLimitManager(
                 if (chunkEndOffset < trackRange.begin || trackRange.end < chunkStartOffset) {
                     continue
                 }
-                var startOffset = Distance.max(0.meters, trackRange.begin - chunkStartOffset)
-                var endOffset = Distance.min(trackChunkLength, trackRange.end - chunkStartOffset)
-                var direction =
+                val startOffset = Distance.max(0.meters, trackRange.begin - chunkStartOffset)
+                val endOffset = Distance.min(trackChunkLength, trackRange.end - chunkStartOffset)
+                val direction =
                     when (trackRange.direction) {
                         EdgeDirection.START_TO_STOP -> Direction.INCREASING
                         EdgeDirection.STOP_TO_START -> Direction.DECREASING
@@ -376,7 +376,7 @@ private fun checkForConflicts(
                 it.endTime + departureTime.seconds
             )
         }
-    val conflictDetector = incrementalConflictDetectorFromReq(timetableTrainRequirements)
+    val conflictDetector = IncrementalConflictDetector(timetableTrainRequirements)
     val spacingRequirements = parseSpacingRequirements(newTrainSpacingRequirement)
     val conflicts = conflictDetector.analyseConflicts(spacingRequirements)
     assert(conflicts is NoConflictResponse) {

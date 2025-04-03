@@ -2,38 +2,29 @@ package fr.sncf.osrd.conflicts
 
 import com.carrotsearch.hppc.IntArrayList
 import com.squareup.moshi.Json
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 
-interface SpacingTrainRequirement {
-    val trainId: String
-    val spacingRequirements: Collection<SpacingRequirement>
+class Conflict(
+    val startTime: Double,
+    val endTime: Double,
+    val conflictType: ConflictType,
+    val requirements: Collection<ConflictRequirement>,
+    val trainIds: Collection<String>,
+    val workScheduleIds: Collection<String> = listOf(),
+)
+
+enum class ConflictType {
+    @Json(name = "Spacing") SPACING,
+    @Json(name = "Routing") ROUTING,
 }
 
-interface RoutingTrainRequirement {
-    val trainId: String
-    val routingRequirements: Collection<RoutingRequirement>
-}
+class ConflictRequirement(val zone: String, val startTime: Double, val endTime: Double)
 
 interface ResourceRequirement {
     val beginTime: Double
     val endTime: Double
 }
-
-// TODO: when dropping v1, remove these structs and directly use Requirements
-class TrainRequirements(
-    @Json(name = "train_id")
-    override val trainId:
-        String, // Not standard RJS IDs, but either a train DB ID as a string or a generated paced
-    // train occurrence ID.
-    @Json(name = "spacing_requirements")
-    override val spacingRequirements: Collection<SpacingRequirement>,
-    @Json(name = "routing_requirements")
-    override val routingRequirements: Collection<RoutingRequirement>,
-) : SpacingTrainRequirement, RoutingTrainRequirement
 
 class Requirements(
     val id: RequirementId,
@@ -52,11 +43,7 @@ enum class RequirementType {
     WORK_SCHEDULE
 }
 
-fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
-    return detectRequirementConflicts(convertTrainRequirements(trainRequirements))
-}
-
-fun detectRequirementConflicts(requirements: List<Requirements>): List<Conflict> {
+fun detectConflicts(requirements: List<Requirements>): List<Conflict> {
     val res = conflictDetectorFromRequirements(requirements).checkConflicts()
     return mergeConflicts(res)
 }
@@ -150,7 +137,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
         // as spacing requirements are exclusive, any overlap is a conflict
         val res = mutableListOf<Conflict>()
         for (entry in spacingZoneRequirements) {
-            for (conflictGroup in detectRequirementConflicts(entry.value) { _, _ -> true }) {
+            for (conflictGroup in detectConflicts(entry.value) { _, _ -> true }) {
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
                 // If there are only conflicting work schedules, skip conflict group
@@ -166,12 +153,12 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
                 val conflictReq = ConflictRequirement(entry.key, beginTime, endTime)
                 res.add(
                     Conflict(
-                        trains,
-                        workSchedules,
                         beginTime,
                         endTime,
                         ConflictType.SPACING,
-                        listOf(conflictReq)
+                        listOf(conflictReq),
+                        trains,
+                        workSchedules,
                     )
                 )
             }
@@ -183,14 +170,13 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
         // for each zone, check compatibility of overlapping requirements
         val res = mutableListOf<Conflict>()
         for (entry in routingZoneRequirements) {
-            for (conflictGroup in
-                detectRequirementConflicts(entry.value) { a, b -> a.config != b.config }) {
+            for (conflictGroup in detectConflicts(entry.value) { a, b -> a.config != b.config }) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
                 val conflictReq = ConflictRequirement(entry.key, beginTime, endTime)
                 res.add(
-                    Conflict(trains, beginTime, endTime, ConflictType.ROUTING, listOf(conflictReq))
+                    Conflict(beginTime, endTime, ConflictType.ROUTING, listOf(conflictReq), trains)
                 )
             }
         }
@@ -202,7 +188,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
  * Return a list of requirement conflict groups. If requirements pairs (A, B) and (B, C) are
  * conflicting, then (A, B, C) are part of the same conflict group.
  */
-internal fun <ReqT : ResourceRequirement> detectRequirementConflicts(
+internal fun <ReqT : ResourceRequirement> detectConflicts(
     requirements: MutableList<ReqT>,
     conflicting: (ReqT, ReqT) -> Boolean,
 ): List<List<ReqT>> {
@@ -298,12 +284,12 @@ fun mergeMap(
                     if (--eventCount > 0) continue
                     newConflicts.add(
                         Conflict(
-                            key.trainIds.toMutableList(),
-                            key.workScheduleIds.toMutableList(),
                             eventBeginning,
                             event.time,
                             conflictType,
-                            conflictReqs
+                            conflictReqs,
+                            key.trainIds.toMutableList(),
+                            key.workScheduleIds.toMutableList(),
                         )
                     )
                     conflictReqs = mutableListOf()
@@ -338,20 +324,4 @@ fun mergeConflicts(conflicts: List<Conflict>): List<Conflict> {
     mergedConflicts += mergeMap(routingResources, ConflictType.ROUTING)
 
     return mergedConflicts
-}
-
-internal fun convertTrainRequirements(
-    trainRequirements: List<TrainRequirements>
-): List<Requirements> {
-    val res = mutableListOf<Requirements>()
-    for (trainRequirement in trainRequirements) {
-        res.add(
-            Requirements(
-                RequirementId(trainRequirement.trainId, RequirementType.TRAIN),
-                trainRequirement.spacingRequirements,
-                trainRequirement.routingRequirements
-            )
-        )
-    }
-    return res
 }

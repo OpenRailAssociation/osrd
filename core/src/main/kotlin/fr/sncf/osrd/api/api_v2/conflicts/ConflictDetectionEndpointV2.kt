@@ -1,12 +1,12 @@
 package fr.sncf.osrd.api.api_v2.conflicts
 
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.parseTrainsRequirements
 import fr.sncf.osrd.api.api_v2.parseWorkSchedulesRequest
+import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
-import fr.sncf.osrd.conflicts.detectRequirementConflicts
+import fr.sncf.osrd.conflicts.detectConflicts
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -47,7 +47,7 @@ class ConflictDetectionEndpointV2(private val infraManager: InfraManager) : Take
             val trainRequirements =
                 parseTrainsRequirements(request.trainsRequirements, minStartTime)
             requirements.addAll(trainRequirements)
-            val conflicts = detectRequirementConflicts(requirements)
+            val conflicts = detectConflicts(requirements)
             val res = makeConflictDetectionResponse(conflicts, minStartTime)
 
             RsJson(RsWithBody(conflictResponseAdapter.toJson(res)))
@@ -58,22 +58,22 @@ class ConflictDetectionEndpointV2(private val infraManager: InfraManager) : Take
 }
 
 private fun makeConflictDetectionResponse(
-    conflicts: Collection<ConflictDetectionResult.Conflict>,
+    conflicts: Collection<Conflict>,
     startTime: ZonedDateTime
 ): ConflictDetectionResponse {
     return ConflictDetectionResponse(
         conflicts.map {
-            Conflict(
+            ConflictResponse(
                 it.trainIds,
                 it.workScheduleIds,
                 startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
                 startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
                 it.conflictType,
-                it.requirements.map {
+                it.requirements.map { requirement ->
                     ConflictRequirement(
-                        it.zone,
-                        startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
-                        startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
+                        requirement.zone,
+                        startTime.plus(Duration.ofMillis((requirement.startTime * 1000).toLong())),
+                        startTime.plus(Duration.ofMillis((requirement.endTime * 1000).toLong())),
                     )
                 }
             )
