@@ -2,12 +2,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction, useMemo, useRef } from 'react';
 
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
   type ProjectPathTrainResult,
 } from 'common/api/osrdEditoastApi';
+import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { setFailure } from 'reducers/main';
 import type {
   TimetableItemId,

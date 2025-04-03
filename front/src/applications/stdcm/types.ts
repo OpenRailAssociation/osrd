@@ -1,4 +1,3 @@
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   GeoJsonPoint,
@@ -11,7 +10,7 @@ import type {
   TowedRollingStock,
   PathProperties,
 } from 'common/api/osrdEditoastApi';
-import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
+import type { SpeedSpaceChartData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { ValueOf } from 'utils/types';
