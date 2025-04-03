@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { lineString, point } from '@turf/helpers';
@@ -34,6 +34,7 @@ import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { getIsPlaying } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isoDateWithTimezoneToSec } from 'utils/date';
+import { usePrevious } from 'utils/hooks/state';
 import { kmToM, mmToM, msToKmh } from 'utils/physics';
 
 import getSelectedTrainHoverPositions from './getSelectedTrainHoverPositions';
@@ -51,6 +52,7 @@ type SimulationResultMapProps = {
     startTime: string;
   };
   setMapCanvas?: (mapCanvas: string) => void;
+  loading: boolean;
 };
 
 const SimulationResultMap = ({
@@ -58,8 +60,10 @@ const SimulationResultMap = ({
   geometry,
   timetableItemSimulation,
   setMapCanvas,
+  loading,
 }: SimulationResultMapProps) => {
   const dispatch = useAppDispatch();
+  const previousLoading = usePrevious(loading);
 
   const infraID = useInfraID();
   const { getTrackSectionsByIds } = useScenarioContext();
@@ -71,6 +75,13 @@ const SimulationResultMap = ({
   const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] =
     useState<TimetableItemCurrentInfo>();
 
+  console.log(previousLoading, loading);
+  useEffect(() => {
+    if (previousLoading && !loading) {
+      console.log('capture');
+      captureMap(viewport, MAP_ID, setMapCanvas, geometry);
+    }
+  }, [loading]);
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
   const [mapMarkers, setMapMarkers] = useState<MapMarker[]>([]);
@@ -198,9 +209,9 @@ const SimulationResultMap = ({
         onClick={() => {
           removeSearchItemMarkersOnMap(dispatch);
         }}
-        onIdle={() => {
-          captureMap(viewport, MAP_ID, setMapCanvas, geometry);
-        }}
+        // onIdle={() => {
+        //   captureMap(viewport, MAP_ID, setMapCanvas, geometry);
+        // }}
         onMouseEnter={onPathHover}
         showOSM={showOSM}
         viewPort={viewport}
@@ -227,4 +238,4 @@ const SimulationResultMap = ({
   );
 };
 
-export default SimulationResultMap;
+export default memo(SimulationResultMap);

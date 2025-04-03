@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, memo } from 'react';
 
 import { Blocked, ChevronLeft, Pencil, X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -175,4 +175,4 @@ const ScenarioDescription = ({
   );
 };
 
-export default ScenarioDescription;
+export default memo(ScenarioDescription);

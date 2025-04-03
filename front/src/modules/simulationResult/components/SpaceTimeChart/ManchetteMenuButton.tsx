@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo } from 'react';
 
 import { Eye, KebabHorizontal } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -73,4 +73,4 @@ const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonPro
   );
 };
 
-export default ManchetteMenuButton;
+export default memo(ManchetteMenuButton);

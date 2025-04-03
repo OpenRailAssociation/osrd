@@ -146,6 +146,7 @@ const useLazyProjectTrains = ({
       timetableItemIdsToProject.size > 0 &&
       requestedProjectedTrainIds.current.size === timetableItemIdsToProject.size
     ) {
+      console.log('new ids');
       setTimetableItemIdsToProject(new Set());
       requestedProjectedTrainIds.current = new Set();
     }
@@ -153,6 +154,7 @@ const useLazyProjectTrains = ({
 
   useEffect(() => {
     if (!moreTrainsToCome && timetableItems && path) {
+      console.log('new projects trains ');
       // project all the trains again
       projectionSeqNum.current += 1;
       requestedProjectedTrainIds.current = new Set();

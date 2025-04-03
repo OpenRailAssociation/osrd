@@ -7,6 +7,7 @@ import { Loader } from 'common/Loaders/Loader';
 
 import { useTimesStopsColumns } from './hooks/useTimesStopsColumns';
 import { type TableType, type TimesStopsRow } from './types';
+import { useCallback } from 'react';
 
 type TimesStopsProps<T extends TimesStopsRow> = {
   rows: T[];
@@ -31,6 +32,17 @@ const TimesStops = <T extends TimesStopsRow>({
 
   const columns = useTimesStopsColumns(tableType, rows);
 
+  const handleChange = useCallback<Extract<DataSheetGridProps['onChange'], Function>>((newRows: T[], [op]) => {
+    if (onChange) {
+      onChange(newRows, op);
+    }
+  }, [onChange]);
+
+  const rowClassName = useCallback<Extract<DataSheetGridProps['rowClassName'], Function>>(({ rowData, rowIndex }) =>
+  cx({
+    activeRow: Boolean(rowData.pathStepId),
+    oddRow: (rowIndex + 1) % 2,
+  }), [])
   if (dataIsLoading) {
     return (
       <div style={{ height: '600px' }}>
@@ -46,27 +58,18 @@ const TimesStops = <T extends TimesStopsRow>({
       </div>
     );
   }
-
+  
   return (
     <DynamicDataSheetGrid
       className="time-stops-datasheet"
       columns={columns}
       value={rows}
-      onChange={(newRows: T[], [op]) => {
-        if (onChange) {
-          onChange(newRows, op);
-        }
-      }}
+      onChange={handleChange}
       stickyRightColumn={stickyRightColumn}
       lockRows
       height={600}
       headerRowHeight={headerRowHeight}
-      rowClassName={({ rowData, rowIndex }) =>
-        cx({
-          activeRow: Boolean(rowData.pathStepId),
-          oddRow: (rowIndex + 1) % 2,
-        })
-      }
+      rowClassName={rowClassName}
       cellClassName={cellClassName}
     />
   );
