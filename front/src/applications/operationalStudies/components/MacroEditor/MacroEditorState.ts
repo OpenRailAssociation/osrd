@@ -4,7 +4,7 @@ import type {
   MacroNodeResponse,
   ScenarioResponse,
   SearchResultItemOperationalPoint,
-  TrainScheduleResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
@@ -23,7 +23,7 @@ export default class MacroEditorState {
   /**
    * Train schedules
    */
-  trainSchedules: TrainScheduleResult[];
+  trainSchedules: TrainScheduleResponse[];
 
   /**
    * Nodes storage
@@ -65,7 +65,7 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, trainSchedules: TrainScheduleResult[]) {
+  constructor(scenario: ScenarioResponse, trainSchedules: TrainScheduleResponse[]) {
     // Empty
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
@@ -208,7 +208,7 @@ export default class MacroEditorState {
   /**
    * Given an path step, returns its pathKey
    */
-  static getPathKey(item: TrainScheduleResult['path'][0]): string {
+  static getPathKey(item: TrainScheduleResponse['path'][0]): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
     if ('operational_point' in item) return `op_id:${item.operational_point}`;

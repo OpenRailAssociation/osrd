@@ -6,13 +6,12 @@ use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 
 use crate::models::prelude::*;
+use crate::models::timetable::Timetable;
+use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::train_schedule::TrainScheduleForm;
-use crate::{
-    models::timetable::{Timetable, TimetableWithTrains},
-    views::train_schedule::TrainScheduleResult,
-    CliError,
-};
+use crate::views::train_schedule::TrainScheduleResponse;
+use crate::CliError;
 
 #[derive(Subcommand, Debug)]
 pub enum TimetablesCommands {
@@ -58,7 +57,7 @@ pub async fn trains_export(
 
     let train_schedules: Vec<TrainScheduleBase> = train_schedules
         .into_iter()
-        .map(|ts| Into::<TrainScheduleResult>::into(ts).train_schedule)
+        .map(|ts| Into::<TrainScheduleResponse>::into(ts).train_schedule)
         .collect();
 
     let file = File::create(args.path.clone())?;

@@ -16,7 +16,7 @@ import type {
   PacedTrainResponse,
   PathItemLocation,
   ReceptionSignal,
-  TrainScheduleResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 import type { LayersSettings } from 'reducers/map';
@@ -149,7 +149,7 @@ export type PacedTrainId = string & { readonly __type: unique symbol };
 export type TrainId = TrainScheduleId | OccurrenceId;
 export type TimetableItemId = TrainScheduleId | PacedTrainId;
 
-export type TrainScheduleResultWithTrainId = Omit<TrainScheduleResult, 'id'> & {
+export type TrainScheduleResponseWithTrainId = Omit<TrainScheduleResponse, 'id'> & {
   id: TrainScheduleId;
 };
 
@@ -158,5 +158,5 @@ export type PacedTrainResponseWithPacedTrainId = Omit<PacedTrainResponse, 'id'> 
 };
 
 export type TimetableItemWithTimetableId =
-  | TrainScheduleResultWithTrainId
+  | TrainScheduleResponseWithTrainId
   | PacedTrainResponseWithPacedTrainId;

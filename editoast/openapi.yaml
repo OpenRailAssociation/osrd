@@ -3376,7 +3376,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/TrainScheduleResult'
+                        $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Timetable not found
     post:
@@ -3408,7 +3408,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainScheduleResult'
+                  $ref: '#/components/schemas/TrainScheduleResponse'
   /towed_rolling_stock:
     get:
       tags:
@@ -3631,7 +3631,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainScheduleResult'
+                $ref: '#/components/schemas/TrainScheduleResponse'
     put:
       tags:
       - train_schedule
@@ -3657,7 +3657,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainScheduleResult'
+                $ref: '#/components/schemas/TrainScheduleResponse'
   /train_schedule/{id}/path:
     get:
       tags:
@@ -12567,7 +12567,7 @@ components:
         use_speed_limits_for_simulation:
           type: boolean
       additionalProperties: false
-    TrainScheduleResult:
+    TrainScheduleResponse:
       allOf:
       - $ref: '#/components/schemas/TrainScheduleBase'
       - type: object

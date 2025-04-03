@@ -5,7 +5,7 @@ import {
   type GetSpritesSignalingSystemsApiResponse,
   generatedEditoastApi,
   type Property,
-  type TrainScheduleResult,
+  type TrainScheduleResponse,
   type PacedTrainResponse,
 } from './generatedEditoastApi';
 
@@ -16,14 +16,14 @@ const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
     endpoints: (builder) => ({
       getAllTimetableByIdTrainSchedules: builder.query<
-        TrainScheduleResult[],
+        TrainScheduleResponse[],
         { timetableId: number }
       >({
         queryFn: async ({ timetableId }, { dispatch }) => {
           const pageSize = 25;
           let page = 1;
           let reachEnd = false;
-          const result: TrainScheduleResult[] = [];
+          const result: TrainScheduleResponse[] = [];
           while (!reachEnd) {
             const promise = dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(

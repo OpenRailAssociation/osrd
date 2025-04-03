@@ -3,7 +3,7 @@ import type {
   PathfindingInputError,
   PathfindingNotFound,
   SimulationSummaryResult,
-  TrainScheduleResult,
+  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -17,7 +17,7 @@ export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
 type TimetableItemWithSummaries = Omit<
-  TrainScheduleResult,
+  TrainScheduleResponse,
   'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
   name: string;

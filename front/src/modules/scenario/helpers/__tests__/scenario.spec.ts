@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 
 import { getScenarioDatetimeWindow } from '../utils';
 
@@ -21,7 +21,7 @@ describe('getScenarioDatetimeWindow', () => {
       { start_time: '2023-10-01T08:00:00Z' },
     ];
 
-    const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResult[]);
+    const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResponse[]);
 
     expect(result).toEqual({
       begin: new Date('2023-10-01T08:00:00Z'),
@@ -32,7 +32,7 @@ describe('getScenarioDatetimeWindow', () => {
   it('should handle a single train detail correctly', () => {
     const trainsDetails = [{ start_time: '2023-10-01T10:00:00Z' }];
 
-    const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResult[]);
+    const result = getScenarioDatetimeWindow(trainsDetails as TrainScheduleResponse[]);
 
     expect(result).toEqual({
       begin: new Date('2023-10-01T10:00:00Z'),

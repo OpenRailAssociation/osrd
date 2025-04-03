@@ -73,7 +73,7 @@ crate::routes! {
 editoast_common::schemas! {
     TrainScheduleBase,
     TrainScheduleForm,
-    TrainScheduleResult,
+    TrainScheduleResponse,
     ElectricalProfileSetIdQueryParam,
 }
 
@@ -104,14 +104,14 @@ struct TrainScheduleIdParam {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
-pub struct TrainScheduleResult {
+pub struct TrainScheduleResponse {
     id: i64,
     timetable_id: i64,
     #[serde(flatten)]
     pub train_schedule: TrainScheduleBase,
 }
 
-impl From<TrainSchedule> for TrainScheduleResult {
+impl From<TrainSchedule> for TrainScheduleResponse {
     fn from(value: TrainSchedule) -> Self {
         Self {
             id: value.id,
@@ -160,7 +160,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
     tag = "train_schedule",
     params(TrainScheduleIdParam),
     responses(
-        (status = 200, description = "The train schedule", body = TrainScheduleResult)
+        (status = 200, description = "The train schedule", body = TrainScheduleResponse)
     )
 )]
 async fn get(
@@ -169,7 +169,7 @@ async fn get(
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
-) -> Result<Json<TrainScheduleResult>> {
+) -> Result<Json<TrainScheduleResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -225,7 +225,7 @@ async fn delete(
     request_body = TrainScheduleForm,
     params(TrainScheduleIdParam),
     responses(
-        (status = 200, description = "The train schedule have been updated", body = TrainScheduleResult)
+        (status = 200, description = "The train schedule have been updated", body = TrainScheduleResponse)
     )
 )]
 async fn put(
@@ -235,7 +235,7 @@ async fn put(
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Json(train_schedule_form): Json<TrainScheduleForm>,
-) -> Result<Json<TrainScheduleResult>> {
+) -> Result<Json<TrainScheduleResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -819,7 +819,7 @@ pub mod tests {
         let response = app
             .fetch(request)
             .assert_status(StatusCode::OK)
-            .json_into::<TrainScheduleResult>();
+            .json_into::<TrainScheduleResponse>();
 
         assert_eq!(train_schedule.id, response.id);
         assert_eq!(train_schedule.timetable_id, response.timetable_id);
@@ -842,7 +842,7 @@ pub mod tests {
             .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())
             .json(&json!(vec![train_schedule_base]));
 
-        let response: Vec<TrainScheduleResult> =
+        let response: Vec<TrainScheduleResponse> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
     }
@@ -888,7 +888,7 @@ pub mod tests {
             .put(format!("/train_schedule/{}", train_schedule.id).as_str())
             .json(&json!(update_train_schedule_form));
 
-        let response: TrainScheduleResult =
+        let response: TrainScheduleResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(
             response.train_schedule.rolling_stock_name,

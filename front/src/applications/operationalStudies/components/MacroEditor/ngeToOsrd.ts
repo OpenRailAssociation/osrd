@@ -8,7 +8,7 @@ import {
 import type {
   TimetableItemId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
+  TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -279,7 +279,7 @@ const handleUpdateTrainSchedule = async ({
   trainrun: TrainrunDto;
   dispatch: AppDispatch;
   infraId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   state: MacroEditorState;
 }) => {
   const { nodes, labels } = netzgrafikDto;
@@ -315,7 +315,7 @@ const handleUpdateTrainSchedule = async ({
       },
     })
   ).unwrap();
-  const formattedNewTrainSchedule: TrainScheduleResultWithTrainId = {
+  const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
     ...newTrainSchedule,
     id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedule.id),
   };
@@ -339,7 +339,7 @@ const handleTrainrunOperation = async ({
   infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   addDeletedTrainIds: (trainIds: TimetableItemId[]) => void;
   state: MacroEditorState;
 }) => {
@@ -372,7 +372,7 @@ const handleTrainrunOperation = async ({
         })
       ).unwrap();
       // TODO Paced train : Adapt to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10612
-      const formattedNewTrainSchedules: TrainScheduleResultWithTrainId[] = newTrainSchedules.map(
+      const formattedNewTrainSchedules: TrainScheduleResponseWithTrainId[] = newTrainSchedules.map(
         (trainSchedule) => ({
           ...trainSchedule,
           id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
@@ -512,7 +512,7 @@ const handleLabelOperation = async ({
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;
   infraId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   state: MacroEditorState;
 }) => {
   const { trainruns } = netzgrafikDto;
@@ -555,7 +555,7 @@ const handleOperation = async ({
   infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   addDeletedTrainIds: (trainIds: TimetableItemId[]) => void;
 }) => {
   const { type } = event;

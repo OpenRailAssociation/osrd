@@ -22,7 +22,7 @@ import { Loader } from 'common/Loaders';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
-import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import ScenarioDescription from './ScenarioDescription';
@@ -102,7 +102,7 @@ const ScenarioContent = ({
       infraId: infra.id,
       timeTableId: scenario.timetable_id,
       netzgrafikDto,
-      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResultWithTrainId[]) => {
+      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResponseWithTrainId[]) => {
         upsertTimetableItems(upsertedTrainSchedules);
       },
       addDeletedTrainIds: (trainIds: TimetableItemId[]) => {

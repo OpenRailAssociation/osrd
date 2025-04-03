@@ -16,7 +16,7 @@ import type {
   TimetableItemId,
   TrainId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
+  TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -36,7 +36,7 @@ type TrainScheduleItemProps = {
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: TrainScheduleId) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   dtoImport: () => void;
@@ -128,15 +128,15 @@ const TrainScheduleItem = ({
       };
 
       try {
-        const [trainScheduleResult] = await postTrainSchedule({
+        const [trainScheduleResponse] = await postTrainSchedule({
           id: trainDetail.timetable_id,
           body: [newTrain],
         }).unwrap();
-        const formattedTrainScheduleResult: TrainScheduleResultWithTrainId = {
-          ...trainScheduleResult,
-          id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
+        const formattedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
+          ...trainScheduleResponse,
+          id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResponse.id),
         };
-        upsertTrainSchedules([formattedTrainScheduleResult]);
+        upsertTrainSchedules([formattedTrainScheduleResponse]);
         dtoImport();
         dispatch(
           setSuccess({

@@ -49,7 +49,7 @@ use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::models::Infra;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::train_schedule::TrainScheduleForm;
-use crate::views::train_schedule::TrainScheduleResult;
+use crate::views::train_schedule::TrainScheduleResponse;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::AppState;
@@ -121,8 +121,8 @@ struct TimetableIdParam {
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
 struct ListTrainSchedulesResponse {
-    #[schema(value_type = Vec<TrainScheduleResult>)]
-    results: Vec<TrainScheduleResult>,
+    #[schema(value_type = Vec<TrainScheduleResponse>)]
+    results: Vec<TrainScheduleResponse>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -234,7 +234,7 @@ async fn delete(
     params(TimetableIdParam),
     request_body = Vec<TrainScheduleBase>,
     responses(
-        (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResult>)
+        (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
     )
 )]
 async fn post_train_schedule(
@@ -242,7 +242,7 @@ async fn post_train_schedule(
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(train_schedules): Json<Vec<TrainScheduleBase>>,
-) -> Result<Json<Vec<TrainScheduleResult>>> {
+) -> Result<Json<Vec<TrainScheduleResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await

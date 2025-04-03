@@ -2010,7 +2010,7 @@ export type PostTimetableByIdStdcmApiArg = {
 };
 export type GetTimetableByIdTrainSchedulesApiResponse =
   /** status 200 Timetable with train schedules ids */ PaginationStats & {
-    results: TrainScheduleResult[];
+    results: TrainScheduleResponse[];
   };
 export type GetTimetableByIdTrainSchedulesApiArg = {
   /** A timetable ID */
@@ -2019,7 +2019,7 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   pageSize?: number | null;
 };
 export type PostTimetableByIdTrainSchedulesApiResponse =
-  /** status 200 The created train schedules */ TrainScheduleResult[];
+  /** status 200 The created train schedules */ TrainScheduleResponse[];
 export type PostTimetableByIdTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
@@ -2077,13 +2077,13 @@ export type PostTrainScheduleSimulationSummaryApiArg = {
   };
 };
 export type GetTrainScheduleByIdApiResponse =
-  /** status 200 The train schedule */ TrainScheduleResult;
+  /** status 200 The train schedule */ TrainScheduleResponse;
 export type GetTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
 };
 export type PutTrainScheduleByIdApiResponse =
-  /** status 200 The train schedule have been updated */ TrainScheduleResult;
+  /** status 200 The train schedule have been updated */ TrainScheduleResponse;
 export type PutTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
@@ -4012,7 +4012,7 @@ export type PathfindingItem = {
     arrival_time_tolerance_before: number;
   } | null;
 };
-export type TrainScheduleResult = TrainScheduleBase & {
+export type TrainScheduleResponse = TrainScheduleBase & {
   id: number;
   timetable_id: number;
 };

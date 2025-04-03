@@ -16,7 +16,7 @@ import type {
   TimetableItemId,
   TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
+  TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { getShowPacedTrains } from 'reducers/user/userSelectors';
@@ -259,7 +259,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         throw new Error('Train non trouvé');
       }
 
-      const trainScheduleResult = await putTrainScheduleById({
+      const trainScheduleResponse = await putTrainScheduleById({
         id: editoastTrainId,
         trainScheduleForm: {
           ...trainSchedule,
@@ -267,15 +267,15 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         },
       }).unwrap();
 
-      const updatedTrainScheduleResult: TrainScheduleResultWithTrainId = {
-        ...trainScheduleResult,
-        id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
+      const updatedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
+        ...trainScheduleResponse,
+        id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResponse.id),
       };
 
       setProjectedTrainsById((prev) => {
         const newProjectedTrainsById = new Map(prev);
-        newProjectedTrainsById.set(updatedTrainScheduleResult.id, {
-          ...newProjectedTrainsById.get(updatedTrainScheduleResult.id)!,
+        newProjectedTrainsById.set(updatedTrainScheduleResponse.id, {
+          ...newProjectedTrainsById.get(updatedTrainScheduleResponse.id)!,
           departureTime: newDeparture,
         });
         return newProjectedTrainsById;
@@ -284,7 +284,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       setTimetableItems((prev) => {
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
-          ...keyBy([updatedTrainScheduleResult], 'id'),
+          ...keyBy([updatedTrainScheduleResponse], 'id'),
         };
         return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
@@ -307,7 +307,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       const summaries = formatTimetableItemSummaries(
         [trainId],
         formattedRawSummaries,
-        mapBy([updatedTrainScheduleResult], 'id'),
+        mapBy([updatedTrainScheduleResponse], 'id'),
         rollingStocks!
       );
       setTimetableItemSummariesById((prev) => {

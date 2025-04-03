@@ -11,7 +11,7 @@ import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesC
 import type {
   PacedTrainResponseWithPacedTrainId,
   TimetableItemWithTimetableId,
-  TrainScheduleResultWithTrainId,
+  TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
@@ -105,7 +105,7 @@ const AddTrainScheduleButton = ({
           }).unwrap();
 
           // We can only add one train schedule at a time
-          const formattedNewTrainSchedule: TrainScheduleResultWithTrainId = {
+          const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
             ...newTrainSchedule.at(0)!,
             id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
           };
@@ -149,7 +149,7 @@ const AddTrainScheduleButton = ({
           body: trainScheduleParams,
         }).unwrap();
 
-        const formattedNewTrainSchedule: TrainScheduleResultWithTrainId[] = newTrainSchedules.map(
+        const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId[] = newTrainSchedules.map(
           (trainSchedule) => ({
             ...trainSchedule,
             id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),

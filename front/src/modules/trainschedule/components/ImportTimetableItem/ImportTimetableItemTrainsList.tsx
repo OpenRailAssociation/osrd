@@ -19,7 +19,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainResponseWithPacedTrainId,
   TimetableItemWithTimetableId,
-  TrainScheduleResultWithTrainId,
+  TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
@@ -104,7 +104,7 @@ const ImportTimetableItemTrainsList = ({
         trainSchedulePayloads = generateTrainSchedulesPayloads(formattedTrainsList, false);
       }
 
-      let formattedTrainSchedules: TrainScheduleResultWithTrainId[] = [];
+      let formattedTrainSchedules: TrainScheduleResponseWithTrainId[] = [];
 
       if (trainSchedulePayloads.length) {
         const trainSchedules = await postTrainSchedule({
