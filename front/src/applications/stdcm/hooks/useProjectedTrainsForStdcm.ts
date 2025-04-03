@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import useLazyLoadTimetableItems from 'applications/operationalStudies/hooks/useLazyLoadTimetableItems';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import useLazyLoadTimetableItems from 'modules/simulationResult/hooks/useLazyLoadTimetableItems';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import {

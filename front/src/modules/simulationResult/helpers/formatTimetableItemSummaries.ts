@@ -1,5 +1,6 @@
 import { compact } from 'lodash';
 
+import { isScheduledPointsNotHonored, isTooFast } from 'applications/operationalStudies/utils';
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
@@ -11,8 +12,6 @@ import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
-
-import { isScheduledPointsNotHonored, isTooFast } from '../utils';
 
 /**
  * Format the timetable items with their simulation summaries
