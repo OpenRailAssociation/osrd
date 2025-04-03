@@ -44,7 +44,7 @@ const mockedEditoastApi = api.injectEndpoints({
               database.SUBJECTS[0].resourcesGranted[resourceType as ResourceType];
             acc[resourceType as ResourceType] = resourceIds.map(
               (resourceId) =>
-                resourcesGranted.find((resource) => resource.id === resourceId) || {
+                resourcesGranted.find((resource) => resource.id === resourceId) ?? {
                   id: resourceId,
                   grant: 'NONE',
                 }
@@ -74,7 +74,7 @@ const mockedEditoastApi = api.injectEndpoints({
             id: user.id,
             grant:
               user.resourcesGranted[resource_type].find((resource) => resource.id === resource_id)
-                ?.grant || 'NONE',
+                ?.grant ?? 'NONE',
           });
           return acc;
         }, []);

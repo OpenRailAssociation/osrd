@@ -59,7 +59,7 @@ export function generateTrainSchedulesPayloads(
     payloads.push({
       path,
       train_name: train.trainNumber,
-      rolling_stock_name: train.rollingStock || '',
+      rolling_stock_name: train.rollingStock ?? '',
       constraint_distribution: 'MARECO',
       schedule,
       start_time: departureTime.toISOString(),

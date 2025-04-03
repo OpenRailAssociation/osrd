@@ -108,7 +108,7 @@ export function resizeSegment<T>(
     return { result: linearMetadata, newIndexMapping };
 
   const min = linearMetadata[0].begin;
-  const max = last(linearMetadata)?.end || 0;
+  const max = last(linearMetadata)?.end ?? 0;
 
   // apply the modification on the segment
   let result = cloneDeep(linearMetadata);
@@ -441,7 +441,7 @@ export function splitAt<T>(
   distance: number
 ): Array<LinearMetadataItem<T>> {
   if (linearMetadata.length < 1) throw new Error('linear metadata is empty');
-  if (distance >= (last(linearMetadata)?.end || 0) || distance <= 0)
+  if (distance >= (last(linearMetadata)?.end ?? 0) || distance <= 0)
     throw new Error('split point is outside the geometry');
 
   return linearMetadata
@@ -504,10 +504,10 @@ export function getZoomedViewBox<T>(
   if (data.length === 0) return null;
 
   const min = data[0].begin;
-  const max = last(data)?.end || 0;
+  const max = last(data)?.end ?? 0;
   const fullDistance = max - min;
 
-  const viewBox: [number, number] = currentViewBox || [min, max];
+  const viewBox: [number, number] = currentViewBox ?? [min, max];
   let distanceToDisplay =
     (viewBox[1] - viewBox[0]) * (zoom === 'IN' ? ZOOM_RATIO : 1 - ZOOM_RATIO + 1);
 
@@ -519,7 +519,7 @@ export function getZoomedViewBox<T>(
   if (distanceToDisplay < MIN_SIZE_TO_DISPLAY) distanceToDisplay = MIN_SIZE_TO_DISPLAY;
 
   // Compute the point on which we do the zoom
-  const point = onPoint || viewBox[0] + (viewBox[1] - viewBox[0]) / 2;
+  const point = onPoint ?? viewBox[0] + (viewBox[1] - viewBox[0]) / 2;
 
   // let's try to add the distance on each side
   const begin = point - distanceToDisplay / 2;
@@ -556,7 +556,7 @@ export function transalteViewBox<T>(
   // can't perform a translation if not zoomed
   if (!currentViewBox) return null;
 
-  const max = last(data)?.end || 0;
+  const max = last(data)?.end ?? 0;
   const distanceToDisplay = currentViewBox[1] - currentViewBox[0];
 
   // if translation on the left, we do it on the min

@@ -182,4 +182,4 @@ export const isVia = (
 export const isStation = (chCode: string): boolean =>
   chCode === 'BV' || chCode === '00' || chCode === '';
 
-export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
+export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid ?? false;

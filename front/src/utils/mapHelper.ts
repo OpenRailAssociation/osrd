@@ -311,8 +311,8 @@ export function getMapMouseEventNearestFeature(
   opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
 ): { feature: MapGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
-  const tolerance = opts?.tolerance || 15;
-  const excludeOsm = opts?.excludeOsm || true;
+  const tolerance = opts?.tolerance ?? 15;
+  const excludeOsm = opts?.excludeOsm ?? true;
   const { target: map, point } = e;
   const coord = e.lngLat.toArray();
 
@@ -334,7 +334,7 @@ export function getMapMouseEventNearestFeature(
         switch (feature.geometry.type) {
           case 'Point': {
             const layer = feature.sourceLayer as Layer;
-            const multiplier = POINT_FEATURES_DISTANCE_MULTIPLIERS[layer] || DEFAULT_MULTIPLIER;
+            const multiplier = POINT_FEATURES_DISTANCE_MULTIPLIERS[layer] ?? DEFAULT_MULTIPLIER;
             nearestFeaturePoint = feature as Feature<Point>;
             // we boost point, otherwise when a point is on some line, it's too hard to find it
             distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates) * multiplier;
@@ -395,7 +395,7 @@ export function getMapMouseEventNearestFeature(
     )
   );
 
-  return result || null;
+  return result ?? null;
 }
 
 /**

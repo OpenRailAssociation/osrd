@@ -165,7 +165,7 @@ const useSimulationResults = (): SimulationResultsData => {
   return {
     selectedTimetableItem: selectedTimetableItemSimulationData?.selectedTimetableItem,
     selectedTimetableItemRollingStock: speedSpaceChart?.rollingStock,
-    selectedTimetableItemPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
+    selectedTimetableItemPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions ?? [],
     timetableItemSimulation: speedSpaceChart?.simulation,
     pathProperties: speedSpaceChart?.formattedPathProperties,
     pathLength: path?.length,

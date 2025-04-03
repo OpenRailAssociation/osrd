@@ -86,13 +86,13 @@ class SimulationResultPage extends STDCMPage {
         const cells = row.querySelectorAll('td');
         return {
           index: Number(cells[0]?.textContent?.trim()) || 0,
-          operationalPoint: cells[1]?.textContent?.trim() || '',
-          code: cells[2]?.textContent?.trim() || '',
-          endStop: cells[3]?.textContent?.trim() || '',
-          passageStop: cells[4]?.textContent?.trim() || '',
-          startStop: cells[5]?.textContent?.trim() || '',
-          weight: cells[6]?.textContent?.trim() || '',
-          refEngine: cells[7]?.textContent?.trim() || '',
+          operationalPoint: cells[1]?.textContent?.trim() ?? '',
+          code: cells[2]?.textContent?.trim() ?? '',
+          endStop: cells[3]?.textContent?.trim() ?? '',
+          passageStop: cells[4]?.textContent?.trim() ?? '',
+          startStop: cells[5]?.textContent?.trim() ?? '',
+          weight: cells[6]?.textContent?.trim() ?? '',
+          refEngine: cells[7]?.textContent?.trim() ?? '',
         };
       })
     );

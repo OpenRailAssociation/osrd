@@ -105,7 +105,7 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
       const isLast = i === a.length - 1;
 
       if (isLast) props[k] = oldProperties[key];
-      else props[k] = props[k] || {};
+      else props[k] = props[k] ?? {};
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return props[k];
     }, newProperties);

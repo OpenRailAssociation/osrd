@@ -69,15 +69,15 @@ export const getRollingStockEditorDefaultValues = (
     ? {
         railjsonVersion: rollingStockData.railjson_version,
         name: rollingStockData.name,
-        detail: rollingStockData.metadata?.detail || '',
-        family: rollingStockData.metadata?.family || '',
-        grouping: rollingStockData.metadata?.grouping || '',
-        number: rollingStockData.metadata?.number || '',
-        reference: rollingStockData.metadata?.reference || '',
-        series: rollingStockData.metadata?.series || '',
-        subseries: rollingStockData.metadata?.subseries || '',
-        type: rollingStockData.metadata?.type || '',
-        unit: rollingStockData.metadata?.unit || '',
+        detail: rollingStockData.metadata?.detail ?? '',
+        family: rollingStockData.metadata?.family ?? '',
+        grouping: rollingStockData.metadata?.grouping ?? '',
+        number: rollingStockData.metadata?.number ?? '',
+        reference: rollingStockData.metadata?.reference ?? '',
+        series: rollingStockData.metadata?.series ?? '',
+        subseries: rollingStockData.metadata?.subseries ?? '',
+        type: rollingStockData.metadata?.type ?? '',
+        unit: rollingStockData.metadata?.unit ?? '',
         length: rollingStockData.length,
         mass: {
           ...getDefaultMultiUnitsParameter('mass'),
@@ -105,9 +105,9 @@ export const getRollingStockEditorDefaultValues = (
           ...getDefaultMultiUnitsParameter('rollingResistanceC'),
           value: rollingStockData.rolling_resistance.C / (1000 * 3.6 ** 2), // The c resistance received is in N/(m/s)² and should appear in kN/(km/h)².
         },
-        electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
-        raisePantographTime: rollingStockData.raise_pantograph_time || null,
-        basePowerClass: rollingStockData.base_power_class || null,
+        electricalPowerStartupTime: rollingStockData.electrical_power_startup_time ?? null,
+        raisePantographTime: rollingStockData.raise_pantograph_time ?? null,
+        basePowerClass: rollingStockData.base_power_class ?? null,
         powerRestrictions: rollingStockData.power_restrictions,
         supportedSignalingSystems: rollingStockData.supported_signaling_systems,
         primaryCategory: rollingStockData.primary_category,
@@ -251,7 +251,7 @@ export const checkRollingStockFormValidity = (
   });
 
   let invalidEffortCurves: string[] = [];
-  Object.entries(effortCurves || {}).forEach(([mode, { curves }]) => {
+  Object.entries(effortCurves ?? {}).forEach(([mode, { curves }]) => {
     curves.forEach(
       ({ curve, cond: { comfort, electrical_profile_level, power_restriction_code } }) => {
         const filteredCurve = filterNullValueInCurve(curve);

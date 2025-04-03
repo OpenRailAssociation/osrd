@@ -54,7 +54,7 @@ async function checkI18N(
   // This variable is used for testing the generation of the error message.
   // It's a dummy (and dumb) error variables, it just generate an object with empty string
   // perhaps we can find a better way to generate it, specially this the property type
-  const errorVarExample = Object.keys(error.properties.context.properties || {}).reduce(
+  const errorVarExample = Object.keys(error.properties.context.properties ?? {}).reduce(
     (acc, curr) => {
       acc[curr] = '';
       return acc;

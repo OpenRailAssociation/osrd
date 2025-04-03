@@ -7,7 +7,7 @@ import type { LayerContext } from './types';
 
 const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];
 export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
+  const enableErrorTypes = context.issuesSettings?.types ?? INFRA_ERRORS;
   const res: OmitLayer<LineLayer> = {
     type: 'line',
     filter: [
@@ -32,7 +32,7 @@ export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLa
 }
 
 export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
+  const enableErrorTypes = context.issuesSettings?.types ?? INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     filter: [
@@ -62,7 +62,7 @@ export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<Sy
 }
 
 export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<CircleLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
+  const enableErrorTypes = context.issuesSettings?.types ?? INFRA_ERRORS;
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     filter: [
@@ -86,7 +86,7 @@ export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<Circl
 }
 
 export function getPointTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
-  const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
+  const enableErrorTypes = context.issuesSettings?.types ?? INFRA_ERRORS;
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     filter: [

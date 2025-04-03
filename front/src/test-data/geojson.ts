@@ -43,8 +43,8 @@ export function lineString(
   arg2?: [number, number]
 ): Feature<LineString> {
   if (typeof arg1 === 'number' || !arg1) {
-    const length = arg1 || random(2, 5, false);
-    const valueRange = arg2 || [random(), random()];
+    const length = arg1 ?? random(2, 5, false);
+    const valueRange = arg2 ?? [random(), random()];
     const positions = Array.from({ length }).map(() => position(valueRange));
     return turfLineString(positions);
   }

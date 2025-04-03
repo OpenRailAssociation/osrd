@@ -37,7 +37,7 @@ const useScenarioQueryParams = () => {
   // Helper function to get a parameter from the URL, or if absent from local storage
   const getParamFromUrlOrStorage = useCallback(
     (paramName: string) =>
-      searchParams.get(paramName) || localStorage.getItem(`${localKey}_${paramName}`) || undefined,
+      searchParams.get(paramName) ?? localStorage.getItem(`${localKey}_${paramName}`) ?? undefined,
     [localKey, searchParams]
   );
 

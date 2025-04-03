@@ -20,7 +20,7 @@ function useCompleteRollingStockSchemasProperties(): readonly SchemaProperty[] {
     );
     const completeSigSystemsSchema = {
       ...RS_SCHEMA_PROPERTIES[sigSystemsIndex],
-      enum: supportedSignalingSystems || [],
+      enum: supportedSignalingSystems ?? [],
     };
     return replaceElementAtIndex(RS_SCHEMA_PROPERTIES, sigSystemsIndex, completeSigSystemsSchema);
   }, [supportedSignalingSystems]);

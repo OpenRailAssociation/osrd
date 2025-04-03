@@ -26,8 +26,8 @@ class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
   // Retrieve the cell value based on the locator type
   static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
     return isInput
-      ? (await cell.locator('input').getAttribute('value'))?.trim() || ''
-      : (await cell.textContent())?.trim() || '';
+      ? ((await cell.locator('input').getAttribute('value'))?.trim() ?? '')
+      : ((await cell.textContent())?.trim() ?? '');
   }
 
   // Extract the column index for each header name

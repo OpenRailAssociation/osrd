@@ -20,8 +20,8 @@ export const buildSteps = (
       const times = ocpTT.getElementsByTagName('times')[0];
       const isLastOcp = ocpTT === ocpTTs.at(-1);
       const ocpType = ocpTT.getAttribute('ocpType');
-      let departureTime = times?.getAttribute('departure') || '';
-      let arrivalTime = ocpType === 'pass' ? departureTime : times?.getAttribute('arrival') || '';
+      let departureTime = times?.getAttribute('departure') ?? '';
+      let arrivalTime = ocpType === 'pass' ? departureTime : (times?.getAttribute('arrival') ?? '');
       arrivalTime = cleanTimeFormat(arrivalTime);
       departureTime = cleanTimeFormat(departureTime);
 

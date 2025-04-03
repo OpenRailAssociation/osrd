@@ -91,11 +91,11 @@ class LinkedTrainSection extends STDCMPage {
     // Extract and process train details
     return trainResultInfosButton.evaluateAll((buttons) =>
       buttons.map((button) => {
-        const trainName = button.querySelector('.train-name')?.textContent?.trim() || '';
+        const trainName = button.querySelector('.train-name')?.textContent?.trim() ?? '';
         const segments = Array.from(button.querySelectorAll('.d-flex'), (segment) =>
           Array.from(
             segment.querySelectorAll('.opDetails'),
-            (detail) => detail.textContent?.trim() || ''
+            (detail) => detail.textContent?.trim() ?? ''
           )
         );
         return { trainName, segments };

@@ -174,7 +174,7 @@ async function getRouteGeometryByRoute(
     })
   );
   trackRangesResp.unsubscribe();
-  const trackRangesResult = (await trackRangesResp).data || [];
+  const trackRangesResult = (await trackRangesResp).data ?? [];
   if (trackRangesResult.length === 0 || trackRangesResult[0].type !== 'Computed') {
     throw new Error('Some track ranges could not be computed yet.');
   }

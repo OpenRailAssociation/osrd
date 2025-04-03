@@ -72,7 +72,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     timetableId,
   });
 
-  const trainIds = useMemo(() => timetable?.map((t) => t.id) || [], [timetable]);
+  const trainIds = useMemo(() => timetable?.map((t) => t.id) ?? [], [timetable]);
 
   const formattedTrainIds = useMemo(
     () => trainIds.map((trainId) => formatEditoastTrainIdToTrainScheduleId(trainId)),

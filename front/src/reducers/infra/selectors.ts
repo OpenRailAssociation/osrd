@@ -22,7 +22,7 @@ function buildInfraStateSelectors<Name extends string>(
   name?: Name
 ): InfraStateSelectors<Name> {
   return {
-    [`get${name || ''}InfraID`]: (state: RootState) => state[slice.name].infraID,
+    [`get${name ?? ''}InfraID`]: (state: RootState) => state[slice.name].infraID,
   } as InfraStateSelectors<Name>;
 }
 

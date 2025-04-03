@@ -29,7 +29,7 @@ export const replaceCurrentWord = (
   cursorPosition: number,
   result: SearchResultItemOperationalPoint
 ) => {
-  const currentWord = findCurrentWord(inputText, cursorPosition) || '';
+  const currentWord = findCurrentWord(inputText, cursorPosition) ?? '';
   let newText;
 
   if (currentWord.length > 0) {

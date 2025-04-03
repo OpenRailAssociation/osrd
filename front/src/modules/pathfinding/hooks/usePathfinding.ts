@@ -175,7 +175,7 @@ const usePathfinding = ({
         matchPathStepAndOp(step, suggestedOp)
       );
 
-      const theoreticalMargin = i === 0 ? step.theoreticalMargin || '0%' : step.theoreticalMargin;
+      const theoreticalMargin = i === 0 ? (step.theoreticalMargin ?? '0%') : step.theoreticalMargin;
 
       const stopFor =
         i === pathStepsInput.length - 1 && !step.stopFor ? Duration.zero : step.stopFor;

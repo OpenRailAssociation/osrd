@@ -31,7 +31,7 @@ const computeBasePathStep = (
     stop_for: stopFor,
     locked,
     reception_signal: receptionSignal,
-  } = correspondingSchedule || {};
+  } = correspondingSchedule ?? {};
 
   let name;
   if ('trigram' in step) {

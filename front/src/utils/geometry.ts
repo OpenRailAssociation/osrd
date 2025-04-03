@@ -91,7 +91,7 @@ export function nearestPointOnLine(
     const nearestPoints = linesCoords.map((lineCoords) =>
       nearestPointOnLine({ type: 'LineString', coordinates: lineCoords }, inPoint, options)
     );
-    return minBy(nearestPoints, (i) => i.properties.dist) || nearestPoints[0];
+    return minBy(nearestPoints, (i) => i.properties.dist) ?? nearestPoints[0];
   }
 
   const pointA = getCoord(inPoint);
@@ -138,7 +138,7 @@ export function nearestPointOnLine(
     }
   }
 
-  const result = minBy(closestPointPerSegment, 'dist') || {
+  const result = minBy(closestPointPerSegment, 'dist') ?? {
     point: lineCoords[0],
     index: 0,
     dist: turfDistance(pointA, lineCoords[0]),

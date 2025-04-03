@@ -127,7 +127,7 @@ const overloadSteps = (
     };
     return {
       electrificationProfile:
-        value.electrical_profile_type === 'profile' ? value.profile || '' : '',
+        value.electrical_profile_type === 'profile' ? (value.profile ?? '') : '',
       ...currentTrainRegime,
     };
   });
@@ -226,8 +226,8 @@ export default function exportTrainCSV(
   speedsWithOPsAndSpeedLimits.forEach((speed, index) => {
     const actualVmaxs = getActualVmax(speed.position, formattedMrsp);
     const newStep = {
-      op: speed.op || '',
-      ch: speed.ch || '',
+      op: speed.op ?? '',
+      ch: speed.ch ?? '',
       trackName: speed.trackName,
       time: dateToHHMMSS(new Date(speed.time)),
       seconds: pointToComma(+ms2sec(speed.time).toFixed(1)),

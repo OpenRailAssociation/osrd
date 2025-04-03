@@ -183,7 +183,7 @@ export default class MacroEditorState {
    */
   getNodeByKey(key: string): NodeIndexed | null {
     const index = this.indexByPathKey[key];
-    return this.nodes[index] || null;
+    return this.nodes[index] ?? null;
   }
 
   /**
@@ -191,7 +191,7 @@ export default class MacroEditorState {
    */
   getNodeByNgeId(id: number): NodeIndexed | null {
     const index = this.indexByNgeId[id];
-    return this.nodes[index] || null;
+    return this.nodes[index] ?? null;
   }
 
   private deleteByIndexStorage(indexInStorage: number) {

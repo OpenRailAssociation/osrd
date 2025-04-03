@@ -45,7 +45,7 @@ export function normalizeStationData(data: StationData[]): StationData[] {
     requestedDeparture: cleanWhitespace(item.requestedDeparture),
     stopTime: cleanWhitespace(item.stopTime),
     signalReceptionClosed: item.signalReceptionClosed,
-    shortSlipDistance: item.shortSlipDistance !== undefined ? item.shortSlipDistance : false,
+    shortSlipDistance: item.shortSlipDistance ?? false,
     margin: {
       theoretical: cleanWhitespace(item.margin.theoretical),
       theoreticalS: cleanWhitespace(item.margin.theoreticalS),

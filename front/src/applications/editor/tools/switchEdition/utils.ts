@@ -60,7 +60,7 @@ export function getSwitchTypeJSONSchema(
       ),
     },
     required: [
-      ...without(baseSchema.required || [], 'ports', 'switch_type'),
+      ...without(baseSchema.required ?? [], 'ports', 'switch_type'),
       ...switchType.ports.map((port) => `${FLAT_SWITCH_PORTS_PREFIX}${port}`),
     ],
   };

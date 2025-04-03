@@ -34,7 +34,7 @@ export function loadDataModel() {
         const schemaResponse = infra_schema as JSONSchema7;
         // parse the schema
         const fieldToOmit = ['id', 'geo'];
-        const schema = Object.keys(schemaResponse.properties || {})
+        const schema = Object.keys(schemaResponse.properties ?? {})
           .filter((e: string) => {
             const property: JSONSchema7Definition | undefined = schemaResponse?.properties?.[e];
             return typeof property !== 'boolean' && property && property.type === 'array';
@@ -49,7 +49,7 @@ export function loadDataModel() {
             const ref = items?.$ref?.split('/') as keys;
             const refTarget = clone(schemaResponse[ref[1]][ref[2]]) as JSONSchema7;
             refTarget.properties = omit(refTarget.properties, fieldToOmit);
-            refTarget.required = (refTarget.required || []).filter(
+            refTarget.required = (refTarget.required ?? []).filter(
               (field: string) => !fieldToOmit.includes(field)
             );
             return {
@@ -91,7 +91,7 @@ export function updateTotalsIssue(infraID: number | undefined) {
             { subscribe: false, forceRefetch: true }
           )
         );
-        total = totalResp.data?.count || 0;
+        total = totalResp.data?.count ?? 0;
         filterTotal = total;
 
         // Get total for the active filters (if needed)
@@ -108,7 +108,7 @@ export function updateTotalsIssue(infraID: number | undefined) {
               { subscribe: false, forceRefetch: true }
             )
           );
-          filterTotal = filterResp.data?.count || 0;
+          filterTotal = filterResp.data?.count ?? 0;
         }
       }
       dispatch(updateTotalsIssueAction({ total, filterTotal }));
@@ -214,9 +214,9 @@ export function save(
   }
 ) {
   const payload = [
-    ...(operations.create || []).map((e) => entityToCreateOperation(e)),
-    ...(operations.update || []).map((e) => entityToUpdateOperation(e.target, e.source)),
-    ...(operations.delete || []).map((e) => entityToDeleteOperation(e)),
+    ...(operations.create ?? []).map((e) => entityToCreateOperation(e)),
+    ...(operations.update ?? []).map((e) => entityToUpdateOperation(e.target, e.source)),
+    ...(operations.delete ?? []).map((e) => entityToDeleteOperation(e)),
   ];
   return saveOperations(infraID, payload);
 }

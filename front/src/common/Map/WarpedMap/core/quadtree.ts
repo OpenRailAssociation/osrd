@@ -70,7 +70,7 @@ export function getQuadTree<
         for (let k = 0; k < candidates.length; k++) {
           const candidate = candidates[k];
           if (bboxIntersect(fBBox, candidate)) {
-            quad.children[k] = quad.children[k] || getNewQuadChild(candidate, d === depth - 1);
+            quad.children[k] = quad.children[k] ?? getNewQuadChild(candidate, d === depth - 1);
             newQuads.push(quad.children[k]!);
           }
         }

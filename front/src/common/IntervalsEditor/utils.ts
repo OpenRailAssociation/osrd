@@ -18,7 +18,7 @@ export function createEmptySegmentAt<T>(
   defaultUnit?: string
 ): Array<LinearMetadataItem<T>> {
   if (linearMetadata.length < 1) throw new Error('linear metadata is empty');
-  if (distance >= (last(linearMetadata)?.end || 0) || distance <= 0)
+  if (distance >= (last(linearMetadata)?.end ?? 0) || distance <= 0)
     throw new Error('split point is outside the geometry');
 
   return linearMetadata

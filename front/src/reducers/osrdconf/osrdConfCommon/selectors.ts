@@ -45,16 +45,16 @@ function buildCommonConfSelectors<Name extends string>(
 ): CommonSelectors<Name> {
   const makeOsrdConfSelector = makeSubSelector((state: RootState) => state[slice.name]);
 
-  const infraSelector = buildInfraStateSelectors(slice, name || '');
+  const infraSelector = buildInfraStateSelectors(slice, name ?? '');
 
   const additionalSelectors = {
-    [`get${name || ''}ProjectID`]: makeOsrdConfSelector('projectID'),
-    [`get${name || ''}StudyID`]: makeOsrdConfSelector('studyID'),
-    [`get${name || ''}ScenarioID`]: makeOsrdConfSelector('scenarioID'),
-    [`get${name || ''}TimetableID`]: makeOsrdConfSelector('timetableID'),
-    [`get${name || ''}ElectricalProfileSetId`]: makeOsrdConfSelector('electricalProfileSetId'),
-    [`get${name || ''}RollingStockID`]: makeOsrdConfSelector('rollingStockID'),
-    [`get${name || ''}SpeedLimitByTag`]: makeOsrdConfSelector('speedLimitByTag'),
+    [`get${name ?? ''}ProjectID`]: makeOsrdConfSelector('projectID'),
+    [`get${name ?? ''}StudyID`]: makeOsrdConfSelector('studyID'),
+    [`get${name ?? ''}ScenarioID`]: makeOsrdConfSelector('scenarioID'),
+    [`get${name ?? ''}TimetableID`]: makeOsrdConfSelector('timetableID'),
+    [`get${name ?? ''}ElectricalProfileSetId`]: makeOsrdConfSelector('electricalProfileSetId'),
+    [`get${name ?? ''}RollingStockID`]: makeOsrdConfSelector('rollingStockID'),
+    [`get${name ?? ''}SpeedLimitByTag`]: makeOsrdConfSelector('speedLimitByTag'),
   } as Selectors<Name>;
 
   return { ...infraSelector, ...additionalSelectors };

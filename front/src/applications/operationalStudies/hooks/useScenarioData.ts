@@ -71,7 +71,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const formattedRawTrainSchedules = useMemo(
     () =>
-      (fetchedTrainSchedulesResults || []).map((trainSchedule) => ({
+      (fetchedTrainSchedulesResults ?? []).map((trainSchedule) => ({
         ...trainSchedule,
         id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
       })),
@@ -81,7 +81,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const formattedRawPacedTrains: PacedTrainResponseWithPacedTrainId[] = useMemo(
     () =>
       showPacedTrains
-        ? (fetchedPacedTrains || []).map((pacedTrain) => ({
+        ? (fetchedPacedTrains ?? []).map((pacedTrain) => ({
             ...pacedTrain,
             id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
           }))

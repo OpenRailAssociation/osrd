@@ -72,23 +72,23 @@ function getLogicalSignalSettings(signalingSystem: SignalingSystemForm) {
   switch (signaling_system) {
     case 'TVM':
       return {
-        is_430: settings?.is_430 || 'false',
+        is_430: settings?.is_430 ?? 'false',
       };
     case 'BAPR':
       return {
-        Nf: settings?.Nf || 'false',
-        distant: settings?.distant || 'false',
+        Nf: settings?.Nf ?? 'false',
+        distant: settings?.distant ?? 'false',
       };
     default:
       return {
-        Nf: settings?.Nf || 'false',
+        Nf: settings?.Nf ?? 'false',
       };
   }
 }
 
 export function formatSignalingSystem(logicalSignal: SignalingSystemForm): SignalingSystem {
   const next_signaling_systems = logicalSignal.next_signaling_systems.map(
-    (nextSignalingSystem) => nextSignalingSystem || 'BAL'
+    (nextSignalingSystem) => nextSignalingSystem ?? 'BAL'
   );
 
   const settings = getLogicalSignalSettings(logicalSignal);
@@ -113,7 +113,7 @@ export function formatSignalingSystem(logicalSignal: SignalingSystemForm): Signa
     signaling_system: 'BAL',
     next_signaling_systems,
     settings,
-    default_parameters: { jaune_cli: logicalSignal.default_parameters?.jaune_cli || 'false' },
+    default_parameters: { jaune_cli: logicalSignal.default_parameters?.jaune_cli ?? 'false' },
     conditional_parameters,
   } as SignalingSystem;
 }

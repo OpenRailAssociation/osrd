@@ -219,7 +219,7 @@ const createTrainSchedulePayload = async ({
   }
 
   const trainScheduleLabels =
-    trainSchedule?.labels?.filter((label) => trainrunFrequencyFromLabel(label) !== null) || [];
+    trainSchedule?.labels?.filter((label) => trainrunFrequencyFromLabel(label) !== null) ?? [];
 
   trainrunLabels = uniq([...trainrunLabels, ...trainScheduleLabels]);
 
@@ -248,7 +248,7 @@ const createTrainSchedulePayload = async ({
     }
 
     // If missing arrival time, default to a zero stop duration
-    arrival = arrival || departure!;
+    arrival = arrival ?? departure!;
 
     return {
       at: `${section.targetNodeId}-${index + 1}`,

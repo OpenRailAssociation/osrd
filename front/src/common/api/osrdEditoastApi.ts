@@ -114,7 +114,7 @@ const osrdEditoastApi = generatedEditoastApi
       getProjects: {
         providesTags: (result) => [
           { type: 'projects', id: 'LIST' },
-          ...(result?.results || []).map((project) => ({
+          ...(result?.results ?? []).map((project) => ({
             type: 'projects' as const,
             id: project.id,
           })),
@@ -137,7 +137,7 @@ const osrdEditoastApi = generatedEditoastApi
       getProjectsByProjectIdStudies: {
         providesTags: (result) => [
           { type: 'studies', id: 'LIST' },
-          ...(result?.results || []).map(({ id }) => ({
+          ...(result?.results ?? []).map(({ id }) => ({
             type: 'studies' as const,
             id,
           })),
@@ -169,7 +169,7 @@ const osrdEditoastApi = generatedEditoastApi
       getProjectsByProjectIdStudiesAndStudyIdScenarios: {
         providesTags: (result) => [
           { type: 'scenarios', id: 'LIST' },
-          ...(result?.results || []).map(({ id }) => ({
+          ...(result?.results ?? []).map(({ id }) => ({
             type: 'scenarios' as const,
             id,
           })),

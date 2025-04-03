@@ -80,7 +80,7 @@ function checkWrapperValidity<T>(
   expect(result[0].begin).toEqual(0);
   // we round due to some approximation that result to a diff (below millimeter)
   if (newLine)
-    expect(Math.round(last(result)?.end || 0)).toEqual(Math.round(getLineStringDistance(newLine)));
+    expect(Math.round(last(result)?.end ?? 0)).toEqual(Math.round(getLineStringDistance(newLine)));
   // Checking the continuity
   tail(result).forEach((value, index) => {
     expect(value.begin <= value.end).toEqual(true);

@@ -43,7 +43,7 @@ export default async function createScenario(
   const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`);
 
   // Create a new scenario with a unique name if not provided
-  const scenarioNameFinal = scenarioName || `${scenarioData.name} ${uuidv4()}`;
+  const scenarioNameFinal = scenarioName ?? `${scenarioData.name} ${uuidv4()}`;
 
   // Create a new scenario with the provided or generated name
   const scenario: Scenario = await postApiRequest(

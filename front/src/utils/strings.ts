@@ -44,7 +44,7 @@ export function getTranslationKey(translationList: string | undefined, item: str
 }
 
 export function geti18nKeyForNull(str: string | null): string {
-  return str || `N/C`;
+  return str ?? `N/C`;
 }
 
 /** Given a string, return a number or undefined */
@@ -57,7 +57,7 @@ export function parseNumber(str: string) {
  * Useful for number input
  */
 export function convertInputStringToNumber(str: string) {
-  return parseNumber(str) || 0;
+  return parseNumber(str) ?? 0;
 }
 
 /**

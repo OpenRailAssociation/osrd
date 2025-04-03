@@ -45,7 +45,7 @@ export const userSlice = createSlice({
       return userInitialState;
     },
     setUserRoles(state, action: PayloadAction<Role[] | undefined>) {
-      state.userRoles = action.payload || [];
+      state.userRoles = action.payload ?? [];
     },
     updateUserPreferences(
       state,

@@ -114,8 +114,8 @@ const castNodeToNge = (
   labels: LabelDto[]
 ): NetzgrafikDto['nodes'][0] => ({
   id: node.ngeId,
-  betriebspunktName: node.trigram || '',
-  fullName: node.full_name || '',
+  betriebspunktName: node.trigram ?? '',
+  fullName: node.full_name ?? '',
   positionX: node.position_x,
   positionY: node.position_y,
   ports: [],
@@ -238,9 +238,9 @@ const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
         name: trainSchedule.train_name,
         categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
         frequencyId:
-          getFrequencyFromLabels(trainSchedule.labels || [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
+          getFrequencyFromLabels(trainSchedule.labels ?? [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
         trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-        labelIds: (trainSchedule.labels || [])
+        labelIds: (trainSchedule.labels ?? [])
           // we keep only not handled frequencies as labels to be not redundant
           .filter((l) => trainrunFrequencyFromLabel(l) === null)
           .map((l) =>

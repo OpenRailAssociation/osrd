@@ -132,14 +132,14 @@ export const formatOperationalPoints = (
 
     const opCommonProp = {
       id: op.id,
-      name: op.extensions?.identifier?.name || null,
+      name: op.extensions?.identifier?.name ?? null,
       duration: stepDuration,
       position: mmToM(op.position),
-      line_code: metadata?.line_code || null,
-      track_number: metadata?.track_number || null,
-      line_name: metadata?.line_name || null,
-      track_name: metadata?.track_name || null,
-      ch: op.extensions?.sncf?.ch || null,
+      line_code: metadata?.line_code ?? null,
+      track_number: metadata?.track_number ?? null,
+      line_name: metadata?.line_name ?? null,
+      track_name: metadata?.track_name ?? null,
+      ch: op.extensions?.sncf?.ch ?? null,
     };
 
     formattedStops.push({

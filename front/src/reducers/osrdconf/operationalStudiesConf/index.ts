@@ -73,8 +73,8 @@ export const operationalStudiesConfSlice = createSlice({
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;
       state.usingSpeedLimits = options?.use_speed_limits_for_simulation ?? true;
       state.labels = labels;
-      state.speedLimitByTag = speedLimitTag || undefined;
-      state.powerRestriction = power_restrictions || [];
+      state.speedLimitByTag = speedLimitTag ?? undefined;
+      state.powerRestriction = power_restrictions ?? [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
       if (isPacedTrainWithDetails(action.payload)) {

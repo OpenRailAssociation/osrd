@@ -110,7 +110,7 @@ class OriginSection extends STDCMPage {
       await expect(this.dynamicOriginCh).toHaveValue(chValue);
       await expect(this.originArrival).toHaveValue(arrivalType);
       await this.dateOriginArrival.fill(arrivalDate);
-      await this.timeOriginArrival.fill(arrivalTimeOverride || arrivalTime);
+      await this.timeOriginArrival.fill(arrivalTimeOverride ?? arrivalTime);
       await this.fillToleranceField(
         this.toleranceOriginArrival,
         tolerance.negative,

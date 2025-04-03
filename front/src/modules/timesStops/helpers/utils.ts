@@ -73,10 +73,10 @@ export const formatSuggestedViasToRowVias = (
 
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOpWithKP(step, op));
-    const { name } = pathStep || op;
+    const { name } = pathStep ?? op;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
 
-    const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse || {};
+    const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse ?? {};
 
     const stopForSeconds = stopFor ? stopFor.total('second') : undefined;
 
@@ -101,7 +101,7 @@ export const formatSuggestedViasToRowVias = (
       arrival: formattedArrival,
       departure: formattedDeparture,
       onStopSignal,
-      name: name || t('waypoint', { id: filteredOp.pathStepId }),
+      name: name ?? t('waypoint', { id: filteredOp.pathStepId }),
       shortSlipDistance,
       stopFor: stopForSeconds !== undefined ? String(stopForSeconds) : undefined,
       theoreticalMargin,

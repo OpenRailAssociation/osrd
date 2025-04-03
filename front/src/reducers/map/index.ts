@@ -163,11 +163,11 @@ export function updateViewport(
     dispatch(mapSlice.actions.updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
       const { map } = getState();
-      const latitude = gpsRound(viewport.latitude || map.viewport.latitude);
-      const longitude = gpsRound(viewport.longitude || map.viewport.longitude);
-      const zoom = gpsRound(viewport.zoom || map.viewport.zoom);
-      const bearing = gpsRound(viewport.bearing || map.viewport.bearing);
-      const pitch = gpsRound(viewport.pitch || map.viewport.pitch);
+      const latitude = gpsRound(viewport.latitude ?? map.viewport.latitude);
+      const longitude = gpsRound(viewport.longitude ?? map.viewport.longitude);
+      const zoom = gpsRound(viewport.zoom ?? map.viewport.zoom);
+      const bearing = gpsRound(viewport.bearing ?? map.viewport.bearing);
+      const pitch = gpsRound(viewport.pitch ?? map.viewport.pitch);
 
       history.push(`${baseUrl}/${latitude}/${longitude}/${zoom}/${bearing}/${pitch}`);
     }

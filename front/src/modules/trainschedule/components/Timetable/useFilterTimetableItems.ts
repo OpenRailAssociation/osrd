@@ -85,7 +85,7 @@ const useFilterTimetableItems = (
             reference = '',
             series = '',
             subseries = '',
-          } = timetableItem.rollingStock?.metadata || {};
+          } = timetableItem.rollingStock?.metadata ?? {};
           if (
             ![detail, family, reference, series, subseries].some((v) =>
               v.toLowerCase().includes(debouncedRollingstockFilter.toLowerCase())

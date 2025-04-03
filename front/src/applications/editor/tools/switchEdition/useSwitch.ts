@@ -46,7 +46,7 @@ const useSwitch = () => {
   const isNew = switchEntity.properties.id === NEW_ENTITY_ID;
   const switchType = useMemo(
     () =>
-      switchTypes.find((type) => type.id === switchEntity.properties.switch_type) ||
+      switchTypes.find((type) => type.id === switchEntity.properties.switch_type) ??
       first(switchTypes),
     [switchEntity.properties.switch_type, switchTypes]
   );

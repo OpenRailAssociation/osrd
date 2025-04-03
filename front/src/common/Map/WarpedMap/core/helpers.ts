@@ -195,8 +195,8 @@ export function computeBBoxViewport(
   const [minLng, minLat, maxLng, maxLat] = boundingBox;
   const viewportTemp = new WebMercatorViewport({
     ...initialViewport,
-    width: opts?.width || 600,
-    height: opts?.height || 400,
+    width: opts?.width ?? 600,
+    height: opts?.height ?? 400,
   });
   const { longitude, latitude, zoom } = viewportTemp.fitBounds(
     [

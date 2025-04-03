@@ -18,7 +18,7 @@ const getPowerRestrictionFromRange = (
   const powerRestrictionRange = powerRestrictionRanges.find(
     (restriction) => restriction.from === fromPathStep.id && restriction.to === toPathStep.id
   );
-  return powerRestrictionRange || null;
+  return powerRestrictionRange ?? null;
 };
 
 /**
@@ -79,7 +79,7 @@ const getRestrictionsToResize = (
   let secondRestriction: PowerRestriction | undefined;
   if (context === 'begin') {
     // default hypothesis: the begin was decremented
-    firstRestriction = otherRestriction || undefined;
+    firstRestriction = otherRestriction ?? undefined;
     secondRestriction = selectedRestriction;
 
     if (otherRange && otherRestriction && otherRange.begin > selectedRange.begin) {
@@ -89,7 +89,7 @@ const getRestrictionsToResize = (
   } else {
     // default hypothesis: the end was incremented
     firstRestriction = selectedRestriction;
-    secondRestriction = otherRestriction || undefined;
+    secondRestriction = otherRestriction ?? undefined;
 
     if (otherRange && otherRestriction && otherRange.begin < selectedRange.begin) {
       firstRestriction = otherRestriction;
