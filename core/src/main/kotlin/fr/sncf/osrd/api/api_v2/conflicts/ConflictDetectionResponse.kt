@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.ConflictDetectionEndpoint
+import fr.sncf.osrd.conflicts.ConflictType
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
 
@@ -14,7 +14,7 @@ class ConflictDetectionResponse(
      * train/work schedule IDs. (i.e. there's only one conflict entry between trains (A, B), but
      * there may be a different one for trains (B, C), or (A, B, C)).
      */
-    val conflicts: Collection<Conflict>,
+    val conflicts: Collection<ConflictResponse>,
 )
 
 /**
@@ -22,7 +22,7 @@ class ConflictDetectionResponse(
  * given set of [train + work schedule] is conflicting over a continuous time range, only one
  * conflict is returned (with a longer requirement list).
  */
-class Conflict(
+class ConflictResponse(
     /** List of train IDs for this given conflict. Can't be empty. */
     @Json(name = "train_ids") val trainIds: Collection<String>,
     /** List of work schedule IDs for this given conflict, if any. */
@@ -31,9 +31,8 @@ class Conflict(
     @Json(name = "start_time") val startTime: ZonedDateTime,
     /** End of the conflict time range. See `start_time`. */
     @Json(name = "end_time") val endTime: ZonedDateTime,
-    /** One of "SPACING" or "ROUTING" depending on the kind of conflicting resource. */
-    @Json(name = "conflict_type")
-    val conflictType: ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType,
+    /** One of "Spacing" or "Routing" depending on the kind of conflicting resource. */
+    @Json(name = "conflict_type") val conflictType: ConflictType,
     /** List of all conflicting requirements. Can't be empty. */
     @Json(name = "requirements") val requirements: Collection<ConflictRequirement>,
 )
