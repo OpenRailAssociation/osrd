@@ -1,97 +1,22 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
-import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult.PathWaypointLocation
-import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
-import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
-import fr.sncf.osrd.graph.PathfindingResultId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.chunksOnBlocks
 import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import java.util.function.BiFunction
-import java.util.stream.Stream
 import kotlin.math.abs
 
-/**
- * The pathfinding algorithm produces a path in the block graph. This makes total sense, but also
- * isn't enough: the caller wants to know which waypoints were encountered, as well as the track
- * section path and its geometry.
- */
-fun convertPathfindingResult(
-    blockInfra: BlockInfra,
-    rawInfra: RawSignalingInfra,
-    rawPath: PathfindingResultId<Block>,
-    warningRecorder: DiagnosticRecorderImpl
-): PathfindingResult {
-    val path = makePathProps(rawInfra, blockInfra, rawPath.ranges)
-    val result = PathfindingResult(path.getLength().meters)
-    result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges)
-    result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra)
-    result.geographic = makeGeographic(path)
-    result.slopes = makeSlopes(path)
-    result.curves = makeCurves(path)
-    result.warnings = warningRecorder.getWarnings()
-    return result
-}
-
-/**
- * Make the list of waypoints on the path, in order. Both user-defined waypoints and operational
- * points.
- */
-fun makePathWaypoint(
-    path: PathProperties,
-    rawPath: PathfindingResultId<Block>,
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra
-): List<PathWaypointResult> {
-    val waypoints = ArrayList<PathWaypointResult>()
-    waypoints.addAll(makeUserDefinedWaypoints(path, infra, blockInfra, rawPath))
-    waypoints.addAll(makeOperationalPoints(infra, path))
-    return sortAndMergeDuplicates(waypoints)
-}
-
-/** Returns all the user defined waypoints on the path */
-private fun makeUserDefinedWaypoints(
-    path: PathProperties,
-    infra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    rawPath: PathfindingResultId<Block>
-): Collection<PathWaypointResult> {
-    // Builds a mapping between blocks and all user defined waypoints on the block
-    val userDefinedWaypointsPerBlock = HashMap<BlockId, MutableList<Offset<Block>>>()
-    for (waypoint in rawPath.waypoints) {
-        val offsets =
-            userDefinedWaypointsPerBlock.computeIfAbsent(waypoint.edge) { _ -> ArrayList() }
-        offsets.add(waypoint.offset)
-    }
-    val res = ArrayList<PathWaypointResult>()
-    val startFirstRange = rawPath.ranges[0].start
-    var startBlockOffset = Offset<TravelledPath>(-startFirstRange.distance)
-    for (blockRange in rawPath.ranges) {
-        for (waypoint in userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge, ArrayList())) {
-            if (blockRange.start <= waypoint && waypoint <= blockRange.end) {
-                val pathOffset = startBlockOffset + waypoint.distance
-                res.add(makePendingUserDefinedWaypoint(infra, path, pathOffset))
-            }
-        }
-        startBlockOffset += blockInfra.getBlockLength(blockRange.edge).distance
-    }
-    return res
-}
-
+// TODO: change name and localisation, this is an utils class now
 /** Returns all the operational points on the path as waypoints */
 fun makeOperationalPoints(
     infra: RawSignalingInfra,
@@ -118,71 +43,6 @@ private fun makePendingOPWaypoint(
     val trackName = infra.getTrackSectionName(trackId)
     val location = PathWaypointLocation(trackName, trackOffset.distance.meters)
     return PathWaypointResult(location, pathOffset.distance.meters, true, opId)
-}
-
-/** Creates a pending waypoint from a path and its offset */
-private fun makePendingUserDefinedWaypoint(
-    infra: RawSignalingInfra,
-    path: PathProperties,
-    pathOffset: Offset<TravelledPath>
-): PathWaypointResult {
-    val (trackId, offset) = path.getTrackLocationAtOffset(pathOffset)
-    val trackName = infra.getTrackSectionName(trackId)
-    val location = PathWaypointLocation(trackName, offset.distance.meters)
-    return PathWaypointResult(location, pathOffset.distance.meters, false, null)
-}
-
-/** Sorts the waypoints on the path. When waypoints overlap, the user-defined one is kept. */
-private fun sortAndMergeDuplicates(
-    waypoints: ArrayList<PathWaypointResult>
-): List<PathWaypointResult> {
-    waypoints.sortWith(Comparator.comparingDouble { wp: PathWaypointResult -> wp.pathOffset })
-    val res = ArrayList<PathWaypointResult>()
-    var last: PathWaypointResult? = null
-    for (waypoint in waypoints) {
-        if (last != null && last.isDuplicate(waypoint)) last.merge(waypoint)
-        else {
-            last = waypoint
-            res.add(last)
-        }
-    }
-    return res
-}
-
-/** Returns the geographic linestring of the path */
-private fun makeGeographic(path: PathProperties): RJSLineString {
-    return toRJSLineString(path.getGeo())
-}
-
-/** Returns the slopes on the path */
-private fun makeSlopes(path: PathProperties): List<SlopeChartPointResult> {
-    return generateChartPoints(path.getSlopes()) { position: Double?, gradient: Double? ->
-        SlopeChartPointResult(position!!, gradient!!)
-    }
-}
-
-/** Returns the curves on the path */
-private fun makeCurves(path: PathProperties): List<CurveChartPointResult> {
-    return generateChartPoints(path.getCurves()) { position: Double?, radius: Double? ->
-        CurveChartPointResult(position!!, radius!!)
-    }
-}
-
-/**
- * Generates and returns a list of points, generated by `factory` for both the lower and upper
- * endpoint of each range of `ranges`, in ascending order.
- */
-private fun <T> generateChartPoints(
-    ranges: DistanceRangeMap<Double>,
-    factory: BiFunction<Double, Double, T>
-): List<T> {
-    return ranges
-        .asList()
-        .stream()
-        .flatMap { (lower, upper, value): DistanceRangeMap.RangeMapEntry<Double> ->
-            Stream.of(factory.apply(lower.meters, value), factory.apply(upper.meters, value))
-        }
-        .toList()
 }
 
 /** Returns the route path, from the raw block pathfinding result */

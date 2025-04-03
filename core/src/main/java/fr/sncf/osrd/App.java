@@ -13,8 +13,6 @@ public class App {
      */
     public static void main(String[] args) {
         var commands = new HashMap<String, CliCommand>();
-        commands.put("api", new ApiServerCommand());
-        commands.put("standalone-simulation", new StandaloneSimulationCommand());
         commands.put("load-infra", new ValidateInfra());
         commands.put("worker", new WorkerCommand());
         commands.put("reproduce-request", new ReproduceRequest());

@@ -26,18 +26,6 @@ data class NoConflictResponse(
     val timeOfNextConflict: Double,
 ) : IncrementalConflictResponse
 
-fun incrementalConflictDetectorFromTrainReq(
-    requirements: List<TrainRequirements>
-): IncrementalConflictDetector {
-    return IncrementalConflictDetector(convertTrainRequirements(requirements))
-}
-
-fun incrementalConflictDetectorFromReq(
-    requirements: List<Requirements>
-): IncrementalConflictDetector {
-    return IncrementalConflictDetector(requirements)
-}
-
 /**
  * This class takes a list of requirements as input, and can only be used to compare them to a *new*
  * set of requirements. The initial requirements cannot be modified. Conflicts between initial

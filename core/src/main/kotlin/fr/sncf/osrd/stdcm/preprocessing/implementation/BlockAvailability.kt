@@ -320,23 +320,26 @@ private data class AvailabilityProperties(
 )
 
 fun makeBlockAvailability(
-    requirements: Collection<SpacingRequirement>,
+    spacingRequirements: Collection<SpacingRequirement>,
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
 ): BlockAvailabilityInterface {
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
         // The margin expected *after* the new train is added *before* the other train resource uses
-        requirements.forEach {
+        spacingRequirements.forEach {
             it.beginTime -= gridMarginAfterTrain
             it.endTime += gridMarginBeforeTrain
         }
     }
-    val trainRequirements = listOf(TrainRequirements("0", requirements, listOf()))
+    val requirements =
+        listOf(
+            Requirements(RequirementId("0", RequirementType.TRAIN), spacingRequirements, listOf())
+        )
 
     // Only keep steps with planned timing data
     return BlockAvailability(
-        incrementalConflictDetectorFromTrainReq(trainRequirements),
+        IncrementalConflictDetector(requirements),
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
         timeStep

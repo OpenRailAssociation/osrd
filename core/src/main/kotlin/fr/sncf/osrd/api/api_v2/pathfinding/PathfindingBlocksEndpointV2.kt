@@ -402,3 +402,45 @@ private fun getBlockOffset(
         String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
     )
 }
+
+private fun makeHeuristicsForPathfindingEdges(
+    infra: FullInfra,
+    waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>,
+    rollingStockMaxSpeed: Double,
+): ArrayList<AStarHeuristic<PathfindingEdge, Block>> {
+    // Compute the minimum distance between steps
+    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
+    for (i in 0 until waypoints.size - 2) {
+        stepMinDistance[i] =
+            minDistanceBetweenSteps(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                waypoints[i + 2]
+            )
+    }
+
+    // Reversed cumulative sum
+    for (i in stepMinDistance.size - 2 downTo 0) {
+        stepMinDistance[i] += stepMinDistance[i + 1]
+    }
+
+    // Setup estimators foreach intermediate steps
+    val remainingDistanceEstimators = ArrayList<AStarHeuristic<PathfindingEdge, Block>>()
+    for (i in 0 until waypoints.size - 1) {
+        val remainingDistanceEstimator =
+            RemainingDistanceEstimator(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                stepMinDistance[i]
+            )
+
+        // Now that the cost function is an approximation of the remaining time,
+        // we need to return the smallest possible remaining time here
+        remainingDistanceEstimators.add { edge, offset ->
+            remainingDistanceEstimator.apply(edge.block, offset).meters / rollingStockMaxSpeed
+        }
+    }
+    return remainingDistanceEstimators
+}

@@ -89,7 +89,7 @@ private fun makeEndOfPathStop(
 }
 
 /** Return the offsets of block-delimiting signals on the path. */
-fun getSignalOffsets(
+private fun getSignalOffsets(
     infra: FullInfra,
     zonePaths: List<StaticIdx<ZonePath>>,
     pathStartOffset: Offset<BlockPath>,
