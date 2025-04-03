@@ -1,7 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult
-import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult.PathWaypointLocation
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*
@@ -24,7 +22,6 @@ import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -102,7 +99,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
-                makePathStops(stops, infra, trainPath)
+                makePathStops(stops, trainPath)
             )
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
@@ -328,41 +325,12 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     /** Builds the list of stops from OP */
-    private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): List<TrainStop> {
-        val operationalPoints = makeOperationalPoints(infra, trainPath)
+    private fun makeOpStops(trainPath: PathProperties): List<TrainStop> {
         val res = ArrayList<TrainStop>()
-        for (op in operationalPoints) {
-            res.add(TrainStop(op.pathOffset, 0.0, OPEN))
+        for ((_, offset) in trainPath.getOperationalPointParts()) {
+            res.add(TrainStop(offset.distance.meters, 0.0, OPEN))
         }
         return res
-    }
-
-    /** Returns all the operational points on the path as waypoints */
-    private fun makeOperationalPoints(
-        infra: RawSignalingInfra,
-        path: PathProperties
-    ): Collection<PathWaypointResult> {
-        val res = ArrayList<PathWaypointResult>()
-        for ((opId, offset) in path.getOperationalPointParts()) {
-            res.add(makePendingOPWaypoint(infra, offset, opId))
-        }
-        return res
-    }
-
-    /** Creates a pending waypoint from an operational point part */
-    private fun makePendingOPWaypoint(
-        infra: RawSignalingInfra,
-        pathOffset: Offset<Path>,
-        opPartId: OperationalPointPartId
-    ): PathWaypointResult {
-        val partChunk = infra.getOperationalPointPartChunk(opPartId)
-        val partChunkOffset = infra.getOperationalPointPartChunkOffset(opPartId)
-        val opId = infra.getOperationalPointPartOpId(opPartId)
-        val trackId = infra.getTrackFromChunk(partChunk)
-        val trackOffset = partChunkOffset + infra.getTrackChunkOffset(partChunk).distance
-        val trackName = infra.getTrackSectionName(trackId)
-        val location = PathWaypointLocation(trackName, trackOffset.distance.meters)
-        return PathWaypointResult(location, pathOffset.distance.meters, true, opId)
     }
 
     /** Sorts the stops on the path. When stops overlap, the user-defined one is kept. */
@@ -385,13 +353,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * Make the path's ordered list of stops, in order. Both user-defined stops and operational
      * points.
      */
-    private fun makePathStops(
-        stops: List<TrainStop>,
-        infra: RawSignalingInfra,
-        trainPath: PathProperties
-    ): List<TrainStop> {
+    private fun makePathStops(stops: List<TrainStop>, trainPath: PathProperties): List<TrainStop> {
         val mutStops = stops.toMutableList()
-        mutStops.addAll(makeOpStops(infra, trainPath))
+        mutStops.addAll(makeOpStops(trainPath))
         return sortAndMergeStopsDuplicates(mutStops)
     }
 }
