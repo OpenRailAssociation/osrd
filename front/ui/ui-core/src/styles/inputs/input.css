@@ -19,7 +19,7 @@
     width: 100%;
 
     &.focused-by-tab {
-      outline: 1px solid theme('colors.primary.50');
+      outline: 1px solid var(--color-primary-50);
       outline-offset: 3px;
     }
 

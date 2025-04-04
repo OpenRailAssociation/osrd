@@ -99,6 +99,7 @@
     "@eslint/js": "^8.57.1",
     "@playwright/test": "^1.52.0",
     "@rtk-query/codegen-openapi": "^2.0.0",
+    "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

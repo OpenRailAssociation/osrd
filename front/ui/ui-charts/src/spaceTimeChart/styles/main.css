@@ -36,7 +36,7 @@
   .type-and-duration {
     display: flex;
     justify-content: space-between;
-    background-color: theme('colors.error.60');
+    background-color: var(--color-error-60);
     padding: 1px 6px 3px 6px;
     margin-bottom: 2px;
   }
