@@ -6,17 +6,16 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
+import type { ResourceType } from 'common/api/mock/mockEditoastApi';
 import type { Infra } from 'common/api/osrdEditoastApi';
-import useResourcesGrants from 'common/authorization/hooks/useResourcesGrants';
+import GrantsManager from 'common/authorization/components/GrantsManager';
+import useUserResourcesGrants from 'common/authorization/hooks/useUserResourcesGrants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useInfraActions, useInfraID, useOsrdContext } from 'common/osrdContext';
 import { MODES } from 'main/consts';
-import { DEFAULT_GRANT } from 'modules/infra/consts';
 import { deleteItinerary } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
-
-import InfraSelectorGrantsManager from './InfraSelectorGrantsManager';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -55,10 +54,12 @@ const InfraSelectorModalBodyStandard = ({
   const { closeModal } = useContext(ModalContext);
   const navigate = useNavigate();
 
-  const payload = useMemo(() => ({ infra: infraIdsList }), [infraIdsList]);
+  const payload: Map<ResourceType, number[]> = useMemo(
+    () => new Map([['infra', infraIdsList]]),
+    [infraIdsList]
+  );
 
-  const { userResourcesGrants, resourceGrants, usersInfraGrantsByInfraId } =
-    useResourcesGrants(payload);
+  const { currentUserGrants, grantTreeByResourceType } = useUserResourcesGrants(payload);
 
   const setInfraID = useCallback(
     (id: number) => {
@@ -92,9 +93,9 @@ const InfraSelectorModalBodyStandard = ({
       </div>
       <div className="infraslist" data-testid="infra-list">
         {infrasList.map((infra) => {
-          const userGrant =
-            userResourcesGrants?.infra.find((userInfraGrant) => userInfraGrant.id === infra.id)
-              ?.grant || DEFAULT_GRANT;
+          const userGrant = currentUserGrants?.infra.find(
+            (userInfraGrant) => userInfraGrant.id === infra.id
+          )?.grant;
           return (
             <div
               className={cx('infraslist-item-choice', {
@@ -119,11 +120,11 @@ const InfraSelectorModalBodyStandard = ({
                   </span>
                 )}
               </button>
-              <InfraSelectorGrantsManager
-                infraId={infra.id}
-                userGrant={userGrant}
-                resourceGrants={resourceGrants}
-                userSubjectsList={usersInfraGrantsByInfraId[infra.id]}
+              <GrantsManager
+                resourceId={infra.id}
+                resourceType="infra"
+                userGrant={userGrant!}
+                privilegesByGrant={grantTreeByResourceType.get('infra')}
               />
               <div className="infraslist-item-choice-footer">
                 <span>ID {infra.id}</span>
