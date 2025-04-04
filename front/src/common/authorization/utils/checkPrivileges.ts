@@ -1,29 +1,33 @@
+import type { Grant, Privilege, PrivilegesByGrant } from 'common/api/mock/mockEditoastApi';
+
 export type AuthorizationRequirement =
   | {
-      requiredGrant: string;
+      requiredGrant: Grant;
       requiredPrivileges?: undefined;
     }
   | {
       requiredGrant?: undefined;
-      requiredPrivileges: string[];
+      requiredPrivileges: Privilege[];
     };
 
 export type CheckPrivilegesParams = {
-  resourceGrants?: {
-    [grant: string]: string[];
-  };
-  userGrant: string;
+  privilegesByGrant?: PrivilegesByGrant;
+  userGrant: Grant;
 } & AuthorizationRequirement;
 
 const checkPrivileges = ({
   userGrant,
-  resourceGrants = {},
+  privilegesByGrant = {
+    READER: [],
+    WRITER: [],
+    OWNER: [],
+  },
   requiredGrant,
   requiredPrivileges = [],
 }: CheckPrivilegesParams) => {
-  const userPrivileges = resourceGrants[userGrant] || [];
+  const userPrivileges = privilegesByGrant[userGrant] || [];
   const privilegesToCheck = requiredGrant
-    ? resourceGrants[requiredGrant] || []
+    ? privilegesByGrant[requiredGrant] || []
     : requiredPrivileges;
 
   return privilegesToCheck.every((privilege) => userPrivileges.includes(privilege));

@@ -3,7 +3,7 @@ import type { MockedDB } from './mockEditoastApi';
 const database: MockedDB = {
   SUBJECTS: [
     {
-      type: 'user',
+      type: 'User',
       id: 1,
       name: 'Odile Roindolle',
       roles: ['admin'],
@@ -20,21 +20,21 @@ const database: MockedDB = {
       },
     },
     {
-      type: 'user',
+      type: 'User',
       id: 2,
       name: 'Monique Nguyen',
       roles: ['OperationalStudies'],
       resourcesGranted: {
         infra: [
-          { id: 1, grant: 'READER' },
-          { id: 2, grant: 'WRITER' },
+          { id: 1, grant: 'WRITER' },
+          { id: 2, grant: 'READER' },
           { id: 3, grant: 'READER' },
         ],
         timetable: [{ id: 2, grant: 'READER' }],
       },
     },
     {
-      type: 'user',
+      type: 'User',
       id: 3,
       name: 'André Lartigotte',
       roles: ['Stdcm'],
@@ -48,7 +48,7 @@ const database: MockedDB = {
       },
     },
     {
-      type: 'user',
+      type: 'User',
       id: 4,
       name: 'Pedro Tomaszewki',
       roles: ['OperationalStudies'],
@@ -65,13 +65,13 @@ const database: MockedDB = {
       },
     },
     {
-      type: 'user',
+      type: 'User',
       id: 5,
       name: 'Victor Jacquinot',
       roles: ['Stdcm'],
       resourcesGranted: {
         infra: [
-          { id: 1, grant: 'READER' },
+          { id: 1, grant: 'OWNER' },
           { id: 5, grant: 'WRITER' },
           { id: 7, grant: 'READER' },
         ],
@@ -79,7 +79,7 @@ const database: MockedDB = {
       },
     },
     {
-      type: 'group',
+      type: 'Group',
       id: 6,
       name: 'stdcm users',
       roles: ['Stdcm'],
@@ -96,7 +96,7 @@ const database: MockedDB = {
       },
     },
     {
-      type: 'group',
+      type: 'Group',
       id: 7,
       name: 'operational studies users',
       roles: ['OperationalStudies'],

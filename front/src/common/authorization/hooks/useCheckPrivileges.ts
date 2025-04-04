@@ -38,7 +38,7 @@ type UseCheckPrivilegesParams = {
 //   const userGrant = userResourcesGrants?.[resourceType]?.[0].grant || 'NONE';
 
 //   return checkPrivileges({
-//     resourceGrants: availableGrantsOnResource as CheckPrivilegesParams['resourceGrants'],
+//     privilegesByGrant: availableGrantsOnResource as CheckPrivilegesParams['privilegesByGrant'],
 //     userGrant,
 //     ...(requiredGrant ? { requiredGrant } : { requiredPrivileges }),
 //   });

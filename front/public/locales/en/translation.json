@@ -456,16 +456,26 @@
     }
   },
   "authorization": {
+    "addGrantToUser": "Add grant to user",
+    "grants": {
+      "edit": "write",
+      "full": "full access",
+      "none": "no access",
+      "read": "read"
+    },
     "permission": "Permission",
-    "permissionDenied": "You don't have permission to perform this action"
+    "permissionDenied": "You don't have permission to perform this action",
+    "yourGrant": "Your access : {{grant}}"
   },
   "common": {
+    "add": "Add",
     "and": "and",
     "cancel": "Cancel",
     "close": "Close",
     "collapse": "Collapse",
     "confirm": "Confirm",
     "delete": "Delete",
+    "details": "Details",
     "duplicate": "Duplicate",
     "edit": "Edit",
     "error": "An error has occurred",
@@ -519,10 +529,8 @@
     "actions": {
       "cancel": "Cancel",
       "check": "Validate",
-      "collapse": "collapse",
       "copy": "Clone",
       "delete": "Delete",
-      "details": "details",
       "export": "Export to RailJSON",
       "lock": "Lock",
       "rename": "Rename",
@@ -541,12 +549,6 @@
     },
     "goToEditionMode": "Edit",
     "goToStandardMode": "Back to the selection",
-    "grants": {
-      "edit": "write",
-      "full": "full access",
-      "none": "no access",
-      "read": "read"
-    },
     "infraChoice": "Infrastructures",
     "infraDeleted": "The {{name}} infrastructure has been deleted.",
     "infraManagement": "Infrastructures management",

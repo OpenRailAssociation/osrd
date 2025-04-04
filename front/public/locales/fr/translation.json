@@ -454,16 +454,26 @@
     }
   },
   "authorization": {
+    "addGrantToUser": "Ajouter des droits à un utilisateur",
+    "grants": {
+      "edit": "écriture",
+      "full": "accès total",
+      "none": "pas d'accès",
+      "read": "lecture"
+    },
     "permission": "Permission",
-    "permissionDenied": "Vous n'avez pas la permission de réaliser cette action"
+    "permissionDenied": "Vous n'avez pas la permission de réaliser cette action",
+    "yourGrant": "Votre accès : {{grant}}"
   },
   "common": {
+    "add": "Ajouter",
     "and": "et",
     "cancel": "Annuler",
     "close": "Fermer",
     "collapse": "Réduire",
     "confirm": "Confirmer",
     "delete": "Supprimer",
+    "details": "Détails",
     "duplicate": "Dupliquer",
     "edit": "Éditer",
     "error": "Une erreur est survenue",
@@ -517,10 +527,8 @@
     "actions": {
       "cancel": "Annuler",
       "check": "Valider",
-      "collapse": "réduire",
       "copy": "Dupliquer",
       "delete": "Supprimer",
-      "details": "détails",
       "export": "Exporter au format RailJSON",
       "lock": "Verrouiller",
       "rename": "Renommer",
@@ -539,12 +547,6 @@
     },
     "goToEditionMode": "Éditer",
     "goToStandardMode": "Retour à la sélection",
-    "grants": {
-      "edit": "écriture",
-      "full": "accès total",
-      "none": "pas d'accès",
-      "read": "lecture"
-    },
     "infraChoice": "Infrastructures",
     "infraDeleted": "L'infrastructure {{name}} a bien été supprimée.",
     "infraManagement": "Gestion des infrastructures",

@@ -51,8 +51,8 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /translation:nav-bar.language\..*/, // Language selector which is generated with the locale
 
-  // Infra management
-  /translation:infraManagement.grants\..*/,
+  // Authorization
+  /translation:authorization\.grants\..*/,
 
   // Map
   /translation:mapKey.alternatingCurrent/,
@@ -79,14 +79,15 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:.*.create/,
   /operational-studies:.*.select/,
 
-  // Scenario
-  /operational-studies:main.Routing/,
-  /operational-studies:main.Spacing/,
-  /operational-studies:main.pacedTrain/,
-  /operational-studies:main.pacedTrainCount/,
-  /operational-studies:main.timetable\.invalid\..*/,
-  /operational-studies:main.train/,
-  /operational-studies:main.trainCount/,
+  // Project
+  /operationalStudies\/scenario:Routing/,
+  /operationalStudies\/scenario:Spacing/,
+  /operationalStudies\/scenario:pacedTrain/,
+  /operationalStudies\/scenario:pacedTrainCount/,
+  /operationalStudies\/scenario:timetable\.invalid\..*/,
+  /operationalStudies\/scenario:timetable\.occurrenceChangeGroup\..*/,
+  /operationalStudies\/scenario:train/,
+  /operationalStudies\/scenario:trainCount/,
 
   // Study
   /operational-studies:study\.date-*/,
@@ -121,6 +122,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /stdcm:consist\.errors\..*/,
   /stdcm:datetimeOutsideWindow/,
   /stdcm:destinationTime/,
+  /stdcm:departureDate/,
   /stdcm:leaveAt/,
   /stdcm:linkedTrainDefaultCard\..*/,
   /stdcm:simulation.additionalResults/,
