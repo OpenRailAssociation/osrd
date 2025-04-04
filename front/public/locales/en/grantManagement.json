@@ -1,0 +1,15 @@
+{
+  "actions": {
+    "add": "Add",
+    "collapse": "collapse",
+    "details": "details"
+  },
+  "addGrantToUser": "Add grant to user",
+  "grants": {
+    "edit": "write",
+    "full": "full access",
+    "none": "no access",
+    "read": "read"
+  },
+  "yourGrant": "Your access : {{grant}}"
+}

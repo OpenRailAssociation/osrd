@@ -1,3 +1,5 @@
+import type { Grant } from 'common/api/mock/mockEditoastApi';
+
 export enum GrantsLabel {
   NONE = 'none',
   READER = 'read',
@@ -5,4 +7,4 @@ export enum GrantsLabel {
   OWNER = 'full',
 }
 
-export const DEFAULT_GRANT = 'NONE';
+export const DEFAULT_GRANT: Grant = 'NONE';

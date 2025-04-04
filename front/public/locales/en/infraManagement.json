@@ -2,10 +2,8 @@
   "actions": {
     "cancel": "Cancel",
     "check": "Validate",
-    "collapse": "collapse",
     "copy": "Clone",
     "delete": "Delete",
-    "details": "details",
     "export": "Export to RailJSON",
     "lock": "Lock",
     "rename": "Rename",
@@ -27,12 +25,6 @@
   },
   "goToEditionMode": "Edit",
   "goToStandardMode": "Back to the selection",
-  "grants": {
-    "edit": "write",
-    "full": "full access",
-    "none": "no access",
-    "read": "read"
-  },
   "infraChoice": "Infrastructures",
   "infraDeleted": "The {{name}} infrastructure has been deleted.",
   "infraManagement": "Infrastructures management",

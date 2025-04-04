@@ -1,0 +1,15 @@
+{
+  "actions": {
+    "add": "Ajouter",
+    "collapse": "réduire",
+    "details": "détails"
+  },
+  "addGrantToUser": "Ajouter des droits à un utilisateur",
+  "grants": {
+    "edit": "écriture",
+    "full": "accès total",
+    "none": "pas d'accès",
+    "read": "lecture"
+  },
+  "yourGrant": "Votre accès : {{grant}}"
+}
