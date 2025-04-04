@@ -1,17 +1,22 @@
 use axum::extract::State;
+use std::collections::HashSet;
+use std::iter;
+use std::ops::Deref;
+
 use axum::Extension;
 use axum::Json;
 use editoast_authz::Role;
 use editoast_models::DbConnectionPoolV2;
 
-use axum::extract::State;
 use axum::response::IntoResponse;
 use core_client::AsCoreRequest as _;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PathPropertiesResponse;
+use diesel::QueryDsl;
 use editoast_authz::Role;
 use editoast_models::DbConnection;
+use itertools::Either;
 use itertools::Itertools;
 
 use crate::error::Result;
@@ -47,6 +52,17 @@ struct Waypoint {
     ci: i64,
     ch: String,
     stop: bool,
+}
+
+#[derive(Debug, Clone)]
+struct Segment(Vec<Waypoint>);
+
+impl Deref for Segment {
+    type Target = Vec<Waypoint>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
@@ -107,7 +123,60 @@ async fn ref_schedules(
         "pre-processing complete"
     );
 
-    Ok(Json(vec!["12345".to_owned(), "6789".to_owned()]))
+    // Step 2: query reference schedules and build the search graph
+    // ------------------------------------------------------------
+
+    let mut names = HashSet::new();
+    for segment in segments {
+        let schedules = query_schedules_between_stops(&mut conn, &segment, &rolling_stock).await?;
+        tracing::debug!(segment_start = ?segment.begin(), segment_end = ?segment.end(), n_schedules = schedules.len(), "reference schedules queried");
+
+        if schedules.is_empty() {
+            return Ok(Json(vec![]));
+        }
+
+        let first_waypoint = segment.begin();
+        let last_waypoint = segment.end();
+
+        let selected_schedules = schedules
+            .into_iter()
+            .filter_map(move |rs| {
+                // TODO: relax the CH check for overtakes
+                let first = rs.find_waypoint(first_waypoint.ci, Some(&first_waypoint.ch))?;
+                let last = rs.find_waypoint(last_waypoint.ci, Some(&last_waypoint.ch))?;
+                match rs.inside_segment(&first, &last) {
+                    Ok(Either::Left(rs)) => Some(rs),
+                    // the waypoints are not in the right order so let's just skip this schedule
+                    Ok(Either::Right(())) => None,
+                    Err(_) => {
+                        unreachable!("the wayponits are in the schedule for sure at this point")
+                    }
+                }
+            })
+            .collect_vec();
+
+        let schedule_names = selected_schedules
+            .iter()
+            .map(|schedule| &schedule.name)
+            .join(",");
+        tracing::debug!(
+            n_selected_schedules = selected_schedules.len(),
+            schedules = schedule_names,
+            "schedules trimmed and filtered out"
+        );
+
+        let sch_names = selected_schedules
+            .iter()
+            .map(|schedule| schedule.name.clone())
+            .collect();
+        names = if names.is_empty() {
+            sch_names
+        } else {
+            names.intersection(&sch_names).cloned().collect()
+        };
+    }
+
+    Ok(Json(names.into_iter().collect()))
 }
 
 async fn validate_rolling_stock_input(
@@ -162,7 +231,7 @@ fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
 ///
 /// The first and last provided waypoints must be stop waypoints.
 /// There must be at least two waypoints in the provided list. (duh)
-fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Vec<Waypoint>> {
+fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Segment> {
     if waypoints.len() < 2 {
         panic!("Not enough waypoints to split into segments");
     }
@@ -190,7 +259,57 @@ fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Vec<Waypoint>> {
         segments.pop();
     }
 
-    segments
+    segments.into_iter().map(Segment).collect()
+}
+
+impl Segment {
+    fn rank(&self, ci: i64, ch: String) -> Option<usize> {
+        self.iter()
+            .position(|waypoint| waypoint.ci == ci && waypoint.ch == ch)
+    }
+
+    fn begin(&self) -> &Waypoint {
+        self.first().expect("empty segment")
+    }
+
+    fn end(&self) -> &Waypoint {
+        self.last().expect("empty segment")
+    }
+}
+
+async fn query_schedules_between_stops(
+    conn: &mut DbConnection,
+    segment: &Segment,
+    RollingStockCharacteristics {
+        name,
+        towed_rolling_stock,
+        speed_limit_tag,
+        mass,
+    }: &RollingStockCharacteristics,
+) -> Result<Vec<ReferenceSchedule>> {
+    let stops = vec![segment.begin().ci, segment.end().ci];
+
+    // use diesel::expression_methods::ExpressionMethods as _;
+    use diesel::expression_methods::PgArrayExpressionMethods as _;
+    use diesel_async::RunQueryDsl as _;
+    use editoast_models::tables::reference_schedule::dsl;
+
+    let rows = dsl::reference_schedule
+        .select(editoast_models::tables::reference_schedule::all_columns)
+        .filter(dsl::stop_points_ci.contains(stops))
+        // .filter(dsl::traction_engine.eq(name))
+        // .filter(dsl::towed_rolling_stock.eq(towed_rolling_stock))
+        // .filter(dsl::speed_limit_tag.eq(speed_limit_tag))
+        // .filter(dsl::weight.ge(mass.map(|m| m as i64)))
+        .load::<Row<ReferenceSchedule>>(&mut conn.write().await)
+        .await?;
+
+    let schedules = rows
+        .into_iter()
+        .map(|row| ReferenceSchedule::from_row(row))
+        .collect();
+
+    Ok(schedules)
 }
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
