@@ -12,8 +12,9 @@ import type { GrantsLabelKeys } from 'modules/infra/type';
 import generateGrantSelectProps from 'modules/infra/utils/generateGrantSelectProps';
 import { capitalizeFirstLetter } from 'utils/strings';
 
-type InfraSelectorGrantsManagerProps = {
-  infraId: number;
+type GrantsManagerProps = {
+  resourceId: number;
+  resourceType: string;
   userGrant: string;
   resourceGrants?: {
     [grant: string]: string[];
@@ -21,12 +22,13 @@ type InfraSelectorGrantsManagerProps = {
   userSubjectsList: SubjectItemWithGrant;
 };
 
-const InfraSelectorGrantsManager = ({
-  infraId,
+const GrantsManager = ({
+  resourceId,
+  resourceType,
   userGrant,
   resourceGrants = {},
   userSubjectsList,
-}: InfraSelectorGrantsManagerProps) => {
+}: GrantsManagerProps) => {
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
   const [displayUserSearchSection, setDisplayUserSearchSection] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SubjectItemWithGrant[number] | undefined>();
@@ -34,8 +36,8 @@ const InfraSelectorGrantsManager = ({
 
   const updateUserInfraGrant = (userId: number, grant?: string) => {
     const basePayload = {
-      resource_type: 'infra',
-      resource_id: infraId,
+      resource_type: resourceType,
+      resource_id: resourceId,
       subject_id: userId,
     };
 
@@ -55,15 +57,14 @@ const InfraSelectorGrantsManager = ({
   };
   return (
     <div
-      className="infra-selector-grants-manager"
+      className="grant-manager"
       role="button"
       tabIndex={0}
       // We need that to prevent the modal to close when clicking on this section
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="infra-selector-grants-header">
+      <div className="grant-manager-header">
         <span className="user-infra-grant">
-          {/* {capitalizeFirstLetter(t(`grants.${GrantsLabel[userGrant as GrantsLabelKeys]}`))} */}
           {t('yourGrant', {
             grant: capitalizeFirstLetter(t(`grants.${GrantsLabel[userGrant as GrantsLabelKeys]}`)),
           })}
@@ -82,21 +83,18 @@ const InfraSelectorGrantsManager = ({
       </div>
       {displayGrantSection && (
         <>
-          <div className="d-flex flex-column" style={{ paddingRight: '22px' }}>
-            {!displayUserSearchSection && (
-              <button
-                type="button"
-                className="align-self-start"
-                style={{ padding: '0 18px', border: '1px solid grey', borderRadius: '4px' }}
-                onClick={() => setDisplayUserSearchSection(!displayUserSearchSection)}
-              >
-                {t('addGrantToUser')}
-              </button>
-            )}
+          <div className="grant-manager-subject-search">
+            <button
+              type="button"
+              className="grant-manager-display-search"
+              onClick={() => setDisplayUserSearchSection(!displayUserSearchSection)}
+            >
+              {!displayUserSearchSection ? t('addGrantToUser') : 'Annuler'}
+            </button>
             {displayUserSearchSection && (
               <>
-                <div className="search-user-combobox d-flex align-items-center justify-content-between">
-                  <span className="">
+                <div className="grant-manager-subject-search-section">
+                  <span className="grant-manager-subject-search-combobox">
                     <ComboBox
                       id="add-user-combobox"
                       label=""
@@ -109,7 +107,7 @@ const InfraSelectorGrantsManager = ({
                       autoComplete="off"
                     />
                   </span>
-                  <span className="infra-selector-subject-grant">
+                  <span className="grant-manager-subject-select">
                     <Select
                       id="add-user-grant-selector"
                       label=""
@@ -137,8 +135,7 @@ const InfraSelectorGrantsManager = ({
                 </div>
                 <button
                   type="button"
-                  className="align-self-end"
-                  style={{ padding: '0 18px', border: '1px solid grey', borderRadius: '4px' }}
+                  className="grant-manager-subject-search-add-button align-self-end"
                   onClick={() => {
                     if (selectedUser) {
                       updateUserInfraGrant(selectedUser.id, selectedUser.grant);
@@ -153,11 +150,11 @@ const InfraSelectorGrantsManager = ({
             )}
           </div>
 
-          <div className="infra-selector-subject-list">
+          <div className="grant-manager-subject-list">
             {userSubjectsList.map(({ id, name, grant }) => (
-              <div className="infra-selector-subject-card" key={id}>
-                <span className="infra-selector-subject-name">{name}</span>
-                <span className="infra-selector-subject-grant">
+              <div className="grant-manager-subject-card" key={id}>
+                <span className="grant-manager-subject-name">{name}</span>
+                <span className="grant-manager-subject-select">
                   <Select
                     id={`${id}-${name}`}
                     label=""
@@ -182,4 +179,4 @@ const InfraSelectorGrantsManager = ({
   );
 };
 
-export default InfraSelectorGrantsManager;
+export default GrantsManager;

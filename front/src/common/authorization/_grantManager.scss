@@ -1,0 +1,79 @@
+.grant-manager {
+  margin: 0 16px 8px;
+  padding: 5px 0 7px;
+  border-bottom: 1px solid var(--grey20);
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    .user-infra-grant {
+      font-size: 0.875rem;
+      color: var(--info60);
+    }
+    .blue-label {
+      color: var(--primary60);
+    }
+    .grey-label {
+      color: var(--grey30);
+    }
+  }
+  &-subject {
+    &-search {
+      display: flex;
+      flex-direction: column;
+      padding-right: 22px;
+      margin-top: 8px;
+      .grant-manager-display-search {
+        align-self: flex-start;
+        border-radius: 4px;
+        padding: 0 12px;
+        color: var(--primary60);
+      }
+      &-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      &-combobox {
+        * > #add-user-combobox {
+          height: 32px;
+        }
+      }
+      &-add-button {
+        align-self: flex-end;
+        padding: 0 12px;
+        border-radius: 4px;
+        background-color: var(--ambientB15);
+        color: var(--primary60);
+        margin-right: 30px;
+      }
+    }
+    &-list {
+      border-radius: 6px;
+      margin: 15px 8px 8px;
+      background-color: var(--ambientC10);
+    }
+    &-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 47px;
+      margin-inline: 8px;
+      padding-inline: 7px 4px;
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--grey20);
+      }
+    }
+    &-name {
+      color: var(--black100);
+    }
+    &-select {
+      * > .osrd-ui-custom-select {
+        background-color: var(--white100);
+        margin: 0;
+        width: 136px;
+        height: 32px;
+      }
+    }
+  }
+}

@@ -7,6 +7,7 @@ import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
+import GrantsManager from 'common/authorization/components/GrantsManager';
 import useResourcesGrants from 'common/authorization/hooks/useResourcesGrants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -15,8 +16,6 @@ import { MODES } from 'main/consts';
 import { DEFAULT_GRANT } from 'modules/infra/consts';
 import { deleteItinerary } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
-
-import InfraSelectorGrantsManager from './InfraSelectorGrantsManager';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -119,8 +118,9 @@ const InfraSelectorModalBodyStandard = ({
                   </span>
                 )}
               </button>
-              <InfraSelectorGrantsManager
-                infraId={infra.id}
+              <GrantsManager
+                resourceId={infra.id}
+                resourceType="infra"
                 userGrant={userGrant}
                 resourceGrants={resourceGrants}
                 userSubjectsList={usersInfraGrantsByInfraId[infra.id]}
