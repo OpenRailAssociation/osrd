@@ -81,3 +81,33 @@ pub enum OperationalPointIdentifier {
         secondary_code: Option<String>,
     },
 }
+
+impl PathItemLocation {
+    pub fn secondary_code(&self) -> Option<&str> {
+        match self {
+            PathItemLocation::TrackOffset(_) => None,
+            PathItemLocation::OperationalPointReference(op_ref) => match &op_ref.reference {
+                OperationalPointIdentifier::OperationalPointId { .. } => None,
+                OperationalPointIdentifier::OperationalPointDescription {
+                    secondary_code, ..
+                } => secondary_code.as_deref(),
+                OperationalPointIdentifier::OperationalPointUic { secondary_code, .. } => {
+                    secondary_code.as_deref()
+                }
+            },
+        }
+    }
+
+    pub fn operational_point_id(&self) -> Option<&str> {
+        match self {
+            PathItemLocation::TrackOffset(_) => None,
+            PathItemLocation::OperationalPointReference(op_ref) => match &op_ref.reference {
+                OperationalPointIdentifier::OperationalPointId { operational_point } => {
+                    Some(operational_point)
+                }
+                OperationalPointIdentifier::OperationalPointDescription { .. } => None,
+                OperationalPointIdentifier::OperationalPointUic { .. } => None,
+            },
+        }
+    }
+}

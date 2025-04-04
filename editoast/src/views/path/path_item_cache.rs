@@ -32,6 +32,7 @@ pub struct PathItemCache {
 
 impl PathItemCache {
     /// Load the path item cache from a list of pathfinding inputs
+    #[tracing::instrument(skip(conn), err)]
     pub async fn load(
         conn: &mut DbConnection,
         infra_id: i64,
@@ -104,6 +105,32 @@ impl PathItemCache {
     /// Check if a track exists
     pub fn track_exists(&self, track: &str) -> bool {
         self.existing_track_ids.contains(track)
+    }
+
+    pub fn get_from_path_location(
+        &self,
+        path_item: &PathItemLocation,
+    ) -> Option<&[OperationalPointModel]> {
+        match path_item {
+            PathItemLocation::TrackOffset(_) => None,
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference:
+                    OperationalPointIdentifier::OperationalPointId {
+                        operational_point, ..
+                    },
+                ..
+            }) => self
+                .get_from_id(&operational_point.0)
+                .map(std::slice::from_ref),
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
+                ..
+            }) => self.get_from_trigram(&trigram.0).map(Vec::as_slice),
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
+                ..
+            }) => self.get_from_uic(i64::from(*uic)).map(Vec::as_slice),
+        }
     }
 
     /// Extract locations from path items

@@ -1,22 +1,41 @@
+mod graph;
 mod new_schedule;
+mod past_schedule;
+
+use std::collections::HashSet;
+use std::sync::Arc;
 
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
 use chrono::DateTime;
 use chrono::Utc;
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::path_properties::OperationalPointOnPath;
+use core_client::path_properties::PathPropertiesRequest;
+use core_client::path_properties::PathPropertiesResponse;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use smol_str::SmolStr;
+use smol_str::ToSmolStr;
 use utoipa::ToSchema;
 
+use crate::ValkeyClient;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use crate::models;
+use crate::models::Infra;
 use crate::models::RollingStock;
 use crate::models::prelude::*;
+use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
+use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::pathfinding::PathfindingResult;
+use crate::views::path::pathfinding_from_train_batch;
 
 use super::AppState;
 use super::AuthenticationExt;
@@ -101,6 +120,10 @@ enum SimilarSchedulesError {
     #[error(transparent)]
     #[editoast_error(status = 400)]
     InvalidPath(#[from] new_schedule::ScheduleError),
+
+    #[error("No STDCM search environment setup — contact your administrator")]
+    #[editoast_error(status = 500)]
+    NoSearchEnvironment,
 }
 
 #[utoipa::path(
@@ -120,6 +143,8 @@ async fn similar_schedules(
     State(AppState {
         db_pool,
         speed_limit_tag_ids,
+        valkey,
+        core_client,
         ..
     }): State<AppState>,
     Json(Request {
@@ -153,15 +178,67 @@ async fn similar_schedules(
     });
     let new_schedule = new_schedule::NewSchedule::new(new_schedule_waypoints)
         .map_err(SimilarSchedulesError::from)?;
-    let segments = new_schedule.into_segments();
 
     tracing::debug!(
-        n_segments = segments.len(),
+        n_segments = new_schedule.segment_endpoints().count(),
         n_waypoints = wp_count,
         "pre-processing complete"
     );
 
-    let similar_schedules = Response {
+    // Step 2: query reference schedules and build the search graph
+    // ------------------------------------------------------------
+
+    let Some(StdcmSearchEnvironment {
+        timetable_id,
+        infra_id,
+        ..
+    }) = StdcmSearchEnvironment::retrieve_latest_enabled(&mut conn).await
+    else {
+        return Err(SimilarSchedulesError::NoSearchEnvironment.into());
+    };
+    let infra = Infra::retrieve_real(conn.clone(), infra_id)
+        .await?
+        .expect("infra comes from the search environment");
+
+    tracing::debug!(
+        infra_id,
+        timetable_id,
+        "using latest STDCM search environment"
+    );
+
+    let candidate_schedules = search_candidate_train_schedules(
+        &mut conn,
+        &new_schedule,
+        timetable_id,
+        infra_id,
+        rolling_stock,
+    )
+    .await?;
+    if candidate_schedules.is_empty() {
+        tracing::info!("no candidate train schedules found — similar trains cannot be computed");
+        return Ok(Json(Response {
+            similar_schedules: Vec::new(),
+        }));
+    }
+
+    let selected_past_schedules = simulate_past_schedules(
+        &mut conn,
+        valkey,
+        core_client,
+        &infra,
+        &new_schedule,
+        candidate_schedules,
+    )
+    .await?;
+
+    dbg!(
+        selected_past_schedules
+            .iter()
+            .map(|ps| ps.name())
+            .collect::<Vec<_>>()
+    );
+
+    Ok(Json(Response {
         similar_schedules: vec![
             SimilarScheduleItem {
                 schedule_id: "mock_similar_schedule_1".to_string(),
@@ -192,9 +269,7 @@ async fn similar_schedules(
                 },
             },
         ],
-    };
-
-    Ok(Json(similar_schedules))
+    }))
 }
 
 async fn validate_rolling_stock_input(
@@ -232,6 +307,192 @@ fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
         result.push(waypoint);
     }
     result
+}
+
+#[tracing::instrument(skip(conn, new_schedule), err)]
+async fn search_candidate_train_schedules(
+    conn: &mut DbConnection,
+    new_schedule: &new_schedule::NewSchedule,
+    timetable_id: i64,
+    infra_id: i64,
+    RollingStockCharacteristics {
+        name: rolling_stock_name,
+        speed_limit_tag,
+    }: RollingStockCharacteristics,
+) -> Result<Vec<models::TrainSchedule>> {
+    let filter = SelectionSettings::new()
+        .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
+        .filter(move || models::TrainSchedule::ROLLING_STOCK_NAME.eq(rolling_stock_name.clone()));
+    let train_schedules = models::TrainSchedule::list(
+        conn,
+        if let Some(speed) = speed_limit_tag {
+            filter.filter(move || models::TrainSchedule::SPEED_LIMIT_TAG.eq(Some(speed.clone())))
+        } else {
+            filter
+        },
+    )
+    .await?;
+
+    tracing::debug!(
+        n_train_schedules = train_schedules.len(),
+        "candidate train schedules queried after applying rolling stock restrictions"
+    );
+
+    let path_locations = train_schedules
+        .iter()
+        .flat_map(models::TrainSchedule::iter_stops)
+        .map(|path_item| &path_item.location)
+        .collect_vec();
+    let path_item_cache = PathItemCache::load(conn, infra_id, &path_locations).await?;
+
+    let segments_stops = new_schedule
+        .segment_endpoints()
+        .filter_map(|(stop1, stop2)| {
+            Some((
+                (stop1.primary_code(), stop1.secondary_code()?),
+                (stop2.primary_code(), stop2.secondary_code()?),
+            ))
+        })
+        .collect::<HashSet<_>>();
+
+    let candidate_schedules  =
+        tracing::debug_span!("keeping train schedules stopping at segment ends").in_scope(|| {
+            let mut candidates: Vec<models::TrainSchedule> = Default::default();
+            for train_schedule in train_schedules {
+                let retain_schedule = {
+                    let mut stop_pairs_forming_a_segment = train_schedule.iter_stops()
+                        .flat_map(|p| path_item_cache.get_from_path_location(&p.location))
+                        .tuple_windows()
+                        .flat_map(|(ops1, ops2)| ops1.iter().cartesian_product(ops2.iter()))
+                        .filter_map(|(op1, op2)| {
+                            if let (Some(sncf1), Some(sncf2)) = (op1.extensions.sncf.as_ref(), op2.extensions.sncf.as_ref()) {
+                                Some(((sncf1.ci as u64, sncf1.ch.to_smolstr()), (sncf2.ci as u64, sncf2.ch.to_smolstr())))
+                            } else {
+                                tracing::warn!(
+                                    ?op1,
+                                    ?op2,
+                                    train_schedule_id = train_schedule.id,
+                                    "operational point pair is missing an SNCF extension, required for similar schedules, ignoring it"
+                                );
+                                None
+                            }
+                        })
+                        .filter(|key| segments_stops.contains(key));
+                    stop_pairs_forming_a_segment.next().is_some()
+                };
+                if retain_schedule {
+                    candidates.push(train_schedule);
+                }
+            }
+            tracing::debug!(
+                n_candidates = candidates.len(),
+                "candidate train schedules found"
+            );
+            candidates
+        });
+
+    Ok(candidate_schedules)
+}
+
+async fn simulate_past_schedules(
+    conn: &mut DbConnection,
+    valkey: Arc<ValkeyClient>,
+    core_client: Arc<CoreClient>,
+    infra: &Infra,
+    new_schedule: &new_schedule::NewSchedule,
+    candidate_schedules: Vec<models::TrainSchedule>,
+) -> Result<Vec<past_schedule::PastSchedule>> {
+    let rolling_stock_names = candidate_schedules
+        .iter()
+        .map(|ts| &ts.rolling_stock_name)
+        .cloned()
+        .collect_vec();
+    let rolling_stocks = RollingStock::list(
+        conn,
+        SelectionSettings::new()
+            .filter(move || models::RollingStock::NAME.eq_any(rolling_stock_names.clone())),
+    )
+    .await?
+    .into_iter()
+    .map(editoast_schemas::RollingStock::from)
+    .collect_vec();
+
+    let paths = {
+        let paths = pathfinding_from_train_batch(
+            conn,
+            &mut valkey.get_connection().await?,
+            core_client.clone(),
+            infra,
+            &candidate_schedules,
+            &rolling_stocks,
+        )
+        .await?;
+        paths
+            .into_iter()
+            .zip(candidate_schedules.iter())
+            .filter_map(|(path, ts)| match path {
+                PathfindingResult::Success(path) => Some(path),
+                PathfindingResult::Failure(failure) => {
+                    tracing::warn!(
+                        ?failure,
+                        train_schedule = ts.train_name,
+                        train_schedule_id = ts.id,
+                        "failed to compute path for train schedule, skipping it",
+                    );
+                    None
+                }
+            })
+            .collect_vec()
+    };
+
+    let path_properties = {
+        let futures = paths
+            .into_iter()
+            .zip(candidate_schedules.into_iter())
+            .zip(std::iter::repeat(&core_client))
+            .map(|((path, ts), core)| async move {
+                let response = PathPropertiesRequest {
+                    track_section_ranges: &path.track_section_ranges,
+                    infra: infra.id,
+                    expected_version: infra.version,
+                }
+                .fetch(core)
+                .await;
+                response.map(|properties| (ts, properties))
+            });
+        futures::future::try_join_all(futures).await?
+    };
+
+    let stop_waypoints = new_schedule
+        .stops()
+        .map(|wp| (wp.primary_code(), wp.secondary_code()))
+        .collect::<HashSet<_>>();
+    let selected_past_schedules = path_properties
+        .into_iter()
+        .map(
+            |(
+                ts,
+                PathPropertiesResponse {
+                    operational_points, ..
+                },
+            )| {
+                let ops = operational_points.into_iter().filter_map(
+                    |OperationalPointOnPath { extensions, .. }| {
+                        let sncf = extensions.sncf.as_ref()?;
+                        let key = (sncf.ci as u64, Some(sncf.ch.to_smolstr()));
+                        Some(graph::Waypoint {
+                            stop: stop_waypoints.contains(&key),
+                            primary_code: key.0,
+                            secondary_code: key.1,
+                        })
+                    },
+                );
+                past_schedule::PastSchedule::new(ts.train_name.to_smolstr(), ops)
+            },
+        )
+        .collect_vec();
+
+    Ok(selected_past_schedules)
 }
 
 #[cfg(test)]

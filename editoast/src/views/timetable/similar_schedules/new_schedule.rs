@@ -43,6 +43,14 @@ impl Waypoint {
             kind: Kind::Overtake,
         }
     }
+
+    pub(super) fn primary_code(&self) -> u64 {
+        self.primary_code
+    }
+
+    pub(super) fn secondary_code(&self) -> Option<SmolStr> {
+        self.secondary_code.clone()
+    }
 }
 
 pub(super) struct NewSchedule {
@@ -75,6 +83,16 @@ impl NewSchedule {
             (Kind::Stop, _) => Err(ScheduleError::LastWaypointIsntStop),
             (_, _) => Err(ScheduleError::FirstWaypointIsntStop),
         }
+    }
+
+    pub(super) fn stops(&self) -> impl Iterator<Item = &Waypoint> {
+        self.waypoints
+            .iter()
+            .filter(|w| matches!(w.kind, Kind::Stop))
+    }
+
+    pub(super) fn segment_endpoints(&self) -> impl Iterator<Item = (&Waypoint, &Waypoint)> {
+        self.stops().tuple_windows()
     }
 
     /// Splits the schedule waypoints into segments between each stops
@@ -183,5 +201,29 @@ mod tests {
         assert_eq!(segments[0].make_contiguous(), &waypoints[0..=3]);
         assert_eq!(segments[1].make_contiguous(), &waypoints[3..=5]);
         assert_eq!(segments[2].make_contiguous(), &waypoints[5..=6]);
+    }
+
+    #[test]
+    fn test_segment_endpoints() {
+        let waypoints = vec![
+            Waypoint::stop(1, Some(SmolStr::new("a"))),
+            Waypoint::passing_by(2, Some(SmolStr::new("b"))),
+            Waypoint::passing_by(3, Some(SmolStr::new("c"))),
+            Waypoint::stop(4, Some(SmolStr::new("d"))),
+            Waypoint::passing_by(5, Some(SmolStr::new("e"))),
+            Waypoint::stop(6, Some(SmolStr::new("f"))),
+            Waypoint::stop(7, Some(SmolStr::new("g"))),
+        ];
+        let schedule = NewSchedule::new(waypoints.clone()).unwrap();
+
+        let endpoints = schedule.segment_endpoints().collect_vec();
+        assert_eq!(
+            endpoints,
+            [
+                (&waypoints[0], &waypoints[3]),
+                (&waypoints[3], &waypoints[5]),
+                (&waypoints[5], &waypoints[6]),
+            ]
+        );
     }
 }
