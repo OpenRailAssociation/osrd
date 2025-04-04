@@ -92,17 +92,17 @@ pub enum PropertyElectrificationValue {
 pub struct OperationalPointOnPath {
     /// Id of the operational point
     #[schema(inline)]
-    id: Identifier,
+    pub id: Identifier,
     /// The part along the path
-    part: OperationalPointPart,
+    pub part: OperationalPointPart,
     /// Extensions associated to the operational point
     #[serde(default)]
-    extensions: OperationalPointExtensions,
+    pub extensions: OperationalPointExtensions,
     /// Distance from the beginning of the path in mm
-    position: u64,
+    pub position: u64,
     /// Importance of the operational point
     #[schema(required, minimum = 0, maximum = 100)]
-    weight: Option<u8>,
+    pub weight: Option<u8>,
 }
 
 #[cfg(feature = "mocking_client")]
