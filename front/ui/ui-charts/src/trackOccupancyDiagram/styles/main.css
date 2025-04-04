@@ -7,6 +7,7 @@
   width: 100%;
   border-radius: inherit;
   padding-top: 10px;
+  @apply bg-ambientB-15;
 
   position: relative;
   &::before,
@@ -17,8 +18,8 @@
     left: 0;
     height: 3px;
     box-sizing: border-box;
-    background-color: color-mix(in oklab, theme('colors.grey.50') 15%, transparent);
-    border-color: theme('colors.grey.50');
+    background-color: color-mix(in oklab, var(--color-grey-50) 15%, transparent);
+    border-color: var(--color-grey-50);
     border-style: solid;
   }
   &::before {
@@ -33,8 +34,6 @@
   > canvas {
     border-radius: inherit;
   }
-
-  @apply bg-ambientB-15;
 
   .waypoint::after,
   .waypoint-separator::after {
@@ -53,7 +52,7 @@
   justify-content: flex-end;
   align-items: center;
 
-  &-line {
+  &.track-line {
     margin-right: 16px;
     font-family: 'IBM Plex Sans';
     font-weight: 400;
@@ -61,7 +60,7 @@
     @apply text-grey-50;
   }
 
-  &-name {
+  &.track-name {
     height: 24px;
     @apply bg-grey-70;
     border-radius: 4px;
@@ -75,7 +74,7 @@
     @apply text-white-100;
   }
 
-  &-rail {
+  &.track-rail {
     align-self: center;
     height: 9px;
     width: 17px;

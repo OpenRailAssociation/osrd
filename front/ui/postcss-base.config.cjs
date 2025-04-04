@@ -1,13 +1,8 @@
-module.exports = function generateBasePostcssConfig(
-  tailwindConfigRelativePath = './tailwind.config.js'
-) {
+module.exports = function generateBasePostcssConfig() {
   return {
     plugins: {
-      'postcss-import': {},
+      '@tailwindcss/postcss': {},
       'postcss-assets': {},
-      'tailwindcss/nesting': {},
-      tailwindcss: { config: tailwindConfigRelativePath },
-      autoprefixer: {},
       'postcss-preset-env': {
         features: { 'nesting-rules': false },
       },

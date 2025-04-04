@@ -53,31 +53,31 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    color: theme('colors.info.30');
+    color: var(--color-info-30);
     &:hover {
-      color: theme('colors.info.80');
+      color: var(--color-info-80);
     }
   }
 
   &.loading {
-    background-color: theme('colors.white.25');
+    background-color: var(--color-white-25);
   }
 
   &.success {
-    background-color: theme('colors.success.5');
+    background-color: var(--color-success-5);
   }
 
   &.error {
-    background-color: theme('colors.error.5');
+    background-color: var(--color-error-5);
   }
 
   &.info {
-    background-color: theme('colors.info.5');
+    background-color: var(--color-info-5);
     padding-inline: 12px 32px;
   }
 
   &.warning {
-    background-color: theme('colors.warning.5');
+    background-color: var(--color-warning-5);
   }
 
   &.tooltip-left {
@@ -93,19 +93,19 @@
     padding-block: 6px 10px;
 
     &.success {
-      color: theme('colors.success.60');
+      color: var(--color-success-60);
     }
 
     &.error {
-      color: theme('colors.error.60');
+      color: var(--color-error-60);
     }
 
     &.info {
-      color: theme('colors.info.60');
+      color: var(--color-info-60);
     }
 
     &.warning {
-      color: theme('colors.warning.60');
+      color: var(--color-warning-60);
     }
   }
 }
