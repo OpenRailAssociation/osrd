@@ -3,7 +3,7 @@ import { compact, uniq } from 'lodash';
 import {
   osrdEditoastApi,
   type SearchResultItemOperationalPoint,
-  type TrainScheduleBase,
+  type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type {
   TimetableItemId,
@@ -112,7 +112,7 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   return orderedSections;
 };
 
-const DEFAULT_PAYLOAD: Pick<TrainScheduleBase, 'constraint_distribution' | 'rolling_stock_name'> = {
+const DEFAULT_PAYLOAD: Pick<TrainSchedule, 'constraint_distribution' | 'rolling_stock_name'> = {
   constraint_distribution: 'STANDARD',
   rolling_stock_name: '',
 };
@@ -186,7 +186,7 @@ const createTrainSchedulePayload = async ({
   dispatch: AppDispatch;
   labels: LabelDto[];
   oldStartDate: Date;
-  trainSchedule?: TrainScheduleBase;
+  trainSchedule?: TrainSchedule;
 }) => {
   const pathPromise = trainrunSections.map(async (section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);

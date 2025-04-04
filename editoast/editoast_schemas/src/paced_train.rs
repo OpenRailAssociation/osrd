@@ -1,5 +1,5 @@
 use crate::primitives::PositiveDuration;
-use crate::train_schedule::TrainScheduleBase;
+use crate::train_schedule::TrainSchedule;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -21,7 +21,7 @@ pub struct Paced {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct PacedTrain {
     #[serde(flatten)]
-    pub train_schedule_base: TrainScheduleBase,
+    pub train_schedule_base: TrainSchedule,
     #[schema(inline)]
     pub paced: Paced,
 }

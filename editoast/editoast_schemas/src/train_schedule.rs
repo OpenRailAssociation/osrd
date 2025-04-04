@@ -26,7 +26,7 @@ mod comfort;
 pub use comfort::Comfort;
 
 mod train_schedule_base;
-pub use train_schedule_base::TrainScheduleBase;
+pub use train_schedule_base::TrainSchedule;
 
 mod allowance;
 pub use allowance::Allowance;

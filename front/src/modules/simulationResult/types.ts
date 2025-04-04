@@ -12,7 +12,7 @@ import type {
   PathfindingResultSuccess,
   ProjectPathTrainResult,
   RollingStockWithLiveries,
-  TrainScheduleBase,
+  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithTimetableId, TrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
@@ -59,7 +59,7 @@ export type WaypointsPanelData = {
   timetableId: number | undefined;
   filteredWaypoints: OperationalPoint[];
   setFilteredWaypoints: Dispatch<SetStateAction<OperationalPoint[]>>;
-  projectionPath: TrainScheduleBase['path'];
+  projectionPath: TrainSchedule['path'];
 };
 
 export type LayerRangeData = {

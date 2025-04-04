@@ -16,7 +16,7 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrain;
-use editoast_schemas::train_schedule::TrainScheduleBase;
+use editoast_schemas::train_schedule::TrainSchedule;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -44,7 +44,6 @@ use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
-use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::models::Infra;
 use crate::views::train_schedule::train_simulation_batch;
@@ -160,9 +159,9 @@ async fn get_train_schedules(
     let settings = pagination_params
         .validate(25)?
         .into_selection_settings()
-        .filter(move || TrainSchedule::TIMETABLE_ID.eq(timetable_id));
+        .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
-    let (train_schedules, stats) = TrainSchedule::list_paginated(conn, settings).await?;
+    let (train_schedules, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
     let results = train_schedules.into_iter().map_into().collect();
 
     Ok(Json(ListTrainSchedulesResponse { stats, results }))
@@ -232,7 +231,7 @@ async fn delete(
     post, path = "",
     tag = "timetable,train_schedule",
     params(TimetableIdParam),
-    request_body = Vec<TrainScheduleBase>,
+    request_body = Vec<TrainSchedule>,
     responses(
         (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
     )
@@ -241,7 +240,7 @@ async fn post_train_schedule(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Json(train_schedules): Json<Vec<TrainScheduleBase>>,
+    Json(train_schedules): Json<Vec<TrainSchedule>>,
 ) -> Result<Json<Vec<TrainScheduleResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -268,7 +267,7 @@ async fn post_train_schedule(
         .collect();
 
     // Create a batch of train_schedule
-    let train_schedule: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
+    let train_schedule: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
     Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
@@ -495,9 +494,11 @@ async fn conflicts(
     })
     .await?;
 
-    let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, timetable_trains.train_ids)
-            .await?;
+    let (trains, _): (Vec<_>, _) = models::TrainSchedule::retrieve_batch(
+        &mut db_pool.get().await?,
+        timetable_trains.train_ids,
+    )
+    .await?;
 
     let (paced_trains, _): (Vec<_>, _) = models::PacedTrain::retrieve_batch(
         &mut db_pool.get().await?,
@@ -564,9 +565,9 @@ async fn conflicts(
 
 fn build_conflict_core_request(
     infra: Infra,
-    trains: Vec<TrainSchedule>,
+    trains: Vec<models::TrainSchedule>,
     train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
-    paced_trains_ts: Vec<TrainSchedule>,
+    paced_trains_ts: Vec<models::TrainSchedule>,
     paced_train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
 ) -> (ConflictDetectionRequest, HashMap<String, TrainId>) {
     let mut map_string_to_id: HashMap<String, TrainId> = HashMap::new();

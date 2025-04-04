@@ -25,7 +25,7 @@ use editoast_schemas::rolling_stock::RollingStockCategories;
 use editoast_schemas::rolling_stock::RollingStockCategory;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
-use editoast_schemas::train_schedule::TrainScheduleBase;
+use editoast_schemas::train_schedule::TrainSchedule;
 use postgis_diesel::types::LineString;
 use serde::Deserialize;
 use serde_json::Value;
@@ -36,7 +36,6 @@ use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::timetable::Timetable;
-use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
 use crate::models::Document;
@@ -91,7 +90,7 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
         .expect("Failed to create timetable")
 }
 
-pub fn simple_train_schedule_base() -> TrainScheduleBase {
+pub fn simple_train_schedule_base() -> TrainSchedule {
     serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
         .expect("Unable to parse test train schedule")
 }
@@ -109,8 +108,9 @@ pub fn simple_paced_train_base() -> PacedTrain {
     }
 }
 
-pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<TrainSchedule> {
-    Changeset::<TrainSchedule>::from(simple_train_schedule_base()).timetable_id(timetable_id)
+pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<models::TrainSchedule> {
+    Changeset::<models::TrainSchedule>::from(simple_train_schedule_base())
+        .timetable_id(timetable_id)
 }
 
 pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::PacedTrain> {
@@ -120,7 +120,7 @@ pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::Pace
 pub async fn create_simple_train_schedule(
     conn: &mut DbConnection,
     timetable_id: i64,
-) -> TrainSchedule {
+) -> models::TrainSchedule {
     simple_train_schedule_changeset(timetable_id)
         .create(conn)
         .await

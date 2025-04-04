@@ -2,13 +2,13 @@
 import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 export function generateTrainSchedulesPayloads(
   trains: ImportedTrainSchedule[],
   checkChAndUIC: boolean = true
-): TrainScheduleBase[] {
+): TrainSchedule[] {
   return trains.reduce((payloads, train) => {
     const firstStep = train.steps[0];
 
@@ -40,7 +40,7 @@ export function generateTrainSchedulesPayloads(
         // Skip first step, handle time differences
         if (index !== 0) {
           const arrivalTime = new Date(step.arrivalTime);
-          const schedulePoint: NonNullable<TrainScheduleBase['schedule']>[number] = {
+          const schedulePoint: NonNullable<TrainSchedule['schedule']>[number] = {
             at: stepId,
             arrival: Duration.subtractDate(arrivalTime, departureTime).toISOString(),
             stop_for: step.duration ? `PT${step.duration}S` : undefined,
@@ -51,8 +51,8 @@ export function generateTrainSchedulesPayloads(
         return acc;
       },
       {
-        path: [] as TrainScheduleBase['path'],
-        schedule: [] as NonNullable<TrainScheduleBase['schedule']>,
+        path: [] as TrainSchedule['path'],
+        schedule: [] as NonNullable<TrainSchedule['schedule']>,
       }
     );
 
@@ -65,5 +65,5 @@ export function generateTrainSchedulesPayloads(
       start_time: departureTime.toISOString(),
     });
     return payloads;
-  }, [] as TrainScheduleBase[]);
+  }, [] as TrainSchedule[]);
 }

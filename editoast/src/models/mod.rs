@@ -43,6 +43,7 @@ pub use rolling_stock_model::RollingStockModel;
 pub use scenario::Scenario;
 pub use study::Study;
 pub use tags::Tags;
+pub use train_schedule::TrainSchedule;
 
 editoast_common::schemas! {
     infra::schemas(),

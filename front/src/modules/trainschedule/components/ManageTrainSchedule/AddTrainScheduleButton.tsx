@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -125,7 +125,7 @@ const AddTrainScheduleButton = ({
     } else {
       const formattedStartTimeMs = isoDateToMs(firstStartTime);
 
-      const trainScheduleParams: TrainScheduleBase[] = [];
+      const trainScheduleParams: TrainSchedule[] = [];
       let actualTrainCount = 1;
 
       for (let nb = 1; nb <= trainCount; nb += 1) {

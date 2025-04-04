@@ -8,11 +8,7 @@ import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import {
-  osrdEditoastApi,
-  type PacedTrain,
-  type TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -85,7 +81,7 @@ const ImportTimetableItemTrainsList = ({
 
   async function generateTimetableItem() {
     try {
-      let trainSchedulePayloads: TrainScheduleBase[] = [];
+      let trainSchedulePayloads: TrainSchedule[] = [];
       let pacedTrainPayloads: PacedTrain[] = [];
 
       // Viriato import (TODO Paced train : handle viriato imports for paced trains)

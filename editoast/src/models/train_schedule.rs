@@ -1,13 +1,13 @@
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_schemas;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainScheduleBase;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 use crate::models::prelude::*;
@@ -41,9 +41,9 @@ pub struct TrainSchedule {
     pub options: TrainScheduleOptions,
 }
 
-impl From<TrainScheduleBase> for TrainScheduleChangeset {
+impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
     fn from(
-        TrainScheduleBase {
+        editoast_schemas::TrainSchedule {
             train_name,
             labels,
             rolling_stock_name,
@@ -57,7 +57,7 @@ impl From<TrainScheduleBase> for TrainScheduleChangeset {
             speed_limit_tag,
             power_restrictions,
             options,
-        }: TrainScheduleBase,
+        }: editoast_schemas::TrainSchedule,
     ) -> Self {
         TrainSchedule::changeset()
             .comfort(comfort)

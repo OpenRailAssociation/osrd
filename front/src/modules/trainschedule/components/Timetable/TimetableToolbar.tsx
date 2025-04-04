@@ -7,11 +7,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import {
-  osrdEditoastApi,
-  type PacedTrain,
-  type TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -210,7 +206,7 @@ const TimetableToolbar = ({
     const formattedTimetableItems = timetableItems
       .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
       .reduce<{
-        train_schedules: TrainScheduleBase[];
+        train_schedules: TrainSchedule[];
         paced_trains: PacedTrain[];
       }>(
         (acc, timetableItem) => {

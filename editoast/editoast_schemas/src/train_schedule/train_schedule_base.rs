@@ -18,11 +18,11 @@ use super::ScheduleItem;
 use super::TrainScheduleOptions;
 
 editoast_common::schemas! {
-    TrainScheduleBase,
+    TrainSchedule,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, ToSchema)]
-pub struct TrainScheduleBase {
+pub struct TrainSchedule {
     pub train_name: String,
     #[serde(default)]
     pub labels: Vec<String>,
@@ -52,8 +52,8 @@ pub struct TrainScheduleBase {
     pub options: TrainScheduleOptions,
 }
 
-impl<'de> Deserialize<'de> for TrainScheduleBase {
-    fn deserialize<D>(deserializer: D) -> Result<TrainScheduleBase, D::Error>
+impl<'de> Deserialize<'de> for TrainSchedule {
+    fn deserialize<D>(deserializer: D) -> Result<TrainSchedule, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
@@ -138,7 +138,7 @@ impl<'de> Deserialize<'de> for TrainScheduleBase {
             ));
         }
 
-        Ok(TrainScheduleBase {
+        Ok(TrainSchedule {
             train_name: internal.train_name,
             labels: internal.labels,
             rolling_stock_name: internal.rolling_stock_name,
@@ -168,7 +168,7 @@ mod tests {
     use crate::train_schedule::Margins;
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
-    use crate::train_schedule::TrainScheduleBase;
+    use crate::train_schedule::TrainSchedule;
 
     use super::PathItem;
 
@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn deserialize_train_schedule() {
         let train_schedule = include_str!("../tests/train_schedule_simple.json");
-        assert!(from_str::<TrainScheduleBase>(train_schedule).is_ok());
+        assert!(from_str::<TrainSchedule>(train_schedule).is_ok());
     }
 
     /// Test deserialize an invalid train schedule
@@ -193,29 +193,29 @@ mod tests {
             location,
             deleted: false,
         };
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_schedule_point_not_found_train_schedule() {
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             schedule: vec![Default::default()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_boundary_not_found_train_schedule() {
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             margins: Margins {
                 boundaries: vec![Default::default()],
                 ..Default::default()
@@ -223,18 +223,18 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_power_restriction_train_schedule() {
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             power_restrictions: vec![Default::default()],
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
@@ -251,7 +251,7 @@ mod tests {
             location,
             deleted: false,
         };
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![
                 ScheduleItem {
@@ -272,7 +272,7 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 
     /// Test deserialize an invalid train schedule
@@ -289,7 +289,7 @@ mod tests {
             location,
             deleted: false,
         };
-        let train_schedule = TrainScheduleBase {
+        let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "a".into(),
@@ -301,6 +301,6 @@ mod tests {
             ..Default::default()
         };
         let invalid_str = to_string(&train_schedule).unwrap();
-        assert!(from_str::<TrainScheduleBase>(&invalid_str).is_err());
+        assert!(from_str::<TrainSchedule>(&invalid_str).is_err());
     }
 }
