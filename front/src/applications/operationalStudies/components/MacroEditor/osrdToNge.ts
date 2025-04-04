@@ -2,7 +2,10 @@ import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type {
+  PathItemLocation,
+  SearchResultItemOperationalPoint,
+} from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -77,7 +80,10 @@ const executeSearch = async (
   state: MacroEditorState,
   dispatch: AppDispatch
 ): Promise<SearchResultItemOperationalPoint[]> => {
-  const pathSteps = state.timetableItems.flatMap((timetableItem) => timetableItem.path);
+  const pathSteps: (PathItemLocation & {
+    deleted?: boolean;
+    id: string;
+  })[] = state.timetableItems.flatMap((timetableItem) => timetableItem.path);
   const searchPayload = buildOpSearchQuery(state.scenario.infra_id, pathSteps);
   if (!searchPayload) {
     return [];

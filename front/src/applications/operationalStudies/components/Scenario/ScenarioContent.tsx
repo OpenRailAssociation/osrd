@@ -116,11 +116,11 @@ const ScenarioContent = ({
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
     handleOperation({
       event,
+      netzgrafikDto,
+      timetableId: scenario.timetable_id,
+      infraId: infra.id,
       state: macroEditorState.current!,
       dispatch,
-      infraId: infra.id,
-      timetableId: scenario.timetable_id,
-      netzgrafikDto,
       addUpsertedTimetableItems: (upsertedTimetableItems: TimetableItemWithTimetableId[]) => {
         upsertTimetableItems(upsertedTimetableItems);
       },
