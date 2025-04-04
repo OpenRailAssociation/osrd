@@ -1631,7 +1631,7 @@ export type GetPacedTrainByIdApiArg = {
 export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
-  body: TrainScheduleBase & {
+  body: TrainSchedule & {
     paced: {
       /** Duration of the paced train, an ISO 8601 format is expected */
       duration: string;
@@ -2023,7 +2023,7 @@ export type PostTimetableByIdTrainSchedulesApiResponse =
 export type PostTimetableByIdTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
-  body: TrainScheduleBase[];
+  body: TrainSchedule[];
 };
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
@@ -3225,7 +3225,7 @@ export type SimulationSummaryResult =
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
-export type TrainScheduleBase = {
+export type TrainSchedule = {
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;
@@ -3271,7 +3271,7 @@ export type TrainScheduleBase = {
   start_time: string;
   train_name: string;
 };
-export type PacedTrain = TrainScheduleBase & {
+export type PacedTrain = TrainSchedule & {
   paced: {
     /** Duration of the paced train, an ISO 8601 format is expected */
     duration: string;
@@ -4012,7 +4012,7 @@ export type PathfindingItem = {
     arrival_time_tolerance_before: number;
   } | null;
 };
-export type TrainScheduleResponse = TrainScheduleBase & {
+export type TrainScheduleResponse = TrainSchedule & {
   id: number;
   timetable_id: number;
 };
@@ -4074,7 +4074,7 @@ export type TowedRollingStockLockedForm = {
   /** New locked value */
   locked: boolean;
 };
-export type TrainScheduleForm = TrainScheduleBase & {
+export type TrainScheduleForm = TrainSchedule & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;
 };

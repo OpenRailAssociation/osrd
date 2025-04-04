@@ -2,6 +2,7 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_schemas;
 use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::Paced;
 use editoast_schemas::train_schedule::Comfort;
@@ -10,7 +11,6 @@ use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainScheduleBase;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 use super::Tags;
@@ -102,7 +102,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
 impl From<PacedTrain> for paced_train::PacedTrain {
     fn from(paced_train: PacedTrain) -> Self {
         Self {
-            train_schedule_base: TrainScheduleBase {
+            train_schedule_base: editoast_schemas::TrainSchedule {
                 train_name: paced_train.train_name,
                 labels: paced_train.labels.to_vec(),
                 rolling_stock_name: paced_train.rolling_stock_name,

@@ -11,7 +11,7 @@ import type {
 import type {
   PathProperties,
   SimulationSummaryResult,
-  TrainScheduleBase,
+  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
 
@@ -560,7 +560,7 @@ export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'su
 
 // Data for upsertMapWaypointsInOperationalPoints
 
-export const pathInputsWithOneMapWaypoint: TrainScheduleBase['path'] = [
+export const pathInputsWithOneMapWaypoint: TrainSchedule['path'] = [
   {
     id: '1',
     secondary_code: 'BV',
@@ -578,7 +578,7 @@ export const pathInputsWithOneMapWaypoint: TrainScheduleBase['path'] = [
   },
 ];
 
-export const pathInputsWithNoMapWaypoint: TrainScheduleBase['path'] = [
+export const pathInputsWithNoMapWaypoint: TrainSchedule['path'] = [
   {
     id: '1',
     secondary_code: 'BV',
@@ -646,7 +646,7 @@ export const sampleWithMultipleOperationalPoints: NonNullable<
   },
 ];
 
-export const pathInputWithWaypointsByMapOnly: TrainScheduleBase['path'] = [
+export const pathInputWithWaypointsByMapOnly: TrainSchedule['path'] = [
   {
     id: '1',
     offset: 6481000,
@@ -659,7 +659,7 @@ export const pathInputWithWaypointsByMapOnly: TrainScheduleBase['path'] = [
   },
 ];
 
-export const pathInputsEndingWithTwoWaypointsByMap: TrainScheduleBase['path'] = [
+export const pathInputsEndingWithTwoWaypointsByMap: TrainSchedule['path'] = [
   {
     id: '1',
     offset: 6481000,

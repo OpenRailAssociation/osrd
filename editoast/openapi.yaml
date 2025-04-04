@@ -1698,7 +1698,7 @@ paths:
           application/json:
             schema:
               allOf:
-              - $ref: '#/components/schemas/TrainScheduleBase'
+              - $ref: '#/components/schemas/TrainSchedule'
               - type: object
                 required:
                 - paced
@@ -3398,7 +3398,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/TrainScheduleBase'
+                $ref: '#/components/schemas/TrainSchedule'
         required: true
       responses:
         '200':
@@ -8618,7 +8618,7 @@ components:
       - LastModifiedAsc
     PacedTrain:
       allOf:
-      - $ref: '#/components/schemas/TrainScheduleBase'
+      - $ref: '#/components/schemas/TrainSchedule'
       - type: object
         required:
         - paced
@@ -12420,7 +12420,7 @@ components:
           items:
             $ref: '#/components/schemas/Slope'
       additionalProperties: false
-    TrainScheduleBase:
+    TrainSchedule:
       type: object
       required:
       - train_name
@@ -12551,7 +12551,7 @@ components:
           type: string
     TrainScheduleForm:
       allOf:
-      - $ref: '#/components/schemas/TrainScheduleBase'
+      - $ref: '#/components/schemas/TrainSchedule'
       - type: object
         properties:
           timetable_id:
@@ -12569,7 +12569,7 @@ components:
       additionalProperties: false
     TrainScheduleResponse:
       allOf:
-      - $ref: '#/components/schemas/TrainScheduleBase'
+      - $ref: '#/components/schemas/TrainSchedule'
       - type: object
         required:
         - id

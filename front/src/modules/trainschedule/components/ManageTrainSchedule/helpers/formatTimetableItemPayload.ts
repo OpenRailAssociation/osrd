@@ -1,8 +1,8 @@
-import type { PacedTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import type { ValidConfig } from '../types';
 
-export function formatTimetableItemPayload(validConfig: ValidConfig): TrainScheduleBase {
+export function formatTimetableItemPayload(validConfig: ValidConfig): TrainSchedule {
   return {
     comfort: validConfig.rollingStockComfort,
     constraint_distribution: validConfig.constraintDistribution,

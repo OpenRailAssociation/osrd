@@ -3,7 +3,7 @@ import type {
   Project,
   Study,
   Infra,
-  TrainScheduleBase,
+  TrainSchedule,
   PacedTrain,
 } from 'common/api/osrdEditoastApi';
 
@@ -42,7 +42,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile(
 const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
-const trainSchedulesJson = readJsonFile<TrainScheduleBase[]>(
+const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
   './tests/assets/train-schedule/train_schedules.json'
 );
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');

@@ -5,7 +5,7 @@ import type {
   PathfindingResultSuccess,
   PathProperties,
   SimulationSummaryResult,
-  TrainScheduleBase,
+  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
@@ -166,7 +166,7 @@ export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: PathfindingResultSuccess,
-  trainSchedulePath: TrainScheduleBase['path'],
+  trainSchedulePath: TrainSchedule['path'],
   t: TFunction
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes!, length, 'gradient');

@@ -1,4 +1,4 @@
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import type { ValidConfig } from '../types';
 
@@ -6,7 +6,7 @@ export default function formatTrainSchedulePayload(
   validConfig: ValidConfig,
   trainName: string,
   startTime: Date
-): TrainScheduleBase {
+): TrainSchedule {
   const {
     constraintDistribution,
     rollingStockName,

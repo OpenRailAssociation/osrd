@@ -8,7 +8,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -121,7 +121,7 @@ const TrainScheduleItem = ({
     if (trainDetail) {
       const startTime = new Date(trainDetail.start_time);
       const newStartTime = addDurationToDate(startTime, new Duration({ minutes: trainDelta }));
-      const newTrain: TrainScheduleBase = {
+      const newTrain: TrainSchedule = {
         ...omit(trainDetail, ['id', 'timetable_id']),
         start_time: newStartTime.toISOString(),
         train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),

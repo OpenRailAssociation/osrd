@@ -1,6 +1,6 @@
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 
-import type { EffortCurves, RollingStock, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { EffortCurves, RollingStock, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 
 /**
@@ -398,7 +398,7 @@ export const rollingStockModes: RollingStock['effort_curves']['modes'] = {
  * Data for formatPowerRestrictionRanges
  */
 
-export const powerRestriction: NonNullable<TrainScheduleBase['power_restrictions']> = [
+export const powerRestriction: NonNullable<TrainSchedule['power_restrictions']> = [
   {
     from: 'step1',
     to: 'step2',
@@ -411,7 +411,7 @@ export const powerRestriction: NonNullable<TrainScheduleBase['power_restrictions
   },
 ];
 
-export const stepPath: TrainScheduleBase['path'] = [
+export const stepPath: TrainSchedule['path'] = [
   {
     uic: 12345,
     id: 'step1',

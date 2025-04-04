@@ -1,4 +1,4 @@
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { ArrayElement } from 'utils/types';
@@ -41,7 +41,7 @@ export enum TableType {
   Output = 'Output',
 }
 
-export type ScheduleEntry = ArrayElement<TrainScheduleBase['schedule']>;
+export type ScheduleEntry = ArrayElement<TrainSchedule['schedule']>;
 
 export type TheoreticalMarginsRecord = Record<
   string,

@@ -8,7 +8,7 @@ import type {
   ProjectPathTrainResult,
   RollingStockWithLiveries,
   SimulationResponse,
-  TrainScheduleBase,
+  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -53,7 +53,7 @@ export type ImportStation = {
 };
 
 export type TimetableJsonPayload = {
-  train_schedules: TrainScheduleBase[];
+  train_schedules: TrainSchedule[];
   paced_trains: PacedTrain[];
 };
 
@@ -151,7 +151,7 @@ export type PathPropertiesFormatted = {
   voltages: RangedValue[];
 };
 
-export type PowerRestriction = ArrayElement<TrainScheduleBase['power_restrictions']>;
+export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
 
 export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 'success' }>;
 

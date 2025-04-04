@@ -482,7 +482,7 @@ mod tests {
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
-    use editoast_schemas::train_schedule::TrainScheduleBase;
+    use editoast_schemas::train_schedule::TrainSchedule;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -614,7 +614,7 @@ mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let paced_train_base = PacedTrain {
-            train_schedule_base: TrainScheduleBase {
+            train_schedule_base: TrainSchedule {
                 rolling_stock_name: rolling_stock.name.clone(),
                 ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
                     .expect("Unable to parse")
@@ -845,7 +845,7 @@ mod tests {
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let train_schedule_base = TrainScheduleBase {
+        let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
             ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")

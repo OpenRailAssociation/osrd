@@ -3,12 +3,12 @@ use std::{error::Error, fs::File, path::PathBuf, sync::Arc};
 
 use clap::{Args, Subcommand};
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::train_schedule::TrainScheduleBase;
+use editoast_schemas::train_schedule::TrainSchedule;
 
+use crate::models;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
-use crate::models::train_schedule::TrainSchedule;
 use crate::views::train_schedule::TrainScheduleForm;
 use crate::views::train_schedule::TrainScheduleResponse;
 use crate::CliError;
@@ -51,11 +51,11 @@ pub async fn trains_export(
     };
 
     let (train_schedules, missing): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
+        models::TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
 
     assert!(missing.is_empty());
 
-    let train_schedules: Vec<TrainScheduleBase> = train_schedules
+    let train_schedules: Vec<TrainSchedule> = train_schedules
         .into_iter()
         .map(|ts| Into::<TrainScheduleResponse>::into(ts).train_schedule)
         .collect();
@@ -101,9 +101,8 @@ pub async fn trains_import(
         }
     };
 
-    let train_schedules: Vec<TrainScheduleBase> =
-        serde_json::from_reader(BufReader::new(train_file))?;
-    let changesets: Vec<Changeset<TrainSchedule>> = train_schedules
+    let train_schedules: Vec<TrainSchedule> = serde_json::from_reader(BufReader::new(train_file))?;
+    let changesets: Vec<Changeset<models::TrainSchedule>> = train_schedules
         .into_iter()
         .map(|train_schedule| {
             TrainScheduleForm {
@@ -114,7 +113,7 @@ pub async fn trains_import(
         })
         .collect();
     let inserted: Vec<_> =
-        TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
+        models::TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
 
     println!(
         "✅ {} train schedules created for timetable with id {}",

@@ -13,7 +13,7 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::train_schedule::TrainScheduleBase;
+use editoast_schemas::train_schedule::TrainSchedule;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -39,9 +39,9 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::models;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
-use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -71,7 +71,7 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    TrainScheduleBase,
+    TrainSchedule,
     TrainScheduleForm,
     TrainScheduleResponse,
     ElectricalProfileSetIdQueryParam,
@@ -108,15 +108,15 @@ pub struct TrainScheduleResponse {
     id: i64,
     timetable_id: i64,
     #[serde(flatten)]
-    pub train_schedule: TrainScheduleBase,
+    pub train_schedule: TrainSchedule,
 }
 
-impl From<TrainSchedule> for TrainScheduleResponse {
-    fn from(value: TrainSchedule) -> Self {
+impl From<models::TrainSchedule> for TrainScheduleResponse {
+    fn from(value: models::TrainSchedule) -> Self {
         Self {
             id: value.id,
             timetable_id: value.timetable_id,
-            train_schedule: TrainScheduleBase {
+            train_schedule: TrainSchedule {
                 train_name: value.train_name,
                 labels: value.labels.into_iter().flatten().collect(),
                 rolling_stock_name: value.rolling_stock_name,
@@ -140,7 +140,7 @@ pub struct TrainScheduleForm {
     /// Timetable attached to the train schedule
     pub timetable_id: Option<i64>,
     #[serde(flatten)]
-    pub train_schedule: TrainScheduleBase,
+    pub train_schedule: TrainSchedule,
 }
 
 impl From<TrainScheduleForm> for TrainScheduleChangeset {
@@ -179,7 +179,7 @@ async fn get(
     }
 
     let conn = &mut db_pool.get().await?;
-    let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
     })
     .await?;
@@ -208,9 +208,8 @@ async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    use crate::models::DeleteBatch;
     let conn = &mut db_pool.get().await?;
-    TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
+    models::TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
     })
     .await?;
@@ -302,11 +301,12 @@ async fn simulation(
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule =
-        TrainSchedule::retrieve_or_fail(&mut db_pool.get().await?, train_schedule_id, || {
-            TrainScheduleError::NotFound { train_schedule_id }
-        })
-        .await?;
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(
+        &mut db_pool.get().await?,
+        train_schedule_id,
+        || TrainScheduleError::NotFound { train_schedule_id },
+    )
+    .await?;
 
     // Compute simulation of a train schedule
     let (simulation, _) = train_simulation_batch(
@@ -331,7 +331,7 @@ pub async fn train_simulation_batch(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
-    train_schedules: &[TrainSchedule],
+    train_schedules: &[models::TrainSchedule],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
@@ -390,7 +390,7 @@ pub async fn consist_train_simulation_batch(
     valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedules: &[TrainSchedule],
+    train_schedules: &[models::TrainSchedule],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
@@ -535,7 +535,7 @@ pub async fn consist_train_simulation_batch(
 
 fn build_simulation_request(
     infra: &Infra,
-    train_schedule: &TrainSchedule,
+    train_schedule: &models::TrainSchedule,
     path_item_positions: &[u64],
     path: SimulationPath,
     electrical_profile_set_id: Option<i64>,
@@ -649,8 +649,8 @@ async fn simulation_summary(
         infra_id,
     })
     .await?;
-    let train_schedules: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
@@ -716,7 +716,7 @@ async fn get_path(
         infra_id,
     })
     .await?;
-    let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
+    let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
     })
     .await?;
@@ -764,8 +764,8 @@ async fn project_path(
 
     let conn = &mut db_pool.get().await?;
 
-    let trains_schedules: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+    let trains_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
@@ -861,7 +861,7 @@ pub mod tests {
 
         let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
+        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
             .expect("Failed to retrieve train_schedule");
 
@@ -902,12 +902,12 @@ pub mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+        let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
             ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")
         };
-        let train_schedule: Changeset<TrainSchedule> = TrainScheduleForm {
+        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: train_schedule_base,
         }
@@ -958,12 +958,12 @@ pub mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+        let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
             ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")
         };
-        let train_schedule: Changeset<TrainSchedule> = TrainScheduleForm {
+        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: train_schedule_base.clone(),
         }
@@ -973,9 +973,9 @@ pub mod tests {
             .await
             .expect("Failed to create train schedule");
 
-        let train_schedule_fail: Changeset<TrainSchedule> = TrainScheduleForm {
+        let train_schedule_fail: Changeset<models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
-            train_schedule: TrainScheduleBase {
+            train_schedule: TrainSchedule {
                 rolling_stock_name: "fail".to_string(),
                 start_time: DateTime::from_timestamp(0, 0).unwrap(),
                 ..train_schedule_base.clone()
