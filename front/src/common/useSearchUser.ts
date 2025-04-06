@@ -4,8 +4,8 @@ import { DEFAULT_GRANT } from 'modules/infra/consts';
 import { useDebounce } from 'utils/helpers';
 
 import type { SearchResultItemUser } from './api/generatedEditoastApi';
+import type { SubjectItemWithGrant } from './api/mock/mockEditoastApi';
 import { osrdEditoastApi } from './api/osrdEditoastApi';
-import type { SubjectItemWithGrant } from './authorization/hooks/useResourcesGrants';
 
 type SearchUser = {
   debounceDelay?: number;

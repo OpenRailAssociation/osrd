@@ -88,6 +88,31 @@ const mockedEditoastApi = api.injectEndpoints({
         };
       },
     }),
+    /** New Version of the postUsersGrantsByResourceId query */
+    getUsersGrantsByResourceId: build.query<
+      GetUsersGrantsByResourceIdResponse,
+      GetUsersGrantsByResourceIdArg
+    >({
+      // url: /authz/{resource_type}/{resource_id}
+      queryFn: (queryArgs) => {
+        const { resource_type, resource_id } = queryArgs;
+
+        const response = database.SUBJECTS.filter((user) =>
+          user.resourcesGranted[resource_type].some((resource) => resource.id === resource_id)
+        ).map((user) => ({
+          type: user.type,
+          id: user.id,
+          name: user.name,
+          grant: user.resourcesGranted[resource_type].find(
+            (resource) => resource.id === resource_id
+          )!.grant,
+        }));
+
+        return {
+          data: response,
+        };
+      },
+    }),
   }),
 });
 
@@ -140,5 +165,18 @@ export type PostUsersGrantsByResourceIdResponse = {
   type: string;
   grant: Grant;
 }[];
+
+type GetUsersGrantsByResourceIdArg = {
+  resource_type: ResourceType;
+  resource_id: number;
+};
+export type GetUsersGrantsByResourceIdResponse = {
+  id: number;
+  type: string;
+  grant: Grant;
+  name: string;
+}[];
+
+export type SubjectItemWithGrant = GetUsersGrantsByResourceIdResponse;
 
 export { mockedEditoastApi };

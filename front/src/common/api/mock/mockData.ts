@@ -26,8 +26,8 @@ const database: MockedDB = {
       roles: ['OperationalStudies'],
       resourcesGranted: {
         infra: [
-          { id: 1, grant: 'READER' },
-          { id: 2, grant: 'WRITER' },
+          { id: 1, grant: 'NONE' },
+          { id: 2, grant: 'READER' },
           { id: 3, grant: 'READER' },
         ],
         timetable: [{ id: 2, grant: 'READER' }],
@@ -41,7 +41,7 @@ const database: MockedDB = {
       resourcesGranted: {
         infra: [
           { id: 1, grant: 'READER' },
-          { id: 2, grant: 'WRITER' },
+          { id: 2, grant: 'NONE' },
           { id: 3, grant: 'OWNER' },
         ],
         timetable: [{ id: 12, grant: 'READER' }],
@@ -71,7 +71,7 @@ const database: MockedDB = {
       roles: ['Stdcm'],
       resourcesGranted: {
         infra: [
-          { id: 1, grant: 'READER' },
+          { id: 1, grant: 'NONE' },
           { id: 5, grant: 'WRITER' },
           { id: 7, grant: 'READER' },
         ],
