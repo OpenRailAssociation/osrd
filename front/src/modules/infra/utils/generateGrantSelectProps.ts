@@ -31,7 +31,7 @@ const generateGrantSelectProps = ({
     requiredGrant: subjectGrant,
   });
 
-  if (!isUserGrantGreaterThanSubject) {
+  if (!isUserGrantGreaterThanSubject || connectedUserGrant === subjectGrant) {
     return {
       value: currentSubjectGrantObject,
       options: [currentSubjectGrantObject],
