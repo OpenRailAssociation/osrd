@@ -68,7 +68,8 @@
       color: var(--black100);
     }
     &-select {
-      * > .osrd-ui-custom-select {
+      * > .osrd-ui-custom-select,
+      * > .osrd-ui-custom-select:focus {
         background-color: var(--white100);
         margin: 0;
         width: 136px;
