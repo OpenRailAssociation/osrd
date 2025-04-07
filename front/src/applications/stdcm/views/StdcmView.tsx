@@ -54,7 +54,7 @@ const StdcmViewContent = ({
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
-  const [hasSeenInfoMessage, setHasSeenInfoMessage] = useState(false);
+  const [displayInfoMessage, setDisplayInfoMessage] = useState(false);
 
   const resultSectionRef = useRef<HTMLDivElement | null>(null);
   const previousResultSectionOffsetRef = useRef<number | null>(null);
@@ -82,7 +82,7 @@ const StdcmViewContent = ({
       dispatch(selectSimulation(index));
       setSkipPathfindingStatusMessage(true);
       setShowBtnToLaunchSimulation(false);
-      setHasSeenInfoMessage(true);
+      setDisplayInfoMessage(true);
     }
   };
 
@@ -130,12 +130,14 @@ const StdcmViewContent = ({
   useEffect(() => {
     if (isCanceled) {
       setShowBtnToLaunchSimulation(true);
+      setDisplayInfoMessage(true);
     }
   }, [isCanceled]);
 
   useEffect(() => {
     if (isCalculationCompleted) {
       setShowStatusBanner(true);
+      setDisplayInfoMessage(false);
     }
   }, [isCalculationCompleted]);
 
@@ -181,7 +183,7 @@ const StdcmViewContent = ({
             isCalculationFailed={isCalculationFailed}
             isDebugMode={isDebugMode}
             onSelectSimulation={handleSelectSimulation}
-            hasSeenInfoMessage={hasSeenInfoMessage}
+            displayInfoMessage={displayInfoMessage}
             onStartNewQuery={handleStartNewQuery}
             onStartNewQueryWithData={handleStartNewQueryWithData}
             buttonsVisible={buttonsVisible}
