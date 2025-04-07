@@ -7,8 +7,8 @@ import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
-import GrantsManager from 'common/authorization/components/GrantsManager';
-import useResourcesGrants from 'common/authorization/hooks/useResourcesGrants';
+import GrantsManager from 'common/authorization/components/GrantsManagerHeader';
+import useConnectedUserGrants from 'common/authorization/hooks/useConnectedUserGrants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useInfraActions, useInfraID, useOsrdContext } from 'common/osrdContext';
@@ -56,8 +56,7 @@ const InfraSelectorModalBodyStandard = ({
 
   const payload = useMemo(() => ({ infra: infraIdsList }), [infraIdsList]);
 
-  const { userResourcesGrants, resourceGrants, usersInfraGrantsByInfraId } =
-    useResourcesGrants(payload);
+  const { userResourcesGrants, resourceGrants } = useConnectedUserGrants(payload);
 
   const setInfraID = useCallback(
     (id: number) => {
@@ -123,7 +122,6 @@ const InfraSelectorModalBodyStandard = ({
                 resourceType="infra"
                 userGrant={userGrant}
                 resourceGrants={resourceGrants}
-                userSubjectsList={usersInfraGrantsByInfraId[infra.id]}
               />
               <div className="infraslist-item-choice-footer">
                 <span>ID {infra.id}</span>

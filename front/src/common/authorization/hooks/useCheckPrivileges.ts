@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { mockedEditoastApi, type ResourceType } from 'common/api/mock/mockEditoastApi';
 
-import useResourcesGrants from './useResourcesGrants';
+import useConnectedUserGrants from './useConnectedUserGrants';
 import checkPrivileges, {
   type AuthorizationRequirement,
   type CheckPrivilegesParams,
@@ -37,7 +37,7 @@ const useCheckPrivileges = ({
     () => (resourceId ? { [resourceType]: [resourceId] } : {}),
     [resourceType, resourceId]
   );
-  const { userResourcesGrants } = useResourcesGrants(resourcePayload);
+  const { userResourcesGrants } = useConnectedUserGrants(resourcePayload);
 
   const userGrant = userResourcesGrants?.[resourceType]?.[0].grant || 'NONE';
 
