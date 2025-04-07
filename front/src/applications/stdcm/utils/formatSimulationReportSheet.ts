@@ -61,7 +61,7 @@ function getTimeAtPosition(
  * @param timesList format: List of times in milliseconds corresponding to the positions in trainPositions.
  * @returns The duration in milliseconds between the first and last occurrence of the position in the trainPositions array
  */
-export function getStopDurationBetweenTwoPositions(
+export function getStopDurationAtPosition(
   position: number,
   positionsList: number[],
   timesList: number[]
