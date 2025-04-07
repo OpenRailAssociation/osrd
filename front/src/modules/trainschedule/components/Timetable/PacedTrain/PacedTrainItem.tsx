@@ -45,7 +45,7 @@ type PacedTrainItemProps = {
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
-  dtoImport: () => void;
+  // dtoImport: () => void;
 };
 
 const PacedTrainItem = ({
@@ -58,7 +58,7 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
-  dtoImport,
+  // dtoImport,
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -90,7 +90,7 @@ const PacedTrainItem = ({
         body: { ids: [formatPacedTrainIdToEditoastTrainId(pacedTrain.id)] },
       }).unwrap();
       removePacedTrains([pacedTrain.id]);
-      dtoImport();
+      // dtoImport();
       dispatch(
         setSuccess({
           title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
@@ -151,7 +151,7 @@ const PacedTrainItem = ({
       id: formatEditoastTrainIdToPacedTrainId(pacedTrainResult.id),
     };
     upsertTimetableItems([formattedPacedTrainResponse]);
-    dtoImport();
+    // dtoImport();
     dispatch(
       setSuccess({
         title: t('timetable.pacedTrainAdded'),

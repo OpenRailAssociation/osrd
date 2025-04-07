@@ -202,7 +202,7 @@ const Timetable = ({
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
                   // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612
-                  dtoImport={dtoImport}
+                  // dtoImport={dtoImport}
                 />
               )}
             </div>
