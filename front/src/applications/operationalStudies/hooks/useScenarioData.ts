@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
 import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -22,6 +22,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { getShowPacedTrains } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
 import {
   formatEditoastTrainIdToPacedTrainId,
   formatEditoastTrainIdToTrainScheduleId,
@@ -34,7 +35,13 @@ import { mapBy } from 'utils/types';
 import useAutoUpdateProjection from './useAutoUpdateProjection';
 import usePathProjection from './usePathProjection';
 
+type ScenarioBroadcastMessage =
+  | { type: 'upsertTimetableItems'; timetableItems: TimetableItemWithTimetableId[] }
+  | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
+  | { type: 'updateTrainDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
+
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
+  const dispatch = useAppDispatch();
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const showPacedTrains = useSelector(getShowPacedTrains);
@@ -194,6 +201,12 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     }
   }, [timetableItems, infra.state]);
 
+  const broadcastChannel = useRef<BroadcastChannel>();
+
+  const broadcastScenarioMessage = (msg: ScenarioBroadcastMessage) => {
+    broadcastChannel.current?.postMessage(msg);
+  };
+
   const upsertTimetableItems = useCallback(
     (timetableItemsToUpsert: TimetableItemWithTimetableId[]) => {
       // TODO Paced train : Add logic for projected timetable items in https://github.com/OpenRailAssociation/osrd/issues/10613
@@ -322,6 +335,78 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [timetableItems, rollingStocks]
   );
 
+  const upsertTimetableItemsWithBroadcast = useCallback(
+    (timetableItemsToUpsert: TimetableItemWithTimetableId[]) => {
+      upsertTimetableItems(timetableItemsToUpsert);
+      broadcastScenarioMessage({
+        type: 'upsertTimetableItems',
+        timetableItems: timetableItemsToUpsert,
+      });
+    },
+    [upsertTimetableItems]
+  );
+
+  const removeTimetableItemsWithBroadcast = useCallback(
+    (ids: TimetableItemId[]) => {
+      removeTimetableItems(ids);
+      broadcastScenarioMessage({
+        type: 'removeTimetableItems',
+        timetableItemIds: ids,
+      });
+    },
+    [removeTimetableItems]
+  );
+
+  const updateTrainDepartureTimeWithBroadcast = useCallback(
+    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+      updateTrainDepartureTime(timetableItemId, newDeparture);
+      broadcastScenarioMessage({
+        type: 'updateTrainDepartureTime',
+        timetableItemId,
+        newDeparture,
+      });
+    },
+    [updateTrainDepartureTime]
+  );
+
+  useEffect(() => {
+    const channel = new BroadcastChannel(`osrd-scenario-${scenario.id}`);
+    broadcastChannel.current = channel;
+
+    channel.addEventListener('message', (event) => {
+      const msg: ScenarioBroadcastMessage = event.data;
+
+      switch (msg.type) {
+        case 'upsertTimetableItems':
+          upsertTimetableItems(msg.timetableItems);
+          break;
+        case 'removeTimetableItems':
+          removeTimetableItems(msg.timetableItemIds);
+          break;
+        case 'updateTrainDepartureTime':
+          updateTrainDepartureTime(msg.timetableItemId, msg.newDeparture);
+          break;
+        default:
+          console.error('Unknown scenario broadcast channel message type:', msg);
+          break;
+      }
+
+      dispatch(
+        osrdEditoastApi.util.invalidateTags([
+          'scenarios',
+          'timetable',
+          'train_schedule',
+          'paced_train',
+        ])
+      );
+    });
+
+    return () => {
+      channel.close();
+      broadcastChannel.current = undefined;
+    };
+  }, [scenario]);
+
   const results = useMemo(
     () => ({
       timetableItemsWithDetails,
@@ -339,9 +424,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
             }
           : undefined,
       conflicts,
-      removeTimetableItems,
-      upsertTimetableItems,
-      updateTrainDepartureTime,
+      removeTimetableItems: removeTimetableItemsWithBroadcast,
+      upsertTimetableItems: upsertTimetableItemsWithBroadcast,
+      updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
     }),
     [
       timetableItemsWithDetails,
@@ -352,9 +437,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       allTrainsProjected,
       formattedRawTrainSchedules.length,
       conflicts,
-      removeTimetableItems,
-      upsertTimetableItems,
-      updateTrainDepartureTime,
+      removeTimetableItemsWithBroadcast,
+      upsertTimetableItemsWithBroadcast,
+      updateTrainDepartureTimeWithBroadcast,
     ]
   );
 
