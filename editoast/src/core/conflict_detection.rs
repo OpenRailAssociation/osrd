@@ -75,12 +75,6 @@ pub struct ConflictDetectionResponse {
     pub conflicts: Vec<Conflict>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-pub struct PacedTrainOccurrenceId {
-    pub paced_train_id: i64,
-    pub index: u64,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Conflict {
     /// List of train schedule ids and paced train generated occurrences involved in the conflict
@@ -96,12 +90,6 @@ pub struct Conflict {
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
     pub requirements: Vec<ConflictRequirement>,
-}
-
-#[derive(Debug, Clone)]
-pub enum TrainId {
-    TrainSchedule(i64),
-    PacedTrainOccurrence(PacedTrainOccurrenceId),
 }
 
 /// Unmet requirement causing a conflict.

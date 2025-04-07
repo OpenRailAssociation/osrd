@@ -1,6 +1,9 @@
 pub mod stdcm;
 
 use std::collections::HashMap;
+use std::fmt::Display;
+use std::str::FromStr;
+use std::sync::Arc;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -14,9 +17,11 @@ use chrono::Utc;
 use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrain;
 use editoast_schemas::train_schedule::TrainSchedule;
+use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -30,14 +35,12 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
-use crate::RetrieveBatch;
+use crate::ValkeyClient;
 use crate::core::AsCoreRequest;
 use crate::core::conflict_detection::Conflict as CoreConflict;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::ConflictRequirement;
 use crate::core::conflict_detection::ConflictType;
-use crate::core::conflict_detection::PacedTrainOccurrenceId;
-use crate::core::conflict_detection::TrainId;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
@@ -50,6 +53,7 @@ use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::CoreClient;
 use crate::views::train_schedule::TrainScheduleForm;
 use crate::views::train_schedule::TrainScheduleResponse;
 use crate::views::train_schedule::train_simulation_batch;
@@ -384,7 +388,7 @@ pub struct Conflict {
     /// List of paced train occurrences involved in the conflict.
     /// Each occurrence is identified by a `paced_train_id` and its `index`
     #[schema(inline)]
-    pub paced_train_occurrence_ids: Vec<PacedTrainOccurrenceId>,
+    paced_train_occurrence_ids: Vec<PacedTrainOccurrenceId>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<i64>,
     /// Datetime of the start of the conflict
@@ -399,37 +403,24 @@ pub struct Conflict {
 }
 
 impl Conflict {
-    /// Converts the conflict data into a `ViewConflict` format.
-    ///
-    /// This function processes train schedule ids and paced trains generated ids ("paced_train_id#occurrence_id}")
+    /// This function processes train ids from Core Response
     ///  and maps them to either a `train_schedule_id` or a `paced_train_occurrence_id` based on the provided key mapping.
-    /// The train_id_map follows this structure:
-    /// - `train_id: (train_schedule_id, None)` if `train_id` corresponds to a train schedule ID.
-    /// - `train_id: (paced_train_id, occurrence_id)` if `train_id` corresponds to a generated paced train ID.
-    fn into_conflict_response(
-        conflict: CoreConflict,
-        train_id_map: HashMap<String, TrainId>,
-    ) -> Result<Self> {
-        let mut train_schedule_ids = Vec::new();
-        let mut paced_train_occurrence_ids = Vec::new();
+    fn from_core_response(conflict: CoreConflict) -> Result<Self> {
+        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) = conflict
+            .train_ids
+            .iter()
+            .partition_map(|train_id| match train_id.parse() {
+                Ok(TrainId::TrainSchedule(id)) => Either::Left(id),
+                Ok(TrainId::PacedTrainOccurrence {
+                    paced_train_id,
+                    index,
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    index,
+                }),
+                Err(_) => unreachable!("Unreachable case encountered while partitioning train IDs"),
+            });
 
-        for train_id in &conflict.train_ids {
-            if let Some(train_id) = train_id_map.get(train_id) {
-                match train_id {
-                    TrainId::TrainSchedule(train_id) => train_schedule_ids.push(*train_id),
-                    TrainId::PacedTrainOccurrence(paced_train_occurrence) => {
-                        paced_train_occurrence_ids.push(paced_train_occurrence.clone())
-                    }
-                }
-            } else {
-                let train_id = train_id
-                    .parse::<i64>()
-                    .map_err(|_| TimetableError::ParseError {
-                        train_id: train_id.clone(),
-                    })?;
-                train_schedule_ids.push(train_id);
-            }
-        }
         let work_schedule_ids = conflict
             .work_schedule_ids
             .into_iter()
@@ -448,6 +439,55 @@ impl Conflict {
             conflict_type: conflict.conflict_type,
             requirements: conflict.requirements,
         })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+struct PacedTrainOccurrenceId {
+    paced_train_id: i64,
+    index: u64,
+}
+
+#[derive(Debug, Clone)]
+enum TrainId {
+    TrainSchedule(i64),
+    PacedTrainOccurrence { paced_train_id: i64, index: u64 },
+}
+
+impl Display for TrainId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::TrainSchedule(id) => write!(f, "{id}"),
+            Self::PacedTrainOccurrence {
+                paced_train_id,
+                index,
+            } => write!(f, "{paced_train_id}#{index}"),
+        }
+    }
+}
+
+impl FromStr for TrainId {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains('#') {
+            let parts: Vec<&str> = s.split('#').collect();
+            if parts.len() != 2 {
+                return Err("Invalid PacedTrainOccurrenceId format");
+            }
+
+            let paced_train_id = parts[0].parse::<i64>().map_err(|_| "Invalid train id")?;
+            let index = parts[1]
+                .parse::<u64>()
+                .map_err(|_| "Invalid occurence id")?;
+            Ok(TrainId::PacedTrainOccurrence {
+                paced_train_id,
+                index,
+            })
+        } else {
+            let id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
+            Ok(TrainId::TrainSchedule(id))
+        }
     }
 }
 
@@ -482,74 +522,30 @@ async fn conflicts(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // 1. Retrieve Timetable / Infra / Trains / Simultion
-    let timetable_trains =
-        TimetableWithTrains::retrieve_or_fail(&mut db_pool.get().await?, timetable_id, || {
-            TimetableError::NotFound { timetable_id }
-        })
-        .await?;
-
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TimetableError::InfraNotFound { infra_id }
     })
     .await?;
 
-    let (trains, _): (Vec<_>, _) = models::TrainSchedule::retrieve_batch(
-        &mut db_pool.get().await?,
-        timetable_trains.train_ids,
-    )
-    .await?;
+    let (trains, paced_trains) =
+        retrieve_trains_and_paced_trains(&mut db_pool.get().await?, timetable_id).await?;
 
-    let (paced_trains, _): (Vec<_>, _) = models::PacedTrain::retrieve_batch(
+    let (train_simulations, paced_train_simulations) = retrieve_simulations(
         &mut db_pool.get().await?,
-        timetable_trains.paced_train_ids,
-    )
-    .await?;
-
-    let train_simulations = train_simulation_batch(
-        &mut db_pool.get().await?,
-        valkey_client.clone(),
+        valkey_client,
         core_client.clone(),
         &trains,
+        &paced_trains,
         &infra,
         electrical_profile_set_id,
     )
     .await?;
 
-    let mut paced_trains_ts = vec![];
-    for paced_train in paced_trains.clone() {
-        let occurrences =
-            (paced_train.time_window.num_seconds() / paced_train.interval.num_seconds()) as usize;
-        let interval = paced_train.interval;
-        let mut start_time = paced_train.start_time;
-
-        let mut all_occurrences = Vec::with_capacity(occurrences);
-
-        for _ in 0..occurrences {
-            let mut first_occurrence = paced_train.clone().into_first_occurrence();
-            first_occurrence.start_time = start_time;
-            all_occurrences.push(first_occurrence);
-            start_time += interval;
-        }
-
-        paced_trains_ts.extend(all_occurrences);
-    }
-
-    let paced_train_simulations = train_simulation_batch(
-        &mut db_pool.get().await?,
-        valkey_client.clone(),
-        core_client.clone(),
-        &paced_trains_ts,
-        &infra,
-        electrical_profile_set_id,
-    )
-    .await?;
-
-    let (conflict_detection_request, map_string_to_id) = build_conflict_core_request(
+    let conflict_detection_request = build_conflict_core_request(
         infra,
-        trains,
+        &trains,
         train_simulations,
-        paced_trains_ts,
+        &paced_trains,
         paced_train_simulations,
     );
 
@@ -558,31 +554,87 @@ async fn conflicts(
     let conflicts = conflict_detection_response.conflicts;
     let conflicts_response: Result<Vec<Conflict>> = conflicts
         .into_iter()
-        .map(|conflict| Conflict::into_conflict_response(conflict, map_string_to_id.clone()))
+        .map(Conflict::from_core_response)
         .collect();
     Ok(Json(conflicts_response?))
 }
 
+async fn retrieve_trains_and_paced_trains(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+) -> Result<(Vec<models::TrainSchedule>, Vec<models::PacedTrain>)> {
+    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
+        TimetableError::NotFound { timetable_id }
+    })
+    .await?;
+    let mut conn_clone = conn.clone();
+    let (trains, paced_trains): (Vec<_>, Vec<_>) = tokio::try_join!(
+        models::TrainSchedule::retrieve_batch_unchecked(
+            &mut conn_clone,
+            timetable_trains.train_ids
+        ),
+        models::PacedTrain::retrieve_batch_unchecked(conn, timetable_trains.paced_train_ids)
+    )?;
+
+    Ok((trains, paced_trains))
+}
+
+async fn retrieve_simulations(
+    conn: &mut DbConnection,
+    valkey_client: Arc<ValkeyClient>,
+    core_client: Arc<CoreClient>,
+    trains: &[models::TrainSchedule],
+    paced_trains: &[models::PacedTrain],
+    infra: &Infra,
+    electrical_profile_set_id: Option<i64>,
+) -> Result<(
+    Vec<(SimulationResponse, PathfindingResult)>,
+    Vec<(SimulationResponse, PathfindingResult)>,
+)> {
+    let paced_train_to_ts = paced_trains
+        .iter()
+        .flat_map(|pt| pt.iter_occurrences())
+        .collect::<Vec<_>>();
+    let mut conn_clone = conn.clone();
+    let (train_simulations, paced_train_simulations) = tokio::try_join!(
+        train_simulation_batch(
+            conn,
+            valkey_client.clone(),
+            core_client.clone(),
+            trains,
+            infra,
+            electrical_profile_set_id,
+        ),
+        train_simulation_batch(
+            &mut conn_clone,
+            valkey_client.clone(),
+            core_client.clone(),
+            &paced_train_to_ts,
+            infra,
+            electrical_profile_set_id,
+        )
+    )?;
+
+    Ok((train_simulations, paced_train_simulations))
+}
+
 fn build_conflict_core_request(
     infra: Infra,
-    trains: Vec<models::TrainSchedule>,
+    trains: &[models::TrainSchedule],
     train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
-    paced_trains_ts: Vec<models::TrainSchedule>,
+    paced_trains: &[models::PacedTrain],
     paced_train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
-) -> (ConflictDetectionRequest, HashMap<String, TrainId>) {
-    let mut map_string_to_id: HashMap<String, TrainId> = HashMap::new();
-    let mut trains_requirements = HashMap::with_capacity(trains.len());
+) -> ConflictDetectionRequest {
+    let mut trains_requirements = HashMap::new();
 
     // Build train schedule train requirements
-    for (train, sim) in trains.into_iter().zip(train_simulations) {
+    for (train, sim) in trains.iter().zip(train_simulations) {
         let (sim, _) = sim;
         let final_output = match sim {
             SimulationResponse::Success { final_output, .. } => final_output,
             _ => continue,
         };
-
-        let key = train.id.to_string();
-        map_string_to_id.insert(key.clone(), TrainId::TrainSchedule(train.id));
+        let key = TrainId::TrainSchedule(train.id).to_string();
         trains_requirements.insert(
             key,
             TrainRequirements {
@@ -593,47 +645,48 @@ fn build_conflict_core_request(
         );
     }
 
-    let mut occurrences = HashMap::new();
-
     // Build paced train requirements
-    for (train, (sim, _)) in paced_trains_ts.into_iter().zip(paced_train_simulations) {
-        let final_output = match sim {
-            SimulationResponse::Success { final_output, .. } => final_output,
-            _ => continue,
-        };
+    let mut it = paced_train_simulations.into_iter();
+    for train in paced_trains {
+        let occurrences = &train.num_occurrences();
+        let items: Vec<_> = it.by_ref().take(*occurrences).collect();
 
-        let entry = occurrences.entry(train.id).or_insert(0);
-        let occurrence_id = *entry;
-        let key = format!("{}#{}", train.id, occurrence_id);
-        map_string_to_id.insert(
-            key.clone(),
-            TrainId::PacedTrainOccurrence(PacedTrainOccurrenceId {
+        if items.len() < *occurrences {
+            panic!(
+                "At least one simulation is missing for paced train {}",
+                train.id
+            );
+        }
+
+        for (index, (sim, _)) in items.into_iter().enumerate() {
+            let final_output = match sim {
+                SimulationResponse::Success { final_output, .. } => final_output,
+                _ => continue,
+            };
+
+            let key = TrainId::PacedTrainOccurrence {
                 paced_train_id: train.id,
-                index: occurrence_id,
-            }),
-        );
-
-        trains_requirements.insert(
-            key,
-            TrainRequirements {
-                start_time: train.start_time,
-                spacing_requirements: final_output.spacing_requirements,
-                routing_requirements: final_output.routing_requirements,
-            },
-        );
-
-        *entry += 1;
+                index: index as u64,
+            }
+            .to_string();
+            trains_requirements.insert(
+                key,
+                TrainRequirements {
+                    start_time: train.start_time,
+                    spacing_requirements: final_output.spacing_requirements,
+                    routing_requirements: final_output.routing_requirements,
+                },
+            );
+        }
     }
 
     // Build core conflict request
-    let conflict_detection_request = ConflictDetectionRequest {
+    ConflictDetectionRequest {
         infra: infra.id,
         expected_version: infra.version,
         trains_requirements,
         work_schedules: None,
-    };
-
-    (conflict_detection_request, map_string_to_id)
+    }
 }
 
 #[cfg(test)]
