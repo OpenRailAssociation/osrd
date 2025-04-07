@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import { useDebounce } from 'utils/helpers';
 import { parseNumber } from 'utils/strings';
 
@@ -21,7 +22,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
   const { t } = useTranslation('stdcm');
 
   const [stopDuration, setStopDuration] = useState(
-    pathStep.stopFor !== undefined ? `${pathStep.stopFor}` : ''
+    pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : ''
   );
   const debouncedStopDuration = useDebounce(stopDuration, 300);
 
@@ -29,7 +30,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     () =>
       pathStep.stopType === StdcmStopTypes.DRIVER_SWITCH &&
       pathStep.stopFor !== undefined &&
-      pathStep.stopFor < 3
+      pathStep.stopFor < new Duration({ minutes: 3 })
         ? {
             status: 'warning' as Status,
             message: t('trainPath.warningMinStopTime'),
@@ -39,13 +40,14 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
   );
 
   useEffect(() => {
-    setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor}` : '');
+    setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : '');
   }, [pathStep.stopFor]);
 
   useEffect(() => {
     const parsedNumber = parseNumber(debouncedStopDuration);
-    const newStopDuration = parsedNumber !== undefined ? Math.round(parsedNumber) : undefined;
-    if (newStopDuration !== pathStep.stopFor) {
+    const newStopDuration =
+      parsedNumber !== undefined ? new Duration({ minutes: Math.round(parsedNumber) }) : undefined;
+    if (newStopDuration?.ms !== pathStep.stopFor?.ms) {
       dispatch(
         updateStdcmPathStep({
           id: pathStep.id,

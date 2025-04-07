@@ -195,7 +195,7 @@ describe('stdcmConfReducers', () => {
       expect(via.isVia).toBe(true);
       const updates = {
         stopType: StdcmStopTypes.DRIVER_SWITCH,
-        stopFor: 1,
+        stopFor: new Duration({ minutes: 1 }),
       };
 
       store.dispatch(updateStdcmPathStep({ id: via.id, updates }));
