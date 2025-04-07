@@ -10,6 +10,7 @@ import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdc
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 
 import StdcmCard from './StdcmCard';
 import StdcmDefaultCard from './StdcmDefaultCard';
@@ -33,11 +34,11 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
   const intermediatePoints = useMemo(() => pathSteps.slice(1, -1), [pathSteps]);
 
   const updateStopType = (newStopType: StdcmStopTypes, pathStep: StdcmPathStep) => {
-    let defaultStopTime: number | undefined;
+    let defaultStopTime: Duration | undefined;
     if (newStopType === StdcmStopTypes.DRIVER_SWITCH) {
-      defaultStopTime = 3;
+      defaultStopTime = new Duration({ minutes: 3 });
     } else if (newStopType === StdcmStopTypes.SERVICE_STOP) {
-      defaultStopTime = 0;
+      defaultStopTime = Duration.zero;
     }
     dispatch(
       updateStdcmPathStep({

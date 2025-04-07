@@ -9,7 +9,6 @@ import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/ty
 import { dateTimeFormatting } from 'utils/date';
 import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
-import { minToMs } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
 import { StdcmStopTypes } from '../types';
@@ -155,7 +154,7 @@ export const checkStdcmConf = (
     if (step.isVia) {
       const { stopFor } = step;
       if (step.stopType !== StdcmStopTypes.PASSAGE_TIME && stopFor !== undefined) {
-        duration = minToMs(stopFor);
+        duration = stopFor.ms;
       }
     } else {
       // if the step is either the origin or the destination,
