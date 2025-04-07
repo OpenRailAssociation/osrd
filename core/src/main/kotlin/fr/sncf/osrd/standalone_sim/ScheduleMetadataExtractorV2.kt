@@ -1,10 +1,10 @@
 package fr.sncf.osrd.standalone_sim
 
+import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.*
-import fr.sncf.osrd.api.api_v2.standalone_sim.CompleteReportTrain
-import fr.sncf.osrd.api.api_v2.standalone_sim.ReportTrain
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
+import fr.sncf.osrd.api.standalone_sim.ReportTrain
+import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics

@@ -1,11 +1,11 @@
 package fr.sncf.osrd.pathfinding
 
-import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
-import fr.sncf.osrd.api.api_v2.TrackLocation
-import fr.sncf.osrd.api.api_v2.pathfinding.IncompatibleConstraintsPathResponse
-import fr.sncf.osrd.api.api_v2.pathfinding.NoPathFoundException
-import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockRequest
-import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockSuccess
+import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
+import fr.sncf.osrd.api.pathfinding.NoPathFoundException
+import fr.sncf.osrd.api.pathfinding.PathfindingBlockRequest
+import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
@@ -77,7 +77,7 @@ class PathfindingSignalingTest {
 
         // Run a pathfinding with a non TVM train, expecting not to find any path
         assertThatThrownBy {
-                fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+                fr.sncf.osrd.api.pathfinding.runPathfinding(
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.TRAIN_WITHOUT_TVM,
@@ -105,7 +105,7 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
-            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+            fr.sncf.osrd.api.pathfinding.runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
@@ -131,7 +131,7 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
-            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+            fr.sncf.osrd.api.pathfinding.runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
@@ -176,7 +176,7 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingSouthResp =
-            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+            fr.sncf.osrd.api.pathfinding.runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_ETCS_FAST_TRAIN,
