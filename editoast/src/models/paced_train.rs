@@ -71,6 +71,19 @@ impl PacedTrain {
             options: self.options,
         }
     }
+
+    pub fn iter_occurrences(&self) -> impl Iterator<Item = TrainSchedule> {
+        let base_occurrence = self.clone().into_first_occurrence();
+
+        (0..self.num_occurrences()).map(move |occurrence_idx| TrainSchedule {
+            start_time: base_occurrence.start_time + self.interval * occurrence_idx as i32,
+            ..base_occurrence.clone()
+        })
+    }
+
+    pub fn num_occurrences(&self) -> usize {
+        (self.time_window.num_seconds() / self.interval.num_seconds()) as usize
+    }
 }
 
 impl From<paced_train::PacedTrain> for PacedTrainChangeset {
