@@ -7,12 +7,12 @@ import fr.sncf.osrd.api.ElectricalProfileSetManager
 import fr.sncf.osrd.api.InfraLoadEndpoint
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.VersionEndpoint
-import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2
-import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint
-import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
-import fr.sncf.osrd.api.api_v2.project_signals.SignalProjectionEndpointV2
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint
-import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2
+import fr.sncf.osrd.api.conflicts.ConflictDetectionEndpoint
+import fr.sncf.osrd.api.path_properties.PathPropEndpoint
+import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
+import fr.sncf.osrd.api.project_signals.SignalProjectionEndpoint
+import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -122,14 +122,14 @@ class WorkerCommand : CliCommand {
 
         val endpoints =
             mapOf(
-                "/v2/pathfinding/blocks" to PathfindingBlocksEndpointV2(infraManager),
+                "/v2/pathfinding/blocks" to PathfindingBlocksEndpoint(infraManager),
                 "/v2/path_properties" to PathPropEndpoint(infraManager),
                 "/v2/standalone_simulation" to
                     SimulationEndpoint(infraManager, electricalProfileSetManager),
-                "/v2/signal_projection" to SignalProjectionEndpointV2(infraManager),
-                "/v2/conflict_detection" to ConflictDetectionEndpointV2(infraManager),
+                "/v2/signal_projection" to SignalProjectionEndpoint(infraManager),
+                "/v2/conflict_detection" to ConflictDetectionEndpoint(infraManager),
                 "/version" to VersionEndpoint(),
-                "/v2/stdcm" to STDCMEndpointV2(infraManager),
+                "/v2/stdcm" to STDCMEndpoint(infraManager),
                 "/infra_load" to InfraLoadEndpoint(infraManager),
             )
 

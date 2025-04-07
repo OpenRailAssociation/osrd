@@ -2,10 +2,10 @@ package fr.sncf.osrd.standalone_sim
 
 import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.DriverBehaviour
-import fr.sncf.osrd.api.api_v2.RangeValues
-import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
-import fr.sncf.osrd.api.api_v2.standalone_sim.ReportTrain
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.standalone_sim.MarginValue
+import fr.sncf.osrd.api.standalone_sim.ReportTrain
+import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance

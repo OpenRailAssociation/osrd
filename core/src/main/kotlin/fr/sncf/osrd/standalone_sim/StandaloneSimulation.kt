@@ -6,11 +6,11 @@ import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.RangeValues
-import fr.sncf.osrd.api.api_v2.standalone_sim.ElectricalProfileValue
-import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationSuccess
+import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.standalone_sim.ElectricalProfileValue
+import fr.sncf.osrd.api.standalone_sim.MarginValue
+import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext

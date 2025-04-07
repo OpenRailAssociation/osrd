@@ -5,12 +5,12 @@ import com.beust.jcommander.Parameters
 import com.squareup.moshi.JsonAdapter
 import fr.sncf.osrd.api.ElectricalProfileSetManager
 import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
-import fr.sncf.osrd.api.api_v2.pathfinding.pathfindingRequestAdapter
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationRequest
-import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2
-import fr.sncf.osrd.api.api_v2.stdcm.stdcmRequestAdapter
+import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
+import fr.sncf.osrd.api.pathfinding.pathfindingRequestAdapter
+import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
+import fr.sncf.osrd.api.standalone_sim.SimulationRequest
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint
+import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
 import java.io.IOException
 import java.nio.file.Path
@@ -70,12 +70,12 @@ class ReproduceRequest : CliCommand {
             val time = measureTime {
                 if (stdcmPayloadPath != null) {
                     logger.info("running stdcm request at $stdcmPayloadPath")
-                    STDCMEndpointV2(infraManager)
+                    STDCMEndpoint(infraManager)
                         .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
                 }
                 if (pathfindingPayloadPath != null) {
                     logger.info("running pathfinding request at $pathfindingPayloadPath")
-                    PathfindingBlocksEndpointV2(infraManager)
+                    PathfindingBlocksEndpoint(infraManager)
                         .run(loadRequest(pathfindingPayloadPath!!, pathfindingRequestAdapter))
                 }
                 if (simulationPayloadPath != null) {

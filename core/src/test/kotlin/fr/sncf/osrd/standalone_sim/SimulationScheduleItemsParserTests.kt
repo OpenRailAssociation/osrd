@@ -1,8 +1,8 @@
 package fr.sncf.osrd.standalone_sim
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import fr.sncf.osrd.api.api_v2.parseRawSimulationScheduleItems
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.parseRawSimulationScheduleItems
+import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset

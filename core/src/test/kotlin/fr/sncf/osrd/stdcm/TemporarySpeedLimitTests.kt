@@ -1,9 +1,9 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
-import fr.sncf.osrd.api.api_v2.stdcm.STDCMTemporarySpeedLimit
-import fr.sncf.osrd.api.api_v2.stdcm.buildTemporarySpeedLimitManager
+import fr.sncf.osrd.api.stdcm.STDCMTemporarySpeedLimit
+import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.*
