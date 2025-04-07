@@ -35,7 +35,7 @@ type StcdmResultsProps = {
   onStartNewQueryWithData: () => void;
   buttonsVisible: boolean;
   showStatusBanner: boolean;
-  hasSeenInfoMessage: boolean;
+  displayInfoMessage: boolean;
 };
 
 const StdcmResults = ({
@@ -46,7 +46,7 @@ const StdcmResults = ({
   onStartNewQueryWithData,
   buttonsVisible,
   showStatusBanner,
-  hasSeenInfoMessage,
+  displayInfoMessage,
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
 
@@ -195,7 +195,7 @@ const StdcmResults = ({
                   </ul>
                 )}
                 <span>{t('changeSearchCriteria')}</span>
-                {!alternativePath && !hasSeenInfoMessage && (
+                {!alternativePath && !displayInfoMessage && (
                   <div className="alternative-simulations-info">
                     {t('simulationsWithConflicts')}
                   </div>

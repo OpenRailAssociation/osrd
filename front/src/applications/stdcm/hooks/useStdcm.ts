@@ -56,7 +56,7 @@ const useStdcm = ({
   const osrdconf = useSelector(getStdcmConf);
   const timetableId = useSelector(getStdcmTimetableID);
   const infraId = useSelector(getStdcmInfraID);
-  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>>();
+  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>();
   const isCancelledRef = useRef(false);
 
   const currentSimulationInputs = useStdcmForm();
@@ -138,6 +138,16 @@ const useStdcm = ({
     };
   };
 
+  const handleRejection = (error: unknown) => {
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
+    triggerShowFailureNotification(
+      castErrorToFailure(error, {
+        name: t('stdcm:stdcmErrors.requestFailed'),
+        message: t('translation:common.error'),
+      })
+    );
+  };
+
   const handleSuccess = async (
     response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
     payload: PostTimetableByIdStdcmApiArg
@@ -154,16 +164,24 @@ const useStdcm = ({
     response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'conflicts' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
+    const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
     try {
+      const currentSimulation = await createSimulation(currentSimulationInputs, payload, response);
+      simulationsToAdd.push(currentSimulation);
+
       setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending_additional);
 
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
       const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
 
+      const promiseUpstream = postTimetableByIdStdcm(payloadUpstream);
+      const promiseDownstream = postTimetableByIdStdcm(payloadDownstream);
+      requestPromise.current = [promiseUpstream, promiseDownstream];
+
       // Run two additional requests for alternative simulations
       const [resUp, resDown] = await Promise.all([
-        postTimetableByIdStdcm(payloadUpstream).unwrap(),
-        postTimetableByIdStdcm(payloadDownstream).unwrap(),
+        promiseUpstream.unwrap(),
+        promiseDownstream.unwrap(),
       ]);
 
       if (
@@ -175,39 +193,25 @@ const useStdcm = ({
 
       dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
 
-      const upstreamInputs = adjustInputByDirection(currentSimulationInputs, 'upstream');
-      const downstreamInputs = adjustInputByDirection(currentSimulationInputs, 'downstream');
+      if (!isCancelledRef.current) {
+        const upstreamInputs = adjustInputByDirection(currentSimulationInputs, 'upstream');
+        const downstreamInputs = adjustInputByDirection(currentSimulationInputs, 'downstream');
 
-      const [currentSimulation, downstreamSimulation, upstreamSimulation] = await Promise.all([
-        createSimulation(currentSimulationInputs, payload, response, undefined),
-        createSimulation(downstreamInputs, payloadDownstream, resDown, 'downstream'),
-        createSimulation(upstreamInputs, payloadUpstream, resUp, 'upstream'),
-      ]);
+        const [downstreamSimulation, upstreamSimulation] = await Promise.all([
+          createSimulation(downstreamInputs, payloadDownstream, resDown, 'downstream'),
+          createSimulation(upstreamInputs, payloadUpstream, resUp, 'upstream'),
+        ]);
 
-      if (isCancelledRef.current) return;
-
-      dispatch(addStdcmSimulations([currentSimulation, downstreamSimulation, upstreamSimulation]));
-
-      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
+        simulationsToAdd.push(downstreamSimulation, upstreamSimulation);
+        setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
+      }
     } catch (error) {
-      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-      triggerShowFailureNotification(
-        castErrorToFailure(error, {
-          name: t('stdcm:stdcmErrors.requestFailed'),
-          message: t('translation:common.error'),
-        })
-      );
+      if ((error as Error).name !== 'AbortError') {
+        handleRejection(error);
+      }
+    } finally {
+      dispatch(addStdcmSimulations(simulationsToAdd));
     }
-  };
-
-  const handleRejection = (error: unknown) => {
-    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-    triggerShowFailureNotification(
-      castErrorToFailure(error, {
-        name: t('stdcm:stdcmErrors.requestFailed'),
-        message: t('translation:common.error'),
-      })
-    );
   };
 
   const launchStdcmRequest = async () => {
@@ -222,7 +226,7 @@ const useStdcm = ({
 
     try {
       const promise = postTimetableByIdStdcm(payload);
-      requestPromise.current = promise;
+      requestPromise.current = [promise];
 
       const response = await promise.unwrap();
 
@@ -242,9 +246,11 @@ const useStdcm = ({
 
   const cancelStdcmRequest = () => {
     isCancelledRef.current = true;
-    if (typeof requestPromise.current?.abort === 'function') {
-      requestPromise.current.abort();
-    }
+    requestPromise.current?.forEach((promise) => {
+      if (typeof promise.abort === 'function') {
+        promise.abort();
+      }
+    });
     requestPromise.current = undefined;
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
