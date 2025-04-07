@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -19,6 +19,7 @@ import SimulationResults from 'applications/operationalStudies/views/SimulationR
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import i18n from 'i18n';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
@@ -98,6 +99,11 @@ const ScenarioContent = ({
     macroEditorState.current = state;
     setNgeDto(dto);
   }, [dispatch, scenario, scenario.timetable_id]);
+
+  // To update dynamic translations in NGE when language changes
+  useEffect(() => {
+    dtoImport();
+  }, [i18n.language, dtoImport]);
 
   const toggleMicroMacroButton = useCallback(
     (isMacroMode: boolean) => {

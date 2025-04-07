@@ -41,7 +41,10 @@ import {
  * Get the TrainrunFrequencies from the TimetableItems.
  * We need to add the unknown frequencies from the PacedTrains.
  */
-const getNgeTrainrunFrequencies = (state: MacroEditorState, t: TFunction): TrainrunFrequency[] => {
+const getNgeTrainrunFrequencies = (
+  state: MacroEditorState,
+  t: TFunction<'operationalStudies/scenario'>
+): TrainrunFrequency[] => {
   // Get the default frequencies (TrainSchedule/30min/60min/120min)
   const trainrunFrequencies = getDefaultTrainrunFrequencies(t);
 
@@ -55,7 +58,7 @@ const getNgeTrainrunFrequencies = (state: MacroEditorState, t: TFunction): Train
           order: 0, // temporary order
           frequency: stepInMinutes,
           offset: 0,
-          name: t('operationalStudies/macroEditor/stepXmin', { minutes: stepInMinutes }),
+          name: t('macroEditor.stepXmin', { minutes: stepInMinutes }),
           shortName: `${stepInMinutes}`,
           linePatternRef: '60',
         };
@@ -184,7 +187,7 @@ const castNodeToNge = (
 export const loadAndIndexNge = async (
   state: MacroEditorState,
   dispatch: AppDispatch,
-  t: TFunction
+  t: TFunction<'operationalStudies/scenario'>
 ): Promise<void> => {
   // Load path items
   let nbNodesIndexed = 0;

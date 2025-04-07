@@ -113,5 +113,9 @@
   "conflictsCount_other": "{{count}} Konflikte",
   "conflictsCount_zero": "Keine Konflikte",
   "Routing": "Reiserouten",
-  "Spacing": "Abstand"
+  "Spacing": "Abstand",
+  "macroEditor": {
+    "uniqueTrainSchedule": "Einzelner Zug",
+    "stepXmin": "Takt {{minutes}}min"
+  }
 }

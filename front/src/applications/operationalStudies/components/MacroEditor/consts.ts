@@ -44,13 +44,15 @@ export const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
 /**
  * Return the default TrainrunFrequencies with their translations.
  */
-export const getDefaultTrainrunFrequencies = (t: TFunction): TrainrunFrequency[] => [
+export const getDefaultTrainrunFrequencies = (
+  t: TFunction<'operationalStudies/scenario'>
+): TrainrunFrequency[] => [
   {
     id: 1,
     order: 1,
     frequency: 1440,
     offset: 0,
-    name: t('operationalStudies/macroEditor/uniqueTrainSchedule'),
+    name: t('macroEditor.uniqueTrainSchedule'),
     shortName: '-',
     linePatternRef: '120',
   },
@@ -59,7 +61,7 @@ export const getDefaultTrainrunFrequencies = (t: TFunction): TrainrunFrequency[]
     order: 2,
     frequency: 30,
     offset: 0,
-    name: t('operationalStudies/macroEditor/stepXmin', { minutes: 30 }),
+    name: t('macroEditor.stepXmin', { minutes: 30 }),
     shortName: '30',
     linePatternRef: '30',
   },
@@ -68,7 +70,7 @@ export const getDefaultTrainrunFrequencies = (t: TFunction): TrainrunFrequency[]
     order: 3,
     frequency: 60,
     offset: 0,
-    name: t('operationalStudies/macroEditor/stepXmin', { minutes: 60 }),
+    name: t('macroEditor.stepXmin', { minutes: 60 }),
     shortName: '60',
     linePatternRef: '60',
   },
@@ -77,7 +79,7 @@ export const getDefaultTrainrunFrequencies = (t: TFunction): TrainrunFrequency[]
     order: 4,
     frequency: 120,
     offset: 0,
-    name: t('operationalStudies/macroEditor/stepXmin', { minutes: 120 }),
+    name: t('macroEditor.stepXmin', { minutes: 120 }),
     shortName: '120',
     linePatternRef: '120',
   },
