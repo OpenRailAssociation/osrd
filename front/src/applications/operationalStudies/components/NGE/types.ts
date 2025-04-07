@@ -105,6 +105,18 @@ export type TrainrunCategory = {
   sectionHeadway: number;
 };
 
+/**
+ * Mandatory attribute for any Trainrun.
+ * Used for the `linePatternRef` attribute, which changes the line style of the Trainrun.
+ * It is also used to compute the space-time diagram (Streckengrafik) of NGE.
+ * The main types of TimetableItems are to be displayed:
+ * - `TrainSchedule` -> `TrainrunFrequency.linePatternRef = '120'`
+ * - `PacedTrain`:
+ *    - `paced.step = 30` -> `TrainrunFrequency.linePatternRef = '30'`
+ *    - `paced.step = 60` -> `TrainrunFrequency.linePatternRef = '60'`
+ *    - `paced.step = 120` -> `TrainrunFrequency.linePatternRef = '120'`
+ *    - `paced.step = anything else` -> `TrainrunFrequency.linePatternRef = '60'`
+ */
 export type TrainrunFrequency = {
   /** At creation of a trainrun, default NGE frequency takes id 3. */
   id: number;
@@ -123,8 +135,16 @@ export type TrainrunFrequency = {
 };
 
 /**
- * Not used, nor displayed, in OSRD yet.
+ * Mandatory attribute for any Trainrun.
+ * Not used as its functionnality is meant to be, nor displayed, in OSRD yet.
  * Only used for the `linePatternRef` attribute, which changes the line style of the Trainrun.
+ * The main types of TimetableItems are to be displayed:
+ * - `TrainSchedule` -> `TrainrunTimeCategory.linePatternRef = 'ZEITWEISE'`
+ * - `PacedTrain`:
+ *    - `paced.step = 30` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
+ *    - `paced.step = 60` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
+ *    - `paced.step = 120` -> `TrainrunTimeCategory.linePatternRef = '7/24'`
+ *    - `paced.step = anything else` -> `TrainrunTimeCategory.linePatternRef = 'HVZ'`
  */
 export type TrainrunTimeCategory = {
   id: number;
