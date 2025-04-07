@@ -78,20 +78,19 @@ const RollingStockEditor = () => {
           </div>
           {openedRollingStockCardId === data.id && (
             <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-              {(selectedRollingStock ?? isEditing) &&
-                ((selectedRollingStock && !isEditing && (
+              {selectedRollingStock &&
+                (!isEditing ? (
                   <RollingStockInformationPanel
                     id={openedRollingStockCardId}
                     isEditing={isEditing}
                     rollingStock={selectedRollingStock}
                   />
-                )) ??
-                  (isEditing && (
-                    <RollingStockEditorForm
-                      rollingStockData={selectedRollingStock}
-                      setAddOrEditState={setIsEditing}
-                    />
-                  )))}
+                ) : (
+                  <RollingStockEditorForm
+                    rollingStockData={selectedRollingStock}
+                    setAddOrEditState={setIsEditing}
+                  />
+                ))}
             </div>
           )}
         </div>
