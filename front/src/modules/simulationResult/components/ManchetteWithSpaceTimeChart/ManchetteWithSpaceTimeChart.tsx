@@ -254,6 +254,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       spaceStart: block.position_start,
       spaceEnd: block.position_end,
       color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
+      blinking: block.blinking,
     }));
   });
 
