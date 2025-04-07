@@ -66,6 +66,9 @@
     }
     &-name {
       color: var(--black100);
+      &.bold {
+        font-weight: 500;
+      }
     }
     &-select {
       * > .osrd-ui-custom-select,

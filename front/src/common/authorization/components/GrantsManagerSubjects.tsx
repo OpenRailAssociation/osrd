@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { Grant, ResourceType, SubjectItemWithGrant } from 'common/api/mock/mockEditoastApi';
@@ -124,7 +125,8 @@ const GrantsManagerSubjects = ({
       <div className="grant-manager-subject-list">
         {userSubjectsList?.map(({ id, name, grant }) => (
           <div className="grant-manager-subject-card" key={id}>
-            <span className="grant-manager-subject-name">{name}</span>
+            {/* // TODO Get the connectedUser id from the store and replace this once we can */}
+            <span className={cx('grant-manager-subject-name', { bold: id === 1 })}>{name}</span>
             <span className="grant-manager-subject-select">
               <Select
                 id={`${id}-${name}`}
