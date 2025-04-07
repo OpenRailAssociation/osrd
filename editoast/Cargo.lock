@@ -3078,7 +3078,7 @@ dependencies = [
  "clap",
  "csv",
  "geo-types",
- "osmpbfreader",
+ "osmpbfreader 0.17.0",
  "serde",
 ]
 
@@ -3091,7 +3091,7 @@ dependencies = [
  "geo-types",
  "geos",
  "osm4routing",
- "osmpbfreader",
+ "osmpbfreader 0.18.0",
  "rstest",
  "serde_json",
  "tempfile",
@@ -3103,6 +3103,24 @@ name = "osmpbfreader"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38e9c16f77106ccd0f85602ff6b2237375b1f331ef950f59c35bdd6eff37cb64"
+dependencies = [
+ "byteorder",
+ "flat_map",
+ "flate2",
+ "par-map",
+ "protobuf",
+ "protobuf-codegen",
+ "pub-iterator-type",
+ "self_cell",
+ "serde",
+ "smartstring",
+]
+
+[[package]]
+name = "osmpbfreader"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7fe51f52e28fa2307a9d5397ddd0ef5022c5211beaea800110b824a75fcca12"
 dependencies = [
  "byteorder",
  "flat_map",
