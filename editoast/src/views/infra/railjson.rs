@@ -7,15 +7,12 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
 use editoast_authz::Role;
-use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::RAILJSON_VERSION;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::IntoEnumIterator;
-use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -34,13 +31,6 @@ use editoast_schemas::primitives::ObjectType;
 crate::routes! {
     "/{infra_id}/railjson" => get_railjson,
     "/railjson" => post_railjson,
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra:railjson")]
-enum ListErrorsRailjson {
-    #[error("Wrong Railjson version provided")]
-    WrongRailjsonVersionProvided,
 }
 
 /// Serialize an infra
@@ -185,9 +175,6 @@ async fn post_railjson(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    if railjson.version != RAILJSON_VERSION {
-        return Err(ListErrorsRailjson::WrongRailjsonVersionProvided.into());
-    }
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
@@ -219,6 +206,7 @@ mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::RAILJSON_VERSION;
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information

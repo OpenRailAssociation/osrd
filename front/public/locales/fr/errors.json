@@ -85,9 +85,6 @@
         "EndingTrackLocationNotFound": "Localisation de la fin de la section non trouvé",
         "InvalidNumberOfPaths": "La recherche de chemin ne peut pas renvoyer plus de 5 chemins",
         "StartingTrackLocationNotFound": "Localisation du début de la section non trouvé"
-      },
-      "railjson": {
-        "WrongRailjsonVersionProvided": "Mauvaise version de railjson fournie"
       }
     },
     "core": {

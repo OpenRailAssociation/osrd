@@ -85,9 +85,6 @@
         "EndingTrackLocationNotFound": "Ending track location was not found",
         "InvalidNumberOfPaths": "The pathfinding cannot return 5 paths (expected: [1-5])",
         "StartingTrackLocationNotFound": "Starting track location was not found"
-      },
-      "railjson": {
-        "WrongRailjsonVersionProvided": "Wrong railjson version provided"
       }
     },
     "core": {
