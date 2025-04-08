@@ -1,6 +1,5 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss';
+@import '../../../../index.css';
 
 .ui-spacetimechart-tooltip {
   position: absolute;
@@ -21,7 +20,9 @@
     margin-bottom: 3px;
   }
 
-  .position-range, .type-and-duration, .trains {
+  .position-range,
+  .type-and-duration,
+  .trains {
     font-weight: 600;
   }
 

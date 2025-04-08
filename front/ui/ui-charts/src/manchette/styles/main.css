@@ -1,6 +1,5 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-@import 'manchette.css';
-@import 'waypoint.css';
-@import 'menu.css';
+@import 'tailwindcss';
+@import '../../../../index.css';
+@import './manchette.css';
+@import './waypoint.css';
+@import './menu.css';

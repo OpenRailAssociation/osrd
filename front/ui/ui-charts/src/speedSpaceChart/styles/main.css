@@ -1,6 +1,5 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss';
+@import '../../../../index.css';
 
 .base-margin-top {
   margin-top: 1.6875rem;
