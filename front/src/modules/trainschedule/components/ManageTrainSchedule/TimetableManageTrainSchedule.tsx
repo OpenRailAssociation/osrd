@@ -12,12 +12,13 @@ import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSch
 import { toggleEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf';
 import { getEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { isPacedTrain, isTrainSchedule } from 'utils/trainId';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
-import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
+import useUpdateTimetableItem from './hooks/useUpdateTimtetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
 type TimetableManageTrainScheduleProps = {
@@ -45,6 +46,7 @@ const TimetableManageTrainSchedule = ({
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { showPacedTrains } = useSelector(getUserPreferences);
   const editingTrainIsPacedTrain = useSelector(getEditingTrainIsPacedTrain);
+  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [isWorking, setIsWorking] = useState(false);
 
@@ -53,15 +55,15 @@ const TimetableManageTrainSchedule = ({
     setItemIdToEdit(undefined);
   };
 
-  // TODO Paced trains : update this to handle edit paced trains
-  const updateTrainSchedule = useUpdateTrainSchedule(
+  const updateTimetable = useUpdateTimetableItem(
     setIsWorking,
     setDisplayTrainScheduleManagement,
     upsertTimetableItems,
     removeTimetableItems,
     setItemIdToEdit,
     dtoImport,
-    itemIdToEdit
+    itemIdToEdit,
+    selectedTrainId
   );
 
   const getEditLabel = (_itemIdToEdit: TimetableItemId) => {
@@ -86,7 +88,7 @@ const TimetableManageTrainSchedule = ({
             <button
               className="btn btn-warning mb-2"
               type="button"
-              onClick={updateTrainSchedule}
+              onClick={updateTimetable}
               data-testid="submit-edit-train-schedule"
             >
               <span className="mr-2">

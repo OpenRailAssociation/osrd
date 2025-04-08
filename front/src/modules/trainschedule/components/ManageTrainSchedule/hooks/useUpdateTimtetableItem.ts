@@ -12,30 +12,39 @@ import {
   getOperationalStudiesConf,
   getOperationalStudiesTimetableID,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemId,
+  TimetableItemWithTimetableId,
+  TrainId,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import {
+  extractPacedTrainIdFromOccurrenceId,
   formatEditoastTrainIdToPacedTrainId,
   formatEditoastTrainIdToTrainScheduleId,
   formatPacedTrainIdToEditoastTrainId,
+  formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
+  isOccurrence,
   isPacedTrain,
+  isPacedTrainResponseWithPacedTrainId,
   isTrainSchedule,
 } from 'utils/trainId';
 
 import { formatPacedTrainPayload } from '../helpers/formatTimetableItemPayload';
 import formatTrainSchedulePayload from '../helpers/formatTrainSchedulePayload';
 
-const useUpdateTrainSchedule = (
+const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void,
   setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void,
   dtoImport: () => void,
-  trainIdToEdit?: TimetableItemId
+  trainIdToEdit?: TimetableItemId,
+  selectedTrainId?: TrainId
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
@@ -68,7 +77,7 @@ const useUpdateTrainSchedule = (
 
     setIsWorking(true);
 
-    let editedItemId: TimetableItemId;
+    let trainIdToSelect: TrainId | undefined;
 
     // handle item update without changing type
     if (
@@ -90,6 +99,7 @@ const useUpdateTrainSchedule = (
           ...newTrainsSchedule,
           id: trainIdToEdit,
         };
+        trainIdToSelect = trainIdToEdit;
       } else {
         const pacedTrain = formatPacedTrainPayload(formattedSimulationConf);
         await putPacedTrainById({
@@ -101,10 +111,18 @@ const useUpdateTrainSchedule = (
           timetable_id: timetableId!,
           id: trainIdToEdit,
         };
+
+        // if the selected item is an occurrence of the edited paced train, keep it selected
+        // else select the first occurrence by default
+        trainIdToSelect =
+          selectedTrainId &&
+          isOccurrence(selectedTrainId) &&
+          extractPacedTrainIdFromOccurrenceId(selectedTrainId) === trainIdToEdit
+            ? selectedTrainId
+            : formatPacedTrainIdToOccurrenceId(trainIdToEdit, 0);
       }
 
       upsertTimetableItems([newItem]);
-      editedItemId = trainIdToEdit;
     }
 
     // handle item update with changing type
@@ -155,8 +173,13 @@ const useUpdateTrainSchedule = (
 
       const [_deletedItem, newItem] = await Promise.all(promises);
       removeTimetableItems([trainIdToEdit]);
-      editedItemId = newItem.id;
       upsertTimetableItems([newItem]);
+      if (!isPacedTrainResponseWithPacedTrainId(newItem)) {
+        trainIdToSelect = newItem.id;
+      } else {
+        // select the first occurrence by default
+        trainIdToSelect = formatPacedTrainIdToOccurrenceId(newItem.id, 0);
+      }
     }
 
     // dispatch success and update the selected train id
@@ -167,10 +190,10 @@ const useUpdateTrainSchedule = (
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
-    if (isTrainSchedule(editedItemId)) dispatch(updateSelectedTrainId(editedItemId));
+    dispatch(updateSelectedTrainId(trainIdToSelect));
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTrainIdToEdit(undefined);
   };
 };
 
-export default useUpdateTrainSchedule;
+export default useUpdateTimetableItem;
