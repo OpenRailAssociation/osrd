@@ -4,11 +4,11 @@ import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
+import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-import formatTimetableItemSummaries from '../helpers/formatTimetableItemSummaries';
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
 type UseLazySimulateTrainsOptions = {
