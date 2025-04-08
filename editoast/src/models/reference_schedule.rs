@@ -20,7 +20,7 @@ pub struct ReferenceSchedule {
     pub waypoints: Vec<Waypoint>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct Waypoint {
     pub ci: i64,
     pub ch: Option<String>,

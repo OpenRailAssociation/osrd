@@ -192,6 +192,7 @@ opentelemetry_sdk.workspace = true
 ordered-float = { version = "5.0.0", features = ["serde"] }
 paste.workspace = true
 pathfinding = "4.14.0"
+petgraph = "0.7.1"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true

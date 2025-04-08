@@ -1,4 +1,5 @@
 use axum::extract::State;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::iter;
 use std::ops::Deref;
@@ -14,7 +15,6 @@ use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PathPropertiesResponse;
 use diesel::QueryDsl;
-use editoast_authz::Role;
 use editoast_models::DbConnection;
 use itertools::Either;
 use itertools::Itertools;
@@ -155,13 +155,14 @@ async fn ref_schedules(
             })
             .collect_vec();
 
-        let schedule_names = selected_schedules
-            .iter()
-            .map(|schedule| &schedule.name)
-            .join(",");
         tracing::debug!(
             n_selected_schedules = selected_schedules.len(),
-            schedules = schedule_names,
+            schedules = {
+                selected_schedules
+                    .iter()
+                    .map(|schedule| &schedule.name)
+                    .join(",")
+            },
             "schedules trimmed and filtered out"
         );
 
@@ -174,9 +175,81 @@ async fn ref_schedules(
         } else {
             names.intersection(&sch_names).cloned().collect()
         };
+
+        let mut graph = ReferenceGraph::default();
+        for ReferenceSchedule {
+            name, waypoints, ..
+        } in selected_schedules
+        {
+            graph.push(name, waypoints);
+        }
+        eprintln!("{}", graph.to_dot());
     }
 
     Ok(Json(names.into_iter().collect()))
+}
+
+type Graph = petgraph::graph::DiGraph<(), HashSet<String>>;
+type NodeIndex = petgraph::graph::NodeIndex;
+
+#[derive(Debug, Default)]
+struct ReferenceGraph {
+    graph: Graph,
+    nodes: HashMap<reference_schedule::Waypoint, NodeIndex>,
+    inv_nodes: HashMap<NodeIndex, reference_schedule::Waypoint>,
+}
+
+impl ReferenceGraph {
+    #[inline]
+    fn get_or_create_node(&mut self, waypoint: reference_schedule::Waypoint) -> NodeIndex {
+        if let Some(node) = self.nodes.get(&waypoint) {
+            *node
+        } else {
+            let node = self.graph.add_node(());
+            self.nodes.insert(waypoint.clone(), node); // oh no
+            self.inv_nodes.insert(node, waypoint);
+            node
+        }
+    }
+
+    fn push(&mut self, schedule_name: String, waypoints: Vec<reference_schedule::Waypoint>) {
+        for (wp1, wp2) in waypoints.into_iter().tuple_windows() {
+            let from = self.get_or_create_node(wp1);
+            let to = self.get_or_create_node(wp2);
+            let edge = self
+                .graph
+                .find_edge(from, to)
+                .unwrap_or_else(|| self.graph.add_edge(from, to, HashSet::new()));
+            self.graph
+                .edge_weight_mut(edge)
+                .unwrap()
+                .insert(schedule_name.clone()); // am sad, arc or smallstr or smth por favor
+        }
+    }
+
+    fn to_dot(&self) -> String {
+        let pretty = self.graph.map(
+            |node_idx, _| {
+                let reference_schedule::Waypoint { ci, ch, stop } =
+                    self.inv_nodes.get(&node_idx).unwrap();
+                format!(
+                    "{ci}:{}{}",
+                    ch.as_deref().unwrap_or("ø"),
+                    stop.then_some("[STOP]").unwrap_or("")
+                )
+            },
+            |_, edge| {
+                let names = edge
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                names
+            },
+        );
+        let dot = petgraph::dot::Dot::new(&pretty);
+        format!("{dot:?}")
+    }
 }
 
 async fn validate_rolling_stock_input(
