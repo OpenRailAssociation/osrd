@@ -231,12 +231,18 @@ async fn similar_schedules(
     )
     .await?;
 
-    dbg!(
-        selected_past_schedules
-            .iter()
-            .map(|ps| ps.name())
-            .collect::<Vec<_>>()
-    );
+    let pool = past_schedule::Pool::from_iter(selected_past_schedules);
+    for segment in new_schedule.into_segments() {
+        let past_schedules = pool.schedules_in_segment(&segment);
+        let mut graph = graph::Graph::default();
+        for past_schedule in past_schedules {
+            let Some(waypoints) = past_schedule.clamp_path(&segment) else {
+                panic!("ohno");
+            };
+            graph.push(past_schedule.name(), waypoints.iter());
+        }
+        eprintln!("{}", graph.to_dot());
+    }
 
     Ok(Json(Response {
         similar_schedules: vec![
