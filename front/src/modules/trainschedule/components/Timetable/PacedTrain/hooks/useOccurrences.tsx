@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import dayjs from 'dayjs';
 
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
@@ -21,7 +22,7 @@ const useOccurrences = ({
   rollingStock,
 }: PacedTrainWithDetails) => {
   const occurrencesState = useMemo<OccurrencesState>(() => {
-    const occurrencesCount = Math.ceil(paced.duration.ms / paced.step.ms);
+    const occurrencesCount = getOccurrencesNb(paced);
     const computedOccurrences: Occurrence[] = [];
 
     for (let i = 0; i < occurrencesCount; i += 1) {
