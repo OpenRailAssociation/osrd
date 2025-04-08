@@ -86,7 +86,7 @@ interface LoadedSignalInfra {
 interface BlockInfra {
     val blocks: StaticIdxSpace<Block>
 
-    fun getBlockPath(block: BlockId): StaticIdxList<ZonePath>
+    fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath>
 
     fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block>
 

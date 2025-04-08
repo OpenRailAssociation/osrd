@@ -78,16 +78,16 @@ private fun makeUserDefinedWaypoints(
         offsets.add(waypoint.offset)
     }
     val res = ArrayList<PathWaypointResult>()
-    var lengthPrevBlocks: Offset<Path> = Offset(0.meters)
     val startFirstRange = rawPath.ranges[0].start
+    var startBlockOffset = Offset<TravelledPath>(-startFirstRange.distance)
     for (blockRange in rawPath.ranges) {
         for (waypoint in userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge, ArrayList())) {
             if (blockRange.start <= waypoint && waypoint <= blockRange.end) {
-                val pathOffset = lengthPrevBlocks + waypoint.distance - startFirstRange.distance
+                val pathOffset = startBlockOffset + waypoint.distance
                 res.add(makePendingUserDefinedWaypoint(infra, path, pathOffset))
             }
         }
-        lengthPrevBlocks += blockInfra.getBlockLength(blockRange.edge).distance
+        startBlockOffset += blockInfra.getBlockLength(blockRange.edge).distance
     }
     return res
 }
@@ -107,7 +107,7 @@ fun makeOperationalPoints(
 /** Creates a pending waypoint from an operational point part */
 private fun makePendingOPWaypoint(
     infra: RawSignalingInfra,
-    pathOffset: Offset<Path>,
+    pathOffset: Offset<TravelledPath>,
     opPartId: OperationalPointPartId
 ): PathWaypointResult {
     val partChunk = infra.getOperationalPointPartChunk(opPartId)
@@ -124,7 +124,7 @@ private fun makePendingOPWaypoint(
 private fun makePendingUserDefinedWaypoint(
     infra: RawSignalingInfra,
     path: PathProperties,
-    pathOffset: Offset<Path>
+    pathOffset: Offset<TravelledPath>
 ): PathWaypointResult {
     val (trackId, offset) = path.getTrackLocationAtOffset(pathOffset)
     val trackName = infra.getTrackSectionName(trackId)
@@ -248,7 +248,7 @@ private fun makeRJSTrackRanges(
     routeEndOffset: Offset<Route>
 ): List<RJSDirectionalTrackRange> {
     val res = ArrayList<RJSDirectionalTrackRange>()
-    var chunkStartPathOffset: Offset<Path> = Offset(0.meters)
+    var chunkStartPathOffset: Offset<BlockPath> = Offset(0.meters)
     for (dirChunkId in infra.getChunksOnRoute(route)) {
         val chunkLength = infra.getTrackChunkLength(dirChunkId.value)
         val trackId = infra.getTrackFromChunk(dirChunkId.value)

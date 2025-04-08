@@ -50,13 +50,13 @@ fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     blockIds: List<BlockId>,
-    offsetFirstBlock: Length<Path>,
+    offsetFirstBlock: Length<BlockPath>,
     routes: List<RouteId>? = null
 ): PathProperties {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    var totalLength: Length<Path> = Length(0.meters)
+    var totalLength: Length<BlockPath> = Length(0.meters)
     for (blockId in blockIds) {
-        for (zoneId in blockInfra.getBlockPath(blockId)) {
+        for (zoneId in blockInfra.getBlockZonePaths(blockId)) {
             chunks.addAll(rawInfra.getZonePathChunks(zoneId))
             totalLength += rawInfra.getZonePathLength(zoneId).distance
         }
@@ -97,17 +97,17 @@ fun makeChunkPath(
     blockRanges: List<PathfindingEdgeRangeId<Block>>
 ): ChunkPath {
     assert(blockRanges.isNotEmpty())
-    var totalBlockPathLength: Length<Path> = Length(0.meters)
+    var totalBlockPathLength: Length<BlockPath> = Length(0.meters)
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     for (range in blockRanges) {
-        val zonePaths = blockInfra.getBlockPath(range.edge)
+        val zonePaths = blockInfra.getBlockZonePaths(range.edge)
         for (zonePath in zonePaths) {
             chunks.addAll(rawInfra.getZonePathChunks(zonePath))
             val zoneLength = rawInfra.getZonePathLength(zonePath)
             totalBlockPathLength += zoneLength.distance
         }
     }
-    val startOffset: Offset<Path> = blockRanges[0].start.cast()
+    val startOffset: Offset<BlockPath> = blockRanges[0].start.cast()
     val lastRange = blockRanges[blockRanges.size - 1]
     val lastBlockLength = blockInfra.getBlockLength(lastRange.edge)
     val endOffset = totalBlockPathLength - lastBlockLength.distance + lastRange.end.distance

@@ -10,7 +10,6 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -85,7 +84,7 @@ class SimulationPath(
     val blocks: List<String>,
     val routes: List<String>,
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>
 )
 
 class SimulationScheduleItem(
@@ -137,8 +136,8 @@ class MarginValueAdapter {
 }
 
 class SimulationPowerRestrictionItem(
-    val from: Offset<Path>,
-    val to: Offset<Path>,
+    val from: Offset<TravelledPath>,
+    val to: Offset<TravelledPath>,
     val value: String,
 )
 

@@ -79,7 +79,7 @@ class BlockInfraImpl(
             }
 
             // Update trackChunkToBlockMap, blockToTrackChunkMap, and zoneToBlockMap
-            for (zonePath in getBlockPath(blockId)) {
+            for (zonePath in getBlockZonePaths(blockId)) {
                 val trackChunks = rawInfra.getZonePathChunks(zonePath)
                 val blockTrackChunks =
                     blockToTrackChunkMap.getOrPut(blockId) { mutableDirStaticIdxArrayListOf() }
@@ -105,7 +105,7 @@ class BlockInfraImpl(
     override val blocks: StaticIdxSpace<Block>
         get() = blockPool.space()
 
-    override fun getBlockPath(block: BlockId): StaticIdxList<ZonePath> {
+    override fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath> {
         return blockPool[block].path
     }
 

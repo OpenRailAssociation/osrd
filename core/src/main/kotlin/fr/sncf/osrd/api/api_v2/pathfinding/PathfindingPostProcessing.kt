@@ -11,7 +11,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -62,7 +62,7 @@ fun validatePathfindingResponse(
         val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
         val isLastBlock = i == res.blocks.size - 1
         if (stopAtBufferStop && !isLastBlock) {
-            val zonePath = infra.blockInfra.getBlockPath(block).last()
+            val zonePath = infra.blockInfra.getBlockZonePaths(block).last()
             val detector = infra.rawInfra.getZonePathExit(zonePath)
             val detectorName = infra.rawInfra.getDetectorName(detector.value)
             val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
@@ -86,14 +86,16 @@ fun validatePathfindingResponse(
         throw OSRDError(ErrorType.PathHasInvalidItemPositions)
 }
 
-fun makePathItemPositions(path: Pathfinding.Result<StaticIdx<Block>, Block>): List<Offset<Path>> {
+fun makePathItemPositions(
+    path: Pathfinding.Result<StaticIdx<Block>, Block>
+): List<Offset<TravelledPath>> {
     val pathItemLocations = mutableMapOf<BlockId, MutableList<PathfindingEdgeLocationId<Block>>>()
     for (waypoint in path.waypoints) {
         val edgeWaypoints = pathItemLocations.computeIfAbsent(waypoint.edge) { mutableListOf() }
         edgeWaypoints.add(waypoint)
     }
-    var offsetSinceStart = Offset<Path>(0.meters)
-    val res = mutableListOf<Offset<Path>>()
+    var offsetSinceStart = Offset<TravelledPath>(0.meters)
+    val res = mutableListOf<Offset<TravelledPath>>()
     for (range in path.ranges) {
         for (waypoint in pathItemLocations[range.edge] ?: listOf()) {
             res.add(offsetSinceStart + waypoint.offset.distance - range.start.distance)
