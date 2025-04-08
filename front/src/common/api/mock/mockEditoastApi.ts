@@ -118,7 +118,7 @@ const mockedEditoastApi = api.injectEndpoints({
 
 // ------------------ TYPES --------------------
 
-export type ResourceType = 'infra' | 'timetable';
+export type ResourceType = 'infra' | 'timetable' | 'rollingstock';
 
 export type Grant = 'NONE' | 'READER' | 'WRITER' | 'OWNER';
 

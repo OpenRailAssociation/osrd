@@ -17,6 +17,12 @@ const database: MockedDB = {
           { id: 10, grant: 'OWNER' },
         ],
         timetable: [{ id: 4, grant: 'OWNER' }],
+        rollingstock: [
+          { id: 3, grant: 'READER' },
+          { id: 10, grant: 'WRITER' },
+          { id: 105, grant: 'OWNER' },
+          { id: 106, grant: 'READER' },
+        ],
       },
     },
     {
@@ -31,6 +37,12 @@ const database: MockedDB = {
           { id: 3, grant: 'READER' },
         ],
         timetable: [{ id: 2, grant: 'READER' }],
+        rollingstock: [
+          { id: 3, grant: 'OWNER' },
+          { id: 10, grant: 'WRITER' },
+          { id: 105, grant: 'NONE' },
+          { id: 106, grant: 'WRITER' },
+        ],
       },
     },
     {
@@ -45,6 +57,12 @@ const database: MockedDB = {
           { id: 3, grant: 'OWNER' },
         ],
         timetable: [{ id: 12, grant: 'READER' }],
+        rollingstock: [
+          { id: 3, grant: 'OWNER' },
+          { id: 10, grant: 'WRITER' },
+          { id: 105, grant: 'OWNER' },
+          { id: 106, grant: 'NONE' },
+        ],
       },
     },
     {
@@ -62,6 +80,12 @@ const database: MockedDB = {
           { id: 6, grant: 'WRITER' },
           { id: 9, grant: 'READER' },
         ],
+        rollingstock: [
+          { id: 3, grant: 'NONE' },
+          { id: 10, grant: 'NONE' },
+          { id: 105, grant: 'READER' },
+          { id: 106, grant: 'WRITER' },
+        ],
       },
     },
     {
@@ -76,6 +100,12 @@ const database: MockedDB = {
           { id: 7, grant: 'READER' },
         ],
         timetable: [{ id: 4, grant: 'READER' }],
+        rollingstock: [
+          { id: 3, grant: 'READER' },
+          { id: 10, grant: 'NONE' },
+          { id: 105, grant: 'READER' },
+          { id: 106, grant: 'WRITER' },
+        ],
       },
     },
     {
@@ -93,6 +123,12 @@ const database: MockedDB = {
           { id: 1, grant: 'READER' },
           { id: 2, grant: 'READER' },
         ],
+        rollingstock: [
+          { id: 3, grant: 'READER' },
+          { id: 10, grant: 'WRITER' },
+          { id: 105, grant: 'OWNER' },
+          { id: 106, grant: 'READER' },
+        ],
       },
     },
     {
@@ -107,6 +143,12 @@ const database: MockedDB = {
           { id: 4, grant: 'OWNER' },
         ],
         timetable: [{ id: 3, grant: 'READER' }],
+        rollingstock: [
+          { id: 3, grant: 'READER' },
+          { id: 10, grant: 'WRITER' },
+          { id: 105, grant: 'OWNER' },
+          { id: 106, grant: 'READER' },
+        ],
       },
     },
   ],
