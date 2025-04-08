@@ -23,6 +23,7 @@ use serde_json::Value;
 use thiserror::Error;
 use tracing::error;
 use tracing::trace;
+use utoipa::ToSchema;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
@@ -264,7 +265,7 @@ impl Error {
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct StandardCoreError {
     #[serde(skip)]
     pub status: StatusCode,
@@ -273,10 +274,26 @@ pub struct StandardCoreError {
     pub context: HashMap<String, Value>,
     pub message: String,
     #[serde(default = "CoreErrorCause::default")]
+    #[schema(inline)]
     pub cause: CoreErrorCause,
 }
 
-#[derive(Debug, Deserialize, Default, PartialEq)]
+impl StandardCoreError {
+    pub fn parse(error: Error) -> Self {
+        match error {
+            Error::StandardCoreError(standard_core_error) => standard_core_error,
+            _ => Self {
+                status: StatusCode::INTERNAL_SERVER_ERROR,
+                error_type: "editoast:coreclient:StandardCoreError".to_string(),
+                context: HashMap::default(),
+                message: "Core returned an error in an unknown format".to_string(),
+                cause: CoreErrorCause::Internal,
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, ToSchema)]
 pub enum CoreErrorCause {
     #[default]
     Internal,

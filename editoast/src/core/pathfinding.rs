@@ -7,8 +7,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::core;
 use crate::core::{AsCoreRequest, Json};
-use crate::error::InternalError;
 
 editoast_common::schemas! {
     IncompatibleConstraints,
@@ -99,7 +99,7 @@ pub enum PathfindingCoreResult {
         rolling_stock_name: String,
     },
     InternalError {
-        core_error: InternalError,
+        core_error: core::StandardCoreError,
     },
 }
 

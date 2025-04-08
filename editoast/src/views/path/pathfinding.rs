@@ -155,7 +155,9 @@ impl From<PathfindingCoreResult> for PathfindingResult {
                 ))
             }
             PathfindingCoreResult::InternalError { core_error } => {
-                PathfindingResult::Failure(PathfindingFailure::InternalError { core_error })
+                PathfindingResult::Failure(PathfindingFailure::InternalError {
+                    core_error: core_error.into(),
+                })
             }
         }
     }

@@ -3390,7 +3390,14 @@ export type SimulationResponse =
       status: 'pathfinding_failed';
     }
   | {
-      core_error: InternalError;
+      core_error: {
+        cause?: 'Internal' | 'User';
+        context: {
+          [key: string]: unknown;
+        };
+        message: string;
+        type: string;
+      };
       status: 'simulation_failed';
     };
 export type Tags = string[];

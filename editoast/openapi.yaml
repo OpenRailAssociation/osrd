@@ -11194,7 +11194,24 @@ components:
         - status
         properties:
           core_error:
-            $ref: '#/components/schemas/InternalError'
+            type: object
+            required:
+            - type
+            - context
+            - message
+            properties:
+              cause:
+                type: string
+                enum:
+                - Internal
+                - User
+              context:
+                type: object
+                additionalProperties: {}
+              message:
+                type: string
+              type:
+                type: string
           status:
             type: string
             enum:

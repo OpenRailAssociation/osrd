@@ -26,8 +26,8 @@ use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
 use crate::client::get_app_version;
+use crate::core;
 use crate::core::{AsCoreRequest, Json};
-use crate::error::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
 
 editoast_common::schemas! {
@@ -516,7 +516,8 @@ pub enum SimulationResponse {
         pathfinding_failed: PathfindingFailure,
     },
     SimulationFailed {
-        core_error: InternalError,
+        #[schema(inline)]
+        core_error: core::StandardCoreError,
     },
 }
 

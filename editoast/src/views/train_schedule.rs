@@ -37,7 +37,7 @@ use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SimulationScheduleItem;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
-use crate::error::InternalError;
+use crate::core::StandardCoreError;
 use crate::error::Result;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
@@ -513,10 +513,10 @@ pub async fn consist_train_simulation_batch(
             }
 
             Err(core_error) => {
-                let error: InternalError = core_error.into();
+                let standard_core_error = StandardCoreError::parse(core_error);
                 train_indexes.iter().for_each(|index| {
                     simulation_results[*index] = SimulationResponse::SimulationFailed {
-                        core_error: error.clone(),
+                        core_error: standard_core_error.clone(),
                     }
                 })
             }
