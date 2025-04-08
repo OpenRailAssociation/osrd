@@ -111,6 +111,18 @@ export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId):
 };
 
 /**
+ * Given a paced train id with a PacedTrainId format (used across the front),
+ * returns the occurrence id with an OccurrenceId format (used across the front).
+ */
+export const formatPacedTrainIdToOccurrenceId = (
+  pacedTrainId: PacedTrainId,
+  occurrenceIndex: number
+): OccurrenceId => {
+  const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrainId);
+  return formatEditoastTrainIdToOccurrenceId({ pacedTrainId: editoastTrainId, occurrenceIndex });
+};
+
+/**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the occurrence index.
  */

@@ -10,6 +10,7 @@ import {
   formatEditoastTrainIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
+  formatPacedTrainIdToOccurrenceId,
 } from '../trainId';
 
 describe('formatEditoastTrainIdToTrainScheduleId', () => {
@@ -113,6 +114,21 @@ describe('formatOccurrenceIdToEditoastTrainId', () => {
     const occurrenceId = 'occurrence-five-paced-2' as OccurrenceId;
     expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
       `Invalid paced train ID or occurrence index: ${occurrenceId}`
+    );
+  });
+});
+
+describe('formatPacedTrainIdToOccurrenceId', () => {
+  it('should return the occurrenceId', () => {
+    const pacedTrainId = 'paced-123' as PacedTrainId;
+    const result = formatPacedTrainIdToOccurrenceId(pacedTrainId, 0);
+    expect(result).toBe('occurrence-0-paced-123');
+  });
+
+  it('should throw if pacedTrainId is invalid', () => {
+    const pacedTrainId = 'invalid-paced-123' as PacedTrainId;
+    expect(() => formatPacedTrainIdToOccurrenceId(pacedTrainId, 0)).toThrow(
+      'The paced train id should start with "paced-"'
     );
   });
 });
