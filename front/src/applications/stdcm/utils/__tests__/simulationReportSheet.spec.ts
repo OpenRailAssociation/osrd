@@ -81,8 +81,6 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
   const opAwStopNotDone = { ...opA, stopRequested: true };
   const opCwStopNotDone = { ...opC, stopRequested: true };
   const opDwStopNotDone = { ...opD, stopRequested: true };
-  // We don't define a path step array, as it is currently only used in the function in the case where
-  // a path step is not present in the arrays of ops, which should never happen in practice and currently does not warrant testing.
 
   it('should ignore stops already present in ops', () => {
     const stopPositions = [0, 100, 150];
@@ -95,8 +93,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opAwStop, opB, opCwStop, opDwStop],
       stopPositions,
-      train,
-      []
+      train
     );
     expect(result).toEqual([opAwStop, opB, opCwStop, opDwStop]);
   });
@@ -112,8 +109,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opAwStopNotDone, opB, opCwStopNotDone, opDwStopNotDone],
       stopPositions,
-      train,
-      []
+      train
     );
     expect(result).toEqual([
       opAwStop,
@@ -134,13 +130,13 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
     const result = insertMissingStopsInOperationalPointsWithTimes(
       [opA, opB, opCwStop, opD],
       stopPositions,
-      train,
-      []
+      train
     );
     expect(result).toEqual([
       opA,
       opB,
       {
+        opId: 'unplanned_stop_at_75',
         positionOnPath: 75,
         duration: 60,
         time: '10:15',
@@ -149,6 +145,7 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       },
       opCwStop,
       {
+        opId: 'unplanned_stop_at_125',
         positionOnPath: 125,
         duration: 60,
         time: '10:25',

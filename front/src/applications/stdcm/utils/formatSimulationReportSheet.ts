@@ -100,19 +100,40 @@ export function getStopDurationAtPosition(
 /**
  * @param op Operational point to format
  * @param train Object containing simulated train positions, times, and departure time
- * @param simulationPathSteps List of simulation path steps
- * @returns A formatted operational point with calculated stop duration and departure time
+ * @returns A formatted operational point with required fields only, including calculated stop duration and departure time
  */
-function formatOperationalPointWithTimes(
-  op: SuggestedOP,
-  train: TrainSimulation,
-  simulationPathSteps: StdcmPathStep[]
+function formatMinimalOperationalPointWithTimes(
+  op: Pick<SuggestedOP, 'positionOnPath' | 'opId'>,
+  train: TrainSimulation
 ): StdcmResultsOperationalPoint {
   const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
   const duration = getStopDurationAtPosition(op.positionOnPath, train.positions, train.times);
   const durationInSeconds = duration !== null ? duration.total('second') : null;
   const stopEnd = stopBegin.add(duration || Duration.zero);
+
+  return {
+    opId: op.opId,
+    positionOnPath: op.positionOnPath,
+    time: durationToHHMM(stopBegin),
+    duration: durationInSeconds,
+    stopEndTime: durationToHHMM(stopEnd),
+    stopRequested: false,
+  };
+}
+
+/**
+ * @param op Operational point to format
+ * @param train Object containing simulated train positions, times, and departure time
+ * @param simulationPathSteps List of simulation path steps
+ * @returns A fully formatted operational point with calculated stop duration and departure time
+ */
+function formatOperationalPointWithTimes(
+  op: SuggestedOP,
+  train: TrainSimulation,
+  simulationPathSteps: StdcmPathStep[]
+): StdcmResultsOperationalPoint {
+  const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(op, train);
   // Find the corresponding stopType from pathSteps
   const correspondingStep = simulationPathSteps.find(
     (step) => step.location && matchPathStepAndOp(step.location, op)
@@ -127,13 +148,9 @@ function formatOperationalPointWithTimes(
     correspondingStep.stopFor !== undefined;
 
   return {
-    opId: op.opId!,
-    positionOnPath: op.positionOnPath,
-    time: durationToHHMM(stopBegin),
+    ...partiallyFormattedOp,
     name: op.name,
     ch: op.ch,
-    duration: durationInSeconds,
-    stopEndTime: durationToHHMM(stopEnd),
     trackName: op.metadata?.trackName,
     stopType,
     stopRequested,
@@ -163,8 +180,7 @@ export function findAllStops(positions: number[]): number[] {
 export function insertMissingStopsInOperationalPointsWithTimes(
   formatedOps: StdcmResultsOperationalPoint[],
   stopPositions: number[],
-  train: TrainSimulation,
-  simulationPathSteps: StdcmPathStep[]
+  train: TrainSimulation
 ): StdcmResultsOperationalPoint[] {
   const formatedOpsWithAllStops: StdcmResultsOperationalPoint[] = [];
   let opIndex = 0;
@@ -182,14 +198,12 @@ export function insertMissingStopsInOperationalPointsWithTimes(
 
     // At least the departure with pos 0 should have been added, so updatedOperationalPointsWT.length > 1
     const lastAddedOp = formatedOpsWithAllStops.at(-1)!;
-    const formattedStop = formatOperationalPointWithTimes(
+    const formattedStop = formatMinimalOperationalPointWithTimes(
       {
         positionOnPath: stopPosition,
-        offsetOnTrack: NaN,
-        track: '',
+        opId: `unplanned_stop_at_${stopPosition}`,
       },
-      train,
-      simulationPathSteps
+      train
     );
     if (lastAddedOp.stopRequested && !lastAddedOp.duration) {
       // If a stop was requested at the last op and no stop was performed,
@@ -255,7 +269,7 @@ export function getOperationalPointsWithTimes(
   simulationPathSteps: StdcmPathStep[],
   departureTime: Date
 ): StdcmResultsOperationalPoint[] {
-  const { positions, times } = simulation.final_output;
+  const { positions, times, speeds } = simulation.final_output;
 
   const departureHour = departureTime.getHours();
   const departureMinute = departureTime.getMinutes();
@@ -269,12 +283,11 @@ export function getOperationalPointsWithTimes(
     )
   );
 
-  const stopPositions = findAllStops(simulation.final_output.positions);
+  const stopPositions = findAllStops(positions);
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
     formattedOps,
     stopPositions,
-    { positions, times, departureHour, departureMinute },
-    simulationPathSteps
+    { positions, times, departureHour, departureMinute }
   );
   return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 }
