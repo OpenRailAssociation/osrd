@@ -33,13 +33,13 @@ private val logger = KotlinLogging.logger {}
 
 data class PendingSpacingRequirement(
     val zoneIndex: Int,
-    val zoneEntryOffset: Offset<Path>,
-    val zoneExitOffset: Offset<Path>,
+    val zoneEntryOffset: Offset<BlockPath>,
+    val zoneExitOffset: Offset<BlockPath>,
     val beginTime: Double
 )
 
 data class ProcessedStop(
-    val offset: Offset<Path>,
+    val offset: Offset<BlockPath>,
     val nextBlockIdx: Int,
     val nextZoneIdx: Int,
 )
@@ -237,7 +237,7 @@ class SpacingRequirementAutomaton(
         val firstSimulatedZone = incrementalPath.getBlockStartZone(firstBlockIndex)
 
         // Number of zones included in the block path
-        var nSimulatedZones = blockInfra.getBlockPath(blocks[0]).size
+        var nSimulatedZones = blockInfra.getBlockZonePaths(blocks[0]).size
 
         // Add blocks in the block path until the probed zone is covered
         while (probedZoneIndex - firstSimulatedZone > nSimulatedZones) {
@@ -247,7 +247,7 @@ class SpacingRequirementAutomaton(
             }
             val newBlock = incrementalPath.getBlock(firstBlockIndex + blocks.size)
             blocks.add(newBlock)
-            nSimulatedZones += blockInfra.getBlockPath(newBlock).size
+            nSimulatedZones += blockInfra.getBlockZonePaths(newBlock).size
         }
 
         val zoneStates = MutableList(nSimulatedZones) { ZoneStatus.CLEAR }

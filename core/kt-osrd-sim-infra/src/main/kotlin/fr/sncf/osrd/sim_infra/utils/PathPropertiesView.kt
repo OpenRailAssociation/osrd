@@ -16,14 +16,15 @@ import fr.sncf.osrd.utils.units.meters
  */
 data class PathPropertiesView(
     val base: PathProperties,
-    val startOffset: Offset<Path>,
-    val endOffset: Offset<Path>
+    val startOffset: Offset<TravelledPath>,
+    val endOffset: Offset<TravelledPath>
 ) : PathProperties {
     override fun getSlopes(): DistanceRangeMap<Double> {
         return sliceRangeMap(base.getSlopes())
     }
 
-    override fun getOperationalPointParts(): List<IdxWithPathOffset<OperationalPointPart>> {
+    override fun getOperationalPointParts():
+        List<IdxWithTravelledPathOffset<OperationalPointPart>> {
         return base
             .getOperationalPointParts()
             .map { IdxWithOffset(it.value, it.offset - startOffset.distance) }
@@ -72,11 +73,11 @@ data class PathPropertiesView(
         return endOffset - startOffset
     }
 
-    override fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation {
+    override fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation {
         return base.getTrackLocationAtOffset(pathOffset - startOffset.distance)
     }
 
-    override fun getTrackLocationOffset(location: TrackLocation): Offset<Path>? {
+    override fun getTrackLocationOffset(location: TrackLocation): Offset<TravelledPath>? {
         val baseResult = base.getTrackLocationOffset(location) ?: return null
         if (baseResult < startOffset || baseResult > endOffset) return null
         return baseResult - startOffset.distance

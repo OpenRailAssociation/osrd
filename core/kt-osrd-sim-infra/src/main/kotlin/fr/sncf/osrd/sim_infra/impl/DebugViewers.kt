@@ -79,10 +79,10 @@ fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
 
 @JvmName("makeBlock")
 fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>): BlockViewer {
-    val entry = rawInfra.getZonePathEntry(blockInfra.getBlockPath(id)[0])
-    val exit = rawInfra.getZonePathExit(blockInfra.getBlockPath(id).last())
+    val entry = rawInfra.getZonePathEntry(blockInfra.getBlockZonePaths(id)[0])
+    val exit = rawInfra.getZonePathExit(blockInfra.getBlockZonePaths(id).last())
     return BlockViewer(
-        blockInfra.getBlockPath(id).map { path -> makeZonePath(rawInfra, path) },
+        blockInfra.getBlockZonePaths(id).map { path -> makeZonePath(rawInfra, path) },
         id,
         makeDirViewer(entry, rawInfra.getDetectorName(entry.value)),
         makeDirViewer(exit, rawInfra.getDetectorName(exit.value)),

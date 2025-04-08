@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class OffsetConversionTests {
     val infra = DummyInfra()
     val blocks = (0 ..< 10).map { infra.addBlock(it.toString(), (it + 1).toString(), 1_000.meters) }
-    val zones = blocks.flatMap { infra.getBlockPath(it) }
+    val zones = blocks.flatMap { infra.getBlockZonePaths(it) }
     val chunks = zones.flatMap { infra.getZonePathChunks(it) }
 
     @Test

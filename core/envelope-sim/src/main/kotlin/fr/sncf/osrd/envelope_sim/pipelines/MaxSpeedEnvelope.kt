@@ -18,7 +18,6 @@ import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
 import fr.sncf.osrd.envelope_sim.etcs.LimitOfAuthority
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -111,7 +110,7 @@ object MaxSpeedEnvelope {
         val cursor = EnvelopeCursor.backward(envelope)
         val limitsOfAuthority = mutableListOf<LimitOfAuthority>()
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            val offset = Offset<Path>(cursor.position.meters)
+            val offset = Offset<TravelledPath>(cursor.position.meters)
             if (etcsRanges.contains(offset.distance)) {
                 limitsOfAuthority.add(
                     LimitOfAuthority(

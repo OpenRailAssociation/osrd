@@ -68,15 +68,15 @@ fun BlockInfra.getNextBlocks(infra: RawSignalingInfra, blockId: BlockId): Set<Bl
 
 /** Returns the block's entry detector */
 fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
-    val firstZone: ZonePathId = blockPath[0]
+    val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
+    val firstZone: ZonePathId = blockZonePaths[0]
     return rawInfra.getZonePathEntry(firstZone)
 }
 
 /** Returns the block's exit detector */
 fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
-    val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]
+    val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
+    val lastZonePath: ZonePathId = blockZonePaths[blockZonePaths.size - 1]
     return rawInfra.getZonePathExit(lastZonePath)
 }
 

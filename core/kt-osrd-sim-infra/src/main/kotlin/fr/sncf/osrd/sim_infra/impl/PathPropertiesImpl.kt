@@ -28,13 +28,13 @@ data class ChunkPath(
      * Offset of the head of the train when it starts its path, compared to the start of the first
      * element in `chunks`.
      */
-    val beginOffset: Offset<Path>,
+    val beginOffset: Offset<BlockPath>,
 
     /**
      * Offset of the head of the train when it ends its path, compared to the start of the first
      * element in `chunks`.
      */
-    val endOffset: Offset<Path>
+    val endOffset: Offset<BlockPath>
 ) {
     val length: Distance = endOffset.distance - beginOffset.distance
 }
@@ -48,7 +48,8 @@ data class PathPropertiesImpl(
         return getRangeMap { dirChunkId -> infra.getTrackChunkSlope(dirChunkId) }
     }
 
-    override fun getOperationalPointParts(): List<IdxWithPathOffset<OperationalPointPart>> {
+    override fun getOperationalPointParts():
+        List<IdxWithTravelledPathOffset<OperationalPointPart>> {
         return getElementsOnPath { dirChunkId ->
             infra.getTrackChunkOperationalPointParts(dirChunkId.value).map { opId ->
                 IdxWithOffset(opId, infra.getOperationalPointPartChunkOffset(opId))
@@ -145,8 +146,8 @@ data class PathPropertiesImpl(
         return chunkPath.endOffset - chunkPath.beginOffset
     }
 
-    override fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation {
-        val offset: Offset<Path> = pathOffset + chunkPath.beginOffset.distance
+    override fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation {
+        val offset: Offset<TravelledPath> = pathOffset + chunkPath.beginOffset.distance
         var lengthPrevChunks = 0.meters
         for (chunk in chunkPath.chunks) {
             val chunkLength = infra.getTrackChunkLength(chunk.value)
@@ -167,7 +168,7 @@ data class PathPropertiesImpl(
         throw RuntimeException("The given path offset is larger than the path length")
     }
 
-    override fun getTrackLocationOffset(location: TrackLocation): Offset<Path>? {
+    override fun getTrackLocationOffset(location: TrackLocation): Offset<TravelledPath>? {
         val offset =
             getOffsetOfTrackLocationOnChunks(infra, location, chunkPath.chunks) ?: return null
         if (offset < chunkPath.beginOffset || offset > chunkPath.endOffset) return null
@@ -263,13 +264,13 @@ data class PathPropertiesImpl(
 
     /**
      * Use the given function to get punctual data from a chunk, and concatenates all the values on
-     * the path
+     * the path. // TODO change type: types should be DirStaticIdxList<TrackChunk>
      */
     private fun <T> getElementsOnPath(
         getData: (chunk: DirTrackChunkId) -> Iterable<IdxWithOffset<T, TrackChunk>>
-    ): List<IdxWithPathOffset<T>> {
-        val res = ArrayList<IdxWithPathOffset<T>>()
-        var chunkOffset = Offset<Path>(0.meters)
+    ): List<IdxWithTravelledPathOffset<T>> {
+        val res = ArrayList<IdxWithBlockPathOffset<T>>()
+        var chunkOffset = Offset<BlockPath>(0.meters)
         for (chunk in chunkPath.chunks) {
             for ((element, offset) in getData.invoke(chunk)) {
                 val projectedOffset = projectPosition(chunk, offset)
@@ -296,16 +297,18 @@ data class PathPropertiesImpl(
     }
 
     /**
-     * Keeps only the elements that are not outside the path, and shift the offsets to start at 0
+     * Keeps only the elements that are not outside the path, and shift the offsets to start at 0 //
+     * TODO change type: type DirStaticIdxList<TrackChunk> (= Offset<ChunkSequence> in and
+     * Offset<TravelledPath> out)
      */
     private fun <T> filterAndShiftElementsOnPath(
-        res: List<IdxWithPathOffset<T>>
-    ): List<IdxWithPathOffset<T>> {
+        res: List<IdxWithBlockPathOffset<T>>
+    ): List<IdxWithTravelledPathOffset<T>> {
         return res.filter { element ->
                 element.offset >= chunkPath.beginOffset && element.offset <= chunkPath.endOffset
             }
             .map { element ->
-                IdxWithOffset(element.value, element.offset - chunkPath.beginOffset.distance)
+                IdxWithOffset(element.value, Offset(element.offset - chunkPath.beginOffset))
             }
     }
 }
@@ -315,8 +318,8 @@ fun getOffsetOfTrackLocationOnChunks(
     infra: TrackProperties,
     location: TrackLocation,
     chunks: DirStaticIdxList<TrackChunk>,
-): Offset<Path>? {
-    var offsetAfterFirstChunk = Offset<Path>(0.meters)
+): Offset<BlockPath>? {
+    var offsetAfterFirstChunk = Offset<BlockPath>(0.meters)
     for (dirChunk in chunks) {
         val chunkLength = infra.getTrackChunkLength(dirChunk.value)
         if (location.trackId == infra.getTrackFromChunk(dirChunk.value)) {
@@ -343,11 +346,11 @@ fun getOffsetOfTrackLocationOnChunks(
 fun buildChunkPath(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,
-    pathBeginOffset: Offset<Path>,
-    pathEndOffset: Offset<Path>
+    pathBeginOffset: Offset<BlockPath>,
+    pathEndOffset: Offset<BlockPath>
 ): ChunkPath {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    var totalChunksLength = Offset<Path>(0.meters)
+    var totalChunksLength = Offset<BlockPath>(0.meters)
     var mutBeginOffset = pathBeginOffset
     var mutEndOffset = pathEndOffset
     for (dirChunkId in chunks) {
