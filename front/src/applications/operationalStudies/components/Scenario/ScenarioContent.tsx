@@ -103,7 +103,7 @@ const ScenarioContent = ({
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
     dtoImport();
-  }, [i18n.language, dtoImport]);
+  }, [i18n.language]);
 
   const toggleMicroMacroButton = useCallback(
     (isMacroMode: boolean) => {
