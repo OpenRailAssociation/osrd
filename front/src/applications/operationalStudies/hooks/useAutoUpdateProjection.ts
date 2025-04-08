@@ -12,6 +12,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
+  extractPacedTrainIdFromOccurrenceId,
   formatEditoastTrainIdToOccurrenceId,
   formatPacedTrainIdToEditoastTrainId,
   isPacedTrain,
@@ -43,41 +44,28 @@ const useAutoUpdateProjection = (
       return;
     }
 
-    const isSelectedTimetableItemIncluded =
-      selectedTrainId !== undefined &&
-      timetableItemIds.some((timetableItemId) =>
-        isTrainSchedule(timetableItemId)
-          ? timetableItemId === selectedTrainId
-          : selectedTrainId.includes(timetableItemId)
-      );
-
-    // if a selected train is given, we use it for the projection
-    if (
-      selectedTrainId &&
-      !currentTrainIdForProjection &&
-      isTrainSchedule(selectedTrainId) &&
-      timetableItemIds.includes(selectedTrainId)
-    ) {
-      dispatch(updateTrainIdUsedForProjection(selectedTrainId));
-      return;
+    let timetableItemId: TimetableItemId | undefined;
+    if (selectedTrainId) {
+      timetableItemId = isTrainSchedule(selectedTrainId)
+        ? selectedTrainId
+        : extractPacedTrainIdFromOccurrenceId(selectedTrainId);
     }
 
-    // if there is already a projection and the projected train still exists, keep it
-    if (currentTrainIdForProjection && isSelectedTimetableItemIncluded) {
-      if (isTrainSchedule(timetableItemIds[0])) {
-        dispatch(updateSelectedTrainId(timetableItemIds[0]));
-      } else {
-        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(timetableItemIds[0]);
-        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
-          pacedTrainId: editoastPacedTrainId,
-          occurrenceIndex: 0,
-        });
-        dispatch(updateSelectedTrainId(occurrenceIdToSelect));
+    const isSelectedTimetableItemIncluded =
+      !!timetableItemId && timetableItemIds.some((id) => id === timetableItemId);
+
+    // if a selected timetable item is given and is still in the timetable, don't change the selected train
+    if (timetableItemId && isSelectedTimetableItemIncluded) {
+      // if no train is used for the projection, use the selected train (only if it is a trainSchedule for now)
+      // TODO Paced train : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/10791
+      if (!currentTrainIdForProjection && isTrainSchedule(timetableItemId)) {
+        dispatch(updateTrainIdUsedForProjection(timetableItemId));
       }
       return;
     }
 
-    // by default, use the first valid train
+    // at this point, the selected train is not in the timetable anymore or is undefined
+    // by default, select the first valid train
     const firstValidTrain = timetableItemsWithDetails.find((item) => item.isValid);
     if (firstValidTrain) {
       // TODO Paced train : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/10791
