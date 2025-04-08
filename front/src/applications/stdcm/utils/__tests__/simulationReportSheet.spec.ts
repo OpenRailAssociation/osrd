@@ -35,10 +35,12 @@ describe('getStopDurationBetweenTwoPositions', () => {
 
 describe('findAllStops', () => {
   it('should return all stop positions', () => {
-    const trainPositions = [1, 1, 2, 3, 3, 3, 3, 4, 4, 5];
-    expect(findAllStops(trainPositions)).toStrictEqual([1, 3, 4]);
-    const trainPositions2 = [1, 2, 3, 5, 5];
-    expect(findAllStops(trainPositions2)).toStrictEqual([5]);
+    const positions = [0, 1, 2, 2, 3, 4, 4, 4, 5, 6, 7, 7, 8];
+    const speeds = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+    expect(findAllStops(positions, speeds)).toStrictEqual([2, 4, 7, 8]);
+    const positions2 = [0, 0, 1, 2, 3, 4, 5, 5, 5, 6, 7, 8, 9, 10];
+    const speeds2 = [5, 5, 5, 0, 5, 5, 0, 0, 0, 5, 5, 0, 5, 0];
+    expect(findAllStops(positions2, speeds2)).toStrictEqual([0, 2, 5, 8, 10]);
   });
 });
 

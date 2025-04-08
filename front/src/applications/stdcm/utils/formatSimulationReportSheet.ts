@@ -161,12 +161,13 @@ function formatOperationalPointWithTimes(
  * @param positions Lists of all positions of simulated points of a train simulation report
  * @returns A list of all positions at which the train stops
  */
-export function findAllStops(positions: number[]): number[] {
+export function findAllStops(positions: number[], speeds: number[]): number[] {
   return positions.filter(
     (position, index) =>
-      index !== positions.length - 1 &&
-      position === positions[index + 1] &&
-      (!index || position !== positions[index - 1])
+      (index === positions.length - 1 || // last op is a stop
+        speeds[index] === 0 || // any position with 0 speed is a stop
+        position === positions[index + 1]) && // any repeated position is a stop
+      (!index || position !== positions[index - 1]) // removes duplicates (duplicates are necessarily subsequent)
   );
 }
 
@@ -283,7 +284,7 @@ export function getOperationalPointsWithTimes(
     )
   );
 
-  const stopPositions = findAllStops(positions);
+  const stopPositions = findAllStops(positions, speeds);
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
     formattedOps,
     stopPositions,
