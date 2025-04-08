@@ -63,7 +63,7 @@ export type SimulationReportSheetProps = {
 };
 
 export type StdcmResultsOperationalPoint = {
-  opId: string;
+  opId?: string;
   positionOnPath: number;
   time: string | null;
   name?: string;
