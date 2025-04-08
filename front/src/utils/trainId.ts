@@ -124,6 +124,15 @@ export const formatPacedTrainIdToOccurrenceId = (
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
+ * extract its paced train id with a PacedTrainId format (used across the front).
+ */
+export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId): PacedTrainId => {
+  const editoastTrainId = formatOccurrenceIdToEditoastTrainId(occurrenceId);
+  return formatEditoastTrainIdToPacedTrainId(editoastTrainId);
+};
+
+/**
+ * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the occurrence index.
  */
 export const getOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
