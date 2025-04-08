@@ -19,6 +19,32 @@ import {
   isTrainSchedule,
 } from 'utils/trainId';
 
+export async function fetchTimetableItem(
+  timetableItemId: TimetableItemId,
+  dispatch: AppDispatch
+): Promise<TimetableItemWithTimetableId> {
+  if (isPacedTrain(timetableItemId)) {
+    const pacedTrain = await dispatch(
+      osrdEditoastApi.endpoints.getPacedTrainById.initiate(
+        {
+          id: formatPacedTrainIdToEditoastTrainId(timetableItemId),
+        },
+        { subscribe: false }
+      )
+    ).unwrap();
+    return { ...pacedTrain, id: timetableItemId };
+  }
+  const trainSchedule = await dispatch(
+    osrdEditoastApi.endpoints.getTrainScheduleById.initiate(
+      {
+        id: formatTrainScheduleIdToEditoastTrainId(timetableItemId),
+      },
+      { subscribe: false }
+    )
+  ).unwrap();
+  return { ...trainSchedule, id: timetableItemId };
+}
+
 async function createTrainSchedule(
   dispatch: AppDispatch,
   timetableId: number,
