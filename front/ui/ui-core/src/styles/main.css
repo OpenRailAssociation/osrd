@@ -1,8 +1,9 @@
+@import 'tailwindcss';
+@import '../../../index.css';
 @import './animations.css';
 @import './button.css';
 @import './inputs/index.css';
 @import './select.css';
-@import 'tailwindcss';
 /* REGULAR */
 
 @font-face {
