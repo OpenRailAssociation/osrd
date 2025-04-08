@@ -53,9 +53,9 @@ private fun filterBlocks(
                 !allowedSignalingSystems.contains(blockInfra.getBlockSignalingSystem(block))
         )
             continue
-        val blockPath = blockInfra.getBlockPath(block)
-        if (blockPath.size > remainingZonePaths) continue
-        for (i in 0 until blockPath.size) if (routePath[routeOffset + i] != blockPath[i])
+        val blockZonePaths = blockInfra.getBlockZonePaths(block)
+        if (blockZonePaths.size > remainingZonePaths) continue
+        for (i in 0 until blockZonePaths.size) if (routePath[routeOffset + i] != blockZonePaths[i])
             continue@blockLoop
         res.add(block)
     }
@@ -94,7 +94,7 @@ private fun findRouteBlocks(
         val blocksOnRoute =
             filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, routeOffset)
         for (block in blocksOnRoute) {
-            val blockSize = blockInfra.getBlockPath(block).size
+            val blockSize = blockInfra.getBlockZonePaths(block).size
             addPath(
                 BlockPathElement(
                     prevPath,
@@ -114,7 +114,7 @@ private fun findRouteBlocks(
         val blocks = blockInfra.getBlocksStartingAtDetector(currentDet)
         val blocksOnRoute = filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, 0)
         for (block in blocksOnRoute) {
-            val blockPath = blockInfra.getBlockPath(block)
+            val blockPath = blockInfra.getBlockZonePaths(block)
             addPath(BlockPathElement(null, block, routeIndex, 0, 0, blockPath.size))
         }
     } else {

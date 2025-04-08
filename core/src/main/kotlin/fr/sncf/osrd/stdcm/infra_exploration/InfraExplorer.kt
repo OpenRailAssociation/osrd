@@ -86,7 +86,7 @@ interface InfraExplorer {
     fun getCurrentBlockLength(): Length<Block>
 
     /** Returns the length of all blocks before the current one */
-    fun getPredecessorLength(): Length<Path>
+    fun getPredecessorLength(): Length<BlockPath>
 
     /** Returns all the blocks before the current one */
     fun getPredecessorBlocks(): AppendOnlyLinkedList<BlockId>
@@ -167,7 +167,7 @@ private class InfraExplorerImpl(
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
-    private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
+    private var predecessorLength: Length<BlockPath> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>,
 ) : InfraExplorer {
 
@@ -196,12 +196,13 @@ private class InfraExplorerImpl(
         val blockPathProperties = path.withRoutes(listOf(route))
         pathPropertiesCache[getCurrentBlock()] = blockPathProperties
 
-        val blockLength = Length<Path>(blockInfra.getBlockLength(getCurrentBlock()).distance)
-        val endOffset = if (length == null) blockLength else offset.plus(length).cast()
+        val blockLength = blockInfra.getBlockLength(getCurrentBlock())
+        val endOffset: Offset<Block> = if (length == null) blockLength else offset.plus(length)
         if (offset.distance == 0.meters && endOffset == blockLength) {
             return blockPathProperties
         }
-        return PathPropertiesView(blockPathProperties, offset.cast(), endOffset)
+        // In that case, start of the block is start of the travelled path
+        return PathPropertiesView(blockPathProperties, offset.cast(), endOffset.cast())
     }
 
     override fun getLastEdgeIdentifier(): EdgeIdentifier {
@@ -246,7 +247,7 @@ private class InfraExplorerImpl(
         return blockInfra.getBlockLength(getCurrentBlock())
     }
 
-    override fun getPredecessorLength(): Length<Path> {
+    override fun getPredecessorLength(): Length<BlockPath> {
         return predecessorLength
     }
 
@@ -375,7 +376,7 @@ private class InfraExplorerImpl(
     private fun hasRepeatedElements(block: StaticIdx<Block>): Boolean {
         val tracks =
             blockInfra
-                .getBlockPath(block)
+                .getBlockZonePaths(block)
                 .flatMap { rawInfra.getZonePathChunks(it) }
                 .map { rawInfra.getTrackFromChunk(it.value) }
         for (track in tracks) {

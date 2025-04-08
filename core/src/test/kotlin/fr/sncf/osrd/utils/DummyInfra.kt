@@ -485,7 +485,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override val blocks: StaticIdxSpace<Block>
         get() = TODO("Not yet implemented")
 
-    override fun getBlockPath(block: BlockId): StaticIdxList<ZonePath> {
+    override fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath> {
         return makeIndexList(block)
     }
 

@@ -108,7 +108,7 @@ fun validatePathfindingResult(
         val stopAtBufferStop = blockInfra.blockStopAtBufferStop(blockRange.edge)
         val isLastBlock = i == path.ranges.size - 1
         if (stopAtBufferStop && !isLastBlock) {
-            val zonePath = blockInfra.getBlockPath(blockRange.edge).last()
+            val zonePath = blockInfra.getBlockZonePaths(blockRange.edge).last()
             val detector = rawInfra.getZonePathExit(zonePath)
             val detectorName = rawInfra.getDetectorName(detector.value)
             val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)

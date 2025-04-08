@@ -11,7 +11,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
-data class PathStop(val pathOffset: Offset<Path>, val receptionSignal: RJSReceptionSignal)
+data class PathStop(val pathOffset: Offset<BlockPath>, val receptionSignal: RJSReceptionSignal)
 
 // Used to type offsets that use as reference the start of the first block on a given path fragment
 sealed interface FragmentBlocks
@@ -69,23 +69,23 @@ interface IncrementalPath {
 
     fun getZonePath(zonePathIndex: Int): ZonePathId
 
-    fun getZonePathStartOffset(zonePathIndex: Int): Offset<Path>
+    fun getZonePathStartOffset(zonePathIndex: Int): Offset<BlockPath>
 
-    fun getBlockStartOffset(blockIndex: Int): Offset<Path>
+    fun getBlockStartOffset(blockIndex: Int): Offset<BlockPath>
 
-    fun getRouteStartOffset(routeIndex: Int): Offset<Path>
+    fun getRouteStartOffset(routeIndex: Int): Offset<BlockPath>
 
-    fun getZonePathEndOffset(zonePathIndex: Int): Offset<Path>
+    fun getZonePathEndOffset(zonePathIndex: Int): Offset<BlockPath>
 
-    fun getBlockEndOffset(blockIndex: Int): Offset<Path>
+    fun getBlockEndOffset(blockIndex: Int): Offset<BlockPath>
 
-    fun getRouteEndOffset(routeIndex: Int): Offset<Path>
+    fun getRouteEndOffset(routeIndex: Int): Offset<BlockPath>
 
-    fun convertZonePathOffset(zonePathIndex: Int, offset: Offset<ZonePath>): Offset<Path>
+    fun convertZonePathOffset(zonePathIndex: Int, offset: Offset<ZonePath>): Offset<BlockPath>
 
-    fun convertBlockOffset(blockIndex: Int, offset: Offset<Block>): Offset<Path>
+    fun convertBlockOffset(blockIndex: Int, offset: Offset<Block>): Offset<BlockPath>
 
-    fun convertRouteOffset(routeIndex: Int, offset: Offset<Route>): Offset<Path>
+    fun convertRouteOffset(routeIndex: Int, offset: Offset<Route>): Offset<BlockPath>
 
     fun getRouteStartZone(routeIndex: Int): Int
 
@@ -95,30 +95,33 @@ interface IncrementalPath {
 
     fun getBlockEndZone(blockIndex: Int): Int
 
-    fun getStopOffset(stopIndex: Int): Offset<Path>
+    fun getStopOffset(stopIndex: Int): Offset<BlockPath>
 
     fun isStopOnClosedSignal(stopIndex: Int): Boolean
 
     val pathStarted: Boolean
     /** can only be called if pathStarted */
-    val travelledPathBegin: Offset<Path>
+    val travelledPathBegin: Offset<BlockPath>
 
     val pathComplete: Boolean
     /** can only be called if pathComplete */
-    val travelledPathEnd: Offset<Path>
+    val travelledPathEnd: Offset<BlockPath>
 
-    fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath>
+    fun toTravelledPath(offset: Offset<BlockPath>): Offset<TravelledPath>
 
-    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path>
+    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<BlockPath>
 
-    fun getBlockPathEnd(): Offset<Path>
+    fun getBlockPathEnd(): Offset<BlockPath>
 }
 
 fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPath {
     return IncrementalPathImpl(rawInfra, blockInfra)
 }
 
-private class IncrementalStop(val offset: Offset<Path>, val receptionSignal: RJSReceptionSignal)
+private class IncrementalStop(
+    val offset: Offset<BlockPath>,
+    val receptionSignal: RJSReceptionSignal
+)
 
 private class IncrementalPathImpl(
     private val rawInfra: RawInfra,
@@ -135,17 +138,17 @@ private class IncrementalPathImpl(
     private val routeZoneBounds: AppendOnlyLinkedList<Int> = appendOnlyLinkedListOf(0),
 
     // a lookup table from zone index to zone start path offset
-    private var zonePathBounds: AppendOnlyLinkedList<Offset<Path>> =
+    private var zonePathBounds: AppendOnlyLinkedList<Offset<BlockPath>> =
         appendOnlyLinkedListOf(Offset(0.meters)),
-    override var travelledPathBegin: Offset<Path> = Offset((-1).meters),
-    override var travelledPathEnd: Offset<Path> = Offset((-1).meters),
+    override var travelledPathBegin: Offset<BlockPath> = Offset((-1).meters),
+    override var travelledPathEnd: Offset<BlockPath> = Offset((-1).meters),
 ) : IncrementalPath {
 
     override val pathStarted
-        get() = travelledPathBegin != Offset<Path>((-1).meters)
+        get() = travelledPathBegin != Offset<BlockPath>((-1).meters)
 
     override val pathComplete
-        get() = travelledPathEnd != Offset<Path>((-1).meters)
+        get() = travelledPathEnd != Offset<BlockPath>((-1).meters)
 
     override val zonePathCount
         get() = zonePaths.size
@@ -192,7 +195,7 @@ private class IncrementalPathImpl(
         // route
         if (blockZoneBounds.isEmpty()) {
             val firstBlock = fragment.blocks[0]
-            val firstBlockZonePath = blockInfra.getBlockPath(firstBlock)[0]
+            val firstBlockZonePath = blockInfra.getBlockZonePaths(firstBlock)[0]
             var firstBlockZonePathIndex = -1
             val zonePathList = zonePaths.toList()
             for (zonePathIndex in zonePathList.indices) {
@@ -231,8 +234,8 @@ private class IncrementalPathImpl(
                     blockInfra.getBlockEntry(rawInfra, block) ==
                         blockInfra.getBlockExit(rawInfra, blocks.last())
             )
-            val blockPath = blockInfra.getBlockPath(block)
-            fragBlocksZoneCount += blockPath.size
+            val blockZonePaths = blockInfra.getBlockZonePaths(block)
+            fragBlocksZoneCount += blockZonePaths.size
             val blockEndZonePathIndex = fragmentBlocksStartZoneIndex + fragBlocksZoneCount
             assert(blockEndZonePathIndex <= zonePaths.size)
             blocks.add(block)
@@ -273,39 +276,42 @@ private class IncrementalPathImpl(
         return zonePaths[zonePathIndex]
     }
 
-    override fun getZonePathStartOffset(zonePathIndex: Int): Offset<Path> {
+    override fun getZonePathStartOffset(zonePathIndex: Int): Offset<BlockPath> {
         return zonePathBounds[zonePathIndex]
     }
 
-    override fun getBlockStartOffset(blockIndex: Int): Offset<Path> {
+    override fun getBlockStartOffset(blockIndex: Int): Offset<BlockPath> {
         return getZonePathStartOffset(getBlockStartZone(blockIndex))
     }
 
-    override fun getRouteStartOffset(routeIndex: Int): Offset<Path> {
+    override fun getRouteStartOffset(routeIndex: Int): Offset<BlockPath> {
         return getZonePathStartOffset(getRouteStartZone(routeIndex))
     }
 
-    override fun getZonePathEndOffset(zonePathIndex: Int): Offset<Path> {
+    override fun getZonePathEndOffset(zonePathIndex: Int): Offset<BlockPath> {
         return zonePathBounds[zonePathIndex + 1]
     }
 
-    override fun getBlockEndOffset(blockIndex: Int): Offset<Path> {
+    override fun getBlockEndOffset(blockIndex: Int): Offset<BlockPath> {
         return getZonePathEndOffset(getBlockEndZone(blockIndex) - 1)
     }
 
-    override fun getRouteEndOffset(routeIndex: Int): Offset<Path> {
+    override fun getRouteEndOffset(routeIndex: Int): Offset<BlockPath> {
         return getZonePathEndOffset(getRouteEndZone(routeIndex) - 1)
     }
 
-    override fun convertZonePathOffset(zonePathIndex: Int, offset: Offset<ZonePath>): Offset<Path> {
+    override fun convertZonePathOffset(
+        zonePathIndex: Int,
+        offset: Offset<ZonePath>
+    ): Offset<BlockPath> {
         return getZonePathStartOffset(zonePathIndex) + offset.distance
     }
 
-    override fun convertBlockOffset(blockIndex: Int, offset: Offset<Block>): Offset<Path> {
+    override fun convertBlockOffset(blockIndex: Int, offset: Offset<Block>): Offset<BlockPath> {
         return getBlockStartOffset(blockIndex) + offset.distance
     }
 
-    override fun convertRouteOffset(routeIndex: Int, offset: Offset<Route>): Offset<Path> {
+    override fun convertRouteOffset(routeIndex: Int, offset: Offset<Route>): Offset<BlockPath> {
         return getRouteStartOffset(routeIndex) + offset.distance
     }
 
@@ -325,7 +331,7 @@ private class IncrementalPathImpl(
         return blockZoneBounds[blockIndex + 1]
     }
 
-    override fun getStopOffset(stopIndex: Int): Offset<Path> {
+    override fun getStopOffset(stopIndex: Int): Offset<BlockPath> {
         return stops[stopIndex].offset
     }
 
@@ -333,15 +339,15 @@ private class IncrementalPathImpl(
         return stops[stopIndex].receptionSignal.isStopOnClosedSignal
     }
 
-    override fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
+    override fun toTravelledPath(offset: Offset<BlockPath>): Offset<TravelledPath> {
         return Offset(offset.distance - travelledPathBegin.distance)
     }
 
-    override fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path> {
+    override fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<BlockPath> {
         return Offset(offset.distance + travelledPathBegin.distance)
     }
 
-    override fun getBlockPathEnd(): Offset<Path> {
+    override fun getBlockPathEnd(): Offset<BlockPath> {
         return getBlockEndOffset(blocks.size - 1)
     }
 }

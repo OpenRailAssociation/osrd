@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
@@ -23,8 +23,8 @@ data class BlockAvailability(
 
     override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>,
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
@@ -89,8 +89,8 @@ data class BlockAvailability(
      */
     private fun getStepAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>,
         pathStartTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var minimumDelayToBecomeAvailable = 0.0
@@ -151,8 +151,8 @@ data class BlockAvailability(
     private fun getStepAvailabilityProperties(
         step: LocatedStep,
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>,
         pathStartTime: Double
     ): AvailabilityProperties? {
         val incrementalPath = infraExplorer.getIncrementalPath()
@@ -203,7 +203,7 @@ data class BlockAvailability(
     /** Check the conflicts on the given path and return the corresponding availability. */
     private fun getConflictAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
         pathStartTime: Double,
         startTime: Double,
         endTime: Double

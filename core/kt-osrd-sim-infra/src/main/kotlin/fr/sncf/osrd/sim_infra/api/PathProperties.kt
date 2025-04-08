@@ -16,7 +16,9 @@ data class IdxWithOffset<T, U>(
     val offset: Offset<U>,
 )
 
-typealias IdxWithPathOffset<T> = IdxWithOffset<T, Path>
+typealias IdxWithBlockPathOffset<T> = IdxWithOffset<T, BlockPath>
+
+typealias IdxWithTravelledPathOffset<T> = IdxWithOffset<T, TravelledPath>
 
 data class TrackLocation(
     @get:JvmName("getTrackId") val trackId: TrackSectionId,
@@ -24,11 +26,10 @@ data class TrackLocation(
 )
 
 /**
- * A marker type for Length and Offset. "Path" *mostly* refers to "BlockPath", where start is the
- * beginning of the first block (NOT the real start of the train).
+ * A marker type for Length and Offset. In BlockPath, start refers to the beginning of the first
+ * block (NOT the real start of the train).
  */
-// TODO: rename this to BlockPath and make sure it's used appropriately
-sealed interface Path
+sealed interface BlockPath
 
 /**
  * A marker type for Length and Offset. In TravelledPath, start refers to the real start of the head
@@ -40,7 +41,7 @@ sealed interface TravelledPath
 interface PathProperties {
     fun getSlopes(): DistanceRangeMap<Double>
 
-    fun getOperationalPointParts(): List<IdxWithPathOffset<OperationalPointPart>>
+    fun getOperationalPointParts(): List<IdxWithTravelledPathOffset<OperationalPointPart>>
 
     fun getGradients(): DistanceRangeMap<Double>
 
@@ -65,10 +66,10 @@ interface PathProperties {
     @JvmName("getLength") fun getLength(): Distance
 
     @JvmName("getTrackLocationAtOffset")
-    fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation
+    fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation
 
     @JvmName("getTrackLocationOffset")
-    fun getTrackLocationOffset(location: TrackLocation): Offset<Path>?
+    fun getTrackLocationOffset(location: TrackLocation): Offset<TravelledPath>?
 
     fun <T> getRangeMapFromUndirected(
         getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
@@ -87,8 +88,8 @@ interface PathProperties {
 fun buildPathPropertiesFrom(
     infra: RawSignalingInfra,
     chunks: DirStaticIdxList<TrackChunk>,
-    pathBeginOffset: Offset<Path>,
-    pathEndOffset: Offset<Path>,
+    pathBeginOffset: Offset<BlockPath>,
+    pathEndOffset: Offset<BlockPath>,
     routes: List<RouteId>? = null,
 ): PathProperties {
     val chunkPath = buildChunkPath(infra, chunks, pathBeginOffset, pathEndOffset)
@@ -126,7 +127,10 @@ fun makeTrackLocation(track: TrackSectionId, offset: Offset<TrackSection>): Trac
  * it's generic.
  */
 @JvmName("getTrackLocationOffsetOrThrow")
-fun getTrackLocationOffsetOrThrow(path: PathProperties, location: TrackLocation): Offset<Path> {
+fun getTrackLocationOffsetOrThrow(
+    path: PathProperties,
+    location: TrackLocation
+): Offset<TravelledPath> {
     return path.getTrackLocationOffset(location)
         ?: throw RuntimeException("Can't find location on path")
 }

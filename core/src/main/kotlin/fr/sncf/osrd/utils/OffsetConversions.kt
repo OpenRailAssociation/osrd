@@ -6,12 +6,14 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
-/** Returns the offset where the train actually starts, compared to the start of the first route. */
+/**
+ * Computes the offset between the beginning of the first route and the beginning of the train path
+ */
 fun getRoutePathStartOffset(
     infra: RawInfra,
     chunkPath: ChunkPath,
     routes: StaticIdxList<Route>
-): Offset<Path> {
+): Offset<BlockPath> {
     val zonePaths = routes.flatMap { infra.getRoutePath(it) }
     return trainPathZonePathOffset(infra, zonePaths, chunkPath)
 }
@@ -24,8 +26,8 @@ fun trainPathBlockOffset(
     blockInfra: BlockInfra,
     blockPath: StaticIdxList<Block>,
     chunkPath: ChunkPath
-): Offset<Path> {
-    val zonePaths = blockPath.flatMap { blockInfra.getBlockPath(it) }
+): Offset<BlockPath> {
+    val zonePaths = blockPath.flatMap { blockInfra.getBlockZonePaths(it) }
     return trainPathZonePathOffset(infra, zonePaths, chunkPath)
 }
 
@@ -37,8 +39,8 @@ fun trainPathZonePathOffset(
     infra: RawInfra,
     zonePaths: List<ZonePathId>,
     chunkPath: ChunkPath
-): Offset<Path> {
-    var prevChunksLength = Offset<Path>(0.meters)
+): Offset<BlockPath> {
+    var prevChunksLength = Offset<BlockPath>(0.meters)
     val routeChunks = zonePaths.flatMap { infra.getZonePathChunks(it) }
 
     val firstChunk = Pair(chunkPath.chunks[0], chunkPath.beginOffset)

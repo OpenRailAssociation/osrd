@@ -94,7 +94,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             )
         for (block in blockInfra.blocks) {
             val sigSystem = blockInfra.getBlockSignalingSystem(block)
-            val path = blockInfra.getBlockPath(block)
+            val path = blockInfra.getBlockZonePaths(block)
             val length =
                 Distance(
                     path
@@ -184,7 +184,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         var blockZoneOffset = 0
         for (i in 0 until evaluatedPathEnd) {
             blockZoneMap[i] = blockZoneOffset
-            blockZoneOffset += blocks.getBlockPath(fullPath[i]).size
+            blockZoneOffset += blocks.getBlockZonePaths(fullPath[i]).size
         }
         blockZoneMap[evaluatedPathEnd] = blockZoneOffset
 

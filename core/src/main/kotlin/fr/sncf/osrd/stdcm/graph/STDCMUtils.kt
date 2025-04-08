@@ -26,14 +26,14 @@ fun getNextStopOnCurrentBlock(
 fun makeChunkPathFromEdges(graph: STDCMGraph, edges: List<STDCMEdge>): ChunkPath {
     val blocks = edges.stream().map { edge -> edge.block }.distinct().toList()
     val totalPathLength =
-        Length<Path>(
+        Length<TravelledPath>(
             Distance(
                 millimeters =
                     edges.stream().mapToLong { edge -> (edge.length.distance).millimeters }.sum()
             )
         )
-    val firstOffset = Offset<Path>(edges[0].envelopeStartOffset.distance)
-    val lastOffset = totalPathLength + firstOffset.distance
+    val firstOffset = Offset<BlockPath>(edges[0].envelopeStartOffset.distance)
+    val lastOffset = firstOffset + totalPathLength.distance
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     for (block in blocks) for (chunk in graph.blockInfra.getTrackChunksFromBlock(block)) chunks.add(
         chunk

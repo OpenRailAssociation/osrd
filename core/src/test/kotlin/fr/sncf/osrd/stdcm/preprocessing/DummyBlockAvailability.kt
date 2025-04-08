@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -30,8 +30,8 @@ class DummyBlockAvailability(
     private data class BlockWithOffset(val blockId: BlockId, val pathOffset: Distance)
 
     private data class ResourceUse(
-        val startOffset: Offset<Path>,
-        val endOffset: Offset<Path>,
+        val startOffset: Offset<BlockPath>,
+        val endOffset: Offset<BlockPath>,
         val startTime: Double,
         val endTime: Double,
         val blockId: BlockId,
@@ -40,8 +40,8 @@ class DummyBlockAvailability(
     /** Returns all resource usage for the given path, or null if more lookahead is needed */
     private fun generateResourcesForPath(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>,
     ): List<ResourceUse> {
         val blocks = makeBlocksWithOffsets(infraExplorer)
         val res = mutableListOf<ResourceUse>()
@@ -56,9 +56,9 @@ class DummyBlockAvailability(
                         endOffset
                     ) ?: continue
                 val segmentStartOffset =
-                    Offset<Path>(blockWithOffset.pathOffset + unavailableSegment.distanceStart)
+                    Offset<BlockPath>(blockWithOffset.pathOffset + unavailableSegment.distanceStart)
                 val segmentEndOffset =
-                    Offset<Path>(blockWithOffset.pathOffset + unavailableSegment.distanceEnd)
+                    Offset<BlockPath>(blockWithOffset.pathOffset + unavailableSegment.distanceEnd)
                 res.add(
                     ResourceUse(
                         segmentStartOffset,
@@ -86,7 +86,7 @@ class DummyBlockAvailability(
         for (segment in unavailableSpace[resource.blockId]) {
             // Can be optimized
             val blockOffset =
-                Offset<Path>(blocks.first { it.blockId == resource.blockId }.pathOffset)
+                Offset<BlockPath>(blocks.first { it.blockId == resource.blockId }.pathOffset)
             if (segment.enabledIfBlockInLookahead != null) {
                 val lookahead = infraExplorer.getLookahead()
                 if (lookahead.contains(segment.disabledIfBlockInLookahead)) continue
@@ -111,8 +111,8 @@ class DummyBlockAvailability(
 
     override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>,
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>,
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
@@ -131,10 +131,10 @@ class DummyBlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         resourceUses: List<ResourceUse>,
         pathStartTime: Double,
-        startOffset: Offset<Path>
+        startOffset: Offset<BlockPath>
     ): BlockAvailabilityInterface.Unavailable? {
         var minimumDelay = 0.0
-        var conflictOffset = Offset<Path>(0.meters)
+        var conflictOffset = Offset<BlockPath>(0.meters)
         for (resourceUse in resourceUses) {
             val resourceStartTime = resourceUse.startTime + pathStartTime
             val resourceEndTime = resourceUse.endTime + pathStartTime
@@ -236,8 +236,8 @@ class DummyBlockAvailability(
         unavailableSegment: OccupancySegment,
         block: BlockWithOffset,
         explorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<Path>,
-        endOffset: Offset<Path>
+        startOffset: Offset<BlockPath>,
+        endOffset: Offset<BlockPath>
     ): TimeInterval? {
         val blockEnterOffset = (block.pathOffset + unavailableSegment.distanceStart)
         val blockExitOffset = (block.pathOffset + unavailableSegment.distanceEnd)
@@ -252,8 +252,8 @@ class DummyBlockAvailability(
     /** Returns the list of blocks in the given interval on the path */
     private fun getBlocksInRange(
         blocks: List<BlockWithOffset>,
-        start: Offset<Path>,
-        end: Offset<Path>
+        start: Offset<BlockPath>,
+        end: Offset<BlockPath>
     ): List<BlockWithOffset> {
         return blocks
             .stream()
