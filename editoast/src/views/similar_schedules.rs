@@ -221,6 +221,7 @@ async fn ref_schedules(
     // Step 3: try to find each STDCM waypoint in the successive reference graphs
     // --------------------------------------------------------------------------
 
+    let mut schedules = Vec::new();
     for (segment, graph) in graphs {
         eprintln!("{}", graph.to_dot());
         let mut state = MatchingState::new(segment, graph);
@@ -231,7 +232,12 @@ async fn ref_schedules(
         schedules.push(state.correct_schedules_so_far);
     }
 
-    Ok(Json(names.into_iter().collect()))
+    // Final step: determine the best combination of schedules
+    // -------------------------------------------------------
+
+    let schedules = decide_best_schedule_combination(schedules);
+
+    Ok(Json(schedules))
 }
 
 #[derive(Educe)]
@@ -418,7 +424,7 @@ impl ReferenceGraph {
             |_, ()| String::new(),
         );
         let dot = petgraph::dot::Dot::with_config(&pretty, &[petgraph::dot::Config::EdgeNoLabel]);
-        format!("{dot:?}")
+        format!("{dot:?}").replace("\\\"", "")
     }
 }
 
@@ -548,6 +554,34 @@ async fn query_schedules_between_stops(
         .collect();
 
     Ok(schedules)
+}
+
+fn decide_best_schedule_combination(mut segments_schedules: Vec<HashSet<String>>) -> Vec<String> {
+    let mut schedules = Vec::new();
+
+    while !segments_schedules.is_empty() {
+        let longest_train = {
+            let mut histo = std::collections::BinaryHeap::new();
+            let mut train_count = HashMap::new();
+
+            for segment in &segments_schedules {
+                for train in segment {
+                    *train_count.entry(train).or_insert(0) += 1;
+                }
+            }
+
+            for (train, count) in train_count {
+                histo.push((count, train));
+            }
+
+            let (_, longest_train) = histo.pop().expect("Heap should not be empty");
+            longest_train.clone()
+        };
+        segments_schedules.retain(|segment| !segment.contains(&longest_train));
+        schedules.push(longest_train);
+    }
+
+    schedules
 }
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
