@@ -2,8 +2,7 @@
 
 package fr.sncf.osrd.standalone_sim
 
-import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.conflicts.*
+import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.signaling.SigSystemManager
@@ -11,8 +10,7 @@ import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.utils.BlockPathElement
-import fr.sncf.osrd.sim_infra.utils.recoverBlocks
+import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
@@ -20,7 +18,6 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
 import kotlin.math.abs
@@ -39,38 +36,40 @@ class PathOffsetBuilder(val startOffset: Distance) {
     }
 }
 
-// TODO: remove this function as blockPath is provided by the pathfinding and
-//   must not be reprocessed later (leading to possible inconsistencies, especially
-//   with multiple signaling systems)
-fun deprecatedRecoverBlockPath(
-    simulator: SignalingSimulator,
-    fullInfra: FullInfra,
+// For a path (sequence of blocks and matching sequence of routes)
+// Wrap information about a block, to be used in a lookup table (sorted by block index in
+// block-path).
+private data class BlockInfo(
+    val block: BlockId,
+    // the index of the route in the path
+    val routeIndex: Int,
+)
+
+private fun buildBlockInfoTable(
+    blockInfra: BlockInfra,
+    rawInfra: RawInfra,
     routePath: StaticIdxList<Route>,
-): List<BlockPathElement> {
-    val sigSystemManager = simulator.sigModuleManager
-    val bal = sigSystemManager.findSignalingSystemOrThrow("BAL")
-    val bapr = sigSystemManager.findSignalingSystemOrThrow("BAPR")
-    val tvm300 = sigSystemManager.findSignalingSystemOrThrow("TVM300")
-    val tvm430 = sigSystemManager.findSignalingSystemOrThrow("TVM430")
-    val etcsLevel2 = sigSystemManager.findSignalingSystemOrThrow("ETCS_LEVEL2")
+    blockPath: StaticIdxList<Block>
+): List<BlockInfo> {
+    val detailedBlocks = mutableListOf<BlockInfo>()
 
-    val blockPaths =
-        // TODO: probably remove that function too
-        recoverBlocks(
-            fullInfra.rawInfra,
-            fullInfra.blockInfra,
-            routePath,
-            mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430, etcsLevel2)
-        )
-    assert(blockPaths.isNotEmpty())
+    var currentRouteIdx = 0
 
-    val res = mutableListOf(blockPaths[0]) // TODO: have a better way to choose the block path
-    var cur = blockPaths[0].prev
-    while (cur != null) {
-        res.add(cur)
-        cur = cur.prev
+    for (blockId in blockPath) {
+
+        val blockRoutes = blockInfra.routesOnBlock(rawInfra, blockId)
+        if (!blockRoutes.contains(routePath[currentRouteIdx])) {
+            currentRouteIdx++
+        }
+        assert(currentRouteIdx < routePath.size)
+        val routeId = routePath[currentRouteIdx]
+        assert(blockRoutes.contains(routeId))
+
+        val element = BlockInfo(blockId, currentRouteIdx)
+        detailedBlocks.add(element)
     }
-    return res.reversed()
+
+    return detailedBlocks
 }
 
 fun getBlockOffsets(
@@ -93,7 +92,6 @@ fun routingRequirements(
     simulator: SignalingSimulator,
     routePath: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
-    detailedBlockPath: List<BlockPathElement>,
     sortedClosedSignalStops: List<PathStop>,
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
@@ -104,16 +102,19 @@ fun routingRequirements(
     // count the number of zones in the path
     val zoneCount = routePath.sumOf { rawInfra.getRoutePath(it).size }
 
+    // recover blocks info from the route and block paths into a lookup table
+    val blockInfoTable = buildBlockInfoTable(blockInfra, rawInfra, routePath, blockPath)
+
     // fill a lookup table mapping route indices to the index of the route's first block
     val routeBlockBounds = IntArray(routePath.size + 1)
     var lastRoute = -1
-    for (blockIndex in detailedBlockPath.indices) {
-        val block = detailedBlockPath[blockIndex]
+    for (blockIndex in blockInfoTable.indices) {
+        val block = blockInfoTable[blockIndex]
         if (block.routeIndex == lastRoute) continue
         lastRoute = block.routeIndex
         routeBlockBounds[lastRoute] = blockIndex
     }
-    routeBlockBounds[routePath.size] = detailedBlockPath.size
+    routeBlockBounds[routePath.size] = blockInfoTable.size
 
     val blockOffsets = getBlockOffsets(blockPath, pathOffsetBuilder, blockInfra)
 
@@ -159,7 +160,7 @@ fun routingRequirements(
 
         // find the first block of the route
         val routeStartBlockIndex = routeBlockBounds[routeIndex]
-        val firstRouteBlock = detailedBlockPath[routeStartBlockIndex].block
+        val firstRouteBlock = blockInfoTable[routeStartBlockIndex].block
 
         // find the entry signal for this route. if there is no entry signal,
         // the set deadline is the start of the simulation
