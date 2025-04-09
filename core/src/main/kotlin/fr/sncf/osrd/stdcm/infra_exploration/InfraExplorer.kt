@@ -1,13 +1,12 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.FragmentBlocks
 import fr.sncf.osrd.conflicts.FragmentStop
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
@@ -23,6 +22,7 @@ import fr.sncf.osrd.utils.createAppendOnlySet
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -184,7 +184,7 @@ private class InfraExplorerImpl(
         // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
         // entry.
         // So we have to correct that here now that we now which route we're on.
-        var path =
+        val path =
             pathPropertiesCache.getOrElse(getCurrentBlock()) {
                 makePathProps(
                     blockInfra,

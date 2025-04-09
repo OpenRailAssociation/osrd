@@ -3,10 +3,10 @@ package fr.sncf.osrd.api.pathfinding
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.graph.PathfindingEdgeRangeId
-import fr.sncf.osrd.graph.PathfindingResultId
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.PathfindingResultId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange

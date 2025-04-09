@@ -1,15 +1,18 @@
 package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.SignalingSystemConstraints
 import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.PathfindingResultId
+import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
+import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
+import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.filterIntersection
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 

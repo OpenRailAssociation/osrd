@@ -1,9 +1,9 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.seconds
 import java.time.Duration.*

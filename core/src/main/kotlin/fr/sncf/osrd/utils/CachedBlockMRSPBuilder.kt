@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP

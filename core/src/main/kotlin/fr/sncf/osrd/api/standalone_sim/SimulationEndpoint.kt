@@ -1,10 +1,6 @@
 package fr.sncf.osrd.api.standalone_sim
 
-import fr.sncf.osrd.api.ElectricalProfileSetManager
-import fr.sncf.osrd.api.ExceptionHandler
-import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.parseRawSimulationScheduleItems
-import fr.sncf.osrd.api.pathfinding.makeChunkPath
+import fr.sncf.osrd.api.*
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -17,6 +13,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.makeChunkPath
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -16,9 +15,10 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances

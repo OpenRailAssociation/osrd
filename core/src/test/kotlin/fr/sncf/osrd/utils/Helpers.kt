@@ -3,8 +3,8 @@ package fr.sncf.osrd.utils
 import com.squareup.moshi.JsonAdapter
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.makeSignalingSimulator
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock

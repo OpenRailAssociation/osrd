@@ -1,11 +1,11 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
-import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -160,7 +160,7 @@ class STDCMPathfinding(
         // Check that the step timing makes sense: they can be reached in order and inside the
         // search time window
         val maxArrivalTime = startTime + maxDepartureDelay + maxRunTime
-        var minArrivalTime = startTime
+        val minArrivalTime = startTime
         for ((i, step) in steps.withIndex()) {
             val stepTiming = step.plannedTimingData
             if (stepTiming != null) {

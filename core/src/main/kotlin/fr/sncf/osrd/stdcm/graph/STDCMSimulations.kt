@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
@@ -10,7 +9,6 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
@@ -19,8 +17,6 @@ import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
@@ -141,21 +137,6 @@ class STDCMSimulations {
                 "A total of $nFailedSimulation STDCM Simulations failed during the search (usually because of lack of traction)"
             )
     }
-}
-
-/** Create an EnvelopeSimContext instance from the blocks and extra parameters. */
-fun makeSimContext(
-    rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    blocks: List<BlockId>,
-    offsetFirstBlock: Offset<Block>,
-    rollingStock: RollingStock,
-    comfort: Comfort?,
-    timeStep: Double
-): EnvelopeSimContext {
-    val path = makePathProps(rawInfra, blockInfra, blocks, offsetFirstBlock.cast())
-    val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
-    return build(rollingStock, envelopePath, timeStep, comfort)
 }
 
 /** Make an envelope with a single point of the given speed */

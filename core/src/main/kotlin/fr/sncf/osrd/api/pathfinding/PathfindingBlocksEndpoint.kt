@@ -5,10 +5,14 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
-import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.graph.*
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
+import fr.sncf.osrd.pathfinding.*
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
+import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
+import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
+import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError

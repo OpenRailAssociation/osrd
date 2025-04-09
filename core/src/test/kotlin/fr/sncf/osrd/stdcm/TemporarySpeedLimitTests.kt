@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.stdcm.STDCMTemporarySpeedLimit
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
-import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
@@ -39,10 +39,8 @@ class TemporarySpeedLimitTests {
         val endBlock = blocksOnEnd[0]
         return STDCMPathfindingBuilder()
             .setInfra(infra)
-            .setStartLocations(
-                setOf(Pathfinding.EdgeLocation(startBlock, Offset<Block>(Distance(0L))))
-            )
-            .setEndLocations(setOf(Pathfinding.EdgeLocation(endBlock, Offset<Block>(Distance(0L)))))
+            .setStartLocations(setOf(Pathfinding.EdgeLocation(startBlock, Offset(Distance(0L)))))
+            .setEndLocations(setOf(Pathfinding.EdgeLocation(endBlock, Offset(Distance(0L)))))
             .setTemporarySpeedLimitManager(temporarySpeedLimitManager)
             .run()!!
     }
@@ -58,8 +56,8 @@ class TemporarySpeedLimitTests {
                     listOf(
                         DirectionalTrackRange(
                             trackSection = "TF1",
-                            begin = Offset<TrackSection>(Distance.fromMeters(500.0)),
-                            end = Offset<TrackSection>(Distance.fromMeters(1000.0)),
+                            begin = Offset(Distance.fromMeters(500.0)),
+                            end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP
                         )
                     )
@@ -92,7 +90,6 @@ class TemporarySpeedLimitTests {
 
     @Test
     fun temporarySpeedLimitHigherThanPermanentSpeedLimitIsIgnored() {
-        val speedLimit = Speed.fromMetersPerSecond(20.0)
         // Add a temporary speed limit to a track
         val temporarySpeedLimits =
             listOf(
@@ -101,8 +98,8 @@ class TemporarySpeedLimitTests {
                     listOf(
                         DirectionalTrackRange(
                             trackSection = "TF1",
-                            begin = Offset<TrackSection>(Distance.fromMeters(500.0)),
-                            end = Offset<TrackSection>(Distance.fromMeters(1000.0)),
+                            begin = Offset(Distance.fromMeters(500.0)),
+                            end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP
                         )
                     )
@@ -135,8 +132,8 @@ class TemporarySpeedLimitTests {
                     listOf(
                         DirectionalTrackRange(
                             trackSection = "TF1",
-                            begin = Offset<TrackSection>(Distance.fromMeters(500.0)),
-                            end = Offset<TrackSection>(Distance.fromMeters(1000.0)),
+                            begin = Offset(Distance.fromMeters(500.0)),
+                            end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP
                         )
                     )
@@ -146,8 +143,8 @@ class TemporarySpeedLimitTests {
                     listOf(
                         DirectionalTrackRange(
                             trackSection = "TF1",
-                            begin = Offset<TrackSection>(Distance.fromMeters(800.0)),
-                            end = Offset<TrackSection>(Distance.fromMeters(1100.0)),
+                            begin = Offset(Distance.fromMeters(800.0)),
+                            end = Offset(Distance.fromMeters(1100.0)),
                             direction = EdgeDirection.START_TO_STOP
                         )
                     )
@@ -181,7 +178,6 @@ class TemporarySpeedLimitTests {
 
     @Test
     fun temporarySpeedLimitsInOppositeDirectionAreIgnored() {
-        val speedLimit = Speed.fromMetersPerSecond(20.0)
         // Add a temporary speed limit to a track
         val temporarySpeedLimits =
             listOf(
@@ -190,8 +186,8 @@ class TemporarySpeedLimitTests {
                     listOf(
                         DirectionalTrackRange(
                             trackSection = "TF1",
-                            begin = Offset<TrackSection>(Distance.fromMeters(800.0)),
-                            end = Offset<TrackSection>(Distance.fromMeters(1100.0)),
+                            begin = Offset(Distance.fromMeters(800.0)),
+                            end = Offset(Distance.fromMeters(1100.0)),
                             direction = EdgeDirection.STOP_TO_START
                         )
                     )

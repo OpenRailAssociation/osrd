@@ -2,9 +2,8 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.envelope_sim.SimpleRollingStock
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
@@ -74,7 +73,7 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    SimpleRollingStock.STANDARD_TRAIN,
+                    STANDARD_TRAIN,
                 )
                 .build()
 
@@ -121,11 +120,10 @@ class STDCMHeuristicTests {
                 infra.addBlock("c", "d", allowedSpeed = 1.0),
                 infra.addBlock("d", "e", allowedSpeed = 1.0),
             )
-        val alternativeBlocks =
-            listOf(
-                infra.addBlock("b", "x", allowedSpeed = 1.0),
-                infra.addBlock("x", "y", allowedSpeed = 1.0),
-            )
+        listOf(
+            infra.addBlock("b", "x", allowedSpeed = 1.0),
+            infra.addBlock("x", "y", allowedSpeed = 1.0),
+        )
 
         val steps =
             listOf(
@@ -152,7 +150,7 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    SimpleRollingStock.STANDARD_TRAIN,
+                    STANDARD_TRAIN,
                 )
                 .build()
 
@@ -182,10 +180,9 @@ class STDCMHeuristicTests {
             initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
         for (i in 0 ..< 2) {
             wrongPathExplorer =
-                wrongPathExplorer
-                    .cloneAndExtendLookahead()
-                    .filter { explorer -> explorer.getLookahead().last() != blocks[1] }
-                    .single()
+                wrongPathExplorer.cloneAndExtendLookahead().single {
+                    it.getLookahead().last() != blocks[1]
+                }
         }
         // Lookahead on the wrong path, no possible result
         assertEquals(

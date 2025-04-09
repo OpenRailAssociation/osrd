@@ -1,5 +1,6 @@
-package fr.sncf.osrd.api.standalone_sim
+package fr.sncf.osrd.api
 
+import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType

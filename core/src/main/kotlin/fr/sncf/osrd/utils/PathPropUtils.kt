@@ -1,15 +1,14 @@
-package fr.sncf.osrd.api.pathfinding
+package fr.sncf.osrd.utils
 
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.api.DirectionalTrackRange
-import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
-import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters

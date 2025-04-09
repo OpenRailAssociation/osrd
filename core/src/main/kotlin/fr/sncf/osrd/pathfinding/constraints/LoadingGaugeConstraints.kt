@@ -1,11 +1,11 @@
-package fr.sncf.osrd.api.pathfinding.constraints
+package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Offset
 import java.util.stream.Collectors
 

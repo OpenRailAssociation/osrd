@@ -1,8 +1,9 @@
-package fr.sncf.osrd.graph
+package fr.sncf.osrd.pathfinding
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.api.pathfinding.pathfindingLogger
+import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.indexing.StaticIdx
