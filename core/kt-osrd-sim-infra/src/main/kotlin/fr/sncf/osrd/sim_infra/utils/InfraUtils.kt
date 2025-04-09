@@ -3,7 +3,10 @@ package fr.sncf.osrd.sim_infra.utils
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.indexing.DirStaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 
 fun TrackNetworkInfra.getNextTrackSections(
     trackSection: DirTrackSectionId
@@ -60,12 +63,6 @@ fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): StaticIdxList<
     return res
 }
 
-/** Returns the blocks that follow the given one */
-fun BlockInfra.getNextBlocks(infra: RawSignalingInfra, blockId: BlockId): Set<BlockId> {
-    val entry = getBlockExit(infra, blockId)
-    return getBlocksStartingAtDetector(entry).toSet()
-}
-
 /** Returns the block's entry detector */
 fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
     val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
@@ -78,12 +75,6 @@ fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
     val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
     val lastZonePath: ZonePathId = blockZonePaths[blockZonePaths.size - 1]
     return rawInfra.getZonePathExit(lastZonePath)
-}
-
-/** Returns the blocks that lead into the given one */
-fun BlockInfra.getPreviousBlocks(infra: RawSignalingInfra, blockId: BlockId): Set<BlockId> {
-    val entry = getBlockEntry(infra, blockId)
-    return getBlocksEndingAtDetector(entry).toSet()
 }
 
 /** Returns the route's corresponding blocks */

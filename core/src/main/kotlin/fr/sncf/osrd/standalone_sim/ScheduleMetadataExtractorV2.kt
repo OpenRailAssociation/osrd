@@ -1,7 +1,6 @@
 package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
@@ -9,7 +8,10 @@ import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
@@ -150,9 +152,9 @@ fun runScheduleMetadataExtractor(
             }
 
             val stopDepartureTime =
-                envelopeWithStops.interpolateDepartureFrom(closedSignalStopOffset.distance.meters)
+                envelopeWithStops.interpolateDepartureFrom(closedSignalStopOffset!!.distance.meters)
             if (signalCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN) {
-                signalCriticalOffset = closedSignalStopOffset!!
+                signalCriticalOffset = closedSignalStopOffset
                 signalCriticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
             }
         }

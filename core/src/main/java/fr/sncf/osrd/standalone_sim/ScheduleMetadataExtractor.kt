@@ -11,16 +11,12 @@ import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
-import fr.sncf.osrd.standalone_sim.result.ResultPosition
-import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
-import kotlin.math.abs
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -463,34 +459,5 @@ fun pathSignalsInRange(
 ): List<PathSignal> {
     return pathSignals(pathOffsetBuilder, blockPath, blockInfra).filter { signal ->
         signal.pathOffset.distance in rangeStart..rangeEnd
-    }
-}
-
-fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {
-    return CurveSimplification.rdp(positions, 5.0) {
-        point: ResultPosition,
-        start: ResultPosition,
-        end: ResultPosition ->
-        if (abs(start.time - end.time) < 0.000001)
-            return@rdp abs(point.pathOffset - start.pathOffset)
-        val proj =
-            start.pathOffset +
-                (point.time - start.time) * (end.pathOffset - start.pathOffset) /
-                    (end.time - start.time)
-        abs(point.pathOffset - proj)
-    }
-}
-
-fun simplifySpeeds(speeds: ArrayList<ResultSpeed>): ArrayList<ResultSpeed> {
-    return CurveSimplification.rdp(speeds, 0.2) {
-        point: ResultSpeed,
-        start: ResultSpeed,
-        end: ResultSpeed ->
-        if (abs(start.position - end.position) < 0.000001) return@rdp abs(point.speed - start.speed)
-        val proj =
-            start.speed +
-                (point.position - start.position) * (end.speed - start.speed) /
-                    (end.position - start.position)
-        abs(point.speed - proj)
     }
 }
