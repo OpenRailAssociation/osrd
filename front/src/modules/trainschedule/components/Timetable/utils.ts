@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import specialCodeDictionary from './consts';
 import type { TimetableItemWithDetails } from './types';
 
@@ -27,3 +29,12 @@ export const extractTagCode = (tag?: string | null) => {
 
 export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails[]) =>
   timetableItems.some((timetableItem) => timetableItem.invalidReason);
+
+export const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
+
+export const roundAndFormatToNearestMinute = (d: Date) =>
+  dayjs(d)
+    .add(d.getSeconds() >= 30 ? 1 : 0, 'minute')
+    .format('HH:mm');
+
+export const formatTrainDuration = (ms: number) => dayjs.duration(ms).format('HH[h]mm');

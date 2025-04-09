@@ -6,6 +6,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
 
 import type { Occurrence } from '../types';
+import { roundAndFormatToNearestMinute } from '../utils';
 
 const ConsecutiveDayDateDisplay = ({
   departureTime,
@@ -72,10 +73,10 @@ const OccurrenceItem = ({
             {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
           </div>
           <div className="occurrence-item-time departure-time">
-            {dayjs(startTime).format('HH:mm')}
+            {roundAndFormatToNearestMinute(startTime)}
           </div>
           <div className="occurrence-item-time arrival-time">
-            {dayjs(arrivalTime).format('HH:mm')}
+            {roundAndFormatToNearestMinute(arrivalTime)}
           </div>
         </div>
       )}

@@ -29,6 +29,7 @@ import {
 
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
+import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
 
 type TrainScheduleItemProps = {
   isInSelection: boolean;
@@ -42,12 +43,6 @@ type TrainScheduleItemProps = {
   dtoImport: () => void;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
 };
-
-const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
-const formatDateHours = (d: Date) =>
-  dayjs(d)
-    .add(d.getSeconds() >= 30 ? 1 : 0, 'minute')
-    .format('HH:mm');
 
 const TrainScheduleItem = ({
   isInSelection,
@@ -218,7 +213,7 @@ const TrainScheduleItem = ({
                   className="scenario-timetable-train-times"
                   title={formatFullDate(train.startTime)}
                 >
-                  {formatDateHours(train.startTime)}
+                  {roundAndFormatToNearestMinute(train.startTime)}
                 </div>
               )}
               <div
@@ -235,7 +230,7 @@ const TrainScheduleItem = ({
                   className="scenario-timetable-train-times"
                   title={formatFullDate(train.arrivalTime)}
                 >
-                  {formatDateHours(train.arrivalTime)}
+                  {roundAndFormatToNearestMinute(train.arrivalTime)}
                 </div>
               )}
               <div
@@ -265,9 +260,7 @@ const TrainScheduleItem = ({
               </span>
             </div>
             <div className="duration-time">
-              <span data-testid="train-duration">
-                {dayjs.duration(train.duration!.ms).format('HH[h]mm')}
-              </span>
+              <span data-testid="train-duration">{formatTrainDuration(train.duration!.ms)}</span>
             </div>
           </div>
         )}
