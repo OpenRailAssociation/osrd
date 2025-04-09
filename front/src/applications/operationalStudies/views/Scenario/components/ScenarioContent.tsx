@@ -235,6 +235,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 conflicts={conflicts}
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
                 trainSchedules={trainSchedules ?? []}
+                selectedTrainScheduleIds={selectedTrainScheduleIds}
                 activeBoards={activeBoards}
                 updateTrainScheduleDepartureTime={updateTrainScheduleDepartureTimeWithNge}
                 upsertTrainSchedules={upsertTrainSchedulesWithNge}

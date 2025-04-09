@@ -55,6 +55,7 @@ type SimulationResultsProps = {
   projectionData: ProjectionData | undefined;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   trainSchedules: TrainScheduleResponse[];
+  selectedTrainScheduleIds: number[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainScheduleDepartureTime: (
@@ -74,6 +75,7 @@ const SimulationResults = ({
   projectionData,
   trainSchedulesWithDetails,
   trainSchedules,
+  selectedTrainScheduleIds,
   conflicts = NO_CONFLICTS,
   activeBoards,
   updateTrainScheduleDepartureTime,
@@ -87,8 +89,12 @@ const SimulationResults = ({
   const dispatch = useAppDispatch();
   const { infraId, timetableId } = useScenarioContext();
 
-  const { results: simulationResults, isSimulationDataLoading } =
-    useSimulationResults(trainSchedules);
+  const {
+    results: simulationResults,
+    isSimulationDataLoading,
+    selectedPaths,
+    selectedPathsProperties,
+  } = useSimulationResults(trainSchedules, selectedTrainScheduleIds);
   const selectedTrainId = simulationResults?.train.id;
 
   const timeStopsTableRef = useRef<HTMLDivElement>(null);
@@ -419,6 +425,8 @@ const SimulationResults = ({
             pathProperties={
               simulationResults?.isValid ? simulationResults.pathProperties : undefined
             }
+            selectedPaths={selectedPaths}
+            selectedPathsProperties={selectedPathsProperties}
             setMapCanvas={setMapCanvas}
           />
         </div>
