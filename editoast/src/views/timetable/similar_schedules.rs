@@ -231,6 +231,7 @@ async fn similar_schedules(
     )
     .await?;
 
+    let mut graphs = Vec::new();
     let pool = past_schedule::Pool::from_iter(selected_past_schedules);
     for segment in new_schedule.into_segments() {
         let past_schedules = pool.schedules_in_segment(&segment);
@@ -239,9 +240,23 @@ async fn similar_schedules(
             let Some(waypoints) = past_schedule.clamp_path(&segment) else {
                 panic!("ohno");
             };
-            graph.push(past_schedule.name(), waypoints.iter());
+            graph.push(past_schedule.name(), waypoints.iter().cloned());
         }
-        eprintln!("{}", graph.to_dot());
+        graphs.push((segment, graph));
+    }
+
+    // Step 3: try to find each STDCM waypoint in the successive reference graphs
+    // --------------------------------------------------------------------------
+
+    for (segment, graph) in graphs {
+        #[cfg(debug_assertions)]
+        std::fs::write("/tmp/dot.txt", graph.to_dot()).unwrap();
+        let mut state = graph::MatchingState::new(segment, graph);
+        while state.keep_advancing() {
+            state = state.advance();
+        }
+        tracing::debug!(schedules = ?state.correct_schedules_so_far, "reference schedules found for segment");
+        schedules.push(state.correct_schedules_so_far);
     }
 
     Ok(Json(Response {
