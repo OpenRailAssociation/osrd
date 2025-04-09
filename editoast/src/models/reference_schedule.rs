@@ -20,11 +20,23 @@ pub struct ReferenceSchedule {
     pub waypoints: Vec<Waypoint>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct Waypoint {
     pub ci: i64,
     pub ch: Option<String>,
     pub stop: bool,
+}
+
+impl std::fmt::Debug for Waypoint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}:{}{}",
+            self.ci,
+            self.ch.as_deref().unwrap_or("ø"),
+            self.stop.then_some("[STOP]").unwrap_or("")
+        )
+    }
 }
 
 impl ReferenceSchedule {

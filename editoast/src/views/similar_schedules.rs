@@ -1,8 +1,10 @@
 use axum::extract::State;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::iter;
 use std::ops::Deref;
+use std::ops::DerefMut;
 
 use axum::Extension;
 use axum::Json;
@@ -16,6 +18,7 @@ use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PathPropertiesResponse;
 use diesel::QueryDsl;
 use editoast_models::DbConnection;
+use educe::Educe;
 use itertools::Either;
 use itertools::Itertools;
 
@@ -46,7 +49,7 @@ struct RollingStockCharacteristics {
     mass: Option<u64>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize, utoipa::ToSchema)]
+#[derive(Clone, serde::Deserialize, utoipa::ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 struct Waypoint {
     ci: i64,
@@ -54,14 +57,42 @@ struct Waypoint {
     stop: bool,
 }
 
+impl From<Waypoint> for reference_schedule::Waypoint {
+    fn from(Waypoint { ci, ch, stop }: Waypoint) -> Self {
+        reference_schedule::Waypoint {
+            ci,
+            ch: Some(ch),
+            stop,
+        }
+    }
+}
+
+impl std::fmt::Debug for Waypoint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}:{}{}",
+            self.ci,
+            self.ch,
+            self.stop.then_some("[STOP]").unwrap_or("")
+        )
+    }
+}
+
 #[derive(Debug, Clone)]
-struct Segment(Vec<Waypoint>);
+struct Segment(VecDeque<Waypoint>);
 
 impl Deref for Segment {
-    type Target = Vec<Waypoint>;
+    type Target = VecDeque<Waypoint>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for Segment {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -126,6 +157,7 @@ async fn ref_schedules(
     // Step 2: query reference schedules and build the search graph
     // ------------------------------------------------------------
 
+    let mut graphs = Vec::new();
     let mut names = HashSet::new();
     for segment in segments {
         let schedules = query_schedules_between_stops(&mut conn, &segment, &rolling_stock).await?;
@@ -183,71 +215,209 @@ async fn ref_schedules(
         {
             graph.push(name, waypoints);
         }
+        graphs.push((segment, graph));
+    }
+
+    // Step 3: try to find each STDCM waypoint in the successive reference graphs
+    // --------------------------------------------------------------------------
+
+    for (segment, graph) in graphs {
         eprintln!("{}", graph.to_dot());
+        let mut state = MatchingState::new(segment, graph);
+        while state.keep_advancing() {
+            state = state.advance();
+        }
+        tracing::debug!(schedules = ?state.correct_schedules_so_far, "reference schedules found for segment");
+        schedules.push(state.correct_schedules_so_far);
     }
 
     Ok(Json(names.into_iter().collect()))
 }
 
-type Graph = petgraph::graph::DiGraph<(), HashSet<String>>;
+#[derive(Educe)]
+#[educe(Debug)]
+struct MatchingState {
+    path: VecDeque<Waypoint>,
+    #[educe(Debug = "ignore")]
+    graph: ReferenceGraph,
+    correct_schedules_so_far: HashSet<String>,
+    current_waypoint: reference_schedule::Waypoint,
+    skipped: Option<reference_schedule::Waypoint>,
+}
+
+impl MatchingState {
+    fn new(Segment(mut waypoints): Segment, graph: ReferenceGraph) -> Self {
+        let current_waypoint = waypoints.pop_front().expect("empty segment").into();
+        Self {
+            path: waypoints,
+            graph,
+            correct_schedules_so_far: HashSet::new(),
+            current_waypoint,
+            skipped: None,
+        }
+    }
+
+    #[inline]
+    fn keep_advancing(&self) -> bool {
+        !self.path.is_empty()
+    }
+
+    fn advance(mut self) -> Self {
+        let Some(next_waypoint) = self.path.pop_front() else {
+            return self;
+        };
+        let target = next_waypoint.into();
+
+        tracing::debug!(
+            current_waypoint = ?self.current_waypoint,
+            target_waypoint = ?target,
+            skipped_waypoint = ?self.skipped,
+            schedules = ?self.correct_schedules_so_far,
+            "matching state iteration"
+        );
+
+        let (schedules, current_waypoint, to_skip) = match (
+            self.graph.find_successor(&self.current_waypoint, &target),
+            self.skipped,
+        ) {
+            (Some(schedules), _) => (schedules, target, None),
+            (None, None) => (HashSet::new(), self.current_waypoint, Some(target)),
+            (None, Some(skipped)) => {
+                panic!(
+                    "graph exploration failed: having to skip both successive waypoints {skipped:?} and {:?}",
+                    &self.current_waypoint
+                );
+            }
+        };
+
+        Self {
+            correct_schedules_so_far: if self.correct_schedules_so_far.is_empty() {
+                schedules
+            } else if schedules.is_empty() {
+                self.correct_schedules_so_far
+            } else {
+                self.correct_schedules_so_far
+                    .intersection(&schedules)
+                    .cloned()
+                    .collect()
+            },
+            current_waypoint,
+            path: self.path,
+            graph: self.graph,
+            skipped: to_skip,
+        }
+    }
+}
+
+type Graph = petgraph::graph::DiGraph<GraphNode, ()>;
 type NodeIndex = petgraph::graph::NodeIndex;
+
+#[derive(Debug)]
+struct GraphNode {
+    waypoint: reference_schedule::Waypoint,
+    schedules: HashSet<String>,
+}
 
 #[derive(Debug, Default)]
 struct ReferenceGraph {
     graph: Graph,
-    nodes: HashMap<reference_schedule::Waypoint, NodeIndex>,
-    inv_nodes: HashMap<NodeIndex, reference_schedule::Waypoint>,
+    // index: ci -> ch -> node_index
+    cich_index: HashMap<i64, HashMap<Option<String>, NodeIndex>>,
 }
 
 impl ReferenceGraph {
-    #[inline]
-    fn get_or_create_node(&mut self, waypoint: reference_schedule::Waypoint) -> NodeIndex {
-        if let Some(node) = self.nodes.get(&waypoint) {
+    fn get_or_create_node(
+        &mut self,
+        waypoint: reference_schedule::Waypoint,
+        schedule_name: &str,
+    ) -> NodeIndex {
+        if let Some(node) = self
+            .cich_index
+            .get(&waypoint.ci)
+            .and_then(|map| map.get(&waypoint.ch))
+        {
+            self.graph
+                .node_weight_mut(*node)
+                .unwrap()
+                .schedules
+                .insert(schedule_name.to_owned());
             *node
         } else {
-            let node = self.graph.add_node(());
-            self.nodes.insert(waypoint.clone(), node); // oh no
-            self.inv_nodes.insert(node, waypoint);
+            let ci = waypoint.ci;
+            let ch = waypoint.ch.clone();
+            let node = self.graph.add_node(GraphNode {
+                waypoint,
+                schedules: HashSet::new(),
+            });
+            self.cich_index.entry(ci).or_default().insert(ch, node);
             node
         }
     }
 
     fn push(&mut self, schedule_name: String, waypoints: Vec<reference_schedule::Waypoint>) {
         for (wp1, wp2) in waypoints.into_iter().tuple_windows() {
-            let from = self.get_or_create_node(wp1);
-            let to = self.get_or_create_node(wp2);
-            let edge = self
-                .graph
-                .find_edge(from, to)
-                .unwrap_or_else(|| self.graph.add_edge(from, to, HashSet::new()));
+            let from = self.get_or_create_node(wp1, &schedule_name);
+            let to = self.get_or_create_node(wp2, &schedule_name);
             self.graph
-                .edge_weight_mut(edge)
-                .unwrap()
-                .insert(schedule_name.clone()); // am sad, arc or smallstr or smth por favor
+                .find_edge(from, to)
+                .unwrap_or_else(|| self.graph.add_edge(from, to, ()));
+        }
+    }
+
+    fn find_successor(
+        &self,
+        train_location: &reference_schedule::Waypoint,
+        target_location: &reference_schedule::Waypoint,
+    ) -> Option<HashSet<String>> {
+        let from = self
+            .cich_index
+            .get(&train_location.ci)
+            .and_then(|map| map.get(&train_location.ch))
+            .expect("graph construction fail");
+        let to = self
+            .cich_index
+            .get(&target_location.ci)
+            .and_then(|map| map.get(&target_location.ch))?;
+
+        let aetoile = petgraph::algo::astar(&self.graph, *from, |n| n == *to, |_| 1, |_| 0);
+
+        match aetoile {
+            Some((_, path)) if !path.is_empty() && path.len() <= 2 => {
+                let mut schedules = self.graph.node_weight(*from).unwrap().schedules.clone();
+                debug_assert_eq!(path.first(), Some(from));
+                debug_assert_eq!(path.last(), Some(to));
+                for node in path.into_iter().skip(1) {
+                    let on_path = &self.graph.node_weight(node).unwrap().schedules;
+                    schedules = schedules.intersection(on_path).cloned().collect();
+                }
+                Some(schedules)
+            }
+            Some(_) | None => None,
         }
     }
 
     fn to_dot(&self) -> String {
         let pretty = self.graph.map(
-            |node_idx, _| {
-                let reference_schedule::Waypoint { ci, ch, stop } =
-                    self.inv_nodes.get(&node_idx).unwrap();
+            |_,
+             GraphNode {
+                 waypoint: reference_schedule::Waypoint { ci, ch, stop },
+                 schedules,
+             }| {
+                let mut names = schedules
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect::<Vec<_>>();
+                names.sort();
+                let names = names.join(",");
                 format!(
-                    "{ci}:{}{}",
+                    "{ci}:{}{}  —  {names}",
                     ch.as_deref().unwrap_or("ø"),
                     stop.then_some("[STOP]").unwrap_or("")
                 )
             },
-            |_, edge| {
-                let names = edge
-                    .iter()
-                    .map(|name| name.as_str())
-                    .collect::<Vec<_>>()
-                    .join(",");
-                names
-            },
+            |_, ()| String::new(),
         );
-        let dot = petgraph::dot::Dot::new(&pretty);
+        let dot = petgraph::dot::Dot::with_config(&pretty, &[petgraph::dot::Config::EdgeNoLabel]);
         format!("{dot:?}")
     }
 }
@@ -312,16 +482,16 @@ fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Segment> {
         panic!("Last waypoint is not a stop");
     }
 
-    let mut segments = Vec::<Vec<Waypoint>>::new();
+    let mut segments = Vec::<VecDeque<Waypoint>>::new();
     for waypoint in waypoints {
         if waypoint.stop {
             if let Some(last_segment) = segments.last_mut() {
-                last_segment.push(waypoint.clone());
+                last_segment.push_back(waypoint.clone());
             }
-            segments.push(vec![waypoint]);
+            segments.push(VecDeque::from([waypoint]));
         } else {
             if let Some(last_segment) = segments.last_mut() {
-                last_segment.push(waypoint);
+                last_segment.push_back(waypoint);
             } else {
                 panic!("First waypoint is not a stop");
             }
@@ -336,17 +506,12 @@ fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Segment> {
 }
 
 impl Segment {
-    fn rank(&self, ci: i64, ch: String) -> Option<usize> {
-        self.iter()
-            .position(|waypoint| waypoint.ci == ci && waypoint.ch == ch)
-    }
-
     fn begin(&self) -> &Waypoint {
-        self.first().expect("empty segment")
+        self.front().expect("empty segment")
     }
 
     fn end(&self) -> &Waypoint {
-        self.last().expect("empty segment")
+        self.back().expect("empty segment")
     }
 }
 
@@ -696,10 +861,10 @@ mod tests {
             },
         ];
 
-        let segments = split_segments(waypoints.clone());
-        assert_eq!(segments[0].as_slice(), &waypoints[0..=3]);
-        assert_eq!(segments[1].as_slice(), &waypoints[3..=5]);
-        assert_eq!(segments[2].as_slice(), &waypoints[5..=6]);
+        let mut segments = split_segments(waypoints.clone());
+        assert_eq!(segments[0].make_contiguous(), &waypoints[0..=3]);
+        assert_eq!(segments[1].make_contiguous(), &waypoints[3..=5]);
+        assert_eq!(segments[2].make_contiguous(), &waypoints[5..=6]);
         assert_eq!(segments.len(), 3);
     }
 }
