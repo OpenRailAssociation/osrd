@@ -108,109 +108,113 @@ const StdcmResults = ({
             </div>
           )}
           <div className="simulation-results">
-            {hasSimulationResults && !hasConflictResults ? (
-              <div className="results-and-sheet">
-                <StcdmResultsTable
-                  stdcmData={outputs.results}
-                  consist={selectedSimulation.inputs.consist}
-                  isSimulationRetained={isSelectedSimulationRetained}
-                  operationalPointsList={operationalPointsList}
-                  simulationIndex={selectedSimulation.index}
-                />
-                {isSelectedSimulationRetained && (
-                  <div className="get-simulation">
-                    <div className="download-simulation">
-                      <PDFDownloadLink
-                        document={
-                          <SimulationReportSheet
-                            stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
-                            stdcmData={outputs.results}
-                            consist={selectedSimulation.inputs.consist}
-                            simulationReportSheetNumber={simulationReportSheetNumber}
-                            operationalPointsList={operationalPointsList}
-                            simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+            <div className="results-with-feedback">
+              {hasSimulationResults && !hasConflictResults ? (
+                <div className="results-and-sheet">
+                  <StcdmResultsTable
+                    stdcmData={outputs.results}
+                    consist={selectedSimulation.inputs.consist}
+                    isSimulationRetained={isSelectedSimulationRetained}
+                    operationalPointsList={operationalPointsList}
+                    simulationIndex={selectedSimulation.index}
+                  />
+                  {isSelectedSimulationRetained && (
+                    <div className="get-simulation">
+                      <div className="download-simulation">
+                        <PDFDownloadLink
+                          document={
+                            <SimulationReportSheet
+                              stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
+                              stdcmData={outputs.results}
+                              consist={selectedSimulation.inputs.consist}
+                              simulationReportSheetNumber={simulationReportSheetNumber}
+                              operationalPointsList={operationalPointsList}
+                              simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+                            />
+                          }
+                          fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
+                        >
+                          <Button
+                            data-testid="download-simulation-button"
+                            label={t('downloadSimulationSheet')}
+                            onClick={() => {}}
                           />
-                        }
-                        fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
-                      >
-                        <Button
-                          data-testid="download-simulation-button"
-                          label={t('downloadSimulationSheet')}
-                          onClick={() => {}}
-                        />
-                      </PDFDownloadLink>
+                        </PDFDownloadLink>
+                      </div>
+                      <div className="gesico-text">{t('gesicoRequest')}</div>
                     </div>
-                    <div className="gesico-text">{t('gesicoRequest')}</div>
-                  </div>
-                )}
-                {retainedSimulationIndex !== undefined && buttonsVisible && (
-                  <div className="start-new-query">
-                    <Button
-                      data-testid="start-new-query-button"
-                      variant="Primary"
-                      label={t('startNewQuery')}
-                      onClick={onStartNewQuery}
-                    />
-                    <Button
-                      className="start-new-query-with-data"
-                      data-testid="start-new-query-with-data-button"
-                      variant="Normal"
-                      label={t('startNewQueryFromCurrent')}
-                      onClick={onStartNewQueryWithData}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="simulation-failure">
-                <span className="title">{t('notFound')}</span>
-                <span className="change-criteria">{t('conflictsTitle')}</span>
+                  )}
+                  {retainedSimulationIndex !== undefined && buttonsVisible && (
+                    <div className="start-new-query">
+                      <Button
+                        data-testid="start-new-query-button"
+                        variant="Primary"
+                        label={t('startNewQuery')}
+                        onClick={onStartNewQuery}
+                      />
+                      <Button
+                        className="start-new-query-with-data"
+                        data-testid="start-new-query-with-data-button"
+                        variant="Normal"
+                        label={t('startNewQueryFromCurrent')}
+                        onClick={onStartNewQueryWithData}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="simulation-failure">
+                  <span className="title">{t('notFound')}</span>
+                  <span className="change-criteria">{t('conflictsTitle')}</span>
 
-                {trackConflicts.length > 0 && (
-                  <ul>
-                    {trackConflicts.map((message, index) => (
-                      <li key={index}>
-                        <span>
-                          <Trans>&bull; {message}</Trans>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                  {trackConflicts.length > 0 && (
+                    <ul>
+                      {trackConflicts.map((message, index) => (
+                        <li key={index}>
+                          <span>
+                            <Trans>&bull; {message}</Trans>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
-                {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
+                  {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
 
-                {workConflicts.length > 0 && (
-                  <ul>
-                    {workConflicts.map((message, index) => (
-                      <li key={index}>
-                        <span>
-                          <Trans>&bull; {message}</Trans>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <span>{t('changeSearchCriteria')}</span>
-                {!alternativePath && !displayInfoMessage && (
-                  <div className="alternative-simulations-info">
-                    {t('simulationsWithConflicts')}
-                  </div>
-                )}
-              </div>
-            )}
-            {selectedSimulation && <StdcmFeedback />}
+                  {workConflicts.length > 0 && (
+                    <ul>
+                      {workConflicts.map((message, index) => (
+                        <li key={index}>
+                          <span>
+                            <Trans>&bull; {message}</Trans>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <span>{t('changeSearchCriteria')}</span>
+                  {!alternativePath && !displayInfoMessage && (
+                    <div className="alternative-simulations-info">
+                      {t('simulationsWithConflicts')}
+                    </div>
+                  )}
+                </div>
+              )}
+              {selectedSimulation && <StdcmFeedback />}
+            </div>
+
+            <div className="osrd-config-item-container osrd-config-item-container-map map-results">
+              <DefaultBaseMap
+                mapId="stdcm-map-result"
+                infraId={infraId}
+                geometry={outputs?.pathProperties?.geometry}
+                pathStepMarkers={markersInfo}
+                isFeasible={!hasConflictResults}
+                layersSettings={layersSettings}
+              />
+            </div>
           </div>
-          <div className="osrd-config-item-container osrd-config-item-container-map map-results">
-            <DefaultBaseMap
-              mapId="stdcm-map-result"
-              infraId={infraId}
-              geometry={outputs?.pathProperties?.geometry}
-              pathStepMarkers={markersInfo}
-              isFeasible={!hasConflictResults}
-              layersSettings={layersSettings}
-            />
-          </div>
+
           {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
         </>
       )}
