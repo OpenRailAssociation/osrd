@@ -2,7 +2,7 @@ package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toList
+import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
@@ -100,10 +100,9 @@ fun makeRoute(
     ids.add(id)
     return RouteViewer(
         rawInfra.getRouteName(id),
-        recoverBlocks(rawInfra, blockInfra, ids, null)[0]
-            .toList()
-            .map { blockPathElement -> blockPathElement.block }
-            .map { block -> makeBlock(rawInfra, blockInfra, block) },
+        recoverBlocks(rawInfra, blockInfra, ids, null)[0].toBlockList().map { block ->
+            makeBlock(rawInfra, blockInfra, block)
+        },
         id,
     )
 }

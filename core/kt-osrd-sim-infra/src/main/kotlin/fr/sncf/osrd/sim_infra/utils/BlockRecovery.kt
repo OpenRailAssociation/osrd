@@ -10,23 +10,9 @@ data class BlockPathElement(
     val block: BlockId,
     // the index of the route in the path
     val routeIndex: Int,
-    // the position of the block in the route
-    val blockRouteOffset: Int,
-    // the offset of the block in the route's zones
-    val routeStartZoneOffset: Int,
-    // always equal to routeStartZoneOffset + number of zones in the block
+    // the offset of the block in the route's zones + number of zones in the block
     val routeEndZoneOffset: Int,
 )
-
-fun BlockPathElement.toList(): List<BlockPathElement> {
-    val res = mutableListOf(this)
-    var cur = this.prev
-    while (cur != null) {
-        res.add(cur)
-        cur = cur.prev
-    }
-    return res.reversed()
-}
 
 fun BlockPathElement.toBlockList(): StaticIdxList<Block> {
     val res = mutableStaticIdxArrayListOf(this.block)
@@ -95,16 +81,7 @@ private fun findRouteBlocks(
             filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, routeOffset)
         for (block in blocksOnRoute) {
             val blockSize = blockInfra.getBlockZonePaths(block).size
-            addPath(
-                BlockPathElement(
-                    prevPath,
-                    block,
-                    routeIndex,
-                    prevPath.blockRouteOffset + 1,
-                    routeOffset,
-                    routeOffset + blockSize
-                )
-            )
+            addPath(BlockPathElement(prevPath, block, routeIndex, routeOffset + blockSize))
         }
     }
 
@@ -115,7 +92,7 @@ private fun findRouteBlocks(
         val blocksOnRoute = filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, 0)
         for (block in blocksOnRoute) {
             val blockPath = blockInfra.getBlockZonePaths(block)
-            addPath(BlockPathElement(null, block, routeIndex, 0, 0, blockPath.size))
+            addPath(BlockPathElement(null, block, routeIndex, blockPath.size))
         }
     } else {
         for (prevPath in previousPaths) findNextBlocks(prevPath, 0)
