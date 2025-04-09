@@ -2,6 +2,7 @@ mod graph;
 mod new_schedule;
 mod past_schedule;
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -100,7 +101,8 @@ struct WaypointResponse {
 
 #[derive(Debug, Serialize, ToSchema)]
 struct SimilarScheduleItem {
-    schedule_id: String,
+    #[schema(value_type = String)]
+    schedule_id: past_schedule::Name,
     start_time: DateTime<Utc>,
     #[schema(value_type = SimilarScheduleWaypointResponse)]
     begin: WaypointResponse,
@@ -248,6 +250,7 @@ async fn similar_schedules(
     // Step 3: try to find each STDCM waypoint in the successive reference graphs
     // --------------------------------------------------------------------------
 
+    let mut schedules = Vec::new();
     for (segment, graph) in graphs {
         #[cfg(debug_assertions)]
         std::fs::write("/tmp/dot.txt", graph.to_dot()).unwrap();
@@ -259,10 +262,16 @@ async fn similar_schedules(
         schedules.push(state.correct_schedules_so_far);
     }
 
+    // Final step: determine the best combination of schedules
+    // -------------------------------------------------------
+
+    let schedules = decide_best_schedule_combination(schedules);
+
     Ok(Json(Response {
-        similar_schedules: vec![
-            SimilarScheduleItem {
-                schedule_id: "mock_similar_schedule_1".to_string(),
+        similar_schedules: schedules
+            .into_iter()
+            .map(|schedule_id| SimilarScheduleItem {
+                schedule_id,
                 start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
                     .unwrap()
                     .to_utc(),
@@ -274,22 +283,8 @@ async fn similar_schedules(
                     ci: 456,
                     ch: "B1".to_string(),
                 },
-            },
-            SimilarScheduleItem {
-                schedule_id: "mock_similar_schedule_2".to_string(),
-                start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
-                    .unwrap()
-                    .to_utc(),
-                begin: WaypointResponse {
-                    ci: 123,
-                    ch: "A1".to_string(),
-                },
-                end: WaypointResponse {
-                    ci: 456,
-                    ch: "B1".to_string(),
-                },
-            },
-        ],
+            })
+            .collect(),
     }))
 }
 
@@ -514,6 +509,37 @@ async fn simulate_past_schedules(
         .collect_vec();
 
     Ok(selected_past_schedules)
+}
+
+#[tracing::instrument(ret(level = "debug"))]
+fn decide_best_schedule_combination(
+    mut segments_schedules: Vec<HashSet<past_schedule::Name>>,
+) -> HashSet<past_schedule::Name> {
+    let mut schedules = HashSet::default();
+
+    while !segments_schedules.is_empty() {
+        let longest_train = {
+            let mut histo = std::collections::BinaryHeap::new();
+            let mut train_count = HashMap::new();
+
+            for segment in &segments_schedules {
+                for train in segment {
+                    *train_count.entry(train).or_insert(0) += 1;
+                }
+            }
+
+            for (train, count) in train_count {
+                histo.push((count, train));
+            }
+
+            let (_, longest_train) = histo.pop().expect("Heap should not be empty");
+            longest_train.clone()
+        };
+        segments_schedules.retain(|segment| !segment.contains(&longest_train));
+        schedules.insert(longest_train);
+    }
+
+    schedules
 }
 
 #[cfg(test)]
