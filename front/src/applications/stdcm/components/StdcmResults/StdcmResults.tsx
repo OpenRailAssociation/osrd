@@ -160,7 +160,6 @@ const StdcmResults = ({
                     />
                   </div>
                 )}
-                {selectedSimulation && <StdcmFeedback />}
               </div>
             ) : (
               <div className="simulation-failure">
@@ -200,16 +199,17 @@ const StdcmResults = ({
                 )}
               </div>
             )}
-            <div className="osrd-config-item-container osrd-config-item-container-map map-results">
-              <DefaultBaseMap
-                mapId="stdcm-map-result"
-                infraId={infraId}
-                geometry={outputs?.pathProperties?.geometry}
-                pathStepMarkers={markersInfo}
-                isFeasible={!hasConflictResults}
-                layersSettings={layersSettings}
-              />
-            </div>
+            {selectedSimulation && <StdcmFeedback />}
+          </div>
+          <div className="osrd-config-item-container osrd-config-item-container-map map-results">
+            <DefaultBaseMap
+              mapId="stdcm-map-result"
+              infraId={infraId}
+              geometry={outputs?.pathProperties?.geometry}
+              pathStepMarkers={markersInfo}
+              isFeasible={!hasConflictResults}
+              layersSettings={layersSettings}
+            />
           </div>
           {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
         </>

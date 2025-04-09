@@ -1,11 +1,8 @@
 import { Comment } from '@osrd-project/ui-icons';
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { StdcmResultsOutput } from 'applications/stdcm/types';
 import { getSelectedSimulation } from 'reducers/osrdconf/stdcmConf/selectors';
-import { dateTimeFormatting } from 'utils/date';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 const StdcmFeedback = () => {
@@ -13,19 +10,18 @@ const StdcmFeedback = () => {
   const { stdcmName, stdcmFeedbackMail } = useDeploymentSettings() ?? { stdcmName: 'STDCM' };
   const selectedSimulation = useSelector(getSelectedSimulation);
 
-  const resultsOutput = selectedSimulation.outputs as StdcmResultsOutput;
-  const { rollingStock, speedLimitByTag } = resultsOutput.results;
+  const { inputs } = selectedSimulation;
+  const { departureTime } = inputs;
+  const data = inputs.consist;
 
-  const trainName = rollingStock.name;
-  const consistCode = speedLimitByTag;
-  const consistLength = `${rollingStock.length} m`;
-  const consistMass = `${rollingStock.mass / 1000} t`;
-  const maxSpeed = `${Math.round(rollingStock.max_speed * 3.6)} km/h`;
-  const origin = resultsOutput.results.simulationPathSteps[0]?.location?.name;
-  const destination = resultsOutput.results.simulationPathSteps.at(-1)?.location?.name;
-  const departureTime = dateTimeFormatting(
-    dayjs.utc(resultsOutput.results.departure_time).toDate()
-  );
+  const trainName = data?.tractionEngine?.name ?? '-';
+  const consistCode = data?.speedLimitByTag ?? '-';
+  const consistLength = data?.totalLength ? `${data.totalLength} m` : '-';
+  const consistMass = data?.totalMass ? `${data.totalMass} t` : '-';
+  const maxSpeed = data?.maxSpeed ? `${Math.round(data.maxSpeed * 3.6)} km/h` : '-';
+
+  const origin = inputs.pathSteps[0]?.location?.name ?? '-';
+  const destination = inputs.pathSteps.at(-1)?.location?.name ?? '-';
 
   const subject = encodeURIComponent(t('mailFeedback.subject', { stdcmName }));
   const separator = '********';
