@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim_infra
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
@@ -20,6 +19,7 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.Helpers.getExampleInfra
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 import java.io.IOException
 import java.net.URISyntaxException

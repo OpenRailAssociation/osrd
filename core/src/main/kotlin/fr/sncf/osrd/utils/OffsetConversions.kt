@@ -1,6 +1,6 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.indexing.StaticIdxList

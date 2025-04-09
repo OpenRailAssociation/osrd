@@ -1,6 +1,5 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.parseRJSInfra
@@ -21,6 +20,7 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters

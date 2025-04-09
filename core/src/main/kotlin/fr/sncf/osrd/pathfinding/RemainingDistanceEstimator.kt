@@ -1,7 +1,6 @@
-package fr.sncf.osrd.api.pathfinding
+package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.geom.Point
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra

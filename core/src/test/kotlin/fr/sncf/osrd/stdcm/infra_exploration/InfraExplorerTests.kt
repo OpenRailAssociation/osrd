@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
@@ -310,7 +310,7 @@ class InfraExplorerTests {
         val block = blocks[0]
 
         // block 1->2, lookahead 2->3->bx
-        var explorers =
+        val explorers =
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,
@@ -419,7 +419,7 @@ class InfraExplorerTests {
                 .single()
 
         // block 1->2, lookahead 2->3->bx
-        var explorers =
+        val explorers =
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,

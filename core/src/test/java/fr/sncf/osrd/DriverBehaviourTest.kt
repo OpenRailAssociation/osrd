@@ -1,12 +1,12 @@
 package fr.sncf.osrd
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions

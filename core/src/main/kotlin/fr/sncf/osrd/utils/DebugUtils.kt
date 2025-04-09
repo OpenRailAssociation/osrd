@@ -1,6 +1,7 @@
-package fr.sncf.osrd.api.pathfinding
+package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import java.io.BufferedWriter
 import java.io.File
 

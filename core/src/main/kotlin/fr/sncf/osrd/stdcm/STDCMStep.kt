@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.TimeDelta

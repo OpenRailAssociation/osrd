@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
-import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk

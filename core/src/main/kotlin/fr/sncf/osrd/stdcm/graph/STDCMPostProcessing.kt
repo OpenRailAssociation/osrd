@@ -8,11 +8,11 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP

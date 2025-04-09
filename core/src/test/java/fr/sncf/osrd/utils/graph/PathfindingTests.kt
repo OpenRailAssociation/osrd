@@ -4,8 +4,8 @@ import com.google.common.graph.NetworkBuilder
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.NetworkGraphAdapter
-import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder

@@ -1,5 +1,6 @@
-package fr.sncf.osrd.graph
+package fr.sncf.osrd.pathfinding
 
+import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer

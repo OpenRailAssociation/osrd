@@ -2,11 +2,11 @@ package fr.sncf.osrd.api.project_signals
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.pathfinding.makeChunkPath
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signal_projection.projectSignals
 import fr.sncf.osrd.sim_infra.api.convertBlockPath
 import fr.sncf.osrd.sim_infra.api.convertRoutePath
+import fr.sncf.osrd.utils.makeChunkPath
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take

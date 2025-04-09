@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId

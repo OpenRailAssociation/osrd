@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsPath
-import fr.sncf.osrd.graph.PathfindingResultId
+import fr.sncf.osrd.pathfinding.PathfindingResultId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RouteId

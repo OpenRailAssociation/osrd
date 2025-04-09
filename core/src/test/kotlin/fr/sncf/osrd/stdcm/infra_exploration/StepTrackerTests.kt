@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
