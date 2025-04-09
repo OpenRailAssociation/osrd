@@ -291,7 +291,7 @@ fun buildTemporarySpeedLimitManager(
                         }
                     )
                 } else {
-                    outputSpeedLimits.put(dirTrackChunkId, chunkSpeedLimitRangeMap)
+                    outputSpeedLimits[dirTrackChunkId] = chunkSpeedLimitRangeMap
                 }
             }
         }
