@@ -3,18 +3,21 @@ package fr.sncf.osrd.utils
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.utils.BlockPathElement
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.SignalingSystem
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toList
+import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -109,7 +112,9 @@ object Helpers {
         val candidates =
             recoverBlocks(infra.rawInfra, infra.blockInfra, routes, getSignalingSystems(infra))
         assert(candidates.isNotEmpty())
-        for (candidate in candidates) res.addAll(candidate.toList().map(BlockPathElement::block))
+        for (candidate in candidates) {
+            res.addAll(candidate.toBlockList())
+        }
         return res
     }
 

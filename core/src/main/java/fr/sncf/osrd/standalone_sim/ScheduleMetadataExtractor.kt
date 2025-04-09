@@ -13,7 +13,6 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
@@ -64,7 +63,14 @@ fun deprecatedRecoverBlockPath(
             mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430, etcsLevel2)
         )
     assert(blockPaths.isNotEmpty())
-    return blockPaths[0].toList() // TODO: have a better way to choose the block path
+
+    val res = mutableListOf(blockPaths[0]) // TODO: have a better way to choose the block path
+    var cur = blockPaths[0].prev
+    while (cur != null) {
+        res.add(cur)
+        cur = cur.prev
+    }
+    return res.reversed()
 }
 
 fun getBlockOffsets(
