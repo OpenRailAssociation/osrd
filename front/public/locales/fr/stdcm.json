@@ -112,7 +112,7 @@
       },
       "upgrade": {
         "arrivalIncompatible": "Heure arrivée incompatible",
-        "helpUs": "Aidez-nous à améliorer ST DCM",
+        "helpUs": "Aidez-nous à améliorer {{stdcmName}}",
         "other": "Autre",
         "reason": "Cette simulation ne répond pas à vos besoin car ...",
         "startIncompatible": "Heure départ incompatible",
