@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +33,7 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import type { PacedTrainWithDetails } from '../types';
+import { formatTrainDuration } from '../utils';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -279,9 +279,7 @@ const PacedTrainItem = ({
             </span>
           </div>
           <div className="duration-time">
-            <span data-testid="train-duration">
-              {dayjs.duration(pacedTrain.duration.ms).format('HH[h]mm')}
-            </span>
+            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration.ms)}</span>
           </div>
         </div>
       )}

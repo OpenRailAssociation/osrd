@@ -22,17 +22,17 @@ export const ADD_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
   [
     {
       name: 'Paced train test 1',
-      startTime: '08:35',
+      startTime: '08:36',
       arrivalTime: '12:16',
     },
     {
       name: 'Paced train test 3',
-      startTime: '09:05',
+      startTime: '09:06',
       arrivalTime: '12:46',
     },
     {
       name: 'Paced train test 5',
-      startTime: '09:35',
+      startTime: '09:36',
       arrivalTime: '13:16',
     },
   ],
@@ -74,34 +74,34 @@ export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
     {
       name: '8608',
       startTime: '05:00',
-      arrivalTime: '05:06',
+      arrivalTime: '05:07',
     },
     {
       name: '8610',
       startTime: '06:00',
-      arrivalTime: '06:06',
+      arrivalTime: '06:07',
     },
   ],
   [
     {
       name: 'Paced Train 2',
       startTime: '06:00',
-      arrivalTime: '06:06',
+      arrivalTime: '06:07',
     },
     {
       name: 'Paced Train 4',
       startTime: '06:30',
-      arrivalTime: '06:36',
+      arrivalTime: '06:37',
     },
     {
       name: 'Paced Train 6',
       startTime: '07:00',
-      arrivalTime: '07:06',
+      arrivalTime: '07:07',
     },
     {
       name: 'Paced Train 8',
       startTime: '07:30',
-      arrivalTime: '07:36',
+      arrivalTime: '07:37',
     },
   ],
   [
@@ -150,11 +150,11 @@ export const DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[] = [
   {
     name: '8608',
     startTime: '05:05',
-    arrivalTime: '05:11',
+    arrivalTime: '05:12',
   },
   {
     name: '8608',
     startTime: '06:05',
-    arrivalTime: '06:11',
+    arrivalTime: '06:12',
   },
 ];
