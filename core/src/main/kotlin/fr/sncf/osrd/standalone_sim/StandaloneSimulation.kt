@@ -179,6 +179,7 @@ fun runStandaloneSimulation(
             chunkPath,
             infra,
             routes,
+            blockPath,
             rollingStock,
             schedule,
             pathItemPositions,

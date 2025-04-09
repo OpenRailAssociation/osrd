@@ -18,7 +18,6 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 import kotlin.math.abs
@@ -30,6 +29,7 @@ fun runScheduleMetadataExtractor(
     chunkPath: ChunkPath,
     fullInfra: FullInfra,
     routePath: StaticIdxList<Route>,
+    blockPath: StaticIdxList<Block>,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<TravelledPath>>,
@@ -47,13 +47,6 @@ fun runScheduleMetadataExtractor(
     val loadedSignalInfra = fullInfra.loadedSignalInfra
     val blockInfra = fullInfra.blockInfra
     val simulator = fullInfra.signalingSimulator
-
-    // get a new generation route path
-
-    // recover blocks from the route paths
-    val detailedBlockPath = deprecatedRecoverBlockPath(simulator, fullInfra, routePath)
-    val blockPath = mutableStaticIdxArrayListOf<Block>()
-    for (block in detailedBlockPath) blockPath.add(block.block)
 
     // Compute speeds, head and tail positions
     val envelopeWithStops = EnvelopeStopWrapper(envelope, legacyStops)
@@ -208,7 +201,6 @@ fun runScheduleMetadataExtractor(
             simulator,
             routePath,
             blockPath,
-            detailedBlockPath,
             closedSignalStops,
             loadedSignalInfra,
             blockInfra,

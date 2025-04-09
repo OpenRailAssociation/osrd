@@ -2,8 +2,6 @@ package fr.sncf.osrd.api.stdcm
 
 import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.api.ExceptionHandler
-import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
@@ -187,6 +185,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 path.chunkPath,
                 infra,
                 path.routePath.toIdxList(),
+                path.blocks.ranges.map { it.edge }.toIdxList(),
                 rollingStock,
                 scheduleItems,
                 listOf(),
