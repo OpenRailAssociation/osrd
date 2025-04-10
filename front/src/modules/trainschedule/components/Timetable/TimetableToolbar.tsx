@@ -275,27 +275,22 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          {timetableItems.length === 0 ? (
-            <div className="train-count">
-              <Checkbox small readOnly label={t('timetable.noTrain')} />
-            </div>
-          ) : (
-            <div className="train-count">
-              <Checkbox
-                label={computedItemLabel()}
-                small
-                checked={
-                  selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
-                  selectedTimetableItemIds.length > 0
-                }
-                isIndeterminate={
-                  selectedTimetableItemIds.length !== timetableItemsWithDetails.length &&
-                  selectedTimetableItemIds.length > 0
-                }
-                onChange={() => toggleAllTrainsSelecton()}
-              />
-            </div>
-          )}
+          <div className="train-count">
+            <Checkbox
+              label={timetableItems.length > 0 ? computedItemLabel() : t('timetable.noTrain')}
+              small
+              readOnly={timetableItems.length === 0}
+              checked={
+                selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
+                selectedTimetableItemIds.length > 0
+              }
+              isIndeterminate={
+                selectedTimetableItemIds.length !== timetableItemsWithDetails.length &&
+                selectedTimetableItemIds.length > 0
+              }
+              onChange={() => toggleAllTrainsSelecton()}
+            />
+          </div>
 
           {timetableItems.length > 0 && (
             <div>
