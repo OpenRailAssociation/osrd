@@ -32,6 +32,7 @@ use crate::core::simulation::SignalCriticalPosition;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::ZoneUpdate;
 use crate::error::Result;
+use crate::models;
 use crate::models::RollingStockModel;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
@@ -39,8 +40,8 @@ use crate::models::train_schedule::TrainSchedule;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
-use crate::views::train_schedule::TrainScheduleError;
-use crate::views::train_schedule::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_batch;
+use crate::views::timetable::train_schedule::TrainScheduleError;
 
 editoast_common::schemas! {
     ProjectPathTrainResult,
@@ -326,7 +327,7 @@ pub async fn compute_projected_train_paths(
     valkey_client: Arc<ValkeyClient>,
     path: ProjectPathInput,
     infra_id: i64,
-    trains_schedules: Vec<TrainSchedule>,
+    trains_schedules: Vec<models::TrainSchedule>,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<HashMap<i64, ProjectPathTrainResult>> {
     let path_projection = PathProjection::new(&path.track_section_ranges);

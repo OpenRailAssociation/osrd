@@ -14,8 +14,8 @@ use crate::models;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
-use crate::views::train_schedule::TrainScheduleForm;
-use crate::views::train_schedule::TrainScheduleResponse;
+use crate::views::timetable::train_schedule::TrainScheduleForm;
+use crate::views::timetable::train_schedule::TrainScheduleResponse;
 
 #[derive(Subcommand, Debug)]
 pub enum TimetablesCommands {

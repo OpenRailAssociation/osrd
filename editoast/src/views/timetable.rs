@@ -1,4 +1,7 @@
+pub mod paced_train;
+pub mod simulation;
 pub mod stdcm;
+pub mod train_schedule;
 
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -23,19 +26,19 @@ use editoast_schemas::paced_train::PacedTrain;
 use editoast_schemas::train_schedule::TrainSchedule;
 use itertools::Either;
 use itertools::Itertools;
+use paced_train::PacedTrainResponse;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::paced_train::PacedTrainResponse;
+use super::infra::InfraIdQueryParam;
 use super::pagination::PaginatedList as _;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
-use crate::ValkeyClient;
 use crate::core::AsCoreRequest;
 use crate::core::conflict_detection::Conflict as CoreConflict;
 use crate::core::conflict_detection::ConflictDetectionRequest;
@@ -51,12 +54,14 @@ use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
+
+use crate::ValkeyClient;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::CoreClient;
-use crate::views::train_schedule::TrainScheduleForm;
-use crate::views::train_schedule::TrainScheduleResponse;
-use crate::views::train_schedule::train_simulation_batch;
+use simulation::train_simulation_batch;
+use train_schedule::TrainScheduleForm;
+use train_schedule::TrainScheduleResponse;
 
 crate::routes! {
     "/timetable" => {
@@ -75,12 +80,17 @@ crate::routes! {
             &stdcm,
         },
     },
+    &paced_train,
+    &train_schedule,
 }
 
 editoast_common::schemas! {
     Conflict,
     TimetableResult,
     stdcm::schemas(),
+    paced_train::schemas(),
+    train_schedule::schemas(),
+    simulation::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -367,12 +377,6 @@ async fn get_paced_trains(
     let results = paced_trains.into_iter().map_into().collect();
 
     Ok(Json(ListPacedTrainsResponse { stats, results }))
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub struct InfraIdQueryParam {
-    infra_id: i64,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]

@@ -6,7 +6,6 @@ pub mod infra;
 mod layers;
 mod openapi;
 pub mod operational_studies;
-pub mod paced_train;
 pub mod pagination;
 pub mod params;
 pub mod path;
@@ -21,7 +20,6 @@ pub mod stdcm_search_environment;
 pub mod study;
 pub mod temporary_speed_limits;
 pub mod timetable;
-pub mod train_schedule;
 pub mod work_schedules;
 
 #[cfg(test)]
@@ -72,7 +70,6 @@ use tower_http::trace::TraceLayer;
 use tracing::info;
 use tracing::warn;
 use url::Url;
-use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
@@ -81,8 +78,6 @@ use crate::core;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::mq_client;
-use crate::core::pathfinding::PathfindingInputError;
-use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
 use crate::error::InternalError;
@@ -96,7 +91,6 @@ use crate::map::MapLayers;
 use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
-use crate::views::path::pathfinding::PathfindingFailure;
 
 crate::routes! {
     fn router();
@@ -112,7 +106,6 @@ crate::routes! {
     &fonts,
     &infra,
     &layers,
-    &paced_train,
     &projects,
     &rolling_stock,
     &search,
@@ -120,7 +113,6 @@ crate::routes! {
     &stdcm_search_environment,
     &work_schedules,
     &temporary_speed_limits,
-    &train_schedule,
     &timetable,
     &path,
     &stdcm_logs,
@@ -129,15 +121,11 @@ crate::routes! {
 
 editoast_common::schemas! {
     Version,
-    SimulationSummaryResult,
-    InfraIdQueryParam,
-
     editoast_common::schemas(),
     editoast_schemas::schemas(),
     models::schemas(),
     core::schemas(),
     generated_data::schemas(),
-
     authz::schemas(),
     documents::schemas(),
     electrical_profiles::schemas(),
@@ -145,7 +133,6 @@ editoast_common::schemas! {
     infra::schemas(),
     operation::schemas(),
     operational_studies::schemas(),
-    paced_train::schemas(),
     pagination::schemas(),
     path::schemas(),
     projects::schemas(),
@@ -155,94 +142,9 @@ editoast_common::schemas! {
     scenario::macro_nodes::schemas(),
     search::schemas(),
     stdcm_search_environment::schemas(),
-    train_schedule::schemas(),
     timetable::schemas(),
     work_schedules::schemas(),
     stdcm_logs::schemas(),
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-struct ListId {
-    ids: HashSet<i64>,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub struct InfraIdQueryParam {
-    infra_id: i64,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Deserialize))]
-#[serde(tag = "status", rename_all = "snake_case")]
-enum SimulationSummaryResult {
-    /// Minimal information on a simulation's result
-    Success {
-        /// Length of a path in mm
-        length: u64,
-        /// Travel time in ms
-        time: u64,
-        /// Total energy consumption of a train in kWh
-        energy_consumption: f64,
-        /// Final simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_final: Vec<u64>,
-        /// Provisional simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_provisional: Vec<u64>,
-        /// Base simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_base: Vec<u64>,
-    },
-    /// Pathfinding not found
-    PathfindingNotFound(PathfindingNotFound),
-    /// An error has occurred during pathfinding
-    PathfindingFailure { core_error: InternalError },
-    /// An error has occurred during computing
-    SimulationFailed { error_type: String },
-    /// InputError
-    PathfindingInputError(PathfindingInputError),
-}
-
-impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
-    fn from(sim: SimulationResponse) -> Self {
-        match sim {
-            SimulationResponse::Success {
-                final_output,
-                provisional,
-                base,
-                ..
-            } => {
-                let report = final_output.report_train;
-                Self::Success {
-                    length: *report.positions.last().unwrap(),
-                    time: *report.times.last().unwrap(),
-                    energy_consumption: report.energy_consumption,
-                    path_item_times_final: report.path_item_times.clone(),
-                    path_item_times_provisional: provisional.path_item_times.clone(),
-                    path_item_times_base: base.path_item_times.clone(),
-                }
-            }
-            SimulationResponse::PathfindingFailed { pathfinding_failed } => {
-                match pathfinding_failed {
-                    PathfindingFailure::InternalError { core_error } => {
-                        Self::PathfindingFailure { core_error }
-                    }
-
-                    PathfindingFailure::PathfindingInputError(input_error) => {
-                        Self::PathfindingInputError(input_error)
-                    }
-
-                    PathfindingFailure::PathfindingNotFound(not_found) => {
-                        Self::PathfindingNotFound(not_found)
-                    }
-                }
-            }
-            SimulationResponse::SimulationFailed { core_error } => Self::SimulationFailed {
-                error_type: core_error.error_type,
-            },
-        }
-    }
 }
 
 /// Represents the bundle of information about the issuer of a request

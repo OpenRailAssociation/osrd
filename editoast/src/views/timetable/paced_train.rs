@@ -19,13 +19,6 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthenticationExt;
-use super::InfraIdQueryParam;
-use super::SimulationSummaryResult;
-use super::path::pathfinding::PathfindingResult;
-use super::path::pathfinding::pathfinding_from_train;
-use super::projection::ProjectPathForm;
-use super::projection::compute_projected_train_paths;
-use super::train_schedule::train_simulation_batch;
 use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
 use crate::models;
@@ -34,8 +27,14 @@ use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::AuthorizationError;
-use crate::views::ListId;
+use crate::views::infra::InfraIdQueryParam;
+use crate::views::path::pathfinding::PathfindingResult;
+use crate::views::path::pathfinding::pathfinding_from_train;
+use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
+use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::simulation::SimulationSummaryResult;
+use crate::views::timetable::train_simulation_batch;
 
 crate::routes! {
     "/paced_train" => {
@@ -174,11 +173,16 @@ async fn update_paced_train(
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+struct PacedTrainIds {
+    ids: HashSet<i64>,
+}
+
 /// Delete a paced train
 #[utoipa::path(
     delete, path = "",
     tag = "timetable,paced_train",
-    request_body = inline(ListId),
+    request_body = inline(PacedTrainIds),
     responses(
         (status = 204, description = "All paced_trains have been deleted")
     )
@@ -186,9 +190,9 @@ async fn update_paced_train(
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Json(ListId {
+    Json(PacedTrainIds {
         ids: paced_train_ids,
-    }): Json<ListId>,
+    }): Json<PacedTrainIds>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -505,12 +509,12 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
-    use crate::views::SimulationSummaryResult;
-    use crate::views::paced_train::PacedTrainResponse;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+    use crate::views::timetable::paced_train::PacedTrainResponse;
+    use crate::views::timetable::simulation::SimulationSummaryResult;
 
     #[rstest]
     async fn paced_train_post() {
@@ -616,7 +620,7 @@ mod tests {
         let paced_train_base = PacedTrain {
             train_schedule_base: TrainSchedule {
                 rolling_stock_name: rolling_stock.name.clone(),
-                ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+                ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                     .expect("Unable to parse")
             },
             paced: Paced {
@@ -847,7 +851,7 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")
         };
         let paced_train_valid =
