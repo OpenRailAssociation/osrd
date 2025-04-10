@@ -3,8 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import GrantsManagerHeader from 'common/authorization/components/GrantsManagerHeader';
+import useConnectedUserGrants from 'common/authorization/hooks/useConnectedUserGrants';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Loader } from 'common/Loaders/Loader';
+import { DEFAULT_GRANT } from 'modules/infra/consts';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor';
 import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
@@ -12,9 +15,6 @@ import RollingStockEditorFormModal from 'modules/rollingStock/components/Rolling
 import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
-import useConnectedUserGrants from 'common/authorization/hooks/useConnectedUserGrants';
-import GrantsManagerHeader from 'common/authorization/components/GrantsManagerHeader';
-import { DEFAULT_GRANT } from 'modules/infra/consts';
 
 const RollingStockEditor = () => {
   const { t } = useTranslation('rollingstock');
@@ -44,7 +44,12 @@ const RollingStockEditor = () => {
     resetFilters,
   } = useFilterRollingStock();
 
-  const payload = useMemo(() => ({ rollingstock: [3, 10, 105, 106] }), []);
+  const rollingstockIdsList = useMemo(
+    () => filteredRollingStockList.map((rollingstock) => rollingstock.id),
+    [filteredRollingStockList]
+  );
+
+  const payload = useMemo(() => ({ rollingstock: rollingstockIdsList }), []);
 
   const { resourceGrants, userResourcesGrants } = useConnectedUserGrants(payload);
 
