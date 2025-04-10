@@ -137,14 +137,13 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
 
   const {
     data: { results: allRollingStocks } = { results: [] },
-    isSuccess,
     isError,
     error,
   } = osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
     pageSize: 1000,
   });
 
-  const usefulRollingStocks = useMemo(
+  const usefullRollingStocks = useMemo(
     () =>
       isStdcm
         ? allRollingStocks.filter((rs) => FREIGHT_ROLLING_STOCKS.includes(rs.name))
@@ -178,24 +177,19 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
   };
 
   useEffect(() => {
+    console.log('isError', { isError });
     if (isError && error) {
       dispatch(setFailure(castErrorToFailure(error)));
     }
   }, [isError]);
 
   useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
-    setFilteredRollingStockList(newFilteredRollingStock);
-  }, [isSuccess]);
-
-  useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
-    setTimeout(() => {
+    if (usefullRollingStocks.length > 0) {
+      const newFilteredRollingStock = filterRollingStocks(usefullRollingStocks, filters);
       setFilteredRollingStockList(newFilteredRollingStock);
       setSearchIsLoading(false);
-    }, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, usefulRollingStocks]);
+    }
+  }, [filters, usefullRollingStocks]);
 
   return {
     filteredRollingStockList,
