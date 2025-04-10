@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { compact, concat, uniq } from 'lodash';
+import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import type { IconType } from 'react-icons';
 import { IoMdSpeedometer } from 'react-icons/io';
@@ -45,9 +45,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
       skip: !infraID,
     }
   );
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
-
-  const allSpeedLimitTags = uniq(compact(concat(speedLimitTags, speedLimitsTagsByInfraId)));
+  const allSpeedLimitTags = uniq(speedLimitsTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);

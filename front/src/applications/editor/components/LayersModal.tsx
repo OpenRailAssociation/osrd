@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, concat, compact } from 'lodash';
+import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -72,9 +72,7 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
       { infraId: infraID! },
       { skip: !infraID }
     );
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
-
-  const allSpeedLimitTags = compact(concat(speedLimitTags, speedLimitTagsByInfraId));
+  const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);

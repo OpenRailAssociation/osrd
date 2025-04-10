@@ -2790,22 +2790,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
-  /speed_limit_tags:
-    get:
-      tags:
-      - speed_limit_tags
-      responses:
-        '200':
-          description: List of configured speed-limit tags
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-              example:
-              - V200
-              - MA80
   /sprites/signaling_systems:
     get:
       tags:

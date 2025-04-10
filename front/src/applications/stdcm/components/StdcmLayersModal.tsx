@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { isString, uniq, concat, compact } from 'lodash';
+import { isString, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -54,14 +54,12 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
       { infraId: infraID! },
       { skip: !infraID }
     );
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
-
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('Editor.layers-modal.noSpeedLimitByTag'), [t]);
 
   const speedLimitOptions = useMemo(() => {
-    const allSpeedLimitTags = uniq(compact(concat(speedLimitTags, speedLimitTagsByInfraId))).sort();
+    const allSpeedLimitTags = uniq(speedLimitTagsByInfraId).sort();
     return [t('Editor.layers-modal.noSpeedLimitByTag'), ...allSpeedLimitTags];
-  }, [t, speedLimitTags, speedLimitTagsByInfraId]);
+  }, [t, speedLimitTagsByInfraId]);
   const toggleLayer = useCallback(
     (layer: keyof LayersSettings) => {
       const isEnabled = !selectedLayers[layer];

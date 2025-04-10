@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { compact, concat, uniq } from 'lodash';
+import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { COMPOSITION_CODES, DEFAULT_COMPOSITION_CODE } from 'applications/stdcm/consts';
@@ -26,11 +26,6 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
   const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
-
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery(undefined, {
-    skip: isStdcm,
-  });
-
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
@@ -54,9 +49,7 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
     }
   }, []);
 
-  const speedLimitsByTags = isStdcm
-    ? COMPOSITION_CODES
-    : compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
+  const speedLimitsByTags = isStdcm ? COMPOSITION_CODES : uniq(speedLimitsTagsByInfraId);
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
 
   return {
