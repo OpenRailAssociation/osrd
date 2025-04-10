@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,9 @@ import RollingStockEditorFormModal from 'modules/rollingStock/components/Rolling
 import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+import useConnectedUserGrants from 'common/authorization/hooks/useConnectedUserGrants';
+import GrantsManagerHeader from 'common/authorization/components/GrantsManagerHeader';
+import { DEFAULT_GRANT } from 'modules/infra/consts';
 
 const RollingStockEditor = () => {
   const { t } = useTranslation('rollingstock');
@@ -40,6 +43,18 @@ const RollingStockEditor = () => {
     searchIsLoading,
     resetFilters,
   } = useFilterRollingStock();
+
+  const payload = useMemo(() => ({ rollingstock: [3, 10, 105, 106] }), []);
+
+  const { resourceGrants, userResourcesGrants } = useConnectedUserGrants(payload);
+
+  const userGrant = useMemo(
+    () =>
+      userResourcesGrants?.rollingstock.find(
+        (userInfraGrant) => userInfraGrant.id === openedRollingStockCardId
+      )?.grant || DEFAULT_GRANT,
+    [userResourcesGrants, openedRollingStockCardId]
+  );
 
   const rollingStocksList = (
     <div className="rollingstock-editor-list pr-1" data-testid="rollingstock-editor-list">
@@ -80,11 +95,19 @@ const RollingStockEditor = () => {
             <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
               {(selectedRollingStock || isEditing) &&
                 ((selectedRollingStock && !isEditing && (
-                  <RollingStockInformationPanel
-                    id={openedRollingStockCardId}
-                    isEditing={isEditing}
-                    rollingStock={selectedRollingStock}
-                  />
+                  <>
+                    <RollingStockInformationPanel
+                      id={openedRollingStockCardId}
+                      isEditing={isEditing}
+                      rollingStock={selectedRollingStock}
+                    />
+                    <GrantsManagerHeader
+                      resourceId={openedRollingStockCardId}
+                      resourceType="rollingstock"
+                      resourceGrants={resourceGrants}
+                      userGrant={userGrant}
+                    />
+                  </>
                 )) ||
                   (isEditing && (
                     <RollingStockEditorForm
