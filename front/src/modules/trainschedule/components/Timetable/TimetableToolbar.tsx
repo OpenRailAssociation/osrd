@@ -152,13 +152,13 @@ const TimetableToolbar = ({
       try {
         let deletingTrainSchedulesPromise;
         let deletingPacedTrainsPromise;
-        if (editoastSelectedPacedTrainIds.length > 0) {
-          deletingPacedTrainsPromise = deleteTrainSchedules({
+        if (editoastSelectedTrainScheduleIds.length > 0) {
+          deletingTrainSchedulesPromise = deleteTrainSchedules({
             body: { ids: editoastSelectedTrainScheduleIds },
           }).unwrap();
         }
         if (editoastSelectedPacedTrainIds.length > 0) {
-          deletingTrainSchedulesPromise = deletePacedTrains({
+          deletingPacedTrainsPromise = deletePacedTrains({
             body: { ids: editoastSelectedPacedTrainIds },
           }).unwrap();
         }
