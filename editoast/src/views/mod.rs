@@ -15,7 +15,6 @@ pub mod projects;
 pub mod rolling_stock;
 pub mod scenario;
 pub mod search;
-pub mod speed_limit_tags;
 pub mod sprites;
 pub mod stdcm_logs;
 pub mod stdcm_search_environment;
@@ -117,7 +116,6 @@ crate::routes! {
     &projects,
     &rolling_stock,
     &search,
-    &speed_limit_tags,
     &sprites,
     &stdcm_search_environment,
     &work_schedules,
@@ -613,6 +611,12 @@ pub struct AppState {
 impl FromRef<AppState> for DbConnectionPoolV2 {
     fn from_ref(input: &AppState) -> Self {
         (*input.db_pool).clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<SpeedLimitTagIds> {
+    fn from_ref(input: &AppState) -> Self {
+        input.speed_limit_tag_ids.clone()
     }
 }
 

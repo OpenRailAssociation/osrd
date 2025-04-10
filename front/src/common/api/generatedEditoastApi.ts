@@ -19,7 +19,6 @@ export const addTagTypes = [
   'scenarios',
   'rolling_stock_livery',
   'search',
-  'speed_limit_tags',
   'sprites',
   'stdcm_search_environment',
   'stdcm_log',
@@ -858,10 +857,6 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ['search'],
-      }),
-      getSpeedLimitTags: build.query<GetSpeedLimitTagsApiResponse, GetSpeedLimitTagsApiArg>({
-        query: () => ({ url: `/speed_limit_tags` }),
-        providesTags: ['speed_limit_tags'],
       }),
       getSpritesSignalingSystems: build.query<
         GetSpritesSignalingSystemsApiResponse,
@@ -1866,9 +1861,6 @@ export type PostSearchApiArg = {
   pageSize?: number | null;
   searchPayload: SearchPayload;
 };
-export type GetSpeedLimitTagsApiResponse =
-  /** status 200 List of configured speed-limit tags */ string[];
-export type GetSpeedLimitTagsApiArg = void;
 export type GetSpritesSignalingSystemsApiResponse =
   /** status 200 List of supported signaling systems */ string[];
 export type GetSpritesSignalingSystemsApiArg = void;

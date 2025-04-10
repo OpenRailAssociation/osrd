@@ -24,6 +24,7 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -32,9 +33,11 @@ use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use super::params::List;
 use crate::AppState;
+use crate::Arc;
 use crate::core::AsCoreRequest;
 use crate::core::infra_loading::InfraLoadRequest;
 use crate::error::Result;
+use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
@@ -558,7 +561,8 @@ async fn get_speed_limit_tags(
     Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
-) -> Result<Json<Vec<String>>> {
+    State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
+) -> Result<Json<HashSet<String>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -573,10 +577,13 @@ async fn get_speed_limit_tags(
         infra_id: infra.infra_id,
     })
     .await?;
-    let speed_limits_tags = infra.get_speed_limit_tags(conn).await?;
-    Ok(Json(
-        speed_limits_tags.into_iter().map(|el| (el.tag)).collect(),
-    ))
+    let infra_tags = infra.get_speed_limit_tags(conn).await?;
+    let union_tags: HashSet<String> = infra_tags
+        .into_iter()
+        .map(|el| (el.tag))
+        .chain(builtin_tags.0.clone())
+        .collect();
+    Ok(Json(union_tags))
 }
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
@@ -1044,6 +1051,7 @@ pub mod tests {
     #[rstest]
     async fn infra_get_speed_limit_tags() {
         let app = TestAppBuilder::default_app();
+        let builtin_tags = app.speed_limit_tag_ids();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1058,10 +1066,13 @@ pub mod tests {
 
         let req = app.get(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str());
 
-        let speed_limit_tags: Vec<String> =
+        let mut speed_limit_tags: Vec<String> =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(speed_limit_tags, vec!["test_tag"]);
+        let mut test_tags = builtin_tags.0.clone();
+        test_tags.push("test_tag".to_string());
+
+        assert_eq!(speed_limit_tags.sort(), test_tags.sort());
     }
 
     #[rstest]

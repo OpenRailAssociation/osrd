@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SpeedLimitTagIds(Vec<String>);
+pub struct SpeedLimitTagIds(pub Vec<String>);
 
 type SpeedLimitTagsConfig = HashMap<String, SpeedLimitTag>;
 

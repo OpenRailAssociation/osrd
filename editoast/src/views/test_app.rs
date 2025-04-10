@@ -332,6 +332,10 @@ impl TestApp {
         self.app_state.db_pool.clone()
     }
 
+    pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {
+        self.app_state.speed_limit_tag_ids.clone()
+    }
+
     pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder {
         UserBuilder::new(
             self,

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 
-import { cloneDeep, compact, concat, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
+import { cloneDeep, compact, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EntityError from 'applications/editor/components/EntityError';
@@ -113,10 +113,7 @@ const RangeEditionLeftPanel = () => {
       },
       { skip: !infraID }
     );
-
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
-
-  const allSpeedLimitTags = uniq(concat(speedLimitTags, speedLimitTagsByInfraId));
+  const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const updateSpeedSectionExtensions = (
