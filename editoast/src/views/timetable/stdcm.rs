@@ -57,8 +57,8 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::timetable::Conflict;
-use crate::views::train_schedule::consist_train_simulation_batch;
-use crate::views::train_schedule::train_simulation_batch;
+use crate::views::timetable::simulation::consist_train_simulation_batch;
+use crate::views::timetable::train_simulation_batch;
 
 editoast_common::schemas! {
     request::schemas(),

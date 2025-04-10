@@ -33,7 +33,6 @@ use client::user::UserCommand;
 use editoast_common::tracing::TracingConfig;
 use editoast_common::tracing::create_tracing_subscriber;
 use editoast_models::DbConnectionPoolV2;
-use models::RollingStockModel;
 use tracing_subscriber::util::SubscriberInitExt;
 pub use views::AppState;
 

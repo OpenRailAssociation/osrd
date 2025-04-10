@@ -84,6 +84,7 @@ crate::routes! {
 editoast_common::schemas! {
     pathfinding::schemas(),
     delimited_area::schemas(),
+    InfraIdQueryParam,
     InfraState,
     InfraWithState,
 }
@@ -99,6 +100,12 @@ pub enum InfraApiError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] model::Error),
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct InfraIdQueryParam {
+    pub infra_id: i64,
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
