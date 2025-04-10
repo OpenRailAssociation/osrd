@@ -11,17 +11,26 @@ const StdcmFeedback = () => {
   const selectedSimulation = useSelector(getSelectedSimulation);
 
   const { inputs } = selectedSimulation;
-  const { departureTime } = inputs;
-  const data = inputs.consist;
+  const { departureTime, pathSteps, consist } = inputs;
+  if (
+    !consist ||
+    !consist.tractionEngine ||
+    consist.totalLength == null ||
+    consist.totalMass == null ||
+    consist.maxSpeed == null
+  )
+    return null;
 
-  const trainName = data?.tractionEngine?.name ?? '-';
-  const consistCode = data?.speedLimitByTag ?? '-';
-  const consistLength = data?.totalLength ? `${data.totalLength} m` : '-';
-  const consistMass = data?.totalMass ? `${data.totalMass} t` : '-';
-  const maxSpeed = data?.maxSpeed ? `${Math.round(data.maxSpeed * 3.6)} km/h` : '-';
+  const { tractionEngine, speedLimitByTag, totalLength, totalMass, maxSpeed } = consist;
 
-  const origin = inputs.pathSteps[0]?.location?.name ?? '-';
-  const destination = inputs.pathSteps.at(-1)?.location?.name ?? '-';
+  const trainName = tractionEngine.name;
+  const consistCode = speedLimitByTag ?? '-';
+  const consistLength = `${totalLength} m`;
+  const consistMass = `${totalMass} t`;
+  const consistSpeed = `${Math.round(maxSpeed)} km/h`;
+
+  const origin = pathSteps[0]?.location?.name ?? '-';
+  const destination = pathSteps.at(-1)?.location?.name ?? '-';
 
   const subject = encodeURIComponent(t('mailFeedback.subject', { stdcmName }));
   const separator = '********';
@@ -35,7 +44,7 @@ ${t('consist.tractionEngine')}: ${trainName}
 ${t('consist.compositionCode')}: ${consistCode}
 ${t('consist.tonnage')}: ${consistMass}
 ${t('consist.length')}: ${consistLength}
-${t('consist.maxSpeed')}: ${maxSpeed}
+${t('consist.maxSpeed')}: ${consistSpeed}
 
 ${t('trainPath.origin')}: ${origin}
 ${t('trainPath.destination')}: ${destination}

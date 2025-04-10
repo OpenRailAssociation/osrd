@@ -7,12 +7,12 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 
 const trainName = 'ELECTRIC_RS_E2E';
 const compositionCode = 'HLP';
-const tonnage = '900 t';
-const length = '400 m';
-const maxSpeed = '288 km/h';
+const tonnage = '950 t';
+const length = '567 m';
+const maxSpeed = '100 km/h';
 const origin = 'North_West_station';
 const destination = 'South_station';
-const departureTime = '17 oct 2024 20:21';
+const departureTime = '20:21';
 
 const getMailFeedbackData = () => {
   const translations = getTranslations({
