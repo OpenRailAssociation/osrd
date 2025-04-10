@@ -63,7 +63,7 @@
     "text": "Please contact the maintenance team so they can get you back on track."
   },
   "noCorrespondingResults": "No results matching your search.",
-  "notificationTitle": "Pilot phase: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
+  "notificationTitle": "Current scope: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
   "pathfindingStatus": {
     "calculating": "Validating path...",
     "success": "The requested path is valid."
