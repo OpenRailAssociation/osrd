@@ -8,6 +8,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
+import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
@@ -131,4 +132,12 @@ fun stepsFromLocations(
 ): List<STDCMStep> {
     val duration = if (stops) 0.0 else null
     return locations.map { STDCMStep(listOf(it), duration, stops) }
+}
+
+/**
+ * Returns how long the longest requirement segment lasts, which is the minimum delay we need to add
+ * between two identical trains
+ */
+fun getMaxOccupancyDuration(requirements: List<ResultTrain.SpacingRequirement>): Double {
+    return requirements.maxOf { it.endTime - it.beginTime }
 }
