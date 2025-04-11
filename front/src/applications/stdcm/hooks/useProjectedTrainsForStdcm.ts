@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
+import useLazySimulateTrains from 'applications/operationalStudies/hooks/useLazySimulateTrains';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
-import useLazyLoadTimetableItems from 'modules/simulationResult/hooks/useLazyLoadTimetableItems';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import {
@@ -72,29 +72,33 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     timetableId,
   });
 
-  const trainIds = useMemo(() => timetable?.map((t) => t.id) || [], [timetable]);
+  const { data: { results: rollingStocks } = { results: null } } =
+    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const formattedTrainIds = useMemo(
-    () => trainIds.map((trainId) => formatEditoastTrainIdToTrainScheduleId(trainId)),
-    [trainIds]
-  );
-
-  const formattedTrainSchedules: TrainScheduleResponseWithTrainId[] | undefined = useMemo(
+  const formattedTrainSchedules: TrainScheduleResponseWithTrainId[] = useMemo(
     () =>
       timetable?.map((trainSchedule) => ({
         ...trainSchedule,
         id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
-      })),
+      })) || [],
     [timetable]
   );
 
   // Progressive loading of the trains
-  const { timetableItemSummariesById } = useLazyLoadTimetableItems({
+  const { simulatedTrainsById, simulateTimetableItems } = useLazySimulateTrains({
     infraId,
     electricalProfileSetId,
-    timetableItemIdsToFetch: formattedTrainIds,
-    timetableItems: formattedTrainSchedules,
+    rollingStocks,
+    onProgress: (results) => {
+      if (!stdcmResponse) return;
+      const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(stdcmResponse, results);
+      setTimetableItemIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
+    },
   });
+
+  useEffect(() => {
+    simulateTimetableItems(formattedTrainSchedules);
+  }, [formattedTrainSchedules]);
 
   // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10613
   // Progressive projection of the trains
@@ -109,21 +113,11 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   useEffect(() => {
     if (stdcmResponse) {
-      const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(
-        stdcmResponse,
-        timetableItemSummariesById
-      );
-      setTimetableItemIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
-    }
-  }, [timetableItemSummariesById]);
-
-  useEffect(() => {
-    if (stdcmResponse) {
       // start again the projection when the stdcm response changes
       setSpaceTimeData([]);
       const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(
         stdcmResponse,
-        timetableItemSummariesById
+        simulatedTrainsById
       );
       setTimetableItemIdsToProject(new Set(relevantTrainScheduleIds));
     }
@@ -142,7 +136,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   return {
     spaceTimeData,
-    projectionLoaderData: { allTrainsProjected, totalTrains: trainIds.length },
+    projectionLoaderData: { allTrainsProjected, totalTrains: timetable?.length ?? 0 },
   };
 };
 
