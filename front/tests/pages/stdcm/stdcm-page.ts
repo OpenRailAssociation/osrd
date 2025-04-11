@@ -37,7 +37,7 @@ class STDCMPage extends HomePage {
 
   private readonly mapContainer: Locator;
 
-  private readonly launchSimulationButton: Locator;
+  readonly launchSimulationButton: Locator;
 
   private readonly closeTolerancePickerButton: Locator;
 
@@ -62,8 +62,8 @@ class STDCMPage extends HomePage {
     this.helpButton = page.getByTestId('stdcm-help-button');
     this.mapContainer = page.locator('#stdcm-map-config');
     this.consistCard = page.locator('.stdcm-consist-container .stdcm-card');
-    this.originCard = page.locator('.stdcm-card:has(.stdcm-origin-icon)');
-    this.destinationCard = page.locator('.stdcm-card:has(.stdcm-destination-icon)');
+    this.originCard = page.getByTestId('stdcm-card-origin');
+    this.destinationCard = page.getByTestId('stdcm-card-destination');
     this.addViaButton = page.locator('.stdcm-vias-list button .stdcm-card__body.add-via');
     this.anteriorLinkedTrainContainer = page.locator(
       '.stdcm-linked-train-search-container.anterior-linked-train'

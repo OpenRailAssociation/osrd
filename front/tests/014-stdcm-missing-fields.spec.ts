@@ -85,7 +85,43 @@ test.describe('Verify stdcm missing fields', () => {
       simulationLengthAndDuration: '51 km — 48min',
       validSimulationNumber: 1,
     });
-  });
 
-  // TODO: Add more tests to cover invalid fields
+    // Step 4 — Enter invalid values for tonnage, length and max speed
+    await consistSection.setTonnage('30');
+    await consistSection.setLength('12');
+    await consistSection.setMaxSpeed('7');
+    await stdcmPage.verifyInvalidSimulationLaunch();
+    await stdcmPage.expectWarningBoxVisible();
+    await stdcmPage.expectWarningBoxContains([
+      translations.stdcmErrors.invalidFields.totalMass,
+      translations.stdcmErrors.invalidFields.totalLength,
+      translations.stdcmErrors.invalidFields.maxSpeed,
+    ]);
+
+    // Step 5 — Fix tonnage, clear length and destination and expect both missing and invalid field warnings
+    await consistSection.setTonnage('900');
+    await consistSection.clearLength();
+    await destinationSection.clearDestination();
+    await stdcmPage.verifyInvalidSimulationLaunch();
+    await stdcmPage.expectWarningBoxVisible();
+
+    await stdcmPage.expectWarningBoxContains([
+      translations.stdcmErrors.missingFields.destination,
+      translations.stdcmErrors.missingFields.totalLength,
+      translations.stdcmErrors.invalidFields.maxSpeed,
+    ]);
+
+    // Step 6 — Fill all fields with valid values and verify simulation
+    await consistSection.setLength('400');
+    await consistSection.setMaxSpeed('160');
+    await destinationSection.fillDestinationDetailsLight();
+
+    await stdcmPage.verifyValidSimulationLaunch();
+    await stdcmPage.expectWarningBoxHidden();
+    await simulationResultPage.verifySimulationDetails({
+      simulationIndex: 1,
+      simulationLengthAndDuration: '51 km — 40min',
+      validSimulationNumber: 2,
+    });
+  });
 });

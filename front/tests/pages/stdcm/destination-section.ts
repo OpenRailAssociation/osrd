@@ -32,6 +32,8 @@ class DestinationSection extends STDCMPage {
 
   private readonly suggestionSS: Locator;
 
+  private readonly clearButton: Locator;
+
   constructor(page: Page) {
     super(page);
 
@@ -46,6 +48,7 @@ class DestinationSection extends STDCMPage {
     this.suggestionSS = this.suggestionList.locator('.suggestion-item', {
       hasText: 'SS South_station',
     });
+    this.clearButton = this.destinationCard.locator('.clear-icon');
   }
 
   private async setMinuteLocator(minuteValue: string) {
@@ -93,7 +96,10 @@ class DestinationSection extends STDCMPage {
     // Verify default values
     await expect(this.dynamicDestinationCh).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
-    await expect(this.warningBox).toContainText(translations.stdcmErrors.noScheduledPoint);
+    await this.launchSimulationButton.click();
+    await expect(this.warningBox).toContainText(
+      translations.stdcmErrors.routeErrors.noScheduledPoint
+    );
     await expect(this.dateDestinationArrival).not.toBeVisible();
     await expect(this.timeDestinationArrival).not.toBeVisible();
     await expect(this.toleranceDestinationArrival).not.toBeVisible();
@@ -128,6 +134,12 @@ class DestinationSection extends STDCMPage {
     await this.suggestionSS.click();
     await expect(this.dynamicDestinationCh).toHaveValue(chValue);
     await expect(this.destinationArrival).toHaveValue(arrivalType);
+  }
+
+  async clearDestination(): Promise<void> {
+    await this.clearButton.click();
+
+    await expect(this.destinationCiField).toHaveValue('');
   }
 }
 
