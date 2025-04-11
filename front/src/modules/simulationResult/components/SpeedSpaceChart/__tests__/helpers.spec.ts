@@ -1,13 +1,12 @@
-import type {
-  ElectricalProfileValues,
-  ElectrificationValues,
-  LayerData,
-} from '@osrd-project/ui-charts';
+import type { ElectrificationValues, LayerData } from '@osrd-project/ui-charts';
 import { describe, it, expect } from 'vitest';
 
-import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
+import type {
+  PathPropertiesFormatted,
+  PositionData,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 
-import { simulation } from './sampleData';
 import {
   formatSpeeds,
   formatStops,
@@ -24,7 +23,15 @@ describe('formatSpeeds', () => {
       { position: { start: 1 }, value: 36 },
       { position: { start: 2 }, value: 72 },
     ];
-    expect(formatSpeeds(simulation.base)).toEqual(expected);
+    expect(
+      formatSpeeds({
+        positions: [0, 1000000, 2000000, 3000000],
+        speeds: [0, 10, 20],
+        energy_consumption: 0,
+        path_item_times: [],
+        times: [0, 10, 20],
+      })
+    ).toEqual(expected);
   });
 });
 
@@ -144,7 +151,14 @@ describe('getProfileValue', () => {
 describe('formatElectricalProfiles', () => {
   it('should format electrical profiles', () => {
     const lastPosition = 3;
-
+    const electricalProfiles: SimulationResponseSuccess['electrical_profiles'] = {
+      boundaries: [1000000, 2000000, 3000000],
+      values: [
+        { electrical_profile_type: 'profile', handled: true, profile: 'O' },
+        { electrical_profile_type: 'profile', handled: true, profile: 'A1' },
+        { electrical_profile_type: 'profile', handled: true, profile: 'B' },
+      ],
+    };
     const electrifications: LayerData<ElectrificationValues>[] = [
       {
         position: {
@@ -180,7 +194,8 @@ describe('formatElectricalProfiles', () => {
         },
       },
     ];
-    const expected: LayerData<ElectricalProfileValues>[] = [
+
+    expect(formatElectricalProfiles(electricalProfiles, electrifications, lastPosition)).toEqual([
       {
         position: {
           start: 0,
@@ -214,10 +229,6 @@ describe('formatElectricalProfiles', () => {
           heightLevel: 3,
         },
       },
-    ];
-
-    expect(
-      formatElectricalProfiles(simulation.electrical_profiles, electrifications, lastPosition)
-    ).toEqual(expected);
+    ]);
   });
 });
