@@ -8,9 +8,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams.RJSSpeedIntervalValueCurve;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.Helpers;
 import java.util.*;
-import org.junit.jupiter.api.Test;
 
 public class TestTrains {
     public static final RollingStock REALISTIC_FAST_TRAIN;
@@ -309,10 +307,5 @@ public class TestTrains {
                 "thermal",
                 "1",
                 new String[] {"BAL", "BAPR"});
-    }
-
-    @Test
-    public void testRollingStockParsing() throws Exception {
-        Helpers.getExampleRollingStocks();
     }
 }

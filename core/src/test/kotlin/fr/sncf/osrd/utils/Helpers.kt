@@ -1,79 +1,51 @@
 package fr.sncf.osrd.utils
 
 import com.squareup.moshi.JsonAdapter
-import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.makeSignalingSimulator
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.sim_infra.api.Route
-import fr.sncf.osrd.sim_infra.api.SignalingSystem
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackLocation
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
-import fr.sncf.osrd.sim_infra.impl.getOffsetOfTrackLocationOnChunks
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.moshi.MoshiUtils
 import fr.sncf.osrd.utils.units.Offset
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
-import java.nio.file.FileSystems
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
 object Helpers {
-    @JvmStatic
-    @get:Throws(IOException::class, OSRDError::class)
-    val exampleRollingStocks: List<RJSRollingStock>
-        /** Parse all serialized .json rolling stock files */
-        get() {
-            val jsonMatcher = FileSystems.getDefault().getPathMatcher("glob:**.json")
-            val rollingStocksPaths =
-                Files.list(getResourcePath("rolling_stocks/"))
-                    .filter { path: Path -> path.toFile().isFile() }
-                    .filter { path: Path? -> jsonMatcher.matches(path) }
-                    .toList()
-            val res = ArrayList<RJSRollingStock>()
-            for (filePath in rollingStocksPaths) res.add(
-                MoshiUtils.deserialize(RJSRollingStock.adapter, filePath)
-            )
-            res.sortBy { x: RJSRollingStock ->
-                x.name
-            } // Prevents different behaviors on different OS when running tests
-            return res
-        }
 
-    @JvmStatic
     @Throws(IOException::class, OSRDError::class)
-    fun getExampleRollingStock(fileName: String): RJSRollingStock {
-        return MoshiUtils.deserialize(
-            RJSRollingStock.adapter,
-            getResourcePath("rolling_stocks/$fileName")
-        )
+    fun getExampleRollingStock(fileName: String): PhysicsConsistModel {
+        val adapter: JsonAdapter<PhysicsConsistModel> =
+            Moshi.Builder()
+                .add(RJSRollingResistance.adapter)
+                .addLast(UnitAdapterFactory())
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+                .adapter(PhysicsConsistModel::class.java)
+        return MoshiUtils.deserialize(adapter, getResourcePath("rolling_stocks/$fileName"))
     }
 
-    @JvmStatic
     @Throws(IOException::class, URISyntaxException::class)
     fun getExampleInfra(infraPath: String): RJSInfra {
         return deserializeResource(RJSInfra.adapter, "infras/$infraPath")
     }
 
-    @JvmStatic
     @Throws(IOException::class, URISyntaxException::class)
     fun getExampleElectricalProfiles(externalGeneratedInputsPath: String): RJSElectricalProfileSet {
         return deserializeResource(
@@ -102,7 +74,6 @@ object Helpers {
     }
 
     /** Generates a full infra from rjs data */
-    @JvmStatic
     fun fullInfraFromRJS(rjs: RJSInfra?): FullInfra {
         val signalingSimulator = makeSignalingSimulator()
         return FullInfra.fromRJSInfra(rjs, signalingSimulator)
@@ -151,39 +122,25 @@ object Helpers {
         return res
     }
 
+    data class LocationPair(
+        val blockLocations: Set<PathfindingEdgeLocationId<Block>>,
+        val trackLocations: Set<TrackLocation>,
+    )
+
     /** Converts a route + offset into a block location. */
-    @JvmStatic
-    fun convertRouteLocation(
+    fun convertRouteLocationToBlockLocation(
         infra: FullInfra,
-        routeName: String?,
+        routeName: String,
         offset: Offset<Route>
     ): PathfindingEdgeLocationId<Block> {
         var mutOffset = offset
         val blocks = getBlocksOnRoutes(infra, listOf(routeName))
         for (block in blocks) {
             val blockLength = infra.blockInfra.getBlockLength(block)
-            if (mutOffset <= blockLength.cast()) return EdgeLocation(block, mutOffset.cast())
+            if (mutOffset <= blockLength.cast())
+                return PathfindingEdgeLocationId(block, mutOffset.cast())
             mutOffset -= blockLength.distance
         }
         throw RuntimeException("Couldn't find route location")
-    }
-
-    /** Creates a path from a list of route names and start/end locations */
-    @JvmStatic
-    @JvmName("chunkPathFromRoutes")
-    fun chunkPathFromRoutes(
-        infra: RawSignalingInfra,
-        routeNames: List<String>,
-        start: TrackLocation,
-        end: TrackLocation
-    ): ChunkPath {
-        val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-        for (name in routeNames) {
-            val routeId = infra.getRouteFromName(name)
-            for (chunk in infra.getChunksOnRoute(routeId)) chunks.add(chunk)
-        }
-        val startOffset = getOffsetOfTrackLocationOnChunks(infra, start, chunks)
-        val endOffset = getOffsetOfTrackLocationOnChunks(infra, end, chunks)
-        return buildChunkPath(infra, chunks, startOffset!!, endOffset!!)
     }
 }
