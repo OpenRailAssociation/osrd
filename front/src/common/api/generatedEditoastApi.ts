@@ -3939,6 +3939,30 @@ export type StdcmRequest = {
   /** List of planned work schedules */
   work_schedules: WorkSchedule[];
 };
+export type ConflictRequirement = {
+  end_time: string;
+  start_time: string;
+  zone: string;
+};
+export type Conflict = {
+  conflict_type: 'Spacing' | 'Routing';
+  /** Datetime of the end of the conflict */
+  end_time: string;
+  /** List of paced train occurrences involved in the conflict.
+    Each occurrence is identified by a `paced_train_id` and its `index` */
+  paced_train_occurrence_ids: {
+    index: number;
+    paced_train_id: number;
+  }[];
+  /** List of requirements causing the conflict */
+  requirements: ConflictRequirement[];
+  /** Datetime of the start of the conflict */
+  start_time: string;
+  /** List of train schedule ids involved in the conflict */
+  train_schedule_ids: number[];
+  /** List of work schedule ids involved in the conflict */
+  work_schedule_ids: number[];
+};
 export type StdcmResponse =
   | {
       departure_time: string;
@@ -3947,7 +3971,9 @@ export type StdcmResponse =
       status: 'success';
     }
   | {
-      status: 'path_not_found';
+      conflicts: Conflict[];
+      pathfinding_result: PathfindingResult;
+      status: 'conflicts';
     }
   | {
       error: SimulationResponse;
@@ -3974,30 +4000,6 @@ export type StdcmLogListItem = {
 };
 export type TimetableResult = {
   timetable_id: number;
-};
-export type ConflictRequirement = {
-  end_time: string;
-  start_time: string;
-  zone: string;
-};
-export type Conflict = {
-  conflict_type: 'Spacing' | 'Routing';
-  /** Datetime of the end of the conflict */
-  end_time: string;
-  /** List of paced train occurrences involved in the conflict.
-    Each occurrence is identified by a `paced_train_id` and its `index` */
-  paced_train_occurrence_ids: {
-    index: number;
-    paced_train_id: number;
-  }[];
-  /** List of requirements causing the conflict */
-  requirements: ConflictRequirement[];
-  /** Datetime of the start of the conflict */
-  start_time: string;
-  /** List of train schedule ids involved in the conflict */
-  train_schedule_ids: number[];
-  /** List of work schedule ids involved in the conflict */
-  work_schedule_ids: number[];
 };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */

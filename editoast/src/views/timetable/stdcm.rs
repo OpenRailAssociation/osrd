@@ -62,6 +62,7 @@ use crate::ValkeyClient;
 
 editoast_common::schemas! {
     request::schemas(),
+    StdcmResponse,
 }
 
 crate::routes! {
