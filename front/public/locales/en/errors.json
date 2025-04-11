@@ -194,14 +194,6 @@
       "UnknownSignalingSystem": "Unknown signaling system"
     },
     "stdcm": {
-      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist"
-    },
-    "stdcm_log": {
-      "NotFound": "STDCM log entry '{{id}}' could not be found",
-      "TraceIdNotFound": "STDCM log entry '{{trace_id}}' could not be found",
-      "MissingIdAndTraceId": "STDCM log entry could not be found without specifying an 'id' or 'trace_id'"
-    },
-    "stdcm_v2": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InvalidPathItems": "Invalid waypoint(s) {{items}}",
       "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
@@ -210,6 +202,11 @@
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist",
       "InvalidConsistMass": "Invalid consist mass {{provided_consist_mass}}: it should be greater than '{{expected_min}}'",
       "InvalidConsistLength": "Invalid consist length {{provided_consist_length}}: it should be greater than '{{expected_min}}'"
+    },
+    "stdcm_log": {
+      "NotFound": "STDCM log entry '{{id}}' could not be found",
+      "TraceIdNotFound": "STDCM log entry '{{trace_id}}' could not be found",
+      "MissingIdAndTraceId": "STDCM log entry could not be found without specifying an 'id' or 'trace_id'"
     },
     "study": {
       "Database": "Internal error (database)",
@@ -233,13 +230,8 @@
       "PathNotFound": "Path '{{path_id}}' could not be found",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
-      "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
-    },
-    "train_schedule_v2": {
-      "BatchTrainScheduleNotFound": "'{{number}}' train schedule(s) could not be found",
-      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
-      "InvalidQueryParams": "Invalid query params '{{message}}'"
+      "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found"
     },
     "paced_train": {
       "Database": "Internal error (database)",

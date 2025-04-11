@@ -89,7 +89,7 @@ enum StdcmResponse {
 }
 
 #[derive(Debug, Error, EditoastError, Serialize)]
-#[editoast_error(base_id = "stdcm_v2")]
+#[editoast_error(base_id = "stdcm")]
 enum StdcmError {
     #[error("Infrastrcture {infra_id} does not exist")]
     InfraNotFound { infra_id: i64 },
@@ -992,7 +992,7 @@ mod tests {
 
         assert_eq!(
             stdcm_response.error_type,
-            "editoast:stdcm_v2:InvalidConsistMass".to_string()
+            "editoast:stdcm:InvalidConsistMass".to_string()
         );
         assert_eq!(
             stdcm_response.context["expected_min"].as_f64(),
@@ -1041,7 +1041,7 @@ mod tests {
 
         assert_eq!(
             stdcm_response.error_type,
-            "editoast:stdcm_v2:InvalidConsistLength".to_string()
+            "editoast:stdcm:InvalidConsistLength".to_string()
         );
         assert_eq!(stdcm_response.context["expected_min"].as_f64(), Some(400.0));
     }
