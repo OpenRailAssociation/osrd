@@ -21,7 +21,6 @@ use crate::core::Json;
 
 editoast_common::schemas! {
     Request,
-    Response,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -124,12 +123,11 @@ pub struct UndirectedTrackRange {
     pub end: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
-#[schema(as = StdcmResponse)]
 pub enum Response {
     Success {
         simulation: SimulationResponse,
