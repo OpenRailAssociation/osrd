@@ -196,14 +196,6 @@
       "UnknownSignalingSystem": "Système de signalisation inconnu"
     },
     "stdcm": {
-      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée"
-    },
-    "stdcm_log": {
-      "NotFound": "STDCM Log '{{id}}' n'a pas pu être trouvée",
-      "TraceIdNotFound": "STDCM Log '{{trace_id}}' n'a pas pu être trouvée",
-      "MissingIdAndTraceId": "STDCM Log n'a pas pu être trouvée sans spécifier un 'id' ou un 'trace_id'"
-    },
-    "stdcm_v2": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
@@ -212,6 +204,11 @@
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
       "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'"
+    },
+    "stdcm_log": {
+      "NotFound": "STDCM Log '{{id}}' n'a pas pu être trouvée",
+      "TraceIdNotFound": "STDCM Log '{{trace_id}}' n'a pas pu être trouvée",
+      "MissingIdAndTraceId": "STDCM Log n'a pas pu être trouvée sans spécifier un 'id' ou un 'trace_id'"
     },
     "study": {
       "Database": "Erreur interne (base de données)",
