@@ -44,9 +44,7 @@ class ViaSection extends STDCMPage {
 
   // Dynamic selectors for via cards
   private getViaCard(viaNumber: number): Locator {
-    return this.page.getByTestId('stdcm-card').filter({
-      has: this.page.getByTestId('stdcm-icon-index').filter({ hasText: viaNumber.toString() }),
-    });
+    return this.page.locator('.stdcm-vias-bundle').nth(viaNumber - 1);
   }
 
   private getViaCH(viaNumber: number): Locator {
@@ -131,7 +129,9 @@ class ViaSection extends STDCMPage {
         await this.getViaStopTime(viaNumber).fill(driverSwitch.invalidInput);
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.invalidInput);
         await expect(warning).toBeVisible();
-        expect(await warning.textContent()).toEqual(translations.trainPath.warningMinStopTime);
+        expect(await warning.textContent()).toEqual(
+          translations.stdcmErrors.routeErrors.viaStopDurationTooShort
+        );
         await this.getViaStopTime(viaNumber).fill(driverSwitch.validInput);
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.validInput);
         await expect(warning).not.toBeVisible();

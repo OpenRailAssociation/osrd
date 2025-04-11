@@ -21,6 +21,7 @@ const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItinerar
       title={<img src={DestinationIcon} alt="destination" className="stdcm-destination-icon" />}
       disabled={disabled}
       className="extremity"
+      testId="stdcm-card-destination"
     >
       <StdcmOperationalPoint
         location={destination.location}

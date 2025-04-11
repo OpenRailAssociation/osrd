@@ -7,6 +7,7 @@ export type StdcmCardProps = {
   title?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  testId?: string;
 };
 
 const StdcmCard = ({
@@ -16,8 +17,9 @@ const StdcmCard = ({
   title,
   children,
   className = '',
+  testId,
 }: StdcmCardProps) => (
-  <div data-testid="stdcm-card" className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
+  <div data-testid={testId} className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
     {name && (
       <div
         className={cx(

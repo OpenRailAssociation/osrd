@@ -276,7 +276,6 @@ export type StdcmTranslations = {
   trainPath: {
     origin: string;
     destination: string;
-    warningMinStopTime?: string;
   };
   departureTime: string;
   simulation: {
@@ -291,13 +290,27 @@ export type StdcmTranslations = {
   };
   stdcmErrors: {
     noScheduledPoint: string;
+    invalidFields: {
+      totalMass: string;
+      totalLength: string;
+      maxSpeed: string;
+    };
     missingFields: {
       tractionEngine: string;
       totalMass: string;
       totalLength: string;
       maxSpeed: string;
       origin: string;
+      vias: string;
       destination: string;
+    };
+    routeErrors: {
+      bothPointAreScheduled: string;
+      global: string;
+      noScheduledPoint: string;
+      viaStopDurationMissing: string;
+      viaStopDurationTooShort: string;
+      zeroLengthPath: string;
     };
   };
 };

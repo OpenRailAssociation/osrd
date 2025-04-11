@@ -21,6 +21,7 @@ const StdcmOrigin = ({ disabled = false, onItineraryChange }: StdcmItineraryProp
       className="extremity"
       disabled={disabled}
       hasTip
+      testId="stdcm-card-origin"
     >
       <StdcmOperationalPoint
         location={origin.location}
