@@ -349,9 +349,6 @@ async fn stdcm(
             path,
             departure_time,
         })),
-        crate::core::stdcm::Response::PreprocessingSimulationError { error } => {
-            Ok(Json(StdcmResponse::PreprocessingSimulationError { error }))
-        }
         crate::core::stdcm::Response::PathNotFound => {
             let simulation_failure_handler = SimulationFailureHandler {
                 core_client,

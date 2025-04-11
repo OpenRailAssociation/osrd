@@ -135,9 +135,6 @@ pub enum Response {
         departure_time: DateTime<Utc>,
     },
     PathNotFound,
-    PreprocessingSimulationError {
-        error: SimulationResponse,
-    },
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
