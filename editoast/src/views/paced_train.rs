@@ -792,7 +792,7 @@ mod tests {
     async fn get_paced_train_path() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
-        core.stub("/v2/pathfinding/blocks")
+        core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({

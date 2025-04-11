@@ -657,12 +657,12 @@ mod tests {
 
     fn core_mocking_client() -> MockingClient {
         let mut core = MockingClient::new();
-        core.stub("/v2/pathfinding/blocks")
+        core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
-        core.stub("/v2/standalone_simulation")
+        core.stub("/standalone_simulation")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(simulation_response())
@@ -914,7 +914,7 @@ mod tests {
     async fn stdcm_return_success() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(crate::core::stdcm::Response::Success {
@@ -960,7 +960,7 @@ mod tests {
     async fn stdcm_request_mass_validation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(crate::core::stdcm::Response::Success {
@@ -1004,7 +1004,7 @@ mod tests {
     async fn stdcm_request_length_validation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(crate::core::stdcm::Response::Success {
@@ -1050,7 +1050,7 @@ mod tests {
     async fn stdcm_request_validation_success() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(crate::core::stdcm::Response::Success {
@@ -1103,12 +1103,12 @@ mod tests {
     async fn stdcm_return_conflicts() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({"status": "path_not_found"}))
             .finish();
-        core.stub("/v2/conflict_detection")
+        core.stub("/conflict_detection")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(ConflictDetectionResponse {
@@ -1177,12 +1177,12 @@ mod tests {
             .collect();
 
         let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(crate::core::stdcm::Response::PathNotFound)
             .finish();
-        core.stub("/v2/conflict_detection")
+        core.stub("/conflict_detection")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(ConflictDetectionResponse {

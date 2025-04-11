@@ -245,17 +245,17 @@ mod tests {
 
     fn core_mocking_client() -> CoreClient {
         let mut core = MockingClient::new();
-        core.stub("/v2/pathfinding/blocks")
+        core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
-        core.stub("/v2/standalone_simulation")
+        core.stub("/standalone_simulation")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(simulation_response())
             .finish();
-        core.stub("/v2/stdcm")
+        core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core::stdcm::Response::Success {

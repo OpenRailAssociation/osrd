@@ -95,7 +95,7 @@ pub struct PropertyZoneValues {
 
 impl AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'_> {
     const METHOD: reqwest::Method = reqwest::Method::POST;
-    const URL_PATH: &'static str = "/v2/path_properties";
+    const URL_PATH: &'static str = "/path_properties";
 
     fn infra_id(&self) -> Option<i64> {
         Some(self.infra)
