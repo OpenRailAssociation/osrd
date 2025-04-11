@@ -39,7 +39,7 @@ class PathfindingTest : ApiTest() {
             )
         val rawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/v2/pathfinding/blocks", requestBody))
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
         val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
         AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10250.meters)
@@ -99,7 +99,7 @@ class PathfindingTest : ApiTest() {
             )
         val unconstrainedRawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/v2/pathfinding/blocks", unconstrainedRequestBody))
+                .act(RqFake("POST", "/pathfinding/blocks", unconstrainedRequestBody))
         val unconstrainedResponse = TakesUtils.readBodyResponse(unconstrainedRawResponse)
         val unconstrainedParsed =
             (pathfindingResponseAdapter.fromJson(unconstrainedResponse)
@@ -122,7 +122,7 @@ class PathfindingTest : ApiTest() {
             )
         val rawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/v2/pathfinding/blocks", requestBody))
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
         val parsed =
             (pathfindingResponseAdapter.fromJson(response)
@@ -170,7 +170,7 @@ class PathfindingTest : ApiTest() {
             )
         val unconstrainedRawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/v2/pathfinding/blocks", unconstrainedRequestBody))
+                .act(RqFake("POST", "/pathfinding/blocks", unconstrainedRequestBody))
         val unconstrainedResponse = TakesUtils.readBodyResponse(unconstrainedRawResponse)
         val unconstrainedParsed =
             (pathfindingResponseAdapter.fromJson(unconstrainedResponse)
@@ -193,7 +193,7 @@ class PathfindingTest : ApiTest() {
             )
         val rawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/v2/pathfinding/blocks", requestBody))
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
         val parsed =
             (pathfindingResponseAdapter.fromJson(response)

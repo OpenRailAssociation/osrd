@@ -804,7 +804,7 @@ mod tests {
     #[cfg(test)]
     pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
         let mut core = MockingClient::new();
-        core.stub("/v2/pathfinding/blocks")
+        core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
@@ -816,7 +816,7 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        core.stub("/v2/standalone_simulation")
+        core.stub("/standalone_simulation")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
@@ -856,7 +856,7 @@ mod tests {
                 }
             }))
             .finish();
-        core.stub("/v2/signal_projection")
+        core.stub("/signal_projection")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({

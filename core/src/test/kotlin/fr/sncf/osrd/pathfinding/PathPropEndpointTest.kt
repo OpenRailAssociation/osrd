@@ -41,7 +41,7 @@ class PathPropEndpointTest : ApiTest() {
                 )
             )
         val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "v2/path_properties", requestBody))
+            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
         val parsed = pathPropResponseAdapter.fromJson(response)!!
 

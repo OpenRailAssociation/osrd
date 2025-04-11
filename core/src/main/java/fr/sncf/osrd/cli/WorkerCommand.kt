@@ -61,7 +61,7 @@ class WorkerCommand : CliCommand {
         WORKER_KEY = if (ALL_INFRA) "all" else System.getenv("WORKER_KEY")
         WORKER_AMQP_URI =
             System.getenv("WORKER_AMQP_URI") ?: "amqp://osrd:password@127.0.0.1:5672/%2f"
-        WORKER_MAX_MSG_SIZE = getIntEnvvar("WORKER_MAX_MSG_SIZE") ?: 1024 * 1024 * 128 * 5
+        WORKER_MAX_MSG_SIZE = getIntEnvvar("WORKER_MAX_MSG_SIZE") ?: (1024 * 1024 * 128 * 5)
         WORKER_POOL = System.getenv("WORKER_POOL") ?: "core"
         WORKER_REQUESTS_QUEUE =
             System.getenv("WORKER_REQUESTS_QUEUE") ?: "$WORKER_POOL-req-$WORKER_KEY"
@@ -122,14 +122,14 @@ class WorkerCommand : CliCommand {
 
         val endpoints =
             mapOf(
-                "/v2/pathfinding/blocks" to PathfindingBlocksEndpoint(infraManager),
-                "/v2/path_properties" to PathPropEndpoint(infraManager),
-                "/v2/standalone_simulation" to
+                "/pathfinding/blocks" to PathfindingBlocksEndpoint(infraManager),
+                "/path_properties" to PathPropEndpoint(infraManager),
+                "/standalone_simulation" to
                     SimulationEndpoint(infraManager, electricalProfileSetManager),
-                "/v2/signal_projection" to SignalProjectionEndpoint(infraManager),
-                "/v2/conflict_detection" to ConflictDetectionEndpoint(infraManager),
+                "/signal_projection" to SignalProjectionEndpoint(infraManager),
+                "/conflict_detection" to ConflictDetectionEndpoint(infraManager),
                 "/version" to VersionEndpoint(),
-                "/v2/stdcm" to STDCMEndpoint(infraManager),
+                "/stdcm" to STDCMEndpoint(infraManager),
                 "/infra_load" to InfraLoadEndpoint(infraManager),
             )
 
@@ -147,8 +147,8 @@ class WorkerCommand : CliCommand {
         factory.setMaxInboundMessageBodySize(WORKER_MAX_MSG_SIZE)
         val connection = factory.newConnection()
 
-        connection.use { connection ->
-            connection.createChannel().use { channel -> reportActivity(channel, "started") }
+        connection.use {
+            it.createChannel().use { channel -> reportActivity(channel, "started") }
 
             if (!ALL_INFRA) {
                 try {

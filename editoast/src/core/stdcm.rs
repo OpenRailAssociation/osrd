@@ -144,7 +144,7 @@ pub enum Response {
 
 impl AsCoreRequest<Json<Response>> for Request {
     const METHOD: reqwest::Method = reqwest::Method::POST;
-    const URL_PATH: &'static str = "/v2/stdcm";
+    const URL_PATH: &'static str = "/stdcm";
 
     fn infra_id(&self) -> Option<i64> {
         Some(self.infra)
