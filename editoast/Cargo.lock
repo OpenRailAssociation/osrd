@@ -29,6 +29,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ahash"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
+dependencies = [
+ "cfg-if",
+ "getrandom 0.2.15",
+ "once_cell",
+ "version_check",
+ "zerocopy 0.7.35",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1621,10 +1634,6 @@ name = "flat_map"
 version = "0.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4fa2a56a33c493fc81acbad4676c599cf2b128f21462a020043ea1eee46244f"
-dependencies = [
- "serde",
- "serde_derive",
-]
 
 [[package]]
 name = "flate2"
@@ -3073,10 +3082,11 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.7.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "939f752445d7481d80a6a81fe173b8e7f846262a9e74f21d508fc08883d4798a"
+checksum = "43f1a95bbdf71265bc5c05cab4eb5b79425a472a353f98efa56549b3bdf5361d"
 dependencies = [
+ "ahash",
  "clap",
  "csv",
  "geo-types",
@@ -3093,7 +3103,6 @@ dependencies = [
  "geo-types",
  "geos",
  "osm4routing",
- "osmpbfreader",
  "rstest",
  "serde_json",
  "tempfile",
@@ -3102,9 +3111,9 @@ dependencies = [
 
 [[package]]
 name = "osmpbfreader"
-version = "0.17.0"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38e9c16f77106ccd0f85602ff6b2237375b1f331ef950f59c35bdd6eff37cb64"
+checksum = "3dfa3be445b2878b016888e1d9491b625d905e35507bdbf918df4b41347d2e4a"
 dependencies = [
  "byteorder",
  "flat_map",
@@ -3114,7 +3123,6 @@ dependencies = [
  "protobuf-codegen",
  "pub-iterator-type",
  "self_cell",
- "serde",
  "smartstring",
 ]
 
@@ -4378,7 +4386,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fb72c633efbaa2dd666986505016c32c3044395ceaf881518399d2f4127ee29"
 dependencies = [
  "autocfg",
- "serde",
  "static_assertions",
  "version_check",
 ]
