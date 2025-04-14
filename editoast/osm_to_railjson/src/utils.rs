@@ -20,10 +20,10 @@ use editoast_schemas::infra::Switch;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
 use geo_types::Coord;
+use osm4routing::osmpbfreader::Node;
 use osm4routing::Distance;
 use osm4routing::Edge;
 use osm4routing::NodeId;
-use osmpbfreader::Node;
 use std::collections::HashMap;
 use std::str::FromStr;
 use tracing::error;
@@ -185,7 +185,7 @@ pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }
 
-fn direction(node: &osmpbfreader::Node) -> Direction {
+fn direction(node: &osm4routing::osmpbfreader::Node) -> Direction {
     let direction_tag = node
         .tags
         .get("railway:signal:direction")
@@ -198,7 +198,7 @@ fn direction(node: &osmpbfreader::Node) -> Direction {
     }
 }
 
-fn main_signal(node: &osmpbfreader::OsmObj) -> bool {
+fn main_signal(node: &osm4routing::osmpbfreader::OsmObj) -> bool {
     node.tags().contains_key("railway:signal:main")
         || node.tags().contains_key("railway:signal:combined")
 }
@@ -242,12 +242,12 @@ pub fn signals(
     adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
 ) -> Vec<Signal> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
-    let mut pbf = osmpbfreader::OsmPbfReader::new(file);
+    let mut pbf = osm4routing::osmpbfreader::OsmPbfReader::new(file);
     pbf.iter()
         .flatten()
         .filter(main_signal)
         .flat_map(|obj| match obj {
-            osmpbfreader::OsmObj::Node(node) => Some(node),
+            osm4routing::osmpbfreader::OsmObj::Node(node) => Some(node),
             _ => None,
         })
         .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
@@ -439,12 +439,12 @@ pub fn operational_points(
     nodes_to_tracks: &NodeToTrack,
 ) -> Vec<OperationalPoint> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
-    let mut pbf = osmpbfreader::OsmPbfReader::new(file);
+    let mut pbf = osm4routing::osmpbfreader::OsmPbfReader::new(file);
     pbf.iter()
         .flatten()
         .filter(|obj| obj.tags().contains("public_transport", "stop_area")) // https://wiki.openstreetmap.org/wiki/Tag:public_transport%3Dstop_area
         .flat_map(|obj| match obj {
-            osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
+            osm4routing::osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
             _ => None,                                        // Discard Nodes and Ways
         })
         .flat_map(|rel| {
@@ -453,7 +453,7 @@ pub fn operational_points(
                 .iter()
                 .filter(|r| r.role == "stop") // We ignore other members of the relation
                 .flat_map(|r| match r.member {
-                    osmpbfreader::OsmId::Node(id) => Some(id),
+                    osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
                     _ => {
                         warn!("OpenStreetMap relation ({}) has a member ({:?}) with role `stop` that isn’t a node", rel.id.0, r.member);
                         None
@@ -483,7 +483,9 @@ pub fn operational_points(
         .collect()
 }
 
-fn identifier(tags: &osmpbfreader::Tags) -> Option<OperationalPointIdentifierExtension> {
+fn identifier(
+    tags: &osm4routing::osmpbfreader::Tags,
+) -> Option<OperationalPointIdentifierExtension> {
     let uic = tags
         .get("uic_ref")
         .and_then(|uic| match i64::from_str(uic.as_str()) {
@@ -562,7 +564,9 @@ mod tests {
     fn test_voltage(#[case] input: &str, #[case] expected: &str) {
         let edge = Edge {
             id: "1".into(),
-            tags: HashMap::from([("voltage".into(), input.into())]),
+            tags: [("voltage".to_string(), input.to_string())]
+                .into_iter()
+                .collect(),
             ..Default::default()
         };
 
