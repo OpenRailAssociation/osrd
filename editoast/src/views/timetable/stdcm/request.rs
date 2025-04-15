@@ -291,6 +291,7 @@ impl Request {
         }
 
         let towed_rolling_stock_id = self.towed_rolling_stock_id.unwrap();
+        #[expect(deprecated)]
         let towed_rolling_stock =
             TowedRollingStockModel::retrieve_or_fail(conn, towed_rolling_stock_id, || {
                 StdcmError::TowedRollingStockNotFound {

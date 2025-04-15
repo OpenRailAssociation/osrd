@@ -208,6 +208,7 @@ async fn post(
 
     let conn = &mut db_pool.get().await?;
     let mut valkey_conn = valkey.get_connection().await?;
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })
@@ -388,6 +389,7 @@ pub async fn pathfinding_from_train(
     infra: &Infra,
     train_schedule: TrainSchedule,
 ) -> Result<PathfindingResult> {
+    #[expect(deprecated)]
     let rolling_stock: Vec<RollingStock> =
         RollingStockModel::retrieve(conn, train_schedule.rolling_stock_name.clone())
             .await?

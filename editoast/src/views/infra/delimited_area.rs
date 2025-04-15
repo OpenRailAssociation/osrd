@@ -154,6 +154,7 @@ async fn delimited_area(
     // Retrieve the infra
 
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;

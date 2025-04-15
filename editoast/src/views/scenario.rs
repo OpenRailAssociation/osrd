@@ -266,6 +266,7 @@ async fn delete(
                     return Err(ProjectError::NotFound { project_id }.into());
                 }
 
+                #[expect(deprecated)]
                 let scenario = Scenario::retrieve_or_fail(&mut conn, scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
@@ -406,10 +407,12 @@ async fn get(
         .await?
         .transaction(|mut conn| {
             async move {
+                #[expect(deprecated)]
                 let project = Project::retrieve_or_fail(&mut conn, project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
+                #[expect(deprecated)]
                 let study = Study::retrieve_or_fail(&mut conn, study_id, || StudyError::NotFound {
                     study_id,
                 })
@@ -418,6 +421,7 @@ async fn get(
                     return Err(ProjectError::NotFound { project_id }.into());
                 }
 
+                #[expect(deprecated)]
                 let scenario = Scenario::retrieve_or_fail(&mut conn, scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
@@ -474,6 +478,7 @@ async fn list(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let study =
         Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
     if study.project_id != project_id {
@@ -617,6 +622,7 @@ mod tests {
         assert_eq!(response.scenario.timetable_id, study_timetable_id);
         assert_eq!(response.scenario.tags, study_tags);
 
+        #[expect(deprecated)]
         let created_scenario = Scenario::retrieve(&mut pool.get_ok(), response.scenario.id)
             .await
             .expect("Failed to retrieve scenario")

@@ -128,6 +128,7 @@ async fn get_by_id(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let paced_train = models::PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
         PacedTrainError::NotFound { paced_train_id }
     })
@@ -252,6 +253,7 @@ async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
         infra_id,
     })
@@ -321,10 +323,12 @@ async fn get_path(
     let conn = &mut db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
         infra_id,
     })
     .await?;
+    #[expect(deprecated)]
     let paced_train = models::PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
         PacedTrainError::NotFound { paced_train_id }
     })
@@ -379,12 +383,14 @@ async fn simulation(
     }
 
     // Retrieve infra or fail
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
 
     // Retrieve paced_train or fail
+    #[expect(deprecated)]
     let paced_train =
         models::PacedTrain::retrieve_or_fail(&mut db_pool.get().await?, paced_train_id, || {
             PacedTrainError::NotFound { paced_train_id }
@@ -551,6 +557,7 @@ mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
+        #[expect(deprecated)]
         let updated_paced_train = models::PacedTrain::retrieve(&mut pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve updated paced train")

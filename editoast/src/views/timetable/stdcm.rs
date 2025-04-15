@@ -182,11 +182,13 @@ async fn stdcm(
 
     // 1.  Infra / Timetable / Trains / Simulation / Rolling Stock
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut conn, infra_id, || StdcmError::InfraNotFound {
         infra_id,
     })
     .await?;
 
+    #[expect(deprecated)]
     let rolling_stock =
         RollingStockModel::retrieve_or_fail(&mut conn, stdcm_request.rolling_stock_id, || {
             StdcmError::RollingStockNotFound {
@@ -233,6 +235,7 @@ async fn stdcm(
     let earliest_departure_time = stdcm_request.get_earliest_departure_time(simulation_run_time);
     let latest_simulation_end = stdcm_request.get_latest_simulation_end(simulation_run_time);
 
+    #[expect(deprecated)]
     let timetable = Timetable::retrieve_or_fail(&mut conn, timetable_id, || {
         StdcmError::TimetableNotFound { timetable_id }
     })

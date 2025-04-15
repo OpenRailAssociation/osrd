@@ -371,6 +371,7 @@ async fn update(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
+                #[expect(deprecated)]
                 let previous_rolling_stock = RollingStockModel::retrieve_or_fail(
                     &mut conn.clone(),
                     rolling_stock_id,
@@ -443,6 +444,7 @@ async fn delete(
     }
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let rolling_stock = RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
@@ -650,6 +652,7 @@ pub async fn get_usage(
 ) -> Result<Json<Vec<ScenarioReference>>> {
     let mut conn = db_pool.get().await?;
 
+    #[expect(deprecated)]
     let rolling_stock = RollingStockModel::retrieve_or_fail(&mut conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
@@ -668,13 +671,17 @@ pub async fn retrieve_existing_rolling_stock(
     rolling_stock_key: RollingStockKey,
 ) -> Result<RollingStockModel> {
     match rolling_stock_key.clone() {
-        RollingStockKey::Id(id) => {
+        RollingStockKey::Id(id) =>
+        {
+            #[expect(deprecated)]
             RollingStockModel::retrieve_or_fail(conn, id, || RollingStockError::KeyNotFound {
                 rolling_stock_key: rolling_stock_key.clone(),
             })
             .await
         }
-        RollingStockKey::Name(name) => {
+        RollingStockKey::Name(name) =>
+        {
+            #[expect(deprecated)]
             RollingStockModel::retrieve_or_fail(conn, name, || RollingStockError::KeyNotFound {
                 rolling_stock_key,
             })
@@ -836,6 +843,7 @@ pub mod tests {
         // THEN
         let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database
+        #[expect(deprecated)]
         let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
@@ -867,6 +875,7 @@ pub mod tests {
         // THEN
         let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database with locked = true
+        #[expect(deprecated)]
         let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
@@ -1146,6 +1155,7 @@ pub mod tests {
         // THEN
         raw_response.assert_status(StatusCode::OK);
 
+        #[expect(deprecated)]
         let updated_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1200,6 +1210,7 @@ pub mod tests {
         // THEN
         raw_response.assert_status(StatusCode::OK);
 
+        #[expect(deprecated)]
         let updated_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1249,6 +1260,7 @@ pub mod tests {
             "The primary_category cannot be listed in other_categories for rolling stocks."
         );
 
+        #[expect(deprecated)]
         let updated_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1353,6 +1365,7 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
+        #[expect(deprecated)]
         let fast_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1383,6 +1396,7 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
+        #[expect(deprecated)]
         let fast_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await

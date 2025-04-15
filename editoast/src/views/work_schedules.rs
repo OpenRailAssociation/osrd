@@ -444,6 +444,7 @@ async fn put_in_group(
     conn.transaction(|conn| {
         Box::pin(async move {
             // Check that the group exists
+            #[expect(deprecated)]
             WorkScheduleGroup::retrieve_or_fail(&mut conn.clone(), group_id, || {
                 WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
             })
@@ -515,6 +516,7 @@ async fn get_group(
     let conn = &mut db_pool.get().await?;
 
     // Check that the group exists
+    #[expect(deprecated)]
     WorkScheduleGroup::retrieve_or_fail(conn, group_id, || {
         WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
     })
@@ -564,6 +566,7 @@ pub mod tests {
             .json_into::<WorkScheduleCreateResponse>();
 
         // THEN
+        #[expect(deprecated)]
         let created_group = WorkScheduleGroup::retrieve(
             &mut pool.get_ok(),
             work_schedule_response.work_schedule_group_id,

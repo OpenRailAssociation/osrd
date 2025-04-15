@@ -126,6 +126,7 @@ async fn pathfinding_view(
     }
 
     // TODO: lock for share
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })

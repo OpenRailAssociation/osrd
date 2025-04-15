@@ -48,6 +48,7 @@ pub async fn import_rolling_stock(
                         .unwrap_or("rolling stock without name")
                         .bold()
                 );
+                #[expect(deprecated)]
                 let existing_rolling_stock =
                     RollingStockModel::retrieve(&mut conn, rolling_stock_name.clone()).await?;
                 match (existing_rolling_stock, args.force) {
@@ -199,6 +200,7 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, as raise_panto and startup are not required for non electric",
             );
+            #[expect(deprecated)]
             let created_rs =
                 RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
@@ -226,6 +228,7 @@ mod tests {
 
             // THEN
             assert!(result.is_ok(), "import should succeed");
+            #[expect(deprecated)]
             let created_rs =
                 RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
@@ -263,6 +266,7 @@ mod tests {
                 result.is_err(),
                 "import should fail, as raise_panto and startup are required for electric"
             );
+            #[expect(deprecated)]
             let created_rs =
                 RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
@@ -288,6 +292,7 @@ mod tests {
 
             // THEN
             assert!(result.is_ok(), "import should succeed");
+            #[expect(deprecated)]
             let created_rs =
                 RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
@@ -336,6 +341,7 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
+            #[expect(deprecated)]
             let rolling_stock = RollingStockModel::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),
@@ -379,6 +385,7 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
+            #[expect(deprecated)]
             let rolling_stock = RollingStockModel::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),
@@ -435,6 +442,7 @@ mod tests {
 
             // THEN
             assert!(result.is_ok());
+            #[expect(deprecated)]
             let created_rs = TowedRollingStockModel::retrieve(
                 &mut db_pool.get_ok(),
                 towed_rolling_stock_name.to_string(),

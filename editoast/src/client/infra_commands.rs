@@ -72,6 +72,7 @@ pub async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    #[expect(deprecated)]
     let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
         .await?
         .ok_or_else(|| {

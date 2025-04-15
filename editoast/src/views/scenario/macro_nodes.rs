@@ -293,6 +293,7 @@ async fn update(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
+                #[expect(deprecated)]
                 let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
@@ -353,6 +354,7 @@ async fn delete(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
+                #[expect(deprecated)]
                 let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
@@ -388,9 +390,11 @@ async fn check_project_study_scenario(
     study_id: i64,
     scenario_id: i64,
 ) -> Result<(Project, Study, Scenario)> {
+    #[expect(deprecated)]
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
+    #[expect(deprecated)]
     let study =
         Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
 
@@ -398,6 +402,7 @@ async fn check_project_study_scenario(
         return Err(StudyError::NotFound { study_id }.into());
     }
 
+    #[expect(deprecated)]
     let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
         scenario_id,
     })
@@ -414,6 +419,7 @@ async fn retrieve_macro_node_and_check_scenario(
     scenario_id: i64,
     node_id: i64,
 ) -> Result<MacroNode> {
+    #[expect(deprecated)]
     let node = MacroNode::retrieve_or_fail(&mut conn.clone(), node_id, || {
         MacroNodeError::NotFound { node_id }
     })
@@ -489,6 +495,7 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
+        #[expect(deprecated)]
         let node = MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), response.id, || {
             MacroNodeError::NotFound {
                 node_id: response.id,
@@ -525,6 +532,7 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
+        #[expect(deprecated)]
         let node = MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), fixtures.nodes[0].id, || {
             MacroNodeError::NotFound {
                 node_id: response.id,

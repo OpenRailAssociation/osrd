@@ -82,6 +82,7 @@ async fn attached(
 
     let mut conn = db_pool.get().await?;
     // TODO: lock for share
+    #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
             .await?;

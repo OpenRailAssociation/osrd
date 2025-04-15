@@ -220,6 +220,7 @@ pub mod tests {
             .json_into::<StdcmSearchEnvironment>();
 
         // THEN
+        #[expect(deprecated)]
         let stdcm_search_env_in_db =
             StdcmSearchEnvironment::retrieve(&mut pool.get_ok(), stdcm_search_env.id)
                 .await

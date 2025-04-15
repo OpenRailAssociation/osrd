@@ -102,6 +102,7 @@ async fn list_errors(
     };
 
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
 

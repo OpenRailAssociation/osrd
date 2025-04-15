@@ -57,6 +57,7 @@ async fn get_railjson(
     }
 
     let infra_id = infra.infra_id;
+    #[expect(deprecated)]
     let infra_meta = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })

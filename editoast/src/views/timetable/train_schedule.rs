@@ -161,6 +161,7 @@ async fn get(
     }
 
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
     })
@@ -282,12 +283,14 @@ async fn simulation(
     }
 
     // Retrieve infra or fail
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
     // Retrieve train_schedule or fail
+    #[expect(deprecated)]
     let train_schedule = models::TrainSchedule::retrieve_or_fail(
         &mut db_pool.get().await?,
         train_schedule_id,
@@ -352,6 +355,7 @@ async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
         infra_id,
     })
@@ -419,10 +423,12 @@ async fn get_path(
     let conn = &mut db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })
     .await?;
+    #[expect(deprecated)]
     let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
     })

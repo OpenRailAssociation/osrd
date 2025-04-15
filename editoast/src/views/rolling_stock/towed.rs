@@ -260,6 +260,7 @@ async fn get_by_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    #[expect(deprecated)]
     let towed_rolling_stock = TowedRollingStockModel::retrieve_or_fail(
         &mut db_pool.get().await?,
         towed_rolling_stock_id,
@@ -301,6 +302,7 @@ async fn patch_by_id(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
+                #[expect(deprecated)]
                 let existing_rolling_stock = TowedRollingStockModel::retrieve_or_fail(
                     &mut conn.clone(),
                     towed_rolling_stock_id,
