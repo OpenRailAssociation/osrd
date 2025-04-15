@@ -9,7 +9,7 @@ use crate::error::Result;
 
 use super::Model;
 
-/// Describes how a [Model](super::Model) can be retrieved from the database
+/// Describes how a [Model] can be retrieved from the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
@@ -65,7 +65,7 @@ where
     }
 }
 
-/// Describes how to check for the existence of a [Model](super::Model) in the database
+/// Describes how to check for the existence of a [Model] in the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
@@ -91,9 +91,9 @@ where
     }
 }
 
-/// Unchecked batch retrieval of a [Model](super::Model) from the database
+/// Unchecked batch retrieval of a [Model] from the database
 ///
-/// Any [Model](super::Model) that implement this trait also implement [RetrieveBatch].
+/// Any [Model] that implement this trait also implement [RetrieveBatch].
 /// Unless you know what you're doing, you should use [RetrieveBatch] instead.
 ///
 /// You can implement this type manually but its recommended to use the `Model`
@@ -131,10 +131,10 @@ where
     >(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C>;
+    ) -> Result<C, Self::Error>;
 }
 
-/// Describes how a [Model](super::Model) can be retrieved from the database given a batch of keys
+/// Describes how a [Model] can be retrieved from the database given a batch of keys
 ///
 /// This trait is automatically implemented for all models that implement
 /// [RetrieveBatchUnchecked]. [RetrieveBatchUnchecked] is a lower-level trait
@@ -162,7 +162,7 @@ where
     async fn retrieve_batch<I, C>(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>)>
+    ) -> Result<(C, std::collections::HashSet<K>), Self::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -198,7 +198,7 @@ where
     async fn retrieve_batch_with_key<I, C>(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>)>
+    ) -> Result<(C, std::collections::HashSet<K>), Self::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -239,7 +239,7 @@ where
         conn: &mut DbConnection,
         ids: I,
         fail: F,
-    ) -> Result<C>
+    ) -> Result<C, E>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -247,14 +247,14 @@ where
             + std::iter::Extend<Self>
             + std::iter::FromIterator<Self>
             + std::iter::IntoIterator<Item = Self>,
-        E: EditoastError,
+        E: From<Self::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = Self::retrieve_batch::<_, C>(conn, ids).await?;
         if missing.is_empty() {
             Ok(result)
         } else {
-            Err(fail(missing).into())
+            Err(fail(missing))
         }
     }
 
@@ -270,7 +270,7 @@ where
         conn: &mut DbConnection,
         ids: I,
         fail: F,
-    ) -> Result<C>
+    ) -> Result<C, E>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -278,14 +278,14 @@ where
             + std::iter::Extend<(K, Self)>
             + std::iter::FromIterator<(K, Self)>
             + std::iter::IntoIterator<Item = (K, Self)>,
-        E: EditoastError,
+        E: From<Self::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = Self::retrieve_batch_with_key::<_, C>(conn, ids).await?;
         if missing.is_empty() {
             Ok(result)
         } else {
-            Err(fail(missing).into())
+            Err(fail(missing))
         }
     }
 }
