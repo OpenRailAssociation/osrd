@@ -31,7 +31,7 @@ impl ToTokens for ExistsImpl {
                 async fn exists(
                     conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> crate::error::Result<bool> {
+                ) -> std::result::Result<bool, <#model as crate::models::Model>::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
@@ -40,7 +40,7 @@ impl ToTokens for ExistsImpl {
                     diesel::select(diesel::dsl::exists(dsl::#table_name.#(filter(#eqs)).*))
                         .get_result(conn.write().await.deref_mut())
                         .await
-                        .map_err(Into::into)
+                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

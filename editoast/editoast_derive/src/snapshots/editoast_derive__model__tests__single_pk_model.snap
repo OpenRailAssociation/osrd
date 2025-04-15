@@ -100,7 +100,7 @@ impl crate::models::Exists<(i64)> for Timetable {
     async fn exists(
         conn: &mut editoast_models::DbConnection,
         id: (i64),
-    ) -> crate::error::Result<bool> {
+    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -109,7 +109,9 @@ impl crate::models::Exists<(i64)> for Timetable {
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(Into::into)
+            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]

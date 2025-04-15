@@ -41,11 +41,15 @@ pub async fn handle_stdcm_search_env_command(
     }
 }
 
-async fn check_exists<T: Exists<i64>>(
+async fn check_exists<T>(
     conn: &mut DbConnection,
     object_id: i64,
     readable_name: &str,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync>>
+where
+    T: Exists<i64>,
+    <T as Model>::Error: Sync + 'static,
+{
     if !T::exists(conn, object_id).await? {
         let err_msg = format!("❌ {0} not found, id: {1}", readable_name, object_id);
         return Err(Box::new(CliError::new(1, err_msg)));
