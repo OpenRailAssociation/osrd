@@ -43,6 +43,8 @@ use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::train_schedule::TrainScheduleError;
 
+use super::rolling_stock::RollingStockError;
+
 editoast_common::schemas! {
     ProjectPathTrainResult,
     ProjectPathForm,
@@ -346,7 +348,8 @@ pub async fn compute_projected_train_paths(
             .iter()
             .map::<String, _>(|t| t.rolling_stock_name.clone()),
     )
-    .await?;
+    .await
+    .map_err(RollingStockError::from)?;
 
     let rolling_stock_length: HashMap<_, _> = rolling_stocks
         .into_iter()

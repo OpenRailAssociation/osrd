@@ -833,7 +833,10 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (String)> + Send,
         C: Default + std::iter::Extend<((String), Document)> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -859,14 +862,18 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -937,7 +944,10 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Document)> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -963,14 +973,18 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
