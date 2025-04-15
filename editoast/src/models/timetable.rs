@@ -10,6 +10,7 @@ use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
+use crate::error::EditoastError;
 use crate::error::Result;
 use crate::models::Retrieve;
 use crate::models::prelude::*;
@@ -117,8 +118,8 @@ pub struct TimetableWithTrains {
     pub paced_train_ids: Vec<i64>,
 }
 
-impl Retrieve<i64> for TimetableWithTrains {
-    async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
+impl TimetableWithTrains {
+    pub async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         let result = sql_query(
             "SELECT timetable.*,
         array_remove(array_agg(train_schedule.id), NULL) as train_ids,
@@ -136,6 +137,18 @@ impl Retrieve<i64> for TimetableWithTrains {
             Ok(result) => Ok(Some(result)),
             Err(diesel::result::Error::NotFound) => Ok(None),
             Err(err) => Err(err.into()),
+        }
+    }
+
+    pub async fn retrieve_or_fail<E, F>(conn: &mut DbConnection, id: i64, fail: F) -> Result<Self>
+    where
+        E: EditoastError,
+        F: FnOnce() -> E + Send,
+    {
+        match Self::retrieve(conn, id).await {
+            Ok(Some(obj)) => Ok(obj),
+            Ok(None) => Err(fail().into()),
+            Err(e) => Err(e),
         }
     }
 }
