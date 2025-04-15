@@ -98,7 +98,7 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-pub trait RetrieveBatchUnchecked<K>: Sized + Debug
+pub trait RetrieveBatchUnchecked<K>: Model
 where
     K: Send + Debug,
     Self: Send,
@@ -116,7 +116,7 @@ where
     >(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C>;
+    ) -> Result<C, Self::Error>;
 
     /// Just like [RetrieveBatchUnchecked::retrieve_batch_unchecked] but the returned models are paired with their key
     ///
