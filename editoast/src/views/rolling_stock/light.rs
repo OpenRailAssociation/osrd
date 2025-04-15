@@ -169,6 +169,7 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
+    #[expect(deprecated)]
     let rolling_stock = RollingStockModel::retrieve_or_fail(
         &mut db_pool.get().await?,
         light_rolling_stock_id,
@@ -203,6 +204,7 @@ async fn get_by_name(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
+    #[expect(deprecated)]
     let rolling_stock = RollingStockModel::retrieve_or_fail(
         &mut db_pool.get().await?,
         light_rolling_stock_name.clone(),

@@ -80,6 +80,7 @@ async fn get_routes_from_waypoint(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, path.infra_id, || InfraApiError::NotFound {
         infra_id: path.infra_id,
     })
@@ -165,6 +166,7 @@ async fn get_routes_track_ranges(
     let db_pool = db_pool.clone();
     let infra_caches = infra_caches.clone();
     let infra_id = infra;
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -227,6 +229,7 @@ async fn get_routes_nodes(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, params.infra_id, || {
         InfraApiError::NotFound {
             infra_id: params.infra_id,

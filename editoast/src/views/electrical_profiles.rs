@@ -95,6 +95,7 @@ async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
@@ -134,6 +135,7 @@ async fn get_level_order(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
@@ -353,6 +355,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
         let created_ep: ElectricalProfileSet = response.json();
 
+        #[expect(deprecated)]
         let created_ep = ElectricalProfileSet::retrieve(&mut pool.get_ok(), created_ep.id)
             .await
             .expect("Failed to retrieve created electrical profile set")

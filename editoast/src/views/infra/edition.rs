@@ -93,6 +93,7 @@ async fn edit(
     }
 
     // TODO: lock for update
+    #[expect(deprecated)]
     let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -154,6 +155,7 @@ pub async fn split_track_section(
     );
 
     // Check the infra
+    #[expect(deprecated)]
     let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })

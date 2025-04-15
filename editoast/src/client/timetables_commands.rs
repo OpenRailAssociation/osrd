@@ -91,6 +91,7 @@ pub async fn trains_import(
     };
 
     let timetable = match args.id {
+        #[expect(deprecated)]
         Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
             Some(timetable) => timetable,
             None => {

@@ -79,6 +79,7 @@ async fn set_stdcm_search_env_from_scenario(
             .await?;
     }
 
+    #[expect(deprecated)]
     let scenario_option = Scenario::retrieve(conn, args.scenario_id).await?;
 
     let scenario = scenario_option.ok_or_else(|| {
@@ -232,13 +233,13 @@ async fn show_stdcm_search_env(
 
 #[cfg(test)]
 mod tests {
-    use crate::Create;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_work_schedule_group;
     use crate::models::fixtures::simple_train_schedule_changeset;
+    use crate::models::prelude::*;
 
     use super::*;
     use chrono::DateTime;

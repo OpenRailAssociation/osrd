@@ -329,6 +329,7 @@ async fn get(
     }
 
     let infra_id = infra.infra_id;
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -412,6 +413,7 @@ async fn clone(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
         infra_id: params.infra_id,
     })
@@ -538,6 +540,7 @@ async fn get_switch_types(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
         infra_id: infra.infra_id,
     })
@@ -580,6 +583,7 @@ async fn get_speed_limit_tags(
 
     let conn = &mut db_pool.get().await?;
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
         infra_id: infra.infra_id,
     })
@@ -626,6 +630,7 @@ async fn get_voltages(
     }
 
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra.infra_id, || {
         InfraApiError::NotFound {
             infra_id: infra.infra_id,
@@ -664,6 +669,7 @@ async fn get_all_voltages(
 }
 
 async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
+    #[expect(deprecated)]
     let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -755,6 +761,7 @@ async fn load(
     }
 
     let infra_id = path.infra_id;
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -853,6 +860,7 @@ pub mod tests {
             app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
 
         let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        #[expect(deprecated)]
         let cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
@@ -898,6 +906,7 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
+        #[expect(deprecated)]
         let _cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
@@ -1203,6 +1212,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
+        #[expect(deprecated)]
         let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
@@ -1215,6 +1225,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
+        #[expect(deprecated)]
         let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()

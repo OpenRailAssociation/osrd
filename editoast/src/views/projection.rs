@@ -334,6 +334,7 @@ pub async fn compute_projected_train_paths(
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     // 1. Retrieve infra and rolling stock data
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
         infra_id,
     })

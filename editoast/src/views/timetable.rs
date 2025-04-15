@@ -526,6 +526,7 @@ async fn conflicts(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TimetableError::InfraNotFound { infra_id }
     })
@@ -738,6 +739,7 @@ mod tests {
         let created_timetable: TimetableResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
+        #[expect(deprecated)]
         let retrieved_timetable =
             Timetable::retrieve(&mut pool.get_ok(), created_timetable.timetable_id)
                 .await

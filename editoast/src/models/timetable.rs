@@ -12,7 +12,6 @@ use std::ops::DerefMut;
 
 use crate::error::EditoastError;
 use crate::error::Result;
-use crate::models::Retrieve;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use editoast_models::DbConnection;

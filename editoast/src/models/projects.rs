@@ -164,6 +164,7 @@ impl Project {
     {
         conn.transaction(|mut conn| {
             async move {
+                #[expect(deprecated)]
                 let mut project = Self::retrieve_or_fail(&mut conn, project_id, || {
                     ProjectError::NotFound { project_id }
                 })
@@ -214,6 +215,7 @@ pub mod tests {
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         // Get a project
+        #[expect(deprecated)]
         let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
@@ -239,6 +241,7 @@ pub mod tests {
             .await
             .expect("Failed to update project");
 
+        #[expect(deprecated)]
         let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")

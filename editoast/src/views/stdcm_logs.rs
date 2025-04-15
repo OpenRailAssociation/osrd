@@ -130,12 +130,14 @@ async fn stdcm_log_by_id_or_trace_id(
     let conn = &mut db_pool.get().await?;
 
     if id.is_some() {
+        #[expect(deprecated)]
         let stdcm_log = StdcmLog::retrieve_or_fail(conn, id.unwrap(), || StdcmLogError::NotFound {
             id: id.unwrap(),
         })
         .await?;
         Ok(Json(stdcm_log))
     } else if trace_id.is_some() {
+        #[expect(deprecated)]
         let stdcm_log = StdcmLog::retrieve_or_fail(conn, Some(trace_id.clone().unwrap()), || {
             StdcmLogError::TraceIdNotFound {
                 trace_id: trace_id.unwrap(),

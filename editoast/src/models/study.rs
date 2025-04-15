@@ -92,6 +92,7 @@ impl Study {
     {
         conn.transaction(|mut conn| {
             async move {
+                #[expect(deprecated)]
                 let mut study = Self::retrieve_or_fail(&mut conn, study_id, || {
                     StudyError::NotFound { study_id }
                 })
@@ -151,6 +152,7 @@ pub mod tests {
             create_study(&mut db_pool.get_ok(), study_name, created_project.id).await;
 
         // Retrieve a study
+        #[expect(deprecated)]
         let study = Study::retrieve(&mut db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")

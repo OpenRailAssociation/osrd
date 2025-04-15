@@ -111,6 +111,7 @@ impl From<ProjectCreateForm> for Changeset<Project> {
 }
 
 async fn check_image_content(conn: &mut DbConnection, document_key: i64) -> Result<()> {
+    #[expect(deprecated)]
     let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
         document_key,
     })
@@ -260,6 +261,7 @@ async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
+    #[expect(deprecated)]
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
@@ -294,6 +296,7 @@ async fn delete(
         .await?
         .transaction(|mut conn| {
             async move {
+                #[expect(deprecated)]
                 let project = Project::retrieve_or_fail(&mut conn, project_id, || {
                     ProjectError::NotFound { project_id }
                 })
@@ -450,6 +453,7 @@ pub mod tests {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
+        #[expect(deprecated)]
         let project = Project::retrieve(&mut pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
@@ -548,6 +552,7 @@ pub mod tests {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
+        #[expect(deprecated)]
         let project = Project::retrieve(&mut db_pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
@@ -567,6 +572,7 @@ pub mod tests {
         let project = create_project(&mut db_pool.get_ok(), &app.name("project")).await;
 
         let check_image = |mut conn: DbConnection, image_id: Option<i64>| async move {
+            #[expect(deprecated)]
             let p = Project::retrieve(&mut conn, project.id)
                 .await
                 .expect("Failed to retrieve project")

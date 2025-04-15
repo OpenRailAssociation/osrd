@@ -34,6 +34,7 @@ pub enum PathfindingError {
 }
 
 async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<i64> {
+    #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })

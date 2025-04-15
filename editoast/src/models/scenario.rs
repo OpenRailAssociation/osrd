@@ -92,6 +92,7 @@ impl Scenario {
     {
         conn.transaction(|mut conn| {
             async move {
+                #[expect(deprecated)]
                 let mut scenario = Self::retrieve_or_fail(&mut conn, scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
