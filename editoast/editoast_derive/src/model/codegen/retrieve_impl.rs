@@ -32,10 +32,10 @@ impl ToTokens for RetrieveImpl {
             #[automatically_derived]
             impl crate::models::Retrieve<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
-                async fn retrieve(
-                    conn: &mut editoast_models::DbConnection,
+                async fn retrieve_real(
+                    conn: editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> crate::error::Result<Option<#model>> {
+                ) -> std::result::Result<Option<#model>, <#model as crate::models::Model>::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
@@ -46,9 +46,9 @@ impl ToTokens for RetrieveImpl {
                         .select((#(dsl::#columns,)*))
                         .first::<#row>(conn.write().await.deref_mut())
                         .await
-                        .map(Into::into)
+                        .map(#model::from)
                         .optional()
-                        .map_err(Into::into)
+                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

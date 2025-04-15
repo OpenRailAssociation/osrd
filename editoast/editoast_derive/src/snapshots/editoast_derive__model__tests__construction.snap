@@ -297,10 +297,13 @@ impl crate::models::Retrieve<(String)> for Document {
         err,
         fields(query_id)
     )]
-    async fn retrieve(
-        conn: &mut editoast_models::DbConnection,
+    async fn retrieve_real(
+        conn: editoast_models::DbConnection,
         content_type: (String),
-    ) -> crate::error::Result<Option<Document>> {
+    ) -> std::result::Result<
+        Option<Document>,
+        <Document as crate::models::Model>::Error,
+    > {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -312,9 +315,11 @@ impl crate::models::Retrieve<(String)> for Document {
             .select((dsl::id, dsl::content_type, dsl::data))
             .first::<DocumentRow>(conn.write().await.deref_mut())
             .await
-            .map(Into::into)
+            .map(Document::from)
             .optional()
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]
@@ -325,10 +330,13 @@ impl crate::models::Retrieve<(i64)> for Document {
         err,
         fields(query_id)
     )]
-    async fn retrieve(
-        conn: &mut editoast_models::DbConnection,
+    async fn retrieve_real(
+        conn: editoast_models::DbConnection,
         id_: (i64),
-    ) -> crate::error::Result<Option<Document>> {
+    ) -> std::result::Result<
+        Option<Document>,
+        <Document as crate::models::Model>::Error,
+    > {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -339,9 +347,11 @@ impl crate::models::Retrieve<(i64)> for Document {
             .select((dsl::id, dsl::content_type, dsl::data))
             .first::<DocumentRow>(conn.write().await.deref_mut())
             .await
-            .map(Into::into)
+            .map(Document::from)
             .optional()
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]
