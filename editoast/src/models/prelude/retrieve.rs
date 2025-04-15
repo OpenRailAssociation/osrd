@@ -69,24 +69,24 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-pub trait Exists<K>: Sized
+pub trait Exists<K>: Model
 where
     K: Send,
     Self: Send,
 {
     /// Returns whether the row #`id` exists in the database
-    async fn exists(conn: &mut DbConnection, id: K) -> Result<bool>;
+    async fn exists(conn: &mut DbConnection, id: K) -> Result<bool, Self::Error>;
 
     /// Just like [Exists::exists] but returns `Err(fail())` if the row doesn't exist
-    async fn exists_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<()>
+    async fn exists_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<(), E>
     where
-        E: EditoastError,
+        E: From<Self::Error>,
         F: FnOnce() -> E + Send,
     {
         match Self::exists(conn, id).await {
             Ok(true) => Ok(()),
-            Ok(false) => Err(fail().into()),
-            Err(e) => Err(e),
+            Ok(false) => Err(fail()),
+            Err(e) => Err(E::from(e)),
         }
     }
 }
