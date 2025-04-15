@@ -324,7 +324,10 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Timetable> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<C, <Timetable as crate::models::Model>::Error> {
         use crate::models::Model;
         use editoast_models::tables::timetable::dsl;
         use diesel::prelude::*;
@@ -349,12 +352,15 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s
-                                .map_ok(<Timetable as Model>::from_row)
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(<Timetable as Model>::from_row)
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }

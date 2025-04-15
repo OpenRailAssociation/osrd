@@ -53,8 +53,11 @@ impl ToTokens for RetrieveBatchImpl {
                     .select((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                    .await?
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_ok(<#model as Model>::from_row)
+                    .try_collect::<Vec<_>>()
+                    .await
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
@@ -87,7 +90,7 @@ impl ToTokens for RetrieveBatchImpl {
                 >(
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C> {
+                ) -> std::result::Result<C, <#model as crate::models::Model>::Error> {
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;

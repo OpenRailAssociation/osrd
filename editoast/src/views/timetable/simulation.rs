@@ -20,6 +20,7 @@ use crate::views::InternalError;
 use crate::views::SimulationResponse;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
+use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::Infra;
 use crate::views::timetable::PathfindingResult;
 use editoast_models::DbConnection;
@@ -131,7 +132,9 @@ pub async fn train_simulation_batch(
         .map::<String, _>(|t| t.rolling_stock_name.clone());
 
     let rolling_stocks: Vec<_> =
-        RollingStockModel::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids).await?;
+        RollingStockModel::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids)
+            .await
+            .map_err(RollingStockError::from)?;
 
     let consists: Vec<PhysicsConsistParameters> = rolling_stocks
         .into_iter()
