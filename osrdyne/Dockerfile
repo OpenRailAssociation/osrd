@@ -39,7 +39,6 @@ RUN rustup component add llvm-tools && \
     cargo install grcov
 COPY --from=planner /osrdyne/recipe.json recipe.json
 
-ENV RUSTFLAGS="-Cinstrument-coverage"
 ENV LLVM_PROFILE_FILE="osrdyne-%p-%m.profraw"
 RUN cargo chef cook --tests --recipe-path recipe.json
 COPY . .
