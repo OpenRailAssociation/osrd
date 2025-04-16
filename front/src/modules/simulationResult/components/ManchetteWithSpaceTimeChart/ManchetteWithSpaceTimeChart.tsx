@@ -14,10 +14,11 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
   Manchette,
-  type ProjectPathTrainResult,
   type WaypointMenuData,
   isSegmentPickingElement,
   isPointPickingElement,
+  usePaths,
+  isInteractiveWaypoint,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import { KebabHorizontal, Iterations, ZoomIn } from '@osrd-project/ui-icons';
@@ -40,10 +41,10 @@ import type {
 import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
+import { isTrainId } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
-import { getIdFromTrainPath, getPathStyle } from './utils';
+import { getPathStyle } from './utils';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
@@ -71,8 +72,6 @@ type ManchetteWithSpaceTimeChartProps = {
 };
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
-const BOTTOM_TOOLBAR_HEIGHT = 40;
-const SPACE_TIME_CHART_DIFF_HEIGHT = 8;
 
 const ManchetteWithSpaceTimeChartWrapper = ({
   operationalPoints,
@@ -192,6 +191,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       return { filteredProjectPathTrainResult, filteredConflicts };
     }, [waypointsPanelData?.filteredWaypoints, projectPathTrainResult, conflicts]);
 
+  const paths = usePaths(cutProjectedTrains);
+
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
     return rawWaypoints.map((waypoint) => ({
@@ -203,26 +204,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   }, [waypointsPanelData, operationalPoints]);
 
-  const formattedCutProjectedTrains: ProjectPathTrainResult[] = useMemo(
-    () =>
-      cutProjectedTrains.map((train) => ({
-        ...train,
-        id: formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId),
-      })),
-    [cutProjectedTrains]
-  );
-
-  const formattedTmpSelectedTrain = useMemo(
-    () =>
-      tmpSelectedTrain
-        ? formatTrainScheduleIdToEditoastTrainId(tmpSelectedTrain as TrainScheduleId)
-        : undefined,
-    [tmpSelectedTrain]
-  );
-
   const {
     manchetteProps,
     spaceTimeChartProps,
+    rect,
     handleScroll,
     handleXZoom,
     xZoom,
@@ -231,9 +216,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     setTimeOrigin,
   } = useManchetteWithSpaceTimeChart({
     waypoints: manchetteWaypoints,
-    projectPathTrainResult: formattedCutProjectedTrains,
     manchetteWithSpaceTimeChartRef,
-    selectedTrain: formattedTmpSelectedTrain,
     height,
     spaceTimeChartRef,
     defaultTimeOrigin: 0,
@@ -280,7 +263,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
     if (!handleTrainDrag) {
       // if no handleTrainDrag, we pan normally
-      spaceTimeChartProps.onPan(payload);
+      spaceTimeChartProps.onPan?.(payload);
       return;
     }
 
@@ -314,7 +297,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
+      const hoveredTrainId = hoveredItem.element.pathId;
+      if (!isTrainId(hoveredTrainId)) return;
       const train = projectPathTrainResult.find(
         (projectedTrain) => projectedTrain.id === hoveredTrainId
       );
@@ -330,7 +314,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }
 
     // if no hovered train, we pan normally
-    spaceTimeChartProps.onPan(payload);
+    spaceTimeChartProps.onPan?.(payload);
 
     if (isPanning !== previousPanning) {
       setPreviousPanning(isPanning);
@@ -342,10 +326,14 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
       ...manchetteProps,
-      contents: manchetteProps.contents.map((content) => ({
-        ...content,
-        onClick: waypointMenuData.handleWaypointClick,
-      })),
+      contents: manchetteProps.contents.map((content) =>
+        isInteractiveWaypoint(content)
+          ? {
+              ...content,
+              onClick: waypointMenuData.handleWaypointClick,
+            }
+          : content
+      ),
       waypointMenuData: {
         menu: <OSRDMenu menuRef={waypointMenuData.menuRef} items={waypointMenuData.menuItems} />,
         activeWaypointId: waypointMenuData.activeWaypointId,
@@ -364,17 +352,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const handleClick: SpaceTimeChartProps['onClick'] = () => {
     if (
+      onTrainClick &&
       !draggingState &&
       selectedTrainScheduleId &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const editoastSelectedTrainId = formatTrainScheduleIdToEditoastTrainId(
-        selectedTrainScheduleId as TrainScheduleId
-      );
-      if (editoastSelectedTrainId !== Number(hoveredItem.element.pathId)) {
-        const trainId = getIdFromTrainPath(hoveredItem.element.pathId);
-        onTrainClick?.(trainId);
+      const hoveredTrainId = hoveredItem.element.pathId;
+      if (isTrainId(hoveredTrainId) && selectedTrainScheduleId !== hoveredTrainId) {
+        onTrainClick(hoveredTrainId);
       }
     }
   };
@@ -429,17 +415,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         style={{ height }}
         onScroll={handleScroll}
       >
-        <Manchette {...manchettePropsWithWaypointMenu} height={height - BOTTOM_TOOLBAR_HEIGHT} />
+        <Manchette {...manchettePropsWithWaypointMenu} />
         <div
           ref={spaceTimeChartRef}
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
-          style={{
-            bottom: 0,
-            left: 0,
-            top: 2,
-            height: height - SPACE_TIME_CHART_DIFF_HEIGHT,
-          }}
         >
           <div className="toolbar">
             <button
@@ -489,14 +469,14 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
           >
-            {spaceTimeChartProps.paths.map((path) => (
+            {paths.map((path) => (
               <PathLayer
                 key={path.id}
                 path={path}
-                {...getPathStyle(hoveredItem, path, !!draggingState)}
+                {...getPathStyle(tmpSelectedTrain, hoveredItem, path, !!draggingState)}
               />
             ))}
-            {spaceTimeChartProps.rect && <ZoomRect {...spaceTimeChartProps.rect} />}
+            {rect && <ZoomRect {...rect} />}
             {workSchedules && (
               <WorkScheduleLayer
                 workSchedules={workSchedules.map((ws) => ({
