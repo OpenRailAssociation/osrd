@@ -40,9 +40,5 @@
 # --- OSRDYNE ---
 /osrdyne                                                 @openrailassociation/OSRD-DevOps
 
-# --- CORE PHYSICS ---
-/core/*Physics*.java                                     @openrailassociation/OSRD-Physics
-/core/*Integration*.java                                 @openrailassociation/OSRD-Physics
-
 # --- GATEWAY ---
 /gateway                                                 @openrailassociation/OSRD-DevOps
