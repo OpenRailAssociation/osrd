@@ -1,6 +1,7 @@
 {
-  "editor": "Editor di infrastrutture",
-  "map": "Mappatura",
-  "operationalStudies": "Studi operativi",
-  "stdcm": "Tracce ferroviarie last minute"
+    "editor": "Editor di infrastrutture",
+    "map": "Mappatura",
+    "operationalStudies": "Studi operativi",
+    "stdcm": "Tracce ferroviarie last minute",
+    "rollingStockEditor": "Editor del materiale rotabile"
 }
