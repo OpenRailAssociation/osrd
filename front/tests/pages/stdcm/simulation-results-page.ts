@@ -224,7 +224,7 @@ class SimulationResultPage extends STDCMPage {
     expectedBody: string,
     expectedEmail: string
   ) {
-    const mailtoUrl = await this.feedbackButton.getAttribute('data-mailto');
+    const mailtoUrl = await this.feedbackButton.getAttribute('href');
 
     const decodedUrl = decodeURIComponent(mailtoUrl!);
 

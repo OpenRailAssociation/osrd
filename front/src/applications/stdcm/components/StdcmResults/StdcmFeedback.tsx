@@ -1,4 +1,3 @@
-import { Button } from '@osrd-project/ui-core';
 import { Comment } from '@osrd-project/ui-icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
@@ -59,10 +58,6 @@ ${separator}
 
   const mailtoLink = `mailto:${stdcmFeedbackMail}?subject=${subject}&body=${body}`;
 
-  const handleEmailClick = () => {
-    window.open(mailtoLink, '_blank');
-  };
-
   return (
     <div className="feedback-card" data-testid="feedback-card">
       <div className="feedback-separator" />
@@ -74,15 +69,13 @@ ${separator}
       </div>
       <p className="feedback-card-text" data-testid="feedback-card-text">
         {t('mailFeedback.description')}
+        <br />
+        <strong>
+          <a data-testid="feedback-button" href={mailtoLink}>
+            {t('mailFeedback.writeButton')}
+          </a>
+        </strong>
       </p>
-      <Button
-        data-testid="feedback-button"
-        label={t('mailFeedback.writeButton')}
-        variant="Cancel"
-        size="medium"
-        onClick={handleEmailClick}
-        data-mailto={mailtoLink} // Expose mailto link for easier E2E testing
-      />
     </div>
   );
 };
