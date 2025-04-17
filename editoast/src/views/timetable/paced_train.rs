@@ -497,12 +497,12 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
 
+    use crate::core;
     use crate::core::mocking::MockingClient;
     use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::core::simulation::CompleteReportTrain;
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models;
@@ -660,12 +660,12 @@ mod tests {
             )
             .as_str(),
         );
-        let response: SimulationResponse =
+        let response: core::simulation::Response =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(
             response,
-            SimulationResponse::Success {
+            core::simulation::Response::Success {
                 base: ReportTrain {
                     positions: vec![],
                     times: vec![],

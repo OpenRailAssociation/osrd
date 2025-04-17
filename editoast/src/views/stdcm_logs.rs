@@ -175,7 +175,6 @@ mod tests {
     use crate::core::simulation::CompleteReportTrain;
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
@@ -280,8 +279,8 @@ mod tests {
         }
     }
 
-    fn simulation_response() -> SimulationResponse {
-        SimulationResponse::Success {
+    fn simulation_response() -> core::simulation::Response {
+        core::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],
