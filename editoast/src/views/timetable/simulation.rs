@@ -108,7 +108,9 @@ impl From<crate::core::simulation::Response> for Response {
                 electrical_profiles,
             },
             crate::core::simulation::Response::SimulationFailed { core_error } => {
-                Self::SimulationFailed { core_error }
+                Self::SimulationFailed {
+                    core_error: core_error.into(),
+                }
             }
         }
     }
