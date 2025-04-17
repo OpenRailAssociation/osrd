@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { setSuccess, setFailure } from 'reducers/main';
@@ -33,6 +34,18 @@ const RollingStockEditorButtons = ({
   const [deleteRollingStockById] =
     osrdEditoastApi.endpoints.deleteRollingStockByRollingStockId.useMutation();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
+
+  const protectWithWritePrivilege = useProtectedAction({
+    resourceType: 'rollingstock',
+    resourceId: rollingStock.id,
+    requiredPrivileges: ['can_write'],
+  });
+
+  const protectWithOwnerGrant = useProtectedAction({
+    resourceType: 'rollingstock',
+    resourceId: rollingStock.id,
+    requiredGrant: 'OWNER',
+  });
 
   const deleteRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
@@ -116,7 +129,7 @@ const RollingStockEditorButtons = ({
         title={t('translation:common.edit')}
         tabIndex={0}
         disabled={isRollingStockLocked}
-        onClick={() => setIsEditing(true)}
+        onClick={() => protectWithWritePrivilege(() => setIsEditing(true))}
       >
         <Pencil />
       </button>
@@ -127,7 +140,7 @@ const RollingStockEditorButtons = ({
         aria-label={t('translation:common.duplicate')}
         title={t('translation:common.duplicate')}
         tabIndex={0}
-        onClick={() => duplicateRollingStock()}
+        onClick={duplicateRollingStock}
       >
         <Duplicate />
       </button>
@@ -139,7 +152,7 @@ const RollingStockEditorButtons = ({
         title={t('translation:common.delete')}
         tabIndex={0}
         disabled={isRollingStockLocked}
-        onClick={() => confirmDelete()}
+        onClick={() => protectWithOwnerGrant(confirmDelete)}
       >
         <Trash />
       </button>
