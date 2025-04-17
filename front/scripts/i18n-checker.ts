@@ -50,7 +50,17 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.list\..*/, // Total-error keys are generated
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
+
+  // Simulation
+  /simulation:departureTime/,
+  /simulation:electricalProfiles\..*/,
+  /simulation:powerRestriction\..*/,
+  /simulation:requestedPoint/,
+
+  // Stdcm help section
   /stdcm-help-section:*/,
+
+  // Stdcm
   /stdcm:arriveAt/,
   /stdcm:consist\.errors\..*/,
   /stdcm:datetimeOutsideWindow/,

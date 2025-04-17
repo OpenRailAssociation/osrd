@@ -1,7 +1,4 @@
 {
-  "ManualOffset": "Ajout de secondes au train",
-  "ModalEdit": "Édition d'un train",
-  "allowances": "Marges",
   "departureTime": "Départ",
   "electricalProfiles": {
     "incompatible": "incompatible",
@@ -18,32 +15,16 @@
     "errorLoadingInfra": "Erreur de chargement de l'infrastructure"
   },
   "infraLoading": "Infrastructure en cours de chargement",
-  "isUpdating": "Mise à jour...",
-  "isWorking": "Calcul de la simulation en cours…",
-  "labels": "Étiquettes",
-  "loadingTrain": "Chargement du train",
   "manchetteSettings": {
     "waypointsVisibility": "Modifier la visibilité des PRs"
   },
-  "map": "Carte",
-  "name": "Nom",
-  "noData": "Aucune donnée disponible",
-  "null": "Lieu non renseigné",
-  "pauseSimulation": "Suspendre la simulation",
-  "placeholderlabel": "Filtrer les étiquettes",
-  "playSimulation": "Lancer la simulation",
   "powerRestriction": {
     "incompatible": "Restriction de puissance incompatible",
     "used": "utilisée"
   },
   "projectionInProgress": "Projection en cours: {{ count }}/{{ total }} trains",
   "requestedPoint": "point demandé ({{ count }})",
-  "reset": "Réinitialiser le graphique",
-  "resetTimer": "Réinitialiser le compteur",
-  "rotate": "Pivoter le graphique",
-  "simplify": "Simplification des données",
   "simulationSheet": "Fiche de simulation",
-  "speedLimitComposition": "Composition",
   "speedSpaceChart": "Graphique Espace Vitesse",
   "speedSpaceSettings": {
     "context": "Contexte",
@@ -58,36 +39,15 @@
     "temporarySpeedLimits": "Limites temporaires de vit.",
     "tractionStatus": "Statut de la traction"
   },
-  "start": "Départ",
-  "stop": "Arrivée",
-  "stopPlace": "Lieu",
-  "stopStopTime": "Arrêt",
-  "stopTime": "Arrivée",
   "timeSpaceChartSettings": {
     "capacity": "Capacité",
     "conflicts": "Conflits",
     "paths": "Sillons",
     "signalsStates": "États des signaux"
   },
-  "timetable": "Table horaire",
   "timetableOutput": "Table horaire de sortie",
-  "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
   "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
-  "toggleRewind": "Basculer le rembobinage de la simulation",
-  "toggleSpeedSpaceSettings": "Basculer l'affichage des paramètres du graphique",
   "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
-  "train": "Train",
-  "trainDeleted": "Train supprimé",
-  "trainDetails": {
-    "headPosition": "Tête",
-    "routeBeginOccupancy": "Début canton",
-    "routeEndOccupancy": "Fin canton",
-    "routeSizeOccupancy": "Taille canton",
-    "speed": "Vitesse",
-    "tailPosition": "Queue"
-  },
-  "trainList": "Liste des trains",
-  "waiting": "Chargement en cours…",
   "waypointMenu": {
     "hide": "Masquer ce PR"
   },
