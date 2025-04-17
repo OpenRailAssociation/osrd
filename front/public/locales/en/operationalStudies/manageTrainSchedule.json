@@ -95,9 +95,9 @@
   "pacedTrainUpdated": "Service updated",
   "pacedTrains": {
     "added": "Service added",
-    "cadence": "Cadence of the service",
     "defineService": "Define a service",
-    "timeRangeDuration": "Duration of the repetition time range"
+    "interval": "Cadence of the service",
+    "timeWindow": "Duration of the repetition time range"
   },
   "pathfinding": "Path search",
   "pathfindingDone": "Pathfinding done.",
