@@ -262,18 +262,6 @@ const PacedTrainItem = ({
           }}
         />
       </div>
-      <div className="occurrences">
-        {occurrences.map((occurrence, index) => (
-          <OccurrenceItem
-            occurrence={occurrence}
-            key={occurrence.id}
-            isSelected={selectedTrainId === occurrence.id}
-            nextOccurrence={occurrences[index + 1]}
-            isValid={pacedTrain.isValid}
-            selectOccurrence={selectOccurrence}
-          />
-        ))}
-      </div>
       {/* TODO PACED TRAIN: Remove conditon pacedTrain.duration after development paced train feature is done */}
       {pacedTrain.isValid && pacedTrain.duration && (
         <div className="more-info">
@@ -291,6 +279,18 @@ const PacedTrainItem = ({
           </div>
         </div>
       )}
+      <div className="occurrences">
+        {occurrences.map((occurrence, index) => (
+          <OccurrenceItem
+            occurrence={occurrence}
+            key={occurrence.id}
+            isSelected={selectedTrainId === occurrence.id}
+            nextOccurrence={occurrences[index + 1]}
+            isValid={pacedTrain.isValid}
+            selectOccurrence={selectOccurrence}
+          />
+        ))}
+      </div>
     </div>
   );
 };
