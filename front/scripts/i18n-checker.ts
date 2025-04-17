@@ -61,6 +61,15 @@ const IGNORE_UNUSED: RegExp[] = [
   /operationalStudies\/study:createScenario/,
   /operationalStudies\/study:selectedScenarios/,
 
+  // Project
+  /operationalStudies\/scenario:Routing/,
+  /operationalStudies\/scenario:Spacing/,
+  /operationalStudies\/scenario:pacedTrain/,
+  /operationalStudies\/scenario:pacedTrainCount/,
+  /operationalStudies\/scenario:timetable\.invalid\..*/,
+  /operationalStudies\/scenario:train/,
+  /operationalStudies\/scenario:trainCount/,
+
   // Study
   /operationalStudies\/study:dates\..*/,
   /operationalStudies\/study:studyCategories\..*/,

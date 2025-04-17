@@ -25,7 +25,7 @@ const ConflictCard = ({
       tabIndex={0}
     >
       <div className="trains-info">
-        <p className="conflict-type">{t(`${conflict.conflict_type}`)}</p>
+        <p className="conflict-type">{t(conflict.conflict_type)}</p>
         <div className="start-and-end-time">
           <div className="start-time" title={start_time}>
             {start_time}
