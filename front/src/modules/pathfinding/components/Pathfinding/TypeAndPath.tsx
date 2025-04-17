@@ -66,8 +66,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   const infraId = useInfraID();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const { t: tManageTrainSchedule } = useTranslation('operationalStudies/manageTrainSchedule');
-  const { t: tTypeAndPath } = useTranslation('common/typeAndPath');
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'common/typeAndPath']);
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');
@@ -237,7 +236,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
         style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
         data-testid="type-and-path-container"
       >
-        <div className="help">{opList.length === 0 && tManageTrainSchedule('inputOPTrigrams')}</div>
+        <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>
         <OpTooltips opList={opList} />
         <div className="d-flex align-items-center">
           <div
@@ -251,7 +250,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
               type="text"
               value={inputText}
               onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
-              placeholder={tManageTrainSchedule('inputOPTrigramsExample')}
+              placeholder={t('inputOPTrigramsExample')}
               autoFocus
               data-testid="type-and-path-input"
             />
@@ -260,8 +259,8 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
           <button
             className="btn btn-sm btn-success"
             type="button"
-            aria-label={tManageTrainSchedule('launchPathFinding')}
-            title={tManageTrainSchedule('launchPathFinding')}
+            aria-label={t('launchPathFinding')}
+            title={t('launchPathFinding')}
             onClick={handleSubmit}
             disabled={isInvalid || opList.length < 2}
             data-testid="submit-search-by-trigram"
@@ -290,7 +289,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
               {sortedSearchResults.length > 8 && (
                 <div
                   className="ellipsis-placeholder"
-                  title={tTypeAndPath('refineSearchForMoreResults')}
+                  title={t('common/typeAndPath:refineSearchForMoreResults')}
                 >
                   ...
                 </div>
