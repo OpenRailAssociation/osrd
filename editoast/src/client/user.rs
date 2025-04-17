@@ -1,6 +1,8 @@
 use clap::Args;
 use clap::Subcommand;
 use editoast_authz::StorageDriver;
+use editoast_authz::subject::GroupInfo;
+use editoast_authz::subject::User;
 use editoast_authz::subject::UserInfo;
 use editoast_models::DbConnectionPoolV2;
 use futures::TryStreamExt;
@@ -18,6 +20,8 @@ pub enum UserCommand {
     List(ListArgs),
     /// Add a user
     Add(AddArgs),
+    /// Get information about a user
+    Info(InfoArgs),
 }
 
 #[derive(Debug, Args)]
@@ -33,6 +37,12 @@ pub struct AddArgs {
     identity: String,
     /// Name of the user
     name: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct InfoArgs {
+    /// Identity of the user
+    identity: String,
 }
 
 /// List users
@@ -85,5 +95,41 @@ pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::R
     };
     let subject_id = driver.ensure_user(&user_info).await?;
     println!("User added with id: {}", subject_id);
+    Ok(())
+}
+
+/// Get a user
+pub async fn user_info(
+    InfoArgs { identity }: InfoArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let driver = regulator.driver();
+    let Some(User {
+        id,
+        info: UserInfo { identity, name },
+    }) = driver.get_user_info_by_identity(&identity).await?
+    else {
+        tracing::error!(user.identity = identity, "User not found");
+        return Ok(());
+    };
+    let group_ids = regulator.user_groups(id).await?;
+
+    println!("id      : {id}");
+    println!("identity: {identity}");
+    println!("name    : {name}");
+    println!("groups  :");
+    for group_id in group_ids {
+        let Some(GroupInfo { name }) = driver.get_group_info(group_id).await? else {
+            tracing::warn!(
+                group.id = group_id,
+                group.name = name,
+                "group not found, skipping it!"
+            );
+            continue;
+        };
+        println!("- [{group_id}] {name}");
+    }
     Ok(())
 }
