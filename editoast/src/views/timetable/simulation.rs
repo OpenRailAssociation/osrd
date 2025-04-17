@@ -1,6 +1,7 @@
 use crate::RetrieveBatchUnchecked;
 use crate::ValkeyClient;
 use crate::client::get_app_version;
+use crate::core;
 use crate::core::AsCoreRequest;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
@@ -13,7 +14,6 @@ use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SimulationMargins;
 use crate::core::simulation::SimulationPath;
 use crate::core::simulation::SimulationPowerRestrictionItem;
-use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationScheduleItem;
 use crate::core::simulation::SpeedLimitProperties;
 use crate::error::Result;
@@ -281,7 +281,7 @@ pub async fn consist_train_simulation_batch(
 
     let mut simulation_results = vec![None::<simulation::Response>; train_schedules.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
-    let mut sim_request_map: HashMap<String, SimulationRequest> = HashMap::default();
+    let mut sim_request_map: HashMap<String, core::simulation::Request> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
         pathfinding_results.iter().zip(train_schedules).enumerate()
     {
@@ -409,7 +409,7 @@ fn build_simulation_request(
     path: SimulationPath,
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
-) -> SimulationRequest {
+) -> core::simulation::Request {
     assert_eq!(path_item_positions.len(), train_schedule.path.len());
     // Project path items to path offset
     let path_items_to_position: HashMap<_, _> = train_schedule
@@ -456,7 +456,7 @@ fn build_simulation_request(
         })
         .collect();
 
-    SimulationRequest {
+    core::simulation::Request {
         infra: infra.id,
         expected_version: infra.version,
         path,
@@ -476,7 +476,7 @@ fn build_simulation_request(
 fn compute_train_simulation_hash_with_versioning(
     infra_id: i64,
     infra_version: i64,
-    simulation_input: &SimulationRequest,
+    simulation_input: &core::simulation::Request,
 ) -> String {
     let osrd_version = get_app_version().unwrap_or_default();
     let mut hasher = DefaultHasher::new();
