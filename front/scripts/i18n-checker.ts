@@ -51,6 +51,19 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
 
+  // Operational studies management
+  /operationalStudies\/.*createdOn/,
+  /operationalStudies\/.*deleteItems/,
+  /operationalStudies\/.*confirmDeleteMessage/,
+  /operationalStudies\/.*unselectAll/,
+  /operationalStudies\/study:createScenario/,
+  /operationalStudies\/study:selectedScenarios/,
+
+  // Study
+  /operationalStudies\/study:dates\..*/,
+  /operationalStudies\/study:studyCategories\..*/,
+  /operationalStudies\/study:studyStates\..*/,
+
   // Rolling stock
   /rollingstock:categoriesOptions\..*/,
   /rollingstock:curves\..*/,
