@@ -7,16 +7,63 @@ import {
   powerRestrictionRangesMixedIn2Keys,
   powerRestrictionRangesOnlyNoCode,
   powerRestrictionRangesWithValidRanges,
-  rollingStockModes,
   validPowerRestrictionRanges,
 } from './sampleData';
 import { countWarnings, getPowerRestrictionsWarnings } from '../powerRestrictionWarnings';
+import generateEffortCurvesForTests from './generateEffortCurvesForTests';
 
 const emptyResult: PowerRestrictionWarnings = {
   invalidCombinationWarnings: [],
   modeNotSupportedWarnings: [],
   missingPowerRestrictionWarnings: [],
 };
+
+const rollingStockModes = generateEffortCurvesForTests({
+  '1500V': [
+    {
+      electricalProfile: 'O',
+      powerRestrictionCode: 'C1US',
+    },
+    {
+      electricalProfile: 'O',
+      powerRestrictionCode: 'C2US',
+    },
+    {
+      electricalProfile: 'O',
+      powerRestrictionCode: 'C3US',
+    },
+    {
+      electricalProfile: 'O',
+      powerRestrictionCode: 'C4US',
+    },
+    {
+      electricalProfile: 'O',
+      powerRestrictionCode: null,
+    },
+  ],
+  '25000V': [
+    {
+      electricalProfile: '25000V',
+      powerRestrictionCode: 'M1US',
+    },
+    {
+      electricalProfile: '25000V',
+      powerRestrictionCode: 'M2US',
+    },
+    {
+      electricalProfile: '25000V',
+      powerRestrictionCode: 'M3US',
+    },
+    {
+      electricalProfile: '25000V',
+      powerRestrictionCode: 'M4US',
+    },
+    {
+      electricalProfile: '25000V',
+      powerRestrictionCode: null,
+    },
+  ],
+});
 
 describe('getPowerRestrictionsWarnings', () => {
   it('should return an empty object if there is no warning', () => {
