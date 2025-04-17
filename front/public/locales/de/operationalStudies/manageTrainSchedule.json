@@ -94,9 +94,9 @@
   "origin": "Herkunftsort",
   "pacedTrainUpdated": "Getakteten Zug aktualisiert",
   "pacedTrains": {
-    "cadence": "Bedienungstakt",
     "defineService": "Bedienung erstellen",
-    "timeRangeDuration": "Taktlänge"
+    "interval": "Bedienungstakt",
+    "timeWindow": "Taktlänge"
   },
   "pathfinding": "Wegefindung",
   "pathfindingDone": "Wegefindung durchgeführt.",

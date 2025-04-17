@@ -22,7 +22,7 @@ const PacedTrainSettings = () => {
           label={
             <>
               <ArrowBoth className="input-icon" />
-              <small className="text-nowrap">{t('pacedTrains.timeRangeDuration')}</small>
+              <small className="text-nowrap">{t('pacedTrains.timeWindow')}</small>
             </>
           }
           id="paced-train-time-range-duration"
@@ -45,7 +45,7 @@ const PacedTrainSettings = () => {
           label={
             <>
               <ArrowBoth className="input-icon" />
-              <small className="text-nowrap">{t('pacedTrains.cadence')}</small>
+              <small className="text-nowrap">{t('pacedTrains.interval')}</small>
             </>
           }
           id="paced-train-cadence"

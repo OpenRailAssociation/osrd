@@ -147,7 +147,7 @@ const checkCurrentConfig = (
           setFailure({
             name: t('errorMessages.trainScheduleTitle'),
             message: t('errorMessages.tooLowValue', {
-              value: t('pacedTrains.cadence').toLowerCase(),
+              value: t('pacedTrains.interval').toLowerCase(),
             }),
           })
         );
@@ -158,7 +158,7 @@ const checkCurrentConfig = (
           setFailure({
             name: t('errorMessages.trainScheduleTitle'),
             message: t('errorMessages.tooLowValue', {
-              value: t('pacedTrains.timeRangeDuration').toLowerCase(),
+              value: t('pacedTrains.timeWindow').toLowerCase(),
             }),
           })
         );
