@@ -6,16 +6,7 @@
       "STOP_TO_START": "Stop to start"
     },
     "entities": {
-      "errors-linked": "Linked issues",
-      "track_section": "Track section",
-      "track_section-length": "Length"
-    },
-    "errors": {
-      "infra-not-found": "Infrastructure {{id}} not found",
-      "length-number-and-required": "Length is a required numeric field",
-      "length-out-of-sync-with-geometry": "The distance entered is too far from the geometry (Must be between {{min}} and {{max}})",
-      "no-infra-available": "Your account is not linked to any infrastructure",
-      "technical": "A technical error has occurred: {{msg}}"
+      "errors-linked": "Linked issues"
     },
     "infra-errors": {
       "corrector-modal": {
@@ -115,8 +106,6 @@
         "title_zero": "No issue"
       },
       "list": {
-        "error": "An error occurred while loading the data",
-        "filter-level": "Error level",
         "filter-type": "Error type",
         "goto-error": "Select and locate on the map",
         "total-all": "{{count}} errors and warnings found",
@@ -166,19 +155,14 @@
       "help": "This component allows you to view and modify a linear layout. You can zoom into the view using the provided buttons or the mouse wheel, and move around using drag'n'drop. To change the size of a segment, simply click on it and the edit form will be displayed below. You can also click on a border of a segment, and while keeping your finger pressed, move the border with the mouse.",
       "merge-with-left": "Merge with the previous item",
       "merge-with-right": "Merge with the next item",
-      "split": "Split the item in two",
-      "sync-length-with-geometry": "Synchronize with the geometry"
+      "split": "Split the item in two"
     },
     "nav": {
       "choose-infra": "Choose an infrastructure",
-      "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
       "infra-error-corrector": "Automatic error corrector",
-      "infra-errors": "Display current infrastructure issues on the map",
       "infra-errors-list": "Configure display of issues",
       "map-layers": "Map settings",
       "osrd-layers": "Data layers",
-      "recenter": "Recenter the map",
-      "select-infra": "Select the infrastructure to edit",
       "speed-limits": "Speed limits",
       "toggle-layers": "Choose the types of elements to display"
     },
@@ -192,9 +176,6 @@
       "Switch": "Switch",
       "TrackSection": "Track section"
     },
-    "title": "Editor",
-    "title-issue": "({{nbIssue}} issues)",
-    "tool-help": "Show description for the active tool",
     "tools": {
       "buffer-stop-edition": {
         "actions": {
@@ -476,19 +457,12 @@
   },
   "common": {
     "and": "and",
-    "asc": "Ascending",
-    "back": "Back",
     "cancel": "Cancel",
-    "change": "Change",
     "close": "Close",
     "confirm": "Confirm",
     "delete": "Delete",
-    "description": "Description",
-    "download": "Download",
-    "dsc": "Descending",
     "duplicate": "Duplicate",
     "edit": "Edit",
-    "erase": "Erase",
     "error": "An error has occurred",
     "failure": {
       "save": {
@@ -496,23 +470,20 @@
         "title": "Failed to save modifications"
       }
     },
-    "filter": "Filter",
     "help": "Help",
     "help-display": "Show help",
-    "help-legend": "Show legend",
-    "itinerary": "Route",
     "leaveEditionMode": "You are about to exit edit mode, any unsaved changes will be lost.",
-    "loading": "Loading...",
+    "map-actions": {
+      "help-legend": "Show legend",
+      "reset-north": "Reset camera"
+    },
     "next": "Next",
     "no": "No",
     "open": "Open",
     "previous": "Previous",
-    "reset-north": "Reset camera",
     "save": "Save",
     "search": "Search",
     "selected": "already selected",
-    "settings": "Settings",
-    "sort": "Sort",
     "success": {
       "save": {
         "text": "Your modifications have been published",
@@ -520,7 +491,6 @@
       }
     },
     "toggleInfraErrors": "Toggler infra errors layer",
-    "train(s)": "train(s)",
     "units": {
       "day": "d",
       "hour": "h",

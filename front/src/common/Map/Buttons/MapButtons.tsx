@@ -209,7 +209,7 @@ export default function MapButtons({
               </span>
             </>
           }
-          tooltipKey="common.reset-north"
+          tooltipKey="common.map-actions.reset-north"
           extraClasses={isNewButtons ? 'new-btn-map-resetviewport' : 'btn-map-resetviewport'}
         />
         {withSearchButton && (
@@ -233,7 +233,7 @@ export default function MapButtons({
             onClick={() => toggleMapModal('KEY')}
             isNewButton={isNewButtons}
             icon={<Info />}
-            tooltipKey="common.help-legend"
+            tooltipKey="common.map-actions.help-legend"
           />
         )}
         {withInfraButton && <ButtonMapInfras isInEditor={!!editorProps} />}
