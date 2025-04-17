@@ -461,7 +461,7 @@ pub struct SimulationPowerRestrictionRange {
 
 #[derive(Debug, Serialize, Derivative)]
 #[derivative(Hash)]
-pub struct SimulationRequest {
+pub struct Request {
     pub infra: i64,
     pub expected_version: i64,
     pub path: SimulationPath,
@@ -499,7 +499,7 @@ pub enum Response {
     },
 }
 
-impl AsCoreRequest<Json<Response>> for SimulationRequest {
+impl AsCoreRequest<Json<Response>> for Request {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/standalone_simulation";
 
