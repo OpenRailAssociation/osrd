@@ -64,18 +64,18 @@ const operationalStudiesDateTransform = createTransform(
   null,
   ({
     startTime,
-    cadence,
-    timeRangeDuration,
+    interval,
+    timeWindow,
     ...outboundState
   }: {
     startTime: string;
-    cadence: string;
-    timeRangeDuration: string;
+    interval: string;
+    timeWindow: string;
   }) => ({
     ...outboundState,
     startTime: new Date(startTime),
-    cadence: Duration.parse(cadence),
-    timeRangeDuration: Duration.parse(timeRangeDuration),
+    interval: Duration.parse(interval),
+    timeWindow: Duration.parse(timeWindow),
   }),
   { whitelist: ['operationalStudiesConf'] }
 );

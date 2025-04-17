@@ -33,8 +33,8 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
-  timeRangeDuration: new Duration({ minutes: 120 }),
-  cadence: new Duration({ minutes: 60 }),
+  timeWindow: new Duration({ minutes: 120 }),
+  interval: new Duration({ minutes: 60 }),
   editingTrainIsPacedTrain: false,
 };
 
@@ -79,12 +79,12 @@ export const operationalStudiesConfSlice = createSlice({
 
       if (isPacedTrainWithDetails(action.payload)) {
         state.editingTrainIsPacedTrain = true;
-        state.timeRangeDuration = action.payload.paced.timeWindow;
-        state.cadence = action.payload.paced.interval;
+        state.timeWindow = action.payload.paced.timeWindow;
+        state.interval = action.payload.paced.interval;
       } else {
         state.editingTrainIsPacedTrain = false;
-        state.timeRangeDuration = new Duration({ minutes: 120 });
-        state.cadence = new Duration({ minutes: 60 });
+        state.timeWindow = new Duration({ minutes: 120 });
+        state.interval = new Duration({ minutes: 60 });
       }
     },
     // Use this action to transform an op to via from times and stop table or
@@ -128,8 +128,8 @@ export const {
   updateTrainStep,
   upsertViaFromSuggestedOP,
   upsertSeveralViasFromSuggestedOP,
-  updateTimeRangeDuration,
-  updateCadence,
+  updateTimeWindow,
+  updateInterval,
   toggleEditingTrainIsPacedTrain,
 
   // itinerary reducer

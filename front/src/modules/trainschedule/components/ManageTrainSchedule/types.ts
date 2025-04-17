@@ -54,8 +54,8 @@ export type ValidConfig = {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
-  cadence: string;
-  timeRangeDuration: string;
+  interval: string;
+  timeWindow: string;
   labels: string[];
   rollingStockComfort: TrainSchedule['comfort'];
   initialSpeed: number;
