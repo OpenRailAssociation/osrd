@@ -1,7 +1,4 @@
 {
-  "ManualOffset": "Add seconds to the train",
-  "ModalEdit": "Train edition",
-  "allowances": "Allowances",
   "departureTime": "Departure",
   "electricalProfiles": {
     "incompatible": "incompatible",
@@ -18,32 +15,16 @@
     "errorLoadingInfra": "Infrastructure loading error"
   },
   "infraLoading": "Infrastructure is loading",
-  "isUpdating": "Updating...",
-  "isWorking": "Generating simulation...",
-  "labels": "Tags",
-  "loadingTrain": "Loading train",
   "manchetteSettings": {
     "waypointsVisibility": "show/hide OP"
   },
-  "map": "Map",
-  "name": "Name",
-  "noData": "No available data",
-  "null": "Location not specified",
-  "pauseSimulation": "Pause simulation",
-  "placeholderlabel": "Tag filtering",
-  "playSimulation": "Play simulation",
   "powerRestriction": {
     "incompatible": "Incompatible power restriction ",
     "used": "used"
   },
   "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
   "requestedPoint": "requested point ({{ count }})",
-  "reset": "Reset the chart",
-  "resetTimer": "Reset timer",
-  "rotate": "Rotate the chart",
-  "simplify": "Data simplification",
   "simulationSheet": "Simulation sheet",
-  "speedLimitComposition": "Composition",
   "speedSpaceChart": "Speed Space Chart",
   "speedSpaceSettings": {
     "context": "Context",
@@ -58,36 +39,15 @@
     "temporarySpeedLimits": "Temporary speed limits",
     "tractionStatus": "Traction status"
   },
-  "start": "Departure",
-  "stop": "Arrival",
-  "stopPlace": "Place",
-  "stopStopTime": "Stop",
-  "stopTime": "Arrival",
   "timeSpaceChartSettings": {
     "capacity": "Capacity",
     "conflicts": "Conflicts",
     "paths": "Paths",
     "signalsStates": "Signals states"
   },
-  "timetable": "Timetable",
   "timetableOutput": "Timetable Output",
-  "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
   "toggleManchetteMenu": "Toggle manchette menu",
-  "toggleRewind": "Toggle simulation rewind",
-  "toggleSpeedSpaceSettings": "Toggle chart settings",
   "toggleWarpedMap": "Toggle the warped map",
-  "train": "Train",
-  "trainDeleted": "Train deleted",
-  "trainDetails": {
-    "headPosition": "Head",
-    "routeBeginOccupancy": "Block start",
-    "routeEndOccupancy": "Block end",
-    "routeSizeOccupancy": "Block size",
-    "speed": "Speed",
-    "tailPosition": "Tail"
-  },
-  "trainList": "Train list",
-  "waiting": "Loading...",
   "waypointMenu": {
     "hide": "Hide this OP"
   },
