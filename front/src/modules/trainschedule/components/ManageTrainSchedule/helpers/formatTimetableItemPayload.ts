@@ -28,8 +28,8 @@ export function formatPacedTrainPayload(validConfig: ValidConfig): PacedTrain {
   return {
     ...baseTrain,
     paced: {
-      time_window: validConfig.timeRangeDuration,
-      interval: validConfig.cadence,
+      time_window: validConfig.timeWindow,
+      interval: validConfig.interval,
     },
   };
 }

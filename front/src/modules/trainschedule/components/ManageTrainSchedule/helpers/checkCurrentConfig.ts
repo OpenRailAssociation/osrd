@@ -36,8 +36,8 @@ const checkCurrentConfig = (
     rollingStockComfort,
     powerRestriction,
     startTime,
-    cadence,
-    timeRangeDuration,
+    interval,
+    timeWindow,
     editingTrainIsPacedTrain,
   } = osrdconf;
   let error = false;
@@ -141,7 +141,7 @@ const checkCurrentConfig = (
   if (showPacedTrains) {
     // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
     if (editingTrainIsPacedTrain) {
-      if (cadence.total('minute') < 1) {
+      if (interval.total('minute') < 1) {
         error = true;
         dispatch(
           setFailure({
@@ -152,7 +152,7 @@ const checkCurrentConfig = (
           })
         );
       }
-      if (timeRangeDuration.total('minute') < 1) {
+      if (timeWindow.total('minute') < 1) {
         error = true;
         dispatch(
           setFailure({
@@ -175,8 +175,8 @@ const checkCurrentConfig = (
     trainCount,
     trainStep,
     trainDelta,
-    cadence: cadence.toISOString(),
-    timeRangeDuration: timeRangeDuration.toISOString(),
+    interval: interval.toISOString(),
+    timeWindow: timeWindow.toISOString(),
     labels,
     rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,

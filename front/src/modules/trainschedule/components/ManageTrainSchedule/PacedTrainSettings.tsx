@@ -3,17 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { updateTimeRangeDuration, updateCadence } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getTimeRangeDuration,
-  getCadence,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { updateTimeWindow, updateInterval } from 'reducers/osrdconf/operationalStudiesConf';
+import { getTimeWindow, getInterval } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 const PacedTrainSettings = () => {
-  const timeRangeDuration = useSelector(getTimeRangeDuration).total('minute');
-  const cadence = useSelector(getCadence).total('minute');
+  const timeWindow = useSelector(getTimeWindow).total('minute');
+  const interval = useSelector(getInterval).total('minute');
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
 
@@ -30,12 +27,12 @@ const PacedTrainSettings = () => {
           }
           id="paced-train-time-range-duration"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            dispatch(updateTimeRangeDuration(new Duration({ minutes: +e.target.value })));
+            dispatch(updateTimeWindow(new Duration({ minutes: +e.target.value })));
           }}
-          value={timeRangeDuration}
+          value={timeWindow}
           noMargin
-          isInvalid={timeRangeDuration < 1}
-          errorMsg={timeRangeDuration < 1 ? t('errorMessages.tooLowInput') : undefined}
+          isInvalid={timeWindow < 1}
+          errorMsg={timeWindow < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           unit="min"
           textRight
@@ -53,12 +50,12 @@ const PacedTrainSettings = () => {
           }
           id="paced-train-cadence"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            dispatch(updateCadence(new Duration({ minutes: +e.target.value })));
+            dispatch(updateInterval(new Duration({ minutes: +e.target.value })));
           }}
-          value={cadence}
+          value={interval}
           noMargin
-          isInvalid={cadence < 1}
-          errorMsg={cadence < 1 ? t('errorMessages.tooLowInput') : undefined}
+          isInvalid={interval < 1}
+          errorMsg={interval < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           unit="min"
           textRight

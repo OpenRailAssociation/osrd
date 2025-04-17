@@ -61,17 +61,17 @@ const trainSettingsReducer = {
   ) {
     state.rollingStockComfort = action.payload;
   },
-  updateTimeRangeDuration(
+  updateTimeWindow(
     state: Draft<OperationalStudiesConfState>,
-    action: PayloadAction<OperationalStudiesConfState['timeRangeDuration']>
+    action: PayloadAction<OperationalStudiesConfState['timeWindow']>
   ) {
-    state.timeRangeDuration = action.payload;
+    state.timeWindow = action.payload;
   },
-  updateCadence(
+  updateInterval(
     state: Draft<OperationalStudiesConfState>,
-    action: PayloadAction<OperationalStudiesConfState['cadence']>
+    action: PayloadAction<OperationalStudiesConfState['interval']>
   ) {
-    state.cadence = action.payload;
+    state.interval = action.payload;
   },
   toggleEditingTrainIsPacedTrain(state: Draft<OperationalStudiesConfState>) {
     state.editingTrainIsPacedTrain = !state.editingTrainIsPacedTrain;

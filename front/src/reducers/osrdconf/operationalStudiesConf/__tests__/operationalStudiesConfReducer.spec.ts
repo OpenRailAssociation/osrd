@@ -160,8 +160,8 @@ describe('simulationConfReducer', () => {
           },
         ],
         startTime: new Date('2021-01-01T00:00:00+00:00'),
-        timeRangeDuration: new Duration({ minutes: 60 }),
-        cadence: new Duration({ minutes: 30 }),
+        timeWindow: new Duration({ minutes: 60 }),
+        interval: new Duration({ minutes: 30 }),
         editingTrainIsPacedTrain: true,
       });
     });
