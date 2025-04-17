@@ -25,7 +25,7 @@ const PacedTrainSettings = () => {
               <small className="text-nowrap">{t('pacedTrains.timeWindow')}</small>
             </>
           }
-          id="paced-train-time-range-duration"
+          id="paced-train-time-window"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             dispatch(updateTimeWindow(new Duration({ minutes: +e.target.value })));
           }}
@@ -48,7 +48,7 @@ const PacedTrainSettings = () => {
               <small className="text-nowrap">{t('pacedTrains.interval')}</small>
             </>
           }
-          id="paced-train-cadence"
+          id="paced-train-interval"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             dispatch(updateInterval(new Duration({ minutes: +e.target.value })));
           }}

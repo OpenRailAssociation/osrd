@@ -39,9 +39,9 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly definePacedTrainCheckboxLabel: Locator;
 
-  private readonly pacedTrainTimeRangeDurationInput: Locator;
+  private readonly pacedTrainTimeWindow: Locator;
 
-  private readonly pacedTrainCadenceInput: Locator;
+  private readonly pacedTrainIntervalInput: Locator;
 
   private readonly trainNameInput: Locator;
 
@@ -74,8 +74,8 @@ class OperationalStudiesPage extends CommonPage {
     this.pacedTrainSwitch = page.getByTestId('paced-train-switch');
     this.definePacedTrainCheckbox = page.locator('#define-paced-train');
     this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
-    this.pacedTrainTimeRangeDurationInput = page.locator('#paced-train-time-range-duration');
-    this.pacedTrainCadenceInput = page.locator('#paced-train-cadence');
+    this.pacedTrainTimeWindow = page.locator('#paced-train-time-window');
+    this.pacedTrainIntervalInput = page.locator('#paced-train-interval');
     this.addTrainButton = page.getByTestId('add-train');
     this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
@@ -250,56 +250,47 @@ class OperationalStudiesPage extends CommonPage {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
-    await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
-      DEFAULT_PACED_TRAIN_SETTINGS.duration
-    );
+    await expect(this.pacedTrainTimeWindow).toBeVisible();
+    await expect(this.pacedTrainTimeWindow).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.timeWindow);
 
-    await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.step);
+    await expect(this.pacedTrainIntervalInput).toBeVisible();
+    await expect(this.pacedTrainIntervalInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.interval);
   }
 
   async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
-    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.duration);
-    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.step);
+    await this.setTimeWindow(PACED_TRAIN_SETTINGS_TEST.timeWindow);
+    await this.setInterval(PACED_TRAIN_SETTINGS_TEST.interval);
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
-    await expect(this.pacedTrainTimeRangeDurationInput).not.toBeVisible();
-    await expect(this.pacedTrainCadenceInput).not.toBeVisible();
+    await expect(this.pacedTrainTimeWindow).not.toBeVisible();
+    await expect(this.pacedTrainIntervalInput).not.toBeVisible();
 
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
-    await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
-      PACED_TRAIN_SETTINGS_TEST.duration
-    );
+    await expect(this.pacedTrainTimeWindow).toBeVisible();
+    await expect(this.pacedTrainTimeWindow).toHaveValue(PACED_TRAIN_SETTINGS_TEST.timeWindow);
 
-    await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.step);
+    await expect(this.pacedTrainIntervalInput).toBeVisible();
+    await expect(this.pacedTrainIntervalInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.interval);
   }
 
-  async fillPacedTrainSettings({
-    name,
-    startTime,
-    duration: pacedTrainDuration,
-    step,
-  }: PacedTrainDetails) {
+  async fillPacedTrainSettings({ name, startTime, timeWindow, interval }: PacedTrainDetails) {
     await this.definePacedTrainCheckboxLabel.click();
-    await this.setTimeRangeDuration(pacedTrainDuration);
-    await this.setCadence(step);
+    await this.setTimeWindow(timeWindow);
+    await this.setInterval(interval);
     await this.setTrainScheduleName(name);
     await this.setFormattedStartTime(startTime);
   }
 
-  async setTimeRangeDuration(timeRangeDuration: string) {
-    await this.pacedTrainTimeRangeDurationInput.fill(timeRangeDuration);
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(timeRangeDuration);
+  async setTimeWindow(timeWindow: string) {
+    await this.pacedTrainTimeWindow.fill(timeWindow);
+    await expect(this.pacedTrainTimeWindow).toHaveValue(timeWindow);
   }
 
-  async setCadence(cadence: string) {
-    await this.pacedTrainCadenceInput.fill(cadence);
-    await expect(this.pacedTrainCadenceInput).toHaveValue(cadence);
+  async setInterval(interval: string) {
+    await this.pacedTrainIntervalInput.fill(interval);
+    await expect(this.pacedTrainIntervalInput).toHaveValue(interval);
   }
 
   async addTimetableItem() {
