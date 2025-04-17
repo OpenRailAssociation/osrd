@@ -33,8 +33,8 @@ use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::SimulationSummaryResult;
 
+use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
 
 crate::routes! {
@@ -342,7 +342,7 @@ async fn simulation_summary(
         electrical_profile_set_id,
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
-) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
+) -> Result<Json<HashMap<i64, SummaryResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -380,7 +380,7 @@ async fn simulation_summary(
     let mut simulation_summaries = HashMap::new();
     for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
         let (sim, _) = sim;
-        let simulation_summary_result = SimulationSummaryResult::from(sim);
+        let simulation_summary_result = SummaryResponse::from(sim);
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
 

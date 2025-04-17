@@ -79,7 +79,6 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::mq_client;
 use crate::core::version::CoreVersionRequest;
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::error::{self};
 use crate::generated_data;

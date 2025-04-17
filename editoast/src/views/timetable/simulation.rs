@@ -16,11 +16,11 @@ use crate::core::simulation::SimulationPath;
 use crate::core::simulation::SimulationPowerRestrictionItem;
 use crate::core::simulation::SimulationScheduleItem;
 use crate::core::simulation::SpeedLimitProperties;
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models;
 use crate::models::RollingStockModel;
 use crate::views::CoreClient;
-use crate::views::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::rolling_stock::RollingStockError;
@@ -45,7 +45,7 @@ pub const TRAIN_SIZE_BATCH: usize = 100;
 
 editoast_common::schemas! {
     Response,
-    SimulationSummaryResult,
+    SummaryResponse,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
@@ -119,7 +119,8 @@ impl From<crate::core::simulation::Response> for Response {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[serde(tag = "status", rename_all = "snake_case")]
-pub enum SimulationSummaryResult {
+#[schema(as = SimulationSummaryResult)]
+pub enum SummaryResponse {
     /// Minimal information on a simulation's result
     Success {
         /// Length of a path in mm
@@ -148,7 +149,7 @@ pub enum SimulationSummaryResult {
     PathfindingInputError(PathfindingInputError),
 }
 
-impl From<simulation::Response> for SimulationSummaryResult {
+impl From<simulation::Response> for SummaryResponse {
     fn from(response: simulation::Response) -> Self {
         match response {
             simulation::Response::Success {
