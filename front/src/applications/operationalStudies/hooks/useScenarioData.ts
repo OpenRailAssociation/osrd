@@ -4,6 +4,7 @@ import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import {
+  type PostTrainScheduleSimulationSummaryApiResponse,
   osrdEditoastApi,
   type InfraWithState,
   type ScenarioResponse,
@@ -16,15 +17,16 @@ import type {
   TimetableItemId,
   TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import {
   formatEditoastTrainIdToPacedTrainId,
   formatEditoastTrainIdToTrainScheduleId,
+  formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrain,
+  isTrainSchedule,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -45,8 +47,11 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
+  const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
+  const [PostPacedTrainSimulationSummary] =
+    osrdEditoastApi.endpoints.postPacedTrainSimulationSummary.useLazyQuery();
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
@@ -243,31 +248,78 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   /** Update only depature time of a train */
   const updateTrainDepartureTime = useCallback(
     async (trainId: TimetableItemId, newDeparture: Date) => {
-      const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId);
+      let updatedTimetableItem: TimetableItemWithTimetableId | undefined;
+      let rawSummaries: PostTrainScheduleSimulationSummaryApiResponse = {};
+      const timetableItem = timetableItems?.find((item) => item.id === trainId);
 
-      const trainSchedule = timetableItems?.find((timetableItem) => timetableItem.id === trainId);
-
-      if (!trainSchedule) {
-        throw new Error('Train non trouvé');
+      if (!timetableItem) {
+        throw new Error('Item non trouvé');
       }
 
-      const trainScheduleResult = await putTrainScheduleById({
-        id: editoastTrainId,
-        trainScheduleForm: {
-          ...trainSchedule,
-          start_time: newDeparture.toISOString(),
-        },
-      }).unwrap();
+      if (isTrainSchedule(trainId)) {
+        const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(trainId);
 
-      const updatedTrainScheduleResult: TrainScheduleResultWithTrainId = {
-        ...trainScheduleResult,
-        id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
-      };
+        const trainScheduleResult = await putTrainScheduleById({
+          id: editoastTrainId,
+          trainScheduleForm: {
+            ...timetableItem,
+            start_time: newDeparture.toISOString(),
+          },
+        }).unwrap();
+
+        updatedTimetableItem = {
+          ...trainScheduleResult,
+          id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
+        };
+
+        // update its summary
+        rawSummaries = await postTrainScheduleSimulationSummary({
+          body: {
+            infra_id: scenario.infra_id,
+            ids: [editoastTrainId],
+            electrical_profile_set_id: electricalProfileSetId,
+          },
+        }).unwrap();
+      }
+
+      if (isPacedTrain(trainId)) {
+        const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(trainId);
+
+        try {
+          await putPacedTrainById({
+            id: editoastPacedTrainId,
+            body: {
+              ...(timetableItem as PacedTrainResponseWithPacedTrainId),
+              start_time: newDeparture.toISOString(),
+            },
+          }).unwrap();
+
+          updatedTimetableItem = {
+            ...timetableItem,
+            start_time: newDeparture.toISOString(),
+          };
+        } catch (error) {
+          console.error('Error updating paced train:', error);
+        }
+
+        // update its summary
+        rawSummaries = await PostPacedTrainSimulationSummary({
+          body: {
+            infra_id: scenario.infra_id,
+            ids: [editoastPacedTrainId],
+            electrical_profile_set_id: electricalProfileSetId,
+          },
+        }).unwrap();
+      }
+
+      if (!updatedTimetableItem) {
+        throw new Error('Item non trouvé');
+      }
 
       setProjectedTrainsById((prev) => {
         const newProjectedTrainsById = new Map(prev);
-        newProjectedTrainsById.set(updatedTrainScheduleResult.id, {
-          ...newProjectedTrainsById.get(updatedTrainScheduleResult.id)!,
+        newProjectedTrainsById.set(updatedTimetableItem.id, {
+          ...newProjectedTrainsById.get(updatedTimetableItem.id)!,
           departureTime: newDeparture,
         });
         return newProjectedTrainsById;
@@ -276,30 +328,20 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       setTimetableItems((prev) => {
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
-          ...keyBy([updatedTrainScheduleResult], 'id'),
+          ...keyBy([updatedTimetableItem], 'id'),
         };
         return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
 
-      // update its summary
-      const rawSummaries = await postTrainScheduleSimulationSummary({
-        body: {
-          infra_id: scenario.infra_id,
-          ids: [editoastTrainId],
-          electrical_profile_set_id: electricalProfileSetId,
-        },
-      }).unwrap();
-
-      const formattedRawSummaries: Map<TrainScheduleId, SimulationSummaryResult> = new Map();
+      const formattedRawSummaries: Map<TimetableItemId, SimulationSummaryResult> = new Map();
       for (const [_editoastTrainId, trainSummary] of Object.entries(rawSummaries)) {
-        const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(Number(_editoastTrainId));
-        formattedRawSummaries.set(formattedTrainId, trainSummary);
+        formattedRawSummaries.set(trainId, trainSummary);
       }
 
       const summaries = formatTimetableItemSummaries(
         [trainId],
         formattedRawSummaries,
-        mapBy([updatedTrainScheduleResult], 'id'),
+        mapBy([updatedTimetableItem], 'id'),
         rollingStocks!
       );
       setTimetableItemSummariesById((prev) => {

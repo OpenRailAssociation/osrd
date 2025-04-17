@@ -37,7 +37,7 @@ import type {
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
-import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -66,7 +66,7 @@ type ManchetteWithSpaceTimeChartProps = {
     allTrainsProjected: boolean;
   };
   handleTrainDrag?: (
-    draggedTrainId: TimetableItemId,
+    draggedTrainId: TrainId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => Promise<void>;
@@ -302,7 +302,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const timeDiff = payload.data.time - payload.initialData.time;
       const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
 
-      await handleTrainDrag(draggedTrain.id as TrainScheduleId, newDeparture, {
+      await handleTrainDrag(draggedTrain.id, newDeparture, {
         stopPanning: !isPanning,
       });
 
