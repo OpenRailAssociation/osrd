@@ -78,7 +78,6 @@ use crate::core;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::mq_client;
-use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
 use crate::error::InternalError;
 use crate::error::Result;
@@ -356,7 +355,7 @@ pub enum AppHealthError {
     #[error(transparent)]
     Openfga(anyhow::Error),
     #[error(transparent)]
-    Core(#[from] core::Error),
+    Core(#[from] crate::core::Error),
 }
 
 #[utoipa::path(

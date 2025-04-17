@@ -30,7 +30,6 @@ use super::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::Json;
 use crate::error::InternalError;
-use crate::views::path::pathfinding::PathfindingFailure;
 
 editoast_common::schemas! {
     CompleteReportTrain,
@@ -40,7 +39,6 @@ editoast_common::schemas! {
     RoutingZoneRequirement,
     ZoneUpdate,
     ReportTrain,
-    SimulationResponse,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Derivative, ToSchema)]
@@ -480,7 +478,7 @@ pub struct SimulationRequest {
     pub electrical_profile_set_id: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
@@ -491,16 +489,10 @@ pub enum SimulationResponse {
         base: ReportTrain,
         /// Simulation that takes into account the regularity margins
         provisional: ReportTrain,
-        #[schema(inline)]
         /// User-selected simulation: can be base or provisional
         final_output: CompleteReportTrain,
-        #[schema(inline)]
         mrsp: SpeedLimitProperties,
-        #[schema(inline)]
         electrical_profiles: ElectricalProfiles,
-    },
-    PathfindingFailed {
-        pathfinding_failed: PathfindingFailure,
     },
     SimulationFailed {
         core_error: InternalError,
@@ -513,21 +505,6 @@ impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
 
     fn infra_id(&self) -> Option<i64> {
         Some(self.infra)
-    }
-}
-
-impl SimulationResponse {
-    pub fn simulation_run_time(&self) -> Option<u64> {
-        if let SimulationResponse::Success { provisional, .. } = self {
-            Some(
-                *provisional
-                    .times
-                    .last()
-                    .expect("core error: empty simulation result"),
-            )
-        } else {
-            None
-        }
     }
 }
 

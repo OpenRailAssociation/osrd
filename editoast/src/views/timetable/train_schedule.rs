@@ -18,11 +18,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::views::infra::InfraIdQueryParam;
-use crate::views::timetable::simulation::SimulationSummaryResult;
-
-use crate::core::simulation::SimulationResponse;
-
 use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;
@@ -30,12 +25,15 @@ use crate::models::prelude::*;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::PathfindingError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::SimulationSummaryResult;
 
 use super::simulation::train_simulation_batch;
 
@@ -273,7 +271,7 @@ async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-) -> Result<Json<SimulationResponse>> {
+) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await

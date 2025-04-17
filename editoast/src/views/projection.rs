@@ -29,7 +29,6 @@ use crate::core::signal_projection::TrainSimulation;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalCriticalPosition;
-use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::ZoneUpdate;
 use crate::error::Result;
 use crate::models;
@@ -40,6 +39,7 @@ use crate::models::train_schedule::TrainSchedule;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
+use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::train_schedule::TrainScheduleError;
 
@@ -471,7 +471,7 @@ async fn retrieve_cached_projection(
 async fn extract_train_details(
     infra: &Infra,
     trains_schedules: &[TrainSchedule],
-    simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    simulations: Vec<(simulation::Response, PathfindingResult)>,
     path: &ProjectPathInput,
 ) -> Result<(Vec<String>, Vec<TrainSimulationDetails>)> {
     let ProjectPathInput {
@@ -498,7 +498,7 @@ async fn extract_train_details(
             zone_updates,
             ..
         } = match sim {
-            SimulationResponse::Success { final_output, .. } => final_output,
+            simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };
         let ReportTrain {

@@ -45,7 +45,6 @@ use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::ConflictRequirement;
 use crate::core::conflict_detection::ConflictType;
 use crate::core::conflict_detection::TrainRequirements;
-use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
@@ -596,8 +595,8 @@ async fn retrieve_simulations(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<(
-    Vec<(SimulationResponse, PathfindingResult)>,
-    Vec<(SimulationResponse, PathfindingResult)>,
+    Vec<(simulation::Response, PathfindingResult)>,
+    Vec<(simulation::Response, PathfindingResult)>,
 )> {
     let paced_train_to_ts = paced_trains
         .iter()
@@ -629,9 +628,9 @@ async fn retrieve_simulations(
 fn build_conflict_core_request(
     infra: Infra,
     trains: &[models::TrainSchedule],
-    train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    train_simulations: Vec<(simulation::Response, PathfindingResult)>,
     paced_trains: &[models::PacedTrain],
-    paced_train_simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    paced_train_simulations: Vec<(simulation::Response, PathfindingResult)>,
 ) -> ConflictDetectionRequest {
     let mut trains_requirements = HashMap::new();
 
@@ -639,7 +638,7 @@ fn build_conflict_core_request(
     for (train, sim) in trains.iter().zip(train_simulations) {
         let (sim, _) = sim;
         let final_output = match sim {
-            SimulationResponse::Success { final_output, .. } => final_output,
+            simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };
         let key = TrainId::TrainSchedule(train.id).to_string();
@@ -668,7 +667,7 @@ fn build_conflict_core_request(
 
         for (index, (sim, _)) in items.into_iter().enumerate() {
             let final_output = match sim {
-                SimulationResponse::Success { final_output, .. } => final_output,
+                simulation::Response::Success { final_output, .. } => final_output,
                 _ => continue,
             };
 

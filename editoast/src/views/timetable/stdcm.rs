@@ -42,7 +42,6 @@ use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::PhysicsConsistParameters;
 use crate::core::simulation::RoutingRequirement;
-use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SpacingRequirement;
 use crate::error::InternalError;
 use crate::error::Result;
@@ -57,6 +56,7 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::timetable::Conflict;
+use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
 use crate::views::timetable::train_simulation_batch;
 
@@ -76,7 +76,8 @@ crate::routes! {
 #[allow(clippy::large_enum_variant)]
 enum StdcmResponse {
     Success {
-        simulation: SimulationResponse,
+        #[schema(value_type = SimulationResponse)]
+        simulation: simulation::Response,
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
@@ -85,7 +86,8 @@ enum StdcmResponse {
         conflicts: Vec<Conflict>,
     },
     PreprocessingSimulationError {
-        error: SimulationResponse,
+        #[schema(value_type = SimulationResponse)]
+        error: simulation::Response,
     },
 }
 
@@ -350,7 +352,7 @@ async fn stdcm(
             path,
             departure_time,
         } => Ok(Json(StdcmResponse::Success {
-            simulation,
+            simulation: simulation.into(),
             path,
             departure_time,
         })),
@@ -376,14 +378,14 @@ async fn stdcm(
 /// that overlap with the possible simulation times.
 fn build_train_requirements(
     train_schedules: Vec<TrainSchedule>,
-    simulation_responses: Vec<SimulationResponse>,
+    simulation_responses: Vec<simulation::Response>,
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
 ) -> HashMap<String, TrainRequirements> {
     let mut trains_requirements = HashMap::new();
     for (train, sim) in train_schedules.iter().zip(simulation_responses) {
         let final_output = match sim {
-            SimulationResponse::Success { final_output, .. } => final_output,
+            simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };
 
@@ -458,7 +460,7 @@ fn is_resource_in_range(
 
 struct VirtualTrainRun {
     train_schedule: TrainSchedule,
-    simulation: SimulationResponse,
+    simulation: simulation::Response,
     pathfinding: PathfindingResult,
 }
 
@@ -569,6 +571,7 @@ mod tests {
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::PhysicsConsist;
     use crate::core::simulation::ReportTrain;
+    use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
@@ -951,7 +954,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response(),
+                    simulation: simulation_response().into(),
                     path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime")
@@ -1094,7 +1097,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response(),
+                    simulation: simulation_response().into(),
                     path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime")
