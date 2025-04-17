@@ -563,6 +563,7 @@ mod tests {
     use uom::si::quantities::Mass;
     use uuid::Uuid;
 
+    use crate::core;
     use crate::core::conflict_detection::Conflict as CoreConflict;
     use crate::core::conflict_detection::ConflictDetectionResponse;
     use crate::core::conflict_detection::ConflictType;
@@ -571,7 +572,6 @@ mod tests {
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::PhysicsConsist;
     use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
@@ -677,8 +677,8 @@ mod tests {
         core
     }
 
-    fn simulation_response() -> SimulationResponse {
-        SimulationResponse::Success {
+    fn simulation_response() -> core::simulation::Response {
+        core::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],

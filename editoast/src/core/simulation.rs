@@ -483,7 +483,7 @@ pub struct SimulationRequest {
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
-pub enum SimulationResponse {
+pub enum Response {
     Success {
         /// Simulation without any regularity margins
         base: ReportTrain,
@@ -499,7 +499,7 @@ pub enum SimulationResponse {
     },
 }
 
-impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
+impl AsCoreRequest<Json<Response>> for SimulationRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/standalone_simulation";
 

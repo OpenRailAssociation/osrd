@@ -14,8 +14,8 @@ use utoipa::ToSchema;
 use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
+use super::simulation;
 use super::simulation::PhysicsConsist;
-use super::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::core::Json;
 
@@ -130,7 +130,7 @@ pub struct UndirectedTrackRange {
 #[allow(clippy::large_enum_variant)]
 pub enum Response {
     Success {
-        simulation: SimulationResponse,
+        simulation: simulation::Response,
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },

@@ -91,10 +91,10 @@ impl Response {
     }
 }
 
-impl From<crate::core::simulation::SimulationResponse> for Response {
-    fn from(response: crate::core::simulation::SimulationResponse) -> Self {
+impl From<crate::core::simulation::Response> for Response {
+    fn from(response: crate::core::simulation::Response) -> Self {
         match response {
-            crate::core::simulation::SimulationResponse::Success {
+            crate::core::simulation::Response::Success {
                 base,
                 provisional,
                 final_output,
@@ -107,7 +107,7 @@ impl From<crate::core::simulation::SimulationResponse> for Response {
                 mrsp,
                 electrical_profiles,
             },
-            crate::core::simulation::SimulationResponse::SimulationFailed { core_error } => {
+            crate::core::simulation::Response::SimulationFailed { core_error } => {
                 Self::SimulationFailed { core_error }
             }
         }
