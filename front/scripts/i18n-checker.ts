@@ -51,6 +51,18 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
 
+  // Rolling stock
+  /rollingstock:categoriesOptions\..*/,
+  /rollingstock:curves\..*/,
+  /rollingstock:delete\..*/,
+  /rollingstock:errorMessages\..*/,
+  /rollingstock:length/,
+  /rollingstock:mass/,
+  /rollingstock:maxSpeed/,
+  /rollingstock:messages\..*/,
+  /rollingstock:metadata\..*/,
+  /rollingstock:unspecified/,
+
   // Simulation
   /simulation:departureTime/,
   /simulation:electricalProfiles\..*/,
