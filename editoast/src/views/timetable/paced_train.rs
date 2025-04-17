@@ -19,7 +19,6 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthenticationExt;
-use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
@@ -33,8 +32,9 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationSummaryResult;
-use crate::views::timetable::train_simulation_batch;
+use crate::views::timetable::simulation::train_simulation_batch;
 
 crate::routes! {
     "/paced_train" => {
@@ -373,7 +373,7 @@ async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-) -> Result<Json<SimulationResponse>> {
+) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await

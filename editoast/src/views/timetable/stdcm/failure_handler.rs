@@ -7,11 +7,11 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::WorkSchedulesRequest;
-use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;
 use crate::views::timetable::Conflict;
+use crate::views::timetable::simulation;
 use crate::views::timetable::stdcm::StdcmResponse;
 
 use super::VirtualTrainRun;
@@ -27,7 +27,7 @@ pub(super) struct SimulationFailureHandler {
     pub(super) infra_id: i64,
     pub(super) infra_version: i64,
     pub(super) train_schedules: Vec<TrainSchedule>,
-    pub(super) simulations: Vec<SimulationResponse>,
+    pub(super) simulations: Vec<simulation::Response>,
     pub(super) work_schedules: Vec<WorkSchedule>,
     pub(super) virtual_train_run: VirtualTrainRun,
     pub(super) earliest_departure_time: DateTime<Utc>,

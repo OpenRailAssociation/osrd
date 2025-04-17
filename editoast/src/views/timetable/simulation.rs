@@ -1,31 +1,35 @@
 use crate::RetrieveBatchUnchecked;
 use crate::ValkeyClient;
 use crate::client::get_app_version;
-use crate::core;
 use crate::core::AsCoreRequest;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingResultSuccess;
+use crate::core::simulation::CompleteReportTrain;
+use crate::core::simulation::ElectricalProfiles;
 use crate::core::simulation::PhysicsConsist;
 use crate::core::simulation::PhysicsConsistParameters;
+use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SimulationMargins;
 use crate::core::simulation::SimulationPath;
 use crate::core::simulation::SimulationPowerRestrictionItem;
 use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationScheduleItem;
+use crate::core::simulation::SpeedLimitProperties;
 use crate::error::Result;
 use crate::models;
 use crate::models::RollingStockModel;
 use crate::views::CoreClient;
 use crate::views::InternalError;
-use crate::views::SimulationResponse;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::Infra;
 use crate::views::timetable::PathfindingResult;
+use crate::views::timetable::simulation;
 use editoast_models::DbConnection;
 use itertools::Itertools;
+use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::hash::DefaultHasher;
@@ -40,7 +44,74 @@ use utoipa::ToSchema;
 pub const TRAIN_SIZE_BATCH: usize = 100;
 
 editoast_common::schemas! {
+    Response,
     SimulationSummaryResult,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[serde(tag = "status", rename_all = "snake_case")]
+// We accepted the difference of memory size taken by variants
+// Since there is only on success and others are error cases
+#[allow(clippy::large_enum_variant)]
+#[schema(as = SimulationResponse)]
+pub enum Response {
+    Success {
+        /// Simulation without any regularity margins
+        base: ReportTrain,
+        /// Simulation that takes into account the regularity margins
+        provisional: ReportTrain,
+        #[schema(inline)]
+        /// User-selected simulation: can be base or provisional
+        final_output: CompleteReportTrain,
+        #[schema(inline)]
+        mrsp: SpeedLimitProperties,
+        #[schema(inline)]
+        electrical_profiles: ElectricalProfiles,
+    },
+    PathfindingFailed {
+        pathfinding_failed: PathfindingFailure,
+    },
+    SimulationFailed {
+        core_error: InternalError,
+    },
+}
+
+impl Response {
+    pub fn simulation_run_time(&self) -> Option<u64> {
+        if let Response::Success { provisional, .. } = self {
+            Some(
+                *provisional
+                    .times
+                    .last()
+                    .expect("core error: empty simulation result"),
+            )
+        } else {
+            None
+        }
+    }
+}
+
+impl From<crate::core::simulation::SimulationResponse> for Response {
+    fn from(response: crate::core::simulation::SimulationResponse) -> Self {
+        match response {
+            crate::core::simulation::SimulationResponse::Success {
+                base,
+                provisional,
+                final_output,
+                mrsp,
+                electrical_profiles,
+            } => Self::Success {
+                base,
+                provisional,
+                final_output,
+                mrsp,
+                electrical_profiles,
+            },
+            crate::core::simulation::SimulationResponse::SimulationFailed { core_error } => {
+                Self::SimulationFailed { core_error }
+            }
+        }
+    }
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -75,10 +146,10 @@ pub enum SimulationSummaryResult {
     PathfindingInputError(PathfindingInputError),
 }
 
-impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
-    fn from(sim: SimulationResponse) -> Self {
-        match sim {
-            SimulationResponse::Success {
+impl From<simulation::Response> for SimulationSummaryResult {
+    fn from(response: simulation::Response) -> Self {
+        match response {
+            simulation::Response::Success {
                 final_output,
                 provisional,
                 base,
@@ -94,7 +165,7 @@ impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
                     path_item_times_base: base.path_item_times.clone(),
                 }
             }
-            SimulationResponse::PathfindingFailed { pathfinding_failed } => {
+            simulation::Response::PathfindingFailed { pathfinding_failed } => {
                 match pathfinding_failed {
                     PathfindingFailure::InternalError { core_error } => {
                         Self::PathfindingFailure { core_error }
@@ -109,7 +180,7 @@ impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
                     }
                 }
             }
-            SimulationResponse::SimulationFailed { core_error } => Self::SimulationFailed {
+            simulation::Response::SimulationFailed { core_error } => Self::SimulationFailed {
                 error_type: core_error.error_type,
             },
         }
@@ -126,7 +197,7 @@ pub async fn train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
+) -> Result<Vec<(simulation::Response, PathfindingResult)>> {
     // Compute path
 
     let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
@@ -187,7 +258,7 @@ pub async fn consist_train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
+) -> Result<Vec<(simulation::Response, PathfindingResult)>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let pathfinding_results = pathfinding_from_train_batch(
@@ -208,7 +279,7 @@ pub async fn consist_train_simulation_batch(
         .map(|consist| (&consist.traction_engine.name, consist))
         .collect();
 
-    let mut simulation_results = vec![None::<SimulationResponse>; train_schedules.len()];
+    let mut simulation_results = vec![None::<simulation::Response>; train_schedules.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
     let mut sim_request_map: HashMap<String, SimulationRequest> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
@@ -231,7 +302,7 @@ pub async fn consist_train_simulation_batch(
                 path_item_positions,
             ),
             PathfindingResult::Failure(pathfinding_failed) => {
-                simulation_results[index] = Some(SimulationResponse::PathfindingFailed {
+                simulation_results[index] = Some(simulation::Response::PathfindingFailed {
                     pathfinding_failed: pathfinding_failed.clone(),
                 });
                 continue;
@@ -269,7 +340,7 @@ pub async fn consist_train_simulation_batch(
         nb_unique_sim = to_sim.len()
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
-    let cached_results: Vec<Option<SimulationResponse>> = valkey_conn
+    let cached_results: Vec<Option<simulation::Response>> = valkey_conn
         .compressed_get_bulk(&cached_simulation_hash)
         .await?;
 
@@ -306,13 +377,13 @@ pub async fn consist_train_simulation_batch(
                 to_cache.push((train_hash, sim_res.clone()));
                 train_indexes
                     .iter()
-                    .for_each(|index| simulation_results[*index] = Some(sim_res.clone()))
+                    .for_each(|index| simulation_results[*index] = Some(sim_res.clone().into()))
             }
 
             Err(core_error) => {
                 let error: InternalError = core_error.into();
                 train_indexes.iter().for_each(|index| {
-                    simulation_results[*index] = Some(SimulationResponse::SimulationFailed {
+                    simulation_results[*index] = Some(simulation::Response::SimulationFailed {
                         core_error: error.clone(),
                     })
                 })
