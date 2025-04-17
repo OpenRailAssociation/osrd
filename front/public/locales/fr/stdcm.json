@@ -1,7 +1,5 @@
 {
-  "apply": "Appliquer",
   "arriveAt": "Arriver à {{ time }}",
-  "cancelRequest": "Annuler la requête",
   "consist": {
     "compositionCode": "code de composition",
     "consist": "Convoi",
@@ -68,16 +66,12 @@
     "calculating": "Validation de l'itinéraire en cours...",
     "success": "L'itinéraire demandé est valide."
   },
-  "pleaseWait": "Veuillez patientez…",
   "simulation": {
     "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
     "calculatingSimulation": "Calcul en cours...",
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
-    "modifySearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
-    "pendingSimulation": "simulation en cours",
     "results": {
-      "changeCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "conflictsTitle": "Voici les problèmes rencontrés au moment du calcul sur le chemin le plus court :",
       "displayAll": "Afficher tous les jalons",
@@ -122,8 +116,6 @@
     "stopCalculation": "Arrêter"
   },
   "spaceTimeGraphic": "Graphique Espace-Temps",
-  "speedSpaceChart": "Graphique Espace Vitesse",
-  "stdcmComputation": "Recherche de sillon",
   "stdcmErrors": {
     "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
     "infraNotLoaded": "Infrastructure en cours de chargement",
@@ -146,8 +138,6 @@
     "requestFailed": "Erreur de calcul Sillon de dernière minute",
     "zeroLengthPath": "Le chemin ne peut pas avoir de longueur nulle."
   },
-  "stdcmResults": "Résultats",
-  "stdcmSimulationReport": "Fiche simulation",
   "trainPath": {
     "addVia": "Ajouter un PR intermédiaire",
     "asSoonAsPossible": "dès que possible",

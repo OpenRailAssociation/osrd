@@ -1,7 +1,5 @@
 {
-  "apply": "Apply",
   "arriveAt": "Arrive at {{ time }}",
-  "cancelRequest": "Cancel request",
   "consist": {
     "compositionCode": "Composition code",
     "consist": "Consist",
@@ -68,16 +66,12 @@
     "calculating": "Validating path...",
     "success": "The requested path is valid."
   },
-  "pleaseWait": "Please wait…",
   "simulation": {
     "additionalResults": "No results were found for your request; alternative options are being computed",
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
-    "modifySearchCriteria": "You can modify your search criteria to find a solution.",
-    "pendingSimulation": "Simulation in progress",
     "results": {
-      "changeCriteria": "You can modify your search criterias to find a solution.",
       "changeSearchCriteria": "You can modify your search criteria to find a solution.",
       "conflictsTitle": "Here are the problems encountered when calculating the shortest path:",
       "displayAll": "Display all operational points",
@@ -122,8 +116,6 @@
     "stopCalculation": "Stop"
   },
   "spaceTimeGraphic": "Space-Time graph",
-  "speedSpaceChart": "Speed Space Chart",
-  "stdcmComputation": "Search for a train path",
   "stdcmErrors": {
     "bothPointAreScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
     "infraNotLoaded": "Infrastructure is loading",
@@ -146,8 +138,6 @@
     "requestFailed": "Calculation error for last minute train path",
     "zeroLengthPath": "The path cannot have a null length."
   },
-  "stdcmResults": "Results",
-  "stdcmSimulationReport": "Path simulation report",
   "trainPath": {
     "addVia": "Add intermediate OP",
     "asSoonAsPossible": "as soon as possible",
