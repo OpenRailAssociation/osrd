@@ -169,90 +169,119 @@ const PacedTrainItem = ({
         closed: !isOccurrencesListOpen,
       })}
     >
-      <div
-        data-testid="paced-train"
-        className={cx('base-info', {
-          warning: pacedTrain.invalidReason || pacedTrain.notHonoredReason,
-          invalid: pacedTrain.invalidReason,
-          'not-honored': pacedTrain.notHonoredReason,
-        })}
-      >
-        <div className="checkbox-title">
-          <Checkbox
-            label=""
-            checked={isInSelection}
-            onChange={() => handleSelectPacedTrain(pacedTrain.id)}
-            small
-          />
-        </div>
-
+      <div>
         <div
-          data-testid="paced-train-main-info"
-          title={pacedTrain.name}
-          className="paced-train-main-info"
-          onClick={toggleOccurrencesList}
-          role="button"
-          tabIndex={0}
+          data-testid="paced-train"
+          className={cx('base-info', {
+            warning: pacedTrain.invalidReason || pacedTrain.notHonoredReason,
+            invalid: pacedTrain.invalidReason,
+            'not-honored': pacedTrain.notHonoredReason,
+          })}
         >
-          {isProjectionPathUsed && (
-            <div className="train-projected">
-              <Manchette iconColor="var(--white100)" />
-            </div>
-          )}
-          <div data-testid="occurrences-count" className="occurrences-count">
-            {occurrencesCount}
-          </div>
-          {isOccurrencesListOpen ? (
-            <ChevronDown
-              data-testid="hide-occurrences-button"
-              className="toggle-icon center-icon"
+          <div className="checkbox-title">
+            <Checkbox
+              label=""
+              checked={isInSelection}
+              onChange={() => handleSelectPacedTrain(pacedTrain.id)}
+              small
             />
-          ) : (
-            <ChevronRight
-              data-testid="show-occurrences-button"
-              className="toggle-icon center-icon"
-            />
-          )}
-          <div className="train-info">
-            <span data-testid="paced-train-name" className="train-name">
-              {pacedTrain.name}
-            </span>
           </div>
-        </div>
 
+<<<<<<< Updated upstream
         {!pacedTrain.invalidReason ? (
           <div className="paced-train-right-zone">
             {pacedTrain.isValid && (
               <div data-testid="paced-train-cadence">
                 &mdash;&nbsp;{`${ms2min(pacedTrain.paced.interval.ms)}min`}
+=======
+          <div
+            data-testid="paced-train-main-info"
+            title={pacedTrain.name}
+            className="paced-train-main-info"
+            onClick={toggleOccurrencesList}
+            role="button"
+            tabIndex={0}
+          >
+            {isProjectionPathUsed && (
+              <div className="train-projected">
+                <Manchette iconColor="var(--white100)" />
+>>>>>>> Stashed changes
               </div>
             )}
-            <div
-              className={cx('status-icon', {
-                'not-honored-or-too-fast': pacedTrain.notHonoredReason,
-              })}
-            >
-              {pacedTrain.notHonoredReason &&
-                (pacedTrain.notHonoredReason === 'scheduleNotHonored' ? (
-                  <Clock className="center-icon" />
-                ) : (
-                  <Flame className="center-icon" />
-                ))}
+            <div data-testid="occurrences-count" className="occurrences-count">
+              {occurrencesCount}
+            </div>
+            {isOccurrencesListOpen ? (
+              <ChevronDown
+                data-testid="hide-occurrences-button"
+                className="toggle-icon center-icon"
+              />
+            ) : (
+              <ChevronRight
+                data-testid="show-occurrences-button"
+                className="toggle-icon center-icon"
+              />
+            )}
+            <div className="train-info">
+              <span data-testid="paced-train-name" className="train-name">
+                {pacedTrain.name}
+              </span>
             </div>
           </div>
-        ) : (
-          <div className="invalid-reason">
-            <span title={t(`timetable.invalid.${pacedTrain.invalidReason}`)}>
-              {t(`timetable.invalid.${pacedTrain.invalidReason}`)}
-            </span>
+
+          {!pacedTrain.invalidReason ? (
+            <div className="paced-train-right-zone">
+              {pacedTrain.isValid && (
+                <div data-testid="paced-train-cadence">
+                  &mdash;&nbsp;{`${ms2min(pacedTrain.paced.step.ms)}min`}
+                </div>
+              )}
+              <div
+                className={cx('status-icon', {
+                  'not-honored-or-too-fast': pacedTrain.notHonoredReason,
+                })}
+              >
+                {pacedTrain.notHonoredReason &&
+                  (pacedTrain.notHonoredReason === 'scheduleNotHonored' ? (
+                    <Clock className="center-icon" />
+                  ) : (
+                    <Flame className="center-icon" />
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="invalid-reason">
+              <span title={t(`timetable.invalid.${pacedTrain.invalidReason}`)}>
+                {t(`timetable.invalid.${pacedTrain.invalidReason}`)}
+              </span>
+            </div>
+          )}
+          <TimetableItemActions
+            selectPathProjection={selectPathProjection}
+            duplicateTimetableItem={duplicatePacedTrain}
+            editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
+            deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}
+          />
+        </div>
+        {/* TODO PACED TRAIN: Remove conditon pacedTrain.duration after development paced train feature is done */}
+        {pacedTrain.isValid && pacedTrain.duration && (
+          <div className="more-info">
+            <div className="more-info-left">
+              <span className="more-info-item">
+                {t('timetable.stopsCount', { count: pacedTrain.stopsCount })}
+              </span>
+              <span className="more-info-item">{pacedTrain.pathLength}</span>
+              <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
+                {pacedTrain.mechanicalEnergyConsumed}&nbsp;kWh
+              </span>
+            </div>
+            <div className="duration-time">
+              <span data-testid="train-duration">
+                {dayjs.duration(pacedTrain.duration.ms).format('HH[h]mm')}
+              </span>
+            </div>
           </div>
         )}
-        <TimetableItemActions
-          selectPathProjection={selectPathProjection}
-          duplicateTimetableItem={duplicatePacedTrain}
-          editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}
-        />
       </div>
       <div className="occurrences">
         {occurrences.map((occurrence, index) => (
@@ -266,6 +295,7 @@ const PacedTrainItem = ({
           />
         ))}
       </div>
+<<<<<<< Updated upstream
       {/* TODO PACED TRAIN: Remove conditon pacedTrain.duration after development paced train feature is done */}
       {pacedTrain.isValid && pacedTrain.duration && (
         <div className="more-info">
@@ -283,6 +313,8 @@ const PacedTrainItem = ({
           </div>
         </div>
       )}
+=======
+>>>>>>> Stashed changes
     </div>
   );
 };
