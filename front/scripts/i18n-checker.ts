@@ -43,9 +43,11 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor.obj-types\..*/, // Type of object are translated dynamicly on the sumpup popin
   /translation:Editor.directions\..*/,
   /translation:Editor.layers\..*/,
+  /translation:common.map-actions\..*/,
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
   /translation:Editor\.infra-errors\.error-level\..*/, // Infra error level are generated
+  /translation:Editor\.infra-errors\.list\..*/, // Total-error keys are generated
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
 ];

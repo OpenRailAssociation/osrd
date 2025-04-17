@@ -8,10 +8,6 @@
     "entities": {
       "errors-linked": "Anomalies liées"
     },
-    "errors": {
-      "length-number-and-required": "La distance est un champs numérique requis",
-      "length-out-of-sync-with-geometry": "La distance renseignée est trop éloignée de celle de la géométrie (Doit être compris entre {{min}} et {{max}})"
-    },
     "infra-errors": {
       "corrector-modal": {
         "create-actions": "{{creation_count}} créations d’objets",
@@ -159,8 +155,7 @@
       "help": "Ce composant vous permet de visualiser et modifier un habillage linéaire. Vous pouvez zoomer dans la visualisation via les boutons prévus à cet effet ou avec la molette de la souris, et vous déplacer via un drag'n'drop. Pour modifier la taille d'un segment, il vous suffit de cliquer dessus, le formulaire d'édition s'affichera en dessous. Vous pouvez aussi cliquer sur une bordure d'un segment, et tout en gardant le doigt appuyé, déplacer la bordure avec la sourie.",
       "merge-with-left": "Fusionner avec l'élément précédent",
       "merge-with-right": "Fusionner avec l'élément suivant",
-      "split": "Couper l'élément en deux",
-      "sync-length-with-geometry": "Synchroniser avec la géométrie"
+      "split": "Couper l'élément en deux"
     },
     "nav": {
       "choose-infra": "Choisissez une infrastructure",
@@ -460,19 +455,12 @@
   },
   "common": {
     "and": "et",
-    "asc": "Ascendant",
-    "back": "Retour",
     "cancel": "Annuler",
-    "change": "Changer",
     "close": "Fermer",
     "confirm": "Confirmer",
     "delete": "Supprimer",
-    "description": "Description",
-    "download": "Télécharger",
-    "dsc": "Descendant",
     "duplicate": "Dupliquer",
     "edit": "Éditer",
-    "erase": "Effacer",
     "error": "Une erreur est survenue",
     "failure": {
       "save": {
@@ -480,23 +468,20 @@
         "title": "Echec de l'enregistrement des modifications"
       }
     },
-    "filter": "Filtrer",
     "help": "Aide",
     "help-display": "Afficher l'aide",
-    "help-legend": "Afficher la légende",
-    "itinerary": "Itinéraire",
     "leaveEditionMode": "Vous êtes sur le point de quitter le mode édition, toute modification non sauvegardée sera perdue.",
-    "loading": "Chargement…",
+    "map-actions": {
+      "help-legend": "Afficher la légende",
+      "reset-north": "Réinitialiser la caméra"
+    },
     "next": "Suivant",
     "no": "Non",
     "open": "Ouvrir",
     "previous": "Précedent",
-    "reset-north": "Réinitialiser la caméra",
     "save": "Sauvegarder",
     "search": "Rechercher",
     "selected": "déjà sélectionné",
-    "settings": "Paramètres",
-    "sort": "Tri",
     "success": {
       "save": {
         "text": "Vos modifications ont été publiées",
@@ -504,7 +489,6 @@
       }
     },
     "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
-    "train(s)": "train(s)",
     "units": {
       "day": "j",
       "hour": "h",
