@@ -39,24 +39,25 @@ const RollingStockEditorMetadataFormColumn = ({
   const { t } = useTranslation(['rollingstock', 'translation']);
   return (
     <>
-      {propertiesList.map((property, index) => (
-        <InputSNCF
-          containerClass="col-6 px-0"
-          id={property.title}
-          name={property.title}
-          label={
-            property.title in RS_REQUIRED_FIELDS ? `${t(property.title)} *` : t(property.title)
-          }
-          type={property.type}
-          value={rollingStockValues[property.title] as string | number}
-          onChange={(e) =>
-            setRollingStockValues({ ...rollingStockValues, [property.title]: e.target.value })
-          }
-          sm
-          isFlex
-          key={index}
-        />
-      ))}
+      {propertiesList.map((property, index) => {
+        const titleKey = `metadata.${property.title}`;
+        return (
+          <InputSNCF
+            containerClass="col-6 px-0"
+            id={property.title}
+            name={property.title}
+            label={property.title in RS_REQUIRED_FIELDS ? `${t(titleKey)} *` : t(titleKey)}
+            type={property.type}
+            value={rollingStockValues[property.title] as string | number}
+            onChange={(e) =>
+              setRollingStockValues({ ...rollingStockValues, [property.title]: e.target.value })
+            }
+            sm
+            isFlex
+            key={index}
+          />
+        );
+      })}
     </>
   );
 };
