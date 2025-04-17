@@ -234,6 +234,11 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             UserCommand::Add(add_args) => user::add_user(add_args, Arc::new(db_pool))
                 .await
                 .map_err(Into::into),
+            UserCommand::Info(info_args) => {
+                user::user_info(info_args, openfga_config, Arc::new(db_pool))
+                    .await
+                    .map_err(Into::into)
+            }
         },
         Commands::Healthcheck(core_config) => {
             healthcheck_cmd(db_pool.into(), valkey_config, core_config, openfga_config)

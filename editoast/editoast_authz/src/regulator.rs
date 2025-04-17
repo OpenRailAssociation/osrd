@@ -126,6 +126,30 @@ impl<S: StorageDriver> Regulator<S> {
             .map_err(Error::Storage)
     }
 
+    /// Returns the IDs of the groups for the provided user
+    #[tracing::instrument(skip_all, fields(user_id, group_id), ret(level = Level::DEBUG), err)]
+    pub async fn user_groups(&self, user_id: i64) -> Result<HashSet<i64>, Error<S::Error>> {
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+        let user = fga!(User:user_id);
+        let groups = self
+            .openfga
+            .list_users(User::group().query_users(&user))
+            .await?;
+        Ok(groups
+            .users
+            .into_iter()
+            .filter_map(|Group(group)| match group.parse() {
+                Ok(id) => Some(id),
+                Err(_) => {
+                    tracing::error!(group, "unparsable group - skipping it");
+                    None
+                }
+            })
+            .collect())
+    }
+
     /// Returns the IDs of the users which are members of the provided group
     #[tracing::instrument(skip_all, fields(user_id, group_id), ret(level = Level::DEBUG), err)]
     pub async fn group_members(&self, group_id: i64) -> Result<HashSet<i64>, Error<S::Error>> {
