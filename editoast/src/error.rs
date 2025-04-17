@@ -379,4 +379,19 @@ impl ErrorDefinition {
     }
 }
 
+impl From<crate::core::RawError> for InternalError {
+    fn from(core_error: crate::core::RawError) -> Self {
+        let status = match core_error.cause {
+            core::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+            core::ErrorCause::User => StatusCode::BAD_REQUEST,
+        };
+        Self {
+            status,
+            error_type: core_error.error_type,
+            context: core_error.context,
+            message: core_error.message,
+        }
+    }
+}
+
 inventory::collect!(ErrorDefinition);

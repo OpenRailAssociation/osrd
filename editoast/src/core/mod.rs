@@ -305,6 +305,21 @@ impl Display for StandardCoreError {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub struct RawError {
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub message: String,
+    pub context: HashMap<String, serde_json::Value>,
+    pub cause: ErrorCause,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub enum ErrorCause {
+    Internal,
+    User,
+}
+
 #[cfg(test)]
 mod tests {
 
