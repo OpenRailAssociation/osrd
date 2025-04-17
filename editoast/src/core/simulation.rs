@@ -26,10 +26,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::RawError;
 use super::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::Json;
-use crate::error::InternalError;
 
 editoast_common::schemas! {
     CompleteReportTrain,
@@ -495,7 +495,7 @@ pub enum Response {
         electrical_profiles: ElectricalProfiles,
     },
     SimulationFailed {
-        core_error: InternalError,
+        core_error: RawError,
     },
 }
 
