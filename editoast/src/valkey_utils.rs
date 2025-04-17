@@ -1,7 +1,10 @@
 use std::fmt::Debug;
 
-use deadpool_redis::redis::aio::ConnectionLike;
-use deadpool_redis::redis::cmd;
+use deadpool_redis::Config;
+use deadpool_redis::Connection;
+use deadpool_redis::Pool;
+use deadpool_redis::PoolError;
+use deadpool_redis::Runtime;
 use deadpool_redis::redis::Arg;
 use deadpool_redis::redis::AsyncCommands;
 use deadpool_redis::redis::Cmd;
@@ -11,16 +14,13 @@ use deadpool_redis::redis::RedisError;
 use deadpool_redis::redis::RedisFuture;
 use deadpool_redis::redis::ToRedisArgs;
 use deadpool_redis::redis::Value;
-use deadpool_redis::Config;
-use deadpool_redis::Connection;
-use deadpool_redis::Pool;
-use deadpool_redis::PoolError;
-use deadpool_redis::Runtime;
-use futures::future;
+use deadpool_redis::redis::aio::ConnectionLike;
+use deadpool_redis::redis::cmd;
 use futures::FutureExt;
-use serde::de::DeserializeOwned;
+use futures::future;
 use serde::Serialize;
-use tracing::{debug, span, trace, Level};
+use serde::de::DeserializeOwned;
+use tracing::{Level, debug, span, trace};
 use url::Url;
 
 use crate::error::Result;
@@ -43,15 +43,14 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> std::result::Result<Value, RedisError> {
                 || nb_keys > 1 =>
         {
             Ok(Value::Array(vec![Value::Nil; nb_keys]))
-        },
-        Arg::Simple(_)
-            if nb_keys == 1 =>
-        {
-            Ok(Value::Nil)
-        },
-        Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => Ok(Value::SimpleString("PONG".to_string())),
+        }
+        Arg::Simple(_) if nb_keys == 1 => Ok(Value::Nil),
+        Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => {
+            Ok(Value::SimpleString("PONG".to_string()))
+        }
         Arg::Simple(cmd_name_bytes) => unimplemented!(
-            "valkey command '{}' is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
+            "valkey command '{}' is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'",
+            String::from_utf8(cmd_name_bytes.to_vec())?
         ),
         Arg::Cursor => unimplemented!(
             "valkey cursor mode is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'"
@@ -155,10 +154,10 @@ impl ValkeyConnection {
                     ErrorKind::IoError,
                     "An error occurred serializing to json",
                 ))
-                .into())
+                .into());
             }
         };
-        self.set(key, str_value).await?;
+        self.set::<_, _, ()>(key, str_value).await?;
         Ok(())
     }
 
@@ -187,7 +186,7 @@ impl ValkeyConnection {
             })
             .collect::<Result<Vec<_>>>()?;
 
-        self.mset(&serialized_items).await?;
+        self.mset::<_, _, ()>(&serialized_items).await?;
         Ok(())
     }
 
@@ -224,7 +223,7 @@ impl ValkeyConnection {
 
         // Store the compressed values using mset
         span!(Level::INFO, "Sending items to Redis")
-            .in_scope(|| async move { self.mset(&compressed_items).await })
+            .in_scope(|| async move { self.mset::<_, _, ()>(&compressed_items).await })
             .await?;
         Ok(())
     }

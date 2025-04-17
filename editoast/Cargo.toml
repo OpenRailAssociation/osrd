@@ -24,7 +24,7 @@ dependency_on_unit_never_type_fallback = "allow" # this is caused by tracing, we
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "LGPL-3.0"
 
 [workspace.dependencies]
