@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
-use axum::Extension;
 use deadpool_redis::redis::AsyncCommands;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -16,18 +16,18 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::client::get_root_url;
 use crate::error::Result;
-use crate::map::get_cache_tile_key;
-use crate::map::get_view_cache_prefix;
 use crate::map::Layer;
 use crate::map::MapLayers;
 use crate::map::Tile;
-use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
+use crate::map::get_cache_tile_key;
+use crate::map::get_view_cache_prefix;
 use crate::models::layers::geo_json_and_data::GeoJsonAndData;
+use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
 
 crate::routes! {
      "/layers" => {
@@ -222,7 +222,7 @@ async fn cache_and_get_mvt_tile(
         .to_bytes()
         .unwrap();
     valkey
-        .set(&cache_key, mvt_bytes.clone())
+        .set::<_, _, ()>(&cache_key, mvt_bytes.clone())
         .await
         .unwrap_or_else(|_| panic!("Failed to set value in valkey with key {cache_key}"));
 
@@ -301,7 +301,13 @@ mod tests {
             ("http://localhost:8090/test", "http://localhost:8090/test/"),
             ("http://localhost:8090/test/", "http://localhost:8090/test/"),
         ] {
-            std::env::set_var("ROOT_URL", root_url);
+            // `env::set_var` became an unsafe function in Rust edition 2024.
+            // TODO: Get rid of this unsafe code:
+            // - This code will fail if other tests start using `env::set_var` (run in parallel).
+            // - To remove it the app should not call `get_root_url` directly, but rather use a configuration that is loaded at startup.
+            unsafe {
+                std::env::set_var("ROOT_URL", root_url);
+            }
             test_get_query_with_preset_values(expected_root_url).await;
         }
     }

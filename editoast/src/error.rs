@@ -1,18 +1,18 @@
+use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use axum::Json;
 use colored::Colorize;
-use deadpool_redis::redis::RedisError;
 use deadpool_redis::PoolError;
+use deadpool_redis::redis::RedisError;
 use diesel::result::Error as DieselError;
+use editoast_models::DatabaseError;
 use editoast_models::db_connection_pool::DatabasePoolBuildError;
 use editoast_models::db_connection_pool::DatabasePoolError;
-use editoast_models::DatabaseError;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::json;
 use serde_json::Value;
+use serde_json::json;
 use std::backtrace::Backtrace;
 use std::collections::HashMap;
 use std::error::Error;
@@ -312,7 +312,7 @@ impl EditoastError for core::Error {
     fn get_status(&self) -> StatusCode {
         match self {
             core::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
-            core::Error::StandardCoreError(ref error) => match error.cause {
+            core::Error::StandardCoreError(error) => match error.cause {
                 core::CoreErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
                 core::CoreErrorCause::User => StatusCode::BAD_REQUEST,
             },
@@ -334,7 +334,7 @@ impl EditoastError for core::Error {
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
-            core::Error::CoreResponseFormatError { ref msg } => {
+            core::Error::CoreResponseFormatError { msg } => {
                 [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
             }
             _ => Default::default(),

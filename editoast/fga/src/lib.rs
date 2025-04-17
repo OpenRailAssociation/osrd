@@ -446,17 +446,11 @@ macro_rules! fga {
 
     // fga!(Group:"my_friends"#member) => userset syntax "group:my_friends#member"
     ($ty:ident : $id:literal # $relation:ident) => {
-        {
-            use $crate::model::Relation as _;
-            $ty::$relation().userset(&fga!($ty:$id))
-        }
+        $crate::model::Relation::userset(&$ty::$relation(), &fga!($ty:$id))
     };
 
     ($ty:ident : $var:ident # $relation:ident) => {
-        {
-            use $crate::model::Relation as _;
-            $ty::$relation().userset(&$var)
-        }
+        $crate::model::Relation::userset(&$ty::$relation(), &$var)
     };
 
     // Tuple notations
