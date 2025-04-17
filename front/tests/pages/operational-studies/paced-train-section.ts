@@ -20,7 +20,7 @@ class PacedTrainSection extends CommonPage {
 
   private readonly testedPacedTrainRollingStock: Locator;
 
-  private readonly testedPacedTrainCadence: Locator;
+  private readonly testedPacedTrainInterval: Locator;
 
   private readonly testedPacedTrainOccurrences: Locator;
 
@@ -45,7 +45,7 @@ class PacedTrainSection extends CommonPage {
       this.testedPacedTrain.getByTestId('show-occurrences-button');
     this.testedPacedTrainName = this.testedPacedTrain.getByTestId('paced-train-name');
     this.testedPacedTrainRollingStock = this.testedPacedTrain.locator('> .rolling-stock');
-    this.testedPacedTrainCadence = this.testedPacedTrain.getByTestId('paced-train-cadence');
+    this.testedPacedTrainInterval = this.testedPacedTrain.getByTestId('paced-train-interval');
     this.testedPacedTrainOccurrences = this.testedPacedTrain.getByTestId('occurrence-item');
     this.testedOccurrenceName = this.testedPacedTrain.locator('.occurrence-item-name');
     this.testedOccurrenceStartTime = this.testedPacedTrain.locator('.departure-time');
@@ -73,7 +73,7 @@ class PacedTrainSection extends CommonPage {
       pacedTrainCardAlreadyOpen?: boolean;
     } = {}
   ) {
-    const { name, labels, duration: pacedTrainDuration, step } = pacedTrainData;
+    const { name, labels, timeWindow, interval } = pacedTrainData;
 
     const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
 
@@ -81,7 +81,7 @@ class PacedTrainSection extends CommonPage {
     // An invalid paced train won't have any details
     if (labels?.includes('Invalid')) return;
 
-    const totalOccurrences = Math.ceil(+pacedTrainDuration / +step);
+    const totalOccurrences = Math.ceil(+timeWindow / +interval);
     await this.verifyOccurrencesCount(totalOccurrences, index);
 
     // Open the occurrences list to be able to have a unique
@@ -101,9 +101,9 @@ class PacedTrainSection extends CommonPage {
     await expect(this.testedPacedTrainName).toBeVisible();
     await expect(this.testedPacedTrainName).toHaveText(expectedName);
 
-    await expect(this.testedPacedTrainCadence).toBeVisible();
-    await expect(this.testedPacedTrainCadence).toHaveText(
-      `${String.fromCodePoint(0x2014)} ${step}min`
+    await expect(this.testedPacedTrainInterval).toBeVisible();
+    await expect(this.testedPacedTrainInterval).toHaveText(
+      `${String.fromCodePoint(0x2014)} ${interval}min`
     ); // UI format: "- Xmin"
 
     // Verify that the pace train item does not display the rolling stock

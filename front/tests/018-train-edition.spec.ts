@@ -47,8 +47,8 @@ const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
 );
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
-const DURATION = '240';
-const STEP = '20';
+const TIME_WINDOW = '240';
+const INTERVAL = '20';
 const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
 test.describe('Edit trains and missions', () => {
@@ -121,8 +121,8 @@ test.describe('Edit trains and missions', () => {
 
     await pacedTrainSection.editPacedTrain();
 
-    await operationalStudiesPage.setTimeRangeDuration(DURATION);
-    await operationalStudiesPage.setCadence(STEP);
+    await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
+    await operationalStudiesPage.setInterval(INTERVAL);
     await operationalStudiesPage.setTrainScheduleName(EDITED_PACED_TRAIN_NAME);
 
     await operationalStudiesPage.updateTimetableItem(translations.updatePacedTrain);
@@ -138,8 +138,8 @@ test.describe('Edit trains and missions', () => {
         name: EDITED_PACED_TRAIN_NAME,
         startTime: '03:00',
         labels: [],
-        duration: DURATION,
-        step: STEP,
+        timeWindow: TIME_WINDOW,
+        interval: INTERVAL,
       },
       0,
       { pacedTrainCardAlreadyOpen: true }

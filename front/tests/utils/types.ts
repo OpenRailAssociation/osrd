@@ -247,8 +247,8 @@ export type PacedTrainDetails = {
   name: string;
   startTime: string;
   labels: string[];
-  duration: string;
-  step: string;
+  timeWindow: string;
+  interval: string;
 };
 
 export type OccurrenceDetails = {

@@ -223,7 +223,7 @@ const PacedTrainItem = ({
         {!pacedTrain.invalidReason ? (
           <div className="paced-train-right-zone">
             {pacedTrain.isValid && (
-              <div data-testid="paced-train-cadence">
+              <div data-testid="paced-train-interval">
                 &mdash;&nbsp;{`${ms2min(pacedTrain.paced.interval.ms)}min`}
               </div>
             )}
