@@ -33,7 +33,7 @@ use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::SimulationSummaryResult;
+use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::train_simulation_batch;
 
 crate::routes! {
@@ -242,7 +242,7 @@ async fn simulation_summary(
         electrical_profile_set_id,
         ids: paced_train_ids,
     }): Json<SimulationBatchForm>,
-) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
+) -> Result<Json<HashMap<i64, SummaryResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -286,7 +286,7 @@ async fn simulation_summary(
     let simulation_summaries = paced_trains
         .into_iter()
         .zip(simulations)
-        .map(|(paced_train, (sim, _))| (paced_train.id, SimulationSummaryResult::from(sim)))
+        .map(|(paced_train, (sim, _))| (paced_train.id, SummaryResponse::from(sim)))
         .collect();
 
     Ok(Json(simulation_summaries))
@@ -520,7 +520,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::PacedTrainResponse;
-    use crate::views::timetable::simulation::SimulationSummaryResult;
+    use crate::views::timetable::simulation::SummaryResponse;
 
     #[rstest]
     async fn paced_train_post() {
@@ -728,12 +728,12 @@ mod tests {
             "infra_id": infra_id,
             "ids": vec![paced_train_id],
         }));
-        let response: HashMap<i64, SimulationSummaryResult> =
+        let response: HashMap<i64, SummaryResponse> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
         assert_eq!(
             *response.get(&paced_train_id).unwrap(),
-            SimulationSummaryResult::Success {
+            SummaryResponse::Success {
                 length: 0,
                 time: 0,
                 energy_consumption: 0.0,
