@@ -50,6 +50,21 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.list\..*/, // Total-error keys are generated
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
+  /stdcm:arriveAt/,
+  /stdcm:consist\.errors\..*/,
+  /stdcm:datetimeOutsideWindow/,
+  /stdcm:destinationTime/,
+  /stdcm:leaveAt/,
+  /stdcm:linkedTrainDefaultCard\..*/,
+  /stdcm:simulation.additionalResults/,
+  /stdcm:simulation.calculatingSimulation/,
+  /stdcm:simulation\.results\..*Conflict*/,
+  /stdcm:stdcmErrors\..*/,
+  /stdcm:trainPath.asSoonAsPossible/,
+  /stdcm:trainPath\.linkedTrain\..*/,
+  /stdcm:trainPath.preciseTime/,
+  /stdcm:trainPath.respectDestinationSchedule/,
+  /stdcm:trainPath\.stopType\..*/,
 ];
 
 /**

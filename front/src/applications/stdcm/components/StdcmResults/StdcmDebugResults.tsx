@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { STDCM_TRAIN_TIMETABLE_ID } from 'applications/stdcm/consts';
@@ -8,7 +9,6 @@ import type { StdcmSimulationOutputs } from 'applications/stdcm/types';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ResizableSection from 'common/ResizableSection';
-import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
@@ -29,7 +29,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
 
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
-  const tWithoutPrefix = i18n.getFixedT(null, 'stdcm');
+  const { t } = useTranslation('stdcm');
 
   const [manchetteWithSpaceTimeChartHeight, setManchetteWithSpaceTimeChartHeight] = useState(
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
@@ -66,9 +66,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
                 height: manchetteWithSpaceTimeChartHeight,
               }}
             >
-              <p className="mt-2 mb-3 ml-4 font-weight-bold">
-                {tWithoutPrefix('spaceTimeGraphic')}
-              </p>
+              <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
               <div className="chart-container mt-2">
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={pathProperties.manchetteOperationalPoints}
