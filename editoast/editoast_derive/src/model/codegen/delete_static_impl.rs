@@ -1,5 +1,5 @@
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 
 use crate::model::identifier::Identifier;
 

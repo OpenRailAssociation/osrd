@@ -1,6 +1,11 @@
-use std::{error::Error, fs::File, io::BufReader, path::PathBuf, sync::Arc};
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
+use std::sync::Arc;
 
-use clap::{Args, Subcommand};
+use clap::Args;
+use clap::Subcommand;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 

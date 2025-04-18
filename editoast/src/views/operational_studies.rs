@@ -1,8 +1,8 @@
-use crate::models::prelude::*;
-use crate::models::work_schedules::WorkSchedule;
 use crate::models::Project;
 use crate::models::Scenario;
 use crate::models::Study;
+use crate::models::prelude::*;
+use crate::models::work_schedules::WorkSchedule;
 
 editoast_common::schemas! {
     Ordering,

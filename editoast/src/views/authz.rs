@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 
 use crate::error::Result;
+use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::response::Json;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 
@@ -234,8 +234,8 @@ async fn strip_roles(
 mod tests {
     use axum::http::StatusCode;
 
-    use crate::views::test_app::test_app;
     use crate::views::test_app::TestRequestExt as _;
+    use crate::views::test_app::test_app;
 
     use super::*;
 

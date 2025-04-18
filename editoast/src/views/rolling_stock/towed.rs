@@ -2,17 +2,17 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStockModel;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
+use axum::Extension;
+use axum::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::Extension;
-use axum::Json;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_authz::Role;
 use editoast_common::units;
@@ -23,10 +23,10 @@ use editoast_common::units::quantities::Mass;
 use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::EditoastError;
-use editoast_models::model;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::rolling_stock::RollingResistancePerWeight;
+use editoast_models::model;
 use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
+use editoast_schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -438,10 +438,12 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert!(towed_rolling_stocks
-            .results
-            .iter()
-            .any(|trs| trs.id == towed_rolling_stock.id));
+        assert!(
+            towed_rolling_stocks
+                .results
+                .iter()
+                .any(|trs| trs.id == towed_rolling_stock.id)
+        );
     }
 
     #[rstest]

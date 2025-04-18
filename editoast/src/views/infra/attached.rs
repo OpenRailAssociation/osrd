@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::models::prelude::*;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
@@ -117,8 +117,8 @@ mod tests {
     use rstest::rstest;
 
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::models::prelude::*;
     use crate::models::Infra;
+    use crate::models::prelude::*;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::TrackSection;

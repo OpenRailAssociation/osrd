@@ -6,8 +6,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::models::prelude::*;
-use editoast_models::tables::*;
 use editoast_models::DbConnection;
+use editoast_models::tables::*;
 use editoast_schemas::primitives::ObjectType;
 
 pub trait ModelBackedSchema: Sized {

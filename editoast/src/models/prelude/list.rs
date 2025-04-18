@@ -1,9 +1,11 @@
 use diesel::dsl::sql;
+use diesel::expression::AsExpression;
+use diesel::expression::TypedExpressionType;
 use diesel::expression::expression_types::NotSelectable;
-use diesel::expression::{AsExpression, TypedExpressionType};
 use diesel::pg::Pg;
 use diesel::query_builder::QueryFragment;
-use diesel::sql_types::{Bool, SqlType};
+use diesel::sql_types::Bool;
+use diesel::sql_types::SqlType;
 use std::sync::Arc;
 
 use editoast_models::DbConnection;

@@ -138,11 +138,13 @@ mod tests {
     #[test]
     fn convert_osm_to_railjson() {
         let output = tempfile::NamedTempFile::new().unwrap();
-        assert!(osm_to_railjson(
-            "src/tests/minimal_rail.osm.pbf".into(),
-            output.path().into()
-        )
-        .is_ok());
+        assert!(
+            osm_to_railjson(
+                "src/tests/minimal_rail.osm.pbf".into(),
+                output.path().into()
+            )
+            .is_ok()
+        );
 
         let data = std::fs::read_to_string(output.path()).unwrap();
         let railjson: RailJson = serde_json::from_str(&data).unwrap();

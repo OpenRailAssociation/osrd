@@ -1,4 +1,5 @@
-use quote::{quote, ToTokens};
+use quote::ToTokens;
+use quote::quote;
 
 pub(crate) struct ModelImpl {
     pub(super) model: syn::Ident,

@@ -7,11 +7,11 @@ use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 use std::ops::DerefMut;
 
-use super::utils::InvolvedObjects;
 use super::GeneratedData;
+use super::utils::InvolvedObjects;
 use crate::error::Result;
-use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::operation::CacheOperation;
 
 pub struct SwitchLayer;
 

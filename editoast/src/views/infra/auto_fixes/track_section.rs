@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use tracing::debug;
 use uuid::Uuid;
 
-use super::new_ref_fix_create_pair;
 use super::Fix;
+use super::new_ref_fix_create_pair;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::TrackSectionCache;
@@ -51,9 +51,9 @@ mod tests {
     use std::ops::Deref;
 
     use super::*;
+    use crate::infra_cache::ObjectCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::ObjectCache;
     use editoast_schemas::infra::TrackSection;
 
     #[test]

@@ -36,7 +36,12 @@
 
 /// Re-export the Quantities that are used in OSRD
 pub mod quantities {
-    pub use uom::si::f64::{Acceleration, Length, Mass, Ratio, Time, Velocity};
+    pub use uom::si::f64::Acceleration;
+    pub use uom::si::f64::Length;
+    pub use uom::si::f64::Mass;
+    pub use uom::si::f64::Ratio;
+    pub use uom::si::f64::Time;
+    pub use uom::si::f64::Velocity;
     pub type SolidFriction = uom::si::f64::Force;
     pub type SolidFrictionPerWeight = uom::si::f64::Acceleration;
     pub type ViscosityFriction = uom::si::f64::MassRate;
@@ -86,7 +91,10 @@ macro_rules! define_unit {
     ($unit:ident, $quantity:ident) => {
         pub mod $unit {
             use super::*;
-            use serde::{Deserialize, Deserializer, Serialize, Serializer};
+            use serde::Deserialize;
+            use serde::Deserializer;
+            use serde::Serialize;
+            use serde::Serializer;
             type Unit = quantity_to_path!($quantity, $unit);
             pub type ReprType = f64;
 

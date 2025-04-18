@@ -1,8 +1,11 @@
 use super::RollingResistancePerWeight;
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Velocity;
 
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct TowedRollingStock {

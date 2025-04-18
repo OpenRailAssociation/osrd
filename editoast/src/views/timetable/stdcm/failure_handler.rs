@@ -3,19 +3,19 @@ use std::sync::Arc;
 use chrono::DateTime;
 use chrono::Utc;
 
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::simulation::SimulationResponse;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;
-use crate::views::timetable::stdcm::StdcmResponse;
 use crate::views::timetable::Conflict;
+use crate::views::timetable::stdcm::StdcmResponse;
 
-use super::build_train_requirements;
 use super::VirtualTrainRun;
+use super::build_train_requirements;
 
 /// `SimulationFailureHandler` is used when a simulation failure occurs,
 /// particularly when a train's path cannot be found. It helps detect

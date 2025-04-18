@@ -8,7 +8,9 @@ use crate::DatabaseError;
 
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
-    #[error("unique constraint violation \"{constraint}\" on column \"{column}\" with value \"{value}\"")]
+    #[error(
+        "unique constraint violation \"{constraint}\" on column \"{column}\" with value \"{value}\""
+    )]
     UniqueViolation {
         constraint: String,
         column: String,

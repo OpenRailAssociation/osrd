@@ -11,9 +11,9 @@ use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
 use crate::error::Result;
+use crate::models::Retrieve;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::Retrieve;
 use editoast_models::DbConnection;
 
 #[derive(Debug, Default, Clone, Model)]
@@ -158,7 +158,8 @@ pub mod tests {
     use std::collections::HashSet;
 
     use super::*;
-    use crate::models::fixtures::{create_timetable, simple_train_schedule_base};
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_train_schedule_base;
     use crate::models::train_schedule::TrainScheduleChangeset;
     use editoast_models::DbConnectionPoolV2;
 

@@ -111,12 +111,12 @@ pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError>
 
 #[cfg(test)]
 mod tests {
-    use super::check_electrification_track_ranges;
     use super::InfraError;
+    use super::check_electrification_track_ranges;
     use crate::generated_data::error::electrifications::check_overlapping;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_electrification_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 

@@ -2,20 +2,20 @@ mod graph;
 pub mod object_cache;
 pub mod operation;
 
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::hash_map::Entry;
 
+use dashmap::DashMap;
 use dashmap::mapref::one::Ref;
 use dashmap::mapref::one::RefMut;
-use dashmap::DashMap;
+use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::Crossing;
@@ -54,8 +54,8 @@ use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
-use crate::models::railjson::find_all_schemas;
 use crate::models::Infra;
+use crate::models::railjson::find_all_schemas;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::BoundingBox;
@@ -888,13 +888,13 @@ pub mod tests {
     use std::collections::HashMap;
 
     use super::OperationalPointCache;
+    use crate::infra_cache::InfraCache;
+    use crate::infra_cache::SwitchCache;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::object_cache::TrackSectionCache;
-    use crate::infra_cache::InfraCache;
-    use crate::infra_cache::SwitchCache;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_infra_object;
     use editoast_models::DbConnectionPoolV2;
@@ -1082,9 +1082,11 @@ pub mod tests {
             .await
             .unwrap();
 
-        assert!(infra_cache
-            .electrifications()
-            .contains_key(electrification.get_id()));
+        assert!(
+            infra_cache
+                .electrifications()
+                .contains_key(electrification.get_id())
+        );
         let refs = infra_cache.track_sections_refs;
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
@@ -1403,6 +1405,8 @@ pub mod tests {
         use std::collections::HashMap;
 
         use super::create_track_section_cache;
+        use crate::infra_cache::InfraCache;
+        use crate::infra_cache::InfraCacheEditoastError;
         use crate::infra_cache::tests::create_buffer_stop_cache;
         use crate::infra_cache::tests::create_detector_cache;
         use crate::infra_cache::tests::create_electrification_cache;
@@ -1412,8 +1416,6 @@ pub mod tests {
         use crate::infra_cache::tests::create_speed_section_cache;
         use crate::infra_cache::tests::create_switch_cache_point;
         use crate::infra_cache::tests::create_switch_type_cache;
-        use crate::infra_cache::InfraCache;
-        use crate::infra_cache::InfraCacheEditoastError;
         use editoast_schemas::infra::Direction::StartToStop;
         use editoast_schemas::infra::TrackEndpoint;
         use editoast_schemas::infra::Waypoint::BufferStop;

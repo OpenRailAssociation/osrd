@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use tracing::debug;
 
-use super::new_ref_fix_delete_pair;
 use super::Fix;
+use super::new_ref_fix_delete_pair;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::SignalCache;

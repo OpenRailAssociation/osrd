@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::object_cache::SwitchCache;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
 
@@ -100,9 +100,9 @@ mod tests {
     use std::collections::HashMap;
 
     use super::Graph;
+    use crate::infra_cache::InfraCache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_endpoint;
-    use crate::infra_cache::InfraCache;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::primitives::Identifier;
 

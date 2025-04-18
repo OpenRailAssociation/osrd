@@ -1,9 +1,8 @@
 use chrono::NaiveDateTime;
 use editoast_derive::Model;
-use editoast_models::{
-    model,
-    tables::{temporary_speed_limit, temporary_speed_limit_group},
-};
+use editoast_models::model;
+use editoast_models::tables::temporary_speed_limit;
+use editoast_models::tables::temporary_speed_limit_group;
 use editoast_schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 

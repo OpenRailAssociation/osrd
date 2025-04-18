@@ -20,18 +20,18 @@ use std::hash::Hasher;
 use tracing::info;
 use utoipa::ToSchema;
 
+use crate::AppState;
+use crate::ValkeyConnection;
 use crate::client::get_app_version;
+use crate::core::AsCoreRequest;
 use crate::core::path_properties::OperationalPointOnPath;
 use crate::core::path_properties::PathPropertiesRequest;
 use crate::core::path_properties::PropertyElectrificationValues;
 use crate::core::path_properties::PropertyValuesF64;
 use crate::core::path_properties::PropertyZoneValues;
 use crate::core::pathfinding::TrackRange;
-use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::views::path::retrieve_infra_version;
-use crate::AppState;
-use crate::ValkeyConnection;
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
@@ -289,7 +289,10 @@ mod tests {
     async fn path_properties_small_infra() {
         let app = TestAppBuilder::default_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let url = format!("/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id);
+        let url = format!(
+            "/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points",
+            infra.id
+        );
 
         // Should succeed
         let request = app.post(&url).json(&json!(

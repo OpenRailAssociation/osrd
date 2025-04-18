@@ -6,9 +6,13 @@ use std::hash::Hasher;
 
 use derivative::Derivative;
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Time;
+use editoast_common::units::quantities::Velocity;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -26,7 +30,8 @@ use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
 use crate::client::get_app_version;
-use crate::core::{AsCoreRequest, Json};
+use crate::core::AsCoreRequest;
+use crate::core::Json;
 use crate::error::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
 

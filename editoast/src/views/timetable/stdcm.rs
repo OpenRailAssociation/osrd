@@ -1,11 +1,11 @@
 mod failure_handler;
 pub(crate) mod request;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -20,8 +20,8 @@ use editoast_schemas::train_schedule::ScheduleItem;
 use failure_handler::SimulationFailureHandler;
 use opentelemetry::trace::TraceContextExt;
 use opentelemetry::trace::TraceId;
-use request::convert_steps;
 use request::Request;
+use request::convert_steps;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -32,7 +32,11 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
+use crate::ValkeyClient;
 use crate::core;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
@@ -40,25 +44,21 @@ use crate::core::simulation::PhysicsConsistParameters;
 use crate::core::simulation::RoutingRequirement;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SpacingRequirement;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::models::Infra;
+use crate::models::RollingStockModel;
 use crate::models::prelude::*;
 use crate::models::stdcm_log::StdcmLog;
 use crate::models::stdcm_log::StdcmResponseOrError;
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::Infra;
-use crate::models::RollingStockModel;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::timetable::Conflict;
 use crate::views::train_schedule::consist_train_simulation_batch;
 use crate::views::train_schedule::train_simulation_batch;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
-use crate::AppState;
-use crate::ValkeyClient;
 
 editoast_common::schemas! {
     request::schemas(),
@@ -112,7 +112,9 @@ enum StdcmError {
         provided_consist_mass: f64,
         expected_min: f64,
     },
-    #[error("Invalid consist length {provided_consist_length}: it should be greater than {expected_min}")]
+    #[error(
+        "Invalid consist length {provided_consist_length}: it should be greater than {expected_min}"
+    )]
     InvalidConsistLength {
         provided_consist_length: f64,
         expected_min: f64,
@@ -549,8 +551,8 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
     use std::str::FromStr;
-    use uom::si::length::meter;
     use uom::si::length::Length;
+    use uom::si::length::meter;
     use uom::si::mass::kilogram;
     use uom::si::quantities::Mass;
     use uuid::Uuid;
@@ -574,10 +576,10 @@ mod tests {
     use crate::models::work_schedules::WorkScheduleGroup;
     use crate::models::work_schedules::WorkScheduleType;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::timetable::stdcm::request::PathfindingItem;
-    use crate::views::timetable::stdcm::request::StepTimingData;
     use crate::views::timetable::stdcm::PathfindingResult;
     use crate::views::timetable::stdcm::Request;
+    use crate::views::timetable::stdcm::request::PathfindingItem;
+    use crate::views::timetable::stdcm::request::StepTimingData;
 
     use super::*;
 

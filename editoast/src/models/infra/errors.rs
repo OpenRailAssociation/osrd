@@ -7,7 +7,8 @@ use serde::Deserialize;
 
 use super::Infra;
 use crate::error::Result;
-use crate::generated_data::infra_error::{InfraError, InfraErrorTypeLabel};
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::models::pagination::load_for_pagination;
 use editoast_models::DbConnection;
 
@@ -81,7 +82,8 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
     ) -> Result<HashMap<(String, String), u64>> {
-        use diesel::dsl::{count_star, sql};
+        use diesel::dsl::count_star;
+        use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::Text;
         use diesel_async::RunQueryDsl;

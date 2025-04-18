@@ -1,14 +1,24 @@
-use std::{error::Error, fs::File, io::BufReader, path::PathBuf, sync::Arc};
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
+use std::sync::Arc;
 
-use clap::{Args, Subcommand};
+use clap::Args;
+use clap::Subcommand;
 use colored::Colorize as _;
-use editoast_models::{DbConnection, DbConnectionPoolV2};
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
 
+use crate::CliError;
+use crate::ValkeyClient;
+use crate::infra_cache::InfraCache;
+use crate::map;
 use crate::map::MapLayers;
+use crate::models::Infra;
 use crate::models::prelude::*;
-use crate::{infra_cache::InfraCache, models::Infra, views::infra::InfraApiError, CliError};
-use crate::{map, ValkeyClient};
+use crate::views::infra::InfraApiError;
 
 use super::ValkeyConfig;
 
@@ -258,7 +268,9 @@ async fn batch_retrieve_infras(
 
 #[cfg(test)]
 mod tests {
-    use rand::{distr::Alphanumeric, rng, Rng as _};
+    use rand::Rng as _;
+    use rand::distr::Alphanumeric;
+    use rand::rng;
 
     use crate::client::generate_temp_file;
 

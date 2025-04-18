@@ -16,9 +16,9 @@ use std::marker::PhantomData;
 
 use axum::http::StatusCode;
 use mq_client::MqClientError;
-use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use thiserror::Error;
 use tracing::error;
@@ -84,8 +84,8 @@ impl CoreClient {
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
                 let infra_id = infra_id.unwrap_or(1); // FIXME: don't do that!!!
-                                                      //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
-                                                      // TODO: tracing: use correlation id
+                //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
+                // TODO: tracing: use correlation id
 
                 let response = client
                     .call_with_response(infra_id.to_string(), path, &body, true, None)
@@ -249,7 +249,9 @@ pub enum Error {
     StandardCoreError(#[from] StandardCoreError),
 
     #[cfg(test)]
-    #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
+    #[error(
+        "The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected"
+    )]
     NoResponseContent,
 }
 
@@ -329,10 +331,10 @@ mod tests {
     use serde::Serialize;
     use serde_json::json;
 
-    use crate::core::mocking::MockingClient;
     use crate::core::AsCoreRequest;
     use crate::core::Bytes;
     use crate::core::StandardCoreError;
+    use crate::core::mocking::MockingClient;
 
     use super::Error;
 

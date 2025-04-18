@@ -1,10 +1,10 @@
 use clap::Args;
 use clap::Subcommand;
-use editoast_authz::subject::UserInfo;
 use editoast_authz::StorageDriver;
+use editoast_authz::subject::UserInfo;
 use editoast_models::DbConnectionPoolV2;
-use futures::future::try_join_all;
 use futures::TryStreamExt;
+use futures::future::try_join_all;
 use std::collections::HashSet;
 use std::sync::Arc;
 

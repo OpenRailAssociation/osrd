@@ -1,11 +1,11 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::http::header;
 use axum::http::StatusCode;
+use axum::http::header;
 use axum::response::IntoResponse;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_schemas::infra::RailJson;
 use enum_map::EnumMap;
@@ -16,15 +16,15 @@ use strum::IntoEnumIterator;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::models::prelude::*;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
@@ -205,8 +205,8 @@ mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::RAILJSON_VERSION;
+    use editoast_schemas::infra::SwitchType;
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
@@ -259,8 +259,10 @@ mod tests {
 
         let res: PostRailjsonResponse = app.fetch(req).assert_status(StatusCode::OK).json_into();
 
-        assert!(Infra::delete_static(&mut db_pool.get_ok(), res.infra)
-            .await
-            .unwrap());
+        assert!(
+            Infra::delete_static(&mut db_pool.get_ok(), res.infra)
+                .await
+                .unwrap()
+        );
     }
 }

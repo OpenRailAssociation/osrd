@@ -11,11 +11,11 @@ use std::ops::DerefMut;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use diesel::delete;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use serde::Deserialize;
@@ -31,16 +31,16 @@ pub use object_queryable::ObjectQueryable;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
+use crate::models::Create;
 use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
 use crate::models::prelude::*;
 use crate::models::railjson::persist_railjson;
-use crate::models::Create;
-use editoast_models::tables::infra::dsl;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::infra::RailJson;
+use editoast_models::tables::infra::dsl;
 use editoast_schemas::infra::RAILJSON_VERSION;
+use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::ObjectType;
 
 editoast_common::schemas! {
@@ -317,6 +317,7 @@ pub mod tests {
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::NeutralSection;
     use editoast_schemas::infra::OperationalPoint;
+    use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::infra::RailJson;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
@@ -324,7 +325,6 @@ pub mod tests {
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::OSRDIdentified;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -335,8 +335,8 @@ pub mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::models::prelude::*;
-    use crate::models::railjson::find_all_schemas;
     use crate::models::railjson::RailJsonError;
+    use crate::models::railjson::find_all_schemas;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]

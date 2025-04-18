@@ -1,8 +1,8 @@
+use crate::RetrieveBatchUnchecked;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::error::Result;
 use crate::models::TrackSectionModel;
-use crate::RetrieveBatchUnchecked;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::NonBlankString;
 use editoast_schemas::train_schedule::OperationalPointReference;

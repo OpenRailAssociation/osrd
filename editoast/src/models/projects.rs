@@ -7,15 +7,15 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::SelectionSettings;
 use crate::error::InternalError;
-use crate::models::prelude::*;
 use crate::models::Document;
 use crate::models::Study;
 use crate::models::Tags;
+use crate::models::prelude::*;
 use crate::views::projects::ProjectError;
-use crate::SelectionSettings;
-use editoast_models::model;
 use editoast_models::DbConnection;
+use editoast_models::model;
 
 editoast_common::schemas! {
     Project,
@@ -195,9 +195,9 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
+    use crate::models::Model;
     use crate::models::fixtures::create_project;
     use crate::models::prelude::*;
-    use crate::models::Model;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
@@ -299,9 +299,11 @@ pub mod tests {
             .update_and_prune_document(&mut db_pool.get_ok(), None)
             .await
             .expect("should work - image is still used by project1");
-        assert!(Document::exists(&mut db_pool.get_ok(), image.id)
-            .await
-            .unwrap());
+        assert!(
+            Document::exists(&mut db_pool.get_ok(), image.id)
+                .await
+                .unwrap()
+        );
 
         project1
             .update_and_prune_document(&mut db_pool.get_ok(), Some(image2.id))
@@ -380,12 +382,16 @@ pub mod tests {
 
         // project2 -> image1
 
-        assert!(Project::exists(&mut db_pool.get_ok(), project2.id)
-            .await
-            .unwrap());
-        assert!(Document::exists(&mut db_pool.get_ok(), image1.id)
-            .await
-            .unwrap());
+        assert!(
+            Project::exists(&mut db_pool.get_ok(), project2.id)
+                .await
+                .unwrap()
+        );
+        assert!(
+            Document::exists(&mut db_pool.get_ok(), image1.id)
+                .await
+                .unwrap()
+        );
 
         assert!(!Project::exists(&mut db_pool.get_ok(), p1_id).await.unwrap());
         assert!(!Project::exists(&mut db_pool.get_ok(), p3_id).await.unwrap());

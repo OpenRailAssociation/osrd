@@ -1,22 +1,22 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::models::prelude::*;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 
 crate::routes! {
     "/lines/{line_code}/bbox" => get_line_bbox,

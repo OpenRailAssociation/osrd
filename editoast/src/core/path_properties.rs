@@ -7,7 +7,8 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
-use crate::core::{AsCoreRequest, Json};
+use crate::core::AsCoreRequest;
+use crate::core::Json;
 
 #[derive(Debug, Serialize)]
 pub struct PathPropertiesRequest<'a> {

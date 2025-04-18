@@ -11,10 +11,10 @@ use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use validator::ValidationErrorsKind;
 
+use crate::CliError;
+use crate::models::RollingStockModel;
 use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStockModel;
-use crate::models::RollingStockModel;
-use crate::CliError;
 
 #[derive(Args, Clone, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]
@@ -196,9 +196,9 @@ mod tests {
 
             // THEN
             assert!(
-            result.is_ok(),
-            "import should succeed, as raise_panto and startup are not required for non electric",
-        );
+                result.is_ok(),
+                "import should succeed, as raise_panto and startup are not required for non electric",
+            );
             let created_rs =
                 RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
@@ -332,7 +332,10 @@ mod tests {
             let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
             // THEN
-            assert!(result.is_ok(), "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled");
+            assert!(
+                result.is_ok(),
+                "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
+            );
             let rolling_stock = RollingStockModel::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),
@@ -372,7 +375,10 @@ mod tests {
             let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
             // THEN
-            assert!(result.is_ok(), "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled");
+            assert!(
+                result.is_ok(),
+                "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
+            );
             let rolling_stock = RollingStockModel::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),

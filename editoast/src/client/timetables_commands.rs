@@ -1,17 +1,21 @@
+use std::error::Error;
+use std::fs::File;
 use std::io::BufReader;
-use std::{error::Error, fs::File, path::PathBuf, sync::Arc};
+use std::path::PathBuf;
+use std::sync::Arc;
 
-use clap::{Args, Subcommand};
+use clap::Args;
+use clap::Subcommand;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainSchedule;
 
+use crate::CliError;
 use crate::models;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::views::train_schedule::TrainScheduleForm;
 use crate::views::train_schedule::TrainScheduleResponse;
-use crate::CliError;
 
 #[derive(Subcommand, Debug)]
 pub enum TimetablesCommands {

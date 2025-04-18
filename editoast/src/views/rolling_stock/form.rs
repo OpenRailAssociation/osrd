@@ -1,16 +1,17 @@
 use std::collections::HashMap;
 
-use editoast_common::units::{quantities::*, *};
+use editoast_common::units::quantities::*;
+use editoast_common::units::*;
 use editoast_models::rolling_stock::RollingStockCategories;
 use editoast_models::rolling_stock::RollingStockCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

@@ -6,7 +6,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use crate::core::{AsCoreRequest, Json};
+use crate::core::AsCoreRequest;
+use crate::core::Json;
 
 use super::simulation::RoutingRequirement;
 use super::simulation::SpacingRequirement;

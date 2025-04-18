@@ -1,11 +1,11 @@
 pub mod macro_nodes;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -22,13 +22,15 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::prelude::*;
-use crate::models::scenario::Scenario;
-use crate::models::timetable::Timetable;
 use crate::models::Infra;
 use crate::models::Project;
 use crate::models::Study;
 use crate::models::Tags;
+use crate::models::prelude::*;
+use crate::models::scenario::Scenario;
+use crate::models::timetable::Timetable;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
@@ -37,8 +39,6 @@ use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 
 crate::routes! {
     "/projects/{project_id}/studies/{study_id}/scenarios" => {

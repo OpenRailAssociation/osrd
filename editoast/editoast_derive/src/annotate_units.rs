@@ -1,7 +1,9 @@
 use darling::Result;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_quote, DeriveInput, LitStr};
+use syn::DeriveInput;
+use syn::LitStr;
+use syn::parse_quote;
 
 const OPTIONAL_SUFFIX: &str = "::option";
 struct UnitType {

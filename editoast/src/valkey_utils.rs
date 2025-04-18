@@ -20,7 +20,10 @@ use futures::FutureExt;
 use futures::future;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use tracing::{Level, debug, span, trace};
+use tracing::Level;
+use tracing::debug;
+use tracing::span;
+use tracing::trace;
 use url::Url;
 
 use crate::error::Result;

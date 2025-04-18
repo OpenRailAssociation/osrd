@@ -21,9 +21,9 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 use electrification::ElectrificationLayer;
+use error::ErrorLayer;
 pub use error::generate_infra_errors;
 pub use error::infra_error;
-use error::ErrorLayer;
 use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;
 use operational_point::OperationalPointLayer;
@@ -37,8 +37,8 @@ use tracing::debug;
 use track_section::TrackSectionLayer;
 
 use crate::error::Result;
-use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::operation::CacheOperation;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 
@@ -177,9 +177,11 @@ pub mod tests {
     async fn refresh_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        assert!(refresh_all(db_pool.into(), infra.id, &Default::default())
-            .await
-            .is_ok());
+        assert!(
+            refresh_all(db_pool.into(), infra.id, &Default::default())
+                .await
+                .is_ok()
+        );
     }
 
     #[rstest]

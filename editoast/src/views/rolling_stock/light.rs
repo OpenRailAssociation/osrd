@@ -1,8 +1,8 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
@@ -32,15 +32,15 @@ use super::RollingStockError;
 use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
+use crate::List;
+use crate::SelectionSettings;
 use crate::error::Result;
-use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::Retrieve;
 use crate::models::RollingStockModel;
+use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::List;
-use crate::SelectionSettings;
 
 #[cfg(test)]
 use serde::Deserialize;

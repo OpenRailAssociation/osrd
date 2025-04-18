@@ -1,13 +1,13 @@
-use axum::extract::State;
 use axum::Extension;
 use axum::Json;
+use axum::extract::State;
 use editoast_authz::Role;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
 
 crate::routes! {
     "/speed_limit_tags" => speed_limit_tags,

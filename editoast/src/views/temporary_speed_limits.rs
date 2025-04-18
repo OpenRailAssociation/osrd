@@ -1,29 +1,29 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use axum::Extension;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::DirectionalTrackRange;
 use itertools::Either;
-use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
+use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::error::Result;
-use crate::models::temporary_speed_limits;
-use crate::models::temporary_speed_limits::TemporarySpeedLimit;
-use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
-use crate::models::Changeset;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use crate::Create;
 use crate::CreateBatch;
 use crate::Model;
+use crate::error::Result;
+use crate::models::Changeset;
+use crate::models::temporary_speed_limits;
+use crate::models::temporary_speed_limits::TemporarySpeedLimit;
+use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use editoast_authz::Role;
 
 crate::routes! {
@@ -183,11 +183,11 @@ async fn create_temporary_speed_limit_group(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
-    use crate::views::test_app::TestApp;
     use crate::List;
     use crate::Retrieve;
     use crate::SelectionSettings;
+    use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
+    use crate::views::test_app::TestApp;
     use axum::http::StatusCode;
     use axum_test::TestRequest;
     use chrono::Duration;

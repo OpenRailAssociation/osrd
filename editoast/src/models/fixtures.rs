@@ -32,12 +32,6 @@ use serde_json::Value;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
-use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::prelude::*;
-use crate::models::rolling_stock_livery::RollingStockLiveryModel;
-use crate::models::timetable::Timetable;
-use crate::models::work_schedules::WorkSchedule;
-use crate::models::work_schedules::WorkScheduleGroup;
 use crate::models::Document;
 use crate::models::Infra;
 use crate::models::Project;
@@ -45,6 +39,12 @@ use crate::models::RollingStockModel;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
+use crate::models::electrical_profiles::ElectricalProfileSet;
+use crate::models::prelude::*;
+use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::timetable::Timetable;
+use crate::models::work_schedules::WorkSchedule;
+use crate::models::work_schedules::WorkScheduleGroup;
 
 use super::temporary_speed_limits::TemporarySpeedLimitGroup;
 
@@ -322,9 +322,10 @@ pub fn create_simple_rolling_stock() -> RollingStock {
 pub async fn create_document_example(conn: &mut DbConnection) -> Document {
     let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
     let mut img_bytes: Vec<u8> = Vec::new();
-    assert!(img
-        .write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
-        .is_ok());
+    assert!(
+        img.write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
+            .is_ok()
+    );
     let changeset = Document::changeset()
         .content_type(String::from("img/png"))
         .data(img_bytes);

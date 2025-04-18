@@ -1,13 +1,13 @@
 use std::collections::HashSet;
-use tracing::debug;
 use tracing::Level;
+use tracing::debug;
 
-use crate::subject::UserIdentity;
-use crate::subject::UserInfo;
 use crate::Error;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
+use crate::subject::UserIdentity;
+use crate::subject::UserInfo;
 
 /// Represents how an authenticated user can interact with the authorization system
 #[derive(Clone)]
@@ -71,11 +71,11 @@ impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Role;
     use crate::subject::GroupInfo;
     use crate::subject::GroupName;
     use crate::subject::User;
     use crate::subject::UserIdentity;
-    use crate::Role;
     use futures::stream;
     use pretty_assertions::assert_eq;
     use std::collections::HashMap;
@@ -133,24 +133,30 @@ mod tests {
                 .expect("roles should be granted");
         }
 
-        assert!(Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::OperationalStudies]))
-            .await
-            .expect("should check roles successfully"));
-        assert!(Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Stdcm, Role::Admin]))
-            .await
-            .expect("should check roles successfully"));
-        assert!(!Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Admin]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::OperationalStudies]))
+                .await
+                .expect("should check roles successfully")
+        );
+        assert!(
+            Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Stdcm, Role::Admin]))
+                .await
+                .expect("should check roles successfully")
+        );
+        assert!(
+            !Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Admin]))
+                .await
+                .expect("should check roles successfully")
+        );
 
         // remove role
         {
@@ -160,32 +166,40 @@ mod tests {
                 .expect("roles should be stripped");
         }
 
-        assert!(!Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::OperationalStudies]))
-            .await
-            .expect("should check roles successfully"));
-        assert!(Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Stdcm]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            !Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::OperationalStudies]))
+                .await
+                .expect("should check roles successfully")
+        );
+        assert!(
+            Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Stdcm]))
+                .await
+                .expect("should check roles successfully")
+        );
 
         // no roles
-        assert!(Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(user_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([]))
+                .await
+                .expect("should check roles successfully")
+        );
 
         // unknown user
-        assert!(!regulator()
-            .check_roles(i64::MAX, HashSet::from([Role::Stdcm]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            !regulator()
+                .check_roles(i64::MAX, HashSet::from([Role::Stdcm]))
+                .await
+                .expect("should check roles successfully")
+        );
 
         assert_eq!(
             regulator()
@@ -253,33 +267,41 @@ mod tests {
             .expect("bob's roles should be granted");
 
         // check roles
-        assert!(Authorizer::try_initialize(alice_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::OperationalStudies]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(alice_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::OperationalStudies]))
+                .await
+                .expect("should check roles successfully")
+        );
 
-        assert!(Authorizer::try_initialize(bob_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::OperationalStudies]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(bob_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::OperationalStudies]))
+                .await
+                .expect("should check roles successfully")
+        );
 
-        assert!(!Authorizer::try_initialize(alice_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Stdcm]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            !Authorizer::try_initialize(alice_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Stdcm]))
+                .await
+                .expect("should check roles successfully")
+        );
 
-        assert!(Authorizer::try_initialize(bob_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Stdcm]))
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(bob_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Stdcm]))
+                .await
+                .expect("should check roles successfully")
+        );
 
         // remove user
         regulator()
@@ -287,19 +309,23 @@ mod tests {
             .await
             .expect("bob should be removed from the group");
 
-        assert!(!Authorizer::try_initialize(bob_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::OperationalStudies])) // now he doesn't have the group's roles...
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            !Authorizer::try_initialize(bob_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::OperationalStudies])) // now he doesn't have the group's roles...
+                .await
+                .expect("should check roles successfully")
+        );
 
-        assert!(Authorizer::try_initialize(bob_identity(), regulator())
-            .await
-            .unwrap()
-            .check_roles(HashSet::from([Role::Stdcm])) // ...but still has its own
-            .await
-            .expect("should check roles successfully"));
+        assert!(
+            Authorizer::try_initialize(bob_identity(), regulator())
+                .await
+                .unwrap()
+                .check_roles(HashSet::from([Role::Stdcm])) // ...but still has its own
+                .await
+                .expect("should check roles successfully")
+        );
 
         // unknown group
         assert_eq!(

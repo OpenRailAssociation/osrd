@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -13,12 +13,12 @@ use thiserror::Error;
 
 use super::InfraApiError;
 use super::InfraIdParam;
+use crate::Retrieve;
 use crate::error::Result;
-use crate::models::infra::ObjectQueryable;
 use crate::models::Infra;
+use crate::models::infra::ObjectQueryable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::Retrieve;
 
 crate::routes! {
     "/objects/{object_type}" => get_objects,
@@ -160,8 +160,8 @@ mod tests {
     use editoast_schemas::primitives::Identifier;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use serde_json::json;
     use serde_json::Value as JsonValue;
+    use serde_json::json;
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;

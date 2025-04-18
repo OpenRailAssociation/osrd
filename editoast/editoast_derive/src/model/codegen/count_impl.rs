@@ -1,5 +1,5 @@
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 
 pub(crate) struct CountImpl {
     pub(super) model: syn::Ident,

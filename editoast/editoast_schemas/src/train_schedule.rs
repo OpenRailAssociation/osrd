@@ -41,9 +41,9 @@ use std::collections::HashSet;
 
 use chrono::DateTime;
 use chrono::Utc;
-use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
+use serde::de::Error as SerdeError;
 use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
@@ -203,13 +203,13 @@ mod tests {
     use serde_json::from_str;
     use serde_json::to_string;
 
-    use crate::train_schedule::path_item::OperationalPointIdentifier::OperationalPointId;
-    use crate::train_schedule::path_item::OperationalPointReference;
-    use crate::train_schedule::schedule_item::ReceptionSignal;
     use crate::train_schedule::Margins;
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
     use crate::train_schedule::TrainSchedule;
+    use crate::train_schedule::path_item::OperationalPointIdentifier::OperationalPointId;
+    use crate::train_schedule::path_item::OperationalPointReference;
+    use crate::train_schedule::schedule_item::ReceptionSignal;
 
     use super::PathItem;
 

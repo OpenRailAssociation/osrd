@@ -17,8 +17,8 @@ impl Cache for Route {
 #[cfg(test)]
 mod tests {
 
-    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
+    use crate::infra_cache::tests::create_small_infra_cache;
 
     #[test]
     fn test_compute_track_ranges_1() {
@@ -36,10 +36,11 @@ mod tests {
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 250.);
         assert_eq!(path.switches_directions.len(), 1);
-        assert!(path
-            .switches_directions
-            .iter()
-            .any(|(k, _)| k == &"link".into()));
+        assert!(
+            path.switches_directions
+                .iter()
+                .any(|(k, _)| k == &"link".into())
+        );
     }
 
     #[test]
@@ -58,9 +59,10 @@ mod tests {
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 480.);
         assert_eq!(path.switches_directions.len(), 1);
-        assert!(path
-            .switches_directions
-            .iter()
-            .any(|(k, _)| k == &"switch".into()));
+        assert!(
+            path.switches_directions
+                .iter()
+                .any(|(k, _)| k == &"switch".into())
+        );
     }
 }

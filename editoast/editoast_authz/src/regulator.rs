@@ -6,6 +6,8 @@ use fga::model::Relation;
 use futures::stream;
 use tracing::Level;
 
+use crate::Error;
+use crate::Role;
 use crate::model;
 use crate::model::*;
 use crate::subject::GroupInfo;
@@ -13,8 +15,6 @@ use crate::subject::GroupName;
 use crate::subject::User as UserSubject;
 use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
-use crate::Error;
-use crate::Role;
 
 /// Entry point for managing authorizations (roles and grants)
 ///

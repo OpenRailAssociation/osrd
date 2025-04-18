@@ -227,10 +227,10 @@ mod tests {
     use crate::generated_data::error::routes::check_path;
     use crate::generated_data::error::routes::check_release_detectors_ref;
     use crate::generated_data::error::routes::check_switches_directions_ref;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_detector_cache;
     use crate::infra_cache::tests::create_route_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::OSRDObject;

@@ -1,9 +1,15 @@
-use darling::{Error, Result};
-use darling::{FromDeriveInput, FromVariant};
+use darling::Error;
+use darling::FromDeriveInput;
+use darling::FromVariant;
+use darling::Result;
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::DataEnum;
+use syn::DeriveInput;
+use syn::Fields;
+use syn::Ident;
+use syn::Lit;
 use syn::ext::IdentExt;
-use syn::{DataEnum, DeriveInput, Fields, Ident, Lit};
 
 const DEFAULT_STATUS_CODE: u16 = 400;
 

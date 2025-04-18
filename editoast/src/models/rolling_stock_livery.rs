@@ -60,9 +60,9 @@ pub mod tests {
     use rstest::*;
 
     use super::RollingStockLiveryModel;
+    use crate::models::Document;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::models::prelude::*;
-    use crate::models::Document;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
@@ -78,14 +78,18 @@ pub mod tests {
                 .is_ok()
         );
 
-        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
-            .await
-            .is_ok());
+        assert!(
+            Document::retrieve(&mut db_pool.get_ok(), image.id)
+                .await
+                .is_ok()
+        );
 
-        assert!(rs_livery
-            .delete_with_compound_image(&mut db_pool.get_ok())
-            .await
-            .is_ok());
+        assert!(
+            rs_livery
+                .delete_with_compound_image(&mut db_pool.get_ok())
+                .await
+                .is_ok()
+        );
 
         assert!(
             RollingStockLiveryModel::retrieve(&mut db_pool.get_ok(), rs_livery.id)
@@ -94,9 +98,11 @@ pub mod tests {
                 .is_none()
         );
 
-        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
-            .await
-            .expect("Failed to retrieve document")
-            .is_none());
+        assert!(
+            Document::retrieve(&mut db_pool.get_ok(), image.id)
+                .await
+                .expect("Failed to retrieve document")
+                .is_none()
+        );
     }
 }

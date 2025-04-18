@@ -58,11 +58,11 @@ pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> 
 
 #[cfg(test)]
 mod tests {
-    use super::check_op_parts;
     use super::InfraError;
+    use super::check_op_parts;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_operational_point_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 

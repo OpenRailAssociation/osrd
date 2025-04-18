@@ -199,18 +199,18 @@
 
 use std::ops::DerefMut;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use chrono::DateTime;
 use chrono::NaiveDateTime;
 use chrono::Utc;
+use diesel::QueryableByName;
 use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
-use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
 use editoast_authz::Role;
 use editoast_common::geometry::GeoJsonPoint;
@@ -222,9 +222,9 @@ use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
-use editoast_search::query_into_sql;
 use editoast_search::SearchConfigStore as _;
 use editoast_search::SearchError;
+use editoast_search::query_into_sql;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
@@ -232,9 +232,9 @@ use std::collections::HashSet;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::pagination::PaginationQueryParams;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::pagination::PaginationQueryParams;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -361,7 +361,7 @@ async fn search(
             return Err(SearchApiError::ObjectType {
                 object_type: object.to_owned(),
             }
-            .into())
+            .into());
         }
     };
 

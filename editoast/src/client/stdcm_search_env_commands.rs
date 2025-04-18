@@ -1,14 +1,14 @@
-use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
-use crate::models::timetable::Timetable;
-use crate::models::work_schedules::WorkScheduleGroup;
-use crate::models::Create;
-use crate::models::Infra;
-use crate::models::Scenario;
 use crate::CliError;
 use crate::Exists;
 use crate::Model;
 use crate::Retrieve;
+use crate::models::Create;
+use crate::models::Infra;
+use crate::models::Scenario;
+use crate::models::electrical_profiles::ElectricalProfileSet;
+use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
+use crate::models::timetable::Timetable;
+use crate::models::work_schedules::WorkScheduleGroup;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -232,18 +232,19 @@ async fn show_stdcm_search_env(
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        models::fixtures::{
-            create_electrical_profile_set, create_empty_infra, create_scenario_fixtures_set,
-            create_timetable, create_work_schedule_group, simple_train_schedule_changeset,
-        },
-        Create,
-    };
+    use crate::Create;
+    use crate::models::fixtures::create_electrical_profile_set;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_scenario_fixtures_set;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_work_schedule_group;
+    use crate::models::fixtures::simple_train_schedule_changeset;
 
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
-    use editoast_models::{DbConnection, DbConnectionPoolV2};
+    use editoast_models::DbConnection;
+    use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
 
     fn make_datetime(s: &str) -> DateTime<Utc> {
@@ -327,9 +328,11 @@ mod tests {
 
         let timetable = create_timetable(conn).await;
 
-        assert!(resolve_search_window(timetable.id, None, None, conn)
-            .await
-            .is_err());
+        assert!(
+            resolve_search_window(timetable.id, None, None, conn)
+                .await
+                .is_err()
+        );
     }
 
     #[rstest]

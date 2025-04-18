@@ -6,7 +6,8 @@ mod model;
 mod search;
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput};
+use syn::DeriveInput;
+use syn::parse_macro_input;
 
 /// An EditoastError custom derive.
 ///

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -15,16 +15,16 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::models::prelude::*;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::Endpoint;
@@ -423,8 +423,8 @@ mod tests {
     use std::collections::HashMap;
 
     use super::compute_path;
-    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
+    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::views::infra::pathfinding::InfraPathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
     use editoast_schemas::infra::Direction;

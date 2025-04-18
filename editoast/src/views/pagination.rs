@@ -7,10 +7,10 @@ use tracing::warn;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::Result;
 use crate::ListAndCount;
 use crate::Model;
 use crate::SelectionSettings;
+use crate::error::Result;
 
 editoast_common::schemas! {
     PaginationStats,
@@ -185,7 +185,9 @@ impl<M: Model + 'static> From<PaginationQueryParams> for SelectionSettings<M> {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pagination")]
 pub enum PaginationError {
-    #[error("Invalid page size ({provided_page_size}), expected an integer 0 < page_size <= {max_page_size}")]
+    #[error(
+        "Invalid page size ({provided_page_size}), expected an integer 0 < page_size <= {max_page_size}"
+    )]
     #[editoast_error(status = 400)]
     InvalidPageSize {
         provided_page_size: i64,

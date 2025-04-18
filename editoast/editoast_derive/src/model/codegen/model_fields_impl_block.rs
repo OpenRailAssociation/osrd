@@ -1,6 +1,6 @@
 use super::np;
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 
 pub(crate) struct ModelFieldsImplBlock {
     pub(super) model: syn::Ident,

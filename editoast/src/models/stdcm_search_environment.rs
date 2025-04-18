@@ -94,16 +94,17 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
+    use crate::models::Infra;
+    use crate::models::Model;
     use crate::models::electrical_profiles::ElectricalProfileSet;
-    use crate::models::fixtures::{
-        create_electrical_profile_set, create_empty_infra, create_temporary_speed_limit_group,
-        create_timetable, create_work_schedule_group,
-    };
+    use crate::models::fixtures::create_electrical_profile_set;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_temporary_speed_limit_group;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::create_work_schedule_group;
     use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
     use crate::models::timetable::Timetable;
     use crate::models::work_schedules::WorkScheduleGroup;
-    use crate::models::Infra;
-    use crate::models::Model;
     use editoast_models::DbConnectionPoolV2;
 
     pub async fn stdcm_search_env_fixtures(

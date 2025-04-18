@@ -1,7 +1,8 @@
 use chrono::Utc;
 use editoast_derive::EditoastError;
+use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::{major_version, RAILJSON_VERSION};
+use editoast_schemas::infra::major_version;
 
 use crate::error::Result;
 use crate::models::infra_objects::*;

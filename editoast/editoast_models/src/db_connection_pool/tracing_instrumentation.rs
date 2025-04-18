@@ -71,7 +71,9 @@ impl Instrumentation for TracingInstrumentation {
                     tracing::trace!("starting query");
                 }
                 if let Some(_existing_span) = self.query_spans.take() {
-                    tracing::warn!("a query was already started: are you pipelining queries on the same connection?");
+                    tracing::warn!(
+                        "a query was already started: are you pipelining queries on the same connection?"
+                    );
                 }
                 self.query_spans = Some(span);
             }
@@ -140,7 +142,9 @@ impl Instrumentation for TracingInstrumentation {
                 tracing::trace!("rollbacking transaction");
             }
             _ => {
-                tracing::warn!("unknown instrumentation event, maybe 'InstrumentationEvent' evolved since last time this code was updated?");
+                tracing::warn!(
+                    "unknown instrumentation event, maybe 'InstrumentationEvent' evolved since last time this code was updated?"
+                );
             }
         }
     }

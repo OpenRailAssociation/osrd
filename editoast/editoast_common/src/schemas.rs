@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
+use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
-use utoipa::ToSchema;
 
 #[derive(Default)]
 pub struct LocalSchemas {
