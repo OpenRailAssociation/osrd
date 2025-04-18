@@ -168,7 +168,7 @@ const ComboBox = <T,>({
   return (
     <div
       data-testid={testIdPrefix ? `${testIdPrefix}` : undefined}
-      className="combo-box"
+      className="ui-combo-box"
       style={{ '--number-of-suggestions': numberOfSuggestionsToShow } as React.CSSProperties}
       ref={wrapperRef}
     >
@@ -204,7 +204,7 @@ const ComboBox = <T,>({
                 small,
               })}
               onClick={() => selectSuggestion(index)}
-              onMouseDown={(e) => e.preventDefault()} // Prevents the div parent (.combo-box) from losing focus
+              onMouseDown={(e) => e.preventDefault()} // Prevents the div parent (.ui-combo-box) from losing focus
               onMouseEnter={() => {
                 setActiveSuggestionIndex(index);
               }}

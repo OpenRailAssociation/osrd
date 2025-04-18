@@ -1,4 +1,4 @@
-.modal-ui-overlay {
+.ui-modal-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -6,7 +6,7 @@
   bottom: 0;
   z-index: 1000;
 
-  .modal-ui-content {
+  .modal-content {
     background-color: theme('colors.white.100');
     border-radius: 0.5rem;
     box-shadow:

@@ -29,14 +29,14 @@ img {
 }
 
 // __________________ Calendar Picker  __________________
-.date-picker .calendar-picker {
+.ui-date-picker .calendar-picker {
   top: auto !important;
   left: auto !important;
   z-index: 1;
 }
 
 // __________________ Time Picker  __________________
-.time-picker {
+.ui-time-picker {
   .modal-content {
     left: -198.4px !important;
     .time-picker-container {
@@ -47,8 +47,8 @@ img {
 
 // __________________ Common Time/Tolerance Picker  __________________
 
-.time-picker,
-.tolerance-picker {
+.ui-time-picker,
+.ui-tolerance-picker {
   .modal-overlay {
     position: relative !important;
   }
@@ -60,7 +60,7 @@ img {
 }
 
 // __________________ Tolerance Picker  __________________
-.tolerance-picker {
+.ui-tolerance-picker {
   .modal-content {
     left: -376px !important;
     .tolerance-grid {
@@ -71,7 +71,7 @@ img {
 
 // __________________ Select  __________________
 // TODO Remove this after the fix in the ui-core
-.osrd-ui-custom-select {
+.ui-select {
   min-height: auto;
   padding-top: 0;
   padding-bottom: 0;

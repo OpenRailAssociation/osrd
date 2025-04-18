@@ -13,7 +13,7 @@ type LabelProps = {
 };
 
 const Label = ({ htmlFor, text, required, hasHint, disabled, small = false }: LabelProps) => (
-  <div className={cx('base-label-wrapper', { 'has-hint': hasHint, small })}>
+  <div className={cx('ui-label-wrapper', { 'has-hint': hasHint, small })}>
     {required && (
       <span className="required">
         <RequiredInput />

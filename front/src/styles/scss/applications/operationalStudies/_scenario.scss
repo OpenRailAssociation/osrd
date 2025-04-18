@@ -91,7 +91,7 @@
       align-items: center;
       justify-content: right;
       padding-right: 16px;
-      .status-icon {
+      .ui-status-icon {
         width: 24px;
         height: 24px;
         color: var(--info60);
@@ -457,7 +457,7 @@
           position: relative;
           line-height: 24px;
 
-          .custom-checkbox.small {
+          .ui-checkbox.small {
             padding-left: 21px;
           }
         }
@@ -605,7 +605,7 @@
           }
 
           // TODO : remove this when height for small element is fixed in osrd-ui
-          .input-field-wrapper.small {
+          .ui-input-field-wrapper.small {
             height: auto !important;
           }
 

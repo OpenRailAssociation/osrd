@@ -1,4 +1,4 @@
-.range-wrapper {
+.ui-range-wrapper {
   width: 112px;
   height: 10px;
 
@@ -9,8 +9,8 @@
     background-color: inherit;
     height: 10px;
     width: 100%;
-  
-    /* can’t have different vendor’s prefixes in the same comma separated selector 
+
+    /* can’t have different vendor’s prefixes in the same comma separated selector
       or the browser will ignore it as it doesn’t recognise part of it
       &::-webkit-slider-runnable-track, &::-moz-range-track need to be split
       or to write some custom postcss plugin to split it for us
@@ -29,7 +29,7 @@
       border-radius: 2px;
       opacity: 1;
     }
-    
+
     &::-moz-range-track {
       -webkit-appearance: none;
       appearance: none;
@@ -44,7 +44,7 @@
       border-radius: 2px;
       opacity: 1;
     }
-    
+
     &::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -57,7 +57,7 @@
       background-color: theme('colors.white.100');
       opacity: 1;
     }
-    
+
     &::-moz-range-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -77,7 +77,7 @@
       /* ==== Focus state ==== */
       &:focus-visible {
         outline: none;
-  
+
         &::-webkit-slider-runnable-track {
           box-sizing: content-box;
           border-radius: 4px;
@@ -91,7 +91,7 @@
           box-shadow: 0 0 0 0.5px theme('colors.black.25') inset;
           opacity: 1;
         }
-  
+
         &::-moz-range-track {
           box-sizing: content-box;
           border-radius: 4px;
@@ -104,7 +104,7 @@
           box-shadow: 0 0 0 0.5px theme('colors.black.25') inset;
           opacity: 1;
         }
-  
+
         &::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -117,7 +117,7 @@
           box-shadow: 0 1px 3px theme('colors.black.10');
           opacity: 1;
         }
-        
+
         &::-moz-range-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -131,11 +131,11 @@
           opacity: 1;
         }
       }
-  
+
       /* ==== Hover state ==== */
       &:hover {
         outline: none;
-  
+
         &::-webkit-slider-runnable-track {
           box-sizing: content-box;
           border: 0;
@@ -148,7 +148,7 @@
           box-shadow: 0 0 0 0.5px theme('colors.black.75') inset;
           opacity: 1;
         }
-  
+
         &::-moz-range-track {
           box-sizing: content-box;
           border: 0;
@@ -160,9 +160,9 @@
           border-radius: 2px;
           box-shadow: 0 0 0 0.5px theme('colors.black.75') inset;
           opacity: 1;
-  
+
         }
-  
+
         &::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -175,7 +175,7 @@
           box-shadow: 0 1px 3px theme('colors.black.25');
           opacity: 1;
         }
-        
+
         &::-moz-range-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -189,11 +189,11 @@
           opacity: 1;
         }
       }
-  
+
       /* ==== Active state ==== */
       &:active {
         outline: none;
-    
+
         &::-webkit-slider-runnable-track {
           box-sizing: content-box;
           border: 0;
@@ -206,7 +206,7 @@
           box-shadow: 0 0 0 0.5px theme('colors.black.75') inset;
           opacity: 1;
         }
-    
+
         &::-moz-range-track {
           box-sizing: content-box;
           border: 0;
@@ -219,7 +219,7 @@
           box-shadow: 0 0 0 0.5px theme('colors.black.75') inset;
           opacity: 1;
         }
-    
+
         &::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -231,7 +231,7 @@
           box-shadow: 0 0.5px 1px theme('colors.black.25');
           opacity: 1;
         }
-        
+
         &::-moz-range-thumb {
           -webkit-appearance: none;
           appearance: none;

@@ -134,7 +134,7 @@ const TimePicker = ({
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   return (
-    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="time-picker">
+    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="ui-time-picker">
       <Input
         testIdPrefix={testIdPrefix ? `${testIdPrefix}` : undefined}
         {...otherProps}

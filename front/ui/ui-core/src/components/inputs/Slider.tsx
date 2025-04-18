@@ -52,7 +52,7 @@ const Slider = ({
 
   return (
     <div
-      className={cx('range-wrapper', containerClassName, { disabled })}
+      className={cx('ui-range-wrapper', containerClassName, { disabled })}
       style={{ width: `${width}px` }}
     >
       <input

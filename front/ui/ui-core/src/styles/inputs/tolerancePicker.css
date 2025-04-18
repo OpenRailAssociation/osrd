@@ -1,4 +1,4 @@
-.tolerance-picker {
+.ui-tolerance-picker {
   .time-tolerance {
     display: flex;
     justify-content: center;
@@ -19,7 +19,7 @@
     cursor: pointer;
   }
 
-  .modal-ui-overlay {
+  .ui-modal-overlay {
     .tolerance-picker-section {
       display: flex;
       gap: 1rem;
@@ -48,7 +48,7 @@
     }
   }
 
-  .modal-ui-content {
+  .modal-content {
     padding: 1.25rem;
   }
 

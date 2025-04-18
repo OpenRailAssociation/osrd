@@ -24,7 +24,7 @@ const RadioButton = ({
 }: RadioButtonProps) => {
   const { handleKeyUp, handleBlur, isFocusByTab } = useFocusByTab({ onBlur, onKeyUp });
   return (
-    <div className={cx('radio-button', { 'read-only': readOnly, small })} tabIndex={0}>
+    <div className={cx('ui-radio-button', { 'read-only': readOnly, small })} tabIndex={0}>
       <div className="radio-container">
         <input
           className="radio-input"

@@ -28,7 +28,7 @@ const TokenInput = ({ label, tokens: initialTokens }: TokenInputProps) => {
   };
 
   return (
-    <div className="token-input-wrapper">
+    <div className="ui-token-input-wrapper">
       <label className="input-label">{label}</label>
       <div className="tokens-wrapper" onClick={focusInput}>
         {tokens.map((token, index) => (

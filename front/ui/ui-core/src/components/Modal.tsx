@@ -28,10 +28,10 @@ const InputModal = ({ inputRef, isOpen, onClose, children, testIdPrefix }: Modal
   if (!isOpen) return null;
 
   return (
-    <div className="modal-ui-overlay">
+    <div className="ui-modal-overlay">
       <div
         ref={modalRef}
-        className="modal-ui-content"
+        className="modal-content"
         style={{ top: modalPosition.top, left: modalPosition.left }}
       >
         <button

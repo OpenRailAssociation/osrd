@@ -52,7 +52,7 @@ export const DatePicker = (props: DatePickerProps) => {
   const { testIdPrefix } = props;
 
   return (
-    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="date-picker">
+    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="ui-date-picker">
       <div>
         <Input
           testIdPrefix={testIdPrefix}

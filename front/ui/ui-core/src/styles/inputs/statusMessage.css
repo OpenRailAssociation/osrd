@@ -1,10 +1,10 @@
-.status-message-wrapper {
+.ui-status-message-wrapper {
   display: flex;
   align-items: flex-start;
   margin-top: 0.688rem;
   margin-bottom: 0.125rem;
 
-  .status-icon {
+  .ui-status-icon {
     margin-right: 0.5rem;
   }
 
@@ -32,7 +32,7 @@
   }
 }
 
-.status-message-wrapper-tooltip {
+.ui-status-message-wrapper-tooltip {
   position: absolute;
   display: flex;
   align-items: center;
