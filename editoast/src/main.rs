@@ -214,6 +214,11 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             GroupCommand::List => group::list_group(Arc::new(db_pool))
                 .await
                 .map_err(Into::into),
+            GroupCommand::Info(info_args) => {
+                group::group_info(info_args, openfga_config, Arc::new(db_pool))
+                    .await
+                    .map_err(Into::into)
+            }
             GroupCommand::Include(include_args) => {
                 group::include_group(include_args, openfga_config, Arc::new(db_pool))
                     .await
