@@ -8,7 +8,7 @@ export type TooltipProps = {
 };
 
 export const Tooltip = ({ position, children }: TooltipProps) => (
-  <div className="spacetimechart-tooltip" style={{ left: position.x, top: position.y }}>
+  <div className="ui-spacetimechart-tooltip" style={{ left: position.x, top: position.y }}>
     {children}
   </div>
 );
