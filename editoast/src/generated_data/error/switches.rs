@@ -133,13 +133,13 @@ fn check_overlapping(
 
 #[cfg(test)]
 mod tests {
+    use super::InfraError;
     use super::check_invalid_ref_ports;
     use super::check_invalid_ref_switch_type;
     use super::check_match_ports_type;
     use super::check_overlapping;
-    use super::InfraError;
-    use crate::generated_data::error::switches::check_endpoints_unicity;
     use crate::generated_data::error::switches::Context;
+    use crate::generated_data::error::switches::check_endpoints_unicity;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_switch_cache_point;
     use crate::infra_cache::tests::create_track_endpoint;

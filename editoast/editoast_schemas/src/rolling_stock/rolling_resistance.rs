@@ -1,9 +1,11 @@
 use derivative::Derivative;
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    AerodynamicDrag, AerodynamicDragPerWeight, SolidFriction, SolidFrictionPerWeight,
-    ViscosityFriction, ViscosityFrictionPerWeight,
-};
+use editoast_common::units::quantities::AerodynamicDrag;
+use editoast_common::units::quantities::AerodynamicDragPerWeight;
+use editoast_common::units::quantities::SolidFriction;
+use editoast_common::units::quantities::SolidFrictionPerWeight;
+use editoast_common::units::quantities::ViscosityFriction;
+use editoast_common::units::quantities::ViscosityFrictionPerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

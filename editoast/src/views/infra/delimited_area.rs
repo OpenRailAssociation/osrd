@@ -1,17 +1,17 @@
+use crate::AppState;
+use crate::Retrieve;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
-use crate::Retrieve;
-use axum::extract::Path;
-use axum::extract::State;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use axum::Extension;
 use axum::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::Direction;
@@ -94,9 +94,7 @@ enum InputError {
 enum TrackRangeConstructionError {
     #[error("Track identifiers do not match")]
     TrackIdentifierMissmatch,
-    #[error(
-        "The input directions or locations on track do not allow to build a valid track range"
-    )]
+    #[error("The input directions or locations on track do not allow to build a valid track range")]
     InvalidRelativeLocations,
     #[error("The location is not on track")]
     LocationNotOnTrack,
@@ -511,8 +509,8 @@ fn track_range_from_endpoint(
 
 #[cfg(test)]
 mod tests {
-    use crate::models::fixtures::create_small_infra;
     use crate::models::Infra;
+    use crate::models::fixtures::create_small_infra;
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;

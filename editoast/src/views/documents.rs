@@ -1,12 +1,12 @@
+use axum::Extension;
+use axum::Json;
 use axum::body::Bytes;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::http::header::CACHE_CONTROL;
 use axum::http::header::CONTENT_TYPE;
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
-use axum::Json;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Serialize;
@@ -167,8 +167,8 @@ async fn delete(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::header;
     use axum::http::StatusCode;
+    use axum::http::header;
     use rstest::rstest;
     use serde::Deserialize;
 

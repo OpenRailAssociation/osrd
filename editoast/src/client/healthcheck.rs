@@ -3,14 +3,14 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use editoast_models::DbConnectionPoolV2;
 
-use crate::core::mq_client;
-use crate::core::CoreClient;
-use crate::views;
 use crate::ValkeyClient;
+use crate::core::CoreClient;
+use crate::core::mq_client;
+use crate::views;
 
+use super::ValkeyConfig;
 use super::openfga_config::OpenfgaConfig;
 use super::runserver::CoreArgs;
-use super::ValkeyConfig;
 
 pub async fn healthcheck_cmd(
     db_pool: Arc<DbConnectionPoolV2>,

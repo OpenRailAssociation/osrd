@@ -90,9 +90,9 @@ mod tests {
     use json_patch::Patch;
 
     use crate::generated_data::infra_error::InfraError;
+    use crate::infra_cache::ObjectCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::ObjectCache;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::SpeedSection;

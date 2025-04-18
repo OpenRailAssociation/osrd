@@ -1,6 +1,6 @@
 use crate::model::ModelField;
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 use syn::parse_quote;
 
 pub(crate) struct ModelFieldApiImplBlock {

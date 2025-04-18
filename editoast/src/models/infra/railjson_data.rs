@@ -24,7 +24,9 @@ impl Infra {
         object_type: &ObjectType,
     ) -> Result<Vec<RailJsonData>> {
         let table_name = get_table(object_type);
-        let query = format!("SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
+        let query = format!(
+            "SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id"
+        );
         let railjson_data = sql_query(query)
             .bind::<BigInt, _>(infra_id)
             .load::<RailJsonData>(conn.write().await.deref_mut())

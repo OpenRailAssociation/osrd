@@ -1,7 +1,7 @@
-use crate::model::utils::np;
 use crate::model::ModelField;
-use quote::quote;
+use crate::model::utils::np;
 use quote::ToTokens;
+use quote::quote;
 use syn::parse_quote;
 
 pub(crate) struct ChangesetFromModelImpl {

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
-use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
+use crate::infra_cache::operation::CacheOperation;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
@@ -63,11 +63,11 @@ mod tests {
     use std::collections::HashSet;
 
     use super::InvolvedObjects;
+    use crate::infra_cache::ObjectCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::TrackSectionCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::infra_cache::ObjectCache;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 

@@ -1,4 +1,5 @@
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
+use std::hash::Hasher;
 
 /// Hash a float through a rounded integer value
 /// `hash_float<3,_>` means that the value is rounded to the nearest thousandth

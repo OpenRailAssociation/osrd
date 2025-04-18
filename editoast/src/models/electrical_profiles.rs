@@ -2,8 +2,8 @@ use std::ops::DerefMut;
 
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use editoast_models::tables::electrical_profile_set;
 use editoast_models::DbConnection;
+use editoast_models::tables::electrical_profile_set;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use serde::Deserialize;
 use serde::Serialize;

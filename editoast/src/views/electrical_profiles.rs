@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -19,12 +19,12 @@ use utoipa::IntoParams;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 use crate::error::Result;
-use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::electrical_profiles::LightElectricalProfileSet;
 use crate::models::Create;
 use crate::models::DeleteStatic;
 use crate::models::Model;
 use crate::models::Retrieve;
+use crate::models::electrical_profiles::ElectricalProfileSet;
+use crate::models::electrical_profiles::LightElectricalProfileSet;
 
 crate::routes! {
     "/electrical_profile_set" => {
@@ -227,9 +227,9 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+    use crate::Exists;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::views::test_app::TestAppBuilder;
-    use crate::Exists;
     use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::TrackRange;
 

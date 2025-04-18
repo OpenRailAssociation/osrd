@@ -1,13 +1,13 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_common::units;
@@ -22,26 +22,26 @@ use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
 
+use crate::AppState;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::core::pathfinding::PathfindingCoreResult;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingRequest;
 use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
 use crate::models::Retrieve;
 use crate::models::RollingStockModel;
+use crate::models::train_schedule::TrainSchedule;
 use crate::valkey_utils::ValkeyConnection;
-use crate::views::get_app_version;
-use crate::views::path::path_item_cache::PathItemCache;
-use crate::views::path::PathfindingError;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::get_app_version;
+use crate::views::path::PathfindingError;
+use crate::views::path::path_item_cache::PathItemCache;
 use editoast_models::DbConnection;
 
 crate::routes! {

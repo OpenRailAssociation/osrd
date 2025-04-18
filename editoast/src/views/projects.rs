@@ -1,9 +1,9 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
@@ -18,13 +18,12 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::AuthenticationExt;
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use super::study;
-use super::AuthenticationExt;
 use crate::error::Result;
-use crate::models::projects;
 use crate::models::Changeset;
 use crate::models::Create;
 use crate::models::Document;
@@ -33,8 +32,9 @@ use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Tags;
 use crate::models::Update;
-use crate::views::pagination::PaginationQueryParams;
+use crate::models::projects;
 use crate::views::AuthorizationError;
+use crate::views::pagination::PaginationQueryParams;
 
 crate::routes! {
     "/projects" => {
@@ -634,9 +634,11 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::OK);
 
         check_image(db_pool.get_ok(), Some(new_image.id)).await;
-        assert!(!Document::exists(&mut db_pool.get_ok(), old_image.id)
-            .await
-            .unwrap());
+        assert!(
+            !Document::exists(&mut db_pool.get_ok(), old_image.id)
+                .await
+                .unwrap()
+        );
 
         // now we remove the image
         let request = app
@@ -647,8 +649,10 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::OK);
 
         check_image(db_pool.get_ok(), None).await;
-        assert!(!Document::exists(&mut db_pool.get_ok(), new_image.id)
-            .await
-            .unwrap());
+        assert!(
+            !Document::exists(&mut db_pool.get_ok(), new_image.id)
+                .await
+                .unwrap()
+        );
     }
 }

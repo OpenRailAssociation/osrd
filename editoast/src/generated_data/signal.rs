@@ -8,19 +8,19 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-use editoast_models::tables::infra_layer_signal::dsl;
 use editoast_models::DbConnection;
+use editoast_models::tables::infra_layer_signal::dsl;
 use editoast_schemas::infra::LogicalSignal;
 use editoast_schemas::primitives::ObjectType;
 
-use super::utils::InvolvedObjects;
 use super::GeneratedData;
+use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
-use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::operation::CacheOperation;
 
 pub struct SignalLayer;
 

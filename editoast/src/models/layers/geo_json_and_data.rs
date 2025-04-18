@@ -213,9 +213,9 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 mod tests {
     use serde_json::json;
 
+    use super::GeoJsonAndData;
     use super::create_and_fill_mvt_tile;
     use super::get_geo_json_sql_query;
-    use super::GeoJsonAndData;
     use crate::map::MapLayers;
 
     #[test]

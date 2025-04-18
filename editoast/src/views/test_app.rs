@@ -8,14 +8,14 @@ use std::sync::Arc;
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
-use editoast_authz::subject;
-use editoast_authz::subject::UserInfo;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
-use editoast_common::tracing::create_tracing_subscriber;
+use editoast_authz::subject;
+use editoast_authz::subject::UserInfo;
 use editoast_common::tracing::Stream;
 use editoast_common::tracing::Telemetry;
 use editoast_common::tracing::TracingConfig;
+use editoast_common::tracing::create_tracing_subscriber;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::executor::block_on;
@@ -27,25 +27,25 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::filter::Directive;
 use url::Url;
 
-use crate::core::mocking::MockingClient;
+use crate::AppState;
+use crate::ValkeyClient;
 use crate::core::CoreClient;
+use crate::core::mocking::MockingClient;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
-use crate::AppState;
-use crate::ValkeyClient;
 use axum_test::TestRequest;
 use axum_test::TestServer;
 
-use super::authentication_middleware;
 use super::CoreConfig;
 use super::OpenfgaConfig;
 use super::OsrdyneConfig;
 use super::PostgresConfig;
 use super::Regulator;
 use super::ServerConfig;
+use super::authentication_middleware;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
 // 'testing' feature which brings with it tons of unneeded dependencies
@@ -396,7 +396,9 @@ impl<'a> UserBuilder<'a> {
         let authz_disabled =
             app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
         if !roles.is_empty() && authz_disabled {
-            panic!("Authorization must be enabled and a model must be provided to grant a user some roles");
+            panic!(
+                "Authorization must be enabled and a model must be provided to grant a user some roles"
+            );
         }
         let regulator = &app.app_state.regulator;
         block_on(async move {

@@ -53,12 +53,12 @@ use self::row_decl::RowFieldDecl;
 use self::update_batch_impl::UpdateBatchImpl;
 use self::update_impl::UpdateImpl;
 
+use super::ModelConfig;
+use super::RawIdentifier;
 use super::args::ImplPlan;
 use super::config::Changeset;
 use super::identifier::Identifier;
 use super::utils::np;
-use super::ModelConfig;
-use super::RawIdentifier;
 
 impl RawIdentifier {
     fn get_ident_lvalue(&self) -> syn::Expr {
@@ -452,11 +452,7 @@ impl ModelConfig {
 
 trait TokensIf: Sized {
     fn tokens_if(self, condition: bool) -> Option<Self> {
-        if condition {
-            Some(self)
-        } else {
-            None
-        }
+        if condition { Some(self) } else { None }
     }
 }
 

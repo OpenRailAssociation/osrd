@@ -12,9 +12,9 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::prelude::*;
 use crate::models::Scenario;
 use crate::models::Tags;
+use crate::models::prelude::*;
 use crate::views::study::StudyError;
 
 use super::Project;

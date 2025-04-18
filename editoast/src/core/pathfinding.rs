@@ -195,7 +195,9 @@ impl std::str::FromStr for TrackRange {
         };
         let track_section = Identifier::from(name);
         let Some((begin, end)) = offsets.split_once('-') else {
-            return Err(String::from("track range must contain '-' to separate the offsets and be of the form \"A+12-25\""));
+            return Err(String::from(
+                "track range must contain '-' to separate the offsets and be of the form \"A+12-25\"",
+            ));
         };
         let Ok(begin) = begin.parse() else {
             return Err(format!("{begin} in track range should be an integer"));

@@ -1,28 +1,28 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use axum::Extension;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_authz::Role;
 use editoast_models::DbConnectionPoolV2;
-use serde::de::Error as SerdeError;
 use serde::Deserialize;
+use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
 use utoipa::ToSchema;
 
 #[cfg(test)]
 use serde::Serialize;
 
+use crate::Model;
 use crate::error::Result;
-use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::Changeset;
 use crate::models::Create;
+use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::Model;
 
 crate::routes! {
     "/stdcm/search_environment" => {
@@ -180,10 +180,10 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
-    use crate::views::test_app::TestAppBuilder;
     use crate::Create;
     use crate::Retrieve;
+    use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     async fn create_stdcm_search_env() {

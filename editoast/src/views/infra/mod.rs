@@ -9,13 +9,13 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::model;
@@ -28,21 +28,21 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use super::params::List;
-use super::AuthenticationExt;
-use crate::core::infra_loading::InfraLoadRequest;
+use crate::AppState;
 use crate::core::AsCoreRequest;
+use crate::core::infra_loading::InfraLoadRequest;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
-use crate::models::prelude::*;
 use crate::models::Infra;
+use crate::models::prelude::*;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
-use crate::views::AuthorizationError;
-use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
 
@@ -802,8 +802,8 @@ pub mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
-    use crate::core::mocking::MockingClient;
     use crate::core::CoreClient;
+    use crate::core::mocking::MockingClient;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
@@ -816,10 +816,10 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
     use editoast_osrdyne_client::OsrdyneClient;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::ObjectType;
 
     impl TestApp {

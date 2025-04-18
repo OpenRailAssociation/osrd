@@ -4,9 +4,9 @@ use url::Url;
 
 use crate::views;
 
-use super::openfga_config::OpenfgaConfig;
 use super::PostgresConfig;
 use super::ValkeyConfig;
+use super::openfga_config::OpenfgaConfig;
 
 #[derive(Args, Debug, Clone)]
 struct MapLayersConfig {

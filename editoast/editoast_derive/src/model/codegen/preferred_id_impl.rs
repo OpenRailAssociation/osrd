@@ -1,5 +1,5 @@
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 
 pub(crate) struct PreferredIdImpl {
     pub(super) model: syn::Ident,

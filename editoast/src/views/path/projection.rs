@@ -41,9 +41,11 @@ impl<'a> PathProjection<'a> {
         let mut map_position = HashMap::new();
         let mut pos: u64 = 0;
         for (index, track_range) in path.iter().enumerate() {
-            assert!(track_index
-                .insert(&track_range.track_section, index)
-                .is_none());
+            assert!(
+                track_index
+                    .insert(&track_range.track_section, index)
+                    .is_none()
+            );
             map_position.insert(&track_range.track_section, pos);
             pos += track_range.length();
         }

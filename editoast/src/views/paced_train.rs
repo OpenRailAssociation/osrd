@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -17,25 +17,25 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::path::pathfinding::pathfinding_from_train;
-use super::path::pathfinding::PathfindingResult;
-use super::projection::compute_projected_train_paths;
-use super::projection::ProjectPathForm;
-use super::train_schedule::train_simulation_batch;
 use super::AppState;
 use super::AuthenticationExt;
 use super::InfraIdQueryParam;
 use super::SimulationSummaryResult;
+use super::path::pathfinding::PathfindingResult;
+use super::path::pathfinding::pathfinding_from_train;
+use super::projection::ProjectPathForm;
+use super::projection::compute_projected_train_paths;
+use super::train_schedule::train_simulation_batch;
 use crate::core::simulation::SimulationResponse;
 use crate::error::Result;
 use crate::models;
+use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::Infra;
-use crate::views::projection::ProjectPathTrainResult;
 use crate::views::AuthorizationError;
 use crate::views::ListId;
+use crate::views::projection::ProjectPathTrainResult;
 
 crate::routes! {
     "/paced_train" => {
@@ -496,21 +496,21 @@ mod tests {
     use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models;
+    use crate::models::fixtures::PartialProjectPathTrainResult;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
-    use crate::models::fixtures::PartialProjectPathTrainResult;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
+    use crate::views::SimulationSummaryResult;
     use crate::views::paced_train::PacedTrainResponse;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
-    use crate::views::SimulationSummaryResult;
 
     #[rstest]
     async fn paced_train_post() {

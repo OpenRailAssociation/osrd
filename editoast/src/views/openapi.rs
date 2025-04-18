@@ -5,8 +5,7 @@ use std::convert::Infallible;
 use itertools::Itertools as _;
 use tracing::debug;
 use tracing::warn;
-use utoipa::openapi::path::PathItemBuilder;
-use utoipa::openapi::schema::AnyOf;
+use utoipa::OpenApi;
 use utoipa::openapi::AllOf;
 use utoipa::openapi::Array;
 use utoipa::openapi::Object;
@@ -14,10 +13,11 @@ use utoipa::openapi::OneOf;
 use utoipa::openapi::PathItem;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
-use utoipa::OpenApi;
+use utoipa::openapi::path::PathItemBuilder;
+use utoipa::openapi::schema::AnyOf;
 
-use crate::error::ErrorDefinition;
 use crate::AppState;
+use crate::error::ErrorDefinition;
 
 #[derive(Debug)]
 pub struct OpenApiPathScope {

@@ -7,6 +7,7 @@ pub use form::RollingStockForm;
 
 use std::io::Cursor;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Multipart;
 use axum::extract::Path;
@@ -14,7 +15,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -35,13 +35,13 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::models::Document;
+use crate::models::RollingStockModel;
+use crate::models::RollingStockSeparatedImageModel;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::rolling_stock_model;
 use crate::models::rolling_stock_model::ScenarioReference;
-use crate::models::Document;
-use crate::models::RollingStockModel;
-use crate::models::RollingStockSeparatedImageModel;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 

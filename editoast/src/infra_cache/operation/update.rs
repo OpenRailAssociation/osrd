@@ -1,12 +1,12 @@
 use std::ops::DerefMut;
 
+use diesel::QueryableByName;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
-use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
@@ -15,9 +15,9 @@ use editoast_schemas::primitives::ObjectType;
 use json_patch::Patch;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::Value;
 use serde_json::from_value;
 use serde_json::json;
-use serde_json::Value;
 
 use super::OperationError;
 use crate::error::Result;
@@ -51,7 +51,7 @@ impl UpdateOperation {
                     obj_id: self.obj_id.clone(),
                     infra_id,
                 }
-                .into())
+                .into());
             }
             Err(err) => return Err(err.into()),
         };
@@ -108,7 +108,7 @@ impl DataObject {
                 return Err(OperationError::InvalidPatch {
                     error: err.to_string(),
                 }
-                .into())
+                .into());
             }
         };
 
@@ -173,10 +173,12 @@ mod tests {
             .unwrap(),
         };
 
-        assert!(update_track
-            .apply(infra.id, &mut db_pool.get_ok())
-            .await
-            .is_ok());
+        assert!(
+            update_track
+                .apply(infra.id, &mut db_pool.get_ok())
+                .await
+                .is_ok()
+        );
 
         let updated_length = sql_query(format!(
                 "SELECT (data->>'length')::float as val FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
@@ -229,10 +231,12 @@ mod tests {
             .unwrap(),
         };
 
-        assert!(update_signal
-            .apply(infra.id, &mut db_pool.get_ok())
-            .await
-            .is_ok());
+        assert!(
+            update_signal
+                .apply(infra.id, &mut db_pool.get_ok())
+                .await
+                .is_ok()
+        );
 
         let updated_length = sql_query(format!(
                 "SELECT (data->>'sight_distance')::float as val FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
@@ -260,10 +264,12 @@ mod tests {
                 .unwrap(),
             };
 
-        assert!(update_switch
-            .apply(infra.id, &mut db_pool.get_ok())
-            .await
-            .is_ok());
+        assert!(
+            update_switch
+                .apply(infra.id, &mut db_pool.get_ok())
+                .await
+                .is_ok()
+        );
 
         let updated_comment = sql_query(format!(
                 "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
@@ -292,10 +298,12 @@ mod tests {
             .unwrap(),
         };
 
-        assert!(update_speed
-            .apply(infra.id, &mut db_pool.get_ok())
-            .await
-            .is_ok());
+        assert!(
+            update_speed
+                .apply(infra.id, &mut db_pool.get_ok())
+                .await
+                .is_ok()
+        );
 
         let updated_speed = sql_query(format!(
                 "SELECT (data->>'speed_limit')::float as val FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",

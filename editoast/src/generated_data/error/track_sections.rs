@@ -54,12 +54,12 @@ pub fn check_curve_out_of_range(track: &ObjectCache, _: &InfraCache, _: &Graph) 
 mod tests {
     use rstest::rstest;
 
+    use super::InfraError;
     use super::check_curve_out_of_range;
     use super::check_slope_out_of_range;
-    use super::InfraError;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::infra::Curve;
     use editoast_schemas::infra::Slope;
 

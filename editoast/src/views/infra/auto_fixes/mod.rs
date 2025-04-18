@@ -1,10 +1,10 @@
 use std::collections::hash_map::Entry;
 use std::collections::hash_map::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
@@ -12,24 +12,24 @@ use thiserror::Error;
 use tracing::debug;
 use tracing::error;
 
+use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
-use crate::infra_cache::operation::patch_infra_object;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
-use crate::infra_cache::InfraCache;
-use crate::infra_cache::ObjectCache;
-use crate::models::prelude::*;
+use crate::infra_cache::operation::patch_infra_object;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
@@ -204,7 +204,7 @@ fn fix_infra(
                         return Err(AutoFixesEditoastError::ConflictingFixesOnSameObject {
                             object: entry.key().clone(),
                             fixes: vec![entry.get().0.clone(), fix.0],
-                        })
+                        });
                     }
                     Entry::Vacant(entry) => entry.insert(fix),
                 };
@@ -336,13 +336,13 @@ mod tests {
 
     use super::*;
     use crate::generated_data::infra_error::InfraErrorType;
+    use crate::infra_cache::InfraCacheEditoastError;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
-    use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::InfraCacheEditoastError;
+    use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_small_infra;
     use crate::views::infra::errors::query_errors;
@@ -406,9 +406,11 @@ mod tests {
         // Check the only initial issues are "overlapping_speed_sections" warnings
         let (infra_errors_before_all, before_all_count) =
             query_errors(&mut db_pool.get_ok(), &small_infra).await;
-        assert!(infra_errors_before_all
-            .iter()
-            .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. })));
+        assert!(
+            infra_errors_before_all
+                .iter()
+                .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. }))
+        );
 
         // Remove a track
         let delete_operation = DeleteOperation {

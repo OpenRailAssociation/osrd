@@ -7,16 +7,20 @@ use futures::join;
 use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
+use crate::ValkeyClient;
+use crate::ValkeyConnection;
 use crate::client::get_app_version;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::pathfinding::TrackRange;
 use crate::core::signal_projection::SignalUpdate;
@@ -27,20 +31,16 @@ use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalCriticalPosition;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::ZoneUpdate;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::Result;
+use crate::models::RollingStockModel;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::RollingStockModel;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
-use crate::views::train_schedule::train_simulation_batch;
 use crate::views::train_schedule::TrainScheduleError;
-use crate::ValkeyClient;
-use crate::ValkeyConnection;
+use crate::views::train_schedule::train_simulation_batch;
 
 editoast_common::schemas! {
     ProjectPathTrainResult,

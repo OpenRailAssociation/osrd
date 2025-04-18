@@ -59,12 +59,12 @@ pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) 
 mod tests {
     use std::collections::HashMap;
 
-    use super::check_switch_types;
     use super::InfraError;
+    use super::check_switch_types;
     use crate::infra_cache;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_switch_connection;
     use crate::infra_cache::tests::create_switch_type_cache;
-    use crate::infra_cache::Graph;
 
     #[test]
     fn unknown_port_name() {

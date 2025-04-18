@@ -1,7 +1,7 @@
-use axum::extract::Query;
-use axum::extract::State;
 use axum::Extension;
 use axum::Json;
+use axum::extract::Query;
+use axum::extract::State;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -11,15 +11,15 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::Retrieve;
 use crate::error::Result;
 use crate::models::stdcm_log::StdcmLog;
-use crate::Retrieve;
 
+use super::AuthenticationExt;
+use super::AuthorizationError;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
-use super::AuthenticationExt;
-use super::AuthorizationError;
 
 crate::routes! {
     "/stdcm_logs" => list_stdcm_logs,
@@ -154,8 +154,8 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use editoast_authz::subject;
     use editoast_authz::Role;
+    use editoast_authz::subject;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -167,6 +167,7 @@ mod tests {
     use uuid::Uuid;
 
     use crate::core;
+    use crate::core::CoreClient;
     use crate::core::mocking::MockingClient;
     use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::core::simulation::CompleteReportTrain;
@@ -174,7 +175,6 @@ mod tests {
     use crate::core::simulation::ReportTrain;
     use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
-    use crate::core::CoreClient;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;

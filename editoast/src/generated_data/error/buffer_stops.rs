@@ -163,15 +163,15 @@ fn check_missing(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
 pub mod tests {
     use rstest::rstest;
 
+    use super::InfraError;
     use super::check_invalid_ref;
     use super::check_out_of_range;
-    use super::InfraError;
     use crate::generated_data::error::buffer_stops::check_missing;
     use crate::generated_data::error::buffer_stops::check_odd_location;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_buffer_stop_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

@@ -41,9 +41,13 @@ pub use rolling_stock_category::RollingStockCategories;
 pub use rolling_stock_category::RollingStockCategory;
 
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Time;
+use editoast_common::units::quantities::Velocity;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;

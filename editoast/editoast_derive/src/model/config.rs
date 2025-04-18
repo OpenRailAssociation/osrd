@@ -1,15 +1,13 @@
-use std::{
-    collections::BTreeSet,
-    ops::{Deref, DerefMut},
-};
+use std::collections::BTreeSet;
+use std::ops::Deref;
+use std::ops::DerefMut;
 
 use darling::util::PathList;
 use syn::parse_quote;
 
-use super::{
-    args::ImplPlan,
-    identifier::{Identifier, RawIdentifier},
-};
+use super::args::ImplPlan;
+use super::identifier::Identifier;
+use super::identifier::RawIdentifier;
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct ModelConfig {

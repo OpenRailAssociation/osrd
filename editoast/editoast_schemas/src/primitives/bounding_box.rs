@@ -34,13 +34,13 @@ impl FromIterator<(f64, f64)> for BoundingBox {
 
 impl BoundingBox {
     pub fn union(&mut self, b: &Self) -> &mut Self {
-        self.0 = (self.0 .0.min(b.0 .0), self.0 .1.min(b.0 .1));
-        self.1 = (self.1 .0.max(b.1 .0), self.1 .1.max(b.1 .1));
+        self.0 = (self.0.0.min(b.0.0), self.0.1.min(b.0.1));
+        self.1 = (self.1.0.max(b.1.0), self.1.1.max(b.1.1));
         self
     }
 
     pub fn is_valid(&self) -> bool {
-        self.0 .0 <= self.1 .0 && self.0 .1 <= self.1 .1
+        self.0.0 <= self.1.0 && self.0.1 <= self.1.1
     }
 
     pub fn from_geojson(value: geojson::Value) -> Result<Self, GeometryError> {
@@ -81,10 +81,10 @@ impl BoundingBox {
         // Earth's mean radius in meters
         let r: f64 = 6_378_100.0;
 
-        let a_lon = self.0 .0;
-        let a_lat = self.0 .1;
-        let b_lon = self.1 .0;
-        let b_lat = self.1 .1;
+        let a_lon = self.0.0;
+        let a_lat = self.0.1;
+        let b_lon = self.1.0;
+        let b_lat = self.1.1;
 
         // Calculate differences in longitude and latitude in radians
         let d_lon: f64 = (b_lon - a_lon).to_radians();

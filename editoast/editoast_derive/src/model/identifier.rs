@@ -27,9 +27,11 @@ impl Identifier {
         let (field_types, columns) = {
             let fields = match &identifier {
                 RawIdentifier::Field(ident) => {
-                    vec![fields
-                        .get(ident)
-                        .expect("identifier should exist in the provided config")]
+                    vec![
+                        fields
+                            .get(ident)
+                            .expect("identifier should exist in the provided config"),
+                    ]
                 }
                 RawIdentifier::Compound(idents) => idents
                     .iter()
@@ -71,9 +73,11 @@ impl darling::FromMeta for RawIdentifier {
                         syn::Expr::Path(path) => {
                             idents.push(extract_ident_of_path(&path.path)?);
                         }
-                        _ => return Err(darling::Error::custom(
-                            "Model: invalid compound 'identifier' expression: must be a tuple of idents",
-                        )),
+                        _ => {
+                            return Err(darling::Error::custom(
+                                "Model: invalid compound 'identifier' expression: must be a tuple of idents",
+                            ));
+                        }
                     }
                 }
                 Ok(RawIdentifier::Compound(idents))

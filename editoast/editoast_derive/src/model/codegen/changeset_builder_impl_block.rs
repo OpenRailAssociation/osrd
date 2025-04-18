@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use proc_macro2::TokenStream;
-use quote::quote;
 use quote::ToTokens;
+use quote::quote;
 use syn::parse_quote;
 
 use crate::model::ModelField;

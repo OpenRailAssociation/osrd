@@ -2,13 +2,13 @@ pub mod stdcm;
 
 use std::collections::HashMap;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -29,6 +29,9 @@ use super::pagination::PaginatedList as _;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
+use crate::AppState;
+use crate::RetrieveBatch;
+use crate::core::AsCoreRequest;
 use crate::core::conflict_detection::Conflict as CoreConflict;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::ConflictRequirement;
@@ -37,22 +40,19 @@ use crate::core::conflict_detection::PacedTrainOccurrenceId;
 use crate::core::conflict_detection::TrainId;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
-use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::models;
+use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
-use crate::models::Infra;
-use crate::views::train_schedule::train_simulation_batch;
-use crate::views::train_schedule::TrainScheduleForm;
-use crate::views::train_schedule::TrainScheduleResponse;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
-use crate::RetrieveBatch;
+use crate::views::train_schedule::TrainScheduleForm;
+use crate::views::train_schedule::TrainScheduleResponse;
+use crate::views::train_schedule::train_simulation_batch;
 
 crate::routes! {
     "/timetable" => {

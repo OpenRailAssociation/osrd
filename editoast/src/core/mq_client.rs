@@ -1,22 +1,32 @@
-use deadpool::managed::{Manager, Metrics, Pool, RecycleError, RecycleResult};
+use deadpool::managed::Manager;
+use deadpool::managed::Metrics;
+use deadpool::managed::Pool;
+use deadpool::managed::RecycleError;
+use deadpool::managed::RecycleResult;
 use derivative::Derivative;
 use futures_util::StreamExt;
 use itertools::Itertools;
-use lapin::{
-    message::Delivery,
-    options::{BasicConsumeOptions, BasicPublishOptions},
-    types::{ByteArray, FieldTable, ShortString},
-    BasicProperties, Channel, Connection, ConnectionProperties,
-};
+use lapin::BasicProperties;
+use lapin::Channel;
+use lapin::Connection;
+use lapin::ConnectionProperties;
+use lapin::message::Delivery;
+use lapin::options::BasicConsumeOptions;
+use lapin::options::BasicPublishOptions;
+use lapin::types::ByteArray;
+use lapin::types::FieldTable;
+use lapin::types::ShortString;
 use serde::Serialize;
 use serde_json::to_vec;
-use std::{collections::HashMap, fmt::Debug, sync::Arc};
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::sync::Arc;
 use thiserror::Error;
-use tokio::{
-    sync::{oneshot, RwLock},
-    task,
-    time::{timeout, Duration},
-};
+use tokio::sync::RwLock;
+use tokio::sync::oneshot;
+use tokio::task;
+use tokio::time::Duration;
+use tokio::time::timeout;
 use url::Url;
 use uuid::Uuid;
 

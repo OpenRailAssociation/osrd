@@ -1,10 +1,10 @@
 use std::str::FromStr;
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
@@ -15,14 +15,14 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
+use crate::models::Infra;
 use crate::models::infra::errors::Level;
 use crate::models::prelude::*;
-use crate::models::Infra;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 use editoast_models::DbConnectionPoolV2;
 
 use super::InfraApiError;

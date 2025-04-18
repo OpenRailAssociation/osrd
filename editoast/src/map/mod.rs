@@ -6,12 +6,12 @@ pub use layers::Layer;
 pub use layers::MapLayers;
 pub use layers::View;
 
+pub use self::layer_cache::Tile;
 pub use self::layer_cache::get_cache_tile_key;
 pub use self::layer_cache::get_layer_cache_prefix;
 pub use self::layer_cache::get_view_cache_prefix;
-pub use self::layer_cache::Tile;
-use crate::error::Result;
 use crate::ValkeyConnection;
+use crate::error::Result;
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///

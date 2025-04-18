@@ -1,13 +1,18 @@
-use std::{error::Error, fs, path::PathBuf, sync::Arc};
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
+use std::sync::Arc;
 
-use clap::{Args, Subcommand};
+use clap::Args;
+use clap::Subcommand;
 use colored::Colorize as _;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl as _;
 use editoast_models::DbConnectionPoolV2;
 use editoast_search::SearchConfigStore as _;
 
-use crate::{views::search::SearchConfigFinder, CliError};
+use crate::CliError;
+use crate::views::search::SearchConfigFinder;
 
 #[derive(Subcommand, Debug)]
 pub enum SearchCommands {
@@ -80,9 +85,11 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
         && (up_path.exists() && fs::read(up_path.clone()).is_ok_and(|v| !v.is_empty())
             || down_path.exists() && fs::read(down_path.clone()).is_ok_and(|v| !v.is_empty()))
     {
-        let error = format!("❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
-        migration.to_str().unwrap_or("<unprintable path>"),
-        "--force".bold());
+        let error = format!(
+            "❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
+            migration.to_str().unwrap_or("<unprintable path>"),
+            "--force".bold()
+        );
         return Err(Box::new(CliError::new(2, error)));
     }
     println!(

@@ -36,19 +36,19 @@ use std::collections::HashSet;
 use std::env;
 use std::sync::Arc;
 
+use axum::Router;
+use axum::ServiceExt;
 use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
 use axum::extract::Request;
 use axum::middleware::Next;
 use axum::response::Response;
-use axum::Router;
-use axum::ServiceExt;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chrono::Duration;
 use dashmap::DashMap;
-use editoast_authz::subject::UserInfo;
 use editoast_authz::Authorizer;
 use editoast_authz::Role;
+use editoast_authz::subject::UserInfo;
 
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::TryFutureExt;
@@ -57,8 +57,8 @@ pub use openapi::OpenApiRoot;
 use axum::extract::Json;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use editoast_models::db_connection_pool::ping_database;
 use editoast_models::DbConnectionPoolV2;
+use editoast_models::db_connection_pool::ping_database;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -76,28 +76,28 @@ use url::Url;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::ValkeyClient;
 use crate::client::get_app_version;
 use crate::core;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::core::mq_client;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::error::{self};
 use crate::generated_data;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use crate::infra_cache::operation;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::operation;
 use crate::map::MapLayers;
 use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 use crate::views::path::pathfinding::PathfindingFailure;
-use crate::ValkeyClient;
 
 crate::routes! {
     fn router();
@@ -398,7 +398,7 @@ async fn authenticate(
             Err(AuthorizerError::UnknownUser { .. }) => {
                 return Err(AuthorizationError::ImpersonatedUserNotFound {
                     identity: impersonated_identity,
-                })
+                });
             }
             err => err?,
         };

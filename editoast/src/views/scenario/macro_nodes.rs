@@ -1,10 +1,10 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Extension;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -19,12 +19,14 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::macro_node::MacroNode;
-use crate::models::prelude::*;
 use crate::models::Project;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
+use crate::models::macro_node::MacroNode;
+use crate::models::prelude::*;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -34,8 +36,6 @@ use crate::views::scenario::ScenarioError;
 use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 
 crate::routes! {
     "/macro_nodes" => {list, create,},
@@ -428,9 +428,9 @@ async fn retrieve_macro_node_and_check_scenario(
 pub mod test {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
+    use rand::Rng;
     use rand::distr::Alphanumeric;
     use rand::rng;
-    use rand::Rng;
     use rstest::rstest;
 
     use super::*;

@@ -2,9 +2,9 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
+use rand::Rng;
 use rand::distr::Alphanumeric;
 use rand::rng;
-use rand::Rng;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;

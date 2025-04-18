@@ -13,12 +13,12 @@ use super::Fix;
 use super::OrderedOperation;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
+use crate::infra_cache::ObjectCache;
 use crate::infra_cache::object_cache::OperationalPointCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
-use crate::infra_cache::ObjectCache;
 
 fn invalid_reference_to_ordered_operation(
     operational_point: &OperationalPointCache,
@@ -89,11 +89,11 @@ mod tests {
     use json_patch::Patch;
 
     use crate::generated_data::infra_error::InfraError;
+    use crate::infra_cache::ObjectCache;
     use crate::infra_cache::object_cache::OperationalPointCache;
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::ObjectCache;
     use editoast_schemas::primitives::Identifier;
     use editoast_schemas::primitives::OSRDObject as _;
     use editoast_schemas::primitives::ObjectRef;

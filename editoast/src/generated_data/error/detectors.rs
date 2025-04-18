@@ -54,12 +54,12 @@ pub fn check_out_of_range(
 }
 #[cfg(test)]
 mod tests {
+    use super::InfraError;
     use super::check_invalid_ref;
     use super::check_out_of_range;
-    use super::InfraError;
+    use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_detector_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::infra_cache::Graph;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 

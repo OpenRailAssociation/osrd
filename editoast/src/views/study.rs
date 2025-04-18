@@ -1,9 +1,9 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use axum::Extension;
 use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
@@ -19,16 +19,16 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::operational_studies::OperationalStudiesOrderingParam;
-use super::pagination::PaginationStats;
 use super::AuthenticationExt;
 use super::AuthorizationError;
+use super::operational_studies::OperationalStudiesOrderingParam;
+use super::pagination::PaginationStats;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::prelude::*;
 use crate::models::Project;
 use crate::models::Study;
 use crate::models::Tags;
+use crate::models::prelude::*;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::projects::ProjectError;
@@ -450,9 +450,9 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
+    use crate::models::Study;
     use crate::models::fixtures::create_project;
     use crate::models::fixtures::create_study;
-    use crate::models::Study;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

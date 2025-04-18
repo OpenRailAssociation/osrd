@@ -1,12 +1,18 @@
 #![allow(clippy::manual_unwrap_or_default)]
 
-use darling::{ast, util, Error, FromDeriveInput, FromField};
-use darling::{FromMeta, Result};
+use darling::Error;
+use darling::FromDeriveInput;
+use darling::FromField;
+use darling::FromMeta;
+use darling::Result;
+use darling::ast;
+use darling::util;
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
+use quote::ToTokens;
+use quote::quote;
+use syn::DeriveInput;
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
-use syn::DeriveInput;
 
 #[derive(FromDeriveInput)]
 #[darling(

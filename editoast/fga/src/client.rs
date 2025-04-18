@@ -17,8 +17,8 @@ use tuples::RawTuple;
 use std::future::Future;
 use std::future::{self};
 
-use futures::stream;
 use futures::TryStreamExt as _;
+use futures::stream;
 use itertools::Itertools as _;
 
 use crate::model::AsUser;
@@ -423,7 +423,9 @@ impl Client {
                         public_access = Some(Wildcard(std::marker::PhantomData));
                     }
                     RawUser::UserSet { .. } => {
-                        unreachable!("OpenFGA cannot return usersets when `user_filter` is configured like above")
+                        unreachable!(
+                            "OpenFGA cannot return usersets when `user_filter` is configured like above"
+                        )
                     }
                 }
             }

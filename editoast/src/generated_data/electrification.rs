@@ -7,16 +7,16 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::tables::infra_layer_electrification::dsl;
 use editoast_models::DbConnection;
+use editoast_models::tables::infra_layer_electrification::dsl;
 use editoast_schemas::primitives::ObjectType;
 
-use super::utils::InvolvedObjects;
 use super::GeneratedData;
+use super::utils::InvolvedObjects;
 use crate::diesel::ExpressionMethods;
 use crate::error::Result;
-use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::operation::CacheOperation;
 
 pub struct ElectrificationLayer;
 

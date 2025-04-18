@@ -1,7 +1,12 @@
+use diesel::QueryResult;
+use diesel::QueryableByName;
 use diesel::pg::Pg;
-use diesel::query_builder::{AstPass, Query, QueryFragment, QueryId};
-use diesel::sql_types::{BigInt, Untyped};
-use diesel::{QueryResult, QueryableByName};
+use diesel::query_builder::AstPass;
+use diesel::query_builder::Query;
+use diesel::query_builder::QueryFragment;
+use diesel::query_builder::QueryId;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Untyped;
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
 use std::ops::DerefMut;

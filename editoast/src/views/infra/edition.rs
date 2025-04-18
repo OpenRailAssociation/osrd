@@ -1,7 +1,7 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -28,23 +28,23 @@ use tracing::error;
 use tracing::info;
 use uuid::Uuid;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::generated_data;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
 use crate::infra_cache::object_cache::OperationalPointPartCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
-use crate::infra_cache::InfraCache;
-use crate::infra_cache::ObjectCache;
 use crate::map;
-use crate::models::prelude::*;
 use crate::models::Infra;
-use crate::views::infra::InfraApiError;
-use crate::views::infra::InfraIdParam;
+use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::AppState;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 
@@ -910,7 +910,9 @@ enum EditionError {
     #[error("Infra {infra_id} is locked")]
     InfraIsLocked { infra_id: i64 },
 
-    #[error("Invalid split offset for track section '{tracksection_id}' in infra '{infra_id}'. Expected a value between 0 and {tracksection_length} meters")]
+    #[error(
+        "Invalid split offset for track section '{tracksection_id}' in infra '{infra_id}'. Expected a value between 0 and {tracksection_length} meters"
+    )]
     #[editoast_error(status = 400)]
     SplitTrackSectionBadOffset {
         infra_id: i64,

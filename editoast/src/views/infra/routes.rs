@@ -1,8 +1,8 @@
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::Extension;
 use editoast_authz::Role;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RoutePath;
@@ -13,17 +13,17 @@ use std::collections::HashSet;
 use strum::Display;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::models::prelude::*;
 use crate::models::Infra;
+use crate::models::prelude::*;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
-use crate::AppState;
 
 crate::routes! {
     "/routes" => {
