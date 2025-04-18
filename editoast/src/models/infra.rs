@@ -53,7 +53,7 @@ editoast_common::schemas! {
 /// This value is set by the database. This constant is used
 /// in unit tests.
 #[cfg(test)]
-pub const DEFAULT_INFRA_VERSION: &str = "0";
+pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, Model, utoipa::ToSchema)]
 #[model(table = editoast_models::tables::infra)]
@@ -65,9 +65,9 @@ pub struct Infra {
     pub railjson_version: String,
     #[serde(skip)]
     pub owner: Uuid,
-    pub version: String,
+    pub version: i64,
     #[schema(required)]
-    pub generated_version: Option<String>,
+    pub generated_version: Option<i64>,
     pub locked: bool,
     pub created: DateTime<Utc>,
     #[derivative(Default(value = "Utc::now()"))]
@@ -106,12 +106,7 @@ impl Infra {
     }
 
     pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), ModelError<Self>> {
-        let new_version = self
-            .version
-            .parse::<u32>()
-            .expect("Cannot convert version into an Integer")
-            + 1;
-        self.version = new_version.to_string();
+        self.version += 1;
         self.modified = Utc::now();
         self.save(conn).await
     }
@@ -120,7 +115,7 @@ impl Infra {
         &mut self,
         conn: &mut DbConnection,
     ) -> Result<(), ModelError<Self>> {
-        self.generated_version = Some(self.version.clone());
+        self.generated_version = Some(self.version);
         self.save(conn).await
     }
 
@@ -232,10 +227,7 @@ impl Infra {
         infra_cache: &InfraCache,
     ) -> Result<bool> {
         // Check if refresh is needed
-        if !force
-            && self.generated_version.is_some()
-            && &self.version == self.generated_version.as_ref().unwrap()
-        {
+        if !force && Some(self.version) == self.generated_version {
             return Ok(false);
         }
 

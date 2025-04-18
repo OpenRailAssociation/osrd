@@ -7559,7 +7559,8 @@ components:
           type: string
           format: date-time
         generated_version:
-          type: string
+          type: integer
+          format: int64
           nullable: true
         id:
           type: integer
@@ -7574,7 +7575,8 @@ components:
         railjson_version:
           type: string
         version:
-          type: string
+          type: integer
+          format: int64
     InfraError:
       allOf:
       - $ref: '#/components/schemas/InfraErrorType'
@@ -11584,7 +11586,8 @@ components:
         comfort:
           $ref: '#/components/schemas/Comfort'
         expected_version:
-          type: string
+          type: integer
+          format: int64
           description: Infrastructure expected version
         infra:
           type: integer

@@ -76,10 +76,8 @@ diesel::table! {
         #[max_length = 16]
         railjson_version -> Varchar,
         owner -> Uuid,
-        #[max_length = 40]
-        version -> Varchar,
-        #[max_length = 40]
-        generated_version -> Nullable<Varchar>,
+        version -> Int8,
+        generated_version -> Nullable<Int8>,
         locked -> Bool,
         created -> Timestamptz,
         modified -> Timestamptz,

@@ -17,7 +17,7 @@ class SignalProjectionRequest(
     @Json(name = "train_simulations") var trainSimulations: Map<Long, TrainSimulation>,
     var infra: String,
     /** The expected infrastructure version */
-    @Json(name = "expected_version") var expectedVersion: String,
+    @Json(name = "expected_version") var expectedVersion: Int,
 )
 
 class TrainSimulation(

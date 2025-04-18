@@ -37,7 +37,7 @@ class PathPropEndpointTest : ApiTest() {
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = "1"
+                    expectedVersion = 1
                 )
             )
         val rawResponse =

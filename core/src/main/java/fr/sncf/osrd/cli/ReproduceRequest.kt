@@ -117,7 +117,7 @@ class ReproduceRequest : CliCommand {
 data class FileInfraProvider(val infra: FullInfra) : InfraProvider {
     override fun getInfra(
         infraId: String?,
-        expectedVersion: String?,
+        expectedVersion: Int?,
         diagnosticRecorder: DiagnosticRecorder?
     ): FullInfra {
         return infra

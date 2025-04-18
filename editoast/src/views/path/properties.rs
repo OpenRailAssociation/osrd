@@ -183,7 +183,7 @@ async fn post(
     let mut path_properties = retrieve_path_properties(
         &mut valkey_conn,
         infra_id,
-        &infra_version,
+        infra_version,
         &path_properties_input,
     )
     .await?;
@@ -196,7 +196,7 @@ async fn post(
         let request = PathPropertiesRequest {
             track_section_ranges: &path_properties_input.track_section_ranges,
             infra: infra_id,
-            expected_version: infra_version.clone(),
+            expected_version: infra_version,
         };
         let computed_path_properties = request.fetch(&core_client).await?;
 
@@ -213,7 +213,7 @@ async fn post(
         cache_path_properties(
             &mut valkey_conn,
             infra_id,
-            &infra_version,
+            infra_version,
             &path_properties_input,
             &path_properties,
         )
@@ -232,7 +232,7 @@ async fn post(
 async fn retrieve_path_properties(
     valkey_conn: &mut ValkeyConnection,
     infra: i64,
-    infra_version: &String,
+    infra_version: i64,
     path_properties_input: &PathPropertiesInput,
 ) -> Result<PathProperties> {
     let track_ranges = &path_properties_input.track_section_ranges;
@@ -247,7 +247,7 @@ async fn retrieve_path_properties(
 async fn cache_path_properties(
     valkey_conn: &mut ValkeyConnection,
     infra: i64,
-    infra_version: &String,
+    infra_version: i64,
     path_properties_input: &PathPropertiesInput,
     path_properties: &PathProperties,
 ) -> Result<()> {
@@ -264,7 +264,7 @@ async fn cache_path_properties(
 /// Compute path properties input hash without supported electrifications
 fn path_properties_input_hash(
     infra: i64,
-    infra_version: &String,
+    infra_version: i64,
     track_ranges: &[TrackRange],
 ) -> String {
     let osrd_version = get_app_version().unwrap_or_default();

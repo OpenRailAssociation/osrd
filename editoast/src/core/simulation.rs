@@ -468,7 +468,7 @@ pub struct SimulationPowerRestrictionRange {
 #[derivative(Hash)]
 pub struct SimulationRequest {
     pub infra: i64,
-    pub expected_version: String,
+    pub expected_version: i64,
     pub path: SimulationPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
@@ -488,7 +488,7 @@ impl SimulationRequest {
     pub fn compute_train_simulation_hash_with_versioning(
         &self,
         infra_id: i64,
-        infra_version: &String,
+        infra_version: i64,
     ) -> String {
         let osrd_version = get_app_version().unwrap_or_default();
         let mut hasher = DefaultHasher::new();

@@ -120,7 +120,7 @@ impl TrainSimulationDetails {
     pub fn compute_projection_hash_with_versioning(
         &self,
         infra_id: i64,
-        infra_version: &String,
+        infra_version: i64,
         path_projection_tracks: &[TrackRange],
         path_routes: &[Identifier],
         path_blocks: &[Identifier],
@@ -150,7 +150,7 @@ pub async fn compute_batch_signal_updates<'a>(
     }
     let request = SignalUpdatesRequest {
         infra: infra.id,
-        expected_version: infra.version.clone(),
+        expected_version: infra.version,
         track_section_ranges: path_track_ranges,
         routes: path_routes,
         blocks: path_blocks,
@@ -511,7 +511,7 @@ async fn extract_train_details(
 
         let hash = train_details.compute_projection_hash_with_versioning(
             infra.id,
-            &infra.version,
+            infra.version,
             path_track_ranges,
             path_routes,
             path_blocks,

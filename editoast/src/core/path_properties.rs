@@ -14,7 +14,7 @@ use crate::core::Json;
 pub struct PathPropertiesRequest<'a> {
     pub track_section_ranges: &'a Vec<TrackRange>,
     pub infra: i64,
-    pub expected_version: String,
+    pub expected_version: i64,
 }
 
 /// Properties along a path.

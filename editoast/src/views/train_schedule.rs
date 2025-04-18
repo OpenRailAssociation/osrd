@@ -458,7 +458,7 @@ pub async fn consist_train_simulation_batch(
 
         // Compute unique hash of the simulation input
         let simulation_hash = simulation_request
-            .compute_train_simulation_hash_with_versioning(infra.id, &infra.version);
+            .compute_train_simulation_hash_with_versioning(infra.id, infra.version);
         to_sim
             .entry(simulation_hash.clone())
             .or_default()
@@ -589,7 +589,7 @@ fn build_simulation_request(
 
     SimulationRequest {
         infra: infra.id,
-        expected_version: infra.version.clone(),
+        expected_version: infra.version,
         path,
         schedule,
         margins,

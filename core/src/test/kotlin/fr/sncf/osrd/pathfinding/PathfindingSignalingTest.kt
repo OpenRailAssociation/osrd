@@ -45,7 +45,7 @@ class PathfindingSignalingTest {
             rs.length,
             null,
             "unused_name",
-            "unused_version",
+            0,
             pathItems
         )
     }
