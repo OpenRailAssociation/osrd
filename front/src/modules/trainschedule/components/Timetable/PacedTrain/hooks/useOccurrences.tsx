@@ -20,6 +20,11 @@ const useOccurrences = ({
   arrivalTime,
   name,
   rollingStock,
+  stopsCount,
+  mechanicalEnergyConsumed,
+  pathLength,
+  duration,
+  isValid,
 }: PacedTrainWithDetails) => {
   const occurrencesState = useMemo<OccurrencesState>(() => {
     const occurrencesCount = getOccurrencesNb(paced);
@@ -37,7 +42,18 @@ const useOccurrences = ({
         trainName: computeOccurrenceName(name, i),
         rollingStock,
         startTime: occurrenceStartTime,
-        arrivalTime: occurrenceArrivalTime,
+        stopsCount,
+        ...(isValid
+          ? {
+              isValid: true,
+              arrivalTime: occurrenceArrivalTime,
+              pathLength,
+              mechanicalEnergyConsumed,
+              duration,
+            }
+          : {
+              isValid: false,
+            }),
       });
     }
     return { occurrencesCount, occurrences: computedOccurrences };

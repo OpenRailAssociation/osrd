@@ -89,9 +89,18 @@ export type Occurrence = {
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
-  arrivalTime: Date;
+  stopsCount: number;
   exceptionChangeGroups?: ExceptionChangeGroup[];
-};
+} & (
+  | {
+      isValid: true;
+      arrivalTime: Date;
+      pathLength: string;
+      mechanicalEnergyConsumed: number;
+      duration: Duration | null;
+    }
+  | { isValid: false }
+);
 
 export type ExceptionChangeGroup =
   | 'pathAndSchedule'

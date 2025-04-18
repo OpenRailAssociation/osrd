@@ -266,6 +266,7 @@ const PacedTrainItem = ({
       {pacedTrain.isValid && pacedTrain.duration && (
         <div className="more-info">
           <div className="more-info-left">
+            {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
             <span className="more-info-item">
               {t('timetable.stopsCount', { count: pacedTrain.stopsCount })}
             </span>
@@ -279,18 +280,19 @@ const PacedTrainItem = ({
           </div>
         </div>
       )}
-      <div className="occurrences">
-        {occurrences.map((occurrence, index) => (
-          <OccurrenceItem
-            occurrence={occurrence}
-            key={occurrence.id}
-            isSelected={selectedTrainId === occurrence.id}
-            nextOccurrence={occurrences[index + 1]}
-            isValid={pacedTrain.isValid}
-            selectOccurrence={selectOccurrence}
-          />
-        ))}
-      </div>
+      {isOccurrencesListOpen && (
+        <div className="occurrences">
+          {occurrences.map((occurrence, index) => (
+            <OccurrenceItem
+              occurrence={occurrence}
+              key={occurrence.id}
+              isSelected={selectedTrainId === occurrence.id}
+              nextOccurrence={occurrences[index + 1]}
+              selectOccurrence={selectOccurrence}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

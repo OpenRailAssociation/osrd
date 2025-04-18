@@ -47,6 +47,8 @@ export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' |
   return null;
 };
 
+export const isException = (occurrence: Occurrence) => !!getExceptionType(occurrence);
+
 export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItemWithTimetableId
 ): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrainId(timetableItem.id);

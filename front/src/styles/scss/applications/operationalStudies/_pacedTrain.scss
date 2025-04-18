@@ -126,17 +126,15 @@
 
     .occurrence-item {
       position: relative;
-      display: flex;
       width: 100%;
-      flex-wrap: nowrap;
       padding-left: 4px;
-      height: 32px;
-      align-items: center;
+      min-height: 32px;
       border-top: 1px solid var(--white100);
       border-bottom: 1px solid var(--black10);
       &:hover {
         background-color: var(--ambiantB10);
       }
+
       &.selected {
         background-color: var(--selection20);
       }
@@ -164,7 +162,10 @@
       &:first-child {
         border-top: none;
       }
-
+      .main {
+        display: flex;
+        padding-top: 4px;
+      }
       .occurrence-item-dot {
         position: relative;
         height: 24px;
@@ -243,6 +244,7 @@
 
       &-horaries {
         display: flex;
+        align-items: center;
         margin-left: auto;
         margin-right: 16px;
       }
@@ -300,15 +302,6 @@
   }
 
   &.closed {
-    .occurrences {
-      margin-top: 0;
-      margin-bottom: 0;
-      height: 0;
-      .occurrence-item {
-        display: none;
-      }
-    }
-
     .base-info.invalid {
       box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
     }
@@ -321,12 +314,6 @@
 
     .base-info {
       padding-bottom: 0;
-    }
-
-    &:not(.closed) {
-      .occurrences {
-        margin-bottom: 16px;
-      }
     }
   }
 }
