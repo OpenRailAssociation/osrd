@@ -92,7 +92,7 @@ const TrackOccupancyStandalone = ({
         {/* TODO: Bind actions? */}
         <KebabHorizontal />
       </div>
-      <div className="manchette-space-time-chart-wrapper" style={{ maxHeight: height }}>
+      <div className="ui-manchette-space-time-chart-wrapper" style={{ maxHeight: height }}>
         <div
           ref={manchetteWithSpaceTimeChartRef}
           className="manchette flex h-100"

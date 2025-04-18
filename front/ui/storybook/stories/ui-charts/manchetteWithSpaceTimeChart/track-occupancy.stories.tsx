@@ -116,7 +116,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
   });
 
   return (
-    <div className="manchette-space-time-chart-wrapper">
+    <div className="ui-manchette-space-time-chart-wrapper">
       <div
         ref={manchetteWithSpaceTimeChartRef}
         className="manchette flex"
