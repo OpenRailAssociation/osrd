@@ -5,6 +5,7 @@
 @import './button.css';
 @import './inputs/index.css';
 @import './select.css';
+
 /* REGULAR */
 
 @font-face {
@@ -49,8 +50,4 @@
   font-family: 'IBM Plex Mono', monospace;
   src: inline('fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
   font-weight: 600;
-}
-
-body {
-  font-size: 16px;
 }
