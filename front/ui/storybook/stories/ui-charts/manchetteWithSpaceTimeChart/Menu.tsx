@@ -15,7 +15,7 @@ type MenuProps = {
  * Example of waypoint menu that could be passed to the manchette as props
  */
 const Menu = ({ menuRef, items }: MenuProps) => (
-  <div ref={menuRef} className="menu">
+  <div ref={menuRef} className="ui-manchette-menu">
     {items.map(({ title, icon, onClick }) => (
       <button key={title} type="button" className="menu-item" onClick={onClick}>
         <span className="icon">{icon}</span>

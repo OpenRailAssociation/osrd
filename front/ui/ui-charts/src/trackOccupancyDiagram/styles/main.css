@@ -108,7 +108,7 @@
     display: none;
   }
 
-  .manchette-space-time-chart-wrapper {
+  .ui-manchette-space-time-chart-wrapper {
     overflow: auto;
     flex: 1;
   }
@@ -125,7 +125,7 @@
   .manchette {
     height: 100%;
   }
-  .manchette-container {
+  .ui-manchette-container {
     width: 200px;
     overflow: hidden;
     flex-shrink: 0;

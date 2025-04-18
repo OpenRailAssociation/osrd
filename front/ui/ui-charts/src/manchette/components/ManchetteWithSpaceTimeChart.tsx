@@ -49,7 +49,7 @@ const ManchetteWithSpaceTimeChart = ({
   });
 
   return (
-    <div className="manchette-space-time-chart-wrapper">
+    <div className="ui-manchette-space-time-chart-wrapper">
       <div
         className="header bg-ambientB-5 w-full border-b border-grey-30"
         style={{ height: '40px' }}

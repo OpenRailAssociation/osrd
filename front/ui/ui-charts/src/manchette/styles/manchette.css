@@ -1,4 +1,4 @@
-.manchette-container {
+.ui-manchette-container {
   .menu-wrapper {
     position: absolute;
     z-index: 12;
@@ -77,7 +77,7 @@
   }
 }
 
-.manchette-space-time-chart-wrapper {
+.ui-manchette-space-time-chart-wrapper {
   border-radius: 10px;
   box-shadow:
     0px 4px 9px rgba(0, 0, 0, 0.06),

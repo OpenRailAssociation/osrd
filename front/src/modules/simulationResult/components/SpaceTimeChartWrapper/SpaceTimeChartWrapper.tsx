@@ -463,7 +463,7 @@ const SpaceTimeChartWrapper = ({
   };
 
   return (
-    <div data-testid="manchette-space-time-chart" className="manchette-space-time-chart-wrapper">
+    <div data-testid="manchette-space-time-chart" className="ui-manchette-space-time-chart-wrapper">
       {waypointsPanelData &&
         waypointsPanelIsOpen &&
         createPortal(

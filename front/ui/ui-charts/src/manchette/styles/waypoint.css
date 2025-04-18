@@ -1,4 +1,4 @@
-.waypoint {
+.ui-manchette-container .waypoint {
   @apply text-grey-80;
   height: 2rem;
   line-height: 1.5rem;

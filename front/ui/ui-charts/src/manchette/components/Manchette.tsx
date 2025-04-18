@@ -35,7 +35,7 @@ const Manchette = ({
   children,
   height = INITIAL_OP_LIST_HEIGHT,
 }: ManchetteProps) => (
-  <div className="manchette-container">
+  <div className="ui-manchette-container">
     <div
       className="bg-white-100 border-r border-grey-30 relative"
       style={{ minHeight: `${height}px` }}

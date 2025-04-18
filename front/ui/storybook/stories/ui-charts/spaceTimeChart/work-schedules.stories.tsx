@@ -81,7 +81,10 @@ const WorkSchedulesWrapper = ({
     },
   ];
   return (
-    <div className="manchette-space-time-chart-wrapper" style={{ height: `${DEFAULT_HEIGHT}px` }}>
+    <div
+      className="ui-manchette-space-time-chart-wrapper"
+      style={{ height: `${DEFAULT_HEIGHT}px` }}
+    >
       <SpaceTimeChart
         className="h-full"
         spaceOrigin={0}
