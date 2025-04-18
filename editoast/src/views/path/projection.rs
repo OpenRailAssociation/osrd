@@ -28,7 +28,7 @@ impl<'a> PathProjection<'a> {
     /// Retrieve a track range from the path given the track section identifier.
     fn get_track_range(&self, track_section: &Identifier) -> Option<&TrackRange> {
         let index = *self.track_index.get(track_section)?;
-        Some(&self.path[index])
+        self.path.get(index)
     }
 
     /// Create a new projection from a path.
@@ -132,76 +132,218 @@ impl<'a> PathProjection<'a> {
         TrackLocationFromPath::Two(first_track_loc, second_track_loc)
     }
 
-    /// Returns a list of intersection ranges between `track_ranges` and `self`
+    /// Returns a list of intersection ranges on `self` for `track_ranges`.
     ///
-    /// Intersection ranges are a pair of start and end positions on the `track_ranges` path.
+    /// Intersection ranges are a pair of start and end positions on the `self` path.
     /// If there is no common track section range, the returned list is empty.
-    /// The positions in the intersection list are guaranteed to increase. In other words `list[n].0 < list[n].1 <= list[n+1].0 < list[n+1].1`
+    /// The positions in the intersection list are guaranteed to increase. In other words,
+    /// `list[n].0 < list[n].1 <= list[n+1].0 < list[n+1].1`.
     /// These positions can then be use in conjunction with [PathProjection::get_location].
+    ///
+    /// # Definition
+    ///
+    /// 'path' is about the track ranges of the `PathProjection` (or `self`)
+    /// 'track_ranges' is about the projected track ranges (the argument of the function)
+    ///
+    /// # Hypothesis
+    /// The path is supposed to be continuous and ordered. That means that 2
+    /// successive track ranges are linked in the path (there is no hole).
+    /// This hypothesis allow us to merge intersections that overlap on 2 (or more)
+    /// successive track ranges.
+    ///
+    /// In the following example:
+    /// - the first and second TRACK RANGES are continuous along the PATH: the first intersection is
+    ///   a merge between the overlap on A and the overlap on B.
+    /// - the first and the fourth TRACK RANGES overlap on A, so they're merged too.
+    /// - the fifth TRACK RANGE doesn't add anything that is not already covered by the second TRACK RANGE.
+    ///
+    ///                      A                 B                 C
+    ///              150           200 300           250 0               90
+    /// PATH         |---------------| |---------------| |----------------|
+    ///
+    ///                        A              B                   C
+    ///                    180     200 300        270        40       70
+    /// TRACK RANGES       |----1----| |------2-----|        |----3----|
+    ///                 170     190        290 280
+    ///                 |----4----|        |--5--|
+    ///
+    /// EVENTS          B  B      E  E B   B     E  E       B         E
+    /// (offsets)       20 30    40 50 50  60   70 80       140     170
+    /// (depth)         +1 +2    +1 +0 +1  +2   +1 +0       +1       +0
+    ///
+    ///                 20                         80       140     170
+    /// INTERSECTIONS   |---------------------------|       |---------|
+    ///
+    /// # Algorithm
+    ///
+    /// 1. for each track range of the path
+    ///   1. we find all the matching track range in `track_ranges`
+    ///   2. then we filter out those that do not overlap with the offsets
+    ///   3. then for each track range, we create a BEGIN and an END event
+    ///     - those events contain the offset from the start of `path`
+    ///   4. these events are collected into a vec
+    ///   5. the vec of events are ordered by the offset
+    ///   6. we extend the global list of events, with the list of event for the current track section
+    /// 2. we now have entire list of ordered event
+    /// 3. for each event
+    ///   - if the event is BEGIN, we remind the offset only if an intersection is not only started (see `depth`)
+    ///   - if the event is END, we create a new intersection, only if we don't have another one still opened (see `depth`)
+    #[tracing::instrument(level = "trace", skip(self), fields(path = ?self.path, track_ranges = ?track_ranges))]
     pub fn get_intersections(&self, track_ranges: &[TrackRange]) -> Vec<Intersection> {
-        // Handle the length computation in mm
-        let mut next_pos: u64 = 0;
-        let mut current_pos: u64;
-
-        // Memorize the index of a track section in a path
-        let mut path_track_index: usize = 0;
-        let mut intersection_builder = IntersectionBuilder::new();
-
-        for track_range in track_ranges {
-            // Handle current position
-            current_pos = next_pos;
-            next_pos += track_range.length();
-
-            // When a track is not part of self
-            let Some(proj_track_range) = self.get_track_range(&track_range.track_section) else {
-                // then we finish the computation of the current intersection
-                intersection_builder.finish();
-                continue;
-            };
-
-            // When a previous `track_range` (from maybe several iterations ago) left the `self` path,
-            // but the current `track_range` is back on it, then `dist > 1` which indicates a discontinuity in the resulting intersection list.
-            // So we need to close the previous intersection (if there is one => `start_intersection.is_some()`).
-            let current_path_index = *self
-                .track_index
-                .get(&proj_track_range.track_section)
-                .unwrap();
-
-            let dist = ((current_path_index as i64) - (path_track_index as i64)).abs();
-            if dist != 1 {
-                intersection_builder.finish();
-            }
-
-            path_track_index = current_path_index;
-
-            // Compute the intersection
-            let offset_begin = track_range.begin.max(proj_track_range.begin);
-            let offset_end = track_range.end.min(proj_track_range.end);
-            // Check that ranges intersect even if on the same track
-            if offset_begin >= offset_end {
-                intersection_builder.finish();
-                continue;
-            }
-
-            // Starting a new intersection
-            if intersection_builder.start.is_none() {
-                if track_range.direction == Direction::StartToStop {
-                    intersection_builder
-                        .start_new_intersection(current_pos + offset_begin - track_range.begin)
-                } else {
-                    intersection_builder
-                        .start_new_intersection(current_pos + track_range.end - offset_end)
+        #[derive(Debug)]
+        enum TrackRangeEvent {
+            Begin { offset: u64, is_exhaustive: bool },
+            End { offset: u64, is_exhaustive: bool },
+        }
+        impl TrackRangeEvent {
+            fn offset(&self) -> u64 {
+                match self {
+                    TrackRangeEvent::Begin { offset, .. } | TrackRangeEvent::End { offset, .. } => {
+                        *offset
+                    }
                 }
             }
-
-            // Keeping track of a end of intersection
-            intersection_builder.grow_intersection(offset_end - offset_begin);
         }
+        // Regroup projected track ranges per identifier (might be more than one per identifier)
+        let track_ranges_per_id = track_ranges.iter().fold(
+            HashMap::<&Identifier, Vec<&TrackRange>>::new(),
+            |mut map, track_range| {
+                map.entry(&track_range.track_section)
+                    .or_default()
+                    .push(track_range);
+                map
+            },
+        );
 
-        // Adding the last intersection
-        intersection_builder.finish();
+        let mut track_range_events: Vec<TrackRangeEvent> = vec![];
+        let mut current_position: u64 = 0;
+        tracing::trace!("creating global list of track range events");
+        for path_track_range in self.path {
+            let _iter_span = tracing::trace_span!(
+                "handling_path_track_range",
+                current_position,
+                ?path_track_range,
+            )
+            .entered();
+            let mut current_track_range_events: Vec<TrackRangeEvent> = track_ranges_per_id
+                .get(&path_track_range.track_section)
+                .into_iter()
+                .flatten()
+                .copied()
+                .filter_map(|track_range| {
+                    if let Some(Intersection { start, end }) = path_track_range.overlap(track_range)
+                    {
+                        tracing::trace!(start, end, "overlap");
+                        match path_track_range.direction {
+                            Direction::StartToStop => Some([
+                                // Express as offset from the beginning of 'path_track_range'
+                                TrackRangeEvent::Begin {
+                                    offset: current_position + (start - path_track_range.begin),
+                                    is_exhaustive: start == track_range.begin,
+                                },
+                                TrackRangeEvent::End {
+                                    offset: current_position + (end - path_track_range.begin),
+                                    is_exhaustive: end == track_range.end,
+                                },
+                            ]),
+                            Direction::StopToStart => Some([
+                                // Express as offset from the end of 'path_track_range'
+                                TrackRangeEvent::Begin {
+                                    offset: current_position + (path_track_range.end - end),
+                                    is_exhaustive: start == track_range.begin,
+                                },
+                                TrackRangeEvent::End {
+                                    offset: current_position + (path_track_range.end - start),
+                                    is_exhaustive: end == track_range.end,
+                                },
+                            ]),
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .collect();
+            current_track_range_events.sort_by_key(TrackRangeEvent::offset);
+            tracing::trace!(sorted_track_range_events = ?current_track_range_events);
+            track_range_events.extend(current_track_range_events);
 
-        intersection_builder.intersections
+            current_position += path_track_range.length();
+        }
+        tracing::trace!(?track_range_events);
+        let mut intersection_start = None;
+        let mut depth = 0_usize;
+        let mut intersections: Vec<Intersection> = vec![];
+        tracing::trace!("creating intersection from track range events");
+        for track_range_event in track_range_events {
+            let _iter_span = tracing::trace_span!(
+                "handling_track_range_event",
+                ?track_range_event,
+                ?intersection_start,
+                ?depth,
+                ?intersections,
+            )
+            .entered();
+            match track_range_event {
+                TrackRangeEvent::Begin {
+                    offset,
+                    is_exhaustive,
+                } => {
+                    if let Some(intersection) = intersections.pop() {
+                        // Here, we pop the last intersection to check
+                        // if its end has the same offset as the current
+                        // offset.
+                        // We also want to start a new intersection in case it's a non-bound event
+                        if !is_exhaustive || intersection.end != offset {
+                            // If no, we push back the intersection, and start
+                            // a new one
+                            intersections.push(intersection);
+                            intersection_start = intersection_start.or(Some(offset));
+                        } else {
+                            // If yes, we reinitialize `intersect` with the
+                            // start of the previous intersection
+                            intersection_start = Some(intersection.start);
+                        }
+                    } else {
+                        // No previous intersection, we initialize
+                        // `intersect` only if it's the first
+                        // begin event
+                        assert_eq!(intersection_start.is_none(), depth == 0);
+                        // Equivalent to
+                        // intersect = intersect.or(Some(offset));
+                        if depth == 0 {
+                            intersection_start = Some(offset);
+                        }
+                    }
+                    depth += 1;
+                }
+                TrackRangeEvent::End {
+                    offset,
+                    is_exhaustive,
+                } => {
+                    depth -= 1;
+                    if let Some(start) = intersection_start.take() {
+                        if depth == 0 {
+                            // Intersection are already offsets from the beginning of 'self'
+                            intersections.push(Intersection::from((start, offset)));
+                            intersection_start = None;
+                        } else {
+                            // If the depth is not 0, then we don't want to create
+                            // an intersection yet, so push back the value in `intersect`
+                            intersection_start = Some(start);
+                        }
+                    }
+                }
+            }
+            tracing::trace!(
+                ?intersection_start,
+                ?depth,
+                ?track_range_event,
+                ?intersections,
+                "end iter"
+            );
+        }
+        intersections
     }
 
     /// Returns the length of the path in mm
@@ -233,42 +375,6 @@ impl Intersection {
     }
     pub fn end(&self) -> u64 {
         self.end
-    }
-}
-struct IntersectionBuilder {
-    start: Option<u64>,
-    current: u64,
-    intersections: Vec<Intersection>,
-}
-
-impl IntersectionBuilder {
-    fn new() -> Self {
-        Self {
-            start: None,
-            current: 0,
-            intersections: vec![],
-        }
-    }
-
-    fn finish(&mut self) {
-        if let Some(start) = self.start {
-            assert_ne!(start, self.current);
-            self.intersections
-                .push(Intersection::from((start, self.current)));
-        }
-        self.start = None;
-    }
-
-    fn start_new_intersection(&mut self, start_pos: u64) {
-        assert!(self.start.is_none());
-        if self.start.is_none() {
-            self.start = Some(start_pos);
-            self.current = start_pos;
-        }
-    }
-
-    fn grow_intersection(&mut self, amount: u64) {
-        self.current += amount;
     }
 }
 
@@ -376,7 +482,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn projection_get_invalid_location() {
+    fn projection_get_out_of_bound_location() {
         let path = vec![TrackRange::new("A", 50, 100, Direction::StartToStop)];
 
         let projection = PathProjection::new(&path);
@@ -454,26 +560,31 @@ mod tests {
     // One track on the path
     #[case::one_path_different_track(&["A+0-100"], &["B+0-100"], &[])]
     #[case::one_path_no_overlap(&["A+0-100"], &["A+100-200"], &[])]
-    #[case::one_path_one_simple_intersection(&["A+120-140"], &["A+100-200"], &[(20, 40)])]
-    #[case::one_path_one_simple_intersection_reverse_on_track_ranges(&["A+140-120"], &["A+100-200"], &[(20, 40)])]
-    #[case::two_path_merged(&["A+180-200", "B+100-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::two_path_not_merged(&["A+180-220", "B+80-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::two_path_merged_with_extra_bounds(&["A+180-220", "B+80-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::three_path_with_hole(&["A+150-200", "C+100-150"], &["A+100-200", "B+100-200", "C+100-200"], &[(50, 100), (200, 250)])]
+    #[case::one_path_one_simple_intersection(&["A+100-200"], &["A+120-140"], &[(20, 40)])]
+    #[case::one_path_one_simple_intersection_reverse_on_track_ranges(&["A+100-200"], &["A+140-120"], &[(20, 40)])]
+    #[case::one_path_two_disjoint_tracks(&["A+100-200"], &["A+120-140", "A+160-180"], &[(20, 40), (60, 80)])]
+    #[case::one_path_over_the_external_bounds(&["A+100-200"], &["A+80-120", "A+180-220"], &[(0, 20), (80, 100)])]
+    #[case::one_path_merged(&["A+100-200"], &["A+130-150", "A+150-170"], &[(30, 70)])]
+    // Two tracks on the path
+    #[case::two_path_merged(&["A+100-200", "B+100-200"], &["A+180-200", "B+100-120"], &[(80, 120)])]
+    #[case::two_path_not_merged(&["A+100-200", "B+100-200"], &["A+180-220", "B+80-120"], &[(80, 100), (100, 120)])]
+    #[case::two_path_merged_with_extra_bounds(&["A+100-200", "B+100-200"], &["A+180-220", "B+80-120"], &[(80, 120)])]
+    // Three tracks on the path
+    #[case::three_path_with_hole(&["A+100-200", "B+100-200", "C+100-200"], &["A+150-200", "C+100-150"], &[(50, 100), (200, 250)])]
     // Complex paths with complex track ranges
     #[case::complex_path_one_intersection(
-        &["A+50-100", "B+200-0", "C+0-300", "D+250-120"],
         &["A+0-100", "B+200-0", "C+0-300", "D+250-0", "E+0-100"],
+        &["A+50-100", "B+200-0", "C+0-300", "D+250-120"],
         &[(50, 730)]
     )]
     #[case::complex_path_two_intersections(
-        &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &["X+0-100", "B+0-200", "C+200-150", "E+30-100", "Z+0-100"],
+        &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &[(100, 350), (350, 420)]
     )]
     #[case::complex_path_three_intersections(
-        &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &["A+0-100", "B+0-200", "X+0-100", "C+200-150", "Z+0-100", "E+30-100"],
+        &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &[(50, 300), (400, 450), (550, 620)]
     )]
     fn get_intersections(
@@ -486,13 +597,20 @@ mod tests {
         // and the offsets will be subtracted from the total length
         #[values(false, true)] toggle_track_ranges: bool,
     ) {
+        let _guard = tracing::dispatcher::set_default(
+            &tracing_subscriber::fmt::fmt()
+                .pretty()
+                .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
+                .with_span_events(tracing_subscriber::fmt::format::FmtSpan::ACTIVE)
+                .into(),
+        );
         let path = path.iter().map(|s| s.parse().unwrap());
         let path = if toggle_path {
             invert_track_ranges(path)
         } else {
             path.collect()
         };
-        let projection = PathProjection::new(&path);
+        let path_projection = PathProjection::new(&path);
 
         let track_ranges = track_ranges.iter().map(|s| s.parse().unwrap());
         let track_ranges = if toggle_track_ranges {
@@ -504,14 +622,13 @@ mod tests {
             .iter()
             .copied()
             .map(Intersection::from);
-        let expected_intersections = if toggle_track_ranges {
-            let length: u64 = track_ranges.iter().map(TrackRange::length).sum();
-            invert_intersections(expected_intersections, length)
+        let expected_intersections = if toggle_path {
+            invert_intersections(expected_intersections, path_projection.length)
         } else {
             expected_intersections.collect()
         };
 
-        let intersections = projection.get_intersections(&track_ranges);
+        let intersections = path_projection.get_intersections(&track_ranges);
 
         assert_eq!(intersections, expected_intersections);
     }

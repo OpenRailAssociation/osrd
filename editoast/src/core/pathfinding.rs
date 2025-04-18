@@ -9,6 +9,7 @@ use utoipa::ToSchema;
 
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
+use crate::views::path::projection::Intersection;
 
 editoast_common::schemas! {
     IncompatibleConstraints,
@@ -158,7 +159,7 @@ pub enum PathfindingNotFound {
 
 /// An oriented range on a track section.
 /// `begin` is always less than `end`.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Hash, PartialEq, Eq)]
 pub struct TrackRange {
     /// The track section identifier.
     #[schema(inline)]
@@ -173,11 +174,23 @@ pub struct TrackRange {
 
 impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
     fn from(value: editoast_schemas::infra::DirectionalTrackRange) -> Self {
+        assert!(value.begin <= value.end);
         TrackRange {
             track_section: value.track,
             begin: (value.begin * 1000.).round() as u64,
             end: (value.end * 1000.).round() as u64,
             direction: value.direction,
+        }
+    }
+}
+
+impl std::fmt::Debug for TrackRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "'{}+", self.track_section)?;
+        if matches!(self.direction, Direction::StartToStop) {
+            write!(f, "{}-{}'", self.begin, self.end)
+        } else {
+            write!(f, "{}-{}'", self.end, self.begin)
         }
     }
 }
@@ -202,6 +215,7 @@ impl std::str::FromStr for TrackRange {
         let Ok(end) = end.parse() else {
             return Err(format!("{end} in track range should be an integer"));
         };
+        assert!(begin != end); // Impossible to determine direction in this case
         let (begin, end, direction) = if begin < end {
             (begin, end, Direction::StartToStop)
         } else {
@@ -225,6 +239,7 @@ impl TrackRange {
         end: u64,
         direction: Direction,
     ) -> Self {
+        assert!(begin <= end);
         Self {
             track_section: track_section.as_ref().into(),
             begin,
@@ -262,6 +277,23 @@ impl TrackRange {
 
     pub fn length(&self) -> u64 {
         self.end - self.begin
+    }
+
+    // Check if the 2 track ranges overlap.
+    // Intersection have non-null length and are offsets from the beginning
+    // of the `self` track range.
+    pub fn overlap(&self, track_range: &TrackRange) -> Option<Intersection> {
+        if self.track_section != track_range.track_section {
+            return None;
+        }
+        let begin = std::cmp::max(self.begin, track_range.begin);
+        let end = std::cmp::min(self.end, track_range.end);
+        // In case of equality, we don't consider it an overlap
+        if begin < self.end && end > self.begin {
+            Some(Intersection::from((begin, end)))
+        } else {
+            None
+        }
     }
 }
 
