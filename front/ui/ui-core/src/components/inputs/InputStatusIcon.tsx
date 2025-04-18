@@ -14,7 +14,7 @@ type InputStatusIconProps = {
 const InputStatusIcon = ({ status, small, className }: InputStatusIconProps) => {
   const size = small ? 'sm' : 'lg';
   return (
-    <span className={cx('status-icon', className, status)}>
+    <span className={cx('ui-status-icon', className, status)}>
       {status === 'loading' && <Gear size={size} />}
       {status === 'info' && <Info variant="fill" size={size} />}
       {status === 'success' && <CheckCircle variant="fill" size={size} />}

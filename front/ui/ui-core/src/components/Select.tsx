@@ -63,7 +63,7 @@ const Select = <T,>({
     >
       <select
         id={id}
-        className={cx('osrd-ui-custom-select', statusWithMessage?.status, {
+        className={cx('ui-select', statusWithMessage?.status, {
           'placeholder-selected': placeholder && !selectedOption,
           small,
           'read-only': readOnly,

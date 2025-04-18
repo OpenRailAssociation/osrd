@@ -18,7 +18,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
           content: showPassword ? <EyeClosed /> : <Eye />,
           onClickCallback: () => toggleShowPassword(!showPassword),
         }}
-        inputFieldWrapperClassname={cx('password-input', inputFieldWrapperClassname)}
+        inputFieldWrapperClassname={cx('ui-password-input', inputFieldWrapperClassname)}
         ref={ref}
       />
     );

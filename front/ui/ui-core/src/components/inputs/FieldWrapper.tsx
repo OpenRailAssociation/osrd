@@ -48,7 +48,7 @@ const FieldWrapper = ({
   }
 
   return (
-    <div className={cx('feed-back', statusClassname, className, { small, narrow })}>
+    <div className={cx('ui-feedback', statusClassname, className, { small, narrow })}>
       <div className="custom-field">
         {/* LABEL AND HINT */}
         {label && (

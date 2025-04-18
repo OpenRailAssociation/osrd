@@ -101,7 +101,7 @@
       .error,
       .info {
         --field-wrapper-padding-bottom: 5px;
-        .status-message-wrapper-tooltip.tooltip-left {
+        .ui-status-message-wrapper-tooltip.tooltip-left {
           left: -4px;
         }
       }
@@ -128,7 +128,7 @@
           width: 127px;
         }
 
-        * > .base-label-wrapper > label {
+        * > .ui-label-wrapper > label {
           margin-bottom: 0;
         }
       }
@@ -150,12 +150,12 @@
         flex-direction: row;
         gap: 16px;
 
-        .date-picker {
+        .ui-date-picker {
           width: 144px;
         }
 
-        .time-picker,
-        .tolerance-picker {
+        .ui-time-picker,
+        .ui-tolerance-picker {
           width: 113px;
         }
       }

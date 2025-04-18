@@ -1,4 +1,4 @@
-.feed-back {
+.ui-feedback {
   --input-wrapper-padding: 3px;
   --field-wrapper-padding-bottom: 16px;
   --status-message-wrapper-tooltip--offset: 4px;
@@ -6,19 +6,19 @@
   border-radius: 0.5rem;
   padding: 0.625rem 0.813rem 1rem 1rem;
 
-  &.success:not(:has(.status-message-wrapper-tooltip)) {
+  &.success:not(:has(.ui-status-message-wrapper-tooltip)) {
     @apply bg-success-5;
   }
 
-  &.info:not(:has(.status-message-wrapper-tooltip)) {
+  &.info:not(:has(.ui-status-message-wrapper-tooltip)) {
     @apply bg-info-5;
   }
 
-  &.warning:not(:has(.status-message-wrapper-tooltip)) {
+  &.warning:not(:has(.ui-status-message-wrapper-tooltip)) {
     @apply bg-warning-5;
   }
 
-  &.error:not(:has(.status-message-wrapper-tooltip)) {
+  &.error:not(:has(.ui-status-message-wrapper-tooltip)) {
     @apply bg-error-5;
   }
 
@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
 
-      .status-icon.next-to-field {
+      .ui-status-icon.next-to-field {
         margin-left: 0.563rem;
       }
     }

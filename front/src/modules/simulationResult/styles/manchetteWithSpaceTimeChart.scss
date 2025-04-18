@@ -115,16 +115,16 @@
 
     section {
       // Correctly align the checkbox with the radio buttons
-      .custom-checkbox {
+      .ui-checkbox {
         margin-left: 4px;
       }
 
       // Override the default padding of the radio button wrapper
-      .radio-button-wrapper {
+      .ui-radio-button-wrapper {
         padding-left: 0;
         padding-block: 0;
 
-        .radio-button {
+        .ui-radio-button {
           padding-left: 8px;
 
           label {

@@ -38,7 +38,7 @@ const Button = ({
     <button
       {...btnAttrs}
       className={cx(
-        'button flex items-center',
+        'ui-button flex items-center',
         btnAttrs.className,
         variant.toLowerCase(),
         size.toLowerCase(),

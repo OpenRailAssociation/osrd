@@ -1,4 +1,4 @@
-.status-icon {
+.ui-status-icon {
   &.loading {
     animation: spin 3s linear infinite;
     @apply text-info-30;

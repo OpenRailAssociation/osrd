@@ -45,7 +45,7 @@ const RadioGroup = ({
   const statusClassname = statusWithMessage?.status ? { [statusWithMessage.status]: true } : {};
 
   return (
-    <div className={cx('radio-button-wrapper', statusClassname)}>
+    <div className={cx('ui-radio-button-wrapper', statusClassname)}>
       {label && (
         <label className="label">
           {required && (

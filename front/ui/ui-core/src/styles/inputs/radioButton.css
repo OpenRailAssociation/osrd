@@ -1,4 +1,4 @@
-.radio-button {
+.ui-radio-button {
   align-items: center;
   margin-bottom: 0.25rem;
   cursor: pointer;
@@ -164,17 +164,17 @@
       }
     }
   }
+
+  &:has(input[type='radio']:disabled) {
+    cursor: default;
+  }
+
+  &:has(.read-only) {
+    cursor: default;
+  }
 }
 
-.radio-button:has(input[type='radio']:disabled) {
-  cursor: default;
-}
-
-.radio-button:has(.read-only) {
-  cursor: default;
-}
-
-.radio-button-wrapper {
+.ui-radio-button-wrapper {
   position: relative;
   padding: 1rem 0.625rem;
   border-radius: 0.5rem;
@@ -247,7 +247,7 @@
     display: flex;
     margin-top: 1rem;
 
-    .status-icon {
+    .ui-status-icon {
       margin-right: 0.5625rem;
 
       &.info {

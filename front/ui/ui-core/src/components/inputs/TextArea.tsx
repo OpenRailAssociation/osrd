@@ -40,7 +40,7 @@ const TextArea = ({
       statusWithMessage={statusWithMessage}
       disabled={disabled}
       required={required}
-      className="text-area-field-wrapper"
+      className="ui-text-area-field-wrapper"
     >
       <div className={cx('text-area-wrapper', { 'focused-by-tab': isFocusByTab })}>
         {maxLength && (

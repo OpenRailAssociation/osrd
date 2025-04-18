@@ -35,7 +35,7 @@ const Checkbox = ({
     }
   };
   return (
-    <label className={cx('custom-checkbox', { small })}>
+    <label className={cx('ui-checkbox', { small })}>
       <input
         //read-only state is not working on checkbox as well explain here : https://stackoverflow.com/a/70375659
         className={cx({ 'read-only': readOnly })}

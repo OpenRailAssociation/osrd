@@ -1,16 +1,16 @@
 @-moz-document url-prefix() {
-  .time-picker .time-input {
+  .ui-time-picker .time-input {
     letter-spacing: -0.9px;
   }
 }
 
-.time-picker {
+.ui-time-picker {
   .time-input::-webkit-calendar-picker-indicator {
     background: none;
     display: none;
   }
 
-  .modal-ui-content {
+  .modal-content {
     padding: 4.563rem;
   }
 

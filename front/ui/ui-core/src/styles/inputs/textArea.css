@@ -1,7 +1,7 @@
-.text-area-field-wrapper {
+.ui-text-area-field-wrapper {
   .field-and-status-icon {
     align-items: flex-start !important;
-    .status-icon {
+    .ui-status-icon {
       margin-top: 0.688rem !important;
     }
   }

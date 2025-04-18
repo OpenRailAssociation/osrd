@@ -88,8 +88,8 @@
       display: flex;
       align-items: center;
 
-      * > .osrd-ui-custom-select,
-      * > .osrd-ui-custom-select:focus {
+      * > .ui-select,
+      * > .ui-select:focus {
         background-color: var(--white100);
         margin: 0 0 0 8px;
         width: 136px;
