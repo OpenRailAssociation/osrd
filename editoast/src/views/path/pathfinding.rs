@@ -83,7 +83,7 @@ impl PathfindingInput {
     ///   - The path entry is different
     ///   - The infrastructure has been modified
     ///   - The application has been updated (the algorithm or payloads may have changed)
-    fn compute_path_hash_with_versioning(&self, infra: i64, infra_version: &String) -> String {
+    fn compute_path_hash_with_versioning(&self, infra: i64, infra_version: i64) -> String {
         // Retrieve OSRD Version
         let osrd_version = get_app_version().unwrap_or_default();
         let mut hasher = DefaultHasher::new();
@@ -244,7 +244,7 @@ async fn pathfinding_blocks_batch(
         vec![PathfindingResult::Failure(PathfindingFailure::default()); pathfinding_inputs.len()];
     for (index, path_input) in pathfinding_inputs.iter().enumerate() {
         let pathfinding_hash =
-            path_input.compute_path_hash_with_versioning(infra.id, &infra.version);
+            path_input.compute_path_hash_with_versioning(infra.id, infra.version);
         hash_to_path_indexes
             .entry(pathfinding_hash.clone())
             .or_default()
@@ -365,7 +365,7 @@ fn build_pathfinding_request(
     // Create the pathfinding request
     Ok(PathfindingRequest {
         infra: infra.id,
-        expected_version: infra.version.clone(),
+        expected_version: infra.version,
         path_items: track_offsets,
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
         rolling_stock_is_thermal: pathfinding_input.rolling_stock_is_thermal,

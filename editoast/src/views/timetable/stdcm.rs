@@ -269,7 +269,7 @@ async fn stdcm(
     // 5. Build STDCM request
     let stdcm_request = crate::core::stdcm::Request {
         infra: infra.id,
-        expected_version: infra.version.clone(),
+        expected_version: infra.version,
         rolling_stock_loading_gauge: physics_consist_parameters.traction_engine.loading_gauge,
         rolling_stock_supported_signaling_systems: physics_consist_parameters
             .traction_engine

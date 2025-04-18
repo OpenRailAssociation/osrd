@@ -33,7 +33,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     timeout = null,
                     infra = "tiny_infra/infra.json",
-                    expectedVersion = "1",
+                    expectedVersion = 1,
                     pathItems = waypoints,
                 )
             )
@@ -93,7 +93,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     timeout = null,
                     infra = "tiny_infra/infra.json",
-                    expectedVersion = "1",
+                    expectedVersion = 1,
                     pathItems = waypoints,
                 )
             )
@@ -116,7 +116,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockMaximumSpeed = 320.0,
                     rollingStockLength = 0.0,
                     infra = "tiny_infra/infra.json",
-                    expectedVersion = "1",
+                    expectedVersion = 1,
                     pathItems = waypoints,
                 )
             )
@@ -164,7 +164,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockMaximumSpeed = 320.0,
                     rollingStockLength = 0.0,
                     infra = "small_infra/infra.json",
-                    expectedVersion = "1",
+                    expectedVersion = 1,
                     pathItems = waypoints,
                 )
             )
@@ -187,7 +187,7 @@ class PathfindingTest : ApiTest() {
                     rollingStockLength = 0.0,
                     timeout = null,
                     infra = "small_infra/infra.json",
-                    expectedVersion = "1",
+                    expectedVersion = 1,
                     pathItems = waypoints,
                 )
             )

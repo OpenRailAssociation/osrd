@@ -25,7 +25,7 @@ use super::build_train_requirements;
 pub(super) struct SimulationFailureHandler {
     pub(super) core_client: Arc<CoreClient>,
     pub(super) infra_id: i64,
-    pub(super) infra_version: String,
+    pub(super) infra_version: i64,
     pub(super) train_schedules: Vec<TrainSchedule>,
     pub(super) simulations: Vec<SimulationResponse>,
     pub(super) work_schedules: Vec<WorkSchedule>,

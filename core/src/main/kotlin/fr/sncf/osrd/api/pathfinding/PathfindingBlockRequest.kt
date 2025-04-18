@@ -19,7 +19,7 @@ class PathfindingBlockRequest(
     @Json(name = "rolling_stock_length") val rollingStockLength: Double,
     val timeout: Double?,
     val infra: String,
-    @Json(name = "expected_version") val expectedVersion: String,
+    @Json(name = "expected_version") val expectedVersion: Int?,
 
     // One set of location by step, each step must be reached in order
     @Json(name = "path_items") val pathItems: List<Collection<TrackLocation>>

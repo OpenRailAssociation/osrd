@@ -11,7 +11,7 @@ class PathPropRequest(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
     val infra: String,
     /** The expected infrastructure version */
-    @Json(name = "expected_version") val expectedVersion: String,
+    @Json(name = "expected_version") val expectedVersion: Int?,
 )
 
 val pathPropRequestAdapter: JsonAdapter<PathPropRequest> =

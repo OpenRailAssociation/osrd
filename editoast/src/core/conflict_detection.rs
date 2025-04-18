@@ -22,7 +22,7 @@ editoast_common::schemas! {
 pub struct ConflictDetectionRequest {
     pub infra: i64,
     /// Infrastructure expected version
-    pub expected_version: String,
+    pub expected_version: i64,
     /// List of requirements for each train schedule
     pub trains_requirements: HashMap<String, TrainRequirements>,
     /// List of work schedules

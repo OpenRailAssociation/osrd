@@ -45,10 +45,10 @@ public class InfraLoadEndpoint implements Take {
 
         /** Infra version */
         @Json(name = "expected_version")
-        public String expectedVersion;
+        public int expectedVersion;
 
         /** Create InfraLoadRequest */
-        public InfraLoadRequest(String infra, String expectedVersion) {
+        public InfraLoadRequest(String infra, int expectedVersion) {
             this.infra = infra;
             this.expectedVersion = expectedVersion;
         }

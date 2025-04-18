@@ -73,7 +73,7 @@ public class InfraManager extends APIClient implements InfraProvider {
         public InfraStatus lastStatus = null;
         public Throwable lastError = null;
         public FullInfra infra = null;
-        public String version = null;
+        public Integer version = null;
 
         void transitionTo(InfraStatus newStatus) {
             transitionTo(newStatus, null);
@@ -109,7 +109,7 @@ public class InfraManager extends APIClient implements InfraProvider {
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
             RJSInfra rjsInfra;
-            String version;
+            Integer version;
             try (var response = httpClient.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     if (response.code() != 404) {
@@ -124,9 +124,11 @@ public class InfraManager extends APIClient implements InfraProvider {
                 // Parse the response
                 logger.info("parsing the JSON of {}", request.url());
                 cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
-                version = response.header("x-infra-version");
-                assert version != null : "missing x-infra-version header in railjson response";
+                var version_header = response.header("x-infra-version");
+                assert version_header != null : "missing x-infra-version header in railjson response";
+                version = Integer.parseInt(version_header);
                 cacheEntry.version = version;
+                assert response.body() != null : "missing body in railjson response";
                 rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
@@ -161,7 +163,7 @@ public class InfraManager extends APIClient implements InfraProvider {
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public FullInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
+    public FullInfra load(String infraId, Integer expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws OSRDError, InterruptedException {
         try {
             infraCache.putIfAbsent(infraId, new InfraCacheEntry());
@@ -172,7 +174,8 @@ public class InfraManager extends APIClient implements InfraProvider {
                 // try downloading the infra again if:
                 //  - the existing cache entry hasn't reached a stable state
                 //  - we don't have the right version
-                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
+                var obsoleteVersion =
+                        expectedVersion != null && (cacheEntry.version == null || expectedVersion > cacheEntry.version);
                 if (!cacheEntry.status.isStable || obsoleteVersion)
                     return downloadInfra(cacheEntry, infraId, diagnosticRecorder);
 
@@ -199,7 +202,7 @@ public class InfraManager extends APIClient implements InfraProvider {
     }
 
     @Override
-    public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
+    public FullInfra getInfra(String infraId, Integer expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws OSRDError, InterruptedException {
         try {
             var cacheEntry = infraCache.get(infraId);

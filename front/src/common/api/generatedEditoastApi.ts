@@ -2228,13 +2228,13 @@ export type PaginationStats = {
 };
 export type Infra = {
   created: string;
-  generated_version: string | null;
+  generated_version: number | null;
   id: number;
   locked: boolean;
   modified: string;
   name: string;
   railjson_version: string;
-  version: string;
+  version: number;
 };
 export type InfraState =
   | 'NOT_LOADED'
@@ -3866,7 +3866,7 @@ export type WorkSchedule = {
 export type StdcmRequest = {
   comfort: Comfort;
   /** Infrastructure expected version */
-  expected_version: string;
+  expected_version: number;
   /** Infrastructure id */
   infra: number;
   margin?:

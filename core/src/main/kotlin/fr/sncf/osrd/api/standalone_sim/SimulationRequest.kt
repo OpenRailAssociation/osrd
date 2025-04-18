@@ -20,7 +20,7 @@ import fr.sncf.osrd.utils.units.TimeDelta
 
 class SimulationRequest(
     val infra: String,
-    @Json(name = "expected_version") val expectedVersion: String,
+    @Json(name = "expected_version") val expectedVersion: Int?,
     val path: SimulationPath,
     val schedule: List<SimulationScheduleItem>,
     val margins: RangeValues<MarginValue>,

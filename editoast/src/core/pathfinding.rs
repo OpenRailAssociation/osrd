@@ -27,7 +27,7 @@ pub struct PathfindingRequest {
     /// Infrastructure id
     pub infra: i64,
     /// Infrastructure expected version
-    pub expected_version: String,
+    pub expected_version: i64,
     /// List of waypoints. Each waypoint is a list of track offset.
     pub path_items: Vec<Vec<TrackOffset>>,
     /// The loading gauge of the rolling stock

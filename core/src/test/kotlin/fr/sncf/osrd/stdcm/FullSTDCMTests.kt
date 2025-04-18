@@ -415,7 +415,7 @@ fun makeRequirementsFromPath(
                 rollingStock.length,
                 null,
                 "",
-                "",
+                null,
                 listOf(startLocations, endLocations),
             )
         )

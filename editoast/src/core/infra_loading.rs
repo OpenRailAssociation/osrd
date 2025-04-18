@@ -6,7 +6,7 @@ use super::AsCoreRequest;
 #[derive(Debug, Serialize)]
 pub struct InfraLoadRequest {
     pub infra: i64,
-    pub expected_version: String,
+    pub expected_version: i64,
 }
 
 impl AsCoreRequest<()> for InfraLoadRequest {

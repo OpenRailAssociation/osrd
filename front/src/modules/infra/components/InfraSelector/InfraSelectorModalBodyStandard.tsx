@@ -29,8 +29,8 @@ type InfraSelectorModalBodyStandardProps = {
 
 // Test coherence between actual & generated version, eg. if editoast is up to date with data
 export function editoastUpToDateIndicator(
-  infraVersion: string,
-  infraGeneratedVersion: string | null
+  infraVersion: number,
+  infraGeneratedVersion: number | null
 ) {
   return (
     <span className={`ml-1 text-${infraVersion === infraGeneratedVersion ? 'success' : 'danger'}`}>

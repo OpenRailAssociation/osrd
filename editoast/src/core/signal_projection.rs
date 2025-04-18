@@ -16,7 +16,7 @@ pub struct SignalUpdatesRequest<'a> {
     /// Infrastructure id
     pub infra: i64,
     /// Infrastructure expected version
-    pub expected_version: String,
+    pub expected_version: i64,
     /// Path description as track ranges
     pub track_section_ranges: &'a Vec<TrackRange>,
     /// Path description as route ids

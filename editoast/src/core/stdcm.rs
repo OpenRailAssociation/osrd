@@ -29,7 +29,7 @@ pub struct Request {
     /// Infrastructure id
     pub infra: i64,
     /// Infrastructure expected version
-    pub expected_version: String,
+    pub expected_version: i64,
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
