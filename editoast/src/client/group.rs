@@ -5,6 +5,7 @@ use clap::Subcommand;
 
 use editoast_authz::StorageDriver;
 use editoast_authz::subject::GroupInfo;
+use editoast_authz::subject::UserInfo;
 
 use editoast_models::DbConnectionPoolV2;
 use futures::TryStreamExt;
@@ -21,6 +22,8 @@ pub enum GroupCommand {
     Create(CreateArgs),
     /// List groups
     List,
+    /// Get a group's informations
+    Info(InfoArgs),
     /// Add members to a group
     Include(IncludeArgs),
     /// Remove members to a group
@@ -29,6 +32,12 @@ pub enum GroupCommand {
 
 #[derive(Debug, Args)]
 pub struct CreateArgs {
+    /// Group name
+    name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct InfoArgs {
     /// Group name
     name: String,
 }
@@ -67,6 +76,36 @@ pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     }
     for (id, GroupInfo { name }) in &groups {
         println!("[{}]: {}", id, name);
+    }
+    Ok(())
+}
+
+pub async fn group_info(
+    InfoArgs { name }: InfoArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let driver = regulator.driver();
+    let Some(group_id) = driver.get_group_id(&name).await? else {
+        tracing::error!(name, "No such group");
+        return Ok(());
+    };
+    let Some(GroupInfo { name }) = driver.get_group_info(group_id).await? else {
+        tracing::error!(group.id = group_id, "No such group");
+        return Ok(());
+    };
+    let user_ids = regulator.group_members(group_id).await?;
+
+    println!("id     : {group_id}");
+    println!("name   : {name}");
+    println!("members:");
+    for user_id in user_ids {
+        let Some(UserInfo { identity, name }) = driver.get_user_info(user_id).await? else {
+            tracing::error!(user.id = user_id, "user not found, skipping it!");
+            continue;
+        };
+        println!("- [{user_id}] {identity} ({name})");
     }
     Ok(())
 }
