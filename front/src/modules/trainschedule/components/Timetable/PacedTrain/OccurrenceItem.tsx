@@ -1,14 +1,15 @@
 import { Moon } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { isOccurrenceId } from 'utils/trainId';
+import { isException, isOccurrenceId } from 'utils/trainId';
 
-import type { Occurrence } from '../types';
-import { roundAndFormatToNearestMinute } from '../utils';
 import OccurrenceIndicator from './OccurrenceIndicator';
+import type { Occurrence } from '../types';
+import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
 
 const ConsecutiveDayDateDisplay = ({
   departureTime,
@@ -30,7 +31,6 @@ type OccurrenceItemProps = {
   occurrence: Occurrence;
   isSelected: boolean;
   nextOccurrence?: Occurrence;
-  isValid?: boolean;
   selectOccurrence: (occurrence: TrainId) => void;
 };
 
@@ -38,11 +38,12 @@ const OccurrenceItem = ({
   occurrence,
   isSelected,
   nextOccurrence,
-  isValid,
   selectOccurrence,
 }: OccurrenceItemProps) => {
-  const { trainName, rollingStock, startTime, arrivalTime } = occurrence;
-  const isAfterMidnight = dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
+  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { trainName, rollingStock, startTime } = occurrence;
+  const isAfterMidnight =
+    occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
     ? dayjs(nextOccurrence.startTime).isAfter(occurrence.startTime, 'day')
     : false;
@@ -58,38 +59,59 @@ const OccurrenceItem = ({
       role="button"
       tabIndex={0}
       onClick={() => {
-        if (isOccurrenceId(occurrence.id)) {
-          selectOccurrence(occurrence.id);
-        }
+        if (isOccurrenceId(occurrence.id)) selectOccurrence(occurrence.id);
       }}
     >
-      <OccurrenceIndicator occurrence={occurrence} />
-
-      <div className="occurrence-item-name" title={trainName}>
-        {trainName}
-      </div>
-      <div className="rolling-stock">
-        {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
-      </div>
-
-      {isValid && (
-        <div className="occurrence-item-horaries">
-          <div className="status-icon after-midnight">
-            {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
-          </div>
-          <div className="occurrence-item-time departure-time">
-            {roundAndFormatToNearestMinute(startTime)}
-          </div>
-          <div className="occurrence-item-time arrival-time">
-            {roundAndFormatToNearestMinute(arrivalTime)}
-          </div>
+      <div className="main">
+        <OccurrenceIndicator occurrence={occurrence} />
+        <div className="occurrence-item-name">
+          <span title={trainName}>{trainName}</span>
         </div>
-      )}
-      {nextOccurrence && isNextAfterMidnight && (
-        <ConsecutiveDayDateDisplay
-          departureTime={startTime}
-          nextDepartureTime={nextOccurrence?.startTime}
-        />
+        <div className="rolling-stock">
+          {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
+        </div>
+
+        {occurrence.isValid && (
+          <div className="occurrence-item-horaries">
+            <div className="status-icon after-midnight">
+              {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
+            </div>
+            <div className="occurrence-item-time departure-time">
+              {roundAndFormatToNearestMinute(startTime)}
+            </div>
+            <div className="occurrence-item-time arrival-time">
+              {roundAndFormatToNearestMinute(occurrence.arrivalTime)}
+            </div>
+          </div>
+        )}
+        {nextOccurrence && isNextAfterMidnight && (
+          <ConsecutiveDayDateDisplay
+            departureTime={startTime}
+            nextDepartureTime={nextOccurrence?.startTime}
+          />
+        )}
+      </div>
+
+      {isException(occurrence) && occurrence.isValid && (
+        <div className="more-info">
+          <div className="more-info-left">
+            {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
+            <span className="more-info-item">
+              {t('timetable.stopsCount', { count: occurrence.stopsCount })}
+            </span>
+            <span className="more-info-item">{occurrence.pathLength}</span>
+            <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
+              {occurrence.mechanicalEnergyConsumed}&nbsp;kWh
+            </span>
+          </div>
+          {occurrence.duration && (
+            <div className="duration-time">
+              <span data-testid="train-duration">
+                {formatTrainDuration(occurrence.duration.ms)}
+              </span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
