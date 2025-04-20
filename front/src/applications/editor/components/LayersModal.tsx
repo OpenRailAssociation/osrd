@@ -194,7 +194,7 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
             id="speedLimitTag"
             className="form-control"
             value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
-            disabled={!isArray(allSpeedLimitTags) || !selectedLayers.has('speed_sections')}
+            disabled={!isArray(allSpeedLimitTags)}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               dispatch(
