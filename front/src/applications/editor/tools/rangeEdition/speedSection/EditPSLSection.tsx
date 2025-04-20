@@ -27,15 +27,14 @@ const getNewAnnouncementSign = (
   speedLimit: number
 ) => {
   const firstRange = trackRanges[0];
-  const speedInKmH = msToKmh(speedLimit);
-  const speedMultipleOfFive = Math.ceil(speedInKmH / 5) * 5;
+  const speedInKmH = Math.round(msToKmh(speedLimit));
   return {
     direction: 'START_TO_STOP',
     position: firstRange.begin,
     side: 'LEFT',
     track: firstRange.track,
     type: 'TIV_D',
-    value: `${speedMultipleOfFive}`,
+    value: `${speedInKmH}`,
     kp: '',
   } as PSLSign;
 };
