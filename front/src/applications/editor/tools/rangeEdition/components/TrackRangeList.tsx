@@ -68,7 +68,7 @@ const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
                   count: DEFAULT_DISPLAYED_RANGES_COUNT,
                 })
               : t('Editor.tools.range-edition.show-more-ranges', {
-                  count: displayedRanges.length - DEFAULT_DISPLAYED_RANGES_COUNT,
+                  count: ranges.length - DEFAULT_DISPLAYED_RANGES_COUNT,
                 })}
           </button>
         </div>
