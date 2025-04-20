@@ -46,7 +46,7 @@ const RollingStockEditorMetadataFormColumn = ({
             containerClass="col-6 px-0"
             id={property.title}
             name={property.title}
-            label={property.title in RS_REQUIRED_FIELDS ? `${t(titleKey)} *` : t(titleKey)}
+            label={property.title in RS_REQUIRED_FIELDS ? `${t(titleKey)}\u00a0*` : t(titleKey)}
             type={property.type}
             value={rollingStockValues[property.title] as string | number}
             onChange={(e) =>
@@ -222,7 +222,9 @@ const RollingStockEditorParameterFormColumn = ({
             id={property.title}
             name={property.title}
             label={
-              property.title in RS_REQUIRED_FIELDS ? `${t(property.title)} *` : t(property.title)
+              property.title in RS_REQUIRED_FIELDS
+                ? `${t(property.title)}\u00a0*`
+                : t(property.title)
             }
             type={property.type}
             step="any"
