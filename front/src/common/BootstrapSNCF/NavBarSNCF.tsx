@@ -104,7 +104,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
             titleContent={
-              <div className={cx(impersonatedUser ? 'impersonated-user' : 'd-none d-xl-block')}>
+              <div className={cx({ 'impersonated-user': impersonatedUser })}>
                 {impersonatedUser ? (
                   <Hubot size="lg" className="mr-xl-2" />
                 ) : (
