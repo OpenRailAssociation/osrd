@@ -58,7 +58,7 @@ futures-util = { version = "0.3.30" }
 geojson = { version = "0.24", default-features = false }
 geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
-itertools = "0.13.0"
+itertools = "0.14.0"
 mvt = "0.10.1"
 openssl = "0.10.72"
 opentelemetry = { version = "0.29.1", default-features = false, features = [

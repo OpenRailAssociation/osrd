@@ -1292,7 +1292,7 @@ dependencies = [
  "hostname",
  "image",
  "inventory",
- "itertools 0.13.0",
+ "itertools",
  "json-patch",
  "lapin",
  "lz4_flex",
@@ -1345,7 +1345,7 @@ dependencies = [
  "editoast_common",
  "fga",
  "futures 0.3.31",
- "itertools 0.13.0",
+ "itertools",
  "pretty_assertions",
  "serde",
  "stdext",
@@ -1421,7 +1421,7 @@ dependencies = [
 name = "editoast_osrdyne_client"
 version = "0.1.0"
 dependencies = [
- "itertools 0.13.0",
+ "itertools",
  "reqwest",
  "serde",
  "thiserror 2.0.12",
@@ -1456,7 +1456,7 @@ dependencies = [
 name = "editoast_search"
 version = "0.1.0"
 dependencies = [
- "itertools 0.13.0",
+ "itertools",
  "serde",
  "serde_json",
  "strum",
@@ -1616,7 +1616,7 @@ dependencies = [
  "fga_derive",
  "futures 0.3.31",
  "futures-util",
- "itertools 0.13.0",
+ "itertools",
  "reqwest",
  "serde",
  "serde_json",
@@ -2501,15 +2501,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5c177cff824ab21a6f41079a4c401241c4e8be14f316c4c6b07d5fca351c98d"
 dependencies = [
  "nom 8.0.0",
-]
-
-[[package]]
-name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
 ]
 
 [[package]]
@@ -3552,7 +3543,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.14.0",
+ "itertools",
  "proc-macro2",
  "quote",
  "syn 2.0.100",
