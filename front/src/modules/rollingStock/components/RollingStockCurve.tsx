@@ -274,7 +274,7 @@ export default function RollingStockCurve({
 
   useEffect(() => {
     if (curves && curvesVisibility) {
-      setCurvesToDisplay(curves.filter((curve) => curvesVisibility[curve.id]));
+      setCurvesToDisplay(curves.filter((curve) => curvesVisibility[curve.id] && curve.data.length));
     }
   }, [curves, curvesVisibility]);
 
@@ -328,48 +328,50 @@ export default function RollingStockCurve({
           showPowerRestriction={showPowerRestriction}
         />
       </div>
-      <ResponsiveLine
-        data={curvesToDisplay}
-        margin={{
-          top: 5,
-          right: 10,
-          bottom: 50,
-          left: 45,
-        }}
-        xScale={{
-          type: 'linear',
-          min: 'auto',
-          max: 'auto',
-        }}
-        yScale={{
-          type: 'linear',
-          min: 0,
-          max: 'auto',
-        }}
-        curve="linear"
-        axisTop={null}
-        axisRight={null}
-        axisBottom={{
-          tickSize: 5,
-          tickPadding: 5,
-          tickRotation: 0,
-          legend: 'km/h',
-          legendOffset: 36,
-          legendPosition: 'middle',
-        }}
-        axisLeft={{
-          tickSize: 5,
-          tickPadding: 5,
-          tickRotation: 0,
-          legend: 'kN',
-          legendOffset: -40,
-          legendPosition: 'middle',
-        }}
-        colors={{ datum: 'color' }}
-        lineWidth={2}
-        useMesh
-        tooltip={formatTooltip}
-      />
+      {curvesToDisplay.length > 0 && (
+        <ResponsiveLine
+          data={curvesToDisplay}
+          margin={{
+            top: 5,
+            right: 10,
+            bottom: 50,
+            left: 45,
+          }}
+          xScale={{
+            type: 'linear',
+            min: 'auto',
+            max: 'auto',
+          }}
+          yScale={{
+            type: 'linear',
+            min: 0,
+            max: 'auto',
+          }}
+          curve="linear"
+          axisTop={null}
+          axisRight={null}
+          axisBottom={{
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: 'km/h',
+            legendOffset: 36,
+            legendPosition: 'middle',
+          }}
+          axisLeft={{
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: 'kN',
+            legendOffset: -40,
+            legendPosition: 'middle',
+          }}
+          colors={{ datum: 'color' }}
+          lineWidth={2}
+          useMesh
+          tooltip={formatTooltip}
+        />
+      )}
     </div>
   );
 }
