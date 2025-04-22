@@ -10,7 +10,7 @@ Development will leverage preconstruct. **Documentation yet to come**.
 
 ## Publishing versions
 
-osrd-ui releases are published automatically together with OSRD releases. osrd-ui's latest version is always in sync with OSRD.
+TBD
 
 ### Implications
 

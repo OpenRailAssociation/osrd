@@ -1,8 +1,10 @@
 name: Publish osrd-ui on Release
 
 on:
-  release:
-    types: [released]
+  # TODO: re-enable automatic releases once we've decided on a scheme
+  workflow_dispatch:
+  #release:
+  #  types: [released]
 
 jobs:
   publish:
