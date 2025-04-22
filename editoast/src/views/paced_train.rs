@@ -6,7 +6,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::response::IntoResponse;
+use axum::http::StatusCode;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -118,7 +118,7 @@ async fn get_by_id(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
-) -> Result<impl IntoResponse> {
+) -> Result<Json<PacedTrainResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -154,7 +154,7 @@ async fn update_paced_train(
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
     Json(paced_train_base): Json<PacedTrain>,
-) -> Result<impl IntoResponse> {
+) -> Result<StatusCode> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -171,7 +171,7 @@ async fn update_paced_train(
         })
         .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Delete a paced train
@@ -189,7 +189,7 @@ async fn delete(
     Json(ListId {
         ids: paced_train_ids,
     }): Json<ListId>,
-) -> Result<impl IntoResponse> {
+) -> Result<StatusCode> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -204,7 +204,7 @@ async fn delete(
     })
     .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
