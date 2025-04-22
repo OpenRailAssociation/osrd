@@ -1,4 +1,8 @@
 {
+  "allowances": {
+    "gridMarginBeforeAfter": "Marge grille avant/après",
+    "standardAllowance": "Marge de régularité"
+  },
   "arriveAt": "Arriver à {{ time }}",
   "consist": {
     "compositionCode": "code de composition",

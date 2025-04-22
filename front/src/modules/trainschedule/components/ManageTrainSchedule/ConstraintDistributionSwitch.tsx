@@ -13,7 +13,7 @@ type Props = {
 const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
   const dispatch = useAppDispatch();
   const [constraint, setConstraint] = useState(constraintDistribution);
-  const { t } = useTranslation(['operationalStudies/allowances', 'translation']);
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
   useEffect(() => {
     dispatch(updateConstraintDistribution(constraint));
@@ -25,7 +25,7 @@ const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
         label: (
           <>
             <span className="bullet-linear">●</span>
-            {t('operationalStudies/allowances:distribution.linear')}
+            {t('allowances.distribution-linear')}
           </>
         ),
         value: 'STANDARD',
@@ -34,7 +34,7 @@ const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
         label: (
           <>
             <span className="bullet-mareco">●</span>
-            {t('operationalStudies/allowances:distribution.mareco')}
+            {t('allowances.distribution-mareco')}
           </>
         ),
         value: 'MARECO',
@@ -45,7 +45,7 @@ const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
 
   return (
     <div className="osrd-config-item-container d-flex align-items-center mb-2">
-      <span className="mr-2 text-muted">{t('standardAllowance')}</span>
+      <span className="mr-2 text-muted">{t('allowances.standard-allowance')}</span>
       <OptionsSNCF
         name="constraint-distribution-switch"
         onChange={(e) => setConstraint(e.target.value as Distribution)}

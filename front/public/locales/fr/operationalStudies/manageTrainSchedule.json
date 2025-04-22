@@ -5,6 +5,11 @@
   "addTrainSchedules": "Ajouter un ou plusieurs trains",
   "addVia": "Ajouter ce point de passage",
   "addVias": "Ajout de points de passage",
+  "allowances": {
+    "distribution-linear": "Linéaire",
+    "distribution-mareco": "Mareco",
+    "standard-allowance": "Marge de régularité"
+  },
   "anyTrack": "Toutes voies",
   "deleteRoute": "Supprimer l'itinéraire",
   "deleteVias": "Supprimer les étapes",

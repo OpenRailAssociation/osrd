@@ -5,6 +5,11 @@
   "addTrainSchedules": "Add one or several trains",
   "addVia": "Add this waypoint",
   "addVias": "Add waypoints",
+  "allowances": {
+    "distribution-linear": "Linear",
+    "distribution-mareco": "Mareco",
+    "standard-allowance": "Recovery margin"
+  },
   "anyTrack": "Any track",
   "deleteRoute": "Delete the route",
   "deleteVias": "Delete steps",
