@@ -9,6 +9,8 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -186,6 +188,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
      * Dijkstra algorithm by default, but can be changed to an A* by specifying a function to
      * estimate the remaining distance, using `setRemainingDistanceEstimator`
      */
+    @WithSpan(value = "Running core pathfinding algorithm", kind = SpanKind.SERVER)
     fun runPathfinding(
         starts: Collection<EdgeLocation<EdgeT, OffsetType>>,
         targetsOnEdges: List<TargetsOnEdge<EdgeT, OffsetType>>
