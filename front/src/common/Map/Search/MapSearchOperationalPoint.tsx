@@ -38,7 +38,7 @@ const MapSearchOperationalPoint = ({
   } = useSearchOperationalPoint();
   const dispatch = useAppDispatch();
 
-  const { t } = useTranslation(['map-search']);
+  const { t } = useTranslation('map-settings');
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
@@ -87,8 +87,8 @@ const MapSearchOperationalPoint = ({
           <InputSNCF
             id="map-search-operational-points"
             name="map-search-operational-points"
-            placeholder={t('placeholdername')}
-            title={t('placeholdername')}
+            placeholder={t('map-search.placeholder-name')}
+            title={t('map-search.placeholder-name')}
             inputProps={{ onKeyDown: handleKeyDown }}
             type="text"
             value={searchTerm}
@@ -110,7 +110,7 @@ const MapSearchOperationalPoint = ({
           <InputSNCF
             id="map-search-operational-points-ch-code"
             type="text"
-            placeholder={t('placeholderchcode')}
+            placeholder={t('map-search.placeholder-ch-code')}
             onChange={(e) => {
               setChCodeFilter(e.target.value || undefined);
             }}
@@ -126,7 +126,7 @@ const MapSearchOperationalPoint = ({
           <CheckboxRadioSNCF
             id="map-search-operational-points-main-only"
             type="checkbox"
-            label={t('mainOperationalPointsOnly')}
+            label={t('map-search.main-operational-points-only')}
             checked={mainOperationalPointsOnly}
             onChange={() => setMainOperationalPointsOnly(!mainOperationalPointsOnly)}
           />
@@ -134,8 +134,8 @@ const MapSearchOperationalPoint = ({
       </div>
       <h2 className="text-center mt-3">
         {searchResults.length > 100
-          ? t('resultsCountTooMuch')
-          : t('resultsCount', {
+          ? t('map-search.too-many-results')
+          : t('map-search.results-count', {
               count: searchResultsFilteredByCh.length,
             })}
       </h2>
