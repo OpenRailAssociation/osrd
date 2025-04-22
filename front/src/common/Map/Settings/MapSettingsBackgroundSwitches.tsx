@@ -42,7 +42,7 @@ const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps)
         checked={state}
       />
       <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
-      <span className="ml-2">{t(label)}</span>
+      <span className="ml-2">{t(`layers.${label}`)}</span>
     </div>
   );
 };

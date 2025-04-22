@@ -30,7 +30,7 @@ const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
         role="button"
         tabIndex={0}
       >
-        {t('map-settings:layers')}
+        {t('map-settings:map-layers')}
         <span className="ml-2">
           {showSettingsLayers ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
         </span>
@@ -42,7 +42,7 @@ const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
         role="button"
         tabIndex={0}
       >
-        {t('map-settings:speed_limits')}
+        {t('map-settings:layers.speed_limits')}
         <span className="ml-2">
           {showSettingsSpeedLimits ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
         </span>

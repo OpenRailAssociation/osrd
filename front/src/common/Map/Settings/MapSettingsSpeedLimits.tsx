@@ -32,7 +32,7 @@ type FormatSwitchProps = {
 
 const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'map-settings']);
+  const { t } = useTranslation(['map-settings', 'operationalStudies/manageTrainSchedule']);
   const { layersSettings } = useSelector(getMap);
   const infraID = useInfraID();
   const {
@@ -50,7 +50,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
   const allSpeedLimitTags = uniq(compact(concat(speedLimitTags, speedLimitsTagsByInfraId)));
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
-  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('noSpeedLimitByTag'), [t]);
 
   const setLayerSettings = (setting: keyof MapState['layersSettings']) => {
     dispatch(
@@ -81,7 +81,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
       dispatch(
         setFailure(
           castErrorToFailure(getSpeedLimitTagsError, {
-            name: t('errorMessages.unableToRetrieveTags'),
+            name: t('operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTags'),
           })
         )
       );
@@ -103,7 +103,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
           <span className={`px-1 d-flex align-items-center ${color}`}>
             <IconComponent />
           </span>
-          <small>{t(`map-settings:${name}`)}</small>
+          <small>{t(`layers.${name}`)}</small>
         </div>
       </div>
       <div className="col-lg-6 pt-1">
