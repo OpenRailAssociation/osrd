@@ -1,6 +1,5 @@
 {
   "cancel": "Abbrechen",
-  "closeOSRDConfig": "Schließen",
   "date": "DATUM",
   "datetime": "Datum & Uhrzeit",
   "download": "Herunterladen",
@@ -17,7 +16,6 @@
   },
   "failure": "Operation fehlgeschlagen",
   "from": "Herkunft",
-  "import": "Import",
   "importTimetable": "Fahrplan importieren",
   "inputPlaceholder": "Name, Dreierkürzel",
   "launchImport": "Import starten",

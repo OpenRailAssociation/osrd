@@ -1,6 +1,5 @@
 {
   "cancel": "Cancel",
-  "closeOSRDConfig": "Close",
   "date": "DATE",
   "datetime": "Date & time",
   "download": "Download",
@@ -17,7 +16,6 @@
   },
   "failure": "Operation failed",
   "from": "Origin",
-  "import": "Import",
   "importTimetable": "Import a timetable",
   "inputPlaceholder": "Name, trigram",
   "itemsFound_one": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(trainCount, {'count': {{trainsFound}}}) found",
@@ -43,7 +41,7 @@
   "to": "Destination",
   "trainCount_one": "1 train",
   "trainCount_other": "{{count}} trains",
-  "trainsCount_zero": "",
+  "trainCount_zero": "",
   "warningMessages": {
     "warning": "Warning",
     "warningFilteredStepImport": "Some invalid steps had to be removed to allow import for trains: {{trainNumbers}}"
