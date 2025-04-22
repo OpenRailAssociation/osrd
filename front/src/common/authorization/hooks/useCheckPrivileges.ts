@@ -1,12 +1,6 @@
-import { useMemo } from 'react';
+import { type ResourceType } from 'common/api/mock/mockEditoastApi';
 
-import { mockedEditoastApi, type ResourceType } from 'common/api/mock/mockEditoastApi';
-
-import useResourcesGrants from './useResourcesGrants';
-import checkPrivileges, {
-  type AuthorizationRequirement,
-  type CheckPrivilegesParams,
-} from '../utils/checkPrivileges';
+import type { AuthorizationRequirement } from '../utils/checkPrivileges';
 
 type UseCheckPrivilegesParams = {
   resourceId?: number;
@@ -24,28 +18,33 @@ type UseCheckPrivilegesParams = {
  *
  * @returns {boolean} - Returns true if the user has the required privileges, otherwise false.
  */
-const useCheckPrivileges = ({
-  resourceType,
-  resourceId,
-  requiredGrant,
-  requiredPrivileges = [],
-}: UseCheckPrivilegesParams) => {
-  const { data: availableGrantsOnResource } =
-    mockedEditoastApi.endpoints.getGrantsByResourceType.useQuery(resourceType);
 
-  const resourcePayload = useMemo(
-    () => (resourceId ? { [resourceType]: [resourceId] } : {}),
-    [resourceType, resourceId]
-  );
-  const { userResourcesGrants } = useResourcesGrants(resourcePayload);
+// TODO: Uncomment this function when permissions are fully implemented
+// const useCheckPrivileges = ({
+//   resourceType,
+//   resourceId,
+//   requiredGrant,
+//   requiredPrivileges = [],
+// }: UseCheckPrivilegesParams) => {
+//   const { data: availableGrantsOnResource } =
+//     mockedEditoastApi.endpoints.getGrantsByResourceType.useQuery(resourceType);
 
-  const userGrant = userResourcesGrants?.[resourceType]?.[0].grant || 'NONE';
+//   const resourcePayload = useMemo(
+//     () => (resourceId ? { [resourceType]: [resourceId] } : {}),
+//     [resourceType, resourceId]
+//   );
+//   const { userResourcesGrants } = useResourcesGrants(resourcePayload);
 
-  return checkPrivileges({
-    resourceGrants: availableGrantsOnResource as CheckPrivilegesParams['resourceGrants'],
-    userGrant,
-    ...(requiredGrant ? { requiredGrant } : { requiredPrivileges }),
-  });
-};
+//   const userGrant = userResourcesGrants?.[resourceType]?.[0].grant || 'NONE';
+
+//   return checkPrivileges({
+//     resourceGrants: availableGrantsOnResource as CheckPrivilegesParams['resourceGrants'],
+//     userGrant,
+//     ...(requiredGrant ? { requiredGrant } : { requiredPrivileges }),
+//   });
+// };
+
+// eslint-disable-next-line no-empty-pattern
+const useCheckPrivileges = ({}: UseCheckPrivilegesParams): boolean => true;
 
 export default useCheckPrivileges;
