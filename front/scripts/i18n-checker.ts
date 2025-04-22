@@ -67,6 +67,8 @@ const IGNORE_UNUSED: RegExp[] = [
   /operationalStudies\/.*deleteItems/,
   /operationalStudies\/.*confirmDeleteMessage/,
   /operationalStudies\/.*unselectAll/,
+  /operationalStudies\/home:createProject/,
+  /operationalStudies\/home:selectedProjects/,
   /operationalStudies\/project:createStudy/,
   /operationalStudies\/project:selectedStudies/,
   /operationalStudies\/study:createScenario/,
