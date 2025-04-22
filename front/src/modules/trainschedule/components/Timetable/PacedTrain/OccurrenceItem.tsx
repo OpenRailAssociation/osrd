@@ -1,11 +1,17 @@
-import { Moon } from '@osrd-project/ui-icons';
+import { useMemo, useRef, useState } from 'react';
+
+import { KebabHorizontal, Moon, Pencil, Play, Reverse, Skip, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
+import { GiPathDistance } from 'react-icons/gi';
 
+import AnchoredMenu from 'common/AnchoredMenu';
+import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { isException, isOccurrenceId } from 'utils/trainId';
+import { addElementAtIndex } from 'utils/array';
+import { getExceptionType, isException, isOccurrenceId } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import type { Occurrence } from '../types';
@@ -41,12 +47,90 @@ const OccurrenceItem = ({
   selectOccurrence,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
-  const { trainName, rollingStock, startTime } = occurrence;
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
   const isAfterMidnight =
     occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
     ? dayjs(nextOccurrence.startTime).isAfter(occurrence.startTime, 'day')
     : false;
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  // TODO exceptions : add action to menu buttons
+  const menuItems: Record<string, OSRDMenuItem> = {
+    disable: {
+      title: t('occurrenceMenu.disable'),
+      icon: <Skip />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    enable: {
+      title: t('occurrenceMenu.enable'),
+      icon: <Play />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    edit: {
+      title: t('occurrenceMenu.edit'),
+      icon: <Pencil />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    restore: {
+      title: t('occurrenceMenu.restore'),
+      icon: <Reverse />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    project: {
+      title: t('occurrenceMenu.project'),
+      icon: <GiPathDistance />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    delete: {
+      title: t('occurrenceMenu.delete'),
+      icon: <Trash />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+  };
+
+  // TODO exceptions : filter menu items depending on the occurrence status
+  const filteredMenuItems = useMemo(() => {
+    const { disable, enable, delete: deleteItem, edit, restore, project } = menuItems;
+
+    if (disabled) {
+      return [enable];
+    }
+    const items = [getExceptionType(occurrence) === 'added' ? deleteItem : disable, edit, project];
+
+    if ((exceptionChangeGroups?.length ?? 0) > 0) {
+      return addElementAtIndex(items, 2, restore);
+    }
+    return items;
+  }, [disabled, exceptionChangeGroups, id]);
+
+  const occurrenceMenu = AnchoredMenu({
+    children: isMenuOpen && (
+      <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="occurrence-menu" />
+    ),
+    anchorRef: menuButtonRef,
+    onDismiss: closeMenu,
+  });
 
   return (
     <div
@@ -59,7 +143,8 @@ const OccurrenceItem = ({
       role="button"
       tabIndex={0}
       onClick={() => {
-        if (isOccurrenceId(occurrence.id)) selectOccurrence(occurrence.id);
+        // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
+        if (isOccurrenceId(id)) selectOccurrence(id);
       }}
     >
       <div className="main">
@@ -112,6 +197,25 @@ const OccurrenceItem = ({
             </div>
           )}
         </div>
+      )}
+      <button
+        ref={menuButtonRef}
+        type="button"
+        className={cx('occurrence-item-menu-btn', {
+          'show-menu': isMenuOpen,
+        })}
+        title={t('occurrenceMenu.occurrenceMenuButton')}
+        onClick={() => setIsMenuOpen(true)}
+      >
+        <KebabHorizontal />
+      </button>
+      {occurrenceMenu}
+
+      {nextOccurrence && isNextAfterMidnight && (
+        <ConsecutiveDayDateDisplay
+          departureTime={startTime}
+          nextDepartureTime={nextOccurrence?.startTime}
+        />
       )}
     </div>
   );

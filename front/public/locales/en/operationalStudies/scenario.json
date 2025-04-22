@@ -31,6 +31,15 @@
   "microscopic": "MICRO",
   "moreDetails": "more details",
   "noElectricalProfileSet": "No electrical profile",
+  "occurrenceMenu": {
+    "delete": "Delete",
+    "disable": "Disable",
+    "edit": "Edit",
+    "enable": "Reactivate",
+    "occurrenceMenuButton": "Open occurrence menu",
+    "project": "Project",
+    "restore": "Restore to template"
+  },
   "pacedTrainAndTrainCount": "$t(pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }) and $t(trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) selected",
   "pacedTrainCountSelected_one": "1/{{totalCount}} service selected",
   "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",

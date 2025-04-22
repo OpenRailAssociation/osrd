@@ -720,10 +720,6 @@
               z-index: 1;
             }
           }
-
-          &:hover:not(.selected, .modified, .invalid) {
-            background-color: var(--ambientB15);
-          }
         }
 
         &:not(.with-details) {

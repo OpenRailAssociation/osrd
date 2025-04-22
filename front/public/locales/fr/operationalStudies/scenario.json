@@ -31,6 +31,15 @@
   "microscopic": "MICRO",
   "moreDetails": "plus de détails",
   "noElectricalProfileSet": "Pas de profil électrique",
+  "occurrenceMenu": {
+    "delete": "Supprimer",
+    "disable": "Désactiver",
+    "edit": "Modifier",
+    "enable": "Réactiver",
+    "occurrenceMenuButton": "Ouvrir le menu d'occurrence",
+    "project": "Projeter",
+    "restore": "Rétablir sur le modèle"
+  },
   "pacedTrainAndTrainCount": "$t(pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }) et $t(trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
   "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
   "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",
