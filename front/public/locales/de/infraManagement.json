@@ -14,13 +14,10 @@
   "addInfraJSON": "Ein Betriebsnetz aus einer RailJSON-Datei erstellen",
   "addInfraJSONFile": "RailJSON-Datei hinzufügen",
   "addInfraJSONFileRemove": "RailJSON-Import abbrechen",
-  "chooseInfrastructure": "Betriebsnetz auswählen",
   "createInfra": "Erstellen",
   "deleteConfirm": "Wollen Sie das Betriebsnetz löschen?",
   "errorMessages": {
     "noEmptyName": "Bitte geben Sie einen Namen ein",
-    "noExistingInfra": "Kein Betriebsnetz verfügbar",
-    "unableToRetrieveInfra": "Betriebsnetz kann nicht geladen werden",
     "unableToRetrieveInfraList": "Betriebsnetzliste kann nicht geladen werden"
   },
   "goToEditionMode": "Bearbeiten",
@@ -32,9 +29,7 @@
   "infrasFound_one": "Ein Betriebsnetz gefunden",
   "infrasFound_other": "{{count}} Betriebsnetze gefunden",
   "infrasFound_zero": "Kein Betriebsnetz gefunden",
-  "infrastructure": "Betriebsnetz",
   "locked": "Gesperrt",
   "no": "Nein",
-  "noInfra": "Bitte wählen Sie ein Betriebsnetz aus",
   "yes": "Ja"
 }
