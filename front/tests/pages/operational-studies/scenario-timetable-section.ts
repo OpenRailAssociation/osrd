@@ -1,7 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import OpSimulationResultPage from './simulation-results-page';
-import { EXPLICIT_UI_STABILITY_TIMEOUT } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type {
@@ -20,6 +19,8 @@ const enTranslations: ScenarioTranslations = readJsonFile<{
 const frTranslations: ScenarioTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
+
+const EXPLICIT_UI_STABILITY_TIMEOUT = 500;
 
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainsMessage: Locator;

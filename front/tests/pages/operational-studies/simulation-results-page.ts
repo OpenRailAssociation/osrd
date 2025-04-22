@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { SIMULATION_RESULT_TIMEOUT } from '../../assets/constants/timeout-const';
 import CommonPage from '../common-page';
 
 class OpSimulationResultPage extends CommonPage {
@@ -45,7 +44,6 @@ class OpSimulationResultPage extends CommonPage {
     await this.speedSpaceChartCloseSettingsButton.click();
   }
 
-  // Verify that simulation results are displayed
   async verifySimulationResultsVisibility(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
     await expect(this.manchetteSpaceTimeChart).toBeVisible();
@@ -56,7 +54,7 @@ class OpSimulationResultPage extends CommonPage {
   }
 
   async verifyTimesStopsDataSheetVisibility(): Promise<void> {
-    await expect(this.timesStopsDataSheet).toBeVisible({ timeout: SIMULATION_RESULT_TIMEOUT });
+    await expect(this.timesStopsDataSheet).toBeVisible();
     await this.timesStopsDataSheet.scrollIntoViewIfNeeded();
   }
 

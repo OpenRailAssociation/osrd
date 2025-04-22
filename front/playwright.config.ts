@@ -3,9 +3,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
 
-  timeout: 90_000,
+  timeout: 60_000,
   expect: {
-    toHaveScreenshot: { maxDiffPixelRatio: 0.02 },
+    toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
     timeout: 10_000,
   },
 
@@ -15,7 +15,7 @@ export default defineConfig({
   retries: 1,
   use: {
     navigationTimeout: 30_000,
-    actionTimeout: 15_000,
+    actionTimeout: 10_000,
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
     trace: 'on-first-retry',
     video: 'on-first-retry',

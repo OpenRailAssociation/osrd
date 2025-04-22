@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { STDCM_SIMULATION_TIMEOUT } from '../../assets/constants/timeout-const';
 import HomePage from '../home-page';
 
 class STDCMPage extends HomePage {
@@ -132,7 +131,7 @@ class STDCMPage extends HomePage {
 
   async verifyValidSimulationLaunch(): Promise<void> {
     await this.launchSimulation();
-    await this.simulationStatus.waitFor({ timeout: STDCM_SIMULATION_TIMEOUT });
+    await this.simulationStatus.waitFor();
   }
 
   async verifyInvalidSimulationLaunch(): Promise<void> {
