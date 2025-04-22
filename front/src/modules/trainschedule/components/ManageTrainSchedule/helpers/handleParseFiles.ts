@@ -112,7 +112,7 @@ export const processJsonFile = (
 
 export const processXmlFile = async (
   fileContent: string,
-  parseRailML: (xmlDoc: Document) => Promise<ImportedTrainSchedule[]>,
+  parseXML: (xmlDoc: Document) => Promise<ImportedTrainSchedule[]>,
   updateTrainSchedules: (schedules: ImportedTrainSchedule[]) => void
 ) => {
   const parser = new DOMParser();
@@ -123,7 +123,7 @@ export const processXmlFile = async (
     throw new Error('Invalid XML');
   }
 
-  const importedTrainSchedules = await parseRailML(xmlDoc);
+  const importedTrainSchedules = await parseXML(xmlDoc);
   if (importedTrainSchedules && importedTrainSchedules.length > 0) {
     updateTrainSchedules(importedTrainSchedules);
   }

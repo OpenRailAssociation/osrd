@@ -32,10 +32,6 @@ export const buildSteps = (
 
       const operationalPoint = cichDict[ocpRef];
 
-      if (!operationalPoint) {
-        return null; // Skip step if not found in the cichDict
-      }
-
       const currentArrivalSeconds = time2sec(arrivalTime);
 
       if (previousDepartureSeconds !== null && currentArrivalSeconds < previousDepartureSeconds) {

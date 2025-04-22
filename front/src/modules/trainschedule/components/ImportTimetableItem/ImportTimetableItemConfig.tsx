@@ -20,19 +20,28 @@ import StationSelector from 'modules/trainschedule/components/ImportTimetableIte
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
+import { Duration } from 'utils/duration';
 
 import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
+import { findMostFrequentScheduleInPacedTrain } from './helpers/findMostFrequentXmlSchedule';
 import {
   handleFileReadingError,
   processJsonFile,
   processXmlFile,
 } from '../ManageTrainSchedule/helpers/handleParseFiles';
 
+export type ImportedPacedTrainSchedule = ImportedTrainSchedule & {
+  paced: {
+    interval: string;
+    time_window: string;
+  };
+};
 interface ImportTimetableItemConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
   setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
+  setPacedTrainsXmlData: (pacedTrainsXmlData: ImportedPacedTrainSchedule[]) => void;
 }
 
 const ImportTimetableItemConfig = ({
@@ -40,6 +49,7 @@ const ImportTimetableItemConfig = ({
   setIsLoading,
   setTrainsJsonData,
   setTrainsXmlData,
+  setPacedTrainsXmlData,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -215,7 +225,7 @@ const ImportTimetableItemConfig = ({
     return updatedTrainSchedules;
   };
 
-  const parseRailML = async (xmlDoc: Document): Promise<ImportedTrainSchedule[]> => {
+  const parseXML = async (xmlDoc: Document): Promise<ImportedTrainSchedule[]> => {
     const trainSchedules: ImportedTrainSchedule[] = [];
 
     // Initialize localCichDict
@@ -237,6 +247,10 @@ const ImportTimetableItemConfig = ({
       });
     });
 
+    const pacedTrains: Record<string, ImportedTrainSchedule[]> = {};
+    const trainGroups = Array.from(xmlDoc.getElementsByTagName('trainGroup'));
+
+    const trainSchedulesByTrainPartId: Record<string, ImportedTrainSchedule> = {};
     const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
     const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
     const startDate = period ? period.getAttribute('startDate') : null;
@@ -248,9 +262,10 @@ const ImportTimetableItemConfig = ({
 
     trainParts.forEach((train) => {
       const trainNumber = train.getAttribute('id') || '';
+      const trainPartId = train.getAttribute('id') || '';
       const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
       const formationTT = train.getElementsByTagName('formationTT')[0];
-      const rollingStockViriato = formationTT?.getAttribute('formationRef');
+      const rollingStockXml = formationTT?.getAttribute('formationRef');
       const firstOcpTT = ocpSteps[0];
       const firstDepartureTime = firstOcpTT
         .getElementsByTagName('times')[0]
@@ -269,18 +284,144 @@ const ImportTimetableItemConfig = ({
 
       const trainSchedule: ImportedTrainSchedule = {
         trainNumber,
-        rollingStock: rollingStockViriato, // RollingStocks in viriato files rarely have the correct format
+        rollingStock: rollingStockXml, // RollingStocks in xml files rarely have the correct format
         departureTime: `${startDate} ${firstDepartureTimeformatted}`,
         arrivalTime: `${startDate} ${lastDepartureTimeformatted}`,
         departure: '', // Default for testing
         steps: adaptedSteps,
       };
-
+      trainSchedulesByTrainPartId[trainPartId] = trainSchedule;
       trainSchedules.push(trainSchedule);
     });
+
+    const trainElementsById: Record<string, Element> = {};
+    Array.from(xmlDoc.getElementsByTagName('train')).forEach((train) => {
+      const id = train.getAttribute('id');
+      if (id) {
+        trainElementsById[id] = train;
+      }
+    });
+
+    trainGroups.forEach((trainGroup) => {
+      const pacedTrainId = trainGroup.getAttribute('id')!;
+
+      const trainRefs = Array.from(trainGroup.getElementsByTagName('trainRef'));
+      pacedTrains[pacedTrainId] = trainRefs
+        .map((trainRef) => {
+          const trainId = trainRef.getAttribute('ref');
+          const trainElement = trainId ? trainElementsById[trainId] : undefined;
+
+          const trainPartRef = trainElement?.querySelector('trainPartRef')?.getAttribute('ref');
+
+          return trainPartRef ? trainSchedulesByTrainPartId[trainPartRef] : undefined;
+        })
+        .filter((schedule) => schedule !== undefined);
+    });
+
+    const pacedTrainMostFrequentSchedules: Record<
+      string,
+      { schedule: ImportedTrainSchedule | null; count: number }
+    > = {};
+
+    Object.entries(pacedTrains).forEach(([pacedTrainId, schedules]) => {
+      const { mostFrequent, highestCount } = findMostFrequentScheduleInPacedTrain(schedules);
+      pacedTrainMostFrequentSchedules[pacedTrainId] = {
+        schedule: mostFrequent,
+        count: highestCount,
+      };
+    });
+
+    const getMostFrequentInterval = (schedules: ImportedTrainSchedule[]): Duration => {
+      const departureTimes = schedules
+        .map((s) => new Date(s.departureTime))
+        .sort((a, b) => a.getTime() - b.getTime());
+
+      const intervalsCount = new Map<number, number>();
+
+      for (let i = 1; i < departureTimes.length; i += 1) {
+        const interval = Duration.subtractDate(departureTimes[i], departureTimes[i - 1]);
+        const rawMin = interval.total('minute');
+
+        let roundedMin: number;
+        if (rawMin > 5) {
+          roundedMin = Math.round(rawMin / 10) * 10;
+        } else if (rawMin >= 1) {
+          roundedMin = Math.round(rawMin);
+        } else {
+          roundedMin = 1;
+        }
+
+        intervalsCount.set(roundedMin, (intervalsCount.get(roundedMin) || 0) + 1);
+      }
+
+      let mostFrequentRoundedMin = 0;
+      let maxCount = 0;
+
+      for (const [minutes, count] of intervalsCount.entries()) {
+        if (count > maxCount) {
+          mostFrequentRoundedMin = minutes;
+          maxCount = count;
+        } else if (count === maxCount && minutes < mostFrequentRoundedMin) {
+          // we take smaller interval in case of tie
+          mostFrequentRoundedMin = minutes;
+        }
+      }
+
+      return new Duration({ minutes: mostFrequentRoundedMin });
+    };
+
+    const buildPacedTrain = (
+      pacedTrainId: string,
+      pacedTrainSchedules: ImportedTrainSchedule[]
+    ): ImportedPacedTrainSchedule | null => {
+      if (pacedTrainSchedules.length < 2) {
+        console.warn('Not enough schedules to build a paced train');
+        return null;
+      }
+
+      const sortedSchedules = pacedTrainSchedules.sort(
+        (a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime()
+      );
+
+      const departureDates = sortedSchedules.map((s) => new Date(s.departureTime));
+      const intervalDuration = getMostFrequentInterval(pacedTrainSchedules);
+
+      const totalDuration = Duration.subtractDate(
+        departureDates[departureDates.length - 1],
+        departureDates[0]
+      ).add(intervalDuration);
+
+      return {
+        ...sortedSchedules[0],
+        trainNumber: pacedTrainId,
+        paced: {
+          interval: intervalDuration.toISOString(),
+          time_window: totalDuration.toISOString(),
+        },
+      };
+    };
+
+    const importedPacedTrains: ImportedPacedTrainSchedule[] = Object.entries(pacedTrains)
+      .map(([pacedTrainId, pacedTrainSchedules]) =>
+        buildPacedTrain(pacedTrainId, pacedTrainSchedules)
+      )
+      .filter((pacedTrain) => pacedTrain !== null);
+
+    setPacedTrainsXmlData(importedPacedTrains);
+
     const trains = Array.from(xmlDoc.getElementsByTagName('train'));
     const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
-    setTrainsXmlData(updatedTrainSchedules);
+    const trainSchedulesInPacedTrain = new Set(
+      Object.values(pacedTrains)
+        .flat()
+        .map((schedule) => schedule.trainNumber)
+    );
+
+    const singleTrainSchedules = trainSchedules.filter(
+      (schedule) => !trainSchedulesInPacedTrain.has(schedule.trainNumber)
+    );
+    setTrainsXmlData(singleTrainSchedules);
+
     return updatedTrainSchedules;
   };
 
@@ -311,7 +452,7 @@ const ImportTimetableItemConfig = ({
 
     // try to parse the file as an XML file
     try {
-      await processXmlFile(fileContent, parseRailML, updateTrainSchedules);
+      await processXmlFile(fileContent, parseXML, updateTrainSchedules);
     } catch {
       // the file is not supported or is an invalid XML file
       dispatch(
