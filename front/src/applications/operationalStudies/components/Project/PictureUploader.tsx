@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 
 import { Image, XCircle } from '@osrd-project/ui-icons';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -29,7 +30,7 @@ type PicturePlaceholderButtonsProps = {
 
 const IMAGE_MAX_SIZE = 2 * 1024 * 1024; // 2MiB
 
-function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
+function displayNoImageMessages(isValid: boolean, t: TFunction<'operationalStudies/project'>) {
   return (
     <>
       <Image />
