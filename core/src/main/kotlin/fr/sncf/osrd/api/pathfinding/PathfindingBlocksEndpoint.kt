@@ -26,6 +26,8 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -71,6 +73,7 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
         return run(request)
     }
 
+    @WithSpan(value = "Processing pathfinding request", kind = SpanKind.SERVER)
     fun run(request: PathfindingBlockRequest): Response {
         val recorder = DiagnosticRecorderImpl(false)
         try {
@@ -268,6 +271,7 @@ private fun getTargetsOnEdges(
     return targetsOnEdges
 }
 
+@WithSpan(value = "Identifying why no path was found")
 private fun throwNoPathFoundException(
     infra: FullInfra,
     waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
@@ -407,6 +411,7 @@ private fun getBlockOffset(
     )
 }
 
+@WithSpan(value = "Building heuristic")
 private fun makeHeuristicsForPathfindingEdges(
     infra: FullInfra,
     waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>,
