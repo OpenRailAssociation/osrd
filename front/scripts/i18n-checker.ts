@@ -51,6 +51,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
 
+  // Map
+  /map-settings:layers\..*/,
+  /map-settings:smoothTravel/,
+
   // Import train schedule
   /operationalStudies\/importTimetableItem:errorMessages.errorEmptyFile/,
   /operationalStudies\/importTimetableItem:pacedTrainCount/,
