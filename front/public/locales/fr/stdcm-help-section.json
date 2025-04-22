@@ -116,7 +116,39 @@
           "content": [
             {
               "type": "text",
-              "value": "Indiquez le tonnage total de votre convoi (en tonnes), la longueur totale (en mètres), et la vitesse maximale (en km/h)."
+              "value": "Indiquez :"
+            },
+            {
+              "items": [
+                {
+                  "value": "le tonnage total de votre convoi engin moteur compris (en tonnes)"
+                },
+                {
+                  "value": "la longueur totale engin moteur compris (en mètres)"
+                },
+                {
+                  "value": "la vitesse maximale (en km/h), appliquée sur l'ensemble du parcours"
+                }
+              ],
+              "type": "list"
+            },
+            {
+              "type": "text",
+              "value": "Dès lors qu'on renseigne un engin de traction, l'application LMR affiche par défaut :"
+            },
+            {
+              "items": [
+                {
+                  "value": "le tonnage de l'engin moteur"
+                },
+                {
+                  "value": "la longueur forfaitaire de l'engin moteur"
+                },
+                {
+                  "value": "la vitesse maximale au regard de la composition : il est possible de renseigner une valeur moindre que celle pré-remplie à partir du code composition"
+                }
+              ],
+              "type": "list"
             }
           ],
           "title": "Tonnage, longueur, vitesse max."

@@ -107,7 +107,39 @@
           "content": [
             {
               "type": "text",
-              "value": "Indicate the total weight of your consist (in tons), the total length (in meters) and the maximum speed (in km/h)."
+              "value": "Indicate:"
+            },
+            {
+              "items": [
+                {
+                  "value": "total tonnage of your consist, including engine (in tons)"
+                },
+                {
+                  "value": "total length including engine (in meters)"
+                },
+                {
+                  "value": "maximum speed (in km/h), applied over the entire route"
+                }
+              ],
+              "type": "list"
+            },
+            {
+              "type": "text",
+              "value": "As soon as a traction unit is entered, the LMR application displays by default:"
+            },
+            {
+              "items": [
+                {
+                  "value": "engine tonnage"
+                },
+                {
+                  "value": "the standard length of the engine"
+                },
+                {
+                  "value": "maximum speed in relation to composition: it is possible to enter a lower value than the one pre-filled using the composition code"
+                }
+              ],
+              "type": "list"
             }
           ],
           "title": "Weight, length, max. speed"
