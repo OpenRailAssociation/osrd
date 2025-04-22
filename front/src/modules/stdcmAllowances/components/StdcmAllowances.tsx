@@ -18,7 +18,7 @@ import { Duration } from 'utils/duration';
 import { convertInputStringToNumber } from 'utils/strings';
 
 const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
-  const { t } = useTranslation('allowances');
+  const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const { gridMarginAfter, gridMarginBefore, standardAllowance } = useSelector(getMargins);
   const standardAllowanceTypes = [
@@ -44,7 +44,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
   return (
     <div className="d-flex mb-2 osrd-config-item-container px-0">
       <div className="d-flex flex-column">
-        <span className="ml-1">{t('allowances:gridMarginBeforeAfter')}</span>
+        <span className="ml-1">{t('allowances.gridMarginBeforeAfter')}</span>
         <div className="d-flex">
           <div className="col-6">
             <InputSNCF
@@ -89,7 +89,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
         </div>
       </div>
       <div className="col-6">
-        <label htmlFor="standardAllowanceTypeSelect">{t('allowances:standardAllowance')}</label>
+        <label htmlFor="standardAllowanceTypeSelect">{t('allowances.standardAllowance')}</label>
         <InputGroupSNCF
           id="standardAllowanceTypeSelect"
           options={standardAllowanceTypes}

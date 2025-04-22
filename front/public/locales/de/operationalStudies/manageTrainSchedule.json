@@ -5,6 +5,11 @@
   "addTrainSchedules": "Einen oder mehrere Züge hinzufügen",
   "addVia": "Wegepunkt hinzufügen",
   "addVias": "Wegepunkte hinzufügen",
+  "allowances": {
+    "distribution-linear": "Linear",
+    "distribution-mareco": "Mareco",
+    "standard-allowance": "Zeitpuffer wiederherstellen"
+  },
   "anyTrack": "Beliebige Strecke",
   "deleteRoute": "Route entfernen",
   "deleteVias": "Wegepunkte entfernen",

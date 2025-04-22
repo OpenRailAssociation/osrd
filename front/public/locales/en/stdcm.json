@@ -1,4 +1,8 @@
 {
+  "allowances": {
+    "gridMarginBeforeAfter": "Timetable margin before/after",
+    "standardAllowance": "Recovery margin"
+  },
   "arriveAt": "Arrive at {{ time }}",
   "consist": {
     "compositionCode": "Composition code",
