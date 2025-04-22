@@ -134,7 +134,7 @@ const SimulationReportSheetScenario = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableOpWidth}>
                           <TD style={styles.convoyAndRoute.stopTableOpColumn}>
-                            {step.name || 'Unknown'}
+                            {step.name || t('unknown')}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableChWidth}>
@@ -251,7 +251,7 @@ const SimulationReportSheetScenario = ({
                       >
                         {isNotExtremity && !isWaypoint && step.name === prevStep.name
                           ? '='
-                          : step.name || 'Unknown'}
+                          : step.name || t('unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>
