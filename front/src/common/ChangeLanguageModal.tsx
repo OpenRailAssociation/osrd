@@ -1,7 +1,7 @@
 // React Component displaying different applications versions and license attributions
 // List of applications : Editoast, Core, Api
 
-import { DE, ES, FR, GB, IT, JP, RU, UA } from 'country-flag-icons/react/3x2';
+import { DE, FR, GB } from 'country-flag-icons/react/3x2';
 import { useTranslation } from 'react-i18next';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -26,18 +26,8 @@ const SortedLanguages = () => {
         return <DE title={title} />;
       case 'en':
         return <GB title={title} />;
-      case 'es':
-        return <ES title={title} />;
       case 'fr':
         return <FR title={title} />;
-      case 'it':
-        return <IT title={title} />;
-      case 'jp':
-        return <JP title={title} />;
-      case 'ru':
-        return <RU title={title} />;
-      case 'uk':
-        return <UA title={title} />;
       default:
         return null;
     }
