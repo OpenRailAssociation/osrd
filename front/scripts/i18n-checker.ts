@@ -1,13 +1,13 @@
-import { mkdtemp, readFile } from 'node:fs/promises';
-import os from 'node:os';
-import type { Transform } from 'node:stream';
+/* eslint-disable no-console */
+
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { glob } from 'glob';
-// TODO : remove eslint-disable once https://github.com/i18next/i18next-parser/issues/1000 gets fixed
-// eslint-disable-next-line import/no-unresolved
-import * as I18nextParser from 'i18next-parser';
 import { jsonKeyPathList } from 'json-key-path-list';
-import vfs from 'vinyl-fs';
+import * as ts from 'typescript';
+
+const LANGUAGES = ['en', 'fr'];
 
 const IGNORE_MISSING: RegExp[] = [
   // key used by a t function in modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig.ts
@@ -33,6 +33,7 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:workConflict/,
   /translation:workConflictSameDay/,
 ];
+
 const IGNORE_UNUSED: RegExp[] = [
   /.*-generated$/,
   /.*\.generated\..*$/,
@@ -171,98 +172,209 @@ async function getLocalesKeys(localePath: string, locale: string): Promise<Set<s
   return new Set(allKeys);
 }
 
-// TODO : remove I18nextParser type redefinition once https://github.com/i18next/i18next-parser/issues/1000 gets fixed
-interface I18nextParser {
-  gulp: { new (options: { locales: string[]; output: string }): Transform };
-}
-
 /**
- * Scan the source code and generate a locale folder structure
- * in a temp folder, with all the i18n key found.
- *
- * @returns The location of the temp folder
+ * An i18n syntax error, with file and line position.
  */
-async function scanCode(): Promise<string> {
-  const tempDir = await mkdtemp(`${os.tmpdir()}/osrd-i18n-`);
-  return new Promise((resolve, reject) => {
-    const stream = vfs
-      .src(`${process.cwd()}/src/**/*.{ts,tsx}`)
-      .pipe(
-        // eslint-disable-next-line new-cap
-        new (I18nextParser as unknown as I18nextParser).gulp({
-          locales: ['dev'],
-          output: '$LOCALE/$NAMESPACE.json',
-        })
-      )
-      .pipe(vfs.dest(tempDir));
-
-    stream.on('finish', () => resolve(tempDir));
-    stream.on('error', (e: Error) => reject(e));
-  });
-}
-
-/**
- * The script execution
- */
-async function run() {
-  try {
-    const keysByLocale = await Promise.all(
-      ['fr', 'en'].map(async (locale) => {
-        const keys = await getLocalesKeys(`${process.cwd()}/public/locales`, locale);
-        return { locale, keys };
-      })
-    );
-
-    const scannedLocalePath = await scanCode();
-    const scannedNamespacedKeys = await getLocalesKeys(scannedLocalePath, 'dev');
-
-    // Search for unused keys
-    const unusedKeys: Array<{ locale: string; key: string }> = [];
-    keysByLocale.forEach(({ locale, keys }) => {
-      keys.forEach((key) => {
-        if (
-          !scannedNamespacedKeys.has(key) &&
-          IGNORE_UNUSED.every((pattern) => !key.match(pattern))
-        ) {
-          unusedKeys.push({ locale, key });
-        }
-      });
-    });
-
-    // Search for missing traduction
-    const missingKeys: Array<{ locale: string; key: string }> = [];
-    scannedNamespacedKeys.forEach((key) => {
-      if (IGNORE_MISSING.every((pattern) => !key.match(pattern))) {
-        keysByLocale.forEach(({ locale, keys }) => {
-          if (!keys.has(key)) {
-            missingKeys.push({ locale, key });
-          }
-        });
-      }
-    });
-
-    /* eslint-disable no-console */
-    if (unusedKeys.length > 0) {
-      console.warn(`Unused keys (${unusedKeys.length})`);
-      console.warn('----------------------------------');
-      console.warn(unusedKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
-      console.warn();
-    }
-
-    if (missingKeys.length > 0) {
-      console.warn(`Missing keys (${missingKeys.length})`);
-      console.warn('------------------------------------');
-      console.warn(missingKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
-      console.warn();
-      console.warn('/!\\ Failed: missing keys are not allowed in fr & en');
-      process.exit(1);
-    }
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  } finally {
-    process.exit();
+class I18nSyntaxError extends Error {
+  constructor(file: ts.SourceFile, node: ts.Node, msg: string) {
+    const pos = file.getLineAndCharacterOfPosition(node.pos);
+    super(`${file.fileName}:${pos.line + 1}: ${msg}`);
   }
 }
 
-run();
+/**
+ * Check whether a function call invokes a translation function, record the
+ * translation key if so.
+ */
+function visitCallExpression(
+  checker: ts.TypeChecker,
+  extractedKeys: Set<string>,
+  file: ts.SourceFile,
+  node: ts.CallExpression
+) {
+  const symbol = checker.getSymbolAtLocation(node.expression);
+  if (!symbol) {
+    return;
+  }
+
+  // Check whether a TFunction is being called
+  const type = checker.getTypeOfSymbolAtLocation(symbol, node.expression);
+  if (type.symbol?.escapedName !== 'TFunction') {
+    return;
+  }
+  const typeArgs = checker.getTypeArguments(type as ts.TypeReference);
+
+  // TFunction has two generic type arguments: namespace and key prefix
+  if (typeArgs.length !== 2) {
+    throw new I18nSyntaxError(file, node, 'expected two generic type arguments for TFunction');
+  }
+  if (node.arguments.length < 1) {
+    throw new I18nSyntaxError(file, node, 'expected at least one argument for TFunction');
+  }
+
+  const namespaceType = typeArgs[0];
+  const prefixType = typeArgs[1];
+
+  // Extract the default namespace from the first generic type argument
+  let defaultNamespace;
+  if (namespaceType.isStringLiteral()) {
+    defaultNamespace = namespaceType.value;
+  } else if (checker.isTupleType(namespaceType)) {
+    const namespaceTypeArgs = checker.getTypeArguments(namespaceType as ts.TypeReference);
+    if (!namespaceTypeArgs[0].isStringLiteral()) {
+      return;
+    }
+    defaultNamespace = namespaceTypeArgs[0].value;
+  } else {
+    return;
+  }
+
+  // Extract the key prefix from the second generic type argument
+  let prefix;
+  if (prefixType.isStringLiteral()) {
+    prefix = prefixType.value;
+  } else if (prefixType === checker.getUndefinedType()) {
+    prefix = null;
+  } else {
+    return;
+  }
+
+  // TFunction has between 1 and 3 function arguments: key, default value, and
+  // options
+  if (node.arguments.length < 1 || node.arguments.length > 3) {
+    throw new I18nSyntaxError(
+      file,
+      node,
+      'expected between 1 and 3 function arguments for TFunction'
+    );
+  }
+
+  const keyNode = node.arguments[0];
+  const optionsNode = node.arguments.length > 1 ? node.arguments.at(-1) : undefined;
+
+  // Extract the key from the first function argument
+  if (!ts.isStringLiteral(keyNode)) {
+    return;
+  }
+  let key = keyNode.text;
+
+  // Extract the default namespace from the options in the last function
+  // argument
+  if (optionsNode && ts.isObjectLiteralExpression(optionsNode)) {
+    const optionsType = checker.getTypeAtLocation(optionsNode);
+    const nsSymbol = optionsType.symbol.members?.get(ts.escapeLeadingUnderscores('ns'));
+    if (
+      nsSymbol &&
+      nsSymbol.valueDeclaration &&
+      ts.isPropertyAssignment(nsSymbol.valueDeclaration) &&
+      ts.isStringLiteral(nsSymbol.valueDeclaration.initializer)
+    ) {
+      defaultNamespace = nsSymbol.valueDeclaration.initializer.text;
+    }
+  }
+
+  // If the key doesn't include a namespace, use the default one from options
+  // or generic type arguments
+  if (!key.includes(':')) {
+    if (prefix) {
+      key = `${prefix}.${key}`;
+    }
+    key = `${defaultNamespace}:${key}`;
+  }
+
+  // Trim plural suffixes from the key
+  extractedKeys.add(key.replace(/_(zero|one|other|many)$/, ''));
+}
+
+/**
+ * Recursively collect translation function calls inside a TypeScript AST node.
+ */
+function visitNode(
+  checker: ts.TypeChecker,
+  extractedKeys: Set<string>,
+  file: ts.SourceFile,
+  node: ts.Node
+) {
+  if (ts.isCallExpression(node)) {
+    visitCallExpression(checker, extractedKeys, file, node);
+  }
+
+  node.forEachChild((child) => visitNode(checker, extractedKeys, file, child));
+}
+
+/**
+ * Obtain an abstract syntax tree (AST) from the TypeScript compiler, look at
+ * all translation function calls, and record a list of translation keys.
+ */
+function extractKeysFromTypeScript() {
+  const tsconfigPath = ts.findConfigFile(process.cwd(), ts.sys.fileExists, 'tsconfig.json');
+  if (!tsconfigPath) {
+    throw new Error('Failed to find tsconfig.json');
+  }
+  const tsconfigFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
+  const tsconfig = ts.parseJsonConfigFileContent(
+    tsconfigFile.config,
+    ts.sys,
+    path.dirname(tsconfigPath)
+  );
+
+  const program = ts.createProgram({
+    options: tsconfig.options,
+    rootNames: tsconfig.fileNames,
+    projectReferences: tsconfig.projectReferences,
+  });
+  const checker = program.getTypeChecker();
+
+  const files = program.getSourceFiles();
+  const extractedKeys = new Set<string>();
+  for (const file of files) {
+    visitNode(checker, extractedKeys, file, file);
+  }
+
+  return extractedKeys;
+}
+
+const keysByLocale = await Promise.all(
+  LANGUAGES.map(async (locale) => {
+    const keys = await getLocalesKeys(`${process.cwd()}/public/locales`, locale);
+    return { locale, keys };
+  })
+);
+
+const extractedKeys = extractKeysFromTypeScript();
+
+const unusedKeys: string[] = [];
+keysByLocale.forEach(({ locale, keys }) => {
+  keys.forEach((key) => {
+    if (!extractedKeys.has(key) && IGNORE_UNUSED.every((pattern) => !key.match(pattern))) {
+      unusedKeys.push(`${locale}:${key}`);
+    }
+  });
+});
+
+const missingKeys: string[] = [];
+extractedKeys.forEach((key) => {
+  if (IGNORE_MISSING.every((pattern) => !key.match(pattern))) {
+    keysByLocale.forEach(({ locale, keys }) => {
+      if (!keys.has(key)) {
+        missingKeys.push(`${locale}:${key}`);
+      }
+    });
+  }
+});
+
+if (unusedKeys.length > 0) {
+  console.warn(`Unused keys (${unusedKeys.length})`);
+  console.warn('----------------------------------');
+  console.warn(unusedKeys.join('\n'));
+  console.warn();
+}
+
+if (missingKeys.length > 0) {
+  console.warn(`Missing keys (${missingKeys.length})`);
+  console.warn('------------------------------------');
+  console.warn(missingKeys.join('\n'));
+  console.warn();
+  console.warn(`/!\\ Failed: missing keys are not allowed in ${LANGUAGES}`);
+  process.exit(1);
+}
