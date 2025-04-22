@@ -32,7 +32,7 @@ type SortOptions =
   | 'LastModifiedDesc';
 
 const HomeOperationalStudies = () => {
-  const { t } = useTranslation('operationalStudies/home');
+  const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -74,11 +74,11 @@ const HomeOperationalStudies = () => {
 
   const sortOptions = [
     {
-      label: t('sortOptions.byName'),
+      label: t('operational-studies-management.sort-by-name'),
       value: 'NameAsc',
     },
     {
-      label: t('sortOptions.byRecentDate'),
+      label: t('operational-studies-management.sort-by-latest'),
       value: 'LastModifiedDesc',
     },
   ];
@@ -130,11 +130,10 @@ const HomeOperationalStudies = () => {
       <div className="projects-list row">
         <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
           <AddNewCard
-            translationNamespaces="operationalStudies/home"
             testId="add-project"
             className="project-card empty"
             modalComponent={<AddOrEditProjectModal />}
-            legendTranslationKey="createProject"
+            item="project"
           />
         </div>
         {projectsList.map((project) => (
@@ -164,12 +163,12 @@ const HomeOperationalStudies = () => {
 
   return (
     <>
-      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} />
+      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('project.projects')}</div>} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           <div className="projects-toolbar">
             <div className="h1 mb-0">
-              {t('projectsCount', { count: projectsList ? projectsList.length : 0 })}
+              {t('project.count', { count: projectsList ? projectsList.length : 0 })}
             </div>
             <div className="flex-grow-1">
               <FilterTextField
@@ -191,8 +190,7 @@ const HomeOperationalStudies = () => {
               selectedItemCount={selectedProjectIds.length}
               onDeselectAll={() => setSelectedProjectIds([])}
               onDelete={handleDeleteProjects}
-              translationKey="selectedProjects"
-              translationNameSpace="operationalStudies/home"
+              item="project"
               dataTestId="deleteProjects"
             />
           )}

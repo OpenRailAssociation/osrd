@@ -1,0 +1,41 @@
+{
+  "operational-studies-management": {
+    "delete": "Delete",
+    "filter-placeholder": "Search...",
+    "open": "Open",
+    "sort-by-latest": "Latest",
+    "sort-by-name": "Sort by name",
+    "unselect-all": "Deselect"
+  },
+  "project": {
+    "confirm-delete_one": "Do you really want to delete the project?",
+    "confirm-delete_other": "Do you really want to delete the {{ count }} projects?",
+    "count_one": "1 project",
+    "count_other": "{{count}} projects",
+    "count_zero": "No project",
+    "create": "Create a project",
+    "projects": "Projects",
+    "selected_one": "1 project selected",
+    "selected_other": "{{ count }} projects selected"
+  },
+  "scenario": {
+    "confirm-delete_one": "Do you really want to delete the scenario?",
+    "confirm-delete_other": "Do you really want to delete the {{count}} scenarios?",
+    "count_one": "1 scenario",
+    "count_other": "{{count}} scenarios",
+    "count_zero": "No scenario",
+    "create": "Create a scenario",
+    "selected_one": "{{count}} selected scenario",
+    "selected_other": "{{count}} selected scenarios"
+  },
+  "study": {
+    "confirm-delete_one": "Do you really want to delete the study?",
+    "confirm-delete_other": "Do you really want to delete the {{count}} studies?",
+    "count_one": "1 study",
+    "count_other": "{{count}} studies",
+    "count_zero": "No study",
+    "create": "Create a study",
+    "selected_one": "{{count}} study selected",
+    "selected_other": "{{count}} studies selected"
+  }
+}

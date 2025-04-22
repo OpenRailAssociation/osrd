@@ -1,10 +1,5 @@
 {
   "budget": "Budget",
-  "confirmDeleteMessage": "Möchten Sie das Szenario wirklich löschen?",
-  "confirmDeleteMessage_one": "Möchten Sie {{count}} Szenario wirklich löschen?",
-  "confirmDeleteMessage_other": "Möchten Sie {{count}} Szenarien wirklich löschen?",
-  "createScenario": "Szenario erstellen",
-  "createdOn": "Erstellt am",
   "dates": {
     "creation": "Erstellung",
     "expectedEnd": "Erwartetes Ende",
@@ -12,23 +7,11 @@
     "realEnd": "Tatsächliches Ende",
     "start": "Start"
   },
-  "deleteItems": "Löschen",
   "infrastructureWithTwoPoints": "Netz: ",
   "modifyStudy": "Studie bearbeiten",
   "noDateFound": "Nicht ausgefüllt",
   "nothingSelected": "— Leer —",
-  "openScenario": "Öffnen",
   "scenarioWithTwoPoints": "Szenario: ",
-  "scenariosCount_one": "1 Szenario",
-  "scenariosCount_other": "{{count}} Szenarien",
-  "scenariosCount_zero": "Kein Szenario",
-  "selectedScenarios_one": "{{count}} ausgewähltes Szenario",
-  "selectedScenarios_other": "{{count}} ausgewählte Szenarien",
-  "simulationSheet": "Simulationsüberblick",
-  "sortOptions": {
-    "byName": "Nach Namen sortieren",
-    "byRecentDate": "Neueste"
-  },
   "studyBudget": "Budget",
   "studyBudgetInvalid": "Das Studienbudget muss eine positive Ganzzahl sein und darf 2.147.483.647 € nicht überschreiten.",
   "studyBusinessCode": "Business-Code",
@@ -74,6 +57,5 @@
   "studyType": "Art",
   "studyUpdated": "Erfolgreiche Aktualisierung!",
   "studyUpdatedDetails": "Studie „{{ name }}“ ist aktualisiert worden.",
-  "unselectAll": "Auswahl aufheben",
   "updatedOn": "Bearbeitet am"
 }

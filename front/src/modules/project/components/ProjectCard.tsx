@@ -20,7 +20,7 @@ type Props = {
 };
 
 export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
-  const { t } = useTranslation('operationalStudies/home');
+  const { t } = useTranslation('operational-studies');
   const [imageUrl, setImageUrl] = useState<string>();
   const safeWord = useSelector(getUserSafeWord);
 
@@ -62,7 +62,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
               className="btn btn-primary btn-sm ml-auto"
               type="button"
             >
-              <span className="mr-2">{t('openProject')}</span>
+              <span className="mr-2">{t('operational-studies-management.open')}</span>
               <FileDirectoryOpen variant="fill" />
             </button>
           </Link>
@@ -79,7 +79,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           <span className="mr-1">
             <FileDirectory />
           </span>
-          {t('studiesCount', { count: project.studies_count })}
+          {t('study.count', { count: project.studies_count })}
         </div>
       </div>
       <div className="project-card-name">{project.name}</div>

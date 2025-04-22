@@ -1,10 +1,5 @@
 {
   "budget": "Budget",
-  "confirmDeleteMessage": "Voulez-vous supprimer le scénario ?",
-  "confirmDeleteMessage_one": "Voulez-vous supprimer {{count}} scénario ?",
-  "confirmDeleteMessage_other": "Voulez-vous supprimer les {{ count }} scénarios ?",
-  "createScenario": "Créer un scénario",
-  "createdOn": "Créée le",
   "dates": {
     "creation": "Création",
     "expectedEnd": "Fin estimée",
@@ -12,23 +7,12 @@
     "realEnd": "Fin réelle",
     "start": "Début"
   },
-  "deleteItems": "Supprimer",
   "infrastructureWithTwoPoints": "Infra : ",
   "modifyStudy": "Modifier l'étude",
   "noDateFound": "Non renseigné",
   "nothingSelected": "— Aucun —",
-  "openScenario": "Ouvrir",
   "scenarioWithTwoPoints": "Scénario : ",
-  "scenariosCount_one": "1 scénario",
-  "scenariosCount_other": "{{count}} scénarios",
-  "scenariosCount_zero": "Aucun scénario",
-  "selectedScenarios_one": "{{count}} scénario sélectionné",
-  "selectedScenarios_other": "{{count}} scénarios sélectionnés",
   "simulationSheet": "Fiche de simulation",
-  "sortOptions": {
-    "byName": "Tri par nom",
-    "byRecentDate": "Plus récents"
-  },
   "studyBudget": "Budget",
   "studyBudgetInvalid": "Le budget de l'étude doit être un entier positif et ne doit pas dépasser 2147483647 €",
   "studyBusinessCode": "Code affaire",
@@ -74,6 +58,5 @@
   "studyType": "Type",
   "studyUpdated": "Mise à jour réussie !",
   "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour.",
-  "unselectAll": "Tout désélectionner",
   "updatedOn": "Modifié le"
 }

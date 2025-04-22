@@ -43,7 +43,7 @@ type studyParams = {
 };
 
 const Study = () => {
-  const { t } = useTranslation(['operationalStudies/study']);
+  const { t } = useTranslation(['operationalStudies/study', 'operational-studies']);
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
 
@@ -120,11 +120,11 @@ const Study = () => {
 
   const sortOptions = [
     {
-      label: t('sortOptions.byName'),
+      label: t('operational-studies:operational-studies-management.sort-by-name'),
       value: 'NameAsc',
     },
     {
-      label: t('sortOptions.byRecentDate'),
+      label: t('operational-studies:operational-studies-management.sort-by-latest'),
       value: 'LastModifiedDesc',
     },
   ];
@@ -179,11 +179,10 @@ const Study = () => {
       <div className="row no-gutters">
         <div className="col-hdp-3 col-hd-4 col-lg-6">
           <AddNewCard
-            translationNamespaces="operationalStudies/study"
             testId="add-scenario-button"
             className="scenario-card empty"
             modalComponent={<AddOrEditScenarioModal />}
-            legendTranslationKey="createScenario"
+            item="scenario"
           />
         </div>
         {scenariosList.map((scenario) => (
@@ -347,7 +346,7 @@ const Study = () => {
           )}
 
           <div className="scenarios-toolbar">
-            <div>{t('scenariosCount', { count: scenariosList.length })}</div>
+            <div>{t('operational-studies:scenario.count', { count: scenariosList.length })}</div>
             <div className="flex-grow-1">
               <FilterTextField
                 setFilter={setFilter}
@@ -370,8 +369,7 @@ const Study = () => {
               selectedItemCount={selectedScenarioIds.length}
               onDeselectAll={() => setSelectedScenarioIds([])}
               onDelete={handleDeleteScenario}
-              translationKey="selectedScenarios"
-              translationNameSpace="operationalStudies/study"
+              item="scenario"
               dataTestId="deleteScenarios"
             />
           )}

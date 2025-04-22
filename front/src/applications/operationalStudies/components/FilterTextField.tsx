@@ -15,7 +15,7 @@ type Props = {
 
 export default function FilterTextField({ id, setFilter, sm = false, filterChips = '' }: Props) {
   const [value, setValue] = useState('');
-  const { t } = useTranslation('operationalStudies/home');
+  const { t } = useTranslation('operational-studies');
   const debouncedFilter = useDebounce(value, 500);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function FilterTextField({ id, setFilter, sm = false, filterChips
       name={id}
       value={value}
       onChange={(e) => setValue(e.target.value)}
-      placeholder={t('filterPlaceholder')}
+      placeholder={t('operational-studies-management.filter-placeholder')}
       whiteBG
       noMargin
       unit={<Search />}

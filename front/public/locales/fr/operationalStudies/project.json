@@ -1,12 +1,6 @@
 {
   "addImage": "Ajouter une image",
   "budget": "Budget",
-  "confirmDeleteMessage": "Voulez-vous supprimer une étude ?",
-  "confirmDeleteMessage_one": "Voulez-vous supprimer {{count}} étude ?",
-  "confirmDeleteMessage_other": "Voulez-vous supprimer les {{ count }} études ?",
-  "createStudy": "Créer une étude",
-  "createdOn": "Créée le",
-  "deleteItems": "Supprimer",
   "error": {
     "unableToCreateProjectTitle": "Echec de la création du projet",
     "unableToDeleteProject": "Impossible de supprimer le projet",
@@ -21,7 +15,6 @@
   "modifyProject": "Modifier le projet",
   "noImageInvalid": "Image invalide",
   "objectives": "objectifs",
-  "openStudy": "Ouvrir",
   "projectBudget": "Budget estimé",
   "projectBudgetInvalid": "Le budget du projet doit être un entier positif et ne doit pas dépasser 2147483647 €",
   "projectCancel": "Annuler",
@@ -45,22 +38,9 @@
   "projectTags": "Étiquettes",
   "projectsList": "Projets",
   "removeImage": "Supprimer l'image",
-  "scenariosCount_one": "1 scénario",
-  "scenariosCount_other": "{{count}} scénarios",
-  "scenariosCount_zero": "Aucun scénario",
-  "selectedStudies_one": "{{count}} étude sélectionnée",
-  "selectedStudies_other": "{{count}} études sélectionnées",
-  "sortOptions": {
-    "byName": "Tri par nom",
-    "byRecentDate": "Plus récents"
-  },
-  "studiesCount_one": "1 étude",
-  "studiesCount_other": "{{count}} études",
-  "studiesCount_zero": "Aucune étude",
   "studyBusinessCode": "Code affaire",
   "studyServiceCode": "Code service",
   "totalBudget": "Budget total",
-  "unselectAll": "Désélectionner",
   "updatedOn": "Modifiée le",
   "uploadImage": "Importer une image"
 }

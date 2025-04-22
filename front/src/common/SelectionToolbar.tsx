@@ -10,8 +10,7 @@ type SelectionToolbarProps = {
   selectedItemCount: number;
   onDeselectAll: () => void;
   onDelete: () => void;
-  translationKey: string;
-  translationNameSpace: string;
+  item: 'project' | 'study' | 'scenario';
   dataTestId: string;
 };
 
@@ -19,21 +18,18 @@ const SelectionToolbar = ({
   selectedItemCount,
   onDeselectAll,
   onDelete,
-  translationKey,
-  translationNameSpace,
+  item,
   dataTestId,
 }: SelectionToolbarProps) => {
-  const { t } = useTranslation(translationNameSpace);
+  const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
   return (
     <div className="selection-toolbar">
       <AiFillCheckCircle />
-      <span className="ml-0">
-        {t(`${translationNameSpace}:${translationKey}`, { count: selectedItemCount })}
-      </span>
+      <span className="ml-0">{t(`${item}.selected`, { count: selectedItemCount })}</span>
       <button className="btn btn-sm btn-secondary" type="button" onClick={onDeselectAll}>
         <MdOutlineDeselect />
-        <span className="ml-2">{t(`${translationNameSpace}:unselectAll`)}</span>
+        <span className="ml-2">{t('operational-studies-management.unselect-all')}</span>
       </button>
       <button
         data-testid={dataTestId}
@@ -43,7 +39,7 @@ const SelectionToolbar = ({
           openModal(
             <DeleteItemsModal
               handleDeleteItems={onDelete}
-              translationKey={t(`${translationNameSpace}:confirmDeleteMessage`, {
+              translationKey={t(`${item}.confirm-delete`, {
                 count: selectedItemCount,
               })}
             />,
@@ -52,7 +48,7 @@ const SelectionToolbar = ({
         }
       >
         <Trash />
-        <span className="ml-2">{t(`${translationNameSpace}:deleteItems`)}</span>
+        <span className="ml-2">{t('operational-studies-management.delete')}</span>
       </button>
     </div>
   );
