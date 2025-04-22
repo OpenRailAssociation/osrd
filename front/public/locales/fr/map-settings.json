@@ -22,7 +22,44 @@
     "tivs": "Limites de vitesse",
     "tvds": "Circuits de voie"
   },
+  "map-key": {
+    "alternatingCurrent": "Alternatif",
+    "directCurrent": "Continu",
+    "electrifications": "Électrification",
+    "keyTitle": "Légende",
+    "lower_pantograph": "Zone « baissez panto »",
+    "neutral_sections": "BP / CC",
+    "speedlimit": "Vitesse",
+    "switch_off": "Coupez Courant"
+  },
   "map-layers": "Couches de données",
+  "map-search": {
+    "all": "Tous",
+    "aspects": "Aspects",
+    "line": "Ligne",
+    "line-code": "Code ligne",
+    "main-operational-points-only": "BV seuls",
+    "name": "Nom",
+    "no-aspect-selected": "Aucun aspect sélectionné",
+    "operational-point": "Point remarquable",
+    "placeholder-ch-code": "CH",
+    "placeholder-line": "Nom ou numéro de ligne",
+    "placeholder-name": "Nom, appelation, libellé, code CI",
+    "placeholder-signal": "Nom du signal",
+    "results-count_one": "1 résultat",
+    "results-count_other": "{{ count }} résultats",
+    "results-count_zero": "Aucun résultat",
+    "signal": "Signal",
+    "signal-settings": {
+      "Nf": "Non franchissable",
+      "distant": "Distant",
+      "is_430": "430"
+    },
+    "signal-system": "Système de signalisation",
+    "too-many-results": "Il y a plus de 100 résultats, merci d'affiner votre recherche.",
+    "type": "Type",
+    "unable-to-search-signal": "Recherche du signal impossible"
+  },
   "mapSettings": "Paramètres cartographie",
   "mapstyles": {
     "darkmode": "Sombre",

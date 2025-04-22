@@ -41,7 +41,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   const infraID = useInfraID();
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
-  const { t } = useTranslation(['translation', 'map-search']);
+  const { t } = useTranslation('map-settings');
 
   // NOTE: the following mappings are constants. However their values depend on
   // the translation settings. Since useTranslation is a hook these mappings
@@ -50,15 +50,15 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   const { SIGNALING_SYSTEMS, SIGNAL_SETTINGS_DISPLAY } = useMemo(
     () => ({
       SIGNALING_SYSTEMS: {
-        ALL: t('map-search:all'),
+        ALL: t('map-search.all'),
         BAL: 'BAL',
         BAPR: 'BAPR',
         TVM: 'TVM',
       },
       SIGNAL_SETTINGS_DISPLAY: {
-        Nf: t('map-search:signalSettings.Nf'),
-        distant: t('map-search:signalSettings.distant'),
-        is_430: t('map-search:signalSettings.is_430'),
+        Nf: t('map-search.signal-settings.Nf'),
+        distant: t('map-search.signal-settings.distant'),
+        is_430: t('map-search.signal-settings.is_430'),
       },
     }),
     []
@@ -152,9 +152,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
       .catch((e) => {
         setSearchResults([]);
         dispatch(
-          setFailure(
-            castErrorToFailure(e, { name: t('map-search:errorMessages.unableToSearchSignal') })
-          )
+          setFailure(castErrorToFailure(e, { name: t('map-search.unable-to-search-signal') }))
         );
       });
   };
@@ -237,9 +235,9 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
       <div className="row mb-2 search-signal" ref={divRef}>
         <div className={cx({ 'col-lg-4': searchSignalWidth > 768 }, 'col-md-6 mb-2')}>
           <InputSNCF
-            label={t('map-search:line')}
+            label={t('map-search.line')}
             type="text"
-            placeholder={t('map-search:placeholderline')}
+            placeholder={t('map-search.placeholder-line')}
             id="map-search-signal-line"
             onChange={(e) => {
               setSearchLine(e.target.value);
@@ -265,9 +263,9 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         </div>
         <div className={cx({ 'col-lg-4': searchSignalWidth > 768 }, 'col-md-6 mb-2')}>
           <InputSNCF
-            label={t('map-search:signal')}
+            label={t('map-search.signal')}
             type="text"
-            placeholder={t('map-search:placeholdersignal')}
+            placeholder={t('map-search.placeholder-signal')}
             id="map-search-signal"
             onChange={(e) => {
               setSearch(e.target.value);
@@ -299,7 +297,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           })}
         >
           <SelectImproved
-            label={t('map-search:signalSystem')}
+            label={t('map-search.signal-system')}
             onChange={(e) => {
               if (e !== undefined) setSignalSystem(e);
             }}
@@ -317,8 +315,8 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           })}
         >
           <MultiSelectSNCF
-            multiSelectTitle={t('map-search:aspects')}
-            multiSelectPlaceholder={t('map-search:noAspectSelected')}
+            multiSelectTitle={t('map-search.aspects')}
+            multiSelectPlaceholder={t('map-search.no-aspect-selected')}
             options={[{ options: signalSettings }]}
             onChange={setSelectedSettings}
             selectedValues={selectedSettings}
@@ -327,7 +325,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         </div>
       </div>
       <h2 className="text-center mt-3">
-        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+        {t('map-search.results-count', { count: searchResults ? searchResults.length : 0 })}
       </h2>
       <div>
         {searchResults?.length > 0 && (
@@ -339,7 +337,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
                 onClick={() => setSortName('type')}
                 tabIndex={-1}
               >
-                {t('map-search:type')}
+                {t('map-search.type')}
                 {orderDisplay('type')}
               </div>
               <div
@@ -348,7 +346,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
                 onClick={() => setSortName('label')}
                 tabIndex={-1}
               >
-                {t('map-search:name')}
+                {t('map-search.name')}
                 {orderDisplay('label')}
               </div>
               <div
@@ -357,7 +355,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
                 onClick={() => setSortName('line_code')}
                 tabIndex={-1}
               >
-                {t('map-search:linecode')}
+                {t('map-search.line-code')}
                 {orderDisplay('line_code')}
               </div>
               <div
@@ -366,7 +364,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
                 onClick={() => setSortName('line_name')}
                 tabIndex={-1}
               >
-                {t('map-search:line')}
+                {t('map-search.line')}
                 {orderDisplay('line_name')}
               </div>
             </div>
