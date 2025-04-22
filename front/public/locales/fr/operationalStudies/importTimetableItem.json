@@ -1,6 +1,5 @@
 {
   "cancel": "Annuler",
-  "closeOSRDConfig": "Fermer",
   "date": "DATE",
   "datetime": "Date & horaires",
   "download": "Télécharger",
@@ -17,7 +16,6 @@
   },
   "failure": "Opération échouée",
   "from": "Origine",
-  "import": "Importation",
   "importTimetable": "Importer une grille horaire",
   "inputPlaceholder": "Nom, trigramme",
   "itemsFound_one": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(trainCount, {'count': {{trainsFound}}}) trouvé",
@@ -43,7 +41,7 @@
   "to": "Destination",
   "trainCount_one": "1 train",
   "trainCount_other": "{{count}} trains",
-  "trainsCount_zero": "",
+  "trainCount_zero": "",
   "warningMessages": {
     "warning": "Attention",
     "warningFilteredStepImport": "Certaines étapes invalides ont dû être supprimées pour permettre l'importation pour les trains : {{trainNumbers}}"
