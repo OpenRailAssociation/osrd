@@ -51,6 +51,9 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /home\/navbar:language\..*/, // Language selector which is generated with the locale
 
+  // Infra management
+  /infraManagement:grants\..*/,
+
   // Map
   /map-settings:layers\..*/,
   /map-settings:smoothTravel/,

@@ -16,13 +16,10 @@
   "addInfraJSON": "Créer une infrastructure, à partir d'un fichier RailJSON",
   "addInfraJSONFile": "Ajouter un fichier RailJSON",
   "addInfraJSONFileRemove": "Annuler l'import RailJSON",
-  "chooseInfrastructure": "Choisissez une infrastructure",
   "createInfra": "Création",
   "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
   "errorMessages": {
     "noEmptyName": "Veuillez renseigner un nom",
-    "noExistingInfra": "Aucune intrastructure disponible",
-    "unableToRetrieveInfra": "Récupération infra impossible",
     "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
   },
   "goToEditionMode": "Éditer",
@@ -40,9 +37,7 @@
   "infrasFound_one": "{{count}} infrastructure trouvée",
   "infrasFound_other": "{{count}} infrastructures trouvées",
   "infrasFound_zero": "Aucune infrastructure trouvée",
-  "infrastructure": "Infrastructure",
   "locked": "Verrouillée",
   "no": "Non",
-  "noInfra": "Veuillez choisir une infrastructure",
   "yes": "Oui"
 }
