@@ -8094,6 +8094,8 @@ components:
       - power_restrictions
       - energy_sources
       - supported_signaling_systems
+      - primary_category
+      - other_categories
       properties:
         base_power_class:
           type: string
@@ -8145,10 +8147,14 @@ components:
           nullable: true
         name:
           type: string
+        other_categories:
+          $ref: '#/components/schemas/RollingStockCategories'
         power_restrictions:
           type: object
           additionalProperties:
             type: string
+        primary_category:
+          $ref: '#/components/schemas/RollingStockCategory'
         railjson_version:
           type: string
         rolling_resistance:
