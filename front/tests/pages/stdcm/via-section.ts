@@ -6,13 +6,13 @@ import {
   VIA_STOP_TIMES,
   VIA_STOP_TYPES,
 } from '../../assets/constants/stdcm-const';
-import { EXPLICIT_UI_STABILITY_TIMEOUT } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+const EXPLICIT_UI_STABILITY_TIMEOUT = 500;
 
 class ViaSection extends STDCMPage {
   private readonly viaIcon: Locator;
