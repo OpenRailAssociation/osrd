@@ -90,7 +90,7 @@ const StcdmResultsTable = ({
                     !isRequestedPathStep &&
                     step.duration === 0
                       ? '='
-                      : step.name || 'Unknown'}
+                      : step.name || t('unknown')}
                   </td>
                   <td className="ch">{step.ch}</td>
                   <td className="stop">{isLastStep || step.duration > 0 ? step.time : ''}</td>

@@ -358,7 +358,7 @@ const SimulationReportSheet = ({
                       >
                         {isNotExtremity && !isViaInSimulationPath && step.name === prevStep.name
                           ? '='
-                          : step.name || 'Unknown'}
+                          : step.name || t('unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>
