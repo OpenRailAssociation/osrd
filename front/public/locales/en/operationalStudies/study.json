@@ -1,10 +1,5 @@
 {
   "budget": "Budget",
-  "confirmDeleteMessage": "Do you really want to delete the scenario?",
-  "confirmDeleteMessage_one": "Do you really want to delete {{count}} scenario?",
-  "confirmDeleteMessage_other": "Do you really want to delete the {{count}} scenarios?",
-  "createScenario": "Create a scenario",
-  "createdOn": "Created on ",
   "dates": {
     "creation": "Creation",
     "expectedEnd": "Expected end",
@@ -12,23 +7,12 @@
     "realEnd": "Real end",
     "start": "Start"
   },
-  "deleteItems": "Delete",
   "infrastructureWithTwoPoints": "Infra: ",
   "modifyStudy": "Edit the study",
   "noDateFound": "Not filled in",
   "nothingSelected": "— Empty —",
-  "openScenario": "Open",
   "scenarioWithTwoPoints": "Scenario: ",
-  "scenariosCount_one": "1 scenario",
-  "scenariosCount_other": "{{count}} scenarios",
-  "scenariosCount_zero": "No scenario",
-  "selectedScenarios_one": "{{count}} selected scenario",
-  "selectedScenarios_other": "{{count}} selected scenarios",
   "simulationSheet": "Simulation sheet",
-  "sortOptions": {
-    "byName": "Sort by name",
-    "byRecentDate": "Latest"
-  },
   "studyBudget": "Budget",
   "studyBudgetInvalid": "The study budget must be a positive integer and must not exceed 2147483647 €",
   "studyBusinessCode": "Business code",
@@ -74,6 +58,5 @@
   "studyType": "Type",
   "studyUpdated": "Successful update!",
   "studyUpdatedDetails": "The {{ name }} study has been updated.",
-  "unselectAll": "Deselect",
   "updatedOn": "Edited on"
 }

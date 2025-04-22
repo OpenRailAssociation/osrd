@@ -24,7 +24,11 @@ export default function StudyCard({
   isSelected,
   toggleSelect,
 }: StudyCardProps) {
-  const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
+  const { t } = useTranslation([
+    'operationalStudies/project',
+    'operationalStudies/study',
+    'operational-studies',
+  ]);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();
@@ -59,7 +63,9 @@ export default function StudyCard({
           onClick={handleClick}
           type="button"
         >
-          <span className="mr-2">{t('openStudy')}</span>
+          <span className="mr-2">
+            {t('operational-studies:operational-studies-management.open')}
+          </span>
           <FileDirectoryOpen variant="fill" />
         </button>
       </div>
@@ -117,7 +123,7 @@ export default function StudyCard({
           <span className="mr-1">
             <FileDirectory />
           </span>
-          {t('scenariosCount', { count: study.scenarios_count })}
+          {t('operational-studies:scenario.count', { count: study.scenarios_count })}
         </div>
         <div className="study-card-date">
           <span className="mr-1">

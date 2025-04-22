@@ -43,7 +43,7 @@ type ProjectParams = {
 };
 
 const Project = () => {
-  const { t } = useTranslation(['operationalStudies/project']);
+  const { t } = useTranslation(['operationalStudies/project', 'operational-studies']);
   const { openModal } = useModal();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -113,11 +113,11 @@ const Project = () => {
   };
   const sortOptions = [
     {
-      label: t('sortOptions.byName'),
+      label: t('operational-studies:operational-studies-management.sort-by-name'),
       value: 'NameAsc',
     },
     {
-      label: t('sortOptions.byRecentDate'),
+      label: t('operational-studies:operational-studies-management.sort-by-latest'),
       value: 'LastModifiedDesc',
     },
   ];
@@ -174,11 +174,10 @@ const Project = () => {
       <div className="row no-gutters mt-2">
         <div className="col-hdp-3 col-hd-4 col-lg-6">
           <AddNewCard
-            translationNamespaces={['operationalStudies/project', 'operationalStudies/study']}
             testId="add-study-button"
             className="study-card empty"
             modalComponent={<AddOrEditStudyModal />}
-            legendTranslationKey="createStudy"
+            item="study"
           />
         </div>
         {studiesList.map((study) => (
@@ -321,7 +320,9 @@ const Project = () => {
 
           <div className="studies-toolbar">
             <div className="h1 mb-0">
-              {t('studiesCount', { count: studiesList ? studiesList.length : 0 })}
+              {t('operational-studies:study.count', {
+                count: studiesList ? studiesList.length : 0,
+              })}
             </div>
             <div className="flex-grow-1">
               <FilterTextField
@@ -343,8 +344,7 @@ const Project = () => {
               selectedItemCount={selectedStudyIds.length}
               onDeselectAll={() => setSelectedStudyIds([])}
               onDelete={handleDeleteStudy}
-              translationKey="selectedStudies"
-              translationNameSpace="operationalStudies/project"
+              item="study"
               dataTestId="deleteStudies"
             />
           )}

@@ -1,12 +1,6 @@
 {
   "addImage": "Bild hinzufügen",
   "budget": "Budget",
-  "confirmDeleteMessage": "Möchten Sie das Projekt wirklich löschen?",
-  "confirmDeleteMessage_one": "Möchten Sie {{count}} Studie wirklich löschen?",
-  "confirmDeleteMessage_other": "Möchten Sie {{count}} Studien wirklich löschen?",
-  "createStudy": "Studie erstellen",
-  "createdOn": "Erstellt am ",
-  "deleteItems": "Löschen",
   "error": {
     "unableToCreateProjectTitle": "Projekt erstellen nicht möglich",
     "unableToDeleteProject": "Projekt löschen nicht möglich",
@@ -21,7 +15,6 @@
   "modifyProject": "Projekt ändern",
   "noImageInvalid": "Ungültiges Bild",
   "objectives": "Ziele",
-  "openStudy": "Öffnen",
   "projectBudget": "Geschätztes Budget",
   "projectBudgetInvalid": "Das Projektbudget muss ein positiver, ganzzahliger Wert sein und darf 2.147.483.647 € nicht überschreiten.",
   "projectCancel": "Abbrechen",
@@ -45,22 +38,9 @@
   "projectTags": "Tags",
   "projectsList": "Projekte",
   "removeImage": "Bild entfernen",
-  "scenariosCount_one": "1 Szenario",
-  "scenariosCount_other": "{{count}} Szenarien",
-  "scenariosCount_zero": "Keine Szenarien",
-  "selectedStudies_one": "{{count}} Studie ausgewählt",
-  "selectedStudies_other": "{{count}} Studien ausgewählt",
-  "sortOptions": {
-    "byName": "Nach Namen sortieren",
-    "byRecentDate": "Neueste"
-  },
-  "studiesCount_one": "1 Studie",
-  "studiesCount_other": "{{count}} Studien",
-  "studiesCount_zero": "Keine Studien",
   "studyBusinessCode": "Organisationsschlüssel",
   "studyServiceCode": "Auftragsschlüssel",
   "totalBudget": "Gesamtbudget",
-  "unselectAll": "Auswahl entfernen",
   "updatedOn": "Geändert am",
   "uploadImage": "Bild hochladen"
 }

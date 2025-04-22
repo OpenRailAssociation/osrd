@@ -72,16 +72,11 @@ const IGNORE_UNUSED: RegExp[] = [
   /operationalStudies\/manageTrainSchedule:tabs\..*/,
 
   // Operational studies management
-  /operationalStudies\/.*createdOn/,
-  /operationalStudies\/.*deleteItems/,
-  /operationalStudies\/.*confirmDeleteMessage/,
-  /operationalStudies\/.*unselectAll/,
-  /operationalStudies\/home:createProject/,
-  /operationalStudies\/home:selectedProjects/,
-  /operationalStudies\/project:createStudy/,
-  /operationalStudies\/project:selectedStudies/,
-  /operationalStudies\/study:createScenario/,
-  /operationalStudies\/study:selectedScenarios/,
+  /operational-studies:.*.delete/,
+  /operational-studies:.*.confirm-delete/,
+  /operational-studies:.*.unselect-all/,
+  /operational-studies:.*.create/,
+  /operational-studies:.*.select/,
 
   // Project
   /operationalStudies\/scenario:Routing/,

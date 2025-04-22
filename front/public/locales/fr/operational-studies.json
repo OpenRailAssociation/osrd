@@ -1,0 +1,41 @@
+{
+  "operational-studies-management": {
+    "delete": "Supprimer",
+    "filter-placeholder": "Rechercher…",
+    "open": "Ouvrir",
+    "sort-by-latest": "Plus récents",
+    "sort-by-name": "Tri par nom",
+    "unselect-all": "Déselectionner"
+  },
+  "project": {
+    "confirm-delete_one": "Voulez-vous réellement supprimer le projet ?",
+    "confirm-delete_other": "Voulez-vous réellement supprimer les {{ count }} projets ?",
+    "count_one": "1 projet",
+    "count_other": "{{count}} projets",
+    "count_zero": "Aucun projet",
+    "create": "Créer un projet",
+    "projects": "Projets",
+    "selected_one": "1 projet sélectionné",
+    "selected_other": "{{count}} projets sélectionnés"
+  },
+  "scenario": {
+    "confirm-delete_one": "Voulez-vous supprimer le scénario ?",
+    "confirm-delete_other": "Voulez-vous supprimer les {{ count }} scénarios ?",
+    "count_one": "1 scénario",
+    "count_other": "{{count}} scénarios",
+    "count_zero": "Aucun scénario",
+    "create": "Créer un scénario",
+    "selected_one": "{{count}} scénario sélectionné",
+    "selected_other": "{{count}} scénarios sélectionnés"
+  },
+  "study": {
+    "confirm-delete_one": "Voulez-vous supprimer l'étude ?",
+    "confirm-delete_other": "Voulez-vous supprimer les {{ count }} études ?",
+    "count_one": "1 étude",
+    "count_other": "{{count}} études",
+    "count_zero": "Aucune étude",
+    "create": "Créer une étude",
+    "selected_one": "{{count}} étude sélectionnée",
+    "selected_other": "{{count}} études sélectionnées"
+  }
+}

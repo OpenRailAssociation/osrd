@@ -1,0 +1,41 @@
+{
+  "operational-studies-management": {
+    "delete": "Löschen",
+    "filter-placeholder": "Suchen...",
+    "open": "Öffnen",
+    "sort-by-latest": "Neueste",
+    "sort-by-name": "Nach Namen sortieren",
+    "unselect-all": "Auswahl entfernen"
+  },
+  "project": {
+    "confirm-delete_one": "Möchten Sie das Projekt wirklich löschen?",
+    "confirm-delete_other": "Möchten Sie {{count}} Projekte wirklich löschen?",
+    "count_one": "1 Projekt",
+    "count_other": "{{count}} Projekte",
+    "count_zero": "Kein Projekt",
+    "create": "Projekt anlegen",
+    "projects": "Projekte",
+    "selected_one": "1 Projekt ausgewählt",
+    "selected_other": "{{count}} Projekte ausgewählt"
+  },
+  "scenario": {
+    "confirm-delete_one": "Möchten Sie das Szenario wirklich löschen?",
+    "confirm-delete_other": "Möchten Sie {{count}} Szenarien wirklich löschen?",
+    "count_one": "1 Szenario",
+    "count_other": "{{count}} Szenarien",
+    "count_zero": "Keine Szenarien",
+    "create": "Szenario erstellen",
+    "selected_one": "{{count}} ausgewähltes Szenario",
+    "selected_other": "{{count}} ausgewählte Szenarien"
+  },
+  "study": {
+    "confirm-delete_one": "Möchten Sie das Projekt wirklich löschen?",
+    "confirm-delete_other": "Möchten Sie {{count}} Studien wirklich löschen?",
+    "count_one": "1 Studie",
+    "count_other": "{{count}} Studien",
+    "count_zero": "Keine Studie",
+    "create": "Studie erstellen",
+    "selected_one": "{{count}} Studie ausgewählt",
+    "selected_other": "{{count}} Studien ausgewählt"
+  }
+}

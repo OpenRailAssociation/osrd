@@ -8,21 +8,14 @@ import { REQUIRED_USER_ROLES_FOR } from '../../../common/authorization/roleBaseA
 import { useModal } from '../../../common/BootstrapSNCF/ModalSNCF';
 
 type AddNewCardProps = {
-  translationNamespaces?: string[] | string;
   testId: string;
   className: string;
   modalComponent: ReactNode;
-  legendTranslationKey: string;
+  item: 'project' | 'study' | 'scenario';
 };
 
-const AddNewCard = ({
-  translationNamespaces,
-  testId,
-  className,
-  modalComponent,
-  legendTranslationKey,
-}: AddNewCardProps) => {
-  const { t } = useTranslation(translationNamespaces);
+const AddNewCard = ({ testId, className, modalComponent, item }: AddNewCardProps) => {
+  const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
 
   const newProjectStudyScenarioAllowed = useUserRoleCheck(
@@ -41,7 +34,7 @@ const AddNewCard = ({
       }
     >
       <FaPlus />
-      <div className="legend">{t(legendTranslationKey)}</div>
+      <div className="legend">{t(`${item}.create`)}</div>
     </div>
   );
 };
