@@ -10,7 +10,6 @@
   "projectsCount_one": "1 projet",
   "projectsCount_other": "{{count}} projets",
   "projectsCount_zero": "Aucun projet",
-  "safeWordActivated": "Mode « sûr » activé",
   "selectedProjects_one": "1 projet sélectionné",
   "selectedProjects_other": "{{count}} projets sélectionnés",
   "sortOptions": {
