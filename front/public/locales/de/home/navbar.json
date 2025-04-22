@@ -12,13 +12,8 @@
   "language": {
     "de": "Deutsch",
     "en": "English",
-    "es": "Español",
     "fr": "Français",
-    "it": "Italiano",
-    "jp": "やまと",
-    "languageChoice": "Sprache",
-    "ru": "Русский",
-    "uk": "Українська"
+    "languageChoice": "Sprache"
   },
   "safeWord": "Stichwort",
   "safeWordHelp": "Durch das „Stichwort“ können Projekte in der Liste gefiltert werden, wenn es eingegeben wird. Es sollte einzigartig sein und kein Risiko für eine Doppelung bergen, um eine versehentliche Nutzung zu meiden. Fügen Sie es einem Projekt als Label hinzu – es wird bei Erstellung automatisch hinzugefügt, sofern das Stichwort hier eingetragen wird.",
