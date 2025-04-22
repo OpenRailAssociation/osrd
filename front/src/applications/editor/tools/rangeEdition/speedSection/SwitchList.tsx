@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { FaTimes } from 'react-icons/fa';
 
 import type { PartialOrReducer } from 'applications/editor/types';
@@ -30,6 +30,7 @@ const SwitchList = ({
   /** possible positions based on the routes found */
   availableSwitchesPositions,
 }: SwitchListProps) => {
+  const { t } = useTranslation();
   const infraID = useInfraID();
   const { data: switchTypes } = useSwitchTypes(infraID);
 
