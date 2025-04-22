@@ -55,7 +55,7 @@ const Timetable = ({
   timetableItems = [],
   timetableItemsWithDetails,
 }: TimetableProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
+  const { t } = useTranslation('operationalStudies/scenario');
 
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);

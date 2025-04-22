@@ -15,9 +15,7 @@
   "end": "Ende",
   "navigation": {
     "goBack": "Zur letzten Seite",
-    "goHome": "Zur Startseite",
-    "next": "Weiter",
-    "previous": "Zurück"
+    "goHome": "Zur Startseite"
   },
   "value": "Wert"
 }

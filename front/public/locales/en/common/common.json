@@ -19,9 +19,7 @@
   "end": "End",
   "navigation": {
     "goBack": "Back to previous page",
-    "goHome": "Go to home page",
-    "next": "Next",
-    "previous": "Previous"
+    "goHome": "Go to home page"
   },
   "value": "value"
 }
