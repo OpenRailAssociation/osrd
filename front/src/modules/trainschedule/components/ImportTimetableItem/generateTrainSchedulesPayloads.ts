@@ -2,68 +2,77 @@
 import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
-export function generateTrainSchedulesPayloads(
-  trains: ImportedTrainSchedule[],
-  checkChAndUIC: boolean = true
-): TrainSchedule[] {
-  return trains.reduce((payloads, train) => {
-    const firstStep = train.steps[0];
+import type { ImportedPacedTrainSchedule } from './ImportTimetableItemConfig';
 
-    // Conditionally check for valid UIC in the first step
-    if (checkChAndUIC && (!firstStep || !firstStep.uic)) {
-      console.warn(`Skipping train ${train.trainNumber} due to invalid first step UIC`);
-      return payloads; // Skip this train
-    }
+export function generateTrainSchedulePayload(train: ImportedTrainSchedule): TrainSchedule | null {
+  const departureTime = new Date(train.departureTime);
+  const { path, schedule } = train.steps.reduce<{
+    path: TrainSchedule['path'];
+    schedule: NonNullable<TrainSchedule['schedule']>;
+  }>(
+    (acc, step) => {
+      const stepId = nextId();
 
-    const departureTime = new Date(train.departureTime);
+      const validUICNumber = !Number.isNaN(step.uic);
 
-    const { path, schedule } = train.steps.reduce(
-      (acc, step, index) => {
-        const stepId = nextId();
-
-        // Conditionally skip invalid UIC or CH code steps
-        if (checkChAndUIC && !step.uic) {
-          console.error(`Invalid UIC for step ${step.name}`);
-          return acc; // Skip invalid step
-        }
-        if (checkChAndUIC && !step.chCode) {
-          console.error(`Invalid CH code for step ${step.name}`);
-          return acc; // Skip invalid step
-        }
-        if (!step.uic && step.trigram)
-          acc.path.push({ id: stepId, trigram: step.trigram, secondary_code: step.chCode });
-        else acc.path.push({ id: stepId, uic: Number(step.uic), secondary_code: step.chCode });
-
-        // Skip first step, handle time differences
-        if (index !== 0) {
-          const arrivalTime = new Date(step.arrivalTime);
-          const schedulePoint: NonNullable<TrainSchedule['schedule']>[number] = {
-            at: stepId,
-            arrival: Duration.subtractDate(arrivalTime, departureTime).toISOString(),
-            stop_for: step.duration ? `PT${step.duration}S` : undefined,
-          };
-          acc.schedule.push(schedulePoint);
-        }
-
-        return acc;
-      },
-      {
-        path: [] as TrainSchedule['path'],
-        schedule: [] as NonNullable<TrainSchedule['schedule']>,
+      if (validUICNumber) {
+        acc.path.push({
+          id: stepId,
+          uic: Number(step.uic),
+          secondary_code: step.chCode,
+        });
+      } else {
+        acc.path.push({
+          id: stepId,
+          trigram: step.name, // we use ocpRef when uic is NaN
+          secondary_code: step.chCode ?? '',
+        });
       }
-    );
 
-    payloads.push({
-      path,
-      train_name: train.trainNumber,
-      rolling_stock_name: train.rollingStock || '',
-      constraint_distribution: 'MARECO',
-      schedule,
-      start_time: departureTime.toISOString(),
-    });
-    return payloads;
-  }, [] as TrainSchedule[]);
+      if (acc.path.length > 1) {
+        const arrivalTime = new Date(step.arrivalTime);
+
+        acc.schedule.push({
+          at: stepId,
+          arrival: Duration.subtractDate(arrivalTime, departureTime).toISOString(),
+          stop_for: step.duration ? `PT${step.duration}S` : undefined,
+        });
+      }
+
+      return acc;
+    },
+    { path: [], schedule: [] }
+  );
+  return {
+    path,
+    schedule,
+    train_name: train.trainNumber,
+    rolling_stock_name: train.rollingStock || '',
+    constraint_distribution: 'MARECO',
+    start_time: departureTime.toISOString(),
+  };
+}
+
+export function generateTrainSchedulesPayloads(trains: ImportedTrainSchedule[]): TrainSchedule[] {
+  return trains
+    .map((train) => generateTrainSchedulePayload(train))
+    .filter((payload) => payload !== null);
+}
+
+export function generatePacedTrainPayloads(trains: ImportedPacedTrainSchedule[]): PacedTrain[] {
+  return trains
+    .map((train) => {
+      const basePayload = generateTrainSchedulePayload(train);
+      if (!basePayload) return null;
+
+      return {
+        ...basePayload,
+        paced: train.paced,
+        exceptions: [],
+      };
+    })
+    .filter((payload) => payload !== null);
 }

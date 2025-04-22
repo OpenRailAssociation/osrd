@@ -20,7 +20,11 @@ import type {
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
-import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
+import {
+  generatePacedTrainPayloads,
+  generateTrainSchedulesPayloads,
+} from './generateTrainSchedulesPayloads';
+import type { ImportedPacedTrainSchedule } from './ImportTimetableItemConfig';
 import findValidTrainNameKey from '../ManageTrainSchedule/helpers/findValidTrainNameKey';
 
 function LoadingIfSearching({
@@ -44,6 +48,7 @@ type ImportTimetableItemTrainsListProps = {
   trainsJsonData: TimetableJsonPayload;
   trainsXmlData: ImportedTrainSchedule[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  pacedTrainXmlData: ImportedPacedTrainSchedule[];
 };
 
 const ImportTimetableItemTrainsList = ({
@@ -53,12 +58,12 @@ const ImportTimetableItemTrainsList = ({
   trainsJsonData,
   trainsXmlData,
   upsertTimetableItems,
+  pacedTrainXmlData,
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
 
   const { train_schedules: trainSchedulesJsonData, paced_trains: pacedTrainsJsonData } =
     trainsJsonData;
-
   const formattedTrainsList = useMemo(
     () =>
       trainsList.map(({ rollingStock, ...train }) => {
@@ -87,9 +92,9 @@ const ImportTimetableItemTrainsList = ({
       let trainSchedulePayloads: TrainSchedule[] = [];
       let pacedTrainPayloads: PacedTrain[] = [];
 
-      // Viriato import (TODO Paced train : handle viriato imports for paced trains)
+      // XML import
       if (trainsXmlData.length > 0) {
-        trainSchedulePayloads = generateTrainSchedulesPayloads(trainsXmlData, true);
+        trainSchedulePayloads = generateTrainSchedulesPayloads(trainsXmlData);
 
         // JSON import
       } else if (trainSchedulesJsonData.length > 0 || pacedTrainsJsonData.length > 0) {
@@ -98,7 +103,11 @@ const ImportTimetableItemTrainsList = ({
 
         // Open data import (only handle trainSchedules)
       } else {
-        trainSchedulePayloads = generateTrainSchedulesPayloads(formattedTrainsList, false);
+        trainSchedulePayloads = generateTrainSchedulesPayloads(formattedTrainsList);
+      }
+
+      if (pacedTrainXmlData.length > 0) {
+        pacedTrainPayloads = generatePacedTrainPayloads(pacedTrainXmlData);
       }
 
       let formattedTrainSchedules: TrainScheduleResponseWithTrainId[] = [];
@@ -154,18 +163,29 @@ const ImportTimetableItemTrainsList = ({
   }
 
   const computedItemImportLabel = () => {
-    if (!trainSchedulesJsonData.length && !trainsList.length && !!pacedTrainsJsonData.length) {
+    if (
+      !trainSchedulesJsonData.length &&
+      !trainsList.length &&
+      (!!pacedTrainsJsonData.length || !!pacedTrainXmlData)
+    ) {
       return t('pacedTrainsFound', {
-        count: pacedTrainsJsonData.length,
-        pacedTrainsFound: pacedTrainsJsonData.length,
+        count: pacedTrainsJsonData.length || pacedTrainXmlData.length,
+        pacedTrainsFound: pacedTrainsJsonData.length || pacedTrainXmlData.length,
       });
     }
 
     return t('itemsFound', {
-      count: trainsList.length || [...trainSchedulesJsonData, ...pacedTrainsJsonData].length,
-      pacedTrainsFound: pacedTrainsJsonData.length,
-      trainsFound: trainsList.length || trainSchedulesJsonData.length,
-      and: !!trainSchedulesJsonData.length && !!pacedTrainsJsonData.length ? t('and') : '',
+      count:
+        trainsList.length ||
+        [...trainSchedulesJsonData, ...pacedTrainsJsonData, ...trainsXmlData, ...pacedTrainXmlData]
+          .length,
+      pacedTrainsFound: pacedTrainsJsonData.length || pacedTrainXmlData.length,
+      trainsFound: trainsList.length || trainSchedulesJsonData.length || trainsXmlData.length,
+      and:
+        (!!trainSchedulesJsonData.length && !!pacedTrainsJsonData.length) ||
+        (!!trainsXmlData.length && !!pacedTrainXmlData)
+          ? t('and')
+          : '',
     });
   };
 

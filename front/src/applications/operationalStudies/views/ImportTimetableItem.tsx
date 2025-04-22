@@ -12,6 +12,7 @@ import {
   ImportTimetableItemConfig,
   ImportTimetableItemTrainsList,
 } from 'modules/trainschedule/components/ImportTimetableItem';
+import type { ImportedPacedTrainSchedule } from 'modules/trainschedule/components/ImportTimetableItem/ImportTimetableItemConfig';
 import { setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -31,6 +32,7 @@ const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimeta
     paced_trains: [],
   });
   const [trainsXmlData, setTrainsXmlData] = useState<ImportedTrainSchedule[]>([]);
+  const [pacedTrainXmlData, setPacedTrainXmlData] = useState<ImportedPacedTrainSchedule[]>([]);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
@@ -55,6 +57,7 @@ const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimeta
         setTrainsList={setTrainsList}
         setTrainsJsonData={setTrainsJsonData}
         setTrainsXmlData={setTrainsXmlData}
+        setPacedTrainsXmlData={setPacedTrainXmlData}
       />
       <ImportTimetableItemTrainsList
         isLoading={isLoading}
@@ -62,6 +65,7 @@ const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimeta
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
         trainsXmlData={trainsXmlData}
+        pacedTrainXmlData={pacedTrainXmlData}
         upsertTimetableItems={upsertTimetableItems}
       />
     </main>
