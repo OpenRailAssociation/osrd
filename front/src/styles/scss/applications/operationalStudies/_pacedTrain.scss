@@ -93,6 +93,10 @@
     padding: 12px 0px 12px 4px;
     position: relative;
 
+    &:hover {
+      background-color: var(--ambientB15);
+    }
+
     &.warning {
       &.invalid {
         background-image: url('data:image/svg+xml,%3Csvg version="1.1" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"%3E%3Ctitle%3EAssets/TrainList/InvalidTrain%3C/title%3E%3Cg fill-rule="evenodd"%3E%3Crect width="48" height="48" fill="%23FFEEED"/%3E%3Cpath d="m48 26v22h-22l22-22zm0-26-48 48v-22l26-26h22z" fill="%23FF6868" opacity=".1"/%3E%3C/g%3E%3C/svg%3E');
@@ -122,17 +126,19 @@
     width: 100%;
     height: auto;
     padding-left: 32px;
-    margin-top: 12px;
 
     .occurrence-item {
       position: relative;
       width: 100%;
       padding-left: 4px;
-      min-height: 32px;
       border-top: 1px solid var(--white100);
       border-bottom: 1px solid var(--black10);
       &:hover {
-        background-color: var(--ambiantB10);
+        background-color: var(--ambientB15);
+
+        .occurrence-item-menu-btn {
+          display: flex;
+        }
       }
 
       &.selected {
@@ -149,7 +155,9 @@
       }
       .main {
         display: flex;
+        align-items: center;
         padding-top: 4px;
+        min-height: 48px;
 
         .occurrence-item-dot {
           position: relative;
@@ -199,7 +207,6 @@
           text-overflow: ellipsis;
           direction: rtl;
           width: 56px;
-          height: 24px;
           line-height: 24px;
           margin-inline: 8px;
 
@@ -211,14 +218,12 @@
         .status-icon {
           margin-left: 8px;
           min-width: 16px;
-          height: 24px;
         }
 
         .rolling-stock {
           display: flex;
           align-items: center;
           overflow: hidden;
-          height: 24px;
           position: relative;
 
           &::after {
@@ -281,6 +286,31 @@
           }
         }
       }
+
+      .occurrence-item-menu-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--ambientB10);
+        color: var(--primary60);
+        border-radius: 4px;
+        box-shadow: 0px 0px 0px 1.5px rgba(255, 255, 255, 1) inset;
+
+        &:hover {
+          background-color: var(--white100);
+        }
+
+        &.show-menu {
+          display: flex;
+          background-color: var(--white100);
+        }
+      }
+
       &.selected {
         .rolling-stock::after {
           background: linear-gradient(
@@ -317,4 +347,10 @@
       padding-bottom: 0;
     }
   }
+}
+
+.occurrence-menu {
+  width: 198px;
+  margin-top: -3px;
+  margin-left: -3px;
 }

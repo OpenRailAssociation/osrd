@@ -2,6 +2,7 @@
   width: 368px;
   background-color: var(--grey5);
   border: 1px solid var(--grey30);
+  color: var(--grey80);
   border-radius: 8px;
   box-shadow:
     0 6px 21px -5px rgba(101, 169, 232, 0.341810533216783),
@@ -25,7 +26,6 @@
     }
 
     &:not(:only-of-type, :last-child) {
-      color: red;
       border-bottom: 1px solid var(--grey20);
     }
 
