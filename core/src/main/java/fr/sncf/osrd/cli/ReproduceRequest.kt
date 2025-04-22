@@ -70,8 +70,12 @@ class ReproduceRequest : CliCommand {
         try {
             val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
             val infraManager =
-                if (railjson != null) FileInfraProvider(railjson!!)
-                else InfraManager(editoastUrl, editoastAuthorization, httpClient)
+                if (railjson != null) {
+                    val rjs = parseRailJSONFromFile(railjson)
+                    val signalingSimulator = makeSignalingSimulator()
+                    val infra = FullInfra.fromRJSInfra(rjs, signalingSimulator)
+                    FileInfraProvider(infra)
+                } else InfraManager(editoastUrl, editoastAuthorization, httpClient)
 
             fun <T> loadRequest(path: String, adapter: JsonAdapter<T>): T {
                 val fileSource = Path.of(path).source()
@@ -110,14 +114,12 @@ class ReproduceRequest : CliCommand {
  * Implement the InfraProvider interface using a railjson file. Used to reproduce requests without
  * needing to run any other part of the stack.
  */
-data class FileInfraProvider(val path: String) : InfraProvider {
+data class FileInfraProvider(val infra: FullInfra) : InfraProvider {
     override fun getInfra(
         infraId: String?,
         expectedVersion: String?,
         diagnosticRecorder: DiagnosticRecorder?
     ): FullInfra {
-        val rjs = parseRailJSONFromFile(path)
-        val signalingSimulator = makeSignalingSimulator()
-        return FullInfra.fromRJSInfra(rjs, signalingSimulator)
+        return infra
     }
 }
