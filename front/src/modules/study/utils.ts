@@ -10,14 +10,11 @@ import type { StudyForm } from './components/AddOrEditStudyModal';
 
 type OptionsList = StudyState[];
 
-export const createSelectOptions = (
-  translationList: string,
-  list: OptionsList
-): SelectOptionObject[] => {
-  const { t } = useTranslation('operationalStudies/study');
-  if (isEmpty(list)) return [{ label: t('nothingSelected').toString() }];
+export const createSelectOptions = (list: OptionsList): SelectOptionObject[] => {
+  const { t } = useTranslation('operational-studies');
+  if (isEmpty(list)) return [{ label: t('study.nothingSelected').toString() }];
   return sortBy(
-    list.map((key) => ({ id: key, label: t(`${translationList}.${key}`) })),
+    list.map((key) => ({ id: key, label: t(`study.studyStates.${key}`) })),
     'value'
   );
 };

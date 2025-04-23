@@ -60,7 +60,7 @@ const emptyStudy: StudyForm = {
 };
 
 const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyModalProps) => {
-  const { t } = useTranslation(['operationalStudies/study', 'translation']);
+  const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -76,7 +76,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const [deleteStudies, { error: deleteStudyError }] =
     osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
 
-  const studyStateOptions = createSelectOptions('studyStates', studyStates);
+  const studyStateOptions = createSelectOptions(studyStates);
 
   const initialValuesRef = useRef<StudyForm | null>(null);
 
@@ -136,8 +136,8 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
         .then(() => {
           dispatch(
             setSuccess({
-              title: t('studyUpdated'),
-              text: t('studyUpdatedDetails', { name: study.name }),
+              title: t('study.studyUpdated'),
+              text: t('study.studyUpdatedDetails', { name: study.name }),
             })
           );
           closeModal();
@@ -162,8 +162,8 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
 
           dispatch(
             setSuccess({
-              title: t('studyDeleted'),
-              text: t('studyDeletedDetails', { name: study.name }),
+              title: t('study.studyDeleted'),
+              text: t('study.studyDeletedDetails', { name: study.name }),
             })
           );
           dispatch(updateStudyID(undefined));
@@ -223,7 +223,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="study-edition-modal-title">
           <img src={studyLogo} alt="Study Logo" />
-          {editionMode ? t('studyModificationTitle') : t('studyCreationTitle')}
+          {editionMode ? t('study.studyModificationTitle') : t('study.studyCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
@@ -238,13 +238,13 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                 <span className="mr-2">
                   <MdTitle />
                 </span>
-                <span className="font-weight-bold">{t('studyName')}</span>
+                <span className="font-weight-bold">{t('study.studyName')}</span>
               </div>
             }
             value={currentStudy?.name}
             onChange={(e) => handleStudyInputChange('name', e.target.value)}
             isInvalid={displayErrors && invalidFields.name}
-            errorMsg={t('studyNameInvalid')}
+            errorMsg={t('study.studyNameInvalid')}
           />
         </div>
         <div className="row">
@@ -258,18 +258,18 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                         <span className="mr-2">
                           <RiQuestionLine />
                         </span>
-                        {t('studyType')}
+                        {t('study.studyType')}
                       </div>
                     }
                     value={{
                       id: currentStudy.study_type ?? undefined,
                       label: t(
-                        `studyCategories.${currentStudy.study_type || 'nothingSelected'}`
+                        `study.studyCategories.${currentStudy.study_type || 'nothingSelected'}`
                       ).toString(),
                     }}
                     options={STUDY_TYPES.map((studyType) => ({
                       id: studyType === 'nothingSelected' ? '' : studyType,
-                      label: t(`studyCategories.${studyType}`),
+                      label: t(`study.studyCategories.${studyType}`),
                     }))}
                     onChange={(e) => {
                       handleStudyInputChange('study_type', e.id);
@@ -286,12 +286,12 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                         <span className="mr-2">
                           <FaTasks />
                         </span>
-                        {t('studyState')}
+                        {t('study.studyState')}
                       </div>
                     }
                     value={{
                       id: currentStudy.state,
-                      label: t(`studyStates.${currentStudy.state}`).toString(),
+                      label: t(`study.studyStates.${currentStudy.state}`).toString(),
                     }}
                     options={studyStateOptions}
                     onChange={(e) => handleStudyInputChange('state', e?.id)}
@@ -307,14 +307,14 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                     <span className="mr-2">
                       <Note />
                     </span>
-                    {t('studyDescription')}
+                    {t('study.studyDescription')}
                   </div>
                 }
                 value={currentStudy.description ?? undefined}
                 onChange={(e) => handleStudyInputChange('description', e.target.value)}
-                placeholder={t('studyDescriptionPlaceholder')}
+                placeholder={t('study.studyDescriptionPlaceholder')}
                 isInvalid={displayErrors && invalidFields.description}
-                errorMsg={t('studyDescriptionInvalid')}
+                errorMsg={t('study.studyDescriptionInvalid')}
               />
             </div>
           </div>
@@ -328,7 +328,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2 text-success">
                     <RiCalendarLine />
                   </span>
-                  {t('studyStartDate')}
+                  {t('study.studyStartDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.start_date)}
@@ -344,7 +344,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2 text-warning">
                     <RiCalendarLine />
                   </span>
-                  {t('studyExpectedEndDate')}
+                  {t('study.studyExpectedEndDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.expected_end_date)}
@@ -361,7 +361,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2 text-danger">
                     <RiCalendarLine />
                   </span>
-                  {t('studyRealEndDate')}
+                  {t('study.studyRealEndDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.actual_end_date)}
@@ -382,13 +382,13 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2">
                     <MdBusinessCenter />
                   </span>
-                  {t('studyServiceCode')}
+                  {t('study.study-service-code')}
                 </div>
               }
               value={currentStudy?.service_code || ''}
               onChange={(e) => handleStudyInputChange('service_code', e.target.value)}
               isInvalid={displayErrors && invalidFields.service_code}
-              errorMsg={t('studyServiceCodeInvalid')}
+              errorMsg={t('study.studyServiceCodeInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -401,13 +401,13 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2">
                     <MdBusinessCenter />
                   </span>
-                  {t('studyBusinessCode')}
+                  {t('study.study-business-code')}
                 </div>
               }
               value={currentStudy?.business_code || ''}
               onChange={(e) => handleStudyInputChange('business_code', e.target.value)}
               isInvalid={displayErrors && invalidFields.business_code}
-              errorMsg={t('studyBusinessCodeInvalid')}
+              errorMsg={t('study.studyBusinessCodeInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -422,7 +422,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   <span className="mr-2">
                     <RiMoneyEuroCircleLine />
                   </span>
-                  {t('studyBudget')}
+                  {t('study.budget')}
                 </div>
               }
               value={
@@ -440,7 +440,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               }
               textRight
               isInvalid={displayErrors && invalidFields.budget}
-              errorMsg={t('studyBudgetInvalid')}
+              errorMsg={t('study.studyBudgetInvalid')}
             />
           </div>
         </div>
@@ -448,7 +448,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
           addTag={addTag}
           tags={currentStudy?.tags || []}
           removeTag={removeTag}
-          title={t('studyTags')}
+          title={t('study.studyTags')}
           color="primary"
         />
       </ModalBodySNCF>
@@ -464,11 +464,11 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               <span className="mr-2">
                 <Trash />
               </span>
-              {t('studyDeleteButton')}
+              {t('study.studyDeleteButton')}
             </button>
           )}
           <button className="btn btn-secondary mr-2" type="button" onClick={closeModal}>
-            {t('studyCancel')}
+            {t('study.studyCancel')}
           </button>
           {editionMode ? (
             <button
@@ -481,7 +481,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               <span className="mr-2">
                 <Pencil />
               </span>
-              {t('studyModifyButton')}
+              {t('study.studyModifyButton')}
             </button>
           ) : (
             <button
@@ -494,7 +494,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               <span className="mr-2">
                 <FaPlus />
               </span>
-              {t('studyCreateButton')}
+              {t('study.studyCreateButton')}
             </button>
           )}
         </div>
