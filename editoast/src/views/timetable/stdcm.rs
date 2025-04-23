@@ -498,6 +498,7 @@ impl VirtualTrainRun {
             speed_limit_tag: stdcm_request.speed_limit_tags.clone(),
             power_restrictions: vec![],
             options: Default::default(),
+            category: None,
         };
 
         // Compute simulation of a train schedule

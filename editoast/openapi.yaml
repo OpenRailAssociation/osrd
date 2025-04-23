@@ -12503,6 +12503,10 @@ components:
       - path
       - constraint_distribution
       properties:
+        category:
+          allOf:
+          - $ref: '#/components/schemas/RollingStockCategory'
+          nullable: true
         comfort:
           $ref: '#/components/schemas/Comfort'
         constraint_distribution:

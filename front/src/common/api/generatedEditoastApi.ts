@@ -3240,6 +3240,7 @@ export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainSchedule = {
+  category?: RollingStockCategory | null;
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;

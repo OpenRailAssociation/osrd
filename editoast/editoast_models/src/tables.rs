@@ -432,6 +432,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::RollingStockCategory;
 
     paced_train (id) {
         id -> Int8,
@@ -454,6 +455,7 @@ diesel::table! {
         options -> Jsonb,
         time_window -> Interval,
         interval -> Interval,
+        category -> Nullable<RollingStockCategory>,
     }
 }
 
@@ -786,6 +788,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::RollingStockCategory;
 
     train_schedule (id) {
         id -> Int8,
@@ -806,6 +809,7 @@ diesel::table! {
         speed_limit_tag -> Nullable<Varchar>,
         power_restrictions -> Jsonb,
         options -> Jsonb,
+        category -> Nullable<RollingStockCategory>,
     }
 }
 

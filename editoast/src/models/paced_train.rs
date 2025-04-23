@@ -2,6 +2,7 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_models::rolling_stock::RollingStockCategory;
 use editoast_schemas;
 use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::Paced;
@@ -49,6 +50,7 @@ pub struct PacedTrain {
     pub time_window: ChronoDuration,
     /// Time between two occurrences
     pub interval: ChronoDuration,
+    pub category: Option<RollingStockCategory>,
 }
 
 impl PacedTrain {
@@ -69,6 +71,7 @@ impl PacedTrain {
             speed_limit_tag: self.speed_limit_tag,
             power_restrictions: self.power_restrictions,
             options: self.options,
+            category: self.category,
         }
     }
 
@@ -129,6 +132,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
                 power_restrictions: paced_train.power_restrictions,
                 options: paced_train.options,
+                category: paced_train.category.as_deref().cloned(),
             },
             paced: Paced {
                 time_window: paced_train.time_window.try_into().unwrap(),
