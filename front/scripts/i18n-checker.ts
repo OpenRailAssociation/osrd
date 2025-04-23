@@ -13,11 +13,7 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:unspecified/,
   // key used by upsertMapWaypointsInOperationalPoints
   /translation:requestedPoint/,
-  // key used by checkStdcmConfigErrors
-  /translation:arriveAt/,
   /translation:departureTime/,
-  /translation:destinationTime/,
-  /translation:leaveAt/,
   /stdcm-help-section:asu/,
   /stdcm-help-section:sections/,
   /translation:remainingTrackConflicts/,
@@ -110,12 +106,9 @@ const IGNORE_UNUSED: RegExp[] = [
   /stdcm-help-section:*/,
 
   // Stdcm
-  /stdcm:arriveAt/,
   /stdcm:consist\.errors\..*/,
   /stdcm:datetimeOutsideWindow/,
-  /stdcm:destinationTime/,
   /stdcm:departureDate/,
-  /stdcm:leaveAt/,
   /stdcm:linkedTrainDefaultCard\..*/,
   /stdcm:simulation.additionalResults/,
   /stdcm:simulation.calculatingSimulation/,
