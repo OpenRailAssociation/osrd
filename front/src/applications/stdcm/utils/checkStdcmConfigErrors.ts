@@ -19,7 +19,7 @@ const checkStdcmConfigErrors = ({
   prevFormErros,
   shouldCheckMandatoryFields,
 }: {
-  t: TFunction;
+  t: TFunction<'stdcm'>;
   pathfindingStatus?: 'success' | 'failure';
   stdcmConf?: OsrdStdcmConfState;
   prevFormErros?: StdcmConfigErrors;
