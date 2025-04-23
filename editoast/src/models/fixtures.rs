@@ -13,8 +13,10 @@ use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
+use editoast_schemas::paced_train::ExceptionType;
 use editoast_schemas::paced_train::Paced;
 use editoast_schemas::paced_train::PacedTrain;
+use editoast_schemas::paced_train::PacedTrainException;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
@@ -28,6 +30,7 @@ use editoast_schemas::train_schedule::TrainSchedule;
 use postgis_diesel::types::LineString;
 use serde::Deserialize;
 use serde_json::Value;
+use uuid::Uuid;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
@@ -100,6 +103,21 @@ pub fn simple_paced_train_base() -> PacedTrain {
             .expect("Unable to parse test train schedule");
     PacedTrain {
         train_schedule_base,
+        exceptions: vec![PacedTrainException {
+            key: "exception_key".into(),
+            exception_type: ExceptionType::Created {},
+            disabled: false,
+            constraint_distribution: None,
+            initial_speed: None,
+            labels: None,
+            options: None,
+            path_and_schedule: None,
+            rolling_stock: None,
+            rolling_stock_category: None,
+            speed_limit_tag: None,
+            start_time: None,
+            train_name: None,
+        }],
         paced: Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),

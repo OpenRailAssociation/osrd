@@ -6,6 +6,7 @@ use editoast_models::rolling_stock::TrainCategory;
 use editoast_schemas;
 use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::Paced;
+use editoast_schemas::paced_train::PacedTrainException;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
@@ -51,6 +52,8 @@ pub struct PacedTrain {
     /// Time between two occurrences
     pub interval: ChronoDuration,
     pub category: Option<TrainCategory>,
+    #[model(json)]
+    pub exceptions: Vec<PacedTrainException>,
 }
 
 impl PacedTrain {
@@ -94,6 +97,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
         paced_train::PacedTrain {
             train_schedule_base,
             paced,
+            exceptions,
         }: paced_train::PacedTrain,
     ) -> Self {
         PacedTrain::changeset()
@@ -113,6 +117,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
             .category(train_schedule_base.category.map(TrainCategory))
+            .exceptions(exceptions)
     }
 }
 
@@ -135,6 +140,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 options: paced_train.options,
                 category: paced_train.category.as_deref().cloned(),
             },
+            exceptions: paced_train.exceptions,
             paced: Paced {
                 time_window: paced_train.time_window.try_into().unwrap(),
                 interval: paced_train.interval.try_into().unwrap(),

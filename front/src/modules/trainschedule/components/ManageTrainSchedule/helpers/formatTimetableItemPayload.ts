@@ -46,5 +46,6 @@ export function formatPacedTrainPayload(
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
     },
+    exceptions: [],
   };
 }
