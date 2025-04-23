@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 
-import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import { formatConflicts } from 'applications/stdcm/utils/formatConflicts';
 import { hasConflicts } from 'applications/stdcm/utils/simulationOutputUtils';
 
 import type { StdcmSimulationOutputs } from '../types';
 
-const useConflictsMessages = (t: TFunction, selectedSimulationOutput?: StdcmSimulationOutputs) => {
+const useConflictsMessages = (selectedSimulationOutput?: StdcmSimulationOutputs) => {
+  const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const [trackConflicts, setTrackConflicts] = useState<string[]>([]);
   const [workConflicts, setWorkConflicts] = useState<string[]>([]);
 
