@@ -144,19 +144,20 @@
         border-bottom: 1px solid var(--black50);
       }
       &-name {
-        white-space: nowrap;
         overflow: hidden;
-        /* "overflow" value must be different from "visible" */
+        white-space: nowrap;
         text-overflow: ellipsis;
-        width: 56px;
         direction: rtl;
-        text-align: left;
+        width: 56px;
         height: 24px;
         line-height: 24px;
-        min-width: 56px;
         margin-inline: 8px;
-      }
 
+        span {
+          unicode-bidi: embed;
+          direction: ltr;
+        }
+      }
       &:last-child {
         border-bottom: none;
       }

@@ -60,8 +60,8 @@ const OccurrenceItem = ({
       <div className="occurrence-item-dot">
         <Dot variant="fill" />
       </div>
-      <div className="occurrence-item-name" title={trainName}>
-        {trainName}
+      <div className="occurrence-item-name">
+        <span title={trainName}>{trainName}</span>
       </div>
       <div className="rolling-stock">
         {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
