@@ -7,7 +7,7 @@ import { isInvalidFloatNumber } from 'utils/numbers';
 
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
-  t: TFunction,
+  t: TFunction<'operational-studies', 'manageTrainSchedule'>,
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string

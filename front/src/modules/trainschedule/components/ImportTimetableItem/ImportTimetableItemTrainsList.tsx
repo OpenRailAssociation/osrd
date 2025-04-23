@@ -23,7 +23,13 @@ import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } fro
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from '../ManageTrainSchedule/helpers/findValidTrainNameKey';
 
-function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
+function LoadingIfSearching({
+  isLoading,
+  t,
+}: {
+  isLoading: boolean;
+  t: TFunction<'operational-studies', 'importTrains'>;
+}) {
   return (
     <h1 className="text-center text-muted my-5">
       {isLoading ? <Loader position="center" /> : `${t('noResults')}`}

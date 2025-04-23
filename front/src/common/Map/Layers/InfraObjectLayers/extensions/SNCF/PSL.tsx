@@ -30,7 +30,7 @@ export function getPSLSpeedValueLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-  t?: TFunction;
+  t?: TFunction<'translation'>;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
