@@ -30,7 +30,7 @@ const useProtectedAction = ({
   requiredGrant,
   requiredPrivileges = [],
 }: UseProtectedActionParams) => {
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const hasPrivilege = useCheckPrivileges({
     resourceType,

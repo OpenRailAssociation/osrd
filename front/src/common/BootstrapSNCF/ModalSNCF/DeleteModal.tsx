@@ -14,7 +14,7 @@ const DeleteModal = ({
   selectedPacedTrainIds,
   selectedTrainScheduleIds,
 }: DeleteModalProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'translation', 'common/common']);
+  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
   const { closeModal } = useModal();
 
   const deleteTimetableItemsComputedLabel = () => {

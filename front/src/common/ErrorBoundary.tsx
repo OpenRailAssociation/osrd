@@ -9,7 +9,7 @@ import { getErrorMessage } from 'utils/error';
 
 export default function ErrorBoundary() {
   const error = useRouteError() as ApiError | SerializedError;
-  const { t } = useTranslation(['errors', 'common/common']);
+  const { t } = useTranslation(['translation', 'errors']);
   const navigate = useNavigate();
   return (
     <ModalProvider>
@@ -29,7 +29,7 @@ export default function ErrorBoundary() {
 
           <Link to="/">
             <button type="button" className="btn btn-primary btn-sm px-2">
-              {t('common/common:navigation.goHome')}
+              {t('common.navigation.goHome')}
             </button>
           </Link>
           <button
@@ -37,7 +37,7 @@ export default function ErrorBoundary() {
             type="button"
             onClick={() => navigate(-1)}
           >
-            {t('common/common:navigation.goBack')}
+            {t('common.navigation.goBack')}
           </button>
         </div>
       </main>

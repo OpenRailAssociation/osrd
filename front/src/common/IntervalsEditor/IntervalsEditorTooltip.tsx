@@ -8,21 +8,21 @@ interface IntervalsEditorTooltip {
 }
 
 const IntervalsEditorTooltip = ({ item, point }: IntervalsEditorTooltip) => {
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
   return (
     <div className="linear-metadata-tooltip">
       <div className="header">{point && <span>{Math.round(point)}</span>}</div>
       <div className="content">
         <div>
-          <span className="mr-3">{t('begin')}</span>
+          <span className="mr-3">{t('interval-editor.begin')}</span>
           {Math.round(item.begin)}
         </div>
         <div>
-          <span className="mr-3">{t('end')}</span>
+          <span className="mr-3">{t('interval-editor.end')}</span>
           {Math.round(item.end)}
         </div>
         <div>
-          <span className="mr-3">{t('value')}</span>
+          <span className="mr-3">{t('interval-editor.value')}</span>
           {item.value}
         </div>
       </div>

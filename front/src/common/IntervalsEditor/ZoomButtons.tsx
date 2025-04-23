@@ -12,14 +12,14 @@ type ZoomButtonProps = {
 };
 
 const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
 
   return (
     <div>
       <div className="zoom-horizontal">
         <button
-          aria-label={t('actions.zoom-in')}
-          title={t('actions.zoom-in')}
+          aria-label={t('common.zoom-in')}
+          title={t('common.zoom-in')}
           type="button"
           className="btn btn-sm btn-outline-secondary"
           onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
@@ -27,8 +27,8 @@ const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
           <TbZoomIn />
         </button>
         <button
-          aria-label={t('actions.reset')}
-          title={t('actions.reset')}
+          aria-label={t('common.reset')}
+          title={t('common.reset')}
           type="button"
           disabled={viewBox === null}
           className="btn btn-sm btn-outline-secondary"
@@ -37,8 +37,8 @@ const ZoomButtons = ({ data, setViewBox, viewBox }: ZoomButtonProps) => {
           <TbZoomCancel />
         </button>
         <button
-          aria-label={t('actions.zoom-out')}
-          title={t('actions.zoom-out')}
+          aria-label={t('common.zoom-out')}
+          title={t('common.zoom-out')}
           type="button"
           disabled={viewBox === null}
           className="btn btn-sm btn-outline-secondary"
