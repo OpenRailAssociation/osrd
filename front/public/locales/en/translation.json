@@ -455,15 +455,21 @@
       }
     }
   },
+  "authorization": {
+    "permission": "Permission",
+    "permissionDenied": "You don't have permission to perform this action"
+  },
   "common": {
     "and": "and",
     "cancel": "Cancel",
     "close": "Close",
+    "collapse": "Collapse",
     "confirm": "Confirm",
     "delete": "Delete",
     "duplicate": "Duplicate",
     "edit": "Edit",
     "error": "An error has occurred",
+    "expand": "Expand",
     "failure": {
       "save": {
         "text": "Failed to publish your modifications",
@@ -477,10 +483,15 @@
       "help-legend": "Show legend",
       "reset-north": "Reset camera"
     },
+    "navigation": {
+      "goBack": "Back to previous page",
+      "goHome": "Go to home page"
+    },
     "next": "Next",
     "no": "No",
     "open": "Open",
     "previous": "Previous",
+    "reset": "Reset",
     "save": "Save",
     "search": "Search",
     "selected": "already selected",
@@ -504,6 +515,16 @@
     "zoom-reset": "Reset zoom"
   },
   "editor": "Infrastructure editor",
+  "interval-editor": {
+    "add": "Add",
+    "begin": "Start",
+    "delete": "Delete",
+    "end": "End",
+    "merge": "Merge with next segment",
+    "split": "Split",
+    "translate": "Shift",
+    "value": "value"
+  },
   "jsonUpload": {
     "badJSON": "The JSON file is malformed",
     "emptyFile": "The file is empty",

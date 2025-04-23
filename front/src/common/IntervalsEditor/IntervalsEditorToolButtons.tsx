@@ -42,7 +42,7 @@ type ToolButtonsProps = {
 };
 
 const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButtonsProps) => {
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
 
   return (
     <div className="btn-group-vertical">
@@ -51,7 +51,7 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
           <ToolButton
             selectedTool={selectedTool}
             tool={INTERVALS_EDITOR_TOOLS.ADD_TOOL}
-            title={t('actions.add')}
+            title={t('interval-editor.add')}
             icon={<IoIosAdd />}
             toggleSelectedTool={toggleSelectedTool}
           />
@@ -60,7 +60,7 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
           <ToolButton
             selectedTool={selectedTool}
             tool={INTERVALS_EDITOR_TOOLS.TRANSLATE_TOOL}
-            title={t('actions.translate')}
+            title={t('interval-editor.translate')}
             icon={<TbArrowsHorizontal />}
             toggleSelectedTool={toggleSelectedTool}
           />
@@ -69,7 +69,7 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
           <ToolButton
             selectedTool={selectedTool}
             tool={INTERVALS_EDITOR_TOOLS.CUT_TOOL}
-            title={t('actions.split')}
+            title={t('interval-editor.split')}
             icon={<TbScissors />}
             toggleSelectedTool={toggleSelectedTool}
           />
@@ -78,7 +78,7 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
           <ToolButton
             selectedTool={selectedTool}
             tool={INTERVALS_EDITOR_TOOLS.MERGE_TOOL}
-            title={t('actions.merge')}
+            title={t('interval-editor.merge')}
             icon={<BiArrowFromLeft />}
             toggleSelectedTool={toggleSelectedTool}
           />
@@ -87,7 +87,7 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
           <ToolButton
             selectedTool={selectedTool}
             tool={INTERVALS_EDITOR_TOOLS.DELETE_TOOL}
-            title={t('actions.delete')}
+            title={t('interval-editor.delete')}
             icon={<BsFillTrashFill />}
             toggleSelectedTool={toggleSelectedTool}
           />

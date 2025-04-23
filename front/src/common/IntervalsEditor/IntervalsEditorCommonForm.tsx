@@ -30,7 +30,7 @@ const IntervalsEditorCommonForm = ({
   defaultValue,
   onInputChange,
 }: IntervalsEditorFormProps) => {
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
 
   const resizeSegmentByInput = (newPosition: number, context: 'begin' | 'end') => {
     const gap = newPosition - interval[context];
@@ -77,7 +77,7 @@ const IntervalsEditorCommonForm = ({
       <DebouncedNumberInputSNCF
         id="item-begin-input"
         input={Math.round(interval.begin)}
-        label={t('begin')}
+        label={t('interval-editor.begin')}
         onChange={(newPosition) => resizeSegmentByInput(newPosition, 'begin')}
         max={interval.end}
         sm
@@ -86,7 +86,7 @@ const IntervalsEditorCommonForm = ({
       <DebouncedNumberInputSNCF
         id="item-end-input"
         input={Math.round(interval.end)}
-        label={t('end')}
+        label={t('interval-editor.end')}
         onChange={(newPosition) => resizeSegmentByInput(newPosition, 'end')}
         min={interval.begin}
         max={Math.round(totalLength)}

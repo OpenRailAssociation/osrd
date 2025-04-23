@@ -1,5 +1,27 @@
 {
+  "common": {
+    "collapse": "Einklappen",
+    "delete": "Löschen",
+    "expand": "Ausklappen",
+    "navigation": {
+      "goBack": "Zur letzten Seite",
+      "goHome": "Zur Startseite"
+    },
+    "reset": "Zurücksetzen",
+    "zoom-in": "Reinzoomen",
+    "zoom-out": "Rauszoomen"
+  },
   "editor": "Betriebsnetz-Editor",
+  "interval-editor": {
+    "add": "Hinzufügen",
+    "begin": "Start",
+    "delete": "Löschen",
+    "end": "Ende",
+    "merge": "Mit nächstem Abschnitt vereinigen",
+    "split": "Trennen",
+    "translate": "Übersetzen",
+    "value": "Wert"
+  },
   "map": "Karte",
   "nav-bar": {
     "about": "Über OSRD",

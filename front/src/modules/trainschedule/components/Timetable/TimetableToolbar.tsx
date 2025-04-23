@@ -60,7 +60,7 @@ const TimetableToolbar = ({
   timetableItems,
   isInSelection,
 }: TimetableToolbarProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'common/common', 'translation']);
+  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
 

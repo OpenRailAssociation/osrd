@@ -11,7 +11,7 @@ interface CollapsableProps extends Omit<HTMLAttributes<unknown>, 'children' | 'c
 }
 const Collapsable = (props: CollapsableProps) => {
   const { children, collapsed = false, className } = props;
-  const { t } = useTranslation('common/common');
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
 
   const toggle = useCallback(() => {
@@ -29,7 +29,7 @@ const Collapsable = (props: CollapsableProps) => {
         <button
           type="button"
           className="flex-grow-0 px-1 pb-1 mx-1"
-          title={isCollapsed ? t('actions.expand') : t('actions.collapse')}
+          title={isCollapsed ? t('common.expand') : t('common.collapse')}
           onClick={toggle}
         >
           {isCollapsed ? <ChevronUp /> : <ChevronDown />}

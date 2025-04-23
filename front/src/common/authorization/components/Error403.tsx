@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
 const Error403 = () => {
-  const { t } = useTranslation(['errors', 'common/common']);
+  const { t } = useTranslation(['errors', 'translation']);
   const navigate = useNavigate();
   return (
     <>
@@ -17,7 +17,7 @@ const Error403 = () => {
             type="button"
             onClick={() => navigate('/')}
           >
-            {t('common/common:navigation.goHome')}
+            {t('translation:common.navigation.goHome')}
           </button>
         </div>
       </main>

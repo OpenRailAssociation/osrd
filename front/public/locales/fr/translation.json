@@ -453,15 +453,21 @@
       }
     }
   },
+  "authorization": {
+    "permission": "Permission",
+    "permissionDenied": "Vous n'avez pas la permission de réaliser cette action"
+  },
   "common": {
     "and": "et",
     "cancel": "Annuler",
     "close": "Fermer",
+    "collapse": "Réduire",
     "confirm": "Confirmer",
     "delete": "Supprimer",
     "duplicate": "Dupliquer",
     "edit": "Éditer",
     "error": "Une erreur est survenue",
+    "expand": "Agrandir",
     "failure": {
       "save": {
         "text": "Vos modifications n'ont pas été publiées",
@@ -475,10 +481,15 @@
       "help-legend": "Afficher la légende",
       "reset-north": "Réinitialiser la caméra"
     },
+    "navigation": {
+      "goBack": "Retour à  la page précédente",
+      "goHome": "Retour à la page d'accueil"
+    },
     "next": "Suivant",
     "no": "Non",
     "open": "Ouvrir",
     "previous": "Précedent",
+    "reset": "Réinitialiser",
     "save": "Sauvegarder",
     "search": "Rechercher",
     "selected": "déjà sélectionné",
@@ -502,6 +513,16 @@
     "zoom-reset": "Réinitialiser le zoom"
   },
   "editor": "Éditeur d'infrastructure",
+  "interval-editor": {
+    "add": "Ajouter",
+    "begin": "Début",
+    "delete": "Supprimer",
+    "end": "Fin",
+    "merge": "Fusionner avec le segment suivant",
+    "split": "Diviser",
+    "translate": "Translater",
+    "value": "Valeur"
+  },
   "jsonUpload": {
     "badJSON": "Le fichier JSON est malformé",
     "emptyFile": "Le fichier est vide",
