@@ -11,8 +11,6 @@ const LANGUAGES = ['en', 'fr'];
 
 const IGNORE_MISSING: RegExp[] = [
   /translation:unspecified/,
-  // key used by upsertMapWaypointsInOperationalPoints
-  /translation:requestedPoint/,
   /stdcm-help-section:asu/,
   /stdcm-help-section:sections/,
 ];
@@ -93,7 +91,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:simulationResults.departureTime/,
   /operational-studies:simulationResults.electricalProfiles\..*/,
   /operational-studies:simulationResults.powerRestriction\..*/,
-  /operational-studies:simulationResults.requestedPoint/,
 
   // Stdcm help section
   /stdcm-help-section:*/,
