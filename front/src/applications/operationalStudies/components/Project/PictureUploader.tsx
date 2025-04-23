@@ -34,10 +34,12 @@ function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
     <>
       <Image />
       {isValid ? (
-        <div className="project-edition-modal-picture-placeholder-text">{t('addImage')}</div>
+        <div className="project-edition-modal-picture-placeholder-text">
+          {t('project.addImage')}
+        </div>
       ) : (
         <div className="project-edition-modal-picture-placeholder-text invalid">
-          {t('noImageInvalid')}
+          {t('project.noImageInvalid')}
         </div>
       )}
     </>
@@ -45,7 +47,7 @@ function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
 }
 
 const PicturePlaceholder = ({ image, isValid, tempProjectImage }: PicturePlaceholderProps) => {
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation('operational-studies');
   const [projectImage, setProjectImage] = useState<Blob>();
 
   const getProjectImageBlob = async () => {
@@ -86,7 +88,7 @@ const PicturePlaceholderButtons = ({
   safeWord,
   shouldDisplayBinButton,
 }: PicturePlaceholderButtonsProps) => {
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation('operational-studies');
   const [categories, setCategories] = useState<Categories>({});
   const [imageIndexes, setImageIndexes] = useState<{ [category: string]: number }>({});
 
@@ -170,7 +172,7 @@ const PicturePlaceholderButtons = ({
         <button
           className="remove"
           type="button"
-          aria-label={t('removeImage')}
+          aria-label={t('project.removeImage')}
           onClick={() => setTempProjectImage(null)}
         >
           <XCircle variant="fill" />
@@ -186,7 +188,7 @@ export default function PictureUploader({
   tempProjectImage,
 }: PictureUploaderProps) {
   const [isValid, setIsValid] = useState<boolean>(true);
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation('operational-studies');
   const safeWord = useSelector(getUserSafeWord);
   const dispatch = useAppDispatch();
 
@@ -201,9 +203,11 @@ export default function PictureUploader({
         dispatch(
           setFailure({
             name: isSizeTooLarge
-              ? t('error.uploadImageSizeTitle')
-              : t('error.uploadImageTypeTitle'),
-            message: isSizeTooLarge ? t('error.uploadImageSize') : t('error.uploadImageType'),
+              ? t('project.error.uploadImageSizeTitle')
+              : t('project.error.uploadImageTypeTitle'),
+            message: isSizeTooLarge
+              ? t('project.error.uploadImageSize')
+              : t('project.error.uploadImageType'),
           })
         );
         setIsValid(false);
@@ -224,7 +228,7 @@ export default function PictureUploader({
           id="picture-upload"
           type="file"
           name="imageFile"
-          aria-label={t('uploadImage')}
+          aria-label={t('project.uploadImage')}
           onChange={handleUpload}
           accept=".png, .jpg, .jpeg"
           className="d-none"
