@@ -164,10 +164,50 @@
       &:first-child {
         border-top: none;
       }
+
       .occurrence-item-dot {
+        position: relative;
         height: 24px;
         color: var(--grey40);
+
+        .exception-info {
+          padding: 9px 8px 11px;
+          margin-left: 7px;
+          min-width: 200px;
+          position: fixed;
+          z-index: 10;
+          background-color: var(--black85);
+          border-radius: 8px;
+          box-shadow: 0 4px 6px -2px var(--black28);
+          font-size: 0.875rem;
+
+          hr {
+            border-top: 1px solid var(--white50);
+            margin-block: 7px 5px;
+          }
+
+          .exception-type {
+            color: var(--highlight30);
+            text-transform: uppercase;
+            font-size: 12px;
+            line-height: 20px;
+            margin-inline: 4px;
+          }
+
+          .change-groups {
+            display: flex;
+            flex-direction: column;
+            color: var(--white100);
+            line-height: 20px;
+          }
+
+          .change-group {
+            margin-inline: 4px;
+            margin-top: 4px;
+          }
+        }
       }
+
       .status-icon {
         margin-left: 8px;
         min-width: 16px;

@@ -1,12 +1,14 @@
-import { Dot, Moon } from '@osrd-project/ui-icons';
+import { Moon } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
+import { isOccurrence } from 'utils/trainId';
 
 import type { Occurrence } from '../types';
 import { roundAndFormatToNearestMinute } from '../utils';
+import OccurrenceIndicator from './OccurrenceIndicator';
 
 const ConsecutiveDayDateDisplay = ({
   departureTime,
@@ -55,13 +57,16 @@ const OccurrenceItem = ({
       })}
       role="button"
       tabIndex={0}
-      onClick={() => selectOccurrence(occurrence.id)}
+      onClick={() => {
+        if (isOccurrence(occurrence.id)) {
+          selectOccurrence(occurrence.id);
+        }
+      }}
     >
-      <div className="occurrence-item-dot">
-        <Dot variant="fill" />
-      </div>
-      <div className="occurrence-item-name">
-        <span title={trainName}>{trainName}</span>
+      <OccurrenceIndicator occurrence={occurrence} />
+
+      <div className="occurrence-item-name" title={trainName}>
+        {trainName}
       </div>
       <div className="rolling-stock">
         {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}

@@ -90,6 +90,22 @@
     "noItem": "Aucun item",
     "noSpeedLimitTagsShort": "Aucun",
     "noTrain": "Aucun train",
+    "occurrenceChangeGroup": {
+      "constraintDistribution": "Marge de régularité",
+      "convoy": "Convoi",
+      "departureTime": "Heure de départ",
+      "electricalProfiles": "Profils électriques",
+      "initialVelocity": "Vitesse initiale",
+      "labels": "Labels",
+      "name": "Nom",
+      "pathAndSchedule": "Desserte et horaires",
+      "speedLimitByTag": "Code de composition"
+    },
+    "occurrenceType": {
+      "addedOccurrence": "Exception ajoutée",
+      "disabledOccurrence": "Exception désactivée",
+      "editedOccurrence": "Exception modifiée"
+    },
     "pacedTrain": "Mission",
     "pacedTrainAdded": "Mission ajoutée",
     "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",

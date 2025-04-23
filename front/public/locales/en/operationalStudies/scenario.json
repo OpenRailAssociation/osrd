@@ -90,6 +90,22 @@
     "noItem": "No item",
     "noSpeedLimitTagsShort": "None",
     "noTrain": "No train",
+    "occurrenceChangeGroup": {
+      "constraintDistribution": "Recovery margin",
+      "convoy": "Convoy",
+      "departureTime": "Departure time",
+      "electricalProfiles": "Electrical profiles",
+      "initialVelocity": "Initial velocity",
+      "labels": "Labels",
+      "name": "Name",
+      "pathAndSchedule": "Path and schedule",
+      "speedLimitByTag": "Speed limit by tag"
+    },
+    "occurrenceType": {
+      "addedOccurrence": "Added occurrence",
+      "disabledOccurrence": "Disabled occurrence",
+      "editedOccurrence": "Edited occurrence"
+    },
     "pacedTrain": "Service",
     "pacedTrainAdded": "Service added",
     "pacedTrainDeleted": "The service {{name}} has been deleted",
