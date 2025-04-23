@@ -10,7 +10,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 const DEFAULT_TEXT = '# contact@osrd.fr';
 
 const HelpModalSNCF = () => {
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
   const [helpModalText, setHelpModalText] = useState<string>('');
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const HelpModalSNCF = () => {
 
   return (
     <div className="informations-modal">
-      <ModalHeaderSNCF withCloseButton>{t('help')}</ModalHeaderSNCF>
+      <ModalHeaderSNCF withCloseButton>{t('nav-bar.help')}</ModalHeaderSNCF>
       <ModalBodySNCF>
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{helpModalText}</ReactMarkdown>
       </ModalBodySNCF>

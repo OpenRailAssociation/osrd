@@ -42,7 +42,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
 
   const { logout, username, impersonatedUser } = useAuth();
   const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
@@ -94,8 +94,8 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
               type="button"
               className="btn btn-only-icon btn-link btn-notif toolbar-item-spacing text-success"
               onClick={() => openModal(<UserSettings />)}
-              aria-label={t('userSettings')}
-              title={t('userSettings')}
+              aria-label={t('nav-bar.userSettings')}
+              title={t('nav-bar.userSettings')}
             >
               <ShieldCheck />
             </button>
@@ -125,7 +125,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
                 <span className="mr-2">
                   <Info />
                 </span>
-                {t('about')}
+                {t('nav-bar.about')}
               </button>,
               <button
                 type="button"
@@ -136,7 +136,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
                 <span className="mr-2">
                   <Report />
                 </span>
-                {t('help')}
+                {t('nav-bar.help')}
               </button>,
               <button
                 type="button"
@@ -147,7 +147,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
                 <span className="mr-2">
                   {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
                 </span>
-                <span data-testid="language-info">{t(`language.${i18n.language}`)} </span>
+                <span data-testid="language-info">{t(`nav-bar.language.${i18n.language}`)} </span>
               </button>,
               <button
                 data-testid="user-settings-btn"
@@ -159,13 +159,13 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
                 <span className="mr-2">
                   <Gear variant="fill" />
                 </span>
-                {t('userSettings')}
+                {t('nav-bar.userSettings')}
               </button>,
               <button type="button" className="btn-link text-reset" onClick={logout} key="logout">
                 <span className="mr-2">
                   <SignOut />
                 </span>
-                {t('disconnect')}
+                {t('nav-bar.disconnect')}
               </button>,
             ]}
           />

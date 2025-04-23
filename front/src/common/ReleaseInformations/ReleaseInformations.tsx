@@ -12,7 +12,7 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
   const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
   const { data: coreVersion } = osrdEditoastApi.endpoints.getVersionCore.useQuery();
@@ -60,10 +60,10 @@ function ReleaseInformations() {
                 <thead>
                   <tr>
                     <th scope="col">
-                      <div className="cell-inner">{t('informations.application')}</div>
+                      <div className="cell-inner">{t('nav-bar.informations.application')}</div>
                     </th>
                     <th scope="col" id="cellfirst-t5">
-                      <div className="cell-inner">{t('informations.version')}</div>
+                      <div className="cell-inner">{t('nav-bar.informations.version')}</div>
                     </th>
                   </tr>
                 </thead>

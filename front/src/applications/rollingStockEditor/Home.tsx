@@ -6,7 +6,7 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import RollingStockEditor from './views/RollingStockEditor';
 
 const HomeRollingStockEditor = () => {
-  const { t } = useTranslation(['home/home', 'referenceMap']);
+  const { t } = useTranslation();
 
   return (
     <ModalProvider>

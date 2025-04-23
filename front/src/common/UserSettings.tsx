@@ -76,25 +76,25 @@ const UserSettings = () => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
   }, [debouncedSafeWord]);
 
-  const { t } = useTranslation(['home/navbar', 'operationalStudies/scenario']);
+  const { t } = useTranslation(['translation', 'operationalStudies/scenario']);
   return (
     <>
       <ModalHeaderSNCF withCloseButton>
         <h1 className="d-flex align-items-center">
           <Gear variant="fill" size="lg" />
-          <span className="ml-2">{t('userSettings')}</span>
+          <span className="ml-2">{t('nav-bar.userSettings')}</span>
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <InputSNCF
           id="safe-word-input"
-          label={t('safeWord')}
+          label={t('nav-bar.safeWord')}
           clearButton
           onClear={() => {
             dispatch(updateUserPreferences({ ...userPreferences, safeWord: '' }));
             setSafeWordText('');
           }}
-          placeholder={t('yourSafeWord')}
+          placeholder={t('nav-bar.yourSafeWord')}
           onChange={(e) => setSafeWordText(e.target.value)}
           value={safeWordText}
           type="text"
@@ -106,11 +106,11 @@ const UserSettings = () => {
           }
         />
         <small id="safeWordHelpBlock" className="form-text text-muted">
-          {t('safeWordHelp')}
+          {t('nav-bar.safeWordHelp')}
         </small>
         {isSuperUser && !impersonatedUser && (
           <>
-            <div className="font-weight-medium mb-2 mt-2">{t('impersonation')}</div>
+            <div className="font-weight-medium mb-2 mt-2">{t('nav-bar.impersonation')}</div>
             <ComboBox
               id="impersonation"
               value={impersonatedUser}

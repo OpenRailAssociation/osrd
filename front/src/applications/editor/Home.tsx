@@ -9,7 +9,7 @@ import { useCurrentInfra } from 'modules/infra/useInfra';
 import Editor from './Editor';
 
 export default function HomeEditorUnplugged() {
-  const { t } = useTranslation(['home/home', 'referenceMap']);
+  const { t } = useTranslation(['translation', 'referenceMap']);
   const { data: infra } = useCurrentInfra();
 
   return (

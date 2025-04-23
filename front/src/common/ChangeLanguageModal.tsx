@@ -11,7 +11,7 @@ import i18n, { supportedLngs } from 'i18n';
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
 const SortedLanguages = () => {
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
   const { closeModal } = useModal();
 
   const changeLanguage = (lng: string) => {
@@ -20,7 +20,7 @@ const SortedLanguages = () => {
   };
 
   const formatLanguageWithFlag = (lng: string) => {
-    const title = t(`language.${lng}`);
+    const title = t(`nav-bar.language.${lng}`);
     switch (lng) {
       case 'de':
         return <DE title={title} />;
@@ -35,7 +35,7 @@ const SortedLanguages = () => {
 
   const availablesLanguages = supportedLngs.map((lng) => ({
     key: lng,
-    value: t(`language.${lng}`),
+    value: t(`nav-bar.language.${lng}`),
   }));
   availablesLanguages.sort((a, b) => a.value.localeCompare(b.value));
   return (
@@ -57,12 +57,12 @@ const SortedLanguages = () => {
 };
 
 export default function ChangeLanguageModal() {
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
 
   return (
     <div className="informations">
       <ModalHeaderSNCF withCloseButton>
-        <h1>{t('language.languageChoice')}</h1>
+        <h1>{t('nav-bar.language.languageChoice')}</h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>{i18n.languages && <SortedLanguages />}</ModalBodySNCF>
     </div>
