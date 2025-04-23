@@ -62,7 +62,7 @@ const StdcmResults = ({
   const hasConflictResults = hasConflicts(outputs);
   const hasSimulationResults = hasResults(outputs);
 
-  const { trackConflicts, workConflicts } = useConflictsMessages(t, outputs);
+  const { trackConflicts, workConflicts } = useConflictsMessages(outputs);
 
   const simulationReportSheetNumber = generateCodeNumber();
   const isSelectedSimulationRetained =

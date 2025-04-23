@@ -13,15 +13,8 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:unspecified/,
   // key used by upsertMapWaypointsInOperationalPoints
   /translation:requestedPoint/,
-  /translation:departureTime/,
   /stdcm-help-section:asu/,
   /stdcm-help-section:sections/,
-  /translation:remainingTrackConflicts/,
-  /translation:remainingWorkConflicts/,
-  /translation:trackConflict/,
-  /translation:trackConflictSameDay/,
-  /translation:workConflict/,
-  /translation:workConflictSameDay/,
 ];
 
 const IGNORE_UNUSED: RegExp[] = [
