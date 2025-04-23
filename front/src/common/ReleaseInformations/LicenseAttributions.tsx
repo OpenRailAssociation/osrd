@@ -79,7 +79,7 @@ const LicenseCard = ({
 );
 
 const LicenseAttributions = () => {
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation();
 
   const attributionsArray = [...(Object.values(attributionsLicenses) as AttributionLicense[])];
 
@@ -89,19 +89,19 @@ const LicenseAttributions = () => {
 
   return (
     <div className="col-md-6 h-100 d-flex flex-column">
-      <h2 className="text-center mb-4">{t('informations.collaborations')}</h2>
+      <h2 className="text-center mb-4">{t('nav-bar.informations.collaborations')}</h2>
       <div className="license-attributions">
         {COLLABORATIONS.map((dataSource) => (
           <LicenseCard attribution={dataSource} key={dataSource.name} />
         ))}
       </div>
-      <h2 className="text-center my-4">{t('informations.dataSources')}</h2>
+      <h2 className="text-center my-4">{t('nav-bar.informations.dataSources')}</h2>
       <div className="license-attributions">
         {DATA_SOURCES.map((dataSource) => (
           <LicenseCard attribution={dataSource} key={dataSource.name} />
         ))}
       </div>
-      <h2 className="text-center my-4">{t('informations.librairies')}</h2>
+      <h2 className="text-center my-4">{t('nav-bar.informations.librairies')}</h2>
       <div className="license-attributions licenses">
         {attributions.map((attribution) => (
           <LicenseCard attribution={attribution} key={attribution.name} />

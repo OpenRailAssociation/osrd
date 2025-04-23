@@ -11,7 +11,7 @@ import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
 export default function Home() {
-  const { t } = useTranslation('home/home');
+  const { t } = useTranslation();
   const {
     operationalStudiesAllowed,
     stdcmAllowed,

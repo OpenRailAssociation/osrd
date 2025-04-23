@@ -503,10 +503,38 @@
     "zoom-out": "Zoom out",
     "zoom-reset": "Reset zoom"
   },
+  "editor": "Infrastructure editor",
   "jsonUpload": {
     "badJSON": "The JSON file is malformed",
     "emptyFile": "The file is empty",
     "notJSONFormat": "The file is not in JSON format ",
     "uploadError": "Error occurred while upload the file"
-  }
+  },
+  "map": "Map viewer",
+  "nav-bar": {
+    "about": "About",
+    "disconnect": "Sign out",
+    "help": "Help",
+    "impersonation": "Impersonate user",
+    "informations": {
+      "application": "Application",
+      "collaborations": "Collaborations",
+      "dataSources": "Data sources",
+      "librairies": "Libraries & licenses",
+      "version": "Version"
+    },
+    "language": {
+      "de": "Deutsch",
+      "en": "English",
+      "fr": "Français",
+      "languageChoice": "Language"
+    },
+    "safeWord": "Safety keyword",
+    "safeWordHelp": "The \"security keyword\" allows you to transparently filter the list of projects with the word you enter, used as a label. Choose a complicated word so that no-one uses it inadvertently. Add it as a label to a project; it will be automatically added when the project is created if the word is entered here.",
+    "userSettings": "User settings",
+    "yourSafeWord": "Type in your word"
+  },
+  "operationalStudies": "Operational studies",
+  "rollingStockEditor": "Rolling stock editor",
+  "stdcm": "Short term path request"
 }

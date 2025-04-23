@@ -13,7 +13,7 @@ import { useAppDispatch } from 'store';
 import Map from './Map';
 
 const HomeReferenceMap = () => {
-  const { t } = useTranslation(['home/home', 'referenceMap']);
+  const { t } = useTranslation(['translation', 'referenceMap']);
   const dispatch = useAppDispatch();
 
   const { updateInfraID } = useInfraActions();

@@ -6,8 +6,8 @@ import { getTranslations } from './utils';
 import readJsonFile from './utils/file-utils';
 import type { FlatTranslations } from './utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/home/home.json');
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/home/home.json');
+const enTranslations: FlatTranslations = readJsonFile('public/locales/en/translation.json');
+const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/translation.json');
 
 test.describe('Home page OSRD', () => {
   let homePage: HomePage;

@@ -1,0 +1,29 @@
+{
+  "editor": "Betriebsnetz-Editor",
+  "map": "Karte",
+  "nav-bar": {
+    "about": "Über OSRD",
+    "disconnect": "Abmelden",
+    "help": "Hilfe",
+    "informations": {
+      "application": "Anwendung",
+      "collaborations": "Kooperationen",
+      "dataSources": "Datenquellen",
+      "librairies": "Versionsinformationen",
+      "version": "Version"
+    },
+    "language": {
+      "de": "Deutsch",
+      "en": "English",
+      "fr": "Français",
+      "languageChoice": "Sprache"
+    },
+    "safeWord": "Stichwort",
+    "safeWordHelp": "Durch das „Stichwort“ können Projekte in der Liste gefiltert werden, wenn es eingegeben wird. Es sollte einzigartig sein und kein Risiko für eine Doppelung bergen, um eine versehentliche Nutzung zu meiden. Fügen Sie es einem Projekt als Label hinzu – es wird bei Erstellung automatisch hinzugefügt, sofern das Stichwort hier eingetragen wird.",
+    "userSettings": "Benutzereinstellungen",
+    "yourSafeWord": "Stichwort eingeben"
+  },
+  "operationalStudies": "Betriebsstudien",
+  "rollingStockEditor": "Schienenfahrzeug-Editor",
+  "stdcm": "Schnellauftrag"
+}

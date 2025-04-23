@@ -49,7 +49,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:Editor\.infra-errors\.error-level\..*/, // Infra error level are generated
   /translation:Editor\.infra-errors\.list\..*/, // Total-error keys are generated
   /translation:Editor\.infra-errors\.corrector-modal\..*/,
-  /home\/navbar:language\..*/, // Language selector which is generated with the locale
+  /translation:nav-bar.language\..*/, // Language selector which is generated with the locale
 
   // Infra management
   /infraManagement:grants\..*/,
@@ -135,8 +135,13 @@ const IGNORE_UNUSED: RegExp[] = [
  * Read a file and returns its content as a JSON
  */
 async function readJsonFile<T extends { [key: string]: unknown }>(filePath: string): Promise<T> {
-  const data = await readFile(filePath, 'utf-8');
-  return JSON.parse(data) as T;
+  try {
+    const data = await readFile(filePath, 'utf-8');
+    return JSON.parse(data) as T;
+  } catch (e) {
+    console.error(`Problem occured while reading ${filePath}`);
+    throw e;
+  }
 }
 
 /**
