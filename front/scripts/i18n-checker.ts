@@ -11,7 +11,7 @@ import vfs from 'vinyl-fs';
 
 const IGNORE_MISSING: RegExp[] = [
   // key used by a t function in modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig.ts
-  /translation:errorMessages\..*/,
+  /operational-studies:errorMessages\..*/,
   /translation:error/,
   /translation:default/,
   /translation:error/,

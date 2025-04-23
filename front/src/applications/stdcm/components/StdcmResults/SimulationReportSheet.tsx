@@ -18,14 +18,14 @@ import { getStopDurationTime } from '../../utils/formatSimulationReportSheet';
 
 const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_code;
 
-const getStopType = (step: StdcmPathStep, t: TFunction) => {
+const getStopType = (step: StdcmPathStep, t: TFunction<'stdcm'>) => {
   if (!step.isVia) {
     return t('reportSheet.serviceStop');
   }
   return capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`));
 };
 
-const getArrivalTimes = (step: StdcmPathStep, t: TFunction, shouldDisplay: boolean) => {
+const getArrivalTimes = (step: StdcmPathStep, t: TFunction<'stdcm'>, shouldDisplay: boolean) => {
   if (shouldDisplay && !step.isVia) {
     if (step.arrival && step.arrivalType === 'preciseTime') {
       return dateToHHMMSS(step.arrival, { withoutSeconds: true });

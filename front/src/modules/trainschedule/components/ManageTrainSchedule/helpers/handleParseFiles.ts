@@ -61,7 +61,7 @@ export const processJsonFile = (
   fileExtension: string,
   setTrainsJsonData: (data: TimetableJsonPayload) => void,
   dispatch: Dispatch,
-  t: TFunction
+  t: TFunction<'operational-studies', 'importTrains'>
 ) => {
   const isJsonFile = fileExtension === 'application/json';
 
