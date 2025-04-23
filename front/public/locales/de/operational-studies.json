@@ -8,15 +8,54 @@
     "unselect-all": "Auswahl entfernen"
   },
   "project": {
+    "addImage": "Bild hinzufügen",
     "confirm-delete_one": "Möchten Sie das Projekt wirklich löschen?",
     "confirm-delete_other": "Möchten Sie {{count}} Projekte wirklich löschen?",
     "count_one": "1 Projekt",
     "count_other": "{{count}} Projekte",
     "count_zero": "Kein Projekt",
     "create": "Projekt anlegen",
+    "error": {
+      "unableToCreateProjectTitle": "Projekt erstellen nicht möglich",
+      "unableToDeleteProject": "Projekt löschen nicht möglich",
+      "unableToPostDocumentTitle": "Bild hochladen nicht möglich",
+      "unableToUpdateProjectTitle": "Projekt ändern nicht möglich",
+      "uploadImageSize": "Das Bild darf nicht mehr als 2 MB groß sein",
+      "uploadImageSizeTitle": "Bilddatei zu groß",
+      "uploadImageType": "Nur jpg, jpeg und png werden als Format unterstützt",
+      "uploadImageTypeTitle": "Dateiart nicht unterstützt"
+    },
+    "fundedBy": "Finanzierung",
+    "modifyProject": "Projekt ändern",
+    "noImageInvalid": "Ungültiges Bild",
+    "objectives": "Ziele",
+    "projectBudget": "Geschätztes Budget",
+    "projectBudgetInvalid": "Das Projektbudget muss ein positiver, ganzzahliger Wert sein und darf 2.147.483.647 € nicht überschreiten.",
+    "projectCancel": "Abbrechen",
+    "projectCreateButton": "Projekt erstellen",
+    "projectCreationTitle": "Ein Projekt erstellen",
+    "projectDeleteButton": "Löschen",
+    "projectDeleted": "Löschen erfolgreich!",
+    "projectDeletedDetails": "Projekt {{ name }} ist gelöscht worden.",
+    "projectDescription": "Projektbeschreibung",
+    "projectDescriptionInvalid": "Die Projektbeschreibung darf 1.024 Zeichen nicht überschreiten.",
+    "projectDescriptionPlaceholder": "Kurzbeschreibung des Projekts",
+    "projectFunders": "Finanzierungsdetails",
+    "projectFundersInvalid": "Die Finanzierungsdetails für das Projekt dürfen 1.024 Zeichen nicht überschreiten.",
+    "projectModificationTitle": "Projekt bearbeiten",
+    "projectModifyButton": "Sichern",
+    "projectName": "Projektname",
+    "projectNameInvalid": "Sie müssen einen Namen für das Projekt mit höchstens 128 Zeichen angeben.",
+    "projectObjectives": "Projektziele",
+    "projectObjectivesInvalid": "Die Projektziele dürfen 4.096 Zeichen nicht überschreiten.",
+    "projectObjectivesMarkdown": "Projektziele (formatiert)",
+    "projectTags": "Tags",
     "projects": "Projekte",
+    "removeImage": "Bild entfernen",
     "selected_one": "1 Projekt ausgewählt",
-    "selected_other": "{{count}} Projekte ausgewählt"
+    "selected_other": "{{count}} Projekte ausgewählt",
+    "totalBudget": "Gesamtbudget",
+    "uploadImage": "Bild hochladen"
   },
   "scenario": {
     "confirm-delete_one": "Möchten Sie das Szenario wirklich löschen?",
@@ -29,6 +68,7 @@
     "selected_other": "{{count}} ausgewählte Szenarien"
   },
   "study": {
+    "budget": "Budget",
     "confirm-delete_one": "Möchten Sie das Projekt wirklich löschen?",
     "confirm-delete_other": "Möchten Sie {{count}} Studien wirklich löschen?",
     "count_one": "1 Studie",
@@ -36,6 +76,9 @@
     "count_zero": "Keine Studie",
     "create": "Studie erstellen",
     "selected_one": "{{count}} Studie ausgewählt",
-    "selected_other": "{{count}} Studien ausgewählt"
+    "selected_other": "{{count}} Studien ausgewählt",
+    "study-business-code": "Organisationsschlüssel",
+    "study-service-code": "Auftragsschlüssel",
+    "updatedOn": "Geändert am"
   }
 }

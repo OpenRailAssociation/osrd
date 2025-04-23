@@ -67,7 +67,7 @@ export default function AddOrEditProjectModal({
   getProject,
   projectStudies,
 }: AddOrEditProjectModalProps) {
-  const { t } = useTranslation(['operationalStudies/project', 'translation']);
+  const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
   const [currentProject, setCurrentProject] = useState<ProjectForm>(project || emptyProject);
   const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
@@ -120,7 +120,9 @@ export default function AddOrEditProjectModal({
       return await postDocument(image);
     } catch (error) {
       dispatch(
-        setFailure(castErrorToFailure(error, { name: t('error.unableToPostDocumentTitle') }))
+        setFailure(
+          castErrorToFailure(error, { name: t('project.error.unableToPostDocumentTitle') })
+        )
       );
       return null;
     }
@@ -152,7 +154,7 @@ export default function AddOrEditProjectModal({
             dispatch(
               setFailure(
                 castErrorToFailure(error, {
-                  name: t('error.unableToCreateProjectTitle'),
+                  name: t('project.error.unableToCreateProjectTitle'),
                 })
               )
             );
@@ -198,7 +200,7 @@ export default function AddOrEditProjectModal({
             dispatch(
               setFailure(
                 castErrorToFailure(error, {
-                  name: t('error.unableToUpdateProjectTitle'),
+                  name: t('project.error.unableToUpdateProjectTitle'),
                 })
               )
             );
@@ -225,8 +227,8 @@ export default function AddOrEditProjectModal({
         closeModal();
         dispatch(
           setSuccess({
-            title: t('projectDeleted'),
-            text: t('projectDeletedDetails', { name: project!.name }),
+            title: t('project.projectDeleted'),
+            text: t('project.projectDeletedDetails', { name: project!.name }),
           })
         );
       })
@@ -234,7 +236,7 @@ export default function AddOrEditProjectModal({
         dispatch(
           setFailure(
             castErrorToFailure(e, {
-              name: t('error.unableToDeleteProject'),
+              name: t('project.error.unableToDeleteProject'),
             })
           )
         );
@@ -275,7 +277,7 @@ export default function AddOrEditProjectModal({
       )}
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="project-edition-modal-title">
-          {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
+          {editionMode ? t('project.projectModificationTitle') : t('project.projectCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
@@ -302,13 +304,13 @@ export default function AddOrEditProjectModal({
                     <span className="mr-2">
                       <MdTitle />
                     </span>
-                    <span className="font-weight-bold">{t('projectName')}</span>
+                    <span className="font-weight-bold">{t('project.projectName')}</span>
                   </div>
                 }
                 value={currentProject.name}
                 onChange={(e) => handleProjectInputChange('name', e.target.value)}
                 isInvalid={displayErrors && invalidFields.name}
-                errorMsg={t('projectNameInvalid')}
+                errorMsg={t('project.projectNameInvalid')}
               />
             </div>
             <div className="project-edition-modal-description">
@@ -319,15 +321,15 @@ export default function AddOrEditProjectModal({
                     <span className="mr-2">
                       <MdDescription />
                     </span>
-                    {t('projectDescription')}
+                    {t('project.projectDescription')}
                   </div>
                 }
                 value={currentProject.description ?? undefined}
                 onChange={(e) => handleProjectInputChange('description', e.target.value)}
-                placeholder={t('projectDescriptionPlaceholder')}
+                placeholder={t('project.projectDescriptionPlaceholder')}
                 rows={3}
                 isInvalid={displayErrors && invalidFields.description}
-                errorMsg={t('projectDescriptionInvalid')}
+                errorMsg={t('project.projectDescriptionInvalid')}
               />
             </div>
           </div>
@@ -342,20 +344,20 @@ export default function AddOrEditProjectModal({
                     <span className="mr-2">
                       <BiTargetLock />
                     </span>
-                    {t('projectObjectives')}
+                    {t('project.projectObjectives')}
                   </div>
                 }
                 value={currentProject.objectives ?? undefined}
                 onChange={(e) => handleProjectInputChange('objectives', e.target.value)}
                 isInvalid={displayErrors && invalidFields.objectives}
-                errorMsg={t('projectObjectivesInvalid')}
+                errorMsg={t('project.projectObjectivesInvalid')}
               />
             </div>
           </div>
           <div className="col-lg-7">
             <div className="project-edition-modal-objectives-md">
               <label htmlFor="debouncedObjectives" className="text-center w-100">
-                {t('projectObjectivesMarkdown')}
+                {t('project.projectObjectivesMarkdown')}
               </label>
               <div className="project-edition-modal-objectives-md-render">
                 <div id="debouncedObjectives">
@@ -379,13 +381,13 @@ export default function AddOrEditProjectModal({
                   <span className="mr-2">
                     <MdBusinessCenter />
                   </span>
-                  {t('projectFunders')}
+                  {t('project.projectFunders')}
                 </div>
               }
               value={currentProject.funders ?? undefined}
               onChange={(e) => handleProjectInputChange('funders', e.target.value)}
               isInvalid={displayErrors && invalidFields.funders}
-              errorMsg={t('projectFundersInvalid')}
+              errorMsg={t('project.projectFundersInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -401,7 +403,7 @@ export default function AddOrEditProjectModal({
                   <span className="mr-2">
                     <RiMoneyEuroCircleLine />
                   </span>
-                  {t('projectBudget')}
+                  {t('project.projectBudget')}
                 </div>
               }
               value={
@@ -419,7 +421,7 @@ export default function AddOrEditProjectModal({
               }
               textRight
               isInvalid={displayErrors && invalidFields.budget}
-              errorMsg={t('projectBudgetInvalid')}
+              errorMsg={t('project.projectBudgetInvalid')}
             />
           </div>
         </div>
@@ -427,7 +429,7 @@ export default function AddOrEditProjectModal({
           addTag={addTag}
           tags={currentProject.tags}
           removeTag={removeTag}
-          title={t('projectTags')}
+          title={t('project.projectTags')}
           color="purple"
         />
       </ModalBodySNCF>
@@ -443,11 +445,11 @@ export default function AddOrEditProjectModal({
               <span className="mr-2">
                 <Trash />
               </span>
-              {t('projectDeleteButton')}
+              {t('project.projectDeleteButton')}
             </button>
           )}
           <button className="btn btn-secondary mr-2" type="button" onClick={closeModal}>
-            {t('projectCancel')}
+            {t('project.projectCancel')}
           </button>
           {editionMode ? (
             <button
@@ -459,7 +461,7 @@ export default function AddOrEditProjectModal({
               <span className="mr-2">
                 <Pencil />
               </span>
-              {t('projectModifyButton')}
+              {t('project.projectModifyButton')}
             </button>
           ) : (
             <button
@@ -471,7 +473,7 @@ export default function AddOrEditProjectModal({
               <span className="mr-2">
                 <FaPlus />
               </span>
-              {t('projectCreateButton')}
+              {t('project.projectCreateButton')}
             </button>
           )}
         </div>

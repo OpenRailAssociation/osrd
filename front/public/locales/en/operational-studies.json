@@ -8,15 +8,54 @@
     "unselect-all": "Deselect"
   },
   "project": {
+    "addImage": "Add an image",
     "confirm-delete_one": "Do you really want to delete the project?",
     "confirm-delete_other": "Do you really want to delete the {{ count }} projects?",
     "count_one": "1 project",
     "count_other": "{{count}} projects",
     "count_zero": "No project",
     "create": "Create a project",
+    "error": {
+      "unableToCreateProjectTitle": "Failure to update the project",
+      "unableToDeleteProject": "Unable to delete project",
+      "unableToPostDocumentTitle": "Failure to upload the picture",
+      "unableToUpdateProjectTitle": "Failure to update the project",
+      "uploadImageSize": "The maximum image size is 2MB",
+      "uploadImageSizeTitle": "Image size is too large",
+      "uploadImageType": "Only jpg, jpeg and png formats are supported",
+      "uploadImageTypeTitle": "Image type is not supported"
+    },
+    "fundedBy": "Funding",
+    "modifyProject": "Update project",
+    "noImageInvalid": "Invalid image",
+    "objectives": "goals",
+    "projectBudget": "Estimated budget",
+    "projectBudgetInvalid": "The project budget must be a positive integer and must not exceed 2147483647 €",
+    "projectCancel": "Cancel",
+    "projectCreateButton": "Create project",
+    "projectCreationTitle": "Create a project",
+    "projectDeleteButton": "Delete",
+    "projectDeleted": "Successful deletion!",
+    "projectDeletedDetails": "{{ name }} project has been deleted.",
+    "projectDescription": "Project description",
+    "projectDescriptionInvalid": "The description for the project must not exceed 1024 characters",
+    "projectDescriptionPlaceholder": "Short description of the project",
+    "projectFunders": "Funding details",
+    "projectFundersInvalid": "The funding details for the project must not exceed 1024 characters",
+    "projectModificationTitle": "Modify project",
+    "projectModifyButton": "Save",
+    "projectName": "Project name",
+    "projectNameInvalid": "You have to set a name for project which does not exceed 128 characters",
+    "projectObjectives": "Project goals",
+    "projectObjectivesInvalid": "The objectives for the project must not exceed 4096 characters",
+    "projectObjectivesMarkdown": "Formatted goals",
+    "projectTags": "Tags",
     "projects": "Projects",
+    "removeImage": "Remove image",
     "selected_one": "1 project selected",
-    "selected_other": "{{ count }} projects selected"
+    "selected_other": "{{ count }} projects selected",
+    "totalBudget": "Total budget",
+    "uploadImage": "Upload an image"
   },
   "scenario": {
     "confirm-delete_one": "Do you really want to delete the scenario?",
@@ -29,6 +68,7 @@
     "selected_other": "{{count}} selected scenarios"
   },
   "study": {
+    "budget": "Budget",
     "confirm-delete_one": "Do you really want to delete the study?",
     "confirm-delete_other": "Do you really want to delete the {{count}} studies?",
     "count_one": "1 study",
@@ -36,6 +76,9 @@
     "count_zero": "No study",
     "create": "Create a study",
     "selected_one": "{{count}} study selected",
-    "selected_other": "{{count}} studies selected"
+    "selected_other": "{{count}} studies selected",
+    "study-business-code": "Business code",
+    "study-service-code": "Service code",
+    "updatedOn": "Updated on"
   }
 }

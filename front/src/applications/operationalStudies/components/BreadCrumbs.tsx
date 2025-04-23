@@ -11,15 +11,15 @@ type Props = {
 };
 
 export default function BreadCrumbs({ project, study, scenario }: Props) {
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation('operational-studies');
   return (
     <div className="navbar-breadcrumbs">
       {!project && !study && !scenario ? (
-        t('projectsList')
+        t('project.projects')
       ) : (
         <>
           <div>
-            <Link to="/operational-studies/projects">{t('projectsList')}</Link>{' '}
+            <Link to="/operational-studies/projects">{t('project.projects')}</Link>{' '}
           </div>
           <span className="text-muted">
             <ChevronRight />

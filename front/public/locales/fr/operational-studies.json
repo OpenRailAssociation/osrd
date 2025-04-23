@@ -8,15 +8,54 @@
     "unselect-all": "Déselectionner"
   },
   "project": {
+    "addImage": "Ajouter une image",
     "confirm-delete_one": "Voulez-vous réellement supprimer le projet ?",
     "confirm-delete_other": "Voulez-vous réellement supprimer les {{ count }} projets ?",
     "count_one": "1 projet",
     "count_other": "{{count}} projets",
     "count_zero": "Aucun projet",
     "create": "Créer un projet",
+    "error": {
+      "unableToCreateProjectTitle": "Echec de la création du projet",
+      "unableToDeleteProject": "Impossible de supprimer le projet",
+      "unableToPostDocumentTitle": "Echec de l'upload de l'image",
+      "unableToUpdateProjectTitle": "Echec de la mise à jour du projet",
+      "uploadImageSize": "L'image ne doit pas dépasser 2Mo",
+      "uploadImageSizeTitle": "L'image est trop volumineuse",
+      "uploadImageType": "Les formats supportés sont png, jpg et jpeg",
+      "uploadImageTypeTitle": "Format d'image non supporté"
+    },
+    "fundedBy": "Financement",
+    "modifyProject": "Modifier le projet",
+    "noImageInvalid": "Image invalide",
+    "objectives": "objectifs",
+    "projectBudget": "Budget estimé",
+    "projectBudgetInvalid": "Le budget du projet doit être un entier positif et ne doit pas dépasser 2147483647 €",
+    "projectCancel": "Annuler",
+    "projectCreateButton": "Créer le projet",
+    "projectCreationTitle": "Créer un projet",
+    "projectDeleteButton": "Supprimer",
+    "projectDeleted": "Suppression réussie !",
+    "projectDeletedDetails": "Le projet {{ name }} a bien été supprimé.",
+    "projectDescription": "Description du projet",
+    "projectDescriptionInvalid": "La description du projet ne doit pas dépasser 1024 caractères",
+    "projectDescriptionPlaceholder": "Courte description du projet",
+    "projectFunders": "Détails du financement",
+    "projectFundersInvalid": "Le détail du financement du projet ne doit pas dépasser 1024 caractères",
+    "projectModificationTitle": "Modifier le projet",
+    "projectModifyButton": "Enregistrer",
+    "projectName": "Nom du projet",
+    "projectNameInvalid": "Vous devez renseigner un nom pour le projet qui ne dépasse pas 128 caractères",
+    "projectObjectives": "Objectifs du projet",
+    "projectObjectivesInvalid": "Les objectifs du projet ne doivent pas dépasser 4096 caractères",
+    "projectObjectivesMarkdown": "Objectifs mis en forme",
+    "projectTags": "Étiquettes",
     "projects": "Projets",
+    "removeImage": "Supprimer l'image",
     "selected_one": "1 projet sélectionné",
-    "selected_other": "{{count}} projets sélectionnés"
+    "selected_other": "{{count}} projets sélectionnés",
+    "totalBudget": "Budget total",
+    "uploadImage": "Importer une image"
   },
   "scenario": {
     "confirm-delete_one": "Voulez-vous supprimer le scénario ?",
@@ -29,6 +68,7 @@
     "selected_other": "{{count}} scénarios sélectionnés"
   },
   "study": {
+    "budget": "Budget",
     "confirm-delete_one": "Voulez-vous supprimer l'étude ?",
     "confirm-delete_other": "Voulez-vous supprimer les {{ count }} études ?",
     "count_one": "1 étude",
@@ -36,6 +76,9 @@
     "count_zero": "Aucune étude",
     "create": "Créer une étude",
     "selected_one": "{{count}} étude sélectionnée",
-    "selected_other": "{{count}} études sélectionnées"
+    "selected_other": "{{count}} études sélectionnées",
+    "study-business-code": "Code affaire",
+    "study-service-code": "Code service",
+    "updatedOn": "Modifiée le"
   }
 }

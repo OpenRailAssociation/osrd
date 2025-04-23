@@ -24,11 +24,7 @@ export default function StudyCard({
   isSelected,
   toggleSelect,
 }: StudyCardProps) {
-  const { t } = useTranslation([
-    'operationalStudies/project',
-    'operationalStudies/study',
-    'operational-studies',
-  ]);
+  const { t } = useTranslation(['operational-studies', 'operationalStudies/study']);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();
@@ -63,9 +59,7 @@ export default function StudyCard({
           onClick={handleClick}
           type="button"
         >
-          <span className="mr-2">
-            {t('operational-studies:operational-studies-management.open')}
-          </span>
+          <span className="mr-2">{t('operational-studies-management.open')}</span>
           <FileDirectoryOpen variant="fill" />
         </button>
       </div>
@@ -81,20 +75,20 @@ export default function StudyCard({
           <div className="study-card-financials-infos">
             {study.service_code && (
               <div className="study-card-financials-infos-item">
-                <h3>{t('studyServiceCode')}</h3>
+                <h3>{t('study.study-service-code')}</h3>
                 <div>{study.service_code}</div>
               </div>
             )}
             {study.business_code && (
               <div className="study-card-financials-infos-item">
-                <h3>{t('studyBusinessCode')}</h3>
+                <h3>{t('study.study-business-code')}</h3>
                 <div>{study.business_code}</div>
               </div>
             )}
           </div>
           {study.budget ? (
             <div className="study-card-financials-amount">
-              <span className="study-card-financials-amount-text">{t('budget')}</span>
+              <span className="study-card-financials-amount-text">{t('study.budget')}</span>
               {budgetFormat(study.budget)}
             </div>
           ) : null}
@@ -123,13 +117,13 @@ export default function StudyCard({
           <span className="mr-1">
             <FileDirectory />
           </span>
-          {t('operational-studies:scenario.count', { count: study.scenarios_count })}
+          {t('scenario.count', { count: study.scenarios_count })}
         </div>
         <div className="study-card-date">
           <span className="mr-1">
             <Calendar />
           </span>
-          <span className="mr-1">{t('updatedOn')}</span>
+          <span className="mr-1">{t('study.updatedOn')}</span>
           {study.last_modification && dateTimeFormatting(new Date(study.last_modification))}
         </div>
       </div>

@@ -43,7 +43,7 @@ type ProjectParams = {
 };
 
 const Project = () => {
-  const { t } = useTranslation(['operationalStudies/project', 'operational-studies']);
+  const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -113,11 +113,11 @@ const Project = () => {
   };
   const sortOptions = [
     {
-      label: t('operational-studies:operational-studies-management.sort-by-name'),
+      label: t('operational-studies-management.sort-by-name'),
       value: 'NameAsc',
     },
     {
-      label: t('operational-studies:operational-studies-management.sort-by-latest'),
+      label: t('operational-studies-management.sort-by-latest'),
       value: 'LastModifiedDesc',
     },
   ];
@@ -257,7 +257,7 @@ const Project = () => {
                           }
                         >
                           <span className="project-details-title-modify-button-text">
-                            {t('modifyProject')}
+                            {t('project.modifyProject')}
                           </span>
                           <Pencil />
                         </button>
@@ -273,7 +273,7 @@ const Project = () => {
                             <span className="mr-2">
                               <BiTargetLock />
                             </span>
-                            {t('objectives')}
+                            {t('project.objectives')}
                           </h3>
                           <div className="project-details-title-objectives">
                             {project.objectives && (
@@ -291,13 +291,13 @@ const Project = () => {
               {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
                 <div className="project-details-financials">
                   <div className="project-details-financials-infos">
-                    <h3>{t('fundedBy')}</h3>
+                    <h3>{t('project.fundedBy')}</h3>
                     {project.funders && <div>{project.funders}</div>}
                   </div>
                   {project.budget ? (
                     <div className="project-details-financials-amount">
                       <span className="project-details-financials-amount-text">
-                        {t('totalBudget')}
+                        {t('project.totalBudget')}
                       </span>
                       {budgetFormat(project.budget)}
                     </div>
@@ -320,7 +320,7 @@ const Project = () => {
 
           <div className="studies-toolbar">
             <div className="h1 mb-0">
-              {t('operational-studies:study.count', {
+              {t('study.count', {
                 count: studiesList ? studiesList.length : 0,
               })}
             </div>
