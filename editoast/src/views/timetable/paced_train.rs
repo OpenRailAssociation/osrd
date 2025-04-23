@@ -702,6 +702,7 @@ mod tests {
                 ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                     .expect("Unable to parse")
             },
+            exceptions: vec![],
             paced: Paced {
                 time_window: Duration::hours(1).try_into().unwrap(),
                 interval: Duration::minutes(15).try_into().unwrap(),

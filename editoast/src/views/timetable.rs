@@ -702,6 +702,11 @@ fn build_conflict_core_request(
 mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
+    use editoast_schemas::paced_train::ExceptionType;
+    use editoast_schemas::paced_train::PacedTrainException;
+    use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
+    use editoast_schemas::train_schedule::MarginValue;
+    use editoast_schemas::train_schedule::Margins;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
@@ -772,6 +777,77 @@ mod tests {
     }
 
     #[rstest]
+    async fn create_paced_train_exceptions() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let mut paced_train_1 = simple_paced_train_base();
+        let exception_1 = PacedTrainException {
+            key: "exception_key_1".into(),
+            exception_type: ExceptionType::Created {},
+            disabled: false,
+            constraint_distribution: None,
+            initial_speed: None,
+            labels: None,
+            options: None,
+            path_and_schedule: None,
+            rolling_stock: None,
+            rolling_stock_category: None,
+            speed_limit_tag: None,
+            start_time: None,
+            train_name: None,
+        };
+
+        let exception_2 = PacedTrainException {
+            key: "exception_key_2".into(),
+            exception_type: ExceptionType::Modified {
+                occurrence_index: 1,
+            },
+            disabled: true,
+            path_and_schedule: Some(PathAndScheduleChangeGroup {
+                power_restrictions: vec![],
+                schedule: vec![],
+                path: vec![],
+                margins: Margins {
+                    boundaries: vec![],
+                    values: vec![MarginValue::Percentage(5.0)],
+                },
+            }),
+            constraint_distribution: None,
+            initial_speed: None,
+            labels: None,
+            options: None,
+            rolling_stock: None,
+            rolling_stock_category: None,
+            speed_limit_tag: None,
+            start_time: None,
+            train_name: None,
+        };
+
+        paced_train_1.exceptions = vec![exception_1.clone(), exception_2.clone()];
+
+        let request = app
+            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .json(&vec![paced_train_1.clone()]);
+
+        let _: Vec<PacedTrainResponse> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let settings = SelectionSettings::default()
+            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id))
+            .limit(25)
+            .offset(0);
+
+        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
+            .await
+            .expect("Failed to fetch paced trains");
+
+        assert_eq!(&list_result[0].exceptions[0], &exception_1);
+        assert_eq!(&list_result[0].exceptions[1], &exception_2);
+    }
+
+    #[rstest]
     async fn create_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -782,7 +858,7 @@ mod tests {
         paced_train_2.paced.time_window = Duration::minutes(120).try_into().unwrap();
         paced_train_2.paced.interval = Duration::seconds(30).try_into().unwrap();
 
-        let paced_trains = vec![paced_train_1, paced_train_2];
+        let paced_trains = vec![paced_train_1, paced_train_2.clone()];
 
         let request = app
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
@@ -798,10 +874,12 @@ mod tests {
             .limit(25)
             .offset(0);
 
-        let list_result = models::PacedTrain::list_paginated(&mut pool.get_ok(), settings)
+        let list_result = models::PacedTrain::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch paced trains");
-        assert!(list_result.0.len() == 2);
+
+        assert!(list_result.len() == 2);
+        assert_eq!(list_result[0].exceptions, paced_train_2.exceptions);
     }
 
     #[rstest]

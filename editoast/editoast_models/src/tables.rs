@@ -454,6 +454,7 @@ diesel::table! {
         time_window -> Interval,
         interval -> Interval,
         category -> Nullable<TrainCategory>,
+        exceptions -> Jsonb,
     }
 }
 

@@ -317,6 +317,7 @@ const handleCreateTimetableItem = async (
     path,
     start_time: startDate.toISOString(),
     schedule,
+    exceptions: [],
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -403,7 +404,7 @@ const handleUpdateTimetableItem = async ({
     };
     updatedTimetableItem = await storePacedTrain(
       timetableItemId,
-      { ...timetableItemForUpdate, paced },
+      { ...timetableItemForUpdate, paced, exceptions: [] },
       timetableId,
       dispatch,
       addUpsertedTimetableItems,

@@ -102,7 +102,11 @@ const useSimulationResults = (): SimulationResultsData => {
 
   const { data: selectedPacedTrainSimulation } =
     osrdEditoastApi.endpoints.getPacedTrainByIdSimulation.useQuery(
-      { id: editoastSelectedTrainId!, infraId: infraId!, electricalProfileSetId },
+      {
+        id: editoastSelectedTrainId!,
+        infraId: infraId!,
+        electricalProfileSetId,
+      },
       {
         skip:
           !editoastSelectedTrainId ||
