@@ -41,6 +41,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.*
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
@@ -68,7 +69,9 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
         if (logRequest?.equals("true", ignoreCase = true) == true) {
             val time = LocalDateTime.now()
             val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
-            File("stdcm-$formatted.json").printWriter().use {
+            val filename = "stdcm-$formatted.json"
+            Span.current()?.setAttribute("request-file", filename)
+            File(filename).printWriter().use {
                 it.println(stdcmRequestAdapter.indent("    ").toJson(request))
             }
         }

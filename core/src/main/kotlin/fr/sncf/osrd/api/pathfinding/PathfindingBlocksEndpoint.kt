@@ -26,6 +26,7 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
@@ -65,7 +66,9 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
         if (logRequest?.equals("true", ignoreCase = true) == true) {
             val time = LocalDateTime.now()
             val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
-            File("pathfinding-$formatted.json").printWriter().use {
+            val filename = "pathfinding-$formatted.json"
+            Span.current()?.setAttribute("request-file", filename)
+            File(filename).printWriter().use {
                 it.println(pathfindingRequestAdapter.indent("    ").toJson(request))
             }
         }

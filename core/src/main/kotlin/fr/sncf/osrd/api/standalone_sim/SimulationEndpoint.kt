@@ -14,6 +14,7 @@ import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.makeChunkPath
+import io.opentelemetry.api.trace.Span
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,7 +42,9 @@ class SimulationEndpoint(
         if (logRequest?.equals("true", ignoreCase = true) == true) {
             val time = LocalDateTime.now()
             val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
-            File("simulation-$formatted.json").printWriter().use {
+            val filename = "simulation-$formatted.json"
+            Span.current()?.setAttribute("request-file", filename)
+            File(filename).printWriter().use {
                 it.println(SimulationRequest.adapter.indent("    ").toJson(request))
             }
         }
