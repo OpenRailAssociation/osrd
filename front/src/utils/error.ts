@@ -8,7 +8,7 @@ import i18n from 'i18n';
  * If name can't be found, a default one is return (or the default value specified)
  */
 export function getErrorName(error: unknown, defaultValue?: string): string {
-  let name = defaultValue || i18n.t('error', { ns: ['errors'] });
+  let name = defaultValue || i18n.t('default', { ns: ['errors'] });
   if (isObject(error) && 'name' in error) {
     const i18nName = `${error.name}`;
     name = i18n.t(i18nName, i18nName, { ns: ['errors'] });
