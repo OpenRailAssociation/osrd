@@ -10,11 +10,6 @@ import * as ts from 'typescript';
 const LANGUAGES = ['en', 'fr'];
 
 const IGNORE_MISSING: RegExp[] = [
-  // key used by a t function in modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig.ts
-  /operational-studies:errorMessages\..*/,
-  /translation:error/,
-  /translation:default/,
-  /translation:error/,
   /translation:unspecified/,
   // key used by upsertMapWaypointsInOperationalPoints
   /translation:requestedPoint/,
@@ -23,7 +18,6 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:departureTime/,
   /translation:destinationTime/,
   /translation:leaveAt/,
-  /stdcm:simulation.results/,
   /stdcm-help-section:asu/,
   /stdcm-help-section:sections/,
   /translation:remainingTrackConflicts/,
@@ -35,8 +29,6 @@ const IGNORE_MISSING: RegExp[] = [
 ];
 
 const IGNORE_UNUSED: RegExp[] = [
-  /.*-generated$/,
-  /.*\.generated\..*$/,
   /errors:.*/, // Errors are generated and used dynamicly
   /infraEditor:.*/, // Translation of properties object for the form
   /infraEditor:__main____.*/, // Found by error by i18n parser in a json-schema
@@ -59,7 +51,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:mapKey.alternatingCurrent/,
   /translation:mapKey.directCurrent/,
   /translation:mapSettings.layers\..*/,
-  /translation:mapSettings.smoothTravel/,
 
   // Import train schedule
   /operational-studies:importTrains.and/,
