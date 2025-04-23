@@ -26,7 +26,7 @@ export default function ScenarioCard({
   isSelected,
   toggleSelect,
 }: ScenarioCardProps) {
-  const { t } = useTranslation(['operationalStudies/study', 'operational-studies']);
+  const { t } = useTranslation('operational-studies');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID } = useOsrdConfActions();
@@ -61,9 +61,7 @@ export default function ScenarioCard({
           type="button"
           onClick={handleClick}
         >
-          <span className="mr-2">
-            {t('operational-studies:operational-studies-management.open')}
-          </span>
+          <span className="mr-2">{t('operational-studies-management.open')}</span>
           <FileDirectoryOpen variant="fill" />
         </button>
       </div>
@@ -99,7 +97,7 @@ export default function ScenarioCard({
           <span className="mr-1">
             <Calendar />
           </span>
-          <span className="mr-1">{t('updatedOn')}</span>
+          <span className="mr-1">{t('scenario.updatedOn')}</span>
           {scenario.last_modification && dateTimeFormatting(new Date(scenario.last_modification))}
         </div>
       </div>

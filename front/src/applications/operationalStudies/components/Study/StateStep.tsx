@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function StateStep({ study, number, state, done }: Props) {
-  const { t } = useTranslation('operationalStudies/study');
+  const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const [patchStudy] =
     osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyId.useMutation();
@@ -30,8 +30,8 @@ export default function StateStep({ study, number, state, done }: Props) {
       });
       dispatch(
         setSuccess({
-          title: t('studyUpdated'),
-          text: t('studyUpdatedDetails', { name: study.name }),
+          title: t('study.studyUpdated'),
+          text: t('study.studyUpdatedDetails', { name: study.name }),
         })
       );
     } catch (error) {
@@ -47,7 +47,7 @@ export default function StateStep({ study, number, state, done }: Props) {
     >
       <span className="study-details-state-step-number">{number}</span>
       <span data-testid="study-state-step-label" className="study-details-state-step-label">
-        {t(`studyStates.${state}`)}
+        {t(`study.studyStates.${state}`)}
       </span>
     </div>
   );

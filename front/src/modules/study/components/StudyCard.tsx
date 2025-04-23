@@ -24,7 +24,7 @@ export default function StudyCard({
   isSelected,
   toggleSelect,
 }: StudyCardProps) {
-  const { t } = useTranslation(['operational-studies', 'operationalStudies/study']);
+  const { t } = useTranslation('operational-studies');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();

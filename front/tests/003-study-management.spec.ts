@@ -13,16 +13,18 @@ import { deleteStudy } from './utils/teardown-utils';
 import type { FlatTranslations, StudyData } from './utils/types';
 
 type StudyTranslations = {
-  studyCategories: FlatTranslations;
-  studyStates: FlatTranslations;
+  study: {
+    studyCategories: FlatTranslations;
+    studyStates: FlatTranslations;
+  };
 };
 
 const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
 const enTranslations: StudyTranslations = readJsonFile(
-  'public/locales/en/operationalStudies/study.json'
+  'public/locales/en/operational-studies.json'
 );
 const frTranslations: StudyTranslations = readJsonFile(
-  'public/locales/fr/operationalStudies/study.json'
+  'public/locales/fr/operational-studies.json'
 );
 
 test.describe('Validate the Study creation workflow', () => {
@@ -55,8 +57,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.createStudy({
       name: studyName,
       description: studyData.description,
-      type: translations.studyCategories.flowRate, // Translated study type
-      status: translations.studyStates.started, // Translated study status
+      type: translations.study.studyCategories.flowRate, // Translated study type
+      status: translations.study.studyStates.started, // Translated study status
       startDate: todayDateISO,
       expectedEndDate: todayDateISO,
       endDate: todayDateISO,
@@ -70,8 +72,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.validateStudyData({
       name: studyName,
       description: studyData.description,
-      type: translations.studyCategories.flowRate,
-      status: translations.studyStates.started,
+      type: translations.study.studyCategories.flowRate,
+      status: translations.study.studyStates.started,
       startDate: expectedDate,
       expectedEndDate: expectedDate,
       endDate: expectedDate,
@@ -95,8 +97,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.updateStudy({
       name: `${study.name} (updated)`,
       description: `${study.description} (updated)`,
-      type: translations.studyCategories.operability,
-      status: translations.studyStates.inProgress,
+      type: translations.study.studyCategories.operability,
+      status: translations.study.studyStates.inProgress,
       startDate: tomorrowDateISO,
       expectedEndDate: tomorrowDateISO,
       endDate: tomorrowDateISO,
@@ -114,8 +116,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.validateStudyData({
       name: `${study.name} (updated)`,
       description: `${study.description} (updated)`,
-      type: translations.studyCategories.operability,
-      status: translations.studyStates.inProgress,
+      type: translations.study.studyCategories.operability,
+      status: translations.study.studyStates.inProgress,
       startDate: expectedDate,
       expectedEndDate: expectedDate,
       endDate: expectedDate,

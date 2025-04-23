@@ -88,9 +88,9 @@ const IGNORE_UNUSED: RegExp[] = [
   /operationalStudies\/scenario:trainCount/,
 
   // Study
-  /operationalStudies\/study:dates\..*/,
-  /operationalStudies\/study:studyCategories\..*/,
-  /operationalStudies\/study:studyStates\..*/,
+  /operational-studies:study\.date-*/,
+  /operational-studies:study\.studyCategories\..*/,
+  /operational-studies:study\.studyStates\..*/,
 
   // Rolling stock
   /rollingstock:categoriesOptions\..*/,

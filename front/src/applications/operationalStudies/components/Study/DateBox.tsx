@@ -4,21 +4,20 @@ import { dateTimeFormatting } from 'utils/date';
 
 type Props = {
   date?: Date | null;
-  className: string;
-  translation: string;
+  type: 'creation' | 'expected-end' | 'modified' | 'real-end' | 'start' | 'end';
   withoutTime?: boolean;
 };
 
-export default function DateBox({ date, className, translation, withoutTime }: Props) {
-  const { t } = useTranslation('operationalStudies/study');
+export default function DateBox({ date, type, withoutTime }: Props) {
+  const { t } = useTranslation('operational-studies');
   return (
-    <div className={`study-details-dates-date ${className}`}>
-      <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
+    <div className={`study-details-dates-date ${type}`}>
+      <span className="study-details-dates-date-label">{t(`study.date-${type}`)}</span>
       <span className="study-details-dates-date-value">
         {date ? (
           dateTimeFormatting(date, withoutTime)
         ) : (
-          <small className="text-muted">{t('noDateFound')}</small>
+          <small className="text-muted">{t('study.noDateFound')}</small>
         )}
       </span>
     </div>

@@ -43,7 +43,7 @@ type studyParams = {
 };
 
 const Study = () => {
-  const { t } = useTranslation(['operationalStudies/study', 'operational-studies']);
+  const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
 
@@ -120,11 +120,11 @@ const Study = () => {
 
   const sortOptions = [
     {
-      label: t('operational-studies:operational-studies-management.sort-by-name'),
+      label: t('operational-studies-management.sort-by-name'),
       value: 'NameAsc',
     },
     {
-      label: t('operational-studies:operational-studies-management.sort-by-latest'),
+      label: t('operational-studies-management.sort-by-latest'),
       value: 'LastModifiedDesc',
     },
   ];
@@ -220,31 +220,26 @@ const Study = () => {
               <div className="study-details-dates">
                 <DateBox
                   date={study.creation_date ? new Date(study.creation_date) : null}
-                  className="creation"
-                  translation="creation"
+                  type="creation"
                 />
                 <DateBox
                   date={study.start_date ? new Date(study.start_date) : null}
-                  className="start"
-                  translation="start"
+                  type="start"
                   withoutTime
                 />
                 <DateBox
                   date={study.expected_end_date ? new Date(study.expected_end_date) : null}
-                  className="expected-end"
-                  translation="expectedEnd"
+                  type="expected-end"
                   withoutTime
                 />
                 <DateBox
                   date={study.actual_end_date ? new Date(study.actual_end_date) : null}
-                  className="real-end"
-                  translation="realEnd"
+                  type="real-end"
                   withoutTime
                 />
                 <DateBox
                   date={study.last_modification ? new Date(study.last_modification) : null}
-                  className="modified"
-                  translation="modified"
+                  type="modified"
                 />
               </div>
               <div className="d-flex flex-column p-2">
@@ -268,13 +263,15 @@ const Study = () => {
                       )
                     }
                   >
-                    <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
+                    <span className="study-details-modify-button-text">
+                      {t('study.modifyStudy')}
+                    </span>
                     <Pencil />
                   </button>
                 </div>
                 {study.study_type && (
                   <div className="study-details-type">
-                    {t(`studyCategories.${study.study_type}`)}
+                    {t(`study.studyCategories.${study.study_type}`)}
                   </div>
                 )}
                 <div className="study-details-description">{study.description}</div>
@@ -305,7 +302,7 @@ const Study = () => {
                   <div className="study-details-financials-infos">
                     {study.service_code && (
                       <div className="study-details-financials-infos-item">
-                        <h3>{t('studyServiceCode')}</h3>
+                        <h3>{t('study.study-service-code')}</h3>
                         <div data-testid="study-service-code-info" className="code">
                           {study.service_code}
                         </div>
@@ -313,7 +310,7 @@ const Study = () => {
                     )}
                     {study.business_code && (
                       <div className="study-details-financials-infos-item">
-                        <h3>{t('studyBusinessCode')}</h3>
+                        <h3>{t('study.study-business-code')}</h3>
                         <div data-testid="study-business-code-info" className="code">
                           {study.business_code}
                         </div>
@@ -322,7 +319,9 @@ const Study = () => {
                   </div>
                   {study.budget ? (
                     <div className="study-details-financials-amount">
-                      <span className="study-details-financials-amount-text">{t('budget')}</span>
+                      <span className="study-details-financials-amount-text">
+                        {t('study.budget')}
+                      </span>
                       {budgetFormat(study.budget)}
                     </div>
                   ) : null}
@@ -346,7 +345,7 @@ const Study = () => {
           )}
 
           <div className="scenarios-toolbar">
-            <div>{t('operational-studies:scenario.count', { count: scenariosList.length })}</div>
+            <div>{t('scenario.count', { count: scenariosList.length })}</div>
             <div className="flex-grow-1">
               <FilterTextField
                 setFilter={setFilter}

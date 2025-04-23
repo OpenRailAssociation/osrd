@@ -27,17 +27,13 @@ const SimulationReportSheetScenario = ({
   mapCanvas,
   operationalPointsList,
 }: SimulationReportSheetScenarioProps) => {
-  const { t } = useTranslation([
-    'stdcm-simulation-report-sheet',
-    'stdcm',
-    'operationalStudies/study',
-  ]);
+  const { t } = useTranslation(['stdcm-simulation-report-sheet']);
   let renderedIndex = 0;
 
   const { rollingStock, speedLimitByTag, creationDate, trainName } = trainData;
   const { name: scenarioName, infraName } = scenarioData;
 
-  const headerTitle = t('operationalStudies/study:simulationSheet');
+  const headerTitle = t('simulationSheet');
 
   return (
     <Document>
@@ -52,16 +48,10 @@ const SimulationReportSheetScenario = ({
             <Text style={styles.header.cardContent}>{trainName}</Text>
           </View>
           <View style={styles.header.numericInfo}>
-            <Text style={styles.header.cardContent}>
-              {t('operationalStudies/study:scenarioWithTwoPoints')}
-              {scenarioName}
-            </Text>
+            <Text style={styles.header.cardContent}>{`${t('scenario')}: ${scenarioName}`}</Text>
           </View>
           <View style={styles.header.numericInfo}>
-            <Text style={styles.header.cardContent}>
-              {t('operationalStudies/study:infrastructureWithTwoPoints')}
-              {infraName}
-            </Text>
+            <Text style={styles.header.cardContent}>{`${t('infrastructure')}: ${infraName}`}</Text>
           </View>
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
         </View>
