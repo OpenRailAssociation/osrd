@@ -31,8 +31,8 @@ const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps)
 
   const label =
     total === filterTotal
-      ? t(`Editor.infra-errors.label.title`, { count: total })
-      : t(`Editor.infra-errors.label.title-with-filter`, { count: filterTotal, total });
+      ? t('Editor.infra-errors.label.title', { count: total })
+      : t('Editor.infra-errors.label.title-with-filter', { count: filterTotal, total });
 
   const displayErrors = useCallback(() => {
     openModal(
