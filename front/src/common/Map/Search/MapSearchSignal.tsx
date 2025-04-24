@@ -144,6 +144,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     );
     await postSearch({
       searchPayload: payload,
+      pageSize: 101,
     })
       .unwrap()
       .then((results) => {
@@ -325,10 +326,14 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         </div>
       </div>
       <h2 className="text-center mt-3">
-        {t('map-search.results-count', { count: searchResults ? searchResults.length : 0 })}
+        {searchResults.length > 100
+          ? t('map-search.too-many-results')
+          : t('map-search.results-count', {
+              count: searchResults.length,
+            })}
       </h2>
       <div>
-        {searchResults?.length > 0 && (
+        {searchResults?.length > 0 && searchResults.length <= 100 && (
           <>
             <div className="row mt-3 mb-2 px-3 small no-gutters justify-content-between">
               <div
