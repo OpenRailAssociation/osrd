@@ -7,7 +7,7 @@ export const positionMmToKm = (position: number) => Math.round((position / 10000
 
 export const msToS = (time: number) => time / 1000;
 
-export const calcTotalDistance = <T extends { position: number }>(ops: T[]) => {
+export const calcTotalDistance = (ops: { position: number }[]) => {
   if (ops.length === 0) {
     return 0;
   }
