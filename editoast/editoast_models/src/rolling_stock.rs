@@ -1,3 +1,3 @@
-mod rolling_stock_category;
-pub use rolling_stock_category::RollingStockCategories;
-pub use rolling_stock_category::RollingStockCategory;
+mod train_category;
+pub use train_category::TrainCategories;
+pub use train_category::TrainCategory;

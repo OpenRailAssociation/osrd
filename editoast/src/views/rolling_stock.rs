@@ -773,8 +773,8 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
-    use editoast_models::rolling_stock::RollingStockCategories;
-    use editoast_models::rolling_stock::RollingStockCategory;
+    use editoast_models::rolling_stock::TrainCategories;
+    use editoast_models::rolling_stock::TrainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -1171,22 +1171,16 @@ pub mod tests {
 
         assert_eq!(
             fast_rolling_stock.primary_category,
-            RollingStockCategory(
-                editoast_schemas::rolling_stock::RollingStockCategory::CommuterTrain,
-            )
+            TrainCategory(editoast_schemas::rolling_stock::TrainCategory::CommuterTrain,)
         );
-        assert_eq!(
-            fast_rolling_stock.other_categories,
-            RollingStockCategories(vec![])
-        );
+        assert_eq!(fast_rolling_stock.other_categories, TrainCategories(vec![]));
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
-        let primary_category = RollingStockCategory(
-            editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
-        );
+        let primary_category =
+            TrainCategory(editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain);
         rolling_stock_form.primary_category = primary_category.clone();
-        let other_categories = RollingStockCategories(vec![RollingStockCategory(
-            editoast_schemas::rolling_stock::RollingStockCategory::RegionalTrain,
+        let other_categories = TrainCategories(vec![TrainCategory(
+            editoast_schemas::rolling_stock::TrainCategory::RegionalTrain,
         )]);
         rolling_stock_form.other_categories = other_categories.clone();
 
@@ -1225,11 +1219,10 @@ pub mod tests {
                 .await;
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
-        let primary_category = RollingStockCategory(
-            editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
-        );
+        let primary_category =
+            TrainCategory(editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain);
         rolling_stock_form.primary_category = primary_category.clone();
-        let other_categories = RollingStockCategories(vec![primary_category.clone()]);
+        let other_categories = TrainCategories(vec![primary_category.clone()]);
         rolling_stock_form.other_categories = other_categories.clone();
 
         let request = app
