@@ -20,7 +20,6 @@ import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.standalone_sim.result.ResultStops
-import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.CurveSimplification
@@ -175,7 +174,7 @@ fun runScheduleMetadataExtractor(
             signalCriticalOffset = Offset.max(signalCriticalOffset, previousSignalOffset)
         }
         var signalCriticalTime =
-            envelopeWithStops.interpolateArrivalAt(signalCriticalOffset.distance.meters)
+            envelopeWithStops.interpolateArrivalAt(signalCriticalOffset.distance.meters).seconds
 
         // advance to the first stop after sightOffset
         while (closedSignalStopOffset != null && closedSignalStopOffset <= signalCriticalOffset) {
@@ -207,10 +206,12 @@ fun runScheduleMetadataExtractor(
             }
 
             val stopDepartureTime =
-                envelopeWithStops.interpolateDepartureFrom(closedSignalStopOffset!!.distance.meters)
-            if (signalCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN) {
+                envelopeWithStops
+                    .interpolateDepartureFrom(closedSignalStopOffset!!.distance.meters)
+                    .seconds
+            if (signalCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds) {
                 signalCriticalOffset = closedSignalStopOffset
-                signalCriticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+                signalCriticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds
             }
         }
 
@@ -219,7 +220,7 @@ fun runScheduleMetadataExtractor(
                 rawInfra.getPhysicalSignalName(
                     loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
                 )!!,
-                maxOf(signalCriticalTime.seconds, Duration.ZERO),
+                maxOf(signalCriticalTime, TimeDelta.ZERO),
                 signalCriticalOffset,
                 "VL" // TODO: find out the real state
             )
@@ -285,21 +286,7 @@ fun runScheduleMetadataExtractor(
         spacingRequirements.requirements.map {
             SpacingRequirement(it.zone, it.beginTime.seconds, it.endTime.seconds)
         },
-        routingRequirements.map {
-            RoutingRequirement(
-                it.route,
-                it.beginTime.seconds,
-                it.zones.map { req ->
-                    RoutingZoneRequirement(
-                        req.zone,
-                        req.entryDetector,
-                        req.exitDetector,
-                        req.switches,
-                        req.endTime.seconds
-                    )
-                }
-            )
-        }
+        routingRequirements
     )
 }
 
@@ -399,7 +386,7 @@ fun routingRequirements(
     envelope: EnvelopeInterpolate,
     rawInfra: RawInfra,
     rollingStock: RollingStock,
-): List<ResultTrain.RoutingRequirement> {
+): List<RoutingRequirement> {
     // count the number of zones in the path
     val zoneCount = routePath.sumOf { rawInfra.getRoutePath(it).size }
 
@@ -454,10 +441,10 @@ fun routingRequirements(
         }
     }
 
-    fun findRouteSetDeadline(routeIndex: Int): Double? {
+    fun findRouteSetDeadline(routeIndex: Int): TimeDelta? {
         if (routeIndex == 0) {
             // TODO: this isn't quite true when the path starts with a stop
-            return 0.0
+            return TimeDelta.ZERO
         }
 
         // find the first block of the route
@@ -466,7 +453,7 @@ fun routingRequirements(
 
         // find the entry signal for this route. if there is no entry signal,
         // the set deadline is the start of the simulation
-        if (blockInfra.blockStartAtBufferStop(firstRouteBlock)) return 0.0
+        if (blockInfra.blockStartAtBufferStop(firstRouteBlock)) return TimeDelta.ZERO
 
         // simulate signaling on the train's path with all zones free,
         // until the start of the route, which is INCOMPATIBLE
@@ -513,7 +500,8 @@ fun routingRequirements(
         // find the location at which establishing the route becomes necessary
         val routeCriticalPos =
             limitingBlockOffset + limitingSignalOffsetInBlock - signalSightDistance
-        var routeCriticalTime = envelope.interpolateArrivalAtClamp(routeCriticalPos.distance.meters)
+        var routeCriticalTime =
+            envelope.interpolateArrivalAtClamp(routeCriticalPos.distance.meters).seconds
 
         // check if an arrival on stop signal is scheduled between the route critical position and
         // the entry signal of the route (both position and time, as there is a time margin) in this
@@ -526,18 +514,22 @@ fun routingRequirements(
             if (stopTravelledOffset <= entrySignalOffset) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 val stopDepartureTime =
-                    envelope.interpolateDepartureFromClamp(stopTravelledOffset.distance.meters)
-                if (routeCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN) {
-                    routeCriticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+                    envelope
+                        .interpolateDepartureFromClamp(stopTravelledOffset.distance.meters)
+                        .seconds
+                if (
+                    routeCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds
+                ) {
+                    routeCriticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds
                 }
                 break
             }
         }
 
-        return maxOf(routeCriticalTime, 0.0)
+        return maxOf(routeCriticalTime, TimeDelta.ZERO)
     }
 
-    val res = mutableListOf<ResultTrain.RoutingRequirement>()
+    val res = mutableListOf<RoutingRequirement>()
     var routePathOffset = Offset.zero<BlockPath>()
     // for all routes, generate requirements
     for (routeIndex in 0 until routePath.size) {
@@ -548,7 +540,7 @@ fun routingRequirements(
         // find the release time of the last zone of each release group
         val route = routePath[routeIndex]
         val routeZonePath = rawInfra.getRoutePath(route)
-        val zoneRequirements = mutableListOf<ResultTrain.RoutingZoneRequirement>()
+        val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
         for (zonePathIndex in 0 until routeZonePath.size) {
             val zonePath = routeZonePath[zonePathIndex]
             routePathOffset += rawInfra.getZonePathLength(zonePath).distance
@@ -564,11 +556,11 @@ fun routingRequirements(
                 continue
             }
             val exitCriticalTime =
-                envelope.interpolateDepartureFromClamp(exitCriticalPos.distance.meters)
+                envelope.interpolateDepartureFromClamp(exitCriticalPos.distance.meters).seconds
             zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
         }
         res.add(
-            ResultTrain.RoutingRequirement(
+            RoutingRequirement(
                 rawInfra.getRouteName(route),
                 routeSetDeadline,
                 zoneRequirements,
@@ -582,8 +574,8 @@ fun routingRequirements(
 private fun routingZoneRequirement(
     rawInfra: RawInfra,
     zonePath: ZonePathId,
-    endTime: Double
-): ResultTrain.RoutingZoneRequirement {
+    endTime: TimeDelta
+): RoutingZoneRequirement {
     val zoneName = rawInfra.getZoneName(rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!)
     val zoneEntry = rawInfra.getZonePathEntry(zonePath)
     val zoneExit = rawInfra.getZonePathExit(zonePath)
@@ -592,7 +584,7 @@ private fun routingZoneRequirement(
     val switchConfigs = rawInfra.getZonePathMovableElementsConfigs(zonePath)
     for ((switch, config) in switches zip switchConfigs) resSwitches[
         rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
-    return ResultTrain.RoutingZoneRequirement(
+    return RoutingZoneRequirement(
         zoneName,
         "${zoneEntry.direction.name}:${rawInfra.getDetectorName(zoneEntry.value)}",
         "${zoneExit.direction.name}:${rawInfra.getDetectorName(zoneExit.value)}",
