@@ -34,3 +34,8 @@
   - any:
       - changed-files:
           - any-glob-to-any-file: "chart/**"
+"kind:api-change":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "editoast/openapi.yaml"
+          - any-glob-to-any-file: "front/src/reducers/osrdconf/infra_schema.json"

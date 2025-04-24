@@ -1,0 +1,86 @@
+name: api_change
+
+on:
+  pull_request:
+    paths:
+      - "editoast/editoast_schemas"
+      - "python/osrd_schemas"
+      - "editoast/openapi.yaml"
+
+jobs:
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            openapi:
+              - 'editoast/openapi.yaml'
+            schemas:
+              - 'editoast/editoast_schemas/**'
+              - 'python/osrd_schemas/**'
+
+
+      - name: Get reference OpenAPI
+        if: steps.changes.outputs.openapi == 'true'
+        run: git show ${{ github.event.pull_request.base.sha }}:editoast/openapi.yaml > base-openapi.yaml
+      - name: Get new OpenAPI
+        if: steps.changes.outputs.openapi == 'true'
+        run: git show ${{ github.event.pull_request.head.sha }}:editoast/openapi.yaml > new-openapi.yaml
+      - name: Generate OpenAPI diff
+        if: steps.changes.outputs.openapi == 'true'
+        id: openapi-diff
+        run: |
+          docker run \
+            --name=openapi-diff \
+            --net=host \
+            --volume $PWD:/osrd\
+            openapitools/openapi-diff --markdown /osrd/openapi-diff.md /osrd/base-openapi.yaml /osrd/new-openapi.yaml
+          # https://trstringer.com/github-actions-multiline-strings/
+          echo "OPENAPI_DIFF<<EOF" >> $GITHUB_ENV
+          echo "## Changes in OpenAPI" >> $GITHUB_ENV
+          echo "The OpenAPI changed, see below for what changed." >> $GITHUB_ENV
+          echo "<details><summary>Summary of the OpenAPI changes (unfold for details)</summary>" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          cat openapi-diff.md >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "</details>" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Generate Schema notification
+        if: steps.changes.outputs.schemas == 'true'
+        run: |
+          # https://trstringer.com/github-actions-multiline-strings/
+          echo "SCHEMA_NOTIFICATION<<EOF" >> $GITHUB_ENV
+          echo "## Changes in Schemas" >> $GITHUB_ENV
+          echo "Dear @${{ github.event.pull_request.user.login }}, please ensure the following:" >> $GITHUB_ENV
+          echo '- [ ] changes should match in [`osrd_schemas`](https://github.com/OpenRailAssociation/osrd/tree/dev/python/osrd_schemas) and [`editoast_schemas`](https://github.com/OpenRailAssociation/osrd/tree/dev/editoast/editoast_schemas)' >> $GITHUB_ENV
+          echo '- [ ] the RailJSON version in [`osrd_schemas::infra.py`](https://github.com/OpenRailAssociation/osrd/blob/a185aa62d0378f9a69576b35185229f1439c2886/python/osrd_schemas/osrd_schemas/infra.py#L11) and [`editoast_schemas::infra::railjson.rs`](https://github.com/OpenRailAssociation/osrd/blob/a185aa62d0378f9a69576b35185229f1439c2886/editoast/editoast_schemas/src/infra/railjson.rs#L18) should match and be bumped on any change of infra schemas' >> $GITHUB_ENV
+          echo '- [ ] the version of the Python package in [`osrd_schemas::pyproject.toml`](https://github.com/OpenRailAssociation/osrd/tree/dev/python/osrd_schemas/pyproject.toml#L3) should be bumped on any change' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Find comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: API changes
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            # :warning: API changes
+            This Pull Request introduces some changes in the API:
+            - [ ] please own it: notify or even prepare dedicated PR(s) to consumer projects
+
+            ${{ env.SCHEMA_NOTIFICATION }}
+
+            ${{ env.OPENAPI_DIFF }}
+          edit-mode: replace
+          
