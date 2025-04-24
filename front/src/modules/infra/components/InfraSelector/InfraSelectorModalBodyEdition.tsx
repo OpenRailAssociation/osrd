@@ -55,6 +55,7 @@ const InfraSelectorModalBodyEdition = ({
         setErrorMessage(undefined);
         setSelectedFile(event.target.files[0]);
       }
+      event.target.value = ''; // Resets the input value to let the onChange retrigger on consecutive inputs with the same file/path, necessary on chrome
     }
   };
 
