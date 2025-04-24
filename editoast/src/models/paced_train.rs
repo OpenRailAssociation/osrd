@@ -2,7 +2,7 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::RollingStockCategory;
+use editoast_models::rolling_stock::TrainCategory;
 use editoast_schemas;
 use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::Paced;
@@ -50,7 +50,7 @@ pub struct PacedTrain {
     pub time_window: ChronoDuration,
     /// Time between two occurrences
     pub interval: ChronoDuration,
-    pub category: Option<RollingStockCategory>,
+    pub category: Option<TrainCategory>,
 }
 
 impl PacedTrain {

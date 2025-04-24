@@ -3,7 +3,7 @@ import type {
   LoadingGaugeType,
   Comfort,
   RollingStock,
-  RollingStockCategory,
+  TrainCategory,
 } from 'common/api/osrdEditoastApi';
 
 export type RollingStockParametersValidValues = {
@@ -35,8 +35,8 @@ export type RollingStockParametersValidValues = {
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
   supportedSignalingSystems: string[];
-  primaryCategory: RollingStockCategory;
-  categories: Set<RollingStockCategory>;
+  primaryCategory: TrainCategory;
+  categories: Set<TrainCategory>;
 };
 
 export type RollingStockParametersValues = {
@@ -68,8 +68,8 @@ export type RollingStockParametersValues = {
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
   supportedSignalingSystems: string[];
-  primaryCategory?: RollingStockCategory;
-  categories: Set<RollingStockCategory>;
+  primaryCategory?: TrainCategory;
+  categories: Set<TrainCategory>;
 };
 
 export type MultiUnit =

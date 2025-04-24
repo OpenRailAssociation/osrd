@@ -14,8 +14,8 @@ use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
-use editoast_models::rolling_stock::RollingStockCategories;
-use editoast_models::rolling_stock::RollingStockCategory;
+use editoast_models::rolling_stock::TrainCategories;
+use editoast_models::rolling_stock::TrainCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -254,8 +254,8 @@ struct LightRollingStock {
     power_restrictions: HashMap<String, String>,
     energy_sources: Vec<EnergySource>,
     supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    primary_category: RollingStockCategory,
-    other_categories: RollingStockCategories,
+    primary_category: TrainCategory,
+    other_categories: TrainCategories,
 }
 
 impl From<RollingStockModel> for LightRollingStock {

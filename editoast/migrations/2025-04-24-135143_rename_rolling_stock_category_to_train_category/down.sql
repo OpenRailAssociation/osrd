@@ -1,0 +1,2 @@
+ALTER TYPE train_category
+RENAME TO rolling_stock_category

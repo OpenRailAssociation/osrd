@@ -21,10 +21,10 @@ use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
 use editoast_schemas::rolling_stock::RollingStock;
-use editoast_schemas::rolling_stock::RollingStockCategories;
-use editoast_schemas::rolling_stock::RollingStockCategory;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
+use editoast_schemas::rolling_stock::TrainCategories;
+use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::train_schedule::TrainSchedule;
 use postgis_diesel::types::LineString;
 use serde::Deserialize;
@@ -314,8 +314,8 @@ pub fn create_simple_rolling_stock() -> RollingStock {
         length: units::meter::new(140.0),
         mass: units::kilogram::new(15000.0),
         max_speed: units::meter_per_second::new(20.0),
-        primary_category: RollingStockCategory::HighSpeedTrain,
-        other_categories: RollingStockCategories(vec![]),
+        primary_category: TrainCategory::HighSpeedTrain,
+        other_categories: TrainCategories(vec![]),
     }
 }
 

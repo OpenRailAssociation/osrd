@@ -47,7 +47,7 @@ use serde::de::Error as SerdeError;
 use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
-use crate::rolling_stock::RollingStockCategory;
+use crate::rolling_stock::TrainCategory;
 
 editoast_common::schemas! {
     margins::schemas(),
@@ -92,7 +92,7 @@ pub struct TrainSchedule {
     #[schema(inline)]
     #[serde(default)]
     pub options: TrainScheduleOptions,
-    pub category: Option<RollingStockCategory>,
+    pub category: Option<TrainCategory>,
 }
 
 impl<'de> Deserialize<'de> for TrainSchedule {
@@ -124,7 +124,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             power_restrictions: Vec<PowerRestrictionItem>,
             #[serde(default)]
             options: TrainScheduleOptions,
-            category: Option<RollingStockCategory>,
+            category: Option<TrainCategory>,
         }
         let internal = Internal::deserialize(deserializer)?;
 

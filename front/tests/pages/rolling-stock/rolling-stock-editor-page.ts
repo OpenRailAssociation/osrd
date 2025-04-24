@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
-import { RollingStockCategoryDict } from 'modules/rollingStock/consts';
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import { TrainCategoryDict } from 'modules/rollingStock/consts';
 
 import { fillAndCheckInputById, getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
@@ -40,7 +40,7 @@ class RollingstockEditorPage extends CommonPage {
 
   private readonly primaryCategorySelector: Locator;
 
-  private readonly categoriesCheckboxes: Record<RollingStockCategory, Locator>;
+  private readonly categoriesCheckboxes: Record<TrainCategory, Locator>;
 
   private readonly tractionModeSelector: Locator;
 
@@ -77,11 +77,11 @@ class RollingstockEditorPage extends CommonPage {
     this.loadingGauge = page.locator('#loadingGauge');
     this.primaryCategorySelector = page.getByTestId('primary-category-selector');
     this.categoriesCheckboxes = Object.fromEntries(
-      Object.keys(RollingStockCategoryDict).map((category) => [
+      Object.keys(TrainCategoryDict).map((category) => [
         category,
         page.getByTestId(`category-checkbox-${category}`),
       ])
-    ) as Record<RollingStockCategory, Locator>;
+    ) as Record<TrainCategory, Locator>;
     this.tractionModeSelector = page.getByTestId('traction-mode-selector');
     this.confirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
     this.addPowerRestrictionButton = this.powerRestrictionSelector.getByRole('button').nth(1);
@@ -208,7 +208,7 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Select primary category
-  async selectPrimaryCategory(value: RollingStockCategory) {
+  async selectPrimaryCategory(value: TrainCategory) {
     await this.primaryCategorySelector.selectOption(value);
     await expect(this.primaryCategorySelector).toHaveValue(value);
     await expect(this.categoriesCheckboxes[value]).toBeChecked();
@@ -216,7 +216,7 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Select an unselected category in the category checkbox list
-  async checkCategoryCheckbox(category: RollingStockCategory) {
+  async checkCategoryCheckbox(category: TrainCategory) {
     const checkbox = this.categoriesCheckboxes[category];
     await expect(checkbox).not.toBeChecked();
     await checkbox.locator('..').locator('label').click();
@@ -224,7 +224,7 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Deselect a selected category in the category checkbox list
-  async uncheckCategoryCheckbox(category: RollingStockCategory) {
+  async uncheckCategoryCheckbox(category: TrainCategory) {
     const checkbox = this.categoriesCheckboxes[category];
     await expect(checkbox).toBeChecked();
     await checkbox.locator('..').locator('label').click();

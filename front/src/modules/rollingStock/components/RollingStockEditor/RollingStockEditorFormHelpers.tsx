@@ -2,14 +2,14 @@ import cx from 'classnames';
 import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
   DEFAULT_SIGNALING_SYSTEMS,
-  RollingStockCategoryDict,
+  TrainCategoryDict,
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
   RS_REQUIRED_FIELDS,
@@ -382,7 +382,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
   );
 };
 
-type CategoryOption = { id?: RollingStockCategory; label: string };
+type CategoryOption = { id?: TrainCategory; label: string };
 
 export const RollingStockEditorCategoryForm = ({
   rollingStockValues,
@@ -392,7 +392,7 @@ export const RollingStockEditorCategoryForm = ({
 
   const categoryOptions: CategoryOption[] = [
     { label: t('categoriesOptions.choose') },
-    ...Object.values(RollingStockCategoryDict).map((category) => ({
+    ...Object.values(TrainCategoryDict).map((category) => ({
       id: category,
       label: t(`categoriesOptions.${category}`),
     })),
@@ -411,7 +411,7 @@ export const RollingStockEditorCategoryForm = ({
   };
 
   const handleOtherCategoryChange =
-    (category: RollingStockCategory) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (category: TrainCategory) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setRollingStockValues((prevValues) => {
         if (e.target.checked) {
           prevValues.categories.add(category);
@@ -451,7 +451,7 @@ export const RollingStockEditorCategoryForm = ({
           {t('otherCategories')}
         </label>
         <div className="d-flex flex-wrap" id="rs_category_checkboxes">
-          {Object.values(RollingStockCategoryDict).map((category) => (
+          {Object.values(TrainCategoryDict).map((category) => (
             <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
               <CheckboxRadioSNCF
                 type="checkbox"
