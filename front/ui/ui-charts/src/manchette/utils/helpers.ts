@@ -29,9 +29,11 @@ export const timeScaleToZoomValue = (timeScale: number) =>
 export const getExtremaScales = (
   drawingHeightWithoutTopPadding: number,
   drawingHeightWithoutBothPadding: number,
-  pathLengthMillimeter: number
+  pathLengthMillimeter?: number
 ) => ({
-  minZoomMillimeterPerPx: pathLengthMillimeter / drawingHeightWithoutBothPadding,
+  minZoomMillimeterPerPx:
+    (pathLengthMillimeter ?? MAX_ZOOM_MANCHETTE_HEIGHT_MILLIMETER) /
+    drawingHeightWithoutBothPadding,
   maxZoomMillimeterPerPx: MAX_ZOOM_MANCHETTE_HEIGHT_MILLIMETER / drawingHeightWithoutTopPadding,
 });
 
@@ -116,7 +118,7 @@ export const selectWaypointsToDisplay = (
   // display all waypoints in linear mode
   if (!isProportional) return waypoints;
 
-  const totalDistance = calcTotalDistance(waypoints);
+  const totalDistance = calcTotalDistance(waypoints)!;
   const manchetteHeight = getHeightWithoutLastWaypoint(height);
 
   // in proportional mode, hide some waypoints to avoid collisions

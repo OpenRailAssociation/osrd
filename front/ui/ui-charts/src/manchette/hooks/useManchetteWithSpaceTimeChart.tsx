@@ -361,6 +361,8 @@ const useManchetteWithSpaceTimeChart = ({
       maxZoomMillimeterPerPx
     );
 
+    if (baseScales.length === 0) return [];
+
     if (!splitPoints) return baseScales;
 
     // Constant scale:
@@ -446,7 +448,9 @@ const useManchetteWithSpaceTimeChart = ({
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
     const getSpacePixel = getSpaceToPixel(0, spaceScaleTree);
     const totalManchetteHeight = Math.max(
-      getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT,
+      spaceScales.length !== 0
+        ? getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT
+        : BASE_WAYPOINT_HEIGHT,
       height - FOOTER_HEIGHT
     );
 
