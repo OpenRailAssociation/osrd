@@ -365,6 +365,7 @@ const useManchetteWithSpaceTimeChart = ({
 
     // Constant scale:
     if (isProportional) {
+      if (baseScales.length === 0) return baseScales;
       const baseScale = baseScales[0];
       const coefficient: number =
         'coefficient' in baseScale && typeof baseScale.coefficient === 'number'
@@ -445,10 +446,13 @@ const useManchetteWithSpaceTimeChart = ({
   const { manchetteContents, manchetteHeight } = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
     const getSpacePixel = getSpaceToPixel(0, spaceScaleTree);
-    const totalManchetteHeight = Math.max(
-      getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT,
-      height - FOOTER_HEIGHT
-    );
+    let totalManchetteHeight = height - FOOTER_HEIGHT;
+    if (spaceScales.length > 0) {
+      totalManchetteHeight = Math.max(
+        totalManchetteHeight,
+        getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT
+      );
+    }
 
     if (!splitPoints)
       return {
