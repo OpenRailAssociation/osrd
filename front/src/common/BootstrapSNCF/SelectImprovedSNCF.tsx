@@ -131,7 +131,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
           </button>
         </span>
       )),
-    [filteredOptions, selectItem]
+    [filteredOptions, selectItem, disabled]
   );
 
   const shouldDisplayNewInputValue =
