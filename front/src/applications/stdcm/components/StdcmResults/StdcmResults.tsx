@@ -23,7 +23,7 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SimulationReportSheet from './SimulationReportSheet';
 import StdcmDebugResults from './StdcmDebugResults';
-import FeedbackCard from './StdcmFeedback';
+import StdcmFeedback from './StdcmFeedback';
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
 
@@ -160,7 +160,7 @@ const StdcmResults = ({
                     />
                   </div>
                 )}
-                {selectedSimulation && <FeedbackCard />}
+                {selectedSimulation && <StdcmFeedback />}
               </div>
             ) : (
               <div className="simulation-failure">
