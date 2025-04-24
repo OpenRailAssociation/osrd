@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { inRange, last } from 'lodash';
+import { flatten, inRange, last } from 'lodash';
 
 import { useDraw, usePicking } from '../hooks/useCanvas';
 import {
@@ -106,28 +106,39 @@ export const PathLayer = ({
   border,
 }: PathLayerProps) => {
   /**
-   * This function returns the list of points to join to draw the path. It will be both used to
-   * render the visible path, and the segments on the picking layer.
+   * This function returns the list of points to join to draw the path. As it can be discontinuous,
+   * it is returned as a Point[][]. For now, the only case for discontinuous paths is when the path
+   * stops on a flat step (in which case, we assume the path will be drawn differently in the flat
+   * step layer).
+   *
+   * It will be both used to render the visible path, and the segments on the picking layer.
    */
-  const getPathSegments = useCallback(
+  const getPathLines = useCallback(
     ({
       getTimePixel,
       getSpacePixel,
       spaceScaleTree,
+      flatSteps,
       timeAxis,
       spaceAxis,
-    }: SpaceTimeChartContextType): Point[] => {
-      const res: Point[] = [];
-      path.points.forEach(({ position, time }, i, a) => {
+    }: SpaceTimeChartContextType): Point[][] => {
+      const lines: Point[][] = [];
+      let line: Point[] = [];
+      const { points } = path;
+
+      for (let i = 0; i < points.length; i++) {
+        const { position, time } = points[i];
+
         if (!i) {
-          res.push({
+          line.push({
             [timeAxis]: getTimePixel(time),
             [spaceAxis]: getSpacePixel(position),
           } as Point);
         } else {
-          const { position: prevPosition, time: prevTime } = a[i - 1];
+          const { position: prevPosition, time: prevTime } = points[i - 1];
           const spaceBreakPoints = getSpaceBreakpoints(prevPosition, position, spaceScaleTree);
           let previousBreakPosition = -Infinity;
+
           spaceBreakPoints.forEach((breakPosition, index) => {
             const nextBreakPosition = spaceBreakPoints[index + 1] ?? Infinity;
             const isBeforeFlatStep = previousBreakPosition === breakPosition;
@@ -143,19 +154,28 @@ export const PathLayer = ({
               prevTime +
               ((breakPosition - prevPosition) / (position - prevPosition)) * (time - prevTime);
 
-            res.push({
+            line.push({
               [timeAxis]: getTimePixel(breakTime),
               [spaceAxis]: getSpacePixel(breakPosition, readSpacePixelFromEnd),
             } as Point);
             previousBreakPosition = breakPosition;
           });
-          res.push({
+
+          const newPoint = {
             [timeAxis]: getTimePixel(time),
             [spaceAxis]: getSpacePixel(position),
-          } as Point);
+          } as Point;
+          if (position === prevPosition && flatSteps.has(position)) {
+            lines.push(line);
+            line = [newPoint];
+          } else {
+            line.push(newPoint);
+          }
         }
-      });
-      return res;
+      }
+
+      lines.push(line);
+      return lines;
     },
     [path]
   );
@@ -194,9 +214,11 @@ export const PathLayer = ({
         if (i) {
           const { position: prevPosition, time: prevTime } = a[i - 1];
           if (prevPosition === position && stopPositions.has(position)) {
-            // Detect flat steps, and draw two graduations if any (one on each side of the step):
-            getSpacePixels(getSpacePixel, position).forEach((rawPixel) => {
-              const spacePixel = getCrispLineCoordinate(rawPixel, ctx.lineWidth);
+            // Only draw the stop when there is no flat step
+            // (i.e. when there's only one space pixel):
+            const rawPixels = getSpacePixels(getSpacePixel, position);
+            if (rawPixels.length === 1) {
+              const spacePixel = getCrispLineCoordinate(rawPixels[0], ctx.lineWidth);
               ctx.beginPath();
               if (!swapAxis) {
                 ctx.moveTo(getTimePixel(prevTime), spacePixel);
@@ -206,7 +228,7 @@ export const PathLayer = ({
                 ctx.lineTo(spacePixel, getTimePixel(time));
               }
               ctx.stroke();
-            });
+            }
           }
         }
       });
@@ -336,7 +358,7 @@ export const PathLayer = ({
   );
 
   const computePathLength = useCallback(
-    (operationalPoints: OperationalPoint[], segments: Point[]) => {
+    (operationalPoints: OperationalPoint[], lines: Point[][]) => {
       let totalLength = 0;
 
       // Compute length of pauses
@@ -351,11 +373,13 @@ export const PathLayer = ({
       });
 
       // Compute length of pathSegments
-      segments.forEach(({ x, y }, i, segmentArray) => {
-        if (i > 0) {
-          const { x: prevX, y: prevY } = segmentArray[i - 1];
-          totalLength += Math.sqrt(Math.pow(prevX - x, 2) + Math.pow(prevY - y, 2));
-        }
+      lines.forEach((points) => {
+        points.forEach(({ x, y }, i, a) => {
+          if (i > 0) {
+            const { x: prevX, y: prevY } = a[i - 1];
+            totalLength += Math.sqrt(Math.pow(prevX - x, 2) + Math.pow(prevY - y, 2));
+          }
+        });
       });
 
       return totalLength;
@@ -370,30 +394,32 @@ export const PathLayer = ({
       const mainPathStyle = STYLES[level];
       const totalPathWidth = border.offset * 2 + mainPathStyle.width;
       const backgroundColor = border.backgroundColor || '#fff';
-      const segments = getPathSegments(stcContext);
+      const lines = getPathLines(stcContext);
       ctx.save();
-      ctx.beginPath();
-      const drawSegments = (lineWidth: number, borderColor = border.color) => {
+      const drawLines = (lineWidth: number, borderColor = border.color) => {
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = lineWidth;
         ctx.lineCap = 'round';
-        segments.forEach(({ x, y }, i) => {
-          if (x === segments[i - 1]?.x && y === segments[i - 1]?.y) return;
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
+        lines.forEach((segments) => {
+          ctx.beginPath();
+          segments.forEach(({ x, y }, i) => {
+            if (x === segments[i - 1]?.x && y === segments[i - 1]?.y) return;
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          });
+          ctx.stroke();
         });
-        ctx.stroke();
       };
 
-      drawSegments(totalPathWidth + borderWidth * 2);
-      drawSegments(totalPathWidth, backgroundColor);
+      drawLines(totalPathWidth + borderWidth * 2);
+      drawLines(totalPathWidth, backgroundColor);
 
       ctx.restore();
     },
-    [border, getPathSegments, level]
+    [border, getPathLines, level]
   );
 
   const drawAll = useCallback<DrawingFunction>(
@@ -415,16 +441,18 @@ export const PathLayer = ({
       ctx.setLineDash(style.dashArray || []);
       ctx.globalAlpha = style.opacity || 1;
       ctx.lineCap = style.lineCap || 'square';
-      ctx.beginPath();
-      const segments = getPathSegments(stcContext);
-      segments.forEach(({ x, y }, i) => {
-        if (!i) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+      const lines = getPathLines(stcContext);
+      lines.forEach((points) => {
+        ctx.beginPath();
+        points.forEach(({ x, y }, i) => {
+          if (!i) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
       });
-      ctx.stroke();
 
       // Draw extremities:
       ctx.setLineDash([]);
@@ -433,15 +461,18 @@ export const PathLayer = ({
 
       // Draw label:
       if (!stcContext.hidePathsLabels) {
-        const pathLength = computePathLength(stcContext.operationalPoints, segments);
-        drawLabel(ctx, stcContext, path.label, color, segments, pathLength);
+        const pathLength = computePathLength(stcContext.operationalPoints, lines);
+        // TODO:
+        // We should improve how the labels are drawn, and handle discontinuous lines (instead of
+        // flattening the points)
+        drawLabel(ctx, stcContext, path.label, color, flatten(lines), pathLength);
       }
     },
     [
       color,
       drawPauses,
       level,
-      getPathSegments,
+      getPathLines,
       drawExtremities,
       computePathLength,
       drawLabel,
@@ -456,28 +487,30 @@ export const PathLayer = ({
       const { registerPickingElement } = stcContext;
 
       // Draw segments:
-      getPathSegments(stcContext).forEach((point, i, a) => {
-        if (i) {
-          const previousPoint = a[i - 1];
-          const pickingElement: SegmentPickingElement = {
-            type: 'segment',
-            pathId: path.id,
-            from: previousPoint,
-            to: point,
-          };
-          const index = registerPickingElement(pickingElement);
-          const lineColor = hexToRgb(indexToColor(index));
-          drawAliasedLine(
-            imageData,
-            previousPoint,
-            point,
-            lineColor,
-            STYLES[level].width + pickingTolerance,
-            true,
-            scalingRatio
-          );
-        }
-      });
+      getPathLines(stcContext).forEach((line) =>
+        line.forEach((point, i, a) => {
+          if (i) {
+            const previousPoint = a[i - 1];
+            const pickingElement: SegmentPickingElement = {
+              type: 'segment',
+              pathId: path.id,
+              from: previousPoint,
+              to: point,
+            };
+            const index = registerPickingElement(pickingElement);
+            const lineColor = hexToRgb(indexToColor(index));
+            drawAliasedLine(
+              imageData,
+              previousPoint,
+              point,
+              lineColor,
+              STYLES[level].width + pickingTolerance,
+              true,
+              scalingRatio
+            );
+          }
+        })
+      );
 
       // Draw snap points:
       getSnapPoints(stcContext).forEach((point) => {
@@ -498,7 +531,7 @@ export const PathLayer = ({
         );
       });
     },
-    [getPathSegments, getSnapPoints, level, path.id, pickingTolerance]
+    [getPathLines, getSnapPoints, level, path.id, pickingTolerance]
   );
   usePicking('paths', drawPicking);
 

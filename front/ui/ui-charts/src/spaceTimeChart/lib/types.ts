@@ -270,6 +270,7 @@ export type SpaceTimeChartContextType = {
   timeScale: number;
   spaceOrigin: number;
   spaceScaleTree: NormalizedScaleTree;
+  flatSteps: Set<number>;
 
   // Translation helpers:
   getTimePixel: TimeToPixel;

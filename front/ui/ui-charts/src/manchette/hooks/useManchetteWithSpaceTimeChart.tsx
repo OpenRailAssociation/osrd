@@ -1,4 +1,4 @@
-import React, { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { sortBy, clamp } from 'lodash';
 
@@ -433,15 +433,15 @@ const useManchetteWithSpaceTimeChart = ({
     splitPoints,
   ]);
 
-  const waypointsWithoutSplitPoints = useMemo(() => {
-    const splitPointPositions = new Set(splitPoints?.map((point) => point.position) || []);
-    const filteredWaypoints = selectWaypointsToDisplay(waypoints, {
-      height,
-      isProportional,
-      yZoom,
-    });
-    return filteredWaypoints.filter((waypoint) => !splitPointPositions.has(waypoint.position));
-  }, [splitPoints, waypoints, height, isProportional, yZoom]);
+  const waypointsToDisplay = useMemo(
+    () =>
+      selectWaypointsToDisplay(waypoints, {
+        height,
+        isProportional,
+        yZoom,
+      }),
+    [waypoints, height, isProportional, yZoom]
+  );
 
   const { manchetteContents, manchetteHeight } = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
@@ -454,21 +454,24 @@ const useManchetteWithSpaceTimeChart = ({
       );
     }
 
-    if (!splitPoints)
+    if (!splitPoints?.length)
       return {
         manchetteHeight: totalManchetteHeight,
-        manchetteContents: waypointsWithoutSplitPoints,
+        manchetteContents: waypointsToDisplay,
       };
 
     // Identify all manchette contents (split sections and waypoints):
+    const splitPointPositions = new Set(splitPoints.map((point) => point.position) || []);
     let allContents: (
       | { type: 'waypoint'; position: number; waypoint: Waypoint }
       | { type: 'splitSection'; position: number; split: SplitPoint }
-    )[] = waypointsWithoutSplitPoints.map((wp) => ({
-      type: 'waypoint',
-      waypoint: wp,
-      position: wp.position,
-    }));
+    )[] = waypointsToDisplay
+      .filter((wp) => !splitPointPositions.has(wp.position))
+      .map((wp) => ({
+        type: 'waypoint',
+        waypoint: wp,
+        position: wp.position,
+      }));
     allContents = allContents.concat(
       splitPoints.map((sp) => ({
         type: 'splitSection',
@@ -533,7 +536,7 @@ const useManchetteWithSpaceTimeChart = ({
       manchetteHeight: totalManchetteHeight,
       manchetteContents: finalContents,
     };
-  }, [spaceOrigin, spaceScales, splitPoints, waypointsWithoutSplitPoints, height]);
+  }, [spaceOrigin, spaceScales, splitPoints, waypointsToDisplay, height]);
 
   return useMemo<{
     manchetteProps: ManchetteProps;
@@ -561,11 +564,13 @@ const useManchetteWithSpaceTimeChart = ({
         yOffset,
       },
       spaceTimeChartProps: {
-        operationalPoints: waypointsWithoutSplitPoints.map((waypoint) => ({
+        operationalPoints: waypointsToDisplay.map((waypoint) => ({
           ...waypoint,
           importanceLevel: 1,
         })),
-        additionalChildren: splitPoints.map((sp) => sp.spaceTimeChartNode),
+        additionalChildren: splitPoints.map((sp, i) => (
+          <Fragment key={i}>{sp.spaceTimeChartNode}</Fragment>
+        )),
         timeScale: zoomValueToTimeScale(xZoom),
         xOffset,
         yOffset: -yOffset + WAYPOINTS_OFFSET,
@@ -674,7 +679,7 @@ const useManchetteWithSpaceTimeChart = ({
       yZoom,
       isProportional,
       yOffset,
-      waypointsWithoutSplitPoints,
+      waypointsToDisplay,
       xZoom,
       xOffset,
       timeOrigin,

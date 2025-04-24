@@ -20,6 +20,7 @@ import {
 } from '../lib/types';
 import {
   getDataToPoint,
+  getFlatSteps,
   getPixelToSpace,
   getPixelToTime,
   getPointToData,
@@ -100,6 +101,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
 
   const contextState: SpaceTimeChartContextType = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
+    const flatSteps = getFlatSteps(spaceScales);
     const timeAxis = !swapAxis ? 'x' : 'y';
     const spaceAxis = !swapAxis ? 'y' : 'x';
 
@@ -147,6 +149,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
       operationalPoints,
       spaceOrigin,
       spaceScaleTree,
+      flatSteps,
       timeOrigin,
       timeScale,
       timePixelOffset,
