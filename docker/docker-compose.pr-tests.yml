@@ -184,7 +184,7 @@ services:
       - pr-tests
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:latest
     container_name: osrd-jaeger-pr-tests
     restart: unless-stopped
     command: --collector.otlp.grpc.host-port :4319 --collector.otlp.http.host-port :4320 --query.http-server.host-port :16687 --collector.grpc-server.host-port :14251
