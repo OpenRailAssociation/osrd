@@ -455,9 +455,10 @@ fun routingRequirements(
     }
 
     fun findRouteSetDeadline(routeIndex: Int): Double? {
-        if (routeIndex == 0)
-        // TODO: this isn't quite true when the path starts with a stop
-        return 0.0
+        if (routeIndex == 0) {
+            // TODO: this isn't quite true when the path starts with a stop
+            return 0.0
+        }
 
         // find the first block of the route
         val routeStartBlockIndex = routeBlockBounds[routeIndex]
