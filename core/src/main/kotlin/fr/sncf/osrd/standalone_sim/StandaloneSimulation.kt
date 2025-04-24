@@ -74,7 +74,8 @@ fun runStandaloneSimulation(
     if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)
     val signalingRanges = buildSignalingRanges(infra, blockPath, chunkPath)
     // MRSP & SpeedLimits
-    val safetySpeedRanges = makeSafetySpeedRanges(infra, chunkPath, routes, schedule)
+    val safetySpeedRanges =
+        makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRanges)
     var mrsp =
         computeMRSP(
             pathProps,
