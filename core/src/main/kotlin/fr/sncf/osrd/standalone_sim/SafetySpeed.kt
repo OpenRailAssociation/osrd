@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -33,7 +34,8 @@ fun makeSafetySpeedRanges(
     infra: FullInfra,
     chunkPath: ChunkPath,
     routes: StaticIdxList<Route>,
-    schedule: List<SimulationScheduleItem>
+    schedule: List<SimulationScheduleItem>,
+    signalingRanges: DistanceRangeMap<String>
 ): DistanceRangeMap<Speed> {
     val rawInfra = infra.rawInfra
     val zonePaths = routes.flatMap { rawInfra.getRoutePath(it) }
@@ -42,7 +44,16 @@ fun makeSafetySpeedRanges(
 
     val stopsWithSafetySpeed =
         schedule
-            .filter { it.receptionSignal.isStopOnClosedSignal }
+            .filter {
+                it.receptionSignal.isStopOnClosedSignal &&
+                    // ETCS signaling system already handles Safety Approach Speed via braking
+                    // curves
+                    !isStopInSignalingSystemRange(
+                        it.pathOffset,
+                        signalingRanges,
+                        ETCS_LEVEL2.id,
+                    )
+            }
             .map {
                 SafetySpeedStop(
                     it.pathOffset,
@@ -50,11 +61,24 @@ fun makeSafetySpeedRanges(
                 )
             }
             .toMutableList()
-    makeEndOfPathStop(rawInfra, routes, signalOffsets)?.let { stopsWithSafetySpeed.add(it) }
+
+    // Last buffer-stop is handled via ETCS braking curves if the last stop is handled by ETCS
+    // signaling system
+    if (
+        schedule.isNotEmpty() &&
+            !isStopInSignalingSystemRange(
+                schedule.last().pathOffset,
+                signalingRanges,
+                ETCS_LEVEL2.id,
+            )
+    ) {
+        makeEndOfPathStop(rawInfra, routes, signalOffsets)?.let { stopsWithSafetySpeed.add(it) }
+    }
 
     val res = distanceRangeMapOf<Speed>()
     for (stop in stopsWithSafetySpeed) {
         // Currently, safety speed is applied to the next signal no matter the sight distance
+        // TODO: should we compute the minimum when adding a speed limit?
         val nextSignalOffset = signalOffsets.first { it >= stop.offset }.distance
         res.put(
             lower = nextSignalOffset - 200.meters,
@@ -71,6 +95,15 @@ fun makeSafetySpeedRanges(
     }
     // Safety speed areas may extend outside the path
     return res.subMap(0.meters, chunkPath.length)
+}
+
+/** Check if a given stop is in a range of a given signaling system. */
+private fun isStopInSignalingSystemRange(
+    stopOffset: Offset<TravelledPath>,
+    signalingRanges: DistanceRangeMap<String>,
+    signalingSystem: String,
+): Boolean {
+    return (signalingRanges.get(stopOffset.distance) == signalingSystem)
 }
 
 /**

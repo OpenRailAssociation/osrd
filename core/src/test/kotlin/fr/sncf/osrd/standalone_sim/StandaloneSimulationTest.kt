@@ -19,6 +19,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.train.TestTrains
@@ -331,8 +332,10 @@ class StandaloneSimulationTest {
                     STOP,
                 ),
             )
+
+        val signalingRanges = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
         val safetySpeedRanges =
-            makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule)
+            makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule, signalingRanges)
         val expected =
             distanceRangeMapOf(
                 *listOf(
@@ -349,6 +352,55 @@ class StandaloneSimulationTest {
                             10_400.meters,
                             10.kilometersPerHour
                         ),
+                    )
+                    .toTypedArray(),
+            )
+        assertEquals(expected, safetySpeedRanges)
+    }
+
+    /**
+     * Test that the safety speed is not applied to stops in a range of ETCS_LEVEL2 signaling system
+     */
+    @Test
+    fun testSafetySpeedWithETCSLevel2() {
+        // Path length = 10400m
+        // SIGNAL OFFSETS on this path: 150m and 10150m
+        // Then, buffer stop at the end of the last route: 10400m
+        // A ETCS_LEVEL2 signaling range is added between 9500m and 10400m
+        val schedule =
+            listOf(
+                SimulationScheduleItem(
+                    Offset(42.meters),
+                    42.seconds,
+                    42.seconds,
+                    STOP,
+                ),
+                // Stop that will be skipped from safety speed range (in ETCS_LEVEL2 range),
+                // associated to the 10150m signal
+                SimulationScheduleItem(
+                    Offset(10_000.meters),
+                    42.seconds,
+                    42.seconds,
+                    SHORT_SLIP_STOP,
+                ),
+                // Stop that will be skipped from safety speed range (in ETCS_LEVEL2 range),
+                // associated to the last buffer stop
+                SimulationScheduleItem(
+                    Offset(10_300.meters),
+                    42.seconds,
+                    42.seconds,
+                    STOP,
+                ),
+            )
+
+        val signalingRanges = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
+        signalingRanges.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
+        val safetySpeedRanges =
+            makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule, signalingRanges)
+        val expected =
+            distanceRangeMapOf(
+                *listOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
                     )
                     .toTypedArray(),
             )
