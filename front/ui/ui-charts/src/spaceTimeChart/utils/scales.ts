@@ -102,6 +102,22 @@ export function spaceScalesToBinaryTree(
 }
 
 /**
+ * This function takes a sequence of SpaceScales, identifies the flat steps (i.e. the scales that do
+ * not increase the position), and returns them in a set.
+ */
+export function getFlatSteps(spaceScales: SpaceScale[]): Set<number> {
+  const flatSteps: number[] = [];
+
+  for (let i = 1; i < spaceScales.length; i++) {
+    const { to: previous } = spaceScales[i - 1];
+    const { to: current } = spaceScales[i];
+    if (previous === current) flatSteps.push(current);
+  }
+
+  return new Set(flatSteps);
+}
+
+/**
  * This function takes a NormalizedScaleTree and a position, and returns the leaf node from the
  * tree that contains that position.
  *

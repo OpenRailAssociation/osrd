@@ -13,6 +13,7 @@ const SpaceGraduations = () => {
         timePixelOffset,
         getSpacePixel,
         operationalPoints,
+        flatSteps,
         swapAxis,
         width,
         height,
@@ -23,6 +24,8 @@ const SpaceGraduations = () => {
 
       // Draw operational point lines:
       operationalPoints.forEach((point) => {
+        if (flatSteps.has(point.position)) return;
+
         const styles = spaceGraduationsStyles[point.importanceLevel || 0];
         if (!styles) return;
 
