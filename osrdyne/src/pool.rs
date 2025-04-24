@@ -16,7 +16,7 @@ use lapin::{
 };
 use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
 use tokio::{sync::oneshot, task::JoinSet};
-use tracing::{Level, error, info, span};
+use tracing::{error, info};
 
 use crate::{
     Key, WorkerDriver,
@@ -470,6 +470,86 @@ async fn activity_processor(
     Ok(())
 }
 
+#[tracing::instrument(skip_all)]
+async fn worker_control_iteration(
+    pool: Arc<Pool>,
+    expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
+    running_workers_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
+    driver: &mut Box<dyn WorkerDriver>,
+    sleep_interval: Duration,
+) {
+    let target = expected_state.borrow().clone();
+
+    let current_workers = match driver.list_worker_groups().await {
+        Ok(workers) => workers,
+        Err(e) => {
+            error!(
+                ?e,
+                "Failed to list worker groups. Aborting current loop iteration."
+            );
+            tokio::time::sleep(sleep_interval).await;
+            return;
+        }
+    };
+
+    let current_workers = Arc::new(current_workers);
+    let _ = running_workers_watch.send(current_workers.clone());
+
+    let current_worker_keys = current_workers
+        .iter()
+        .map(|c| &c.worker_key)
+        .collect::<Vec<_>>();
+
+    let wanted_worker_keys = target
+        .queues
+        .into_iter()
+        .map(|(k, _)| k)
+        .collect::<Vec<_>>();
+
+    // Remove unwanted groups
+    for worker_key in current_worker_keys {
+        if !wanted_worker_keys.contains(worker_key) {
+            if let Err(e) = driver.destroy_worker_group(worker_key.clone()).await {
+                error!(
+                    ?e,
+                    "Failed to destroy worker group. Aborting current loop iteration."
+                );
+                tokio::time::sleep(sleep_interval).await;
+                continue;
+            }
+        }
+    }
+
+    // Add wanted groups
+    for worker_key in wanted_worker_keys {
+        let queue_name = pool.key_queue_name(&worker_key);
+        if let Err(e) = driver
+            .get_or_create_worker_group(queue_name, worker_key)
+            .await
+        {
+            error!(
+                ?e,
+                "Failed to get or create worker group. Aborting current loop iteration."
+            );
+            tokio::time::sleep(sleep_interval).await;
+            continue;
+        }
+    }
+
+    // Refresh workers if needed
+    if let Err(e) = driver.cleanup_stalled().await {
+        error!(
+            ?e,
+            "Failed to cleanup stalled resources. Aborting current loop iteration."
+        );
+        tokio::time::sleep(sleep_interval).await;
+        return;
+    }
+
+    // Sleep for a while
+    tokio::time::sleep(sleep_interval).await;
+}
+
 async fn worker_control_loop(
     pool: Arc<Pool>,
     expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
@@ -478,79 +558,14 @@ async fn worker_control_loop(
     sleep_interval: Duration,
 ) {
     loop {
-        let span = span!(Level::INFO, "loop_iteration");
-        let _enter = span.enter();
-
-        let target = expected_state.borrow().clone();
-
-        let current_workers = match driver.list_worker_groups().await {
-            Ok(workers) => workers,
-            Err(e) => {
-                error!(
-                    ?e,
-                    "Failed to list worker groups. Aborting current loop iteration."
-                );
-                tokio::time::sleep(sleep_interval).await;
-                continue;
-            }
-        };
-
-        let current_workers = Arc::new(current_workers);
-        let _ = running_workers_watch.send(current_workers.clone());
-
-        let current_worker_keys = current_workers
-            .iter()
-            .map(|c| &c.worker_key)
-            .collect::<Vec<_>>();
-
-        let wanted_worker_keys = target
-            .queues
-            .into_iter()
-            .map(|(k, _)| k)
-            .collect::<Vec<_>>();
-
-        // Remove unwanted groups
-        for worker_key in current_worker_keys {
-            if !wanted_worker_keys.contains(worker_key) {
-                if let Err(e) = driver.destroy_worker_group(worker_key.clone()).await {
-                    error!(
-                        ?e,
-                        "Failed to destroy worker group. Aborting current loop iteration."
-                    );
-                    tokio::time::sleep(sleep_interval).await;
-                    continue;
-                }
-            }
-        }
-
-        // Add wanted groups
-        for worker_key in wanted_worker_keys {
-            let queue_name = pool.key_queue_name(&worker_key);
-            if let Err(e) = driver
-                .get_or_create_worker_group(queue_name, worker_key)
-                .await
-            {
-                error!(
-                    ?e,
-                    "Failed to get or create worker group. Aborting current loop iteration."
-                );
-                tokio::time::sleep(sleep_interval).await;
-                continue;
-            }
-        }
-
-        // Refresh workers if needed
-        if let Err(e) = driver.cleanup_stalled().await {
-            error!(
-                ?e,
-                "Failed to cleanup stalled resources. Aborting current loop iteration."
-            );
-            tokio::time::sleep(sleep_interval).await;
-            continue;
-        }
-
-        // Sleep for a while
-        tokio::time::sleep(sleep_interval).await;
+        worker_control_iteration(
+            pool.clone(),
+            expected_state.clone(),
+            running_workers_watch.clone(),
+            &mut driver,
+            sleep_interval,
+        )
+        .await;
     }
 }
 
