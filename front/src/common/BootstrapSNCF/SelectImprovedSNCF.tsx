@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode, useCallback, useMemo } from 'react';
+import { useState, useEffect, type ReactNode, useCallback, useMemo, useRef } from 'react';
 
 import cx from 'classnames';
 import { isObject, isNil } from 'lodash';
@@ -21,7 +21,6 @@ interface SelectProps<T> {
   isOpened?: boolean;
   setSelectVisibility?: (arg: boolean) => void;
   noTogglingHeader?: boolean;
-  disableShadow?: boolean; // if true, the shadow will not be displayed when the menu is open
   disabled?: boolean;
 }
 
@@ -41,13 +40,14 @@ function SelectImproved<T extends string | SelectOptionObject>({
   isOpened = false,
   setSelectVisibility,
   noTogglingHeader = false,
-  disableShadow = false,
   disabled,
 }: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(isOpened);
   const [selectedItem, setSelectedItem] = useState<T | undefined>(value);
   const [filteredOptions, setFilteredOptions] = useState<Array<T>>(options);
   const [filterText, setFilterText] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const filterOptions = useCallback(
     (text: string) => {
       const localFilteredOptions = options.filter((el) =>
@@ -76,6 +76,20 @@ function SelectImproved<T extends string | SelectOptionObject>({
   useEffect(() => {
     filterOptions(filterText);
   }, [filterOptions, filterText]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node | null)) {
+        setIsOpen(false);
+        if (setSelectVisibility) setSelectVisibility(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [setIsOpen, setSelectVisibility, dropdownRef]);
 
   const renderNewValueInput = (currentValue: string) => (
     <div className="select-menu-item" role="listitem">
@@ -126,7 +140,11 @@ function SelectImproved<T extends string | SelectOptionObject>({
     !filteredOptions.map((e) => (isObject(e) ? e.label : e)).includes(filterText);
 
   return (
-    <div className={cx({ 'd-flex align-items-baseline': inline })} data-testid={dataTestId}>
+    <div
+      ref={dropdownRef}
+      className={cx({ 'd-flex align-items-baseline': inline })}
+      data-testid={dataTestId}
+    >
       {label && (
         <label htmlFor="select1" className={cx({ 'pr-2': inline })}>
           {label}
@@ -212,29 +230,6 @@ function SelectImproved<T extends string | SelectOptionObject>({
           </div>
         </div>
       </div>
-      {!disableShadow && isOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100vw',
-            height: '100vh',
-            zIndex: 2,
-          }}
-          role="button"
-          aria-label="close selection display"
-          tabIndex={0}
-          onClick={() => {
-            if (disabled) return;
-
-            setIsOpen(false);
-            if (setSelectVisibility) setSelectVisibility(false);
-          }}
-        >
-          &nbsp;
-        </div>
-      )}
     </div>
   );
 }
