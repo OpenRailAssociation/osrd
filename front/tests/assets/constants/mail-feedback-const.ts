@@ -20,7 +20,7 @@ const getMailFeedbackData = () => {
     fr: frTranslations,
   });
 
-  const expectedSubject = translations.mailFeedback.subject;
+  const expectedSubject = translations.mailFeedback.subject.replace('{{stdcmName}}', 'Stdcm');
 
   const expectedBody = `
 ********
@@ -39,7 +39,7 @@ ${translations.departureTime}: ${departureTime}
 
 ********
 
-${translations.mailFeedback.body}
+${translations.mailFeedback.body.replace('{{stdcmName}}', 'Stdcm')}
 
 ********
 `;

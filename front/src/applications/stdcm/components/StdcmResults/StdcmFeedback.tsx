@@ -6,13 +6,11 @@ import { useSelector } from 'react-redux';
 import type { StdcmResultsOutput } from 'applications/stdcm/types';
 import { getSelectedSimulation } from 'reducers/osrdconf/stdcmConf/selectors';
 import { dateTimeFormatting } from 'utils/date';
+import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
-type StdcmFeedbackProps = {
-  stdcmFeedbackMail?: string;
-};
-
-const StdcmFeedback = ({ stdcmFeedbackMail }: StdcmFeedbackProps) => {
+const StdcmFeedback = () => {
   const { t } = useTranslation('stdcm');
+  const { stdcmName, stdcmFeedbackMail } = useDeploymentSettings() ?? { stdcmName: 'STDCM' };
   const selectedSimulation = useSelector(getSelectedSimulation);
 
   const resultsOutput = selectedSimulation.outputs as StdcmResultsOutput;
@@ -29,7 +27,7 @@ const StdcmFeedback = ({ stdcmFeedbackMail }: StdcmFeedbackProps) => {
     dayjs.utc(resultsOutput.results.departure_time).toDate()
   );
 
-  const subject = encodeURIComponent(t('mailFeedback.subject'));
+  const subject = encodeURIComponent(t('mailFeedback.subject', { stdcmName }));
   const separator = '********';
 
   const messageContent = `
@@ -49,7 +47,7 @@ ${t('departureTime')}: ${departureTime}
 
 ${separator}
 
-${t('mailFeedback.body')}
+${t('mailFeedback.body', { stdcmName })}
 
 ${separator}
 `;
@@ -68,7 +66,7 @@ ${separator}
         </h3>
       </div>
       <p className="feedback-card-text" data-testid="feedback-card-text">
-        {t('mailFeedback.description')}
+        {t('mailFeedback.description', { stdcmName })}
         <br />
         <strong>
           <a data-testid="feedback-button" href={mailtoLink}>

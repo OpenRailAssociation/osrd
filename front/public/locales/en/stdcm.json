@@ -53,10 +53,10 @@
     "posterior": "Indicate posterior train"
   },
   "mailFeedback": {
-    "body": "We invite you to send us a message.\nAs soon as you have a concern or a remark,\neven if it's not perfectly worded.\n\nThank you in advance,\nThe LMR project team\n\n(you may delete this message)",
-    "description": "Help us improve ST DCM by sending us your feedback and suggestions.",
+    "body": "We invite you to send us a message.\nAs soon as you have a concern or a remark,\neven if it's not perfectly worded.\n\nThank you in advance,\nThe {{stdcmName}} project team\n\n(you may delete this message)",
+    "description": "Help us improve {{stdcmName}} by sending us your feedback and suggestions.",
     "simulationDetails": "Simulation details",
-    "subject": "LMR - feedback, suggestions",
+    "subject": "{{stdcmName}} - feedback, suggestions",
     "title": "Any feedback or suggestions?",
     "writeButton": "Write"
   },
