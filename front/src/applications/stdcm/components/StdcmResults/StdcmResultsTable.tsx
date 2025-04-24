@@ -29,7 +29,7 @@ const StcdmResultsTable = ({
   operationalPointsList,
   simulationIndex,
 }: SimulationTableProps) => {
-  const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
+  const { t } = useTranslation('stdcm');
   const dispatch = useDispatch();
 
   const [showAllOP, setShowAllOP] = useState(false);
@@ -45,13 +45,13 @@ const StcdmResultsTable = ({
         <thead>
           <tr>
             <th aria-label="line-count" />
-            <th>{t('operationalPoint')}</th>
-            <th>{t('code')}</th>
-            <th className="head-stop">{t('endStop')}</th>
-            <th className="head-stop">{t('passageStop')}</th>
-            <th className="head-stop">{t('startStop')}</th>
-            <th className="weight">{t('weight')}</th>
-            <th>{t('refEngine')}</th>
+            <th>{t('reportSheet.operationalPoint')}</th>
+            <th>{t('reportSheet.code')}</th>
+            <th className="head-stop">{t('reportSheet.endStop')}</th>
+            <th className="head-stop">{t('reportSheet.passageStop')}</th>
+            <th className="head-stop">{t('reportSheet.startStop')}</th>
+            <th className="weight">{t('reportSheet.weight')}</th>
+            <th>{t('reportSheet.refEngine')}</th>
           </tr>
         </thead>
         <tbody className="table-results">
@@ -90,7 +90,7 @@ const StcdmResultsTable = ({
                     !isRequestedPathStep &&
                     step.duration === null
                       ? '='
-                      : step.name || t('unknown')}
+                      : step.name || t('reportSheet.unknown')}
                   </td>
                   <td className="ch">{step.ch}</td>
                   <td className="stop">{isLastStep || step.duration !== null ? step.time : ''}</td>
@@ -132,9 +132,7 @@ const StcdmResultsTable = ({
             data-testid="all-vias-button"
             variant="Normal"
             label={
-              showAllOP
-                ? t('stdcm:simulation.results.displayMain')
-                : t('stdcm:simulation.results.displayAll')
+              showAllOP ? t('simulation.results.displayMain') : t('simulation.results.displayAll')
             }
             onClick={toggleShowAllOP}
           />
@@ -143,13 +141,11 @@ const StcdmResultsTable = ({
           {!isSimulationRetained ? (
             <Button
               data-testid="retain-simulation-button"
-              label={t('stdcm:simulation.results.retainThisSimulation')}
+              label={t('simulation.results.retainThisSimulation')}
               onClick={onRetainSimulation}
             />
           ) : (
-            <div className="selected-simulation">
-              {t('stdcm:simulation.results.simulationSelected')}
-            </div>
+            <div className="selected-simulation">{t('simulation.results.simulationSelected')}</div>
           )}
         </div>
       </div>

@@ -20,9 +20,9 @@ const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_co
 
 const getStopType = (step: StdcmPathStep, t: TFunction) => {
   if (!step.isVia) {
-    return t('serviceStop');
+    return t('reportSheet.serviceStop');
   }
-  return capitalizeFirstLetter(t(`stdcm:trainPath.stopType.${step.stopType}`));
+  return capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`));
 };
 
 const getArrivalTimes = (step: StdcmPathStep, t: TFunction, shouldDisplay: boolean) => {
@@ -30,20 +30,20 @@ const getArrivalTimes = (step: StdcmPathStep, t: TFunction, shouldDisplay: boole
     if (step.arrival && step.arrivalType === 'preciseTime') {
       return dateToHHMMSS(step.arrival, { withoutSeconds: true });
     }
-    return t('asap');
+    return t('reportSheet.asap');
   }
   return '';
 };
 
 const LogoSTDCM = ({ logoUrl }: { logoUrl?: string }) => {
-  const { t } = useTranslation(['stdcm-simulation-report-sheet']);
+  const { t } = useTranslation('stdcm');
   if (logoUrl) {
     return <Image src={logoUrl} style={styles.header.stdcmLogo} />;
   }
   return (
     <>
-      <Text style={styles.header.title}>{t('stdcm')}</Text>
-      <Text style={styles.header.creation}>{t('stdcmCreation')}</Text>
+      <Text style={styles.header.title}>{t('reportSheet.stdcm')}</Text>
+      <Text style={styles.header.creation}>{t('reportSheet.stdcmCreation')}</Text>
     </>
   );
 };
@@ -56,7 +56,7 @@ const SimulationReportSheet = ({
   operationalPointsList,
   simulationSheetLogo,
 }: SimulationReportSheetProps) => {
-  const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
+  const { t } = useTranslation('stdcm');
   let renderedIndex = 0;
 
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
@@ -71,8 +71,8 @@ const SimulationReportSheet = ({
       <Page wrap={false} style={styles.main.page} size={[1344]}>
         <View style={styles.header.alertBanner}>
           <Image src={iconAlert} style={styles.header.alertIcon} />
-          <Text style={styles.header.simulationTitle}>{t('simulation')}</Text>
-          <Text style={styles.header.message}>{t('warningMessage')}</Text>
+          <Text style={styles.header.simulationTitle}>{t('reportSheet.simulation')}</Text>
+          <Text style={styles.header.message}>{t('reportSheet.warningMessage')}</Text>
         </View>
         <View style={styles.header.numberDateBanner}>
           <View style={styles.header.stdcmTitleBox}>
@@ -86,7 +86,7 @@ const SimulationReportSheet = ({
               {simulationReportSheetNumber}
             </Text>
             <Text style={styles.header.creationDate}>
-              {t('formattedDate', formatDateToString(creationDate))}
+              {t('reportSheet.formattedDate', formatDateToString(creationDate))}
             </Text>
           </View>
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
@@ -96,50 +96,65 @@ const SimulationReportSheet = ({
           <View style={styles.rcInfo.rcBox} />
           <View style={styles.rcInfo.rcBox}>
             <View style={styles.rcInfo.stdcmApplication}>
-              <Text style={styles.rcInfo.applicationDate}>{t('applicationDate')}</Text>
+              <Text style={styles.rcInfo.applicationDate}>{t('reportSheet.applicationDate')}</Text>
               <Text style={styles.rcInfo.date}>{formatDay(departureTime, i18n.language)}</Text>
             </View>
           </View>
         </View>
         <View style={styles.convoyAndRoute.convoyAndRoute}>
           <View style={styles.convoyAndRoute.convoy}>
-            <Text style={styles.convoyAndRoute.convoyTitle}> {t('convoy')}</Text>
+            <Text style={styles.convoyAndRoute.convoyTitle}> {t('reportSheet.convoy')}</Text>
             <View style={styles.convoyAndRoute.convoyInfo}>
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.speedLimitByTag')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.towedMaterial')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {consist?.towedRollingStock?.name ?? '-'}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxSpeed')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {`${Math.floor(convoyMaxSpeed)} km/h`}
                 </Text>
               </View>
               <View style={styles.convoyAndRoute.convoyInfoBox2}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxWeight')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxWeight')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {`${Math.floor(convoyMass)} t`}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('referenceEngine')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.referenceEngine')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>{rollingStock.name}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxLength')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxLength')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>{`${convoyLength} m`}</Text>
               </View>
             </View>
           </View>
           <View style={styles.convoyAndRoute.route}>
-            <Text style={styles.convoyAndRoute.routeTitle}>{t('requestedRoute')}</Text>
+            <Text style={styles.convoyAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
             {anteriorTrain && (
               <View style={styles.convoyAndRoute.fromBanner}>
                 <View style={styles.convoyAndRoute.fromBox}>
-                  <Text style={styles.convoyAndRoute.from}>{t('from')}</Text>
+                  <Text style={styles.convoyAndRoute.from}>{t('reportSheet.from')}</Text>
                 </View>
                 <Text style={styles.convoyAndRoute.fromNumber}>{anteriorTrain.trainName}</Text>
                 <Text style={styles.convoyAndRoute.fromScheduled}>
                   {anteriorTrain &&
-                    t('scheduledArrival', { date: anteriorTrain.date, time: anteriorTrain.time })}
+                    t('reportSheet.scheduledArrival', {
+                      date: anteriorTrain.date,
+                      time: anteriorTrain.time,
+                    })}
                 </Text>
               </View>
             )}
@@ -150,22 +165,22 @@ const SimulationReportSheet = ({
                     <TD aria-label="line-count" />
                   </View>
                   <View style={styles.convoyAndRoute.stopTableOpWidth}>
-                    <TD>{t('operationalPoint')}</TD>
+                    <TD>{t('reportSheet.operationalPoint')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableChWidth}>
-                    <TD>{t('code')}</TD>
+                    <TD>{t('reportSheet.code')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableEndWidth}>
-                    <TD>{t('endStop')}</TD>
+                    <TD>{t('reportSheet.endStop')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableEndWidth}>
-                    <TD>{t('stopTime')}</TD>
+                    <TD>{t('reportSheet.stopTime')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableStartWidth}>
-                    <TD>{t('startStop')}</TD>
+                    <TD>{t('reportSheet.startStop')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
-                    <TD>{t('stopType')}</TD>
+                    <TD>{t('reportSheet.stopType')}</TD>
                   </View>
                 </TH>
                 {stdcmData.simulationPathSteps.map((step, index) => {
@@ -258,14 +273,14 @@ const SimulationReportSheet = ({
             {posteriorTrain && (
               <View style={styles.convoyAndRoute.forBanner}>
                 <Text style={styles.convoyAndRoute.forScheduled}>
-                  {t('scheduledDeparture', {
+                  {t('reportSheet.scheduledDeparture', {
                     date: posteriorTrain.date,
                     time: posteriorTrain.time,
                   })}
                 </Text>
                 <Text style={styles.convoyAndRoute.forNumber}>{posteriorTrain.trainName}</Text>
                 <View style={styles.convoyAndRoute.forBox}>
-                  <Text style={styles.convoyAndRoute.for}>{t('for')}</Text>
+                  <Text style={styles.convoyAndRoute.for}>{t('reportSheet.for')}</Text>
                 </View>
               </View>
             )}
@@ -273,7 +288,7 @@ const SimulationReportSheet = ({
         </View>
         <View style={styles.simulation.simulation}>
           <View style={styles.simulation.simulationContainer}>
-            <Text style={styles.simulation.simulationUppercase}>{t('simulation')}</Text>
+            <Text style={styles.simulation.simulationUppercase}>{t('reportSheet.simulation')}</Text>
             <Text style={styles.simulation.simulationLength}>
               {`${Math.round(stdcmData.path.length / 1000000)} km`}
             </Text>
@@ -285,34 +300,34 @@ const SimulationReportSheet = ({
                   <TD aria-label="line-count" />
                 </View>
                 <View style={styles.simulation.opWidth}>
-                  <TD>{t('operationalPoint')}</TD>
+                  <TD>{t('reportSheet.operationalPoint')}</TD>
                 </View>
                 <View style={styles.simulation.chWidth}>
-                  <TD>{t('code')}</TD>
+                  <TD>{t('reportSheet.code')}</TD>
                 </View>
                 <View style={styles.simulation.trackWidth}>
-                  <TD>{t('track')}</TD>
+                  <TD>{t('reportSheet.track')}</TD>
                 </View>
                 <View style={styles.simulation.endWidth}>
-                  <TD>{t('endStop')}</TD>
+                  <TD>{t('reportSheet.endStop')}</TD>
                 </View>
                 <View style={styles.simulation.passageWidth}>
-                  <TD>{t('passageStop')}</TD>
+                  <TD>{t('reportSheet.passageStop')}</TD>
                 </View>
                 <View style={styles.simulation.startWidth}>
-                  <TD>{t('startStop')}</TD>
+                  <TD>{t('reportSheet.startStop')}</TD>
                 </View>
                 <View style={styles.simulation.weightWidth}>
-                  <TD>{t('weight')}</TD>
+                  <TD>{t('reportSheet.weight')}</TD>
                 </View>
                 <View style={styles.simulation.length}>
-                  <TD>{t('length')}</TD>
+                  <TD>{t('reportSheet.length')}</TD>
                 </View>
                 <View style={styles.simulation.refEngineWidth}>
-                  <TD>{t('referenceEngine')}</TD>
+                  <TD>{t('reportSheet.referenceEngine')}</TD>
                 </View>
                 <View style={styles.simulation.stopType}>
-                  <TD>{t('simulationStopType')}</TD>
+                  <TD>{t('reportSheet.simulationStopType')}</TD>
                 </View>
               </TH>
               {operationalPointsList.map((step, index) => {
@@ -358,7 +373,7 @@ const SimulationReportSheet = ({
                       >
                         {isNotExtremity && !isViaInSimulationPath && step.name === prevStep.name
                           ? '='
-                          : step.name || t('unknown')}
+                          : step.name || t('reportSheet.unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>
@@ -426,8 +441,8 @@ const SimulationReportSheet = ({
                       {(isFirstStep || isLastStep || step.stopType) && (
                         <TD style={tdPassageStopStyle}>
                           {isFirstStep || isLastStep
-                            ? t('serviceStop')
-                            : capitalizeFirstLetter(t(`stdcm:trainPath.stopType.${step.stopType}`))}
+                            ? t('reportSheet.serviceStop')
+                            : capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`))}
                         </TD>
                       )}
                     </View>
@@ -438,7 +453,7 @@ const SimulationReportSheet = ({
           </View>
         </View>
         <View style={styles.footer.warrantyBox}>
-          <Text style={styles.footer.warrantyMessage}>{t('withoutWarranty')}</Text>
+          <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>
         </View>
       </Page>
     </Document>

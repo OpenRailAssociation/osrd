@@ -3,12 +3,12 @@ import { getLocalizedDateString } from '../../utils/date-utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, PdfSimulationContent } from '../../utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile(
-  'public/locales/en/stdcm-simulation-report-sheet.json'
-);
-const frTranslations: FlatTranslations = readJsonFile(
-  'public/locales/fr/stdcm-simulation-report-sheet.json'
-);
+const enTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/stdcm.json'
+).reportSheet;
+const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/fr/stdcm.json'
+).reportSheet;
 
 const simulationSheetDetails = (): PdfSimulationContent => {
   const translations = getTranslations({
