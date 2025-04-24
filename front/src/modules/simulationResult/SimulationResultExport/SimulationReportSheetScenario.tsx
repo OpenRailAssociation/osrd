@@ -27,7 +27,7 @@ const SimulationReportSheetScenario = ({
   mapCanvas,
   operationalPointsList,
 }: SimulationReportSheetScenarioProps) => {
-  const { t } = useTranslation(['stdcm-simulation-report-sheet']);
+  const { t } = useTranslation(['stdcm']);
   let renderedIndex = 0;
 
   const { rollingStock, speedLimitByTag, creationDate, trainName } = trainData;
@@ -58,28 +58,40 @@ const SimulationReportSheetScenario = ({
 
         <View style={styles.convoyAndRoute.convoyAndRoute}>
           <View style={styles.convoyAndRoute.convoy}>
-            <Text style={styles.convoyAndRoute.convoyTitle}> {t('convoy')}</Text>
+            <Text style={styles.convoyAndRoute.convoyTitle}> {t('reportSheet.convoy')}</Text>
             <View style={styles.convoyAndRoute.convoyInfo}>
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.speedLimitByTag')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.towedMaterial')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxSpeed')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {`${Math.floor(rollingStock.max_speed * 3.6)} km/h`}
                 </Text>
               </View>
               <View style={styles.convoyAndRoute.convoyInfoBox2}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxWeight')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxWeight')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {`${Math.floor(rollingStock.mass / 1000)} t`}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('referenceEngine')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.referenceEngine')}
+                </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
                   {rollingStock.metadata?.reference || '-'}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxLength')}</Text>
+                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                  {t('reportSheet.maxLength')}
+                </Text>
                 <Text
                   style={styles.convoyAndRoute.convoyInfoData}
                 >{`${rollingStock.length} m`}</Text>
@@ -87,7 +99,7 @@ const SimulationReportSheetScenario = ({
             </View>
           </View>
           <View style={styles.convoyAndRoute.route}>
-            <Text style={styles.convoyAndRoute.routeTitle}>{t('requestedRoute')}</Text>
+            <Text style={styles.convoyAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
             <View style={styles.convoyAndRoute.stopTableContainer}>
               <Table style={styles.convoyAndRoute.stopTable}>
                 <TH style={styles.convoyAndRoute.stopTableTH}>
@@ -95,16 +107,16 @@ const SimulationReportSheetScenario = ({
                     <TD aria-label="line-count" />
                   </View>
                   <View style={styles.convoyAndRoute.stopTableOpWidth}>
-                    <TD>{t('operationalPoint')}</TD>
+                    <TD>{t('reportSheet.operationalPoint')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableChWidth}>
-                    <TD>{t('code')}</TD>
+                    <TD>{t('reportSheet.code')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableEndWidth}>
-                    <TD>{t('endStop')}</TD>
+                    <TD>{t('reportSheet.endStop')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableStartWidth}>
-                    <TD>{t('startStop')}</TD>
+                    <TD>{t('reportSheet.startStop')}</TD>
                   </View>
                   <View style={styles.convoyAndRoute.stopTableStopTypeWidth} />
                 </TH>
@@ -124,7 +136,7 @@ const SimulationReportSheetScenario = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableOpWidth}>
                           <TD style={styles.convoyAndRoute.stopTableOpColumn}>
-                            {step.name || t('unknown')}
+                            {step.name || t('reportSheet.unknown')}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableChWidth}>
@@ -151,13 +163,13 @@ const SimulationReportSheetScenario = ({
         </View>
         <View style={styles.simulation.simulation}>
           <View style={styles.simulation.simulationContainer}>
-            <Text style={styles.simulation.simulationUppercase}>{t('simulation')}</Text>
+            <Text style={styles.simulation.simulationUppercase}>{t('reportSheet.simulation')}</Text>
             <Link
               href="#simulationMap"
               src="#simulationMap"
               style={styles.simulation.viewSimulation}
             >
-              {t('viewSimulation')}
+              {t('reportSheet.viewSimulation')}
             </Link>
             <Text style={styles.simulation.simulationLength}>
               {`${Math.round(path.length / 1000000)} km`}
@@ -170,34 +182,34 @@ const SimulationReportSheetScenario = ({
                   <TD aria-label="line-count" />
                 </View>
                 <View style={styles.simulation.opWidth}>
-                  <TD>{t('operationalPoint')}</TD>
+                  <TD>{t('reportSheet.operationalPoint')}</TD>
                 </View>
                 <View style={styles.simulation.chWidth}>
-                  <TD>{t('code')}</TD>
+                  <TD>{t('reportSheet.code')}</TD>
                 </View>
                 <View style={styles.simulation.trackWidth}>
-                  <TD>{t('track')}</TD>
+                  <TD>{t('reportSheet.track')}</TD>
                 </View>
                 <View style={styles.simulation.endWidth}>
-                  <TD>{t('endStop')}</TD>
+                  <TD>{t('reportSheet.endStop')}</TD>
                 </View>
                 <View style={styles.simulation.passageWidth}>
-                  <TD>{t('passageStop')}</TD>
+                  <TD>{t('reportSheet.passageStop')}</TD>
                 </View>
                 <View style={styles.simulation.startWidth}>
-                  <TD>{t('startStop')}</TD>
+                  <TD>{t('reportSheet.startStop')}</TD>
                 </View>
                 <View style={styles.simulation.weightWidth}>
-                  <TD>{t('weight')}</TD>
+                  <TD>{t('reportSheet.weight')}</TD>
                 </View>
                 <View style={styles.simulation.refEngineWidth}>
-                  <TD>{t('referenceEngine')}</TD>
+                  <TD>{t('reportSheet.referenceEngine')}</TD>
                 </View>
                 <View style={styles.simulation.convSignWidth}>
-                  <TD>{t('conventionalSign')}</TD>
+                  <TD>{t('reportSheet.conventionalSign')}</TD>
                 </View>
                 <View style={styles.simulation.crossedATEWidth}>
-                  <TD>{t('crossedATE')}</TD>
+                  <TD>{t('reportSheet.crossedATE')}</TD>
                 </View>
               </TH>
               {operationalPointsList.map((step, index) => {
@@ -241,7 +253,7 @@ const SimulationReportSheetScenario = ({
                       >
                         {isNotExtremity && !isWaypoint && step.name === prevStep.name
                           ? '='
-                          : step.name || t('unknown')}
+                          : step.name || t('reportSheet.unknown')}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>
@@ -327,7 +339,7 @@ const SimulationReportSheetScenario = ({
           </View>
         )}
         <View style={styles.footer.creationDate}>
-          <Text>{t('formattedDateScenario', formatDateToString(creationDate))} </Text>
+          <Text>{t('reportSheet.formattedDateScenario', formatDateToString(creationDate))} </Text>
         </View>
       </Page>
     </Document>
