@@ -106,7 +106,7 @@ fun runScheduleMetadataExtractor(
 
     // Compute speeds, head and tail positions
     val envelopeWithStops = EnvelopeStopWrapper(envelope, legacyStops)
-    val trainLength = rollingStock.length
+    val trainLength = rollingStock.length.meters
     val speeds = ArrayList<ResultSpeed>()
     val headPositions = ArrayList<ResultPosition>()
     for (point in envelopeWithStops.iteratePoints()) {
@@ -653,7 +653,7 @@ fun zoneOccupationChangeEvents(
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
     rawInfra: RawInfra,
-    trainLength: Double
+    trainLength: Distance
 ): MutableList<ZoneOccupationChangeEvent> {
     var zoneCount = 0
     var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
@@ -674,7 +674,7 @@ fun zoneOccupationChangeEvents(
                 zoneCount++
                 break
             }
-            val exitOffset = Offset.max(Offset.zero(), currentOffset + trainLength.meters)
+            val exitOffset = Offset.max(Offset.zero(), currentOffset + trainLength)
             if (exitOffset.distance <= envelope.endPos.meters) {
                 val exitTime =
                     envelope.interpolateDepartureFromUS(exitOffset.distance.meters).microseconds
