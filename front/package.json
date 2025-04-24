@@ -64,7 +64,7 @@
     "history": "^5.3.0",
     "html2canvas": "^1.4.1",
     "i18next": "^24.2.3",
-    "i18next-browser-languagedetector": "^8.0.4",
+    "i18next-browser-languagedetector": "^8.0.5",
     "i18next-http-backend": "^3.0.2",
     "immer": "^10.0.3",
     "js-file-download": "^0.4.12",
@@ -89,7 +89,7 @@
     "react-modal": "^3.16.3",
     "react-redux": "^9.2.0",
     "react-rnd": "^10.5.2",
-    "react-router-dom": "^7.5.0",
+    "react-router-dom": "^7.5.1",
     "react-select": "^5.10.1",
     "react-tether": "^3.0.3",
     "redux": "^5.0.1",
@@ -100,7 +100,7 @@
     "reselect": "^5.1.0",
     "uuid": "^11.1.0",
     "viewport-mercator-project": "^7.0.4",
-    "virtua": "^0.40.3"
+    "virtua": "^0.40.4"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
@@ -131,7 +131,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-vitest": "^0.3.21",
-    "glob": "^11.0.1",
+    "glob": "^11.0.2",
     "happy-dom": "^17.4.4",
     "i18next-fs-backend": "^2.6.0",
     "i18next-parser": "^9.3.0",
