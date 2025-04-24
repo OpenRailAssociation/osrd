@@ -39,15 +39,17 @@ use crate::core::infra_loading::InfraLoadRequest;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
-use crate::infra_cache::ObjectCache;
 use crate::map;
 use crate::models::Infra;
+use crate::models::List as _;
+use crate::models::SwitchTypeModel;
 use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
+use editoast_schemas::infra::builtin_node_types_list;
 
 crate::routes! {
     "/infra" => {
@@ -514,11 +516,7 @@ async fn put(
     )
 )]
 async fn get_switch_types(
-    State(AppState {
-        db_pool,
-        infra_caches,
-        ..
-    }): State<AppState>,
+    State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
@@ -538,15 +536,23 @@ async fn get_switch_types(
     })
     .await?;
 
-    let infra = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
-    Ok(Json(
-        infra
-            .switch_types()
-            .values()
-            .map(ObjectCache::unwrap_switch_type)
-            .cloned()
-            .collect(),
-    ))
+    let selection_settings =
+        SelectionSettings::new().filter(move || SwitchTypeModel::INFRA_ID.eq(infra.id));
+    let switch_types_model = SwitchTypeModel::list(conn, selection_settings).await?;
+
+    let extended_switch_types = switch_types_model
+        .into_iter()
+        .map(SwitchType::from)
+        .collect_vec();
+
+    let builtin_switch_types = builtin_node_types_list();
+
+    let union_switch_types = extended_switch_types
+        .into_iter()
+        .chain(builtin_switch_types)
+        .collect_vec();
+
+    Ok(Json(union_switch_types))
 }
 
 /// Returns the set of speed limit tags for a given infra
