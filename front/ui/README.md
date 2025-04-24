@@ -4,9 +4,23 @@ Icons, fonts, colors, components and all user interface items for OSRD project.
 
 A [live storybook](https://openrailassociation.github.io/osrd-ui/) showcases all components.
 
-## Development
+## Building
 
-Development will leverage preconstruct. **Documentation yet to come**.
+To build and start the storybook:
+
+1. Run `cd front/ui` starting from the root directory of the project
+2. Run `npm install`
+3. Run `npm run build-ui`
+4. Run `cd storybook` and `npm start`
+
+While developing on a package, you need to run the following commands to rebuild the package when a file changes:
+
+1. Run `cd ui-<name-of-the-project>`
+2. Run `npm run watch`
+
+## Testing
+
+To execute the test suite, run `npm run test`.
 
 ## Publishing versions
 
@@ -49,19 +63,3 @@ the package itself:
 
 If this section is not added, the package will not be published. Having a `"private": true` in the
 package.json will also prevent the package from being published.
-
-# Build Instructions
-
-1. Run `cd front/ui` starting from the root directory of the project
-2. Run `npm install`
-3. Run `npm run build-ui`
-4. Run `cd storybook` and `npm start`
-
-While developing on a project, you need to run the following commands to see the css modifications:
-
-1. Run `cd ui-<name-of-the-project>`
-2. Run `npm run watch`
-
-# Tests
-
-1. Run `npm run test`
