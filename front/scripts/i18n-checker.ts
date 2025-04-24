@@ -351,5 +351,8 @@ if (missingKeys.length > 0) {
   console.warn(missingKeys.join('\n'));
   console.warn();
   console.warn(`/!\\ Failed: missing keys are not allowed in ${LANGUAGES}`);
+}
+
+if (unusedKeys.length > 0 || missingKeys.length > 0) {
   process.exit(1);
 }
