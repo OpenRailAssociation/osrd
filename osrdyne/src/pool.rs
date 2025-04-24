@@ -357,7 +357,7 @@ async fn orphan_processor(
             queues_status.changed().await?;
         }
 
-        while queues_status.borrow_and_update().queues.get(&key) == Some(&QueueStatus::Active) {
+        while queues_status.borrow_and_update().queues.get(&key) != Some(&QueueStatus::Active) {
             queues_status.changed().await?;
         }
 
