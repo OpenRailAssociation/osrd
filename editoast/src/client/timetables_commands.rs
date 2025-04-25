@@ -46,7 +46,7 @@ pub async fn trains_export(
     args: ExportTimetableArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let train_ids = match TimetableWithTrains::retrieve(&mut db_pool.get().await?, args.id).await? {
+    let train_ids = match TimetableWithTrains::retrieve(db_pool.get().await?, args.id).await? {
         Some(timetable) => timetable.train_ids,
         None => {
             let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
