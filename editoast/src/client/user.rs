@@ -1,8 +1,8 @@
+use anyhow::anyhow;
 use clap::Args;
 use clap::Subcommand;
 use editoast_authz::StorageDriver;
 use editoast_authz::subject::GroupInfo;
-use editoast_authz::subject::User;
 use editoast_authz::subject::UserInfo;
 use editoast_models::DbConnectionPoolV2;
 use futures::TryStreamExt;
@@ -41,8 +41,8 @@ pub struct AddArgs {
 
 #[derive(Debug, Args)]
 pub struct InfoArgs {
-    /// Identity of the user
-    identity: String,
+    /// Id or identity of the user
+    user: String,
 }
 
 /// List users
@@ -100,23 +100,25 @@ pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::R
 
 /// Get a user
 pub async fn user_info(
-    InfoArgs { identity }: InfoArgs,
+    InfoArgs { user }: InfoArgs,
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
     let regulator = openfga_config.into_regulator(pool).await?;
     let driver = regulator.driver();
-    let Some(User {
-        id,
-        info: UserInfo { identity, name },
-    }) = driver.get_user_info_by_identity(&identity).await?
-    else {
-        tracing::error!(user.identity = identity, "User not found");
+    let uid = if let Ok(id) = user.parse::<i64>() {
+        id
+    } else {
+        let uid = driver.get_user_id(&user).await?;
+        uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+    };
+    let Some(UserInfo { identity, name }) = driver.get_user_info(uid).await? else {
+        tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
-    let group_ids = regulator.user_groups(id).await?;
+    let group_ids = regulator.user_groups(uid).await?;
 
-    println!("id      : {id}");
+    println!("id      : {uid}");
     println!("identity: {identity}");
     println!("name    : {name}");
     println!("groups  :");
