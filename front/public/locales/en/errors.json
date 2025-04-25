@@ -244,6 +244,7 @@
       "NoSimulation": "No simulation given",
       "NoTrainSchedules": "No train schedules given",
       "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
+      "OperationalPointNotFound": "Operational Point '{{operational_point_id}}' could not be found",
       "PathNotFound": "Path '{{path_id}}' could not be found",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",

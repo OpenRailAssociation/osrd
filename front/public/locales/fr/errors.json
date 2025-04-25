@@ -244,6 +244,7 @@
       "NoSimulation": "Aucune simulation fournie",
       "NoTrainSchedules": "Aucune circulation de train fournie",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
+      "OperationalPointNotFound": "Point opérationnel '{{operational_point_id}}' non trouvé",
       "PathNotFound": "Chemin '{{path_id}}' non trouvé",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
