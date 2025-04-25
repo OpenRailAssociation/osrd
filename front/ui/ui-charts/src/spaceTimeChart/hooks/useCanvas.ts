@@ -74,7 +74,7 @@ export function useCanvas(
         const ctx = contextsRef.current[`${PICKING}-${layer}`];
         const set = pickingFunctions.current[layer];
 
-        if (ctx) {
+        if (ctx && ctx.canvas.width && ctx.canvas.height) {
           const { width, height } = sizeRef.current;
           ctx.clearRect(0, 0, width, height);
 

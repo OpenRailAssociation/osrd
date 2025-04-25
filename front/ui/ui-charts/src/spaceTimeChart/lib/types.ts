@@ -204,6 +204,7 @@ export type SpaceTimeChartProps = {
   enableSnapping?: boolean;
 
   // Additional options to show/hide context information:
+  hideTimeCaptions?: boolean;
   hideGrid?: boolean;
   hidePathsLabels?: boolean;
   hideDates?: boolean;
@@ -291,6 +292,7 @@ export type SpaceTimeChartContextType = {
 
   // Other options:
   enableSnapping: boolean;
+  hideTimeCaptions: boolean;
   hideGrid: boolean;
   hidePathsLabels: boolean;
   hideDates: boolean;
