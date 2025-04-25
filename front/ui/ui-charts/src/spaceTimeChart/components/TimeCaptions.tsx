@@ -62,10 +62,13 @@ export const TimeCaptions = () => {
           dateCaptionsStyle,
         },
         captionSize,
+        hideTimeCaptions,
         hideDates,
         showTicks,
       }
     ) => {
+      if (hideTimeCaptions) return;
+
       const timeAxisSize = !swapAxis ? width : height;
       const spaceAxisSize = (!swapAxis ? height : width) - captionSize;
 

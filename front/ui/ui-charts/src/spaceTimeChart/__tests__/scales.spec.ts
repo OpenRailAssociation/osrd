@@ -103,6 +103,16 @@ describe('spaceScalesToBinaryTree', () => {
       pixelTo: 250,
     });
   });
+
+  it('should work properly with weird flat-step-only scales', () => {
+    expect(spaceScalesToBinaryTree(0, [{ to: 0, size: 50 }])).toEqual({
+      coefficient: 0 / 50,
+      from: 0,
+      to: 0,
+      pixelFrom: 0,
+      pixelTo: 50,
+    });
+  });
 });
 
 describe('getSpaceBreakpoints', () => {
@@ -182,6 +192,24 @@ describe('getNormalizedScaleAtPosition', () => {
     ).toEqual({
       from: 60,
       to: 70,
+    });
+  });
+
+  it('should work with ONLY a flat section', () => {
+    const tree = spaceScalesToBinaryTree(ORIGIN, [{ to: 0, size: 50 }]);
+
+    expect(
+      pick(getNormalizedScaleAtPosition(0, tree) as NormalizedScale, 'pixelFrom', 'pixelTo')
+    ).toEqual({
+      pixelFrom: 0,
+      pixelTo: 50,
+    });
+
+    expect(
+      pick(getNormalizedScaleAtPosition(0, tree, true) as NormalizedScale, 'pixelFrom', 'pixelTo')
+    ).toEqual({
+      pixelFrom: 0,
+      pixelTo: 50,
     });
   });
 

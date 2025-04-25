@@ -188,11 +188,16 @@ export function getSpaceToPixel(
   binaryTree: NormalizedScaleTree
 ): SpaceToPixel {
   return (position: number, fromEnd?: boolean) => {
-    const { from, pixelFrom, coefficient } = getNormalizedScaleAtPosition(
+    const { from, pixelFrom, pixelTo, coefficient } = getNormalizedScaleAtPosition(
       position,
       binaryTree,
       fromEnd
     );
+    // Rare case where coefficient is 0:
+    // (occurs when there is just a flat step, for instance)
+    if (!coefficient) return pixelOffset + (fromEnd ? pixelTo : pixelFrom);
+
+    // Normal case: We simply interpolate
     return pixelOffset + pixelFrom + (position - from) / coefficient;
   };
 }
