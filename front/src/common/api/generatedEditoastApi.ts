@@ -1128,6 +1128,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      postTrainScheduleTrackOccupancy: build.mutation<
+        PostTrainScheduleTrackOccupancyApiResponse,
+        PostTrainScheduleTrackOccupancyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/track_occupancy`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
       getTrainScheduleById: build.query<
         GetTrainScheduleByIdApiResponse,
         GetTrainScheduleByIdApiArg
@@ -2184,6 +2195,22 @@ export type PostTrainScheduleSimulationSummaryApiArg = {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
+  };
+};
+export type PostTrainScheduleTrackOccupancyApiResponse =
+  /** status 200 Track section occupancy periods for a set of train schedules */ {
+    [key: string]: {
+      duration: string;
+      time_begin: string;
+      train_schedule_id: number;
+    }[];
+  };
+export type PostTrainScheduleTrackOccupancyApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    operational_point_id: string;
+    train_schedule_ids: number[];
   };
 };
 export type GetTrainScheduleByIdApiResponse =

@@ -240,7 +240,9 @@ impl PathItemCache {
 }
 
 /// Collect the ids of the operational points from the path items
-fn collect_path_item_ids(path_items: &[&PathItemLocation]) -> (Vec<String>, Vec<i64>, Vec<String>) {
+pub fn collect_path_item_ids(
+    path_items: &[&PathItemLocation],
+) -> (Vec<String>, Vec<i64>, Vec<String>) {
     let mut trigrams: Vec<String> = Vec::new();
     let mut ops_uic: Vec<i64> = Vec::new();
     let mut ops_id: Vec<String> = Vec::new();

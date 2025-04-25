@@ -1,0 +1,59 @@
+{
+    "train_name": "track occupancy",
+    "rolling_stock_name": "TRACKOCCUPANCY",
+    "labels": [],
+    "speed_limit_tag": null,
+    "start_time": "2025-05-24T10:00:21+00:00",
+    "path": [
+        {
+            "id": "id8",
+            "deleted": false,
+            "uic": 1,
+            "secondary_code": "BV",
+            "track_reference": null
+        },
+        {
+            "id": "id5",
+            "deleted": false,
+            "uic": 3,
+            "secondary_code": "BV",
+            "track_reference": null
+        },
+        {
+            "id": "id7",
+            "deleted": false,
+            "uic": 8,
+            "secondary_code": "BV",
+            "track_reference": null
+        }
+    ],
+    "schedule": [
+        {
+            "at": "id5",
+            "arrival": null,
+            "stop_for": "PT120S",
+            "reception_signal": "OPEN",
+            "locked": false
+        },
+        {
+            "at": "id7",
+            "arrival": null,
+            "stop_for": "P0D",
+            "reception_signal": "OPEN",
+            "locked": false
+        }
+    ],
+    "constraint_distribution": "STANDARD",
+    "margins": {
+        "boundaries": [],
+        "values": [
+            "0%"
+        ]
+    },
+    "initial_speed": 0,
+    "power_restrictions": [],
+    "comfort": "AIR_CONDITIONING",
+    "options": {
+        "use_electrical_profiles": true
+    }
+}
