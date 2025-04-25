@@ -159,7 +159,7 @@ export const SAMPLE_WAYPOINTS: Waypoint[] = [
 
 export const SAMPLE_PATHS_DATA: ProjectPathTrainResult[] = [
   {
-    id: 1,
+    id: '1',
     name: 'Train 1',
     departureTime: new Date('2024-10-23T09:00:00Z'),
     spaceTimeCurves: [
@@ -189,7 +189,7 @@ export const SAMPLE_PATHS_DATA: ProjectPathTrainResult[] = [
     ],
   },
   {
-    id: 2,
+    id: '2',
     name: 'Train 2',
     departureTime: new Date('2024-10-23T09:15:00Z'),
     spaceTimeCurves: [
@@ -219,7 +219,7 @@ export const SAMPLE_PATHS_DATA: ProjectPathTrainResult[] = [
     ],
   },
   {
-    id: 3,
+    id: '3',
     name: 'Train 3',
     departureTime: new Date('2024-10-23T09:30:00Z'),
     spaceTimeCurves: [

@@ -106,7 +106,7 @@ const SplitManchetteWithSpaceTimeChartWrapper = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = usePaths(projectPathTrainResult, selectedTrain);
+  const paths = usePaths(projectPathTrainResult);
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
@@ -128,7 +128,12 @@ const SplitManchetteWithSpaceTimeChartWrapper = ({
         <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
           <SpaceTimeChart className="inset-0 absolute h-full" {...spaceTimeChartProps}>
             {paths.map((path) => (
-              <PathLayer key={path.id} path={path} color={path.color} level={path.level} />
+              <PathLayer
+                key={path.id}
+                path={path}
+                color={path.color}
+                level={path.id === selectedTrain + '' ? 1 : 2}
+              />
             ))}
           </SpaceTimeChart>
         </div>
