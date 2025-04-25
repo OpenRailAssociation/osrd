@@ -26,6 +26,12 @@
   }
 
   .linked-train {
+    .linked-train-inputs {
+      display: flex;
+      gap: 48px;
+      margin-bottom: 24px;
+    }
+
     .stdcm-linked-train-button {
       text-align: center;
       width: 402px;
@@ -33,7 +39,6 @@
       background-color: var(--grey10);
       color: var(--primary50);
       border-radius: 6px;
-      margin: 21px 0 13px 15px;
       &.white {
         background-color: var(--white);
       }
@@ -44,16 +49,23 @@
     }
 
     .stdcm-linked-train-results {
-      padding: 10px 17px 0;
-      border-top: 1px solid var(--grey20);
       margin-top: 21px;
+
+      &::before {
+        content: '';
+        display: block;
+        width: 450px;
+        height: 1px;
+        background-color: var(--grey20);
+        margin-left: -24px;
+      }
 
       .linked-train-result-infos {
         width: 100%;
         margin-bottom: 7px;
+        padding-top: 12px;
 
         &:not(:first-child) {
-          padding-top: 12px;
           border-top: 1px solid var(--grey20);
         }
 

@@ -177,7 +177,7 @@ const StdcmOperationalPoint = ({
 
   return (
     <div className="location-line">
-      <div className="col-9 ci-input">
+      <div className="ci-input">
         <ComboBox
           id={`${pathStepId}-ci`}
           data-testid="operational-point-ci"
@@ -193,7 +193,7 @@ const StdcmOperationalPoint = ({
           narrow
         />
       </div>
-      <div className="col-3 p-0">
+      <div className="ch-input">
         <Select
           label={t('trainPath.ch')}
           id={`${pathStepId}-ch`}
