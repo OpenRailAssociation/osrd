@@ -7,9 +7,17 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use chrono::DateTime;
+use chrono::Duration;
+use chrono::Utc;
+use core_client::simulation::ReportTrain;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::infra::TrackOffset;
+use editoast_schemas::primitives::PositiveDuration;
+use editoast_schemas::train_schedule::OperationalPointIdentifier;
+use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::TrainSchedule;
 use serde::Deserialize;
 use serde::Serialize;
@@ -18,25 +26,31 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::views::infra::InfraIdQueryParam;
-use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
-use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
-use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
-
 use crate::error::Result;
 use crate::models;
+use crate::models::OperationalPointModel;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::PathfindingError;
+use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
+use crate::views::path::projection::PathProjection;
+use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::projection::find_index_upper;
+use crate::views::projection::interpolate;
+use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
+use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
+use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
 use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::Response;
 
 use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
@@ -46,6 +60,7 @@ crate::routes! {
         delete,
         "/project_path" => project_path,
         "/occupancy_blocks" => occupancy_blocks,
+        "/track_occupancy" => track_occupancy,
         "/simulation_summary" => simulation_summary,
         "/{id}" => {
             get,
@@ -78,6 +93,9 @@ pub enum TrainScheduleError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+    #[error("Operational point '{operational_point_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    OperationalPointNotFound { operational_point_id: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::model::Error),
@@ -590,10 +608,325 @@ async fn occupancy_blocks(
     Ok(Json(occupancy_blocks_result))
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
+struct TrackOccupancyForm {
+    train_schedule_ids: Vec<i64>,
+    operational_point_id: String,
+    infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct TrackOccupancy {
+    time_begin: DateTime<Utc>,
+    #[schema(value_type = chrono::Duration, example = "PT5M")]
+    duration: PositiveDuration,
+    train_schedule_id: i64,
+}
+
+/// Calculates when and for how long trains occupy track sections at a specific operational point.
+/// Returns a map of track sections to their occupation periods, containing:
+/// - time_begin: Start of occupation
+/// - duration: Length of occupation (includes stops)
+/// - train_schedule_id: Train schedule ID
+///
+/// If a path item ID is provided, it uses schedule data to determine stop duration and location.
+/// If not, it infers the position and time based on track offsets and interpolation.
+#[utoipa::path(
+    post, path = "",
+    tag = "train_schedule",
+    request_body = inline(TrackOccupancyForm),
+    responses(
+        (status = 200, description = "Track section occupancy periods for a set of train schedules", body = inline(HashMap<String, Vec<TrackOccupancy>>)),
+    ),
+)]
+async fn track_occupancy(
+    State(AppState {
+        db_pool,
+        valkey,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(TrackOccupancyForm {
+        train_schedule_ids,
+        operational_point_id,
+        infra_id,
+        electrical_profile_set_id,
+    }): Json<TrackOccupancyForm>,
+) -> Result<Json<HashMap<String, Vec<TrackOccupancy>>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    // Retrieve infra / train_schedules / operational points
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(
+            &mut db_pool.get().await?,
+            train_schedule_ids,
+            |missing| TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            },
+        )
+        .await?;
+
+    let operational_point = OperationalPointModel::retrieve_real_or_fail(
+        db_pool.get().await?,
+        (infra_id, operational_point_id.clone()),
+        || TrainScheduleError::OperationalPointNotFound {
+            operational_point_id: operational_point_id.clone(),
+        },
+    )
+    .await?;
+
+    // Retrieve simulations
+    let simulations_result = train_simulation_batch(
+        &mut db_pool.get().await?,
+        valkey,
+        core_client,
+        &train_schedules,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    let operational_point_track_offsets = operational_point.schema.track_offset();
+
+    let path_items = train_schedules
+        .iter()
+        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
+        .collect::<Vec<_>>();
+
+    let path_item_cache =
+        PathItemCache::load(&mut db_pool.get().await?, infra_id, &path_items).await?;
+
+    let track_occupancy_map = {
+        let mut track_occupancy_map: HashMap<String, Vec<TrackOccupancy>> = HashMap::new();
+        for ((simulation, pathfinding), train_schedule) in
+            simulations_result.iter().zip(train_schedules)
+        {
+            // Get the track ranges from the pathfinding
+            let (track_ranges, path_item_positions) = match pathfinding {
+                PathfindingResult::Success(pathfinding_result_success) => (
+                    &pathfinding_result_success.track_section_ranges,
+                    &pathfinding_result_success.path_item_positions,
+                ),
+                PathfindingResult::Failure(_) => {
+                    // The timetable can have a pathfinding failure for a train schedule
+                    // because the train schedule is not valid.
+                    // We skip it because we don't want to compute the track occupancy for an invalid train schedule.
+                    // It's not a problem because we are just looking for the track occupancy of the operational point for the valid trains.
+                    tracing::info!(train_schedule.id, "pathfinding failed");
+                    continue;
+                }
+            };
+
+            let path_projection = PathProjection::new(track_ranges);
+
+            // Get the positions and the times from the simulation
+            let report_train = match simulation {
+                Response::Success { final_output, .. } => &final_output.report_train,
+                _ => {
+                    tracing::info!(train_schedule.id, "simulation failed");
+                    continue;
+                }
+            };
+
+            let path_item_id = match_path_item_id_with_op_id(
+                &path_item_cache,
+                &train_schedule,
+                &operational_point_id,
+            );
+
+            // If not, it infers the position and time based on track offsets and interpolation.
+            let track_occupancy = if let Some(path_item_id) = path_item_id {
+                track_occupancy_on_path_item(
+                    &train_schedule,
+                    path_item_id,
+                    path_item_positions,
+                    &path_projection,
+                    &operational_point_track_offsets,
+                    report_train,
+                )
+            } else {
+                interpolate_track_occupancy(
+                    &train_schedule,
+                    &path_projection,
+                    &operational_point_track_offsets,
+                    report_train,
+                )
+            };
+            if let Some((track_section, track_occupancy)) = track_occupancy {
+                track_occupancy_map
+                    .entry(track_section)
+                    .or_default()
+                    .push(track_occupancy)
+            }
+        }
+        track_occupancy_map
+    };
+    Ok(Json(track_occupancy_map))
+}
+
+/// Computes the occupancy of track sections for a given train based on its schedule and path.
+/// If a path item ID is provided, it uses schedule data to determine stop duration and location.
+fn track_occupancy_on_path_item(
+    train_schedule: &models::TrainSchedule,
+    path_item_id: &str,
+    path_item_positions: &[u64],
+    path_projection: &PathProjection,
+    operational_point_track_offsets: &[TrackOffset],
+    report_train: &ReportTrain,
+) -> Option<(String, TrackOccupancy)> {
+    let schedule_item = train_schedule
+        .schedule
+        .iter()
+        .find(|schedule| schedule.at.0 == path_item_id);
+    // Stop time at the operational point:
+    // Retrieve the stop time if it exists; otherwise, default to 0
+    let stop_duration = schedule_item
+        .and_then(|item| item.stop_for.clone())
+        .unwrap_or_default();
+
+    // Get the index of the path item in the list of path items that corresponds to the operational point
+    let index = train_schedule
+        .path
+        .iter()
+        .position(|path| path.id.0 == path_item_id)
+        .expect("Unexpected path item");
+    let position = path_item_positions[index];
+    let time = report_train.path_item_times[index];
+
+    // Retrieve the track section that matches the path item's position along the path
+    let track_section = match path_projection.get_location(position) {
+        TrackLocationFromPath::One(track_offset) => operational_point_track_offsets
+            .iter()
+            .find(|to| *to == &track_offset)
+            .expect("Invalid track offset")
+            .track
+            .clone(),
+        TrackLocationFromPath::Two(track_offset, track_offset1) => operational_point_track_offsets
+            .iter()
+            .find(|to| *to == &track_offset)
+            .or(operational_point_track_offsets
+                .iter()
+                .find(|to| *to == &track_offset1))
+            .expect("Invalid track offset")
+            .track
+            .clone(),
+    };
+
+    Some((
+        track_section.to_string(),
+        TrackOccupancy {
+            time_begin: train_schedule.start_time + Duration::milliseconds(time as i64),
+            duration: stop_duration,
+            train_schedule_id: train_schedule.id,
+        },
+    ))
+}
+
+fn interpolate_track_occupancy(
+    train_schedule: &models::TrainSchedule,
+    path_projection: &PathProjection,
+    operational_point_track_offsets: &[TrackOffset],
+    report_train: &ReportTrain,
+) -> Option<(String, TrackOccupancy)> {
+    // Iterate over the track offsets linked to the operational point
+    // until we find its corresponding position on the pathfinding route.
+    // Then, retrieve the associated time (via interpolation) and position on the path.
+    for track_offset in operational_point_track_offsets {
+        if let Some(position) = path_projection.get_position(track_offset) {
+            let index = find_index_upper(&report_train.positions, position);
+            let time = if index == 0 {
+                report_train.times[0]
+            } else {
+                interpolate(
+                    report_train.positions[index - 1],
+                    report_train.positions[index],
+                    report_train.times[index - 1],
+                    report_train.times[index],
+                    position,
+                )
+            };
+            return Some((
+                track_offset.track.to_string(),
+                TrackOccupancy {
+                    time_begin: train_schedule.start_time + Duration::milliseconds(time as i64),
+                    duration: PositiveDuration::default(),
+                    train_schedule_id: train_schedule.id,
+                },
+            ));
+        }
+    }
+    None
+}
+
+/// Match the id of an operational point with a path item in the train schedule and return the id of the path item concerned
+fn match_path_item_id_with_op_id<'a>(
+    path_item_cache: &'a PathItemCache,
+    train_schedule: &'a models::TrainSchedule,
+    operational_point_id: &'a str,
+) -> Option<&'a str> {
+    for path_item in &train_schedule.path {
+        if let PathItemLocation::OperationalPointReference(operational_point_reference) =
+            &path_item.location
+        {
+            match &operational_point_reference.reference {
+                OperationalPointIdentifier::OperationalPointId { operational_point } => {
+                    if operational_point.0 == operational_point_id {
+                        return Some(&path_item.id);
+                    }
+                }
+                OperationalPointIdentifier::OperationalPointDescription { trigram, .. } => {
+                    let operational_points = path_item_cache
+                        .get_from_trigram(&trigram.0)
+                        .expect("The operational points are supposed to exist");
+                    if operational_points
+                        .iter()
+                        .any(|op| op.obj_id == operational_point_id)
+                    {
+                        return Some(&path_item.id);
+                    }
+                }
+                OperationalPointIdentifier::OperationalPointUic { uic, .. } => {
+                    let ops = path_item_cache
+                        .get_from_uic(*uic as i64)
+                        .expect("The operational points are supposed to exist");
+                    if ops.iter().any(|op| op.obj_id == operational_point_id) {
+                        return Some(&path_item.id);
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
+    #[cfg(test)]
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::TrackRange;
+    use editoast_schemas::infra::Direction;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -608,6 +941,32 @@ pub mod tests {
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+
+    #[cfg(test)]
+    fn mocked_core_pathfinding_and_sim() -> MockingClient {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(
+                serde_json::from_str::<serde_json::Value>(include_str!(
+                    "../../tests/track_occupancy/example_pathfinding_track_occupancy.json"
+                ))
+                .expect("Invalid JSON file"),
+            )
+            .finish();
+        core.stub("/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(
+                serde_json::from_str::<serde_json::Value>(include_str!(
+                    "../../tests/track_occupancy/example_simulation_track_occupancy.json"
+                ))
+                .expect("Invalid JSON file"),
+            )
+            .finish();
+        core
+    }
 
     #[rstest]
     async fn train_schedule_get() {
@@ -816,5 +1175,300 @@ pub mod tests {
             response[&train_schedule_valid.id].departure_time,
             train_schedule_base.start_time
         );
+    }
+
+    #[rstest]
+    async fn test_track_occupancy_fake_operational_point_id() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_base = TrainSchedule {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple_2.json"))
+                .expect("Unable to parse")
+        };
+
+        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: train_schedule_base.clone(),
+        }
+        .into();
+        let train_schedule_valid = train_schedule
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+
+        let core = mocked_core_pathfinding_and_sim();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+
+        let request = app.post("/train_schedule/track_occupancy").json(
+            &json!({"train_schedule_ids": [train_schedule_valid.id],
+                "operational_point_id": "fake_station_id",
+                "infra_id": small_infra.id
+            }),
+        );
+
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn test_track_occupancy_pathfinding_failure() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_base = TrainSchedule {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple_2.json"))
+                .expect("Unable to parse")
+        };
+
+        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: train_schedule_base.clone(),
+        }
+        .into();
+        let train_schedule_valid = train_schedule
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "status": "not_found_in_tracks"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app.post("/train_schedule/track_occupancy").json(
+            &json!({"train_schedule_ids": [train_schedule_valid.id],
+                "operational_point_id": "South_West_station",
+                "infra_id": small_infra.id
+            }),
+        );
+        let response: HashMap<String, Vec<TrackOccupancy>> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.len(), 0);
+    }
+
+    #[rstest]
+    #[case("T2", 50, 0, 100, Direction::StartToStop, vec![0, 100], vec![0, 1000], true, "T2")]
+    #[case("T2", 150, 0, 100, Direction::StartToStop, vec![0, 100], vec![0, 1000], false, "")]
+    #[case("T2", 50, 0, 100, Direction::StopToStart, vec![0, 100], vec![0, 1000], true, "T2")]
+    fn test_interpolate_track_occupancy(
+        #[case] track_name: &str,
+        #[case] offset: u64,
+        #[case] begin: u64,
+        #[case] end: u64,
+        #[case] direction: Direction,
+        #[case] positions: Vec<u64>,
+        #[case] times: Vec<u64>,
+        #[case] should_be_some: bool,
+        #[case] expected_track: &str,
+    ) {
+        use editoast_schemas::primitives::Identifier;
+
+        let track_section = Identifier::from(track_name);
+        let track_range = TrackRange {
+            track_section: track_section.clone(),
+            begin,
+            end,
+            direction,
+        };
+        let track_range_vec = vec![track_range];
+        let path_projection = PathProjection::new(&track_range_vec);
+        let operational_point_track_offsets = vec![TrackOffset {
+            track: track_section.clone(),
+            offset,
+        }];
+        let report_train = ReportTrain {
+            positions: positions.clone(),
+            times: times.clone(),
+            speeds: vec![10.0; positions.len()],
+            energy_consumption: 0.0,
+            path_item_times: vec![0, 1000],
+        };
+        let train_schedule = models::TrainSchedule::default();
+
+        let result = interpolate_track_occupancy(
+            &train_schedule,
+            &path_projection,
+            &operational_point_track_offsets,
+            &report_train,
+        );
+
+        assert_eq!(result.is_some(), should_be_some);
+        if should_be_some {
+            let (track, _occ) = result.unwrap();
+            assert_eq!(track, expected_track);
+        }
+    }
+
+    #[rstest]
+    #[case("path_item_1", 0, 50, 0, 100, "T1", true, "T1", 0, 500)]
+    #[case("path_item_2", 1, 75, 0, 150, "T2", true, "T2", 1000, 300000)]
+    fn test_track_occupancy_on_path_item(
+        #[case] path_item_id: &str,
+        #[case] path_item_index: usize,
+        #[case] track_offset: u64,
+        #[case] track_begin: u64,
+        #[case] track_end: u64,
+        #[case] track_name: &str,
+        #[case] should_be_some: bool,
+        #[case] expected_track: &str,
+        #[case] expected_time: u64,
+        #[case] expected_stop_duration_ms: i64,
+    ) {
+        use editoast_schemas::primitives::Identifier;
+        use editoast_schemas::train_schedule::{
+            OperationalPointReference, PathItem, ReceptionSignal, ScheduleItem,
+        };
+
+        // Create test data
+        let track_section = Identifier::from(track_name);
+        let track_range = TrackRange {
+            track_section: track_section.clone(),
+            begin: track_begin,
+            end: track_end,
+            direction: Direction::StartToStop,
+        };
+        let track_ranges = vec![track_range];
+        let path_projection = PathProjection::new(&track_ranges);
+
+        let operational_point_track_offsets = vec![TrackOffset {
+            track: track_section.clone(),
+            offset: track_offset,
+        }];
+
+        // Create path item positions matching the number of path items
+        let path_item_positions = match path_item_index {
+            0 => vec![50, 100, 150],
+            1 => vec![50, 75, 150],
+            _ => vec![50, 100, 200],
+        };
+
+        let report_train = ReportTrain {
+            positions: vec![0, 50, 100, 150],
+            times: vec![0, expected_time, 2000, 3000],
+            speeds: vec![10.0; 4],
+            energy_consumption: 0.0,
+            path_item_times: vec![0, expected_time, 2000],
+        };
+
+        // Create a train schedule with path items and schedule items
+        let mut train_schedule = models::TrainSchedule::default();
+
+        // Add path items
+        train_schedule.path = vec![
+            PathItem {
+                id: "path_item_1".into(),
+                location: PathItemLocation::OperationalPointReference(OperationalPointReference {
+                    reference: OperationalPointIdentifier::OperationalPointId {
+                        operational_point: "op_1".into(),
+                    },
+                    track_reference: None,
+                }),
+                deleted: false,
+            },
+            PathItem {
+                id: "path_item_2".into(),
+                location: PathItemLocation::OperationalPointReference(OperationalPointReference {
+                    reference: OperationalPointIdentifier::OperationalPointId {
+                        operational_point: "op_2".into(),
+                    },
+                    track_reference: None,
+                }),
+                deleted: false,
+            },
+            PathItem {
+                id: "path_item_invalid".into(),
+                location: PathItemLocation::OperationalPointReference(OperationalPointReference {
+                    reference: OperationalPointIdentifier::OperationalPointId {
+                        operational_point: "op_invalid".into(),
+                    },
+                    track_reference: None,
+                }),
+                deleted: false,
+            },
+        ];
+
+        // Add schedule items with stops
+        train_schedule.schedule = vec![
+            ScheduleItem {
+                at: "path_item_1".into(),
+                arrival: None,
+                stop_for: Some(PositiveDuration::try_from(Duration::milliseconds(500)).unwrap()),
+                locked: false,
+                reception_signal: ReceptionSignal::Open,
+            },
+            ScheduleItem {
+                at: "path_item_2".into(),
+                arrival: None,
+                stop_for: Some(PositiveDuration::try_from(Duration::milliseconds(300000)).unwrap()),
+                locked: false,
+                reception_signal: ReceptionSignal::Open,
+            },
+        ];
+
+        // Set a start time
+        train_schedule.start_time = DateTime::from_timestamp(1000000000, 0).unwrap();
+
+        // Call the function
+        let result = track_occupancy_on_path_item(
+            &train_schedule,
+            path_item_id,
+            &path_item_positions,
+            &path_projection,
+            &operational_point_track_offsets,
+            &report_train,
+        );
+
+        // Verify results
+        if should_be_some {
+            assert!(result.is_some(), "Expected Some result but got None");
+            let (track, occupancy) = result.unwrap();
+            assert_eq!(track, expected_track);
+            assert_eq!(occupancy.train_schedule_id, train_schedule.id);
+            assert_eq!(
+                occupancy.time_begin,
+                train_schedule.start_time + Duration::milliseconds(expected_time as i64)
+            );
+            assert_eq!(
+                occupancy.duration,
+                PositiveDuration::try_from(Duration::milliseconds(expected_stop_duration_ms))
+                    .unwrap()
+            );
+        } else {
+            // For the invalid case, we expect a panic due to the .expect() calls in the function
+            // This is expected behavior based on the function's implementation
+            let result = std::panic::catch_unwind(|| {
+                track_occupancy_on_path_item(
+                    &train_schedule,
+                    path_item_id,
+                    &path_item_positions,
+                    &path_projection,
+                    &operational_point_track_offsets,
+                    &report_train,
+                )
+            });
+            assert!(
+                result.is_err(),
+                "Expected panic for invalid path item but function succeeded"
+            );
+        }
     }
 }
