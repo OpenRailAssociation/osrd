@@ -836,7 +836,7 @@ jobs:
           services='editoast osrdyne core'
           composes='-f docker-compose.yml'
           docker compose $composes pull --policy missing $services
-          docker compose $composes up --no-build -d $services jaeger openfga
+          docker compose $composes up --no-build -d $services jaeger openfga wait-healthy
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
