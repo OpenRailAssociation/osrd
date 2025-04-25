@@ -800,6 +800,7 @@ fn track_occupancy_on_path_item(
         .find(|schedule| schedule.at.0 == path_item_id);
     // Stop time at the operational point:
     // Retrieve the stop time if it exists; otherwise, default to 0
+
     let stop_duration = schedule_item
         .and_then(|item| item.stop_for.clone())
         .unwrap_or_default();
@@ -810,6 +811,7 @@ fn track_occupancy_on_path_item(
         .iter()
         .position(|path| path.id.0 == path_item_id)
         .expect("Unexpected path item");
+
     let position = path_item_positions[index];
     let time = report_train.path_item_times[index];
 
