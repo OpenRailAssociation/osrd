@@ -7,10 +7,10 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Timestamptz;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use editoast_models::DatabaseError;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
-use crate::error::EditoastError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
@@ -118,7 +118,10 @@ pub struct TimetableWithTrains {
 }
 
 impl TimetableWithTrains {
-    pub async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
+    pub async fn retrieve(
+        conn: DbConnection,
+        timetable_id: i64,
+    ) -> Result<Option<Self>, DatabaseError> {
         let result = sql_query(
             "SELECT timetable.*,
         array_remove(array_agg(train_schedule.id), NULL) as train_ids,
@@ -139,15 +142,15 @@ impl TimetableWithTrains {
         }
     }
 
-    pub async fn retrieve_or_fail<E, F>(conn: &mut DbConnection, id: i64, fail: F) -> Result<Self>
+    pub async fn retrieve_or_fail<E, F>(conn: DbConnection, id: i64, fail: F) -> Result<Self, E>
     where
-        E: EditoastError,
+        E: From<DatabaseError>,
         F: FnOnce() -> E + Send,
     {
         match Self::retrieve(conn, id).await {
             Ok(Some(obj)) => Ok(obj),
-            Ok(None) => Err(fail().into()),
-            Err(e) => Err(e),
+            Ok(None) => Err(fail()),
+            Err(e) => Err(E::from(e)),
         }
     }
 }

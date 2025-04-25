@@ -93,7 +93,7 @@ editoast_common::schemas! {
     simulation::schemas(),
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
 enum TimetableError {
     #[error("Timetable '{timetable_id}', could not be found")]
@@ -103,8 +103,9 @@ enum TimetableError {
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
     #[error(transparent)]
+    #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::model::Error),
+    Database(editoast_models::model::Error),
     #[error("Failed to parse train_id '{train_id}'")]
     #[editoast_error(status = 500)]
     ParseError { train_id: String },
@@ -526,14 +527,15 @@ async fn conflicts(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    let mut conn = db_pool.get().await?;
+
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
-        TimetableError::InfraNotFound { infra_id }
+    let infra = Infra::retrieve_or_fail(&mut conn, infra_id, || TimetableError::InfraNotFound {
+        infra_id,
     })
     .await?;
 
-    let (trains, paced_trains) =
-        retrieve_trains_and_paced_trains(&mut db_pool.get().await?, timetable_id).await?;
+    let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
 
     let (train_simulations, paced_train_simulations) = retrieve_simulations(
         &mut db_pool.get().await?,
@@ -565,20 +567,21 @@ async fn conflicts(
 }
 
 async fn retrieve_trains_and_paced_trains(
-    conn: &mut DbConnection,
+    mut conn: DbConnection,
     timetable_id: i64,
 ) -> Result<(Vec<models::TrainSchedule>, Vec<models::PacedTrain>)> {
-    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        TimetableError::NotFound { timetable_id }
-    })
-    .await?;
+    let timetable_trains =
+        TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
+            TimetableError::NotFound { timetable_id }
+        })
+        .await?;
     let mut conn_clone = conn.clone();
     let (trains, paced_trains): (Vec<_>, Vec<_>) = tokio::try_join!(
-        models::TrainSchedule::retrieve_batch_unchecked(
+        models::TrainSchedule::retrieve_batch_unchecked(&mut conn, timetable_trains.train_ids),
+        models::PacedTrain::retrieve_batch_unchecked(
             &mut conn_clone,
-            timetable_trains.train_ids
-        ),
-        models::PacedTrain::retrieve_batch_unchecked(conn, timetable_trains.paced_train_ids)
+            timetable_trains.paced_train_ids
+        )
     )?;
 
     Ok((trains, paced_trains))
