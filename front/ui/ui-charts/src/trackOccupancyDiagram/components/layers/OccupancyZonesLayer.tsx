@@ -8,11 +8,13 @@ const OccupancyZonesLayer = ({
   tracks,
   occupancyZones,
   position,
+  topPadding,
   selectedTrainId,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   position: number;
+  topPadding: number;
   selectedTrainId?: string;
 }) => {
   const drawingFunction = useCallback<DrawingFunction>(
@@ -22,9 +24,10 @@ const OccupancyZonesLayer = ({
         occupancyZones,
         selectedTrainId,
         position,
+        topPadding,
       });
     },
-    [occupancyZones, position, selectedTrainId, tracks]
+    [occupancyZones, position, selectedTrainId, topPadding, tracks]
   );
 
   useDraw('overlay', drawingFunction);

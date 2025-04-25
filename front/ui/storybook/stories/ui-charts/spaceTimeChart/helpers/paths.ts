@@ -1,5 +1,11 @@
-import type { OperationalPoint, PathData, PathLevel } from '@osrd-project/ui-charts';
-import { keyBy } from 'lodash';
+import {
+  DataPoint,
+  OccupancyZone,
+  OperationalPoint,
+  PathData,
+  PathLevel,
+} from '@osrd-project/ui-charts';
+import { cloneDeep, inRange, keyBy } from 'lodash';
 
 import { KILOMETER } from './consts';
 
@@ -240,3 +246,68 @@ export const PATHS: PathDisplay[] = [
     { color: '#64cc2b', toEnd: 'out' }
   ),
 ];
+
+export function getOccupancyZonesFromPath<T extends object>(
+  points: DataPoint[],
+  waypointPosition: number,
+  additionalAttributes: T
+) {
+  const res: (Pick<
+    OccupancyZone,
+    'arrivalDirection' | 'departureDirection' | 'arrivalTime' | 'departureTime'
+  > &
+    T)[] = [];
+
+  points.forEach(({ position, time }, i, a) => {
+    if (!i) return;
+    const { position: prevPosition, time: prevTime } = a[i - 1];
+    const next = a[i + 1];
+    const beforePrev = a[i - 2];
+
+    // First case: Segment on waypoint
+    if (position === waypointPosition && prevPosition === waypointPosition) {
+      res.push({
+        arrivalDirection: !beforePrev
+          ? undefined
+          : beforePrev.position < prevPosition
+            ? 'up'
+            : 'down',
+        arrivalTime: prevTime,
+        departureDirection: !next ? undefined : next.position < position ? 'up' : 'down',
+        departureTime: time,
+        ...cloneDeep(additionalAttributes),
+      });
+    }
+
+    // Second case: Single point exactly on waypoint
+    else if (position === waypointPosition && (!next || next.position !== waypointPosition)) {
+      res.push({
+        arrivalDirection: prevPosition < waypointPosition ? 'up' : 'down',
+        arrivalTime: time,
+        departureDirection: !next ? undefined : next.position < position ? 'up' : 'down',
+        departureTime: time,
+        ...cloneDeep(additionalAttributes),
+      });
+    }
+
+    // Third case: Segment crossing waypoint
+    else if (
+      position !== waypointPosition &&
+      prevPosition !== waypointPosition &&
+      inRange(waypointPosition, prevPosition, position)
+    ) {
+      const crossTime =
+        prevTime +
+        ((waypointPosition - prevPosition) / (position - prevPosition)) * (time - prevTime);
+      res.push({
+        arrivalDirection: prevPosition < waypointPosition ? 'up' : 'down',
+        arrivalTime: crossTime,
+        departureDirection: position < waypointPosition ? 'up' : 'down',
+        departureTime: crossTime,
+        ...cloneDeep(additionalAttributes),
+      });
+    }
+  });
+
+  return res;
+}

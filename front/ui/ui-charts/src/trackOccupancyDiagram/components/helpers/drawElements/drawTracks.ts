@@ -10,8 +10,15 @@ const { HOUR_BACKGROUND_1, HOUR_BACKGROUND_2 } = COLORS;
 export const drawTracks = (
   ctx: CanvasRenderingContext2D,
   stcContext: SpaceTimeChartContextType,
-  position: number,
-  tracks: Track[]
+  {
+    position,
+    tracks,
+    topPadding = 0,
+  }: {
+    position: number;
+    tracks: Track[];
+    topPadding: number;
+  }
 ) => {
   const {
     width,
@@ -42,7 +49,7 @@ export const drawTracks = (
   }
 
   ctx.save();
-  ctx.translate(0, yStart);
+  ctx.translate(0, yStart + topPadding);
   tracks?.forEach((_, index) => {
     const trackTranslate = index === 0 ? CANVAS_PADDING : TRACK_HEIGHT_CONTAINER;
     ctx.translate(0, trackTranslate);
