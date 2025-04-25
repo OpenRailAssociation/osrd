@@ -1,41 +1,18 @@
 import { useCallback } from 'react';
 
-import { type LayerType, type DrawingFunction } from '../../../spaceTimeChart/lib/types';
+import { type DrawingFunction, useDraw } from '../../../spaceTimeChart';
 import { drawTracks } from '../helpers/drawElements/drawTracks';
+import type { Track } from '../types';
 
-const TracksLayer = ({ useDraw }: { useDraw: (layer: LayerType, fn: DrawingFunction) => void }) => {
+const TracksLayer = ({ tracks, position }: { tracks: Track[]; position: number }) => {
   const drawingFunction = useCallback<DrawingFunction>(
-    (
-      ctx,
-      {
-        timeOrigin,
-        timePixelOffset,
-        getTimePixel,
-        tracks,
-        trackOccupancyWidth,
-        trackOccupancyHeight,
-        timeScale,
-        theme: { timeRanges, breakpoints },
-      }
-    ) => {
-      if (trackOccupancyHeight && trackOccupancyWidth)
-        drawTracks({
-          ctx,
-          width: trackOccupancyWidth,
-          height: trackOccupancyHeight,
-          tracks,
-          timeOrigin,
-          timePixelOffset,
-          getTimePixel,
-          timeRanges,
-          breakpoints,
-          timeScale,
-        });
+    (ctx, stcContext) => {
+      drawTracks(ctx, stcContext, position, tracks);
     },
-    []
+    [position, tracks]
   );
 
-  useDraw('background', drawingFunction);
+  useDraw('overlay', drawingFunction);
 
   return null;
 };

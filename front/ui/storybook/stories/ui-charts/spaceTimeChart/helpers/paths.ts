@@ -122,7 +122,7 @@ export const START_DATE = new Date('2024/04/02');
 
 // TODO:
 // Store and share the hardcoded colors with other stories that use the GET as well
-export const PATHS: (PathData & {
+export type PathDisplay = PathData & {
   color: string;
   border?: {
     offset: number;
@@ -131,7 +131,8 @@ export const PATHS: (PathData & {
     backgroundColor?: string;
   };
   level?: PathLevel;
-})[] = [
+};
+export const PATHS: PathDisplay[] = [
   // Paced Train
   ...getPaths(
     'Paced',

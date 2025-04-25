@@ -1,4 +1,5 @@
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
+import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import {
   TRACK_HEIGHT_CONTAINER,
   CANVAS_PADDING,
@@ -21,21 +22,12 @@ const X_TROUGHTRAIN_BACKGROUND_PADDING = 8;
 const BACKGROUND_HEIGHT = 40;
 const SELECTED_TRAIN_ID_GRADIANT = 2;
 
-type DrawZone = {
-  ctx: CanvasRenderingContext2D;
-  arrivalTimePixel: number;
-  departureTimePixel: number;
-  yPosition: number;
-};
-
-const drawDefaultZone = ({ ctx, arrivalTimePixel, departureTimePixel, yPosition }: DrawZone) => {
+const drawDefaultZone = (
+  ctx: CanvasRenderingContext2D,
+  { x, y, width }: { x: number; y: number; width: number }
+) => {
   ctx.beginPath();
-  ctx.rect(
-    arrivalTimePixel,
-    yPosition,
-    departureTimePixel - arrivalTimePixel,
-    OCCUPANCY_ZONE_HEIGHT
-  );
+  ctx.rect(x, y, width, OCCUPANCY_ZONE_HEIGHT);
   ctx.fill();
   ctx.stroke();
 };
@@ -46,10 +38,7 @@ const ARROW_WIDTH = 4.5;
 const ARROW_TOP_Y = 3.5;
 const ARROW_BOTTOM_Y = 6.5;
 
-const drawThroughTrain = ({
-  ctx,
-  arrivalTimePixel,
-}: Omit<DrawZone, 'departureTimePixel' | 'yPosition'>) => {
+const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
   //  ___
   //  \_/
@@ -57,29 +46,33 @@ const drawThroughTrain = ({
   //  ‾‾‾
   ctx.beginPath();
   // draw the upper part
-  ctx.moveTo(arrivalTimePixel - ARROW_OFFSET_X, OCCUPANCY_ZONE_Y_START + ARROW_OFFSET_Y);
-  ctx.lineTo(arrivalTimePixel - ARROW_WIDTH, OCCUPANCY_ZONE_Y_START - ARROW_TOP_Y);
-  ctx.lineTo(arrivalTimePixel + ARROW_WIDTH, OCCUPANCY_ZONE_Y_START - ARROW_TOP_Y);
-  ctx.lineTo(arrivalTimePixel + ARROW_OFFSET_X, OCCUPANCY_ZONE_Y_START + ARROW_OFFSET_Y);
+  ctx.moveTo(x - ARROW_OFFSET_X, y + ARROW_OFFSET_Y);
+  ctx.lineTo(x - ARROW_WIDTH, y - ARROW_TOP_Y);
+  ctx.lineTo(x + ARROW_WIDTH, y - ARROW_TOP_Y);
+  ctx.lineTo(x + ARROW_OFFSET_X, y + ARROW_OFFSET_Y);
   // draw the lower part
-  ctx.lineTo(arrivalTimePixel + ARROW_WIDTH, OCCUPANCY_ZONE_Y_START + ARROW_BOTTOM_Y);
-  ctx.lineTo(arrivalTimePixel - ARROW_WIDTH, OCCUPANCY_ZONE_Y_START + ARROW_BOTTOM_Y);
-  ctx.lineTo(arrivalTimePixel - ARROW_OFFSET_X, OCCUPANCY_ZONE_Y_START + ARROW_OFFSET_Y);
+  ctx.lineTo(x + ARROW_WIDTH, y + ARROW_BOTTOM_Y);
+  ctx.lineTo(x - ARROW_WIDTH, y + ARROW_BOTTOM_Y);
+  ctx.lineTo(x - ARROW_OFFSET_X, y + ARROW_OFFSET_Y);
   ctx.fill();
   // draw the white separator in the middle
-  ctx.moveTo(arrivalTimePixel - ARROW_OFFSET_X, OCCUPANCY_ZONE_Y_START + ARROW_OFFSET_Y);
-  ctx.lineTo(arrivalTimePixel + ARROW_OFFSET_X, OCCUPANCY_ZONE_Y_START + ARROW_OFFSET_Y);
+  ctx.moveTo(x - ARROW_OFFSET_X, y + ARROW_OFFSET_Y);
+  ctx.lineTo(x + ARROW_OFFSET_X, y + ARROW_OFFSET_Y);
   ctx.stroke();
 };
 
-type DrawRemainingTrainsBox = {
+const drawRemainingTrainsBox = ({
+  ctx,
+  remainingTrainsNb,
+  xPosition,
+  yPosition,
+}: {
   ctx: CanvasRenderingContext2D;
   remainingTrainsNb: number;
   xPosition: number;
-};
-
-const drawRemainingTrainsBox = ({ ctx, remainingTrainsNb, xPosition }: DrawRemainingTrainsBox) => {
-  const textY = OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
+  yPosition: number;
+}) => {
+  const textY = yPosition + OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
 
   ctx.fillStyle = REMAINING_TRAINS_BACKGROUND;
   ctx.beginPath();
@@ -97,53 +90,22 @@ const drawRemainingTrainsBox = ({ ctx, remainingTrainsNb, xPosition }: DrawRemai
   );
 };
 
-const drawOccupationZone = ({
-  ctx,
-  zone,
-  tracks,
-  arrivalTimePixel,
-  departureTimePixel,
-  yPosition,
-  isThroughTrain,
-  selectedTrainId,
-  setSelectedTrainId,
-  xMousePosition,
-  yMousePosition,
-  index,
-}: {
-  ctx: CanvasRenderingContext2D;
-  zone: OccupancyZone;
-  tracks: Track[];
-  arrivalTimePixel: number;
-  departureTimePixel: number;
-  yPosition: number;
-  isThroughTrain: boolean;
-  selectedTrainId: string;
-  setSelectedTrainId: (id: string) => void;
-  index: number;
-  xMousePosition: number;
-  yMousePosition: number;
-}) => {
-  let currentSelectedTrainId = selectedTrainId;
-
-  const trackN = CANVAS_PADDING + TRACK_HEIGHT_CONTAINER * index + yPosition;
-  const canvasHeight = CANVAS_PADDING * 2 + TRACK_HEIGHT_CONTAINER * tracks.length;
-  const trackPosition = canvasHeight - trackN;
-
-  const arrowOffset = isThroughTrain ? 4 : 0;
-
-  const xCheck =
-    xMousePosition >= arrivalTimePixel - arrowOffset &&
-    xMousePosition <= departureTimePixel + arrowOffset;
-
-  const yCheck =
-    Math.abs(yMousePosition) >= trackPosition - OCCUPANCY_ZONE_HEIGHT - 1 - arrowOffset &&
-    Math.abs(yMousePosition) <= trackPosition + 1 + arrowOffset;
-
-  if (xCheck && yCheck) {
-    setSelectedTrainId(zone.id);
-    currentSelectedTrainId = zone.id;
+const drawOccupationZone = (
+  ctx: CanvasRenderingContext2D,
+  stcContext: SpaceTimeChartContextType,
+  {
+    zone,
+    position,
+    yZone,
+    selectedTrainId,
+  }: {
+    zone: OccupancyZone;
+    position: number;
+    yZone: number;
+    selectedTrainId?: string;
   }
+) => {
+  const isThroughTrain = zone.arrivalTime === zone.departureTime;
 
   ctx.fillStyle = zone.color;
   ctx.strokeStyle = WHITE_100;
@@ -151,17 +113,22 @@ const drawOccupationZone = ({
   ctx.lineCap = 'round';
   ctx.font = '400 10px IBM Plex Mono';
 
-  if (selectedTrainId === zone.id) {
+  const { getTimePixel, getSpacePixel } = stcContext;
+  const yStart = getSpacePixel(position);
+  const yEnd = getSpacePixel(position, true);
+  const arrivalTimePixel = getTimePixel(zone.arrivalTime);
+  const departureTimePixel = getTimePixel(zone.departureTime);
+
+  if (selectedTrainId === zone.trainId) {
     const extraWidth = isThroughTrain ? X_TROUGHTRAIN_BACKGROUND_PADDING : X_BACKGROUND_PADDING;
     const originTextLength = ctx.measureText(zone.originStation || '--').width;
     const destinationTextLength = ctx.measureText(zone.destinationStation || '--').width;
 
-    ctx.save();
     ctx.fillStyle = SELECTION_20;
     ctx.beginPath();
     ctx.roundRect(
       arrivalTimePixel - originTextLength - extraWidth,
-      yPosition - BACKGROUND_HEIGHT / 2,
+      yZone - BACKGROUND_HEIGHT / 2,
       departureTimePixel -
         arrivalTimePixel +
         originTextLength +
@@ -171,67 +138,78 @@ const drawOccupationZone = ({
       SELECTED_TRAIN_ID_GRADIANT
     );
     ctx.fill();
-    ctx.restore();
   }
 
   if (isThroughTrain) {
-    drawThroughTrain({ ctx, arrivalTimePixel });
+    drawThroughTrain(ctx, arrivalTimePixel, yZone);
   } else {
-    drawDefaultZone({ ctx, arrivalTimePixel, departureTimePixel, yPosition });
+    drawDefaultZone(ctx, {
+      x: arrivalTimePixel,
+      y: yZone,
+      width: departureTimePixel - arrivalTimePixel,
+    });
   }
 
+  // Draw trains:
+  ctx.strokeStyle = zone.color;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([1, 4]);
+  if (zone.arrivalDirection) {
+    ctx.beginPath();
+    ctx.moveTo(arrivalTimePixel, yZone);
+    ctx.lineTo(arrivalTimePixel, zone.arrivalDirection === 'up' ? yStart : yEnd);
+    ctx.stroke();
+  }
+  if (zone.departureDirection) {
+    ctx.beginPath();
+    ctx.moveTo(departureTimePixel, yZone);
+    ctx.lineTo(departureTimePixel, zone.departureDirection === 'up' ? yStart : yEnd);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Draw texts:
   drawOccupancyZonesTexts({
     ctx,
     zone,
     arrivalTimePixel,
     departureTimePixel,
-    yPosition,
     isThroughTrain,
-    selectedTrainId: currentSelectedTrainId,
+    selectedTrainId,
+    yPosition: yZone,
   });
 };
 
-export const drawOccupancyZones = ({
-  ctx,
-  width,
-  height,
-  tracks,
-  occupancyZones,
-  getTimePixel,
-  selectedTrainId,
-  setSelectedTrainId,
-  mousePosition,
-}: {
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  tracks: Track[] | undefined;
-  occupancyZones: OccupancyZone[] | undefined;
-  getTimePixel: (time: number) => number;
-  selectedTrainId: string;
-  setSelectedTrainId: (id: string) => void;
-  mousePosition: { x: number; y: number };
-}) => {
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-
+export const drawOccupancyZones = (
+  ctx: CanvasRenderingContext2D,
+  stcContext: SpaceTimeChartContextType,
+  {
+    occupancyZones,
+    tracks,
+    position,
+    selectedTrainId,
+  }: {
+    occupancyZones: OccupancyZone[];
+    tracks: Track[];
+    position: number;
+    selectedTrainId?: string;
+  }
+) => {
   if (!tracks || !occupancyZones || occupancyZones.length === 0) return;
 
-  const sortedOccupancyZones = occupancyZones.sort(
-    (a, b) => a.arrivalTime.getTime() - b.arrivalTime.getTime()
-  );
+  const { getTimePixel, getSpacePixel } = stcContext;
+  const baseY = getSpacePixel(position);
+
+  const sortedOccupancyZones = occupancyZones.sort((a, b) => a.arrivalTime - b.arrivalTime);
 
   tracks.forEach((track, index) => {
-    const trackTranslate = index === 0 ? CANVAS_PADDING : TRACK_HEIGHT_CONTAINER;
-    ctx.translate(0, trackTranslate);
-
-    const { x: xMousePosition, y: yMousePosition } = mousePosition;
+    const trackY = baseY + CANVAS_PADDING + index * TRACK_HEIGHT_CONTAINER;
 
     const filteredOccupancyZones = sortedOccupancyZones.filter((zone) => zone.trackId === track.id);
 
-    let primaryArrivalTimePixel = 0;
-    let primaryDepartureTimePixel = 0;
-    let lastDepartureTimePixel = primaryDepartureTimePixel;
+    let primaryArrivalTime = 0;
+    let primaryDepartureTime = 0;
+    let lastDepartureTime = primaryDepartureTime;
     let yPosition = OCCUPANCY_ZONE_Y_START;
     let yOffset = Y_OFFSET_INCREMENT;
     let zoneCounter = 0;
@@ -239,9 +217,7 @@ export const drawOccupancyZones = ({
 
     while (zoneIndex < filteredOccupancyZones.length) {
       const zone = filteredOccupancyZones[zoneIndex];
-      const arrivalTimePixel = getTimePixel(zone.arrivalTime.getTime());
-      const departureTimePixel = getTimePixel(zone.departureTime.getTime());
-      const isThroughTrain = arrivalTimePixel === departureTimePixel;
+      const { arrivalTime, departureTime } = zone;
 
       // * if the zone is not overlapping with any previous one, draw it in the center of the track
       // * and reset the primary values
@@ -252,28 +228,20 @@ export const drawOccupancyZones = ({
       // * if the zone is overlapping with the previous one and the counter is higher than the max zones
       // * draw the remaining trains box
       // *
-      if (arrivalTimePixel > lastDepartureTimePixel) {
+      if (arrivalTime > lastDepartureTime) {
         // reset to initial value if the zone is not overlapping
         yPosition = OCCUPANCY_ZONE_Y_START;
-        primaryArrivalTimePixel = arrivalTimePixel;
-        primaryDepartureTimePixel = departureTimePixel;
-        lastDepartureTimePixel = departureTimePixel;
+        primaryArrivalTime = arrivalTime;
+        primaryDepartureTime = departureTime;
+        lastDepartureTime = departureTime;
         yOffset = Y_OFFSET_INCREMENT;
         zoneCounter = 1;
 
-        drawOccupationZone({
-          ctx,
+        drawOccupationZone(ctx, stcContext, {
           zone,
-          tracks,
-          arrivalTimePixel,
-          departureTimePixel,
-          yPosition,
-          isThroughTrain,
+          position,
           selectedTrainId,
-          setSelectedTrainId,
-          index,
-          xMousePosition,
-          yMousePosition,
+          yZone: trackY + yPosition,
         });
 
         zoneIndex++;
@@ -283,7 +251,7 @@ export const drawOccupancyZones = ({
 
       if (zoneCounter < MAX_ZONES) {
         // if so and it's an even index, move it to the bottom, if it's an odd index, move it to the top
-        if (arrivalTimePixel >= primaryArrivalTimePixel) {
+        if (arrivalTime >= primaryArrivalTime) {
           if (zoneCounter % 2 === 0) {
             yPosition -= yOffset;
           } else {
@@ -292,22 +260,13 @@ export const drawOccupancyZones = ({
         }
 
         // update the last departure time if the current zone is longer
-        if (departureTimePixel >= lastDepartureTimePixel)
-          lastDepartureTimePixel = departureTimePixel;
+        if (departureTime >= lastDepartureTime) lastDepartureTime = departureTime;
 
-        drawOccupationZone({
-          ctx,
+        drawOccupationZone(ctx, stcContext, {
           zone,
-          tracks,
-          arrivalTimePixel,
-          departureTimePixel,
-          yPosition,
-          isThroughTrain,
+          position,
+          yZone: trackY + yPosition,
           selectedTrainId,
-          setSelectedTrainId,
-          index,
-          xMousePosition,
-          yMousePosition,
         });
 
         zoneCounter++;
@@ -318,22 +277,17 @@ export const drawOccupancyZones = ({
       }
 
       const nextIndex = filteredOccupancyZones.findIndex(
-        (filteredZone, i) =>
-          i > zoneIndex &&
-          getTimePixel(filteredZone.arrivalTime.getTime()) >= lastDepartureTimePixel
+        (filteredZone, i) => i > zoneIndex && filteredZone.arrivalTime >= lastDepartureTime
       );
 
       const remainingTrainsNb = nextIndex - zoneIndex;
 
       const xPosition =
-        primaryArrivalTimePixel +
-        (lastDepartureTimePixel - primaryArrivalTimePixel) / 2 -
-        REMAINING_TRAINS_WIDTH / 2;
+        getTimePixel((primaryArrivalTime + lastDepartureTime) / 2) - REMAINING_TRAINS_WIDTH / 2;
 
-      drawRemainingTrainsBox({ ctx, remainingTrainsNb, xPosition });
+      drawRemainingTrainsBox({ ctx, remainingTrainsNb, xPosition, yPosition: trackY });
 
       zoneIndex += remainingTrainsNb;
     }
   });
-  ctx.restore();
 };

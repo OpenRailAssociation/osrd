@@ -3,7 +3,7 @@ import { sum } from 'lodash';
 import { TRACK_HEIGHT_CONTAINER, COLORS, TICKS_PATTERN } from '../../consts';
 import { getTickPattern } from '../../utils';
 
-const { WHITE_50, GREY_20, RAIL_TICK } = COLORS;
+const { WHITE_100, WHITE_50, GREY_20, RAIL_TICK } = COLORS;
 
 const drawRails = ({
   xStart,
@@ -18,10 +18,12 @@ const drawRails = ({
   stroke?: string;
   ctx: CanvasRenderingContext2D;
 }) => {
-  ctx.clearRect(xStart, yStart, width, 9);
+  ctx.fillStyle = WHITE_100;
+  ctx.fillRect(xStart, yStart, width, 9);
 
   ctx.fillStyle = WHITE_50;
   ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.rect(xStart, yStart, width, 8);
   ctx.fill();
@@ -44,6 +46,7 @@ const drawTick = ({
   const sumTicks = sum(ticks) / 2;
 
   ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.setLineDash(ticks);
   ctx.moveTo(xStart, yStart - sumTicks);

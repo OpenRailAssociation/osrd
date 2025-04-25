@@ -1,38 +1,33 @@
 import { useCallback } from 'react';
 
-import { type LayerType, type DrawingFunction } from '../../../spaceTimeChart/lib/types';
+import { useDraw, type DrawingFunction } from '../../../spaceTimeChart';
 import { drawOccupancyZones } from '../helpers/drawElements/drawOccupancyZones';
+import type { OccupancyZone, Track } from '../types';
 
 const OccupancyZonesLayer = ({
-  useDraw,
+  tracks,
+  occupancyZones,
+  position,
   selectedTrainId,
-  setSelectedTrainId,
-  mousePosition,
 }: {
-  useDraw: (layer: LayerType, fn: DrawingFunction) => void;
-  selectedTrainId: string;
-  setSelectedTrainId: (id: string) => void;
-  mousePosition: { x: number; y: number };
+  tracks: Track[];
+  occupancyZones: OccupancyZone[];
+  position: number;
+  selectedTrainId?: string;
 }) => {
   const drawingFunction = useCallback<DrawingFunction>(
-    (ctx, { getTimePixel, tracks, occupancyZones, trackOccupancyWidth, trackOccupancyHeight }) => {
-      if (trackOccupancyHeight && trackOccupancyWidth)
-        drawOccupancyZones({
-          ctx,
-          width: trackOccupancyWidth,
-          height: trackOccupancyHeight,
-          tracks,
-          occupancyZones,
-          getTimePixel,
-          selectedTrainId,
-          setSelectedTrainId,
-          mousePosition,
-        });
+    (ctx, stcContext) => {
+      drawOccupancyZones(ctx, stcContext, {
+        tracks,
+        occupancyZones,
+        selectedTrainId,
+        position,
+      });
     },
-    [mousePosition, selectedTrainId, setSelectedTrainId]
+    [occupancyZones, position, selectedTrainId, tracks]
   );
 
-  useDraw('paths', drawingFunction);
+  useDraw('overlay', drawingFunction);
 
   return null;
 };
