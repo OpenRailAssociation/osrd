@@ -222,7 +222,7 @@ fn compute_space_time_curves(
 ///
 /// - If value is greater than the last element of values.
 /// - If values is empty
-fn find_index_upper(values: &[u64], value: u64) -> usize {
+pub fn find_index_upper(values: &[u64], value: u64) -> usize {
     assert!(!values.is_empty(), "Values can't be empty");
     assert!(
         value <= values[values.len() - 1],
@@ -271,7 +271,7 @@ fn project_pos(
 }
 
 /// Interpolate a time value between two positions
-fn interpolate(
+pub fn interpolate(
     start_pos: u64,
     end_pos: u64,
     start_time: u64,

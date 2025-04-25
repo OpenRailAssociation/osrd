@@ -3905,6 +3905,69 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/SimulationSummaryResult'
+  /train_schedule/track_occupancy:
+    post:
+      tags:
+      - train_schedule
+      summary: Calculates when and for how long trains occupy track sections at a specific operational point.
+      description: |-
+        Returns a map of track sections to their occupation periods, containing:
+        - time_begin: Start of occupation
+        - duration: Length of occupation (includes stops)
+        - train_schedule_id: Train schedule ID
+
+        If a path item ID is provided, it uses schedule data to determine stop duration and location.
+        If not, it infers the position and time based on track offsets and interpolation.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_schedule_ids
+              - operational_point_id
+              - infra_id
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_point_id:
+                  type: string
+                train_schedule_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+        required: true
+      responses:
+        '200':
+          description: Track section occupancy periods for a set of train schedules
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - time_begin
+                    - duration
+                    - train_schedule_id
+                    properties:
+                      duration:
+                        type: string
+                        example: PT5M
+                      time_begin:
+                        type: string
+                        format: date-time
+                      train_schedule_id:
+                        type: integer
+                        format: int64
   /train_schedule/{id}:
     get:
       tags:
@@ -5598,6 +5661,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorOperationalPointNotFound'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -7390,6 +7454,30 @@ components:
           type: string
           enum:
           - editoast:train_schedule:NotFound
+    EditoastTrainScheduleErrorOperationalPointNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - operational_point_id
+          properties:
+            operational_point_id:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule:OperationalPointNotFound
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:

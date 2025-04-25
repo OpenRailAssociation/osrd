@@ -60,6 +60,12 @@ pub enum PositiveDurationError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PositiveDuration(ChronoDuration);
 
+impl Default for PositiveDuration {
+    fn default() -> Self {
+        PositiveDuration(ChronoDuration::zero())
+    }
+}
+
 impl TryFrom<ChronoDuration> for PositiveDuration {
     type Error = PositiveDurationError;
     /// Create PositiveDuration from `chrono::Duration``
