@@ -21,6 +21,7 @@ import './styles/rectangle-zoom.css';
 import { MouseTracker } from './helpers/components';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { getDiff } from './helpers/utils';
+import { KILOMETER } from './helpers/consts';
 
 const DEFAULT_WIDTH = 1000;
 const DEFAULT_HEIGHT = 500;
@@ -30,9 +31,9 @@ const MAX_ZOOM = 100;
 const MIN_ZOOM_MS_PER_PX = 600000;
 const MAX_ZOOM_MS_PER_PX = 625;
 const DEFAULT_ZOOM_MS_PER_PX = 10000;
-const MIN_ZOOM_METER_PER_PX = 10000;
-const MAX_ZOOM_METER_PER_PX = 10;
-const DEFAULT_ZOOM_METER_PER_PX = 300;
+const MIN_SPACE_ZOOM = 10 * KILOMETER;
+const MAX_SPACE_ZOOM = 0.01 * KILOMETER;
+const DEFAULT_SPACE_ZOOM = 0.3 * KILOMETER;
 type SpaceTimeHorizontalZoomWrapperProps = {
   swapAxes: boolean;
   spaceOrigin: number;
@@ -50,11 +51,10 @@ const timeScaleToZoomValue = (timeScale: number) =>
   Math.log(MAX_ZOOM_MS_PER_PX / MIN_ZOOM_MS_PER_PX);
 
 const zoomValueToSpaceScale = (slider: number) =>
-  MIN_ZOOM_METER_PER_PX * Math.pow(MAX_ZOOM_METER_PER_PX / MIN_ZOOM_METER_PER_PX, slider / 100);
+  MIN_SPACE_ZOOM * Math.pow(MAX_SPACE_ZOOM / MIN_SPACE_ZOOM, slider / 100);
 
 const spaceScaleToZoomValue = (spaceScale: number) =>
-  (100 * Math.log(spaceScale / MIN_ZOOM_METER_PER_PX)) /
-  Math.log(MAX_ZOOM_METER_PER_PX / MIN_ZOOM_METER_PER_PX);
+  (100 * Math.log(spaceScale / MIN_SPACE_ZOOM)) / Math.log(MAX_SPACE_ZOOM / MIN_SPACE_ZOOM);
 
 type StoryState = {
   timeZoomValue: number;
@@ -84,7 +84,7 @@ const RectangleZoomWrapper = ({
 }: SpaceTimeHorizontalZoomWrapperProps) => {
   const [state, setState] = useState<StoryState>({
     timeZoomValue: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
-    spaceZoomValue: spaceScaleToZoomValue(DEFAULT_ZOOM_METER_PER_PX),
+    spaceZoomValue: spaceScaleToZoomValue(DEFAULT_SPACE_ZOOM),
     xOffset,
     yOffset,
     panning: null,
@@ -96,7 +96,7 @@ const RectangleZoomWrapper = ({
   const timeScale = zoomValueToTimeScale(state.timeZoomValue);
   const spaceScale: SpaceScale[] = [
     {
-      to: 100000,
+      to: 100 * KILOMETER,
       coefficient: zoomValueToSpaceScale(state.spaceZoomValue), // meter/px
     },
   ];
@@ -122,7 +122,7 @@ const RectangleZoomWrapper = ({
         }
 
         const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
-        const newSpaceScale = clamp(chosenSpaceScale, MAX_ZOOM_METER_PER_PX, MIN_ZOOM_METER_PER_PX);
+        const newSpaceScale = clamp(chosenSpaceScale, MAX_SPACE_ZOOM, MIN_SPACE_ZOOM);
         const timeZoomValue = timeScaleToZoomValue(newTimeScale);
         const spaceZoomValue = spaceScaleToZoomValue(newSpaceScale);
 
@@ -227,14 +227,14 @@ const RectangleZoomWrapper = ({
         ...prev,
         ...(!swapAxes
           ? { timeZoomValue: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX) }
-          : { spaceZoomValue: spaceScaleToZoomValue(DEFAULT_ZOOM_METER_PER_PX) }),
+          : { spaceZoomValue: spaceScaleToZoomValue(DEFAULT_SPACE_ZOOM) }),
         xOffset: 0,
       }));
     } else {
       setState((prev) => ({
         ...prev,
         ...(!swapAxes
-          ? { spaceZoomValue: spaceScaleToZoomValue(DEFAULT_ZOOM_METER_PER_PX) }
+          ? { spaceZoomValue: spaceScaleToZoomValue(DEFAULT_SPACE_ZOOM) }
           : { timeZoomValue: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX) }),
         yOffset: 0,
       }));

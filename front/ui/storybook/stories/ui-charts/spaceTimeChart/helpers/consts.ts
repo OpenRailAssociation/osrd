@@ -20,4 +20,4 @@ export const MINUTE = 60 * SECOND;
 export const HOUR = 60 * MINUTE;
 
 // Same for distances in meters:
-export const KILOMETER = 1000;
+export const KILOMETER = 1000000;
