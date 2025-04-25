@@ -19,7 +19,7 @@ const mockedWaypoints = [
 ];
 
 describe('selectWaypointsToDisplay', () => {
-  it('should ensure that a empty array is returned when there is only 1 waypoint', () => {
+  it('should ensure that an empty array is returned when there is only 1 waypoint', () => {
     const result = selectWaypointsToDisplay([mockedWaypoints[0]], {
       height: 500,
       isProportional: true,
@@ -84,19 +84,34 @@ describe('getScales', () => {
     importanceLevel: 1,
   }));
 
-  it('Should ensure that a empty array is return when there is only 1 waypoint', () => {
-    const ops = [mockOpsWithPosition[0]];
-    const result = getScales(
-      ops,
-      {
-        height: 500,
-        isProportional: true,
-        yZoom: 1,
-      },
-      minZoomMillimeterPerPx,
-      maxZoomMillimeterPerPx
-    );
-    expect(result).toHaveLength(0);
+  it('should ensure that an empty array is return when there is no waypoint', () => {
+    expect(
+      getScales(
+        [],
+        {
+          height: 500,
+          isProportional: true,
+          yZoom: 1,
+        },
+        minZoomMillimeterPerPx,
+        maxZoomMillimeterPerPx
+      )
+    ).toHaveLength(0);
+  });
+
+  it('should return correct one single scale when there is just one waypoint', () => {
+    expect(
+      getScales(
+        [mockOpsWithPosition[0]],
+        {
+          height: 500,
+          isProportional: true,
+          yZoom: 1,
+        },
+        minZoomMillimeterPerPx,
+        maxZoomMillimeterPerPx
+      )
+    ).toEqual([{ from: 0, to: 0, size: 500 }]);
   });
 
   it('should return correct scale coefficients for proportional display', () => {

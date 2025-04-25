@@ -33,8 +33,6 @@ import {
   zoomX,
 } from '../utils/helpers';
 
-const WAYPOINTS_OFFSET = 16;
-
 type State = {
   xZoom: number;
   yZoom: number;
@@ -78,6 +76,20 @@ export type SplitPoint = {
   manchetteNode?: ReactNode;
 };
 
+export type ManchetteWithSpaceTimeChartOptions = {
+  displayTimeCaptions: boolean;
+  enableTimePan: boolean;
+  enableSpacePan: boolean;
+  enableTimeZoom: boolean;
+};
+
+export const DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS: ManchetteWithSpaceTimeChartOptions = {
+  displayTimeCaptions: true,
+  enableTimePan: true,
+  enableSpacePan: true,
+  enableTimeZoom: true,
+};
+
 const useManchetteWithSpaceTimeChart = ({
   waypoints,
   manchetteWithSpaceTimeChartRef,
@@ -85,7 +97,10 @@ const useManchetteWithSpaceTimeChart = ({
   spaceTimeChartRef,
   defaultTimeOrigin = 0,
   defaultSpaceOrigin = 0,
+  defaultXOffset = 0,
+  verticalPadding = BASE_WAYPOINT_HEIGHT / 2,
   splitPoints = [],
+  options = {},
 }: {
   waypoints: Waypoint[];
   manchetteWithSpaceTimeChartRef: React.RefObject<HTMLDivElement>;
@@ -93,15 +108,25 @@ const useManchetteWithSpaceTimeChart = ({
   spaceTimeChartRef?: React.RefObject<HTMLDivElement>;
   defaultTimeOrigin?: number;
   defaultSpaceOrigin?: number;
+  defaultXOffset?: number;
+  verticalPadding?: number;
   splitPoints?: SplitPoint[];
+  options?: Partial<ManchetteWithSpaceTimeChartOptions>;
 }) => {
+  const { displayTimeCaptions, enableTimePan, enableSpacePan, enableTimeZoom } = useMemo(
+    () => ({
+      ...DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS,
+      ...options,
+    }),
+    [options]
+  );
   const [isShiftPressed, setIsShiftPressed] = useState(false);
   const [state, setState] = useState<State>({
     xZoom: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
     yZoom: 1,
     timeOrigin: defaultTimeOrigin,
     spaceOrigin: defaultSpaceOrigin,
-    xOffset: 0,
+    xOffset: defaultXOffset,
     yOffset: 0,
     scrollTo: null,
     panning: null,
@@ -133,7 +158,7 @@ const useManchetteWithSpaceTimeChart = ({
     setState((prev) => ({ ...prev, timeOrigin: newTimeOrigin }));
   }, []);
 
-  const canvasDrawingHeight = height - FOOTER_HEIGHT; // 521
+  const canvasDrawingHeight = Math.max(1 + BASE_WAYPOINT_HEIGHT, height - FOOTER_HEIGHT); // 521
   const drawingHeightWithoutTopPadding = canvasDrawingHeight - BASE_WAYPOINT_HEIGHT / 2; // 505
   const drawingHeightWithoutBothPadding = canvasDrawingHeight - BASE_WAYPOINT_HEIGHT; // 489
   const totalDistance = calcTotalDistance(waypoints);
@@ -344,12 +369,13 @@ const useManchetteWithSpaceTimeChart = ({
 
   const handleXZoom = useCallback(
     (newXZoom: number, xPosition = (spaceTimeChartRef?.current?.offsetWidth || 0) / 2) => {
-      setState((prev) => ({
-        ...prev,
-        ...zoomX(prev.xZoom, prev.xOffset, newXZoom, xPosition),
-      }));
+      if (enableTimeZoom)
+        setState((prev) => ({
+          ...prev,
+          ...zoomX(prev.xZoom, prev.xOffset, newXZoom, xPosition),
+        }));
     },
-    [spaceTimeChartRef]
+    [enableTimeZoom, spaceTimeChartRef]
   );
 
   const spaceScales = useMemo(() => {
@@ -373,20 +399,31 @@ const useManchetteWithSpaceTimeChart = ({
           : (baseScale.to - baseScale.from) / baseScale.size;
 
       return splitPoints
-        .flatMap(({ position, size: splitPointHeight }) => [
-          {
-            to: position,
-            coefficient,
-          },
-          {
-            to: position,
-            size: splitPointHeight,
-          },
-        ])
-        .concat({
-          to: baseScales.at(-1)!.to,
-          coefficient,
-        });
+        .flatMap(({ position, size: splitPointHeight }) =>
+          coefficient > 0
+            ? [
+                {
+                  to: position,
+                  coefficient,
+                },
+                {
+                  to: position,
+                  size: splitPointHeight,
+                },
+              ]
+            : {
+                to: position,
+                size: splitPointHeight,
+              }
+        )
+        .concat(
+          coefficient
+            ? {
+                to: baseScales.at(-1)!.to,
+                coefficient,
+              }
+            : []
+        );
     }
 
     // Varying scales:
@@ -450,15 +487,9 @@ const useManchetteWithSpaceTimeChart = ({
     if (spaceScales.length > 0) {
       totalManchetteHeight = Math.max(
         totalManchetteHeight,
-        getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT
+        getSpacePixel(spaceScales.at(-1)!.to, true) + verticalPadding * 2
       );
     }
-
-    if (!splitPoints?.length)
-      return {
-        manchetteHeight: totalManchetteHeight,
-        manchetteContents: waypointsToDisplay,
-      };
 
     // Identify all manchette contents (split sections and waypoints):
     const splitPointPositions = new Set(splitPoints.map((point) => point.position) || []);
@@ -513,12 +544,12 @@ const useManchetteWithSpaceTimeChart = ({
           finalContents.push(
             <div
               style={{
-                // This WAYPOINTS_OFFSET correction is there because:
-                // - Waypoints are positioned so that their lines (at WAYPOINTS_OFFSET pixels from
+                // This verticalPadding correction is there because:
+                // - Waypoints are positioned so that their lines (at verticalPadding pixels from
                 //   the top) are aligned with SpaceTimeChart's space lines
                 // - Split points are positioned so that their top is aligned with SpaceTimeChart's
                 //   space lines
-                top: `${top + WAYPOINTS_OFFSET}px`,
+                top: `${top + verticalPadding}px`,
                 height: `${getSpacePixel(position, true) - top}px`,
                 position: 'absolute',
                 width: '100%',
@@ -536,7 +567,7 @@ const useManchetteWithSpaceTimeChart = ({
       manchetteHeight: totalManchetteHeight,
       manchetteContents: finalContents,
     };
-  }, [spaceOrigin, spaceScales, splitPoints, waypointsToDisplay, height]);
+  }, [spaceOrigin, spaceScales, verticalPadding, height, splitPoints, waypointsToDisplay]);
 
   return useMemo<{
     manchetteProps: ManchetteProps;
@@ -571,9 +602,10 @@ const useManchetteWithSpaceTimeChart = ({
         additionalChildren: splitPoints.map((sp, i) => (
           <Fragment key={i}>{sp.spaceTimeChartNode}</Fragment>
         )),
+        hideTimeCaptions: !displayTimeCaptions,
         timeScale: zoomValueToTimeScale(xZoom),
         xOffset,
-        yOffset: -yOffset + WAYPOINTS_OFFSET,
+        yOffset: -yOffset + verticalPadding,
         timeOrigin,
         spaceOrigin,
         spaceScales,
@@ -643,18 +675,20 @@ const useManchetteWithSpaceTimeChart = ({
 
             const newState = { ...prev };
             const { initialOffset } = panning;
-            newState.xOffset = initialOffset.x + diff.x;
+            const manchette = manchetteWithSpaceTimeChartRef.current;
 
-            const newYPos = initialOffset.y - diff.y;
-            if (
-              manchetteWithSpaceTimeChartRef.current &&
-              newYPos >= 0 &&
-              newYPos + manchetteWithSpaceTimeChartRef.current.offsetHeight <
-                manchetteWithSpaceTimeChartRef.current.scrollHeight
-            ) {
-              newState.yOffset = newYPos;
-              manchetteWithSpaceTimeChartRef.current.scrollTop = newYPos;
+            if (enableTimePan) {
+              newState.xOffset = initialOffset.x + diff.x;
             }
+            if (enableSpacePan) {
+              let newYOffset = initialOffset.y - diff.y;
+              newYOffset = Math.max(newYOffset, 0);
+              if (manchette)
+                newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
+              newState.yOffset = newYOffset;
+              if (manchette) manchette.scrollTop = newYOffset;
+            }
+
             return newState;
           });
         },
@@ -680,12 +714,13 @@ const useManchetteWithSpaceTimeChart = ({
       isProportional,
       yOffset,
       waypointsToDisplay,
+      splitPoints,
       xZoom,
       xOffset,
+      verticalPadding,
       timeOrigin,
       spaceOrigin,
       spaceScales,
-      splitPoints,
       handleScroll,
       handleXZoom,
       toggleZoomMode,
@@ -694,10 +729,13 @@ const useManchetteWithSpaceTimeChart = ({
       minZoomMillimeterPerPx,
       maxZoomMillimeterPerPx,
       setTimeOrigin,
+      displayTimeCaptions,
       isShiftPressed,
       panning,
-      manchetteWithSpaceTimeChartRef,
+      enableTimePan,
+      enableSpacePan,
       canvasDrawingHeight,
+      manchetteWithSpaceTimeChartRef,
     ]
   );
 };

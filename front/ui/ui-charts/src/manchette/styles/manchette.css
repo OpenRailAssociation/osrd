@@ -59,9 +59,12 @@
   .waypoints-list {
     width: 349px;
     border-bottom-left-radius: 0.25rem;
-    padding-inline: 0.5rem 1.625rem;
 
     @apply bg-white-100;
+
+    .waypoint-wrapper {
+      margin-inline: 0.5rem 1.625rem;
+    }
 
     .waypoint-wrapper:last-child {
       .waypoint {
