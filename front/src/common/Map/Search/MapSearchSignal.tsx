@@ -209,7 +209,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         <SignalCard
           signalSearchResult={result}
           onResultClick={onResultClick}
-          key={`mapSearchSignal-${nextId()}-${result.line_name}`}
+          key={`${nextId()}-${result.line_name}`}
         />
       ))}
     </div>
@@ -256,7 +256,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="line" className="overflow-hidden">
             {searchLineState &&
               autocompleteLineNames.map((lineName) => (
-                <option value={lineName} key={lineName}>
+                <option value={lineName} key={`${nextId()}-${lineName}`}>
                   {lineName}
                 </option>
               ))}
@@ -284,7 +284,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="signal">
             {searchState &&
               searchResults.map((result) => (
-                <option value={result.label} key={`${result.label}-${result.line_name}`}>
+                <option value={result.label} key={`${nextId()}-${result.line_name}`}>
                   {result.label}
                 </option>
               ))}
