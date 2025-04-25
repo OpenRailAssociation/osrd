@@ -159,7 +159,7 @@
         padding-top: 4px;
         min-height: 48px;
 
-        .occurrence-item-dot {
+        .occurrence-indicator {
           position: relative;
           height: 24px;
           color: var(--grey40);
@@ -198,6 +198,49 @@
             .change-group {
               margin-inline: 4px;
               margin-top: 4px;
+            }
+          }
+
+          .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: var(--chartGreen50);
+            border-radius: 3px;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: 5px;
+              left: 5px;
+              width: 6px;
+              height: 6px;
+              background: var(--grey80);
+              border-radius: 50%;
+              box-shadow: 0 0 0 2px var(--white100);
+            }
+          }
+
+          .exception {
+            transform: rotate(45deg);
+          }
+
+          .disabled {
+            opacity: 50%;
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: 4px;
+              left: 4px;
+              width: 8px;
+              height: 8px;
+              background: var(--white100);
+              border-radius: 50%;
+              box-shadow: none;
             }
           }
         }

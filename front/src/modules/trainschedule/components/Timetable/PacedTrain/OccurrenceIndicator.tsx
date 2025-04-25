@@ -1,7 +1,8 @@
 /* eslint-disable no-nested-ternary */
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { Dot } from '@osrd-project/ui-icons';
+import cx from 'classnames';
+import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { getExceptionType } from 'utils/trainId';
@@ -58,7 +59,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
 
   return (
     <div
-      className="occurrence-item-dot"
+      className="occurrence-indicator"
       ref={dotRef}
       onMouseEnter={() => {
         setPosition(null);
@@ -99,7 +100,12 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
             </div>
           </div>
         )}
-      <Dot variant="fill" />
+      <span
+        className={cx('icon', {
+          exception: !isEmpty(occurrence?.exceptionChangeGroups),
+          disabled: occurrence.disabled,
+        })}
+      />
     </div>
   );
 };
