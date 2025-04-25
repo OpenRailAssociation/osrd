@@ -4,19 +4,19 @@ import math
 import random
 import time
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from functools import cache
 from pathlib import Path
 from typing import TypeVar
-from collections.abc import Iterable
 
+# TODO: we may want to use more qualified imports
+import conftest
 import requests
 from osrd_schemas.switch_type import builtin_node_types
 from requests import Response, Timeout
 
-# TODO: we may want to use more qualified imports
-import conftest
 from tests.scenario import Scenario
 
 _TIMEOUT = 15
@@ -337,8 +337,10 @@ def _get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> _RollingSt
     :param rolling_stock_name: name of the rolling stock
     :return: ID the rolling stock
     """
+    session = next(conftest.session())
     return _RollingStock(
-        rolling_stock_name, conftest.get_rolling_stock(editoast_url, rolling_stock_name)
+        rolling_stock_name,
+        conftest.get_rolling_stock(session, editoast_url, rolling_stock_name),
     )
 
 
@@ -618,12 +620,13 @@ _to_ms = _to_mm
 if __name__ == "__main__":
     infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME)
     new_scenario = create_scenario(_EDITOAST_URL, infra_id)
+    session = next(conftest.session())
     if _ROLLING_STOCK_NAME == "fast_rolling_stock":
         try:
             _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME)
         except ValueError:
             conftest.create_rolling_stock(
-                conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None
+                session, conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None
             )
     run(
         _EDITOAST_URL,

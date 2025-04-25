@@ -1,10 +1,12 @@
 import json
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Iterable, Iterator, Mapping
 
 import pytest
-import requests
+from requests import Session
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from tests.infra import Infra
 from tests.path import Path as TrainPath
@@ -13,11 +15,11 @@ from tests.services import EDITOAST_URL
 from tests.utils.timetable import create_scenario
 
 
-def _load_generated_infra(name: str) -> int:
+def _load_generated_infra(session: Session, name: str) -> int:
     infra_path = Path(__file__).parent / f"data/infras/{name}/infra.json"
     with infra_path.open() as json_infra:
         infra_json = json.load(json_infra)
-    res = requests.post(
+    res = session.post(
         EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=infra_json
     )
     res.raise_for_status()
@@ -25,30 +27,45 @@ def _load_generated_infra(name: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def tiny_infra() -> Iterator[Infra]:
-    infra_id = _load_generated_infra("tiny_infra")
+def tiny_infra(session: Session) -> Iterator[Infra]:
+    infra_id = _load_generated_infra(session, "tiny_infra")
     yield Infra(infra_id, "tiny_infra")
-    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
+    session.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture(scope="session")
-def small_infra() -> Iterator[Infra]:
+def small_infra(session: Session) -> Iterator[Infra]:
     """small_infra screenshot in `tests/README.md`"""
-    infra_id = _load_generated_infra("small_infra")
+    infra_id = _load_generated_infra(session, "small_infra")
     yield Infra(infra_id, "small_infra")
-    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
+    session.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture(scope="session")
-def etcs_infra() -> Iterator[Infra]:
-    infra_id = _load_generated_infra("etcs_infra")
+def etcs_infra(session: Session) -> Iterator[Infra]:
+    infra_id = _load_generated_infra(session, "etcs_infra")
     yield Infra(infra_id, "etcs_infra")
-    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
+    session.delete(EDITOAST_URL + f"infra/{infra_id}/")
+
+
+@pytest.fixture(scope="session")
+def session() -> Iterator[Session]:
+    # A failed request will retry up to 5 times with the following timings [2, 4, 8, 16, 32] for a total of 62 seconds
+    retry_strategy = Retry(
+        total=5,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = Session()
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    yield session
 
 
 @pytest.fixture
-def foo_project_id() -> Iterator[int]:
-    response = requests.post(
+def foo_project_id(session: Session) -> Iterator[int]:
+    response = session.post(
         EDITOAST_URL + "projects/",
         json={
             "name": "_@Test integration project",
@@ -61,11 +78,11 @@ def foo_project_id() -> Iterator[int]:
     )
     project_id = response.json()["id"]
     yield project_id
-    requests.delete(EDITOAST_URL + f"projects/{project_id}/")
+    session.delete(EDITOAST_URL + f"projects/{project_id}/")
 
 
 @pytest.fixture
-def foo_study_id(foo_project_id: int) -> Iterator[int]:
+def foo_study_id(foo_project_id: int, session: Session) -> Iterator[int]:
     payload = {
         "name": "_@Test integration study",
         "state": "Starting",
@@ -73,7 +90,7 @@ def foo_study_id(foo_project_id: int) -> Iterator[int]:
         "business_code": "BBB",
         "tags": [],
     }
-    res = requests.post(
+    res = session.post(
         EDITOAST_URL + f"projects/{foo_project_id}/studies/", json=payload
     )
     yield res.json()["id"]
@@ -115,7 +132,9 @@ def etcs_scenario(
     )
 
 
-def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
+def get_rolling_stock(
+    session: Session, editoast_url: str, rolling_stock_name: str
+) -> int:
     """
     Returns the ID corresponding to the rolling stock name, if available.
     :param editoast_url: Api url
@@ -125,7 +144,7 @@ def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
     page = 1
     while page is not None:
         # TODO: feel free to reduce page_size when https://github.com/OpenRailAssociation/osrd/issues/5350 is fixed
-        r = requests.get(
+        r = session.get(
             editoast_url + "light_rolling_stock/",
             params={"page": page, "page_size": 1_000},
         )
@@ -170,15 +189,16 @@ TestRollingStock.__test__ = False
 
 
 def create_rolling_stock(
+    session: Session,
     rolling_stock_json_path: Path,
     test_rolling_stocks: list[TestRollingStock] | None = None,
 ) -> list[int]:
     if test_rolling_stocks is None:
         payload = json.loads(rolling_stock_json_path.read_text())
-        response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
+        response = session.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
         rjson = response.json()
         if response.status_code // 100 == 4 and "NameAlreadyUsed" in rjson["type"]:
-            return [get_rolling_stock(EDITOAST_URL, rjson["context"]["name"])]
+            return [get_rolling_stock(session, EDITOAST_URL, rjson["context"]["name"])]
         assert "id" in rjson, f"Failed to create rolling stock: {rjson}"
         return [rjson["id"]]
     ids = []
@@ -187,45 +207,48 @@ def create_rolling_stock(
         payload["name"] = rs.name
         payload["metadata"] = rs.metadata
         ids.append(
-            requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"]
+            session.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"]
         )
     return ids
 
 
 @pytest.fixture
-def fast_rolling_stocks(request: pytest.FixtureRequest) -> Iterator[Iterable[int]]:
+def fast_rolling_stocks(
+    request: pytest.FixtureRequest, session: Session
+) -> Iterator[Iterable[int]]:
     closest_marker = request.node.get_closest_marker("names_and_metadata")
     assert closest_marker is not None
     ids = create_rolling_stock(
+        session,
         FAST_ROLLING_STOCK_JSON_PATH,
         closest_marker.args[0],
     )
     yield ids
     for id in ids:
-        requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+        session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture
-def fast_rolling_stock() -> Iterator[int]:
-    id = create_rolling_stock(FAST_ROLLING_STOCK_JSON_PATH)[0]
+def fast_rolling_stock(session: Session) -> Iterator[int]:
+    id = create_rolling_stock(session, FAST_ROLLING_STOCK_JSON_PATH)[0]
     yield id
-    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+    session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture
-def etcs_rolling_stock() -> Iterator[int]:
-    id = create_rolling_stock(ETCS_ROLLING_STOCK_JSON_PATH)[0]
+def etcs_rolling_stock(session: Session) -> Iterator[int]:
+    id = create_rolling_stock(session, ETCS_ROLLING_STOCK_JSON_PATH)[0]
     yield id
-    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+    session.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture
 def west_to_south_east_path(
-    small_infra: Infra, fast_rolling_stock: int
+    session: Session, small_infra: Infra, fast_rolling_stock: int
 ) -> Iterator[TrainPath]:
     """west_to_south_east_path screenshot in `tests/README.md`"""
-    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
-    response = requests.post(
+    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    response = session.post(
         f"{EDITOAST_URL}infra/{small_infra.id}/pathfinding/blocks",
         json={
             "path_items": [
@@ -251,12 +274,13 @@ def west_to_south_east_path(
 
 @pytest.fixture
 def west_to_south_east_simulation(
+    session: Session,
     small_scenario: Scenario,
     fast_rolling_stock: int,
 ) -> Iterator[dict]:
-    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
-    response = requests.post(
+    response = session.post(
         f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedules/",
         json=[
             {
@@ -278,12 +302,13 @@ def west_to_south_east_simulation(
 
 @pytest.fixture
 def west_to_south_east_paced_train(
+    session: Session,
     small_scenario: Scenario,
     fast_rolling_stock: int,
 ) -> Iterator[dict]:
-    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
-    response = requests.post(
+    response = session.post(
         f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
         json=[
             {
@@ -309,10 +334,11 @@ def west_to_south_east_paced_train(
 
 @pytest.fixture
 def west_to_south_east_paced_trains(
+    session: Session,
     small_scenario: Scenario,
     fast_rolling_stock: int,
 ) -> Iterator[dict]:
-    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
 
     base = {
@@ -326,7 +352,7 @@ def west_to_south_east_paced_trains(
         "speed_limit_tag": "foo",
     }
 
-    response = requests.post(
+    response = session.post(
         f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
         json=[
             {
@@ -360,14 +386,15 @@ def west_to_south_east_paced_trains(
 
 @pytest.fixture
 def west_to_south_east_etcs_simulation(
+    session: Session,
     etcs_scenario: Scenario,
     etcs_rolling_stock: int,
 ) -> Iterator[dict]:
-    rolling_stock_response = requests.get(
+    rolling_stock_response = session.get(
         EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
-    response = requests.post(
+    response = session.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
         json=[
             {
@@ -388,10 +415,11 @@ def west_to_south_east_etcs_simulation(
 
 @pytest.fixture
 def west_to_south_east_simulations(
+    session: Session,
     small_scenario: Scenario,
     fast_rolling_stock: int,
 ) -> Iterator[dict]:
-    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
 
     base = {
@@ -405,7 +433,7 @@ def west_to_south_east_simulations(
         "speed_limit_tag": "foo",
     }
 
-    response = requests.post(
+    response = session.post(
         f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedules/",
         json=[
             {
@@ -426,8 +454,8 @@ def west_to_south_east_simulations(
 
 
 @pytest.fixture
-def timetable_id() -> int:
-    r = requests.post(f"{EDITOAST_URL}timetable/")
+def timetable_id(session: Session) -> int:
+    r = session.post(f"{EDITOAST_URL}timetable/")
     if not r.ok:
         raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
     return r.json()["timetable_id"]
