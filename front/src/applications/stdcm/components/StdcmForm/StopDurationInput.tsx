@@ -70,6 +70,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
         value={stopDuration}
         trailingContent="minutes"
         statusWithMessage={stopWarning}
+        narrow
       />
     </div>
   );

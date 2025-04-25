@@ -61,12 +61,15 @@
   }
 
   .stdcm-card__body {
-    padding: 14px 24px 24px 8px;
+    padding: 14px 24px 24px;
 
-    &.add-linked-train,
+    &.add-linked-train {
+      width: 450px;
+      padding: 12px;
+    }
+
     &.linked-train {
       width: 450px;
-      padding: 11px 8px 13px;
     }
 
     .stdcm-simulation-params {
@@ -75,36 +78,20 @@
     }
 
     .location-line {
-      padding-left: 16px;
       display: flex;
-
+      gap: 16px;
       .ci-input {
-        padding-inline: 0 16px;
+        width: 312px;
+      }
+
+      .ch-input {
+        width: 74px;
       }
     }
 
     // Fix osrd-ui styles
     label {
       margin-bottom: 0;
-    }
-
-    .date-picker {
-      .feed-back {
-        padding-inline: 16px;
-      }
-    }
-
-    .time-picker {
-      .feed-back {
-        padding-right: 16px;
-        width: 120px;
-      }
-    }
-
-    .tolerance-picker {
-      .feed-back {
-        width: 120px;
-      }
     }
 
     .combo-box {
@@ -162,32 +149,34 @@
       padding-bottom: 24px;
 
       .arrival-type-select {
-        padding: 40px 0 0 16px;
+        margin-block: 40px 14px;
       }
 
       .schedule {
         display: flex;
         flex-direction: row;
-        padding-top: 14px;
+        gap: 16px;
+
+        .date-picker {
+          width: 144px;
+        }
+
+        .time-picker,
+        .tolerance-picker {
+          width: 113px;
+        }
       }
     }
 
     &.via {
-      padding-right: 8px;
-      padding-bottom: 13px;
+      padding-bottom: 32px;
 
       .location-line {
-        padding-right: 16px;
-      }
-
-      .stop-type-selector {
-        padding: 14px 16px;
+        margin-bottom: 14px;
       }
 
       .stop-time {
-        .feed-back {
-          padding: 0 16px 13px 16px;
-        }
+        margin-top: 22px;
       }
     }
 

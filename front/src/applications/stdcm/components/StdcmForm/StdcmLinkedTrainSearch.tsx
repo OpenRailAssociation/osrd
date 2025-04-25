@@ -68,7 +68,7 @@ const StdcmLinkedTrainSearch = ({
           }
           className="linked-train"
         >
-          <div className="d-flex pr-1 pl-3">
+          <div className="linked-train-inputs">
             <Input
               id="linked-train-id"
               type="text"
@@ -78,12 +78,14 @@ const StdcmLinkedTrainSearch = ({
                 setTrainNameInput(e.target.value);
               }}
               label="N°"
+              narrow
             />
             <DatePicker
               inputProps={{
                 id: 'linked-train-date',
                 label: 'Date',
                 name: 'op-date',
+                narrow: true,
               }}
               selectableSlot={selectableSlot}
               value={linkedTrainDate}

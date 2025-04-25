@@ -142,29 +142,27 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             readOnly={false}
             narrow
           />
-          <div className="mr-n2 pr-1">
-            <TolerancePicker
-              id={`stdcm-tolerance-${opId}`}
-              label={t('trainPath.tolerance')}
-              toleranceValues={tolerances}
-              onChange={() => {}}
-              onToleranceChange={({ minusTolerance, plusTolerance }) => {
-                dispatch(
-                  updateStdcmPathStep({
-                    id: pathStep.id,
-                    updates: {
-                      tolerances: {
-                        before: new Duration({ seconds: minusTolerance }),
-                        after: new Duration({ seconds: plusTolerance }),
-                      },
+          <TolerancePicker
+            id={`stdcm-tolerance-${opId}`}
+            label={t('trainPath.tolerance')}
+            toleranceValues={tolerances}
+            onChange={() => {}}
+            onToleranceChange={({ minusTolerance, plusTolerance }) => {
+              dispatch(
+                updateStdcmPathStep({
+                  id: pathStep.id,
+                  updates: {
+                    tolerances: {
+                      before: new Duration({ seconds: minusTolerance }),
+                      after: new Duration({ seconds: plusTolerance }),
                     },
-                  })
-                );
-              }}
-              disabled={disabled}
-              narrow
-            />
-          </div>
+                  },
+                })
+              );
+            }}
+            disabled={disabled}
+            narrow
+          />
         </div>
       )}
     </>
