@@ -132,11 +132,22 @@ export const selectWaypointsToDisplay = (
  */
 export const getScales = (
   waypoints: Waypoint[],
-  { isProportional, yZoom }: WaypointsOptions,
+  { isProportional, yZoom, height }: WaypointsOptions,
   minZoomMillimeterPerPx: number,
   maxZoomMillimeterPerPx: number
 ) => {
-  if (waypoints.length < 2) return [];
+  if (!waypoints.length) return [];
+
+  if (waypoints.length === 1) {
+    const waypoint = waypoints[0];
+    return [
+      {
+        from: waypoint.position,
+        to: waypoint.position,
+        size: height || 1,
+      },
+    ];
+  }
 
   if (!isProportional) {
     return waypoints.slice(0, -1).map((from, index) => {
