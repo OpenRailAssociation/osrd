@@ -15,6 +15,7 @@ type SpeedLimitByTagSelectorProps = {
   dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
   className?: string;
   showPlaceHolder?: boolean;
+  narrow?: boolean;
 };
 
 export default function SpeedLimitByTagSelector({
@@ -25,6 +26,7 @@ export default function SpeedLimitByTagSelector({
   dispatchUpdateSpeedLimitByTag,
   className = '',
   showPlaceHolder = false,
+  narrow = false,
 }: SpeedLimitByTagSelectorProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
@@ -59,6 +61,7 @@ export default function SpeedLimitByTagSelector({
             }
           }}
           {...createStringSelectOptions(speedLimitsTagsList)}
+          narrow={narrow}
         />
       </div>
     </div>
