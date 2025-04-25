@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -11,6 +11,8 @@ import {
   type PacedTrain,
   type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
+import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
@@ -59,6 +61,7 @@ const PacedTrainItem = ({
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
+  const { openModal } = useContext(ModalContext);
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
@@ -242,11 +245,21 @@ const PacedTrainItem = ({
             </span>
           </div>
         )}
+
         <TimetableItemActions
           selectPathProjection={selectPathProjection}
           duplicateTimetableItem={duplicatePacedTrain}
           editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-          deleteTimetableItem={() => deletePacedTrain(selectedTrainId)}
+          deleteTimetableItem={async () => {
+            openModal(
+              <DeleteModal
+                handleDelete={async () => deletePacedTrain(selectedTrainId)}
+                selectedPacedTrainIds={[pacedTrain.id]}
+                selectedTrainScheduleIds={[]}
+              />,
+              'sm'
+            );
+          }}
         />
       </div>
       <div className="occurrences">
