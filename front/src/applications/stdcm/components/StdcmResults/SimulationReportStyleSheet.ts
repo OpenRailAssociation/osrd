@@ -266,7 +266,7 @@ const styles = {
       width: '912',
     },
     stopTable: {
-      border: 'none',
+      border: '0',
     },
     stopTableIndexWidth: {
       width: '40',
@@ -439,7 +439,7 @@ const styles = {
       paddingBottom: '16',
     },
     table: {
-      border: 'none',
+      border: '0',
     },
     th: {
       fontSize: '14',
