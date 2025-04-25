@@ -2,25 +2,28 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-.track-occupancy-manchette,
-.canvas-container {
+.track-occupancy-manchette {
   height: 100%;
   width: 100%;
   border-radius: inherit;
+  padding-top: 10px;
 
   > canvas {
     border-radius: inherit;
   }
-}
 
-.track-occupancy-manchette {
-  padding-top: 10px;
   @apply bg-ambientB-15;
+
+  .waypoint::after,
+  .waypoint-separator::after {
+    height: 0;
+  }
 }
 
-.canvas-container {
-  @apply bg-white-100;
-  position: relative;
+.close-track-occupancy-panel {
+  position: absolute;
+  right: 0;
+  margin: 0.875rem;
 }
 
 .track {

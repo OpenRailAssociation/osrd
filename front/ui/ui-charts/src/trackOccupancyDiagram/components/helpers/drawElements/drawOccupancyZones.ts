@@ -188,17 +188,19 @@ export const drawOccupancyZones = (
     tracks,
     position,
     selectedTrainId,
+    topPadding = 0,
   }: {
     occupancyZones: OccupancyZone[];
     tracks: Track[];
     position: number;
     selectedTrainId?: string;
+    topPadding?: number;
   }
 ) => {
   if (!tracks || !occupancyZones || occupancyZones.length === 0) return;
 
   const { getTimePixel, getSpacePixel } = stcContext;
-  const baseY = getSpacePixel(position);
+  const baseY = getSpacePixel(position) + topPadding;
 
   const sortedOccupancyZones = occupancyZones.sort((a, b) => a.arrivalTime - b.arrivalTime);
 

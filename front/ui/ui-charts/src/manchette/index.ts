@@ -2,6 +2,7 @@ import '@osrd-project/ui-core/dist/theme.css';
 import './styles/main.css';
 import './consts';
 
+export { default as WaypointComponent } from './components/Waypoint';
 export { default as Manchette, type ManchetteProps } from './components/Manchette';
 export {
   default as ManchetteWithSpaceTimeChart,
