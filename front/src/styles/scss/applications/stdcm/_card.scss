@@ -88,17 +88,6 @@
       margin-bottom: 0;
     }
 
-    .feed-back {
-      padding: 0;
-      &.error,
-      &.info {
-        --field-wrapper-padding-bottom: 5px;
-        .status-message-wrapper-tooltip.tooltip-left {
-          left: -4px;
-        }
-      }
-    }
-
     .date-picker {
       .feed-back {
         padding-inline: 16px;
@@ -129,6 +118,14 @@
     // cards styles
     &.consist {
       padding-left: 24px;
+
+      .error,
+      .info {
+        --field-wrapper-padding-bottom: 5px;
+        .status-message-wrapper-tooltip.tooltip-left {
+          left: -4px;
+        }
+      }
 
       .towed-rolling-stock {
         margin-top: 14px;

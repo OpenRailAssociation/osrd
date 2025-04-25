@@ -191,6 +191,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           {...rollingStockComboBoxDefaultProps}
           autoComplete="off"
           disabled={disabled}
+          narrow
         />
       </div>
       <div className="towed-rolling-stock">
@@ -206,6 +207,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           {...towedRollingStockComboBoxDefaultProps}
           autoComplete="off"
           disabled={disabled}
+          narrow
         />
       </div>
       <div className="stdcm-consist__properties">
@@ -226,6 +228,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           disabled={disabled}
           statusWithMessage={massFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
+          narrow
         />
         <Input
           id="length"
@@ -247,6 +250,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           disabled={disabled}
           statusWithMessage={lengthFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('length')}
+          narrow
         />
       </div>
       <div className="stdcm-consist__properties">
@@ -256,6 +260,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           speedLimitsByTags={speedLimitsByTags}
           dispatchUpdateSpeedLimitByTag={onSpeedLimitByTagChange}
           showPlaceHolder={isDebugMode}
+          narrow
         />
         <Input
           id="maxSpeed"
@@ -274,6 +279,7 @@ const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
           disabled={disabled}
           statusWithMessage={speedFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
+          narrow
         />
       </div>
     </StdcmCard>

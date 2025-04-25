@@ -190,6 +190,7 @@ const StdcmOperationalPoint = ({
           resetSuggestions={resetSuggestions}
           disabled={disabled}
           autoComplete="off"
+          narrow
         />
       </div>
       <div className="col-3 p-0">
@@ -203,6 +204,7 @@ const StdcmOperationalPoint = ({
           getOptionLabel={(option: { id: string; label: string }) => option.label}
           getOptionValue={(option: { id: string; label: string }) => option.id}
           disabled={disabled}
+          narrow
         />
       </div>
     </div>

@@ -102,6 +102,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
           )}
           getOptionLabel={(option) => t(`trainPath.${option}`)}
           disabled={disabled}
+          narrow
         />
       </div>
       {pathStep.arrivalType === 'preciseTime' && (
@@ -112,6 +113,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
               label: t('trainPath.date'),
               name: 'op-date',
               disabled,
+              narrow: true,
             }}
             selectableSlot={selectableSlot}
             value={pathStep.arrival}
@@ -138,6 +140,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             }}
             disabled={disabled}
             readOnly={false}
+            narrow
           />
           <div className="mr-n2 pr-1">
             <TolerancePicker
@@ -159,6 +162,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
                 );
               }}
               disabled={disabled}
+              narrow
             />
           </div>
         </div>
