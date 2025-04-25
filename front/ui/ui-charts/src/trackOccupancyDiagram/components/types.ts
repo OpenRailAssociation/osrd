@@ -1,5 +1,4 @@
 import { type TICKS_PATTERN } from './consts';
-import { type DrawingFunction, type LayerType } from '../../spaceTimeChart/lib/types';
 
 export type Track = {
   id: string;
@@ -8,28 +7,17 @@ export type Track = {
 };
 
 export type OccupancyZone = {
-  id: string;
+  trainId: string;
   trackId: string;
   arrivalTrainName: string;
   departureTrainName: string;
+  arrivalDirection?: 'up' | 'down';
+  departureDirection?: 'up' | 'down';
   color: string;
   originStation?: string;
   destinationStation?: string;
-  arrivalTime: Date;
-  departureTime: Date;
-};
-
-export type TrackOccupancyCanvasProps = {
-  opId: string;
-  useDraw: (layer: LayerType, fn: DrawingFunction) => void;
-  setCanvasesRoot: (root: HTMLDivElement | null) => void;
-  selectedTrainId: string;
-  setSelectedTrainId: (id: string) => void;
-  mousePosition: { x: number; y: number };
-};
-
-export type TrackOccupancyManchetteProps = {
-  tracks: Track[];
+  arrivalTime: number;
+  departureTime: number;
 };
 
 export type TickPattern = keyof typeof TICKS_PATTERN;

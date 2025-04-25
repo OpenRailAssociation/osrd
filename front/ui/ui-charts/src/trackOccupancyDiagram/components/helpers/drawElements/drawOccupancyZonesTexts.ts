@@ -36,7 +36,7 @@ export const drawOccupancyZonesTexts = ({
   departureTimePixel: number;
   yPosition: number;
   isThroughTrain: boolean;
-  selectedTrainId: string;
+  selectedTrainId?: string;
 }) => {
   const zoneOccupancyLength = departureTimePixel - arrivalTimePixel - STROKE_WIDTH;
 
@@ -66,12 +66,12 @@ export const drawOccupancyZonesTexts = ({
   const xDeparturePosition = isBelowBreakpoint('small') ? 'left' : 'center';
 
   const textStroke = {
-    color: selectedTrainId === zone.id ? 'transparent' : WHITE_100,
+    color: selectedTrainId === zone.trainId ? 'transparent' : WHITE_100,
     width: STROKE_WIDTH,
   };
 
   // train name
-  if (selectedTrainId === zone.id) {
+  if (selectedTrainId === zone.trainId) {
     const { xSelectedTrainNameBackground, ySelectedTrainNameBackground } = isBelowBreakpoint(
       'medium'
     )
@@ -115,7 +115,9 @@ export const drawOccupancyZonesTexts = ({
   // arrival minutes & departure minutes
   drawText({
     ctx,
-    text: zone.arrivalTime.getMinutes().toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
+    text: new Date(zone.arrivalTime)
+      .getMinutes()
+      .toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
     x: isThroughTrain ? arrivalTimePixel - X_THROUGHTRAIN_OFFSET : arrivalTimePixel,
     y: yPosition + MINUTES_TEXT_OFFSET,
     color: GREY_80,
@@ -128,7 +130,9 @@ export const drawOccupancyZonesTexts = ({
   if (!isThroughTrain)
     drawText({
       ctx,
-      text: zone.departureTime.getMinutes().toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
+      text: new Date(zone.departureTime)
+        .getMinutes()
+        .toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
       x: departureTimePixel,
       y: yPosition + MINUTES_TEXT_OFFSET,
       color: GREY_80,
