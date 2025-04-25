@@ -8,7 +8,7 @@ import {
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react';
 
-import { HOUR } from './helpers/consts';
+import { HOUR, KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS, START_DATE } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL } from './helpers/utils';
 
@@ -26,10 +26,10 @@ type WrapperProps = {
 
 const QuadrilateralMock: QuadrilateralProps = {
   vertices: [
-    { time: START_DATE.getTime() + HOUR, position: 3000 },
-    { time: START_DATE.getTime() + HOUR * 3, position: 3000 },
-    { time: START_DATE.getTime() + HOUR * 2, position: 11000 },
-    { time: START_DATE.getTime(), position: 11000 },
+    { time: START_DATE.getTime() + HOUR, position: 3 * KILOMETER },
+    { time: START_DATE.getTime() + HOUR * 3, position: 3 * KILOMETER },
+    { time: START_DATE.getTime() + HOUR * 2, position: 11 * KILOMETER },
+    { time: START_DATE.getTime(), position: 11 * KILOMETER },
   ],
   style: {
     backgroundColor: 'lightblue',

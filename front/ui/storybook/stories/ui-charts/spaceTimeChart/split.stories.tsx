@@ -17,7 +17,7 @@ import { AMBIANT_A10 } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL, zoom, getDiff } from './helpers/utils';
 
-const COEFFICIENT = 300;
+const COEFFICIENT = 300000;
 
 /**
  * This component renders a colored area where the line only has one track:

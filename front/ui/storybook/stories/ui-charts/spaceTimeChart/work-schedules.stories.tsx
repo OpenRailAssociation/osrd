@@ -12,6 +12,7 @@ import {
 import type { Meta } from '@storybook/react';
 
 import upward from './assets/images/ScheduledMaintenanceUp.svg';
+import { KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { getDiff } from './helpers/utils';
 
@@ -24,8 +25,8 @@ const SAMPLE_WORK_SCHEDULES: WorkSchedule[] = [
     timeStart: new Date('2024-04-02T00:00:00Z'),
     timeEnd: new Date('2024-04-02T00:15:00Z'),
     spaceRanges: [
-      [20000, 35000],
-      [45000, 60000],
+      [20 * KILOMETER, 35 * KILOMETER],
+      [45 * KILOMETER, 60 * KILOMETER],
     ],
   },
   {
@@ -33,15 +34,15 @@ const SAMPLE_WORK_SCHEDULES: WorkSchedule[] = [
     timeStart: new Date('2024-04-02T00:15:00Z'),
     timeEnd: new Date('2024-04-02T01:00:00Z'),
     spaceRanges: [
-      [80000, 100000],
-      [110000, 140000],
+      [80 * KILOMETER, 100 * KILOMETER],
+      [110 * KILOMETER, 140 * KILOMETER],
     ],
   },
   {
     type: 'TRACK',
     timeStart: new Date('2024-04-02T01:30:00Z'),
     timeEnd: new Date('2024-04-02T02:30:00Z'),
-    spaceRanges: [[50000, 100000]],
+    spaceRanges: [[50 * KILOMETER, 100 * KILOMETER]],
   },
 ];
 
@@ -75,8 +76,8 @@ const WorkSchedulesWrapper = ({
   const spaceScale = [
     {
       from: 0,
-      to: 75000,
-      coefficient: 300,
+      to: 75 * KILOMETER,
+      coefficient: 300000,
     },
   ];
   return (

@@ -1,7 +1,8 @@
 import type { OperationalPoint, PathData, PathLevel } from '@osrd-project/ui-charts';
 import { keyBy } from 'lodash';
 
-const KM = 1000;
+import { KILOMETER } from './consts';
+
 const MIN = 60 * 1000;
 
 export function getPaths<T extends object>(
@@ -64,37 +65,37 @@ export const OPERATIONAL_POINTS: OperationalPoint[] = [
   {
     id: 'city-a',
     label: 'Point A',
-    position: 0 * KM,
+    position: 0 * KILOMETER,
     importanceLevel: 1,
   },
   {
     id: 'city-b',
     label: 'Point B',
-    position: 10 * KM,
+    position: 10 * KILOMETER,
     importanceLevel: 2,
   },
   {
     id: 'city-c',
     label: 'Point C',
-    position: 60 * KM,
+    position: 60 * KILOMETER,
     importanceLevel: 1,
   },
   {
     id: 'city-d',
     label: 'Point D',
-    position: 70 * KM,
+    position: 70 * KILOMETER,
     importanceLevel: 2,
   },
   {
     id: 'city-e',
     label: 'Point E',
-    position: 90 * KM,
+    position: 90 * KILOMETER,
     importanceLevel: 2,
   },
   {
     id: 'city-f',
     label: 'Point F',
-    position: 140 * KM,
+    position: 140 * KILOMETER,
     importanceLevel: 1,
   },
 ];
@@ -139,7 +140,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     60 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     2,
     +START_DATE + 10 * MIN,
     {
@@ -156,7 +157,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     60 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     1,
     +START_DATE + 40 * MIN,
     {
@@ -175,7 +176,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     30 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     5,
     +START_DATE,
     { color: '#FF362E' }
@@ -185,24 +186,33 @@ export const PATHS: PathDisplay[] = [
     REVERSED_POINTS,
     3 * MIN,
     35 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     4,
     +START_DATE,
     { color: '#FF8E3D' }
   ),
 
   // Fast trains:
-  ...getPaths('fast', EXTREME_POINTS, 5 * MIN, 50 * MIN, (140 * KM) / (60 * MIN), 3, +START_DATE, {
-    color: '#526CE8',
-    fromEnd: 'out',
-    toEnd: 'out',
-  }),
+  ...getPaths(
+    'fast',
+    EXTREME_POINTS,
+    5 * MIN,
+    50 * MIN,
+    (140 * KILOMETER) / (60 * MIN),
+    3,
+    +START_DATE,
+    {
+      color: '#526CE8',
+      fromEnd: 'out',
+      toEnd: 'out',
+    }
+  ),
   ...getPaths(
     'fast-reversed',
     REVERSED_EXTREME_POINTS,
     5 * MIN,
     45 * MIN,
-    (140 * KM) / (60 * MIN),
+    (140 * KILOMETER) / (60 * MIN),
     3,
     +START_DATE,
     { color: '#66C0F1', fromEnd: 'out', toEnd: 'out' }
@@ -214,7 +224,7 @@ export const PATHS: PathDisplay[] = [
     BACK_AND_FORTH_POINTS,
     10 * MIN,
     30 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     2,
     +START_DATE + 15 * MIN,
     { color: '#286109', toEnd: 'out' }
@@ -224,7 +234,7 @@ export const PATHS: PathDisplay[] = [
     REVERSED_BACK_AND_FORTH_POINTS,
     12 * MIN,
     30 * MIN,
-    (80 * KM) / (60 * MIN),
+    (80 * KILOMETER) / (60 * MIN),
     2,
     +START_DATE + 3 * MIN,
     { color: '#64cc2b', toEnd: 'out' }

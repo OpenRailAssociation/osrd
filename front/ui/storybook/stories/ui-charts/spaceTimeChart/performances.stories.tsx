@@ -53,7 +53,7 @@ const Wrapper = ({
     return range(operationalPointsCount).map((i) => ({
       id: `op-${i}`,
       label: `Operational point n°${i + 1}`,
-      position: (position += random(50000, 150000)),
+      position: (position += random(50 * KILOMETER, 150 * KILOMETER)),
       importanceLevel: !i || i === operationalPointsCount - 1 || Math.random() > 0.8 ? 1 : 2,
     }));
   }, [operationalPointsCount]);

@@ -73,7 +73,7 @@ const SpaceTimeHorizontalZoomWrapper = ({
     {
       from: 0,
       to: 75000,
-      coefficient: 300,
+      coefficient: 300000,
     },
   ];
   return (
