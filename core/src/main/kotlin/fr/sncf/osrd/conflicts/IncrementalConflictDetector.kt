@@ -3,7 +3,6 @@ package fr.sncf.osrd.conflicts
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import java.util.TreeMap
 import kotlin.math.max
 import kotlin.math.min

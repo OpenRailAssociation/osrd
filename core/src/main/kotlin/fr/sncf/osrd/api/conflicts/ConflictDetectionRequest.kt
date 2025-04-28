@@ -4,8 +4,8 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.RoutingRequirement
-import fr.sncf.osrd.api.SpacingRequirement
+import fr.sncf.osrd.api.RJSRoutingRequirement
+import fr.sncf.osrd.api.RJSSpacingRequirement
 import fr.sncf.osrd.api.WorkSchedule
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
@@ -36,12 +36,12 @@ class TrainRequirementsRequest(
      * Spacing requirements for the given train (i.e. which zones need to be free in which time
      * ranges).
      */
-    @Json(name = "spacing_requirements") val spacingRequirements: Collection<SpacingRequirement>,
+    @Json(name = "spacing_requirements") val spacingRequirements: Collection<RJSSpacingRequirement>,
     /**
      * Routing requirements for the given train (i.e. which routes need to be usable in which time
      * ranges).
      */
-    @Json(name = "routing_requirements") val routingRequirements: Collection<RoutingRequirement>,
+    @Json(name = "routing_requirements") val routingRequirements: Collection<RJSRoutingRequirement>,
 )
 
 /** Describes the set of work schedules in the given timetable. */

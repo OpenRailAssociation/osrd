@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
+import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
@@ -11,7 +12,6 @@ import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
-import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
@@ -60,10 +60,10 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun interpolateDepartureFromClamp(pathOffset: Offset<BlockPath>): Double
 
     /** Returns the spacing requirements since the last update */
-    fun getSpacingRequirements(): List<ResultTrain.SpacingRequirement>
+    fun getSpacingRequirements(): List<SpacingRequirement>
 
     /** Returns all the spacing requirements over the whole path */
-    fun getFullSpacingRequirements(): List<ResultTrain.SpacingRequirement>
+    fun getFullSpacingRequirements(): List<SpacingRequirement>
 
     /** Returns the length of the simulated section of the path */
     fun getSimulatedLength(): Length<TravelledPath>

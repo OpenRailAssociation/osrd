@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
+import fr.sncf.osrd.conflicts.RoutingRequirement.RoutingZoneRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
@@ -283,10 +284,8 @@ fun runScheduleMetadataExtractor(
         reportTrain.pathItemTimes,
         signalCriticalPositions,
         zoneUpdates,
-        spacingRequirements.requirements.map {
-            SpacingRequirement(it.zone, it.beginTime.seconds, it.endTime.seconds)
-        },
-        routingRequirements
+        spacingRequirements.requirements.map { it.toRJS() },
+        routingRequirements.map { it.toRJS() }
     )
 }
 
@@ -562,7 +561,7 @@ fun routingRequirements(
         res.add(
             RoutingRequirement(
                 rawInfra.getRouteName(route),
-                routeSetDeadline,
+                routeSetDeadline.seconds,
                 zoneRequirements,
             )
         )
@@ -589,7 +588,7 @@ private fun routingZoneRequirement(
         "${zoneEntry.direction.name}:${rawInfra.getDetectorName(zoneEntry.value)}",
         "${zoneExit.direction.name}:${rawInfra.getDetectorName(zoneExit.value)}",
         resSwitches,
-        endTime,
+        endTime.seconds,
     )
 }
 

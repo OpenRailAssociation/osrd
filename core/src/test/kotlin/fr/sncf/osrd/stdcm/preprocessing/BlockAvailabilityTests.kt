@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
+import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
@@ -8,7 +9,6 @@ import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope

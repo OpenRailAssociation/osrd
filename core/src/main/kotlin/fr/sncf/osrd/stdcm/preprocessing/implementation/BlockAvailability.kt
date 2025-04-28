@@ -5,7 +5,6 @@ import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -339,17 +338,23 @@ private data class AvailabilityProperties(
 )
 
 fun makeBlockAvailability(
-    spacingRequirements: Collection<SpacingRequirement>,
+    inputSpacingRequirements: Collection<SpacingRequirement>,
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
 ): BlockAvailabilityInterface {
+    var spacingRequirements = inputSpacingRequirements
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
         // The margin expected *after* the new train is added *before* the other train resource uses
-        spacingRequirements.forEach {
-            it.beginTime -= gridMarginAfterTrain
-            it.endTime += gridMarginBeforeTrain
-        }
+        spacingRequirements =
+            spacingRequirements.map {
+                SpacingRequirement(
+                    it.zone,
+                    it.beginTime - gridMarginAfterTrain,
+                    it.endTime + gridMarginBeforeTrain,
+                    it.isComplete,
+                )
+            }
     }
     val requirements =
         listOf(
