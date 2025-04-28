@@ -12,7 +12,7 @@
     "ui/storybook"
   ],
   "dependencies": {
-    "@ag-media/react-pdf-table": "^2.0.1",
+    "@ag-media/react-pdf-table": "^2.0.2",
     "@nivo/core": "^0.88.0",
     "@nivo/line": "^0.88.0",
     "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
@@ -56,7 +56,7 @@
     "ajv-i18n": "^4.2.0",
     "chroma-js": "^3.1.2",
     "classnames": "^2.5.1",
-    "country-flag-icons": "^1.5.18",
+    "country-flag-icons": "^1.5.19",
     "d3": "^7.8.5",
     "dayjs": "^1.11.10",
     "fast-json-patch": "^3.1.1",
