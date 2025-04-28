@@ -29,8 +29,10 @@ import {
   isPacedTrain,
 } from 'utils/trainId';
 
-import { formatPacedTrainPayload } from '../helpers/formatTimetableItemPayload';
-import formatTrainSchedulePayload from '../helpers/formatTrainSchedulePayload';
+import {
+  formatPacedTrainPayload,
+  formatTimetableItemPayload,
+} from '../helpers/formatTimetableItemPayload';
 
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
@@ -84,7 +86,7 @@ const useUpdateTimetableItem = (
     } else {
       const updatedItem = await storeTrainSchedule(
         timetableItemIdToEdit,
-        formatTrainSchedulePayload(formattedSimulationConf, confName, startTime),
+        formatTimetableItemPayload(formattedSimulationConf),
         timetableId!,
         dispatch,
         upsertTimetableItems,
