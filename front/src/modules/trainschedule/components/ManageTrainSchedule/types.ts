@@ -1,6 +1,6 @@
 import type { Feature, Position } from 'geojson';
 
-import type { ReceptionSignal, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { Duration } from 'utils/duration';
 
 export type SuggestedOP = {
@@ -43,31 +43,6 @@ export type SuggestedOP = {
 export type Margin = {
   boundaries: string[];
   values: string[];
-};
-
-export type ValidConfig = {
-  constraintDistribution: TrainSchedule['constraint_distribution'];
-  rollingStockName: string;
-  // TODO Paced train : rename this and firstStartTime to trainName and startTime in https://github.com/OpenRailAssociation/osrd/issues/10791
-  baseTrainName: string;
-  timetableId: number;
-  trainCount: number;
-  trainStep: number;
-  trainDelta: number;
-  interval: string;
-  timeWindow: string;
-  labels: string[];
-  rollingStockComfort: TrainSchedule['comfort'];
-  initialSpeed: number;
-  usingElectricalProfiles: boolean;
-  usingSpeedLimits: boolean;
-  path: TrainSchedule['path'];
-  margins: TrainSchedule['margins'];
-  schedule: TrainSchedule['schedule'];
-  powerRestrictions?: TrainSchedule['power_restrictions'];
-  firstStartTime: string;
-  speedLimitByTag?: string;
-  editingTrainIsPacedTrain: boolean;
 };
 
 export type FeatureInfoClick = {

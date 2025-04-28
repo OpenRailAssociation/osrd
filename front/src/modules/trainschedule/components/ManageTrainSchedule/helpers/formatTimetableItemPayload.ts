@@ -1,35 +1,49 @@
+import { compact } from 'lodash';
+
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
+import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import { kmhToMs } from 'utils/physics';
 
-import type { ValidConfig } from '../types';
+import formatMargin from './formatMargin';
+import formatSchedule from './formatSchedule';
 
-export function formatTimetableItemPayload(validConfig: ValidConfig): TrainSchedule {
+export function formatTimetableItemPayload(
+  osrdconf: OperationalStudiesConfState,
+  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
+  rollingStockName: string
+): TrainSchedule {
   return {
-    comfort: validConfig.rollingStockComfort,
-    constraint_distribution: validConfig.constraintDistribution,
-    initial_speed: validConfig.initialSpeed,
-    labels: validConfig.labels,
-    margins: validConfig.margins,
+    comfort: osrdconf.rollingStockComfort,
+    constraint_distribution: osrdconf.constraintDistribution,
+    initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
+    labels: osrdconf.labels,
+    margins: formatMargin(compact(osrdconf.pathSteps)),
     options: {
-      use_electrical_profiles: validConfig.usingElectricalProfiles,
-      use_speed_limits_for_simulation: validConfig.usingSpeedLimits,
+      use_electrical_profiles: osrdconf.usingElectricalProfiles,
+      use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
     },
-    path: validConfig.path,
-    power_restrictions: validConfig.powerRestrictions,
-    rolling_stock_name: validConfig.rollingStockName,
-    schedule: validConfig.schedule,
-    speed_limit_tag: validConfig.speedLimitByTag,
-    start_time: validConfig.firstStartTime,
-    train_name: validConfig.baseTrainName,
+    path: compact(osrdconf.pathSteps).map((step) => ({ id: step.id, ...getStepLocation(step) })),
+    power_restrictions: osrdconf.powerRestriction,
+    rolling_stock_name: rollingStockName,
+    schedule: formatSchedule(compact(osrdconf.pathSteps)),
+    speed_limit_tag: osrdconf.speedLimitByTag,
+    start_time: osrdconf.startTime.toISOString(),
+    train_name: osrdconf.name,
   };
 }
 
-export function formatPacedTrainPayload(validConfig: ValidConfig): PacedTrain {
-  const baseTrain = formatTimetableItemPayload(validConfig);
+export function formatPacedTrainPayload(
+  osrdconf: OperationalStudiesConfState,
+  // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
+  rollingStockName: string
+): PacedTrain {
+  const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
   return {
     ...baseTrain,
     paced: {
-      time_window: validConfig.timeWindow,
-      interval: validConfig.interval,
+      time_window: osrdconf.timeWindow.toISOString(),
+      interval: osrdconf.interval.toISOString(),
     },
   };
 }
