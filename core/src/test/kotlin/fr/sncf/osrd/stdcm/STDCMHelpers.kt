@@ -2,13 +2,13 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
-import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
@@ -138,6 +138,6 @@ fun stepsFromLocations(
  * Returns how long the longest requirement segment lasts, which is the minimum delay we need to add
  * between two identical trains
  */
-fun getMaxOccupancyDuration(requirements: List<ResultTrain.SpacingRequirement>): Double {
+fun getMaxOccupancyDuration(requirements: List<SpacingRequirement>): Double {
     return requirements.maxOf { it.endTime - it.beginTime }
 }

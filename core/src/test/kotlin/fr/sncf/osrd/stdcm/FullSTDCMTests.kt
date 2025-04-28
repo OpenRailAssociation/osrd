@@ -4,14 +4,13 @@ import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockRequest
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.api.pathfinding.runPathfinding
+import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.makePathProperties
-import fr.sncf.osrd.standalone_sim.result.ResultTrain
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
@@ -437,7 +436,7 @@ fun makeRequirementsFromPath(
     endLocations: Set<TrackLocation>,
     departureTime: Double,
     rollingStock: RollingStock = REALISTIC_FAST_TRAIN,
-): List<ResultTrain.SpacingRequirement> {
+): List<SpacingRequirement> {
     val path =
         runPathfinding(
             infra,
@@ -481,12 +480,5 @@ fun makeRequirementsFromPath(
             listOf(),
         )
 
-    return sim.finalOutput.spacingRequirements.map {
-        ResultTrain.SpacingRequirement(
-            it.zone,
-            it.beginTime.seconds + departureTime,
-            it.endTime.seconds + departureTime,
-            true
-        )
-    }
+    return sim.finalOutput.spacingRequirements.map { SpacingRequirement.fromRJS(it) }
 }

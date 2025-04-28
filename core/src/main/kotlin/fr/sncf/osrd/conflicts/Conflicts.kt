@@ -2,8 +2,10 @@ package fr.sncf.osrd.conflicts
 
 import com.carrotsearch.hppc.IntArrayList
 import com.squareup.moshi.Json
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.api.RJSRoutingRequirement
+import fr.sncf.osrd.api.RJSRoutingZoneRequirement
+import fr.sncf.osrd.api.RJSSpacingRequirement
+import fr.sncf.osrd.utils.units.seconds
 
 class Conflict(
     val startTime: Double,
@@ -31,6 +33,80 @@ class Requirements(
     val spacingRequirements: Collection<SpacingRequirement>,
     val routingRequirements: Collection<RoutingRequirement>,
 )
+
+data class SpacingRequirement(
+    val zone: String,
+    val beginTime: Double,
+    val endTime: Double,
+    // whether the requirement end_time is final. it's metadata, and **shouldn't be used for
+    // conflict detection**
+    val isComplete: Boolean,
+) {
+    fun toRJS(): RJSSpacingRequirement {
+        return RJSSpacingRequirement(zone, beginTime.seconds, endTime.seconds)
+    }
+
+    companion object {
+        fun fromRJS(input: RJSSpacingRequirement): SpacingRequirement {
+            return SpacingRequirement(
+                input.zone,
+                input.beginTime.seconds,
+                input.endTime.seconds,
+                true
+            )
+        }
+    }
+}
+
+data class RoutingRequirement(
+    val route: String,
+    val beginTime: Double,
+    val zones: List<RoutingZoneRequirement>,
+) {
+    data class RoutingZoneRequirement(
+        val zone: String,
+        val entryDetector: String,
+        val exitDetector: String,
+        val switches: Map<String, String>,
+        val endTime: Double,
+    ) {
+        fun toRJS(): RJSRoutingZoneRequirement {
+            return RJSRoutingZoneRequirement(
+                zone,
+                entryDetector,
+                exitDetector,
+                switches,
+                endTime.seconds
+            )
+        }
+
+        companion object {
+            fun fromRJS(input: RJSRoutingZoneRequirement): RoutingZoneRequirement {
+                return RoutingZoneRequirement(
+                    input.zone,
+                    input.entryDetector,
+                    input.exitDetector,
+                    input.switches,
+                    input.endTime.seconds
+                )
+            }
+        }
+    }
+
+    fun toRJS(): RJSRoutingRequirement {
+        return RJSRoutingRequirement(route, beginTime.seconds, zones.map { it.toRJS() })
+    }
+
+    companion object {
+        fun fromRJS(input: RJSRoutingRequirement): RoutingRequirement {
+            return RoutingRequirement(
+                input.route,
+                input.beginTime.seconds,
+                input.zones.map { RoutingZoneRequirement.fromRJS(it) }
+            )
+        }
+    }
+}
 
 data class RequirementId(
     // Either a train db id or a work schedule db id
@@ -79,7 +155,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
             for (spacingReq in req.spacingRequirements) {
                 val zoneReq =
                     SpacingZoneRequirement(req.id, spacingReq.beginTime, spacingReq.endTime)
-                spacingZoneRequirements.getOrPut(spacingReq.zone!!) { mutableListOf() }.add(zoneReq)
+                spacingZoneRequirements.getOrPut(spacingReq.zone) { mutableListOf() }.add(zoneReq)
             }
         }
     }
@@ -103,7 +179,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
         for (trainRequirements in requirements) {
             val trainId = trainRequirements.id.id
             for (routeRequirements in trainRequirements.routingRequirements) {
-                val route = routeRequirements.route!!
+                val route = routeRequirements.route
                 var beginTime = routeRequirements.beginTime
                 // TODO: make it a parameter
                 if (routeRequirements.zones.any { it.switches.isNotEmpty() }) beginTime -= 5.0
@@ -113,7 +189,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
                         RoutingZoneConfig(
                             zoneRequirement.entryDetector,
                             zoneRequirement.exitDetector,
-                            zoneRequirement.switches!!
+                            zoneRequirement.switches
                         )
                     val requirement =
                         RoutingZoneRequirement(trainId, route, beginTime, endTime, config)

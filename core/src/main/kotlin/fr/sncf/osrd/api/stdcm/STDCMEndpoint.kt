@@ -374,12 +374,14 @@ private fun checkForConflicts(
         simResult.finalOutput.spacingRequirements.map {
             SpacingRequirement(
                 it.zone,
-                it.beginTime + departureTime.seconds,
-                it.endTime + departureTime.seconds
+                (it.beginTime + departureTime.seconds).seconds,
+                (it.endTime + departureTime.seconds).seconds,
+                true
             )
         }
     val conflictDetector = IncrementalConflictDetector(timetableTrainRequirements)
-    val spacingRequirements = parseSpacingRequirements(newTrainSpacingRequirement)
+    val spacingRequirements =
+        parseSpacingRequirements(newTrainSpacingRequirement.map { it.toRJS() })
     val conflicts = conflictDetector.analyseConflicts(spacingRequirements)
     assert(conflicts is NoConflictResponse) {
         "STDCM result is conflicting with the scheduled timetable"
