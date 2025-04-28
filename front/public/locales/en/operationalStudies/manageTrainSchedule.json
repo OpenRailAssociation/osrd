@@ -97,6 +97,7 @@
   "powerRestriction": "Power restriction code",
   "powerRestrictionEmptyExplanationText": "The selected rolling stock does not have any power restrictions. You can edit it in the rolling stock editor.",
   "powerRestrictionExplanationText": "By default, the simulation will use the nominal power.",
+  "refineSearchForMoreResults": "Refine your search for more results",
   "removeVia": "Remove this waypoint",
   "returnToSimulationResults": "Go back to simulation results",
   "rollingstock": "Rolling stock",

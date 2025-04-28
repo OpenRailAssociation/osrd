@@ -97,6 +97,7 @@
   "powerRestriction": "Code de restriction de puissance",
   "powerRestrictionEmptyExplanationText": "Le matériel roulant sélectionné ne possède pas de restrictions de puissance. Vous pouvez en créer dans l'éditeur de matériel roulant.",
   "powerRestrictionExplanationText": "Si aucune restriction de puissance n'est renseignée sur un intervalle, le calcul de marche sera réalisé en utilisant la puissance nominale.",
+  "refineSearchForMoreResults": "Affinez votre recherche pour plus de résultats",
   "removeVia": "Retirer ce via",
   "returnToSimulationResults": "Retourner aux résultats de simulation",
   "rollingstock": "Matériel",

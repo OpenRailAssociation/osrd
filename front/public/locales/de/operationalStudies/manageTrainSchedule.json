@@ -95,6 +95,7 @@
   "powerRestriction": "Leistungsbeschränkungsschlüssel",
   "powerRestrictionEmptyExplanationText": "Die ausgewählte Flotte hat keine Leistungsbeschränkung. Sie können sie im Schienenfahrzeug-Editor bearbeiten.",
   "powerRestrictionExplanationText": "Falls in einem Intervall keine Leistungsbeshränkung angegeben ist, nutzt die Simulation standardmäßig die Nennleistung des Fahrzeugs.",
+  "refineSearchForMoreResults": "Konkretisieren Sie Ihre Suche für mehr Ergebnisse.",
   "removeVia": "Wegepunkt entfernen",
   "returnToSimulationResults": "Zurück zu Simulationsergebnissen",
   "rollingstock": "Schienenfahrzeug",

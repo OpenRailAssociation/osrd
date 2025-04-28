@@ -66,7 +66,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   const infraId = useInfraID();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'common/typeAndPath']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');
@@ -287,10 +287,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
                 </button>
               ))}
               {sortedSearchResults.length > 8 && (
-                <div
-                  className="ellipsis-placeholder"
-                  title={t('common/typeAndPath:refineSearchForMoreResults')}
-                >
+                <div className="ellipsis-placeholder" title={t('refineSearchForMoreResults')}>
                   ...
                 </div>
               )}
