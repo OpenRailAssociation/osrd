@@ -247,7 +247,8 @@ class FullSTDCMTests {
                 Offset(6_000.meters) // Within sight distance of a signal
             )
         val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
-        val zoneAtStop = "zone.[det.center.1:INCREASING, det.center.2:DECREASING]"
+        val zoneNameAtStop = "zone.[det.center.1:INCREASING, det.center.2:DECREASING]"
+        val zoneAtStop = infra.rawInfra.getZoneFromName(zoneNameAtStop)
         val requirements =
             listOf(SpacingRequirement(zoneAtStop, 7_000.0, Double.POSITIVE_INFINITY, true))
         STDCMPathfindingBuilder()
@@ -282,7 +283,8 @@ class FullSTDCMTests {
                 Offset(6_000.meters) // Within sight distance of a signal
             )
         val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
-        val zoneAfterStop = "zone.[det.center.2:INCREASING, det.center.3:DECREASING]"
+        val zoneNameAfterStop = "zone.[det.center.2:INCREASING, det.center.3:DECREASING]"
+        val zoneAfterStop = infra.rawInfra.getZoneFromName(zoneNameAfterStop)
         val requirements = listOf(SpacingRequirement(zoneAfterStop, 0.0, 7_000.0, true))
         val res =
             STDCMPathfindingBuilder()
@@ -480,5 +482,7 @@ fun makeRequirementsFromPath(
             listOf(),
         )
 
-    return sim.finalOutput.spacingRequirements.map { SpacingRequirement.fromRJS(it) }
+    return sim.finalOutput.spacingRequirements.map {
+        SpacingRequirement.fromRJS(it, infra.rawInfra())
+    }
 }

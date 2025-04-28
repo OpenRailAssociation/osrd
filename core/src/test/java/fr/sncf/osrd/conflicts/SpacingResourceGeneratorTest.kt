@@ -192,9 +192,9 @@ class SpacingResourceGeneratorTest {
 
         // Check that the final version of each resource use matches what we get with a single call
         // over the whole path
-        val usePerZone = mutableMapOf<String, SpacingRequirement>()
+        val usePerZone = mutableMapOf<ZoneId, SpacingRequirement>()
         for (list in res) for (use in list) usePerZone[use.zone] = use
-        val expectedMap = mutableMapOf<String, SpacingRequirement>()
+        val expectedMap = mutableMapOf<ZoneId, SpacingRequirement>()
         for (expected in resourceUseOnSingleCall) expectedMap[expected.zone] = expected
         assertEquals(expectedMap, usePerZone)
     }
@@ -329,6 +329,7 @@ class SpacingResourceGeneratorTest {
         val stopDuration = 5_000.0
         val zoneNameAfterStop =
             "zone.[det.b1.nf:DECREASING, det.b2.nf:DECREASING, det.center.3:INCREASING]"
+        val zoneAfterStop = infra.rawInfra().getZoneFromName(zoneNameAfterStop)
 
         // Init stops and offsets
         val stopOffset =
@@ -387,20 +388,20 @@ class SpacingResourceGeneratorTest {
                 stopDuration
 
         // Run assertions on the results
-        assert(incrementalResultAtStop.none { it.zone == zoneNameAfterStop }) {
+        assert(incrementalResultAtStop.none { it.zone == zoneAfterStop }) {
             "No requirement after the closed signal during the stop"
         }
         assert(incrementalResultAtStop.maxOf { it.endTime } == stopDepartureTime) {
             "We still generate requirements during the full stop duration"
         }
         assert(
-            incrementalResultAtArrival.single { it.zone == zoneNameAfterStop } ==
-                oneShotResults.requirements.single { it.zone == zoneNameAfterStop }
+            incrementalResultAtArrival.single { it.zone == zoneAfterStop } ==
+                oneShotResults.requirements.single { it.zone == zoneAfterStop }
         ) {
             "We generate the same requirements after the stop, even with incremental calls"
         }
         assert(
-            incrementalResultAtArrival.single { it.zone == zoneNameAfterStop }.beginTime ==
+            incrementalResultAtArrival.single { it.zone == zoneAfterStop }.beginTime ==
                 stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
         ) {
             "We emit the requirement 20s before the departure time"

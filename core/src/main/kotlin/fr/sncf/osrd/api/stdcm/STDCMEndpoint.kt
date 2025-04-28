@@ -22,6 +22,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
@@ -105,7 +106,11 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     request.rollingStockSupportedSignalingSystems
                 )
             val trainsRequirements =
-                parseTrainsRequirements(request.trainsRequirements, request.startTime)
+                parseTrainsRequirements(
+                        infra.rawInfra,
+                        request.trainsRequirements,
+                        request.startTime
+                    )
                     .toMutableList()
             val convertedWorkSchedules =
                 convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
@@ -152,7 +157,12 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 )
 
             // Check for conflicts
-            checkForConflicts(trainsRequirements, simulationResponse, path.departureTime)
+            checkForConflicts(
+                infra.rawInfra(),
+                trainsRequirements,
+                simulationResponse,
+                path.departureTime
+            )
 
             val departureTime =
                 request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
@@ -365,6 +375,7 @@ private fun parseSimulationScheduleItems(
 
 /** Sanity check, we assert that the result is not conflicting with the scheduled timetable */
 private fun checkForConflicts(
+    rawInfra: RawSignalingInfra,
     timetableTrainRequirements: List<Requirements>,
     simResult: SimulationSuccess,
     departureTime: Double
@@ -373,15 +384,15 @@ private fun checkForConflicts(
     val newTrainSpacingRequirement =
         simResult.finalOutput.spacingRequirements.map {
             SpacingRequirement(
-                it.zone,
-                (it.beginTime + departureTime.seconds).seconds,
-                (it.endTime + departureTime.seconds).seconds,
+                rawInfra.getZoneFromName(it.zone),
+                it.beginTime.seconds + departureTime,
+                it.endTime.seconds + departureTime,
                 true
             )
         }
     val conflictDetector = IncrementalConflictDetector(timetableTrainRequirements)
     val spacingRequirements =
-        parseSpacingRequirements(newTrainSpacingRequirement.map { it.toRJS() })
+        parseSpacingRequirements(rawInfra, newTrainSpacingRequirement.map { it.toRJS(rawInfra) })
     val conflicts = conflictDetector.analyseConflicts(spacingRequirements)
     assert(conflicts is NoConflictResponse) {
         "STDCM result is conflicting with the scheduled timetable"

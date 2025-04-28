@@ -1,5 +1,6 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,7 +42,7 @@ class IncrementalConflictDetectorTests {
                 Requirements(
                     RequirementId("0", RequirementType.TRAIN),
                     requirements.map {
-                        SpacingRequirement(it.zoneId.toString(), it.start, it.end, true)
+                        SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
                     },
                     listOf()
                 )
@@ -54,7 +55,9 @@ class IncrementalConflictDetectorTests {
         vararg requirements: SimpleRequirement
     ): IncrementalConflictResponse {
         return detector.analyseConflicts(
-            requirements.map { SpacingRequirement(it.zoneId.toString(), it.start, it.end, true) },
+            requirements.map {
+                SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
+            },
         )
     }
 }

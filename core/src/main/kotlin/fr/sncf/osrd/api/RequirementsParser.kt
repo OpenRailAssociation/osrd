@@ -3,7 +3,7 @@ package fr.sncf.osrd.api
 import fr.sncf.osrd.api.conflicts.TrainRequirementsRequest
 import fr.sncf.osrd.api.conflicts.WorkSchedulesRequest
 import fr.sncf.osrd.conflicts.*
-import fr.sncf.osrd.conflicts.RoutingRequirement.RoutingZoneRequirement
+import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Duration
@@ -20,6 +20,7 @@ val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsPars
 
 @WithSpan(value = "Parsing train requirements", kind = SpanKind.SERVER)
 fun parseTrainsRequirements(
+    infra: RawInfra,
     trainsRequirements: Map<String, TrainRequirementsRequest>,
     startTime: ZonedDateTime
 ): List<Requirements> {
@@ -27,9 +28,9 @@ fun parseTrainsRequirements(
     for ((id, trainRequirements) in trainsRequirements) {
         val delta = TimeDelta(between(startTime, trainRequirements.startTime).toMillis())
         val spacingRequirements =
-            parseSpacingRequirements(trainRequirements.spacingRequirements, delta)
+            parseSpacingRequirements(infra, trainRequirements.spacingRequirements, delta)
         val routingRequirements =
-            parseRoutingRequirements(trainRequirements.routingRequirements, delta)
+            parseRoutingRequirements(infra, trainRequirements.routingRequirements, delta)
         res.add(
             Requirements(
                 RequirementId(id, RequirementType.TRAIN),
@@ -42,17 +43,20 @@ fun parseTrainsRequirements(
 }
 
 fun parseSpacingRequirements(
+    infra: RawInfra,
     spacingRequirements: Collection<RJSSpacingRequirement>,
     timeToAdd: TimeDelta = Duration.ZERO
 ): List<SpacingRequirement> {
     val res = mutableListOf<SpacingRequirement>()
     for (spacingRequirement in spacingRequirements) {
         res.add(
-            SpacingRequirement(
-                spacingRequirement.zone,
-                (spacingRequirement.beginTime + timeToAdd).seconds,
-                (spacingRequirement.endTime + timeToAdd).seconds,
-                true,
+            SpacingRequirement.fromRJS(
+                RJSSpacingRequirement(
+                    spacingRequirement.zone,
+                    spacingRequirement.beginTime + timeToAdd,
+                    spacingRequirement.endTime + timeToAdd
+                ),
+                infra
             )
         )
     }
@@ -60,24 +64,28 @@ fun parseSpacingRequirements(
 }
 
 fun parseRoutingRequirements(
+    infra: RawSignalingInfra,
     routingRequirements: Collection<RJSRoutingRequirement>,
     timeToAdd: TimeDelta = Duration.ZERO
 ): List<RoutingRequirement> {
     val res = mutableListOf<RoutingRequirement>()
     for (routingRequirement in routingRequirements) {
         res.add(
-            RoutingRequirement(
-                routingRequirement.route,
-                (routingRequirement.beginTime + timeToAdd).seconds,
-                routingRequirement.zones.map {
-                    RoutingZoneRequirement(
-                        it.zone,
-                        it.entryDetector,
-                        it.exitDetector,
-                        it.switches,
-                        (it.endTime + timeToAdd).seconds
-                    )
-                }
+            RoutingRequirement.fromRJS(
+                RJSRoutingRequirement(
+                    routingRequirement.route,
+                    routingRequirement.beginTime + timeToAdd,
+                    routingRequirement.zones.map {
+                        RJSRoutingZoneRequirement(
+                            it.zone,
+                            it.entryDetector,
+                            it.exitDetector,
+                            it.switches,
+                            it.endTime + timeToAdd
+                        )
+                    }
+                ),
+                infra
             )
         )
     }
@@ -112,7 +120,7 @@ fun convertWorkScheduleMap(
         res.add(
             Requirements(
                 RequirementId(entry.key, RequirementType.WORK_SCHEDULE),
-                workScheduleRequirements.map { SpacingRequirement.fromRJS(it) },
+                workScheduleRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
                 listOf()
             )
         )
@@ -139,7 +147,7 @@ fun convertWorkScheduleCollection(
     }
     return Requirements(
         RequirementId(DEFAULT_WORK_SCHEDULE_ID, RequirementType.WORK_SCHEDULE),
-        workSchedulesRequirements.map { SpacingRequirement.fromRJS(it) },
+        workSchedulesRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
         listOf()
     )
 }

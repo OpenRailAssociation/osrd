@@ -284,8 +284,8 @@ fun runScheduleMetadataExtractor(
         reportTrain.pathItemTimes,
         signalCriticalPositions,
         zoneUpdates,
-        spacingRequirements.requirements.map { it.toRJS() },
-        routingRequirements.map { it.toRJS() }
+        spacingRequirements.requirements.map { it.toRJS(rawInfra) },
+        routingRequirements.map { it.toRJS(rawInfra) }
     )
 }
 
@@ -560,7 +560,7 @@ fun routingRequirements(
         }
         res.add(
             RoutingRequirement(
-                rawInfra.getRouteName(route),
+                route,
                 routeSetDeadline.seconds,
                 zoneRequirements,
             )
@@ -575,7 +575,7 @@ private fun routingZoneRequirement(
     zonePath: ZonePathId,
     endTime: TimeDelta
 ): RoutingZoneRequirement {
-    val zoneName = rawInfra.getZoneName(rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!)
+    val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
     val zoneEntry = rawInfra.getZonePathEntry(zonePath)
     val zoneExit = rawInfra.getZonePathExit(zonePath)
     val resSwitches = mutableMapOf<String, String>()
@@ -584,9 +584,9 @@ private fun routingZoneRequirement(
     for ((switch, config) in switches zip switchConfigs) resSwitches[
         rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
     return RoutingZoneRequirement(
-        zoneName,
-        "${zoneEntry.direction.name}:${rawInfra.getDetectorName(zoneEntry.value)}",
-        "${zoneExit.direction.name}:${rawInfra.getDetectorName(zoneExit.value)}",
+        zone,
+        zoneEntry,
+        zoneExit,
         resSwitches,
         endTime.seconds,
     )
