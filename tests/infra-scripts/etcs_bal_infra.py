@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script generates an infrastructure containing ERTMS ETCS Level 2 signals.
+This script generates an infrastructure containing ERTMS ETCS Level 2 and BAL signals.
 This is derived from small_infra.
 """
 
@@ -11,9 +11,9 @@ from pathlib import Path
 from small_infra_creator import create_small_infra
 
 signaling_systems = {
-    "WS": "ETCS_LEVEL2",
-    "SWS": "ETCS_LEVEL2",
-    "MWS": "ETCS_LEVEL2",
+    "WS": "BAL",
+    "SWS": "BAL",
+    "MWS": "BAL",
     "MES": "ETCS_LEVEL2",
     "NS": "ETCS_LEVEL2",
     "SS": "ETCS_LEVEL2",
