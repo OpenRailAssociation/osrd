@@ -28,7 +28,6 @@ import {
   formatPacedTrainPayload,
   formatTimetableItemPayload,
 } from './helpers/formatTimetableItemPayload';
-import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 
 type AddTrainScheduleButtonProps = {
   infraState?: InfraState;
@@ -132,12 +131,12 @@ const AddTrainScheduleButton = ({
         const newStartTime = new Date(formattedStartTimeMs + 1000 * 60 * trainDelta * (nb - 1));
         const trainName = trainNameWithNum(baseTrainName, actualTrainCount, trainCount);
 
-        const trainSchedule = formatTrainSchedulePayload(
-          validTimetableItemConfig,
-          trainName,
-          newStartTime
-        );
-        trainScheduleParams.push({ ...trainSchedule });
+        const trainSchedule = formatTimetableItemPayload(validTimetableItemConfig);
+        trainScheduleParams.push({
+          ...trainSchedule,
+          train_name: trainName,
+          start_time: newStartTime.toISOString(),
+        });
         actualTrainCount += trainStep;
       }
 
