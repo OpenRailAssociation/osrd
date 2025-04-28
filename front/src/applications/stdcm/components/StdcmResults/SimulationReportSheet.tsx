@@ -216,7 +216,7 @@ const SimulationReportSheet = ({
                       </View>
                       <View style={styles.convoyAndRoute.stopForWidth}>
                         <TD style={styles.convoyAndRoute.stopForText}>
-                          {step.isVia && step.stopFor ? `${step.stopFor} min` : ''}
+                          {step.isVia && step.stopFor ? getStopDurationTime(step.stopFor) : ''}
                         </TD>
                       </View>
                       <View style={styles.convoyAndRoute.stopTableStartWidth}>
