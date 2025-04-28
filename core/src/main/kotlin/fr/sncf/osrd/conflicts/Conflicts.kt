@@ -5,6 +5,11 @@ import com.squareup.moshi.Json
 import fr.sncf.osrd.api.RJSRoutingRequirement
 import fr.sncf.osrd.api.RJSRoutingZoneRequirement
 import fr.sncf.osrd.api.RJSSpacingRequirement
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.RouteId
+import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.units.seconds
 
 class Conflict(
@@ -21,7 +26,7 @@ enum class ConflictType {
     @Json(name = "Routing") ROUTING,
 }
 
-class ConflictRequirement(val zone: String, val startTime: Double, val endTime: Double)
+class ConflictRequirement(val zone: ZoneId, val startTime: Double, val endTime: Double)
 
 interface ResourceRequirement {
     val beginTime: Double
@@ -35,21 +40,21 @@ class Requirements(
 )
 
 data class SpacingRequirement(
-    val zone: String,
+    val zone: ZoneId,
     val beginTime: Double,
     val endTime: Double,
     // whether the requirement end_time is final. it's metadata, and **shouldn't be used for
     // conflict detection**
     val isComplete: Boolean,
 ) {
-    fun toRJS(): RJSSpacingRequirement {
-        return RJSSpacingRequirement(zone, beginTime.seconds, endTime.seconds)
+    fun toRJS(infra: RawInfra): RJSSpacingRequirement {
+        return RJSSpacingRequirement(infra.getZoneName(zone), beginTime.seconds, endTime.seconds)
     }
 
     companion object {
-        fun fromRJS(input: RJSSpacingRequirement): SpacingRequirement {
+        fun fromRJS(input: RJSSpacingRequirement, infra: RawInfra): SpacingRequirement {
             return SpacingRequirement(
-                input.zone,
+                infra.getZoneFromName(input.zone),
                 input.beginTime.seconds,
                 input.endTime.seconds,
                 true
@@ -59,33 +64,41 @@ data class SpacingRequirement(
 }
 
 data class RoutingRequirement(
-    val route: String,
+    val route: RouteId,
     val beginTime: Double,
     val zones: List<RoutingZoneRequirement>,
 ) {
     data class RoutingZoneRequirement(
-        val zone: String,
-        val entryDetector: String,
-        val exitDetector: String,
+        val zone: ZoneId,
+        val entryDetector: DirDetectorId,
+        val exitDetector: DirDetectorId,
         val switches: Map<String, String>,
         val endTime: Double,
     ) {
-        fun toRJS(): RJSRoutingZoneRequirement {
+        fun toRJS(infra: RawInfra): RJSRoutingZoneRequirement {
             return RJSRoutingZoneRequirement(
-                zone,
-                entryDetector,
-                exitDetector,
+                infra.getZoneName(zone),
+                "${entryDetector.direction.name}:${infra.getDetectorName(entryDetector.value)}",
+                "${exitDetector.direction.name}:${infra.getDetectorName(exitDetector.value)}",
                 switches,
                 endTime.seconds
             )
         }
 
         companion object {
-            fun fromRJS(input: RJSRoutingZoneRequirement): RoutingZoneRequirement {
+            fun fromRJS(input: RJSRoutingZoneRequirement, infra: RawInfra): RoutingZoneRequirement {
+                fun parseDirDetector(id: String): DirDetectorId {
+                    val split = id.split(":")
+                    assert(split.size == 2)
+                    return DirDetectorId(
+                        infra.findDetector(split[1])!!,
+                        Direction.valueOf(split[0])
+                    )
+                }
                 return RoutingZoneRequirement(
-                    input.zone,
-                    input.entryDetector,
-                    input.exitDetector,
+                    infra.getZoneFromName(input.zone),
+                    parseDirDetector(input.entryDetector),
+                    parseDirDetector(input.exitDetector),
                     input.switches,
                     input.endTime.seconds
                 )
@@ -93,16 +106,20 @@ data class RoutingRequirement(
         }
     }
 
-    fun toRJS(): RJSRoutingRequirement {
-        return RJSRoutingRequirement(route, beginTime.seconds, zones.map { it.toRJS() })
+    fun toRJS(infra: RawInfra): RJSRoutingRequirement {
+        return RJSRoutingRequirement(
+            infra.getRouteName(route),
+            beginTime.seconds,
+            zones.map { it.toRJS(infra) }
+        )
     }
 
     companion object {
-        fun fromRJS(input: RJSRoutingRequirement): RoutingRequirement {
+        fun fromRJS(input: RJSRoutingRequirement, infra: RawInfra): RoutingRequirement {
             return RoutingRequirement(
-                input.route,
+                infra.getRouteFromName(input.route),
                 input.beginTime.seconds,
-                input.zones.map { RoutingZoneRequirement.fromRJS(it) }
+                input.zones.map { RoutingZoneRequirement.fromRJS(it, infra) }
             )
         }
     }
@@ -134,9 +151,9 @@ fun conflictDetectorFromRequirements(requirements: List<Requirements>): Conflict
 
 class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector {
     private val spacingZoneRequirements =
-        mutableMapOf<String, MutableList<SpacingZoneRequirement>>()
+        mutableMapOf<ZoneId, MutableList<SpacingZoneRequirement>>()
     private val routingZoneRequirements =
-        mutableMapOf<String, MutableList<RoutingZoneRequirement>>()
+        mutableMapOf<ZoneId, MutableList<RoutingZoneRequirement>>()
 
     init {
         generateSpacingRequirements(requirements)
@@ -161,14 +178,14 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
     }
 
     data class RoutingZoneConfig(
-        val entryDet: String,
-        val exitDet: String,
+        val entryDet: DirDetectorId,
+        val exitDet: DirDetectorId,
         val switches: Map<String, String>
     )
 
     data class RoutingZoneRequirement(
         val trainId: String,
-        val route: String,
+        val route: RouteId,
         override val beginTime: Double,
         override val endTime: Double,
         val config: RoutingZoneConfig,

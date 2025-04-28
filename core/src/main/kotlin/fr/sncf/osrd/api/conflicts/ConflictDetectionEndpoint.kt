@@ -8,6 +8,7 @@ import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.detectConflicts
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import java.time.Duration
 import java.time.ZonedDateTime
 import org.takes.Request
@@ -45,10 +46,10 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
                 requirements.addAll(convertedWorkSchedules)
             }
             val trainRequirements =
-                parseTrainsRequirements(request.trainsRequirements, minStartTime)
+                parseTrainsRequirements(infra.rawInfra, request.trainsRequirements, minStartTime)
             requirements.addAll(trainRequirements)
             val conflicts = detectConflicts(requirements)
-            val res = makeConflictDetectionResponse(conflicts, minStartTime)
+            val res = makeConflictDetectionResponse(infra.rawInfra, conflicts, minStartTime)
 
             RsJson(RsWithBody(conflictResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
@@ -58,6 +59,7 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 }
 
 private fun makeConflictDetectionResponse(
+    infra: RawSignalingInfra,
     conflicts: Collection<Conflict>,
     startTime: ZonedDateTime
 ): ConflictDetectionResponse {
@@ -71,7 +73,7 @@ private fun makeConflictDetectionResponse(
                 it.conflictType,
                 it.requirements.map { requirement ->
                     ConflictRequirement(
-                        requirement.zone,
+                        infra.getZoneName(requirement.zone),
                         startTime.plus(Duration.ofMillis((requirement.startTime * 1000).toLong())),
                         startTime.plus(Duration.ofMillis((requirement.endTime * 1000).toLong())),
                     )

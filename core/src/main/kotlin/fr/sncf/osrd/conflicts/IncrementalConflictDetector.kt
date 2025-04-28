@@ -3,6 +3,7 @@ package fr.sncf.osrd.conflicts
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import java.util.TreeMap
 import kotlin.math.max
 import kotlin.math.min
@@ -36,7 +37,7 @@ data class NoConflictResponse(
 class IncrementalConflictDetector(requirements: List<Requirements>) {
     // Zone name -> (end time -> Range(start time, end time)).
     // The range is partially redundant, but it makes for easier and clearer processing.
-    private val spacingZoneUses: Map<String, TreeMap<Double, Range<Double>>>
+    private val spacingZoneUses: Map<ZoneId, TreeMap<Double, Range<Double>>>
 
     init {
         spacingZoneUses = generateSpacingZoneUses(requirements)
@@ -44,10 +45,10 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
 
     private fun generateSpacingZoneUses(
         requirements: List<Requirements>
-    ): Map<String, TreeMap<Double, Range<Double>>> {
+    ): Map<ZoneId, TreeMap<Double, Range<Double>>> {
         // We first create RangeSets to handle the overlaps, but then
         // convert them to TreeMaps (`.higherEntry` is extremely convenient here)
-        val rangeSets = mutableMapOf<String, RangeSet<Double>>()
+        val rangeSets = mutableMapOf<ZoneId, RangeSet<Double>>()
         for (req in requirements) {
             for (spacingReq in req.spacingRequirements) {
                 val set = rangeSets.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }

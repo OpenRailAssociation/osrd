@@ -448,7 +448,7 @@ class SpacingRequirementAutomaton(
         }
 
         return SpacingRequirement(
-            zoneName,
+            zone,
             beginTime,
             endTime,
             isComplete,
