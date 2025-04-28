@@ -1,5 +1,6 @@
 use crate::RetrieveBatchUnchecked;
 use crate::ValkeyClient;
+use crate::client::get_app_version;
 use crate::core;
 use crate::core::AsCoreRequest;
 use crate::core::pathfinding::PathfindingInputError;
@@ -26,6 +27,9 @@ use editoast_models::DbConnection;
 use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::hash::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::iter;
 use std::sync::Arc;
 use tracing::Instrument;
@@ -244,8 +248,11 @@ pub async fn consist_train_simulation_batch(
         );
 
         // Compute unique hash of the simulation input
-        let simulation_hash = simulation_request
-            .compute_train_simulation_hash_with_versioning(infra.id, infra.version);
+        let simulation_hash = compute_train_simulation_hash_with_versioning(
+            infra.id,
+            infra.version,
+            &simulation_request,
+        );
         to_sim
             .entry(simulation_hash.clone())
             .or_default()
@@ -389,4 +396,16 @@ fn build_simulation_request(
         physics_consist,
         electrical_profile_set_id,
     }
+}
+
+fn compute_train_simulation_hash_with_versioning(
+    infra_id: i64,
+    infra_version: i64,
+    simulation_input: &SimulationRequest,
+) -> String {
+    let osrd_version = get_app_version().unwrap_or_default();
+    let mut hasher = DefaultHasher::new();
+    simulation_input.hash(&mut hasher);
+    let hash_simulation_input = hasher.finish();
+    format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }
