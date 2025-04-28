@@ -1,16 +1,9 @@
 import type { TFunction } from 'i18next';
-import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
-import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
-import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
-import { kmhToMs } from 'utils/physics';
-
-import formatMargin from './formatMargin';
-import formatSchedule from './formatSchedule';
 
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
@@ -19,22 +12,15 @@ const checkCurrentConfig = (
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string,
   { showPacedTrains = false }: { showPacedTrains?: boolean } = {}
-): ValidConfig | null => {
+): boolean => {
   const {
-    constraintDistribution,
     pathSteps,
     name: trainName,
     timetableID,
     trainCount,
     trainDelta,
     trainStep,
-    labels,
-    speedLimitByTag,
     initialSpeed,
-    usingElectricalProfiles,
-    usingSpeedLimits,
-    rollingStockComfort,
-    powerRestriction,
     startTime,
     interval,
     timeWindow,
@@ -166,30 +152,7 @@ const checkCurrentConfig = (
     }
   }
 
-  if (error) return null;
-  return {
-    constraintDistribution,
-    rollingStockName: rollingStockName!,
-    baseTrainName: trainName,
-    timetableId: timetableID!,
-    trainCount,
-    trainStep,
-    trainDelta,
-    interval: interval.toISOString(),
-    timeWindow: timeWindow.toISOString(),
-    labels,
-    rollingStockComfort,
-    initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
-    usingElectricalProfiles,
-    usingSpeedLimits,
-    path: compact(pathSteps).map((step) => ({ id: step.id, ...getStepLocation(step) })),
-    margins: formatMargin(compact(pathSteps)),
-    schedule: formatSchedule(compact(pathSteps)),
-    powerRestrictions: powerRestriction,
-    firstStartTime: startTime.toISOString(),
-    speedLimitByTag,
-    editingTrainIsPacedTrain,
-  };
+  return !error;
 };
 
 export default checkCurrentConfig;

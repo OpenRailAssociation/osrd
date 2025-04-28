@@ -58,24 +58,18 @@ const AddTrainScheduleButton = ({
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
 
   const createTrainSchedules = async () => {
-    const validTimetableItemConfig = checkCurrentConfig(
-      simulationConf,
-      t,
-      dispatch,
-      rollingStock?.name
-    );
+    if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
 
-    if (!validTimetableItemConfig) return;
-
-    const { timetableId, firstStartTime, trainCount, trainDelta, trainStep, baseTrainName } =
-      validTimetableItemConfig;
+    const timetableId = simulationConf.timetableID!;
+    const baseTrainName = simulationConf.name;
+    const firstStartTime = simulationConf.startTime.toISOString();
 
     setIsWorking(true);
 
     if (showPacedTrains) {
       try {
         if (isPacedTrainMode) {
-          const pacedTrainPayload = formatPacedTrainPayload(validTimetableItemConfig);
+          const pacedTrainPayload = formatPacedTrainPayload(simulationConf, rollingStock!.name);
           const newPacedTrain = await postPacedTrain({
             id: timetableId,
             body: [pacedTrainPayload],
@@ -95,7 +89,10 @@ const AddTrainScheduleButton = ({
           );
           upsertTimetableItems([formattedNewPacedTrain]);
         } else {
-          const trainSchedulePayload = formatTimetableItemPayload(validTimetableItemConfig);
+          const trainSchedulePayload = formatTimetableItemPayload(
+            simulationConf,
+            rollingStock!.name
+          );
           const newTrainSchedule = await postTrainSchedule({
             id: timetableId,
             body: [trainSchedulePayload],
@@ -123,6 +120,7 @@ const AddTrainScheduleButton = ({
       // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
     } else {
       const formattedStartTimeMs = isoDateToMs(firstStartTime);
+      const { trainCount, trainStep, trainDelta } = simulationConf;
 
       const trainScheduleParams: TrainSchedule[] = [];
       let actualTrainCount = 1;
@@ -131,7 +129,7 @@ const AddTrainScheduleButton = ({
         const newStartTime = new Date(formattedStartTimeMs + 1000 * 60 * trainDelta * (nb - 1));
         const trainName = trainNameWithNum(baseTrainName, actualTrainCount, trainCount);
 
-        const trainSchedule = formatTimetableItemPayload(validTimetableItemConfig);
+        const trainSchedule = formatTimetableItemPayload(simulationConf, rollingStock!.name);
         trainScheduleParams.push({
           ...trainSchedule,
           train_name: trainName,

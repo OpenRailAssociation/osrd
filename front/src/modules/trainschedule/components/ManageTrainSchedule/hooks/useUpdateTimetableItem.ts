@@ -54,22 +54,19 @@ const useUpdateTimetableItem = (
   });
 
   return async function submitConfUpdateTrainSchedules() {
-    const formattedSimulationConf = checkCurrentConfig(
-      simulationConf,
-      t,
-      dispatch,
-      rollingStock?.name
-    );
-
-    if (!formattedSimulationConf || !timetableItemIdToEdit) return;
+    if (
+      !timetableItemIdToEdit ||
+      !checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)
+    )
+      return;
 
     setIsWorking(true);
 
     let trainIdToSelect: TrainId | undefined;
-    if (formattedSimulationConf.editingTrainIsPacedTrain) {
+    if (simulationConf.editingTrainIsPacedTrain) {
       const updatedItem = await storePacedTrain(
         timetableItemIdToEdit,
-        formatPacedTrainPayload(formattedSimulationConf),
+        formatPacedTrainPayload(simulationConf, rollingStock!.name),
         timetableId!,
         dispatch,
         upsertTimetableItems,
@@ -86,7 +83,7 @@ const useUpdateTimetableItem = (
     } else {
       const updatedItem = await storeTrainSchedule(
         timetableItemIdToEdit,
-        formatTimetableItemPayload(formattedSimulationConf),
+        formatTimetableItemPayload(simulationConf, rollingStock!.name),
         timetableId!,
         dispatch,
         upsertTimetableItems,
