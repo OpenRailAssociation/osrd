@@ -45,12 +45,14 @@ function durationToHHMM(duration: Duration): string {
 /**
  * @property positions List of positions of a train in mm
  * @property times List of times in milliseconds corresponding to the train positions
+ * @property speeds List of speeds in m/s corresponding to the train positions
  * @property departureHour Hour of the train departure (24h format)
  * @property departureMinute Minute of the train departure
  */
 type TrainSimulation = {
   positions: number[];
   times: number[];
+  speeds: number[];
   departureHour: number;
   departureMinute: number;
 };
@@ -80,20 +82,23 @@ function getTimeAtPosition(position: number, train: TrainSimulation): Duration {
 
 /**
  * @param position Distance from the beginning of the path in mm
- * @param positionsList List of positions of a train in mm.
- * @param timesList List of times in milliseconds corresponding to the positions in trainPositions.
- * @returns The duration in milliseconds between the first and last occurrence of the position in the trainPositions array
+ * @param train Object containing simulated train positions, times, and departure time
+ * @returns The duration in milliseconds between the first and last occurrence of the position in the train simulation, or null if the position is not a stop.
+ *
+ * Here we do not consider the train departure and arrival as stops unless the stop duration at these points is non zero.
  */
 export function getStopDurationAtPosition(
   position: number,
-  positionsList: number[],
-  timesList: number[]
+  train: TrainSimulation
 ): Duration | null {
-  const firstIndex = positionsList.indexOf(position);
-  const lastIndex = positionsList.lastIndexOf(position);
-  if (firstIndex !== -1 && lastIndex !== -1 && firstIndex !== lastIndex) {
-    return new Duration({ milliseconds: timesList[lastIndex] - timesList[firstIndex] });
+  const firstIndex = train.positions.indexOf(position);
+  const lastIndex = train.positions.lastIndexOf(position);
+  if (firstIndex === -1) return null;
+  if (firstIndex !== lastIndex) {
+    return new Duration({ milliseconds: train.times[lastIndex] - train.times[firstIndex] });
   }
+  if (train.speeds[firstIndex] === 0 && firstIndex && lastIndex !== train.positions.length - 1)
+    return new Duration({ milliseconds: 0 });
   return null;
 }
 
@@ -108,7 +113,7 @@ function formatMinimalOperationalPointWithTimes(
 ): StdcmResultsOperationalPoint {
   const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
-  const duration = getStopDurationAtPosition(op.positionOnPath, train.positions, train.times);
+  const duration = getStopDurationAtPosition(op.positionOnPath, train);
   const durationInSeconds = duration !== null ? duration.total('second') : null;
   const stopEnd = stopBegin.add(duration || Duration.zero);
 
@@ -206,7 +211,7 @@ export function insertMissingStopsInOperationalPointsWithTimes(
       },
       train
     );
-    if (lastAddedOp.stopRequested && !lastAddedOp.duration) {
+    if (lastAddedOp.stopRequested && lastAddedOp.duration === null) {
       // If a stop was requested at the last op and no stop was performed,
       // we assume the current stop actually corresponds to the last op
       lastAddedOp.duration = formattedStop.duration;
@@ -279,7 +284,7 @@ export function getOperationalPointsWithTimes(
   const formattedOps = operationalPoints.map((op) =>
     formatOperationalPointWithTimes(
       op,
-      { positions, times, departureHour, departureMinute },
+      { positions, times, speeds, departureHour, departureMinute },
       simulationPathSteps
     )
   );
@@ -288,7 +293,7 @@ export function getOperationalPointsWithTimes(
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
     formattedOps,
     stopPositions,
-    { positions, times, departureHour, departureMinute }
+    { positions, times, speeds, departureHour, departureMinute }
   );
   return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 }
