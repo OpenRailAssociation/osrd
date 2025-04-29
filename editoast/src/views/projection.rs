@@ -19,13 +19,10 @@ use utoipa::ToSchema;
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
 use crate::client::get_app_version;
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::pathfinding::TrackRange;
 use crate::core::signal_projection::SignalUpdate;
-use crate::core::signal_projection::SignalUpdatesRequest;
-use crate::core::signal_projection::TrainSimulation;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalCriticalPosition;
@@ -42,6 +39,9 @@ use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::train_schedule::TrainScheduleError;
+
+// TODO : remove this when project_path is updated
+use crate::views::timetable::occupancy_blocks::compute_batch_signal_updates;
 
 use super::rolling_stock::RollingStockError;
 
@@ -103,7 +103,6 @@ pub struct CachedProjectPathTrainResult {
     #[schema(inline)]
     pub space_time_curves: Vec<SpaceTimeCurve>,
     /// List of signal updates along the path
-    #[schema(inline)]
     pub signal_updates: Vec<SignalUpdate>,
 }
 
@@ -137,42 +136,6 @@ impl TrainSimulationDetails {
         let hash_simulation_input = hasher.finish();
         format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
-}
-
-/// Compute the signal updates of a list of train schedules
-pub async fn compute_batch_signal_updates<'a>(
-    core: Arc<CoreClient>,
-    infra: &Infra,
-    path_track_ranges: &'a Vec<TrackRange>,
-    path_routes: &'a Vec<Identifier>,
-    path_blocks: &'a Vec<Identifier>,
-    trains_details: &'a [TrainSimulationDetails],
-) -> Result<HashMap<i64, Vec<SignalUpdate>>> {
-    if trains_details.is_empty() {
-        return Ok(HashMap::new());
-    }
-    let request = SignalUpdatesRequest {
-        infra: infra.id,
-        expected_version: infra.version,
-        track_section_ranges: path_track_ranges,
-        routes: path_routes,
-        blocks: path_blocks,
-        train_simulations: trains_details
-            .iter()
-            .map(|detail| {
-                (
-                    detail.train_id,
-                    TrainSimulation {
-                        signal_critical_positions: &detail.signal_critical_positions,
-                        zone_updates: &detail.zone_updates,
-                        simulation_end_time: detail.times[detail.times.len() - 1],
-                    },
-                )
-            })
-            .collect(),
-    };
-    let response = request.fetch(&core).await?;
-    Ok(response.signal_updates)
 }
 
 /// Compute space time curves of a list of train schedules
@@ -437,6 +400,7 @@ pub async fn compute_projected_train_paths(
     Ok(project_path_result)
 }
 
+// TODO : romove this function when project_path is updated
 async fn retrieve_cached_projection(
     valkey_conn: &mut ValkeyConnection,
     trains_hash_values: &[String],
@@ -462,13 +426,13 @@ async fn retrieve_cached_projection(
     info!(
         nb_hit = hit_cache.len(),
         nb_miss = miss_cache.len(),
-        "Hit cache",
+        "Hit cache"
     );
 
     Ok((miss_cache, hit_cache))
 }
 
-async fn extract_train_details(
+pub async fn extract_train_details(
     infra: &Infra,
     trains_schedules: &[TrainSchedule],
     simulations: Vec<(simulation::Response, PathfindingResult)>,

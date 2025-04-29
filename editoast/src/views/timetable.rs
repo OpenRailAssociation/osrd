@@ -1,3 +1,4 @@
+pub mod occupancy_blocks;
 pub mod paced_train;
 pub mod simulation;
 pub mod stdcm;
