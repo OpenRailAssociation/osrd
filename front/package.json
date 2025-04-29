@@ -104,7 +104,7 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
-    "@playwright/test": "^1.51.1",
+    "@playwright/test": "^1.52.0",
     "@rtk-query/codegen-openapi": "^2.0.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.0",
