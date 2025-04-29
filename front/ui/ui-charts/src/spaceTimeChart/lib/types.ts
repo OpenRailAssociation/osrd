@@ -93,7 +93,7 @@ export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;
 
 // CANVAS SPECIFIC TYPES:
-export const PICKING_LAYERS = ['paths'] as const;
+export const PICKING_LAYERS = ['paths', 'overlay'] as const;
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];
 export const LAYERS = ['background', 'graduations', 'paths', 'overlay', 'captions'] as const;
 export type LayerType = (typeof LAYERS)[number];

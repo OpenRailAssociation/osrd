@@ -30,6 +30,7 @@ const TrackOccupancyDiagramStory = ({
         tracks={TRACKS}
         occupancyZones={OCCUPANCY_ZONES}
         selectedTrainId={selectedTrainId}
+        onSelectedTrainIdChange={setSelectedTrainId}
         height={autoHeight ? undefined : 500}
       />
     </div>
