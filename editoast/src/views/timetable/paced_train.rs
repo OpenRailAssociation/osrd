@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -32,6 +33,9 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
+use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
+use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::train_simulation_batch;
@@ -40,6 +44,7 @@ crate::routes! {
     "/paced_train" => {
         delete,
         "/project_path" => project_path,
+        "/occupancy_blocks" => occupancy_blocks,
         "/simulation_summary" => simulation_summary,
         "/{id}" => {
             get_by_id,
@@ -54,6 +59,8 @@ editoast_common::schemas! {
     PacedTrainResponse,
     PacedTrainForm,
     PacedTrain,
+    OccupancyBlockForm,
+    OccupancyBlocks,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -480,6 +487,71 @@ async fn project_path(
     .await?;
 
     Ok(Json(project_path_result))
+}
+
+#[utoipa::path(
+    post, path = "",
+    tag = "paced_train",
+    request_body = OccupancyBlockForm,
+    responses(
+        (status = 200, body = HashMap<i64, OccupancyBlocks>),
+    ),
+)]
+async fn occupancy_blocks(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(OccupancyBlockForm {
+        infra_id,
+        ids: paced_train_ids,
+        path,
+        electrical_profile_set_id,
+    }): Json<OccupancyBlockForm>,
+) -> Result<Json<HashMap<i64, OccupancyBlocks>>> {
+    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let paced_trains: Vec<_> =
+        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+            PacedTrainError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+
+    let first_occurrences = paced_trains
+        .into_iter()
+        .map(|p| p.into_first_occurrence())
+        .collect_vec();
+
+    let occupancy_blocks_result = compute_occupancy_blocks(
+        conn,
+        core_client,
+        valkey_client,
+        path,
+        infra,
+        first_occurrences,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    Ok(Json(occupancy_blocks_result))
 }
 
 #[cfg(test)]
