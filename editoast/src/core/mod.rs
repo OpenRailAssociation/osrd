@@ -31,6 +31,7 @@ editoast_common::schemas! {
     pathfinding::schemas(),
     conflict_detection::schemas(),
     stdcm::schemas(),
+    signal_projection::schemas(),
 }
 
 #[derive(Debug, Clone)]

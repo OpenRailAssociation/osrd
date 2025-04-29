@@ -11,6 +11,10 @@ use crate::core::simulation::ZoneUpdate;
 
 use super::pathfinding::TrackRange;
 
+editoast_common::schemas! {
+    SignalUpdate,
+}
+
 #[derive(Debug, Serialize)]
 pub struct SignalUpdatesRequest<'a> {
     /// Infrastructure id
@@ -18,11 +22,11 @@ pub struct SignalUpdatesRequest<'a> {
     /// Infrastructure expected version
     pub expected_version: i64,
     /// Path description as track ranges
-    pub track_section_ranges: &'a Vec<TrackRange>,
+    pub track_section_ranges: &'a [TrackRange],
     /// Path description as route ids
-    pub routes: &'a Vec<Identifier>,
+    pub routes: &'a [Identifier],
     /// Path description as block ids
-    pub blocks: &'a Vec<Identifier>,
+    pub blocks: &'a [Identifier],
     /// List of signal critical positions and zone updates for each train
     pub train_simulations: HashMap<i64, TrainSimulation<'a>>,
 }
