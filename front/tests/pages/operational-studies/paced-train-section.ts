@@ -36,6 +36,8 @@ class PacedTrainSection extends CommonPage {
 
   private readonly manageTrainSchedulePage: Locator;
 
+  private readonly confirmationModalDeleteButton: Locator;
+
   constructor(page: Page) {
     super(page);
     this.pacedTrainItem = page.getByTestId('paced-train');
@@ -53,6 +55,7 @@ class PacedTrainSection extends CommonPage {
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
+    this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
   }
 
   // Only the zone with the role button opens the occurrence list
@@ -264,6 +267,9 @@ class PacedTrainSection extends CommonPage {
       'paced-train'
     );
     await duplicatedPacedTrainActionButtons.deleteItem.click();
+
+    await expect(this.confirmationModalDeleteButton).toBeVisible();
+    await this.confirmationModalDeleteButton.click();
 
     await this.verifyPacedTrainHasBeenDeleted(name, translations);
 
