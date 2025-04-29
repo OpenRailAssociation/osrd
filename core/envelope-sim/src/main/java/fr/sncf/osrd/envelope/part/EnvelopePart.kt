@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.SearchableEnvelope
 import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage
 import fr.sncf.osrd.utils.SelfTypeHolder
 import java.lang.Double.isNaN
@@ -686,9 +687,14 @@ fun minEnvelopeParts(
                         pos,
                         speedB
                     )
-                // Add intersection point
-                newPositions.add(intersection.position)
-                newSpeeds.add(intersection.speed)
+                // Add intersection point if it isn't either the previous or the current position.
+                if (
+                    !arePositionsEqual(intersection.position, pos) &&
+                        !arePositionsEqual(intersection.position, prevPos)
+                ) {
+                    newPositions.add(intersection.position)
+                    newSpeeds.add(intersection.speed)
+                }
             }
         }
         newPositions.add(pos)
