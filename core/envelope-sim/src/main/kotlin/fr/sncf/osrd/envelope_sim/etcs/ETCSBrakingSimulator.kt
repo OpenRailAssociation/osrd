@@ -13,17 +13,35 @@ import fr.sncf.osrd.utils.units.Offset
 interface ETCSBrakingSimulator {
     val context: EnvelopeSimContext
 
-    /** Compute the ETCS braking envelope for each LOA. */
+    /**
+     * Compute the ETCS braking envelope for each LoA and return a new envelope taking said curves
+     * into account.
+     */
     fun addSlowdownBrakingCurves(
         envelope: Envelope,
         limitsOfAuthority: Collection<LimitOfAuthority>
     ): Envelope
 
-    /** Compute the ETCS braking envelope for each EOA. */
+    /**
+     * Compute the ETCS braking envelope for each EoA and return a new envelope taking said curves
+     * into account.
+     */
     fun addStopBrakingCurves(
         envelope: Envelope,
         endsOfAuthority: Collection<EndOfAuthority>
     ): Envelope
+
+    /** Compute the ETCS braking curves for each LoA, ordered by LoA offset. */
+    fun computeSlowdownBrakingCurves(
+        mrsp: Envelope,
+        limitsOfAuthority: Collection<LimitOfAuthority>
+    ): List<Map<BrakingCurveType, ETCSBrakingCurve?>>
+
+    /** Compute the ETCS braking curves for each EoA, ordered by EoA offset. */
+    fun computeStopBrakingCurves(
+        mrsp: Envelope,
+        endsOfAuthority: Collection<EndOfAuthority>
+    ): List<Map<BrakingCurveType, ETCSBrakingCurve?>>
 }
 
 data class LimitOfAuthority(
@@ -49,7 +67,6 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         envelope: Envelope,
         limitsOfAuthority: Collection<LimitOfAuthority>
     ): Envelope {
-        if (limitsOfAuthority.isEmpty()) return envelope
         return addBrakingCurvesAtLOAs(envelope, context, limitsOfAuthority)
     }
 
@@ -57,7 +74,20 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         envelope: Envelope,
         endsOfAuthority: Collection<EndOfAuthority>
     ): Envelope {
-        if (endsOfAuthority.isEmpty()) return envelope
         return addBrakingCurvesAtEOAs(envelope, context, endsOfAuthority)
+    }
+
+    override fun computeSlowdownBrakingCurves(
+        mrsp: Envelope,
+        limitsOfAuthority: Collection<LimitOfAuthority>
+    ): List<Map<BrakingCurveType, ETCSBrakingCurve?>> {
+        return computeBrakingCurvesAtLOAs(mrsp, context, limitsOfAuthority)
+    }
+
+    override fun computeStopBrakingCurves(
+        mrsp: Envelope,
+        endsOfAuthority: Collection<EndOfAuthority>
+    ): List<Map<BrakingCurveType, ETCSBrakingCurve?>> {
+        return computeBrakingCurvesAtEOAs(mrsp, context, endsOfAuthority)
     }
 }
