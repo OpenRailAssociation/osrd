@@ -5,7 +5,7 @@ import { KebabHorizontal } from '@osrd-project/ui-icons';
 import { TRACK_HEIGHT_CONTAINER } from './consts';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
-import type { OccupancyZone, Track } from './types';
+import type { OccupancyZone, OccupancyZonePickingElement, Track } from './types';
 import { Manchette, useManchetteWithSpaceTimeChart } from '../../manchette';
 import { SpaceTimeChart } from '../../spaceTimeChart';
 import { HOUR } from '../../spaceTimeChart/lib/consts';
@@ -14,11 +14,13 @@ const TrackOccupancyStandalone = ({
   tracks,
   occupancyZones,
   selectedTrainId,
+  onSelectedTrainIdChange,
   height = TRACK_HEIGHT_CONTAINER * tracks.length,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   selectedTrainId?: string;
+  onSelectedTrainIdChange?: (selectedTrainId?: string) => void;
   height?: number;
 }) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -94,7 +96,24 @@ const TrackOccupancyStandalone = ({
         >
           <Manchette {...manchetteProps} />
           <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
-            <SpaceTimeChart className="inset-0 absolute h-full" {...spaceTimeChartProps} />
+            <SpaceTimeChart
+              className="inset-0 absolute h-full"
+              {...spaceTimeChartProps}
+              onClick={
+                onSelectedTrainIdChange &&
+                (({ hoveredItem }) => {
+                  if (
+                    hoveredItem?.layer === 'overlay' &&
+                    hoveredItem.element.type === 'occupancyZone'
+                  ) {
+                    const newId = (hoveredItem.element as OccupancyZonePickingElement).trainId;
+                    onSelectedTrainIdChange(newId === selectedTrainId ? undefined : newId);
+                  } else {
+                    onSelectedTrainIdChange(undefined);
+                  }
+                })
+              }
+            />
           </div>
         </div>
       </div>

@@ -28,7 +28,7 @@ export const drawOccupancyZonesTexts = ({
   departureTimePixel,
   yPosition,
   isThroughTrain,
-  selectedTrainId,
+  isSelected,
 }: {
   ctx: CanvasRenderingContext2D;
   zone: OccupancyZone;
@@ -36,7 +36,7 @@ export const drawOccupancyZonesTexts = ({
   departureTimePixel: number;
   yPosition: number;
   isThroughTrain: boolean;
-  selectedTrainId?: string;
+  isSelected?: boolean;
 }) => {
   const zoneOccupancyLength = departureTimePixel - arrivalTimePixel - STROKE_WIDTH;
 
@@ -66,12 +66,12 @@ export const drawOccupancyZonesTexts = ({
   const xDeparturePosition = isBelowBreakpoint('small') ? 'left' : 'center';
 
   const textStroke = {
-    color: selectedTrainId === zone.trainId ? 'transparent' : WHITE_100,
+    color: isSelected ? 'transparent' : WHITE_100,
     width: STROKE_WIDTH,
   };
 
   // train name
-  if (selectedTrainId === zone.trainId) {
+  if (isSelected) {
     const { xSelectedTrainNameBackground, ySelectedTrainNameBackground } = isBelowBreakpoint(
       'medium'
     )

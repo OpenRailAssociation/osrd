@@ -20,4 +20,6 @@ export type OccupancyZone = {
   departureTime: number;
 };
 
+export type OccupancyZonePickingElement = { type: 'occupancyZone'; trainId: string };
+
 export type TickPattern = keyof typeof TICKS_PATTERN;
