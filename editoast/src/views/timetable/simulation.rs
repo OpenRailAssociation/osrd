@@ -204,7 +204,7 @@ pub async fn consist_train_simulation_batch(
         .map(|consist| (&consist.traction_engine.name, consist))
         .collect();
 
-    let mut simulation_results = vec![SimulationResponse::default(); train_schedules.len()];
+    let mut simulation_results = vec![None::<SimulationResponse>; train_schedules.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
     let mut sim_request_map: HashMap<String, SimulationRequest> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
@@ -227,9 +227,9 @@ pub async fn consist_train_simulation_batch(
                 path_item_positions,
             ),
             PathfindingResult::Failure(pathfinding_failed) => {
-                simulation_results[index] = SimulationResponse::PathfindingFailed {
+                simulation_results[index] = Some(SimulationResponse::PathfindingFailed {
                     pathfinding_failed: pathfinding_failed.clone(),
-                };
+                });
                 continue;
             }
         };
@@ -277,7 +277,7 @@ pub async fn consist_train_simulation_batch(
         if let Some(sim_cached) = sim_cached {
             let train_indexes = &to_sim[*train_hash];
             for train_index in train_indexes {
-                simulation_results[*train_index] = sim_cached.clone();
+                simulation_results[*train_index] = Some(sim_cached.clone());
             }
             continue;
         }
@@ -299,15 +299,15 @@ pub async fn consist_train_simulation_batch(
                 to_cache.push((train_hash, sim_res.clone()));
                 train_indexes
                     .iter()
-                    .for_each(|index| simulation_results[*index] = sim_res.clone())
+                    .for_each(|index| simulation_results[*index] = Some(sim_res.clone()))
             }
 
             Err(core_error) => {
                 let error: InternalError = core_error.into();
                 train_indexes.iter().for_each(|index| {
-                    simulation_results[*index] = SimulationResponse::SimulationFailed {
+                    simulation_results[*index] = Some(SimulationResponse::SimulationFailed {
                         core_error: error.clone(),
-                    }
+                    })
                 })
             }
         }
@@ -319,6 +319,7 @@ pub async fn consist_train_simulation_batch(
     // Return the response
     Ok(simulation_results
         .into_iter()
+        .flatten()
         .zip(pathfinding_results)
         .collect())
 }

@@ -525,18 +525,6 @@ pub enum SimulationResponse {
     },
 }
 
-impl Default for SimulationResponse {
-    fn default() -> Self {
-        Self::Success {
-            base: Default::default(),
-            provisional: Default::default(),
-            final_output: Default::default(),
-            mrsp: Default::default(),
-            electrical_profiles: Default::default(),
-        }
-    }
-}
-
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/standalone_simulation";
