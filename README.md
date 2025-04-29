@@ -28,12 +28,11 @@ It's free and open-source forever!
 
 Learn more about the project on [osrd.fr](https://osrd.fr/en/).
 
-## WARNING
+## ⚠️ Development status
 
-OSRD it not yet production ready.
-User and programming interfaces can and will change (now is the time to make suggestions!).
-Important features are missing. Documentation is sparse.
-Please don't rely on OSRD unless you are prepared to deal with frequent changes.
+OSRD is still in active development.
+User and programming interfaces are not entirely stable and are still occasionally modified.
+If you rely on OSRD, be prepared to deal with regular changes.
 
 ## Getting Started
 
