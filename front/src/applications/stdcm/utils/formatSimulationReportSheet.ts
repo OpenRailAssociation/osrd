@@ -114,14 +114,13 @@ function formatMinimalOperationalPointWithTimes(
   const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
   const duration = getStopDurationAtPosition(op.positionOnPath, train);
-  const durationInSeconds = duration !== null ? duration.total('second') : null;
   const stopEnd = stopBegin.add(duration || Duration.zero);
 
   return {
     opId: op.opId,
     positionOnPath: op.positionOnPath,
     time: durationToHHMM(stopBegin),
-    duration: durationInSeconds,
+    duration,
     stopEndTime: durationToHHMM(stopEnd),
     stopRequested: false,
   };
@@ -247,7 +246,7 @@ export function consolidateOvertakesToSingleSteps(
       const consolidatedStep = {
         ...step,
         name: overtakenStepMatch[1],
-        duration: stopDuration,
+        duration: new Duration({ seconds: stopDuration }),
         stopEndTime: nextStep.time!,
         stopType: StdcmStopTypes.OVERTAKE,
         stopFor: stopDuration / 60,

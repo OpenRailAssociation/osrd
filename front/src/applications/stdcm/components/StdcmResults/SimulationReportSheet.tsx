@@ -386,7 +386,7 @@ const SimulationReportSheet = ({
                           // eslint-disable-next-line no-nested-ternary
                           ...(isStepWithDuration
                             ? {
-                                width: `${step.duration! < 600 && step.duration! >= 60 ? 60 : 70}px`,
+                                width: `${step.duration! < new Duration({ seconds: 600 }) && step.duration! >= new Duration({ seconds: 60 }) ? 60 : 70}px`,
                                 ...styles.simulation.blueStop,
                               }
                             : !isViaWithoutStop
@@ -398,7 +398,7 @@ const SimulationReportSheet = ({
                           // eslint-disable-next-line no-nested-ternary
                           isNotExtremity
                             ? step.duration !== null
-                              ? getStopDurationTime(new Duration({ seconds: step.duration }))
+                              ? getStopDurationTime(step.duration)
                               : step.time
                             : ''
                         }
