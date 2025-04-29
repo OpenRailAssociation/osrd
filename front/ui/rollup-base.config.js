@@ -22,7 +22,10 @@ const generateRollupBaseConfig = () => ({
   })),
   plugins: [
     nodeResolve({ rootDir }),
-    eslint(),
+    eslint({
+      throwOnError: true,
+      throwOnWarning: true,
+    }),
     typescript(),
     postcss({
       extract: 'theme.css',
