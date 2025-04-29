@@ -12,7 +12,6 @@ import type {
 } from 'applications/stdcm/types';
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
-import { Duration } from 'utils/duration';
 
 type SimulationTableProps = {
   stdcmData: StdcmSuccessResponse;
@@ -104,7 +103,7 @@ const StcdmResultsTable = ({
                         // eslint-disable-next-line no-nested-ternary
                         isNotExtremity || !isRequestedPathStep
                           ? step.duration !== null
-                            ? getStopDurationTime(new Duration({ seconds: step.duration }))
+                            ? getStopDurationTime(step.duration)
                             : step.time
                           : ''
                       }

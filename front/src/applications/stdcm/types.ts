@@ -13,6 +13,7 @@ import type {
 import type { SpeedSpaceChartData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import type { Duration } from 'utils/duration';
 import type { ValueOf } from 'utils/types';
 
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
@@ -68,7 +69,7 @@ export type StdcmResultsOperationalPoint = {
   time: string | null;
   name?: string;
   ch?: string;
-  duration: number | null;
+  duration: Duration | null;
   stopEndTime: string;
   trackName?: string;
   stopType?: StdcmStopTypes;
