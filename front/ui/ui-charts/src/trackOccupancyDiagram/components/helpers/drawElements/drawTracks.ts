@@ -1,6 +1,6 @@
 import { drawTrack } from './drawTrack';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { HOUR, MINUTE } from '../../../../spaceTimeChart/lib/consts';
+import { GREY_50, HOUR, MINUTE } from '../../../../spaceTimeChart/lib/consts';
 import { TRACK_HEIGHT_CONTAINER, CANVAS_PADDING, COLORS, TICKS_PRIORITIES } from '../../consts';
 import { type Track } from '../../types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
@@ -13,10 +13,12 @@ export const drawTracks = (
   {
     position,
     tracks,
+    drawBorders,
     topPadding = 0,
   }: {
     position: number;
     tracks: Track[];
+    drawBorders: boolean;
     topPadding: number;
   }
 ) => {
@@ -38,6 +40,7 @@ export const drawTracks = (
   const labelLevels = getLabelLevels(breakpoints, pixelsPerMinute, TICKS_PRIORITIES);
   const labelMarks = getLabelMarks(timeRanges, timeStart, timeEnd, labelLevels);
 
+  // Draw backgrounds:
   let hours = Math.floor(timeStart / HOUR);
   const hourEnd = timeEnd / HOUR;
   while (hours < hourEnd) {
@@ -48,6 +51,7 @@ export const drawTracks = (
     hours++;
   }
 
+  // Draw actual tracks:
   ctx.save();
   ctx.translate(0, yStart + topPadding);
   tracks?.forEach((_, index) => {
@@ -61,4 +65,22 @@ export const drawTracks = (
     });
   });
   ctx.restore();
+
+  // Draw borders:
+  if (drawBorders) {
+    const externalBorderWidth = 1;
+    const internalBorderWidth = 2;
+    const fullBorderWidth = externalBorderWidth + internalBorderWidth;
+    const yStartCrisp = Math.round(yStart);
+    const yEndCrisp = Math.round(yEnd);
+    ctx.fillStyle = GREY_50;
+    ctx.fillRect(0, yStartCrisp, width, externalBorderWidth);
+    ctx.fillRect(0, yEndCrisp - externalBorderWidth, width, externalBorderWidth);
+
+    ctx.fillStyle = GREY_50;
+    ctx.globalAlpha = 0.15;
+    ctx.fillRect(0, yStartCrisp + externalBorderWidth, width, internalBorderWidth);
+    ctx.fillRect(0, yEndCrisp - fullBorderWidth, width, internalBorderWidth);
+    ctx.globalAlpha = 1;
+  }
 };

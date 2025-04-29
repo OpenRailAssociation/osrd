@@ -8,16 +8,18 @@ const TracksLayer = ({
   tracks,
   position,
   topPadding,
+  drawBorders,
 }: {
   tracks: Track[];
   position: number;
   topPadding: number;
+  drawBorders: boolean;
 }) => {
   const drawingFunction = useCallback<DrawingFunction>(
     (ctx, stcContext) => {
-      drawTracks(ctx, stcContext, { position, topPadding, tracks });
+      drawTracks(ctx, stcContext, { position, topPadding, tracks, drawBorders });
     },
-    [position, topPadding, tracks]
+    [drawBorders, position, topPadding, tracks]
   );
 
   useDraw('overlay', drawingFunction);

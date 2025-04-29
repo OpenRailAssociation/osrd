@@ -8,6 +8,28 @@
   border-radius: inherit;
   padding-top: 10px;
 
+  position: relative;
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    left: 0;
+    height: 3px;
+    box-sizing: border-box;
+    background-color: color-mix(in oklab, theme('colors.grey.50') 15%, transparent);
+    border-color: theme('colors.grey.50');
+    border-style: solid;
+  }
+  &::before {
+    top: 0;
+    border-top-width: 1px;
+  }
+  &::after {
+    bottom: 0;
+    border-bottom-width: 1px;
+  }
+
   > canvas {
     border-radius: inherit;
   }
@@ -80,6 +102,11 @@
     0 4px 7px -3px rgba(255, 171, 88, 0.17),
     inset 0 1px 0 0 rgb(255, 255, 255);
   border-radius: 10px;
+
+  .track-occupancy-manchette::before,
+  .track-occupancy-manchette::after {
+    display: none;
+  }
 
   .manchette-space-time-chart-wrapper {
     overflow: auto;

@@ -32,6 +32,7 @@ const TrackOccupancyCanvas = ({
   selectedTrainId,
   onClose,
   topPadding = 0,
+  hideBorders = false,
 }: {
   position: number;
   tracks: Track[];
@@ -39,9 +40,15 @@ const TrackOccupancyCanvas = ({
   selectedTrainId?: string;
   onClose?: () => void;
   topPadding?: number;
+  hideBorders?: boolean;
 }) => (
   <>
-    <TracksLayer position={position} tracks={tracks} topPadding={topPadding} />
+    <TracksLayer
+      position={position}
+      tracks={tracks}
+      topPadding={topPadding}
+      drawBorders={!hideBorders}
+    />
     <OccupancyZonesLayer
       tracks={tracks}
       position={position}
