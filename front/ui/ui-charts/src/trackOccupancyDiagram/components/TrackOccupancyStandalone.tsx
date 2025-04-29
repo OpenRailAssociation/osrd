@@ -53,6 +53,7 @@ const TrackOccupancyStandalone = ({
             tracks={tracks}
             occupancyZones={occupancyZones}
             selectedTrainId={selectedTrainId}
+            hideBorders
           />
         ),
         manchetteNode: <TrackOccupancyManchette tracks={tracks} />,
