@@ -94,7 +94,7 @@
       "error",
       {
         "devDependencies": ["**/*.spec.ts", "**/__tests__/**"],
-        "packageDir": [".", ".."]
+        "packageDir": [".", "../base"]
       }
     ],
     "import/no-unresolved": [
