@@ -24,7 +24,7 @@ const InfraSelectorEditionItem = ({
 }: InfraSelectorEditionItemProps) => {
   const [value, setValue] = useState(infra.name);
   const [runningDelete, setRunningDelete] = useState(false);
-  const { t } = useTranslation('infraManagement');
+  const { t } = useTranslation();
 
   const protectWithOwnerGrant = useProtectedAction({
     resourceType: 'infra',
@@ -42,8 +42,8 @@ const InfraSelectorEditionItem = ({
             <button
               className="infraslist-item-action delete"
               type="button"
-              aria-label={t('infraManagement:actions.delete')}
-              title={t('infraManagement:actions.delete')}
+              aria-label={t('infraManagement.actions.delete')}
+              title={t('infraManagement.actions.delete')}
               onClick={() => protectWithOwnerGrant(() => setRunningDelete(true))}
             >
               <Trash />
@@ -69,7 +69,7 @@ const InfraSelectorEditionItem = ({
                   <span className="flex-grow-1 infra-name">{infra.name}</span>
                   {infra.locked && (
                     <span className="infra-lock">
-                      <small>{t('infraManagement:locked')}</small>
+                      <small>{t('infraManagement.locked')}</small>
                       <Lock />
                     </span>
                   )}

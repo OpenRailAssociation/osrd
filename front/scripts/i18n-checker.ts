@@ -52,7 +52,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:nav-bar.language\..*/, // Language selector which is generated with the locale
 
   // Infra management
-  /infraManagement:grants\..*/,
+  /translation:infraManagement.grants\..*/,
 
   // Map
   /map-settings:layers\..*/,

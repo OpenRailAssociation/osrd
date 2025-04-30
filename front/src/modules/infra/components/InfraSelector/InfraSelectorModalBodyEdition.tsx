@@ -25,7 +25,7 @@ const InfraSelectorModalBodyEdition = ({
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>('');
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
-  const { t } = useTranslation(['translation', 'infraManagement']);
+  const { t } = useTranslation();
   const [postInfraRailjson] = osrdEditoastApi.endpoints.postInfraRailjson.useMutation();
   const [postInfra] = osrdEditoastApi.endpoints.postInfra.useMutation();
 
@@ -61,7 +61,7 @@ const InfraSelectorModalBodyEdition = ({
 
   const addNewInfra = async () => {
     if (!nameNewInfra) {
-      setErrorMessage(t('infraManagement:errorMessages.noEmptyName'));
+      setErrorMessage(t('infraManagement.errorMessages.noEmptyName'));
       return;
     }
 
@@ -103,7 +103,7 @@ const InfraSelectorModalBodyEdition = ({
           />
         </div>
         <div className="text-center small text-muted">
-          {infrasList && t('infraManagement:infrasFound', { count: infrasList.length })}
+          {infrasList && t('infraManagement.infrasFound', { count: infrasList.length })}
         </div>
         <div className="infraslist">
           {infrasList.map((infra) => (
@@ -117,7 +117,7 @@ const InfraSelectorModalBodyEdition = ({
         </div>
       </div>
       <div className="col-md-5">
-        <h1 className="text-center text-success mb-1">{t('infraManagement:createInfra')}</h1>
+        <h1 className="text-center text-success mb-1">{t('infraManagement.createInfra')}</h1>
         <div className="infra-add">
           <InputSNCF
             id="infra-add"
@@ -126,7 +126,7 @@ const InfraSelectorModalBodyEdition = ({
             value={nameNewInfra}
             type="text"
             noMargin
-            placeholder={t('infraManagement:infraName')}
+            placeholder={t('infraManagement.infraName')}
           />
           <div className="infra-add-error">{errorMessage}</div>
           <div className="infra-add-import">
@@ -145,7 +145,7 @@ const InfraSelectorModalBodyEdition = ({
                   className="btn btn-sm btn-outline-danger btn-block mt-1 mb-2"
                   onClick={() => setSelectedFile(undefined)}
                 >
-                  {t('infraManagement:addInfraJSONFileRemove')}
+                  {t('infraManagement.addInfraJSONFileRemove')}
                 </button>
               </>
             ) : (
@@ -154,7 +154,7 @@ const InfraSelectorModalBodyEdition = ({
                 <label className="infra-add-import-input-file">
                   <VscJson />
                   <span className="flex-grow-1 text-center">
-                    {t('infraManagement:addInfraJSONFile')}
+                    {t('infraManagement.addInfraJSONFile')}
                   </span>
                   <input type="file" onChange={handleSelect} accept=".json" />
                 </label>
@@ -166,7 +166,7 @@ const InfraSelectorModalBodyEdition = ({
             onClick={addNewInfra}
             type="button"
           >
-            {selectedFile ? t('infraManagement:addInfraJSON') : t('infraManagement:addInfra')}
+            {selectedFile ? t('infraManagement.addInfraJSON') : t('infraManagement.addInfra')}
           </button>
         </div>
       </div>
