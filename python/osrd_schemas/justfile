@@ -4,7 +4,6 @@
 help:
     @just --list --unsorted
 
-# Generate small infra
 run:
     @echo "This component is a library"
 
