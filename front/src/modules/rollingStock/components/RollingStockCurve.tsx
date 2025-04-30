@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { ResponsiveLine } from '@nivo/line';
-import type { PointTooltipProps } from '@nivo/line';
+import type { LineSeries, PointTooltipProps } from '@nivo/line';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +13,8 @@ import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types'
 import { geti18nKeyForNull } from 'utils/strings';
 
 import { getCurveName } from '../helpers/curves';
+
+type CustomPointTooltipProps = PointTooltipProps<LineSeries>;
 
 // Format RollingStock Curves to NIVO format
 const parseData = (
@@ -215,8 +217,8 @@ export default function RollingStockCurve({
   const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
   const [curvesVisibility, setCurvesVisibility] = useState(setupCurvesVisibility(transformedData));
 
-  const formatTooltip = (tooltip: PointTooltipProps) => {
-    const transformedCurve = transformedData[tooltip.point.serieId];
+  const formatTooltip = (tooltip: CustomPointTooltipProps) => {
+    const transformedCurve = transformedData[tooltip.point.seriesId];
     const editionModeTooltipLabel =
       isOnEditionMode && showPowerRestriction
         ? geti18nKeyForNull(transformedCurve?.powerRestriction)
