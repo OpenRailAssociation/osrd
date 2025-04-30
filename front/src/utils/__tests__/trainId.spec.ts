@@ -4,7 +4,7 @@ import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdc
 
 import {
   formatEditoastTrainIdToTrainScheduleId,
-  formatEditoastTrainIdToOccurrenceId,
+  formatEditoastTrainIdToIndexedOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
@@ -12,13 +12,15 @@ import {
   getOccurrenceIndexFromOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
+  formatEditoastTrainIdToExceptionId,
+  getExceptionIdFromOccurrenceId,
 } from '../trainId';
 
 describe('formatEditoastTrainIdToTrainScheduleId', () => {
   it('should format to a TrainScheduleId', () => {
     const trainId = 123;
     const result = formatEditoastTrainIdToTrainScheduleId(trainId);
-    expect(result).toEqual(`trainschedule-${trainId}`);
+    expect(result).toEqual(`trainschedule_${trainId}`);
   });
 });
 
@@ -26,35 +28,44 @@ describe('formatEditoastTrainIdToPacedTrainId', () => {
   it('should format to a PacedTrainId', () => {
     const trainId = 123;
     const result = formatEditoastTrainIdToPacedTrainId(trainId);
-    expect(result).toEqual(`paced-${trainId}`);
+    expect(result).toEqual(`paced_${trainId}`);
   });
 });
 
-describe('formatEditoastTrainIdToOccurrenceId', () => {
+describe('formatEditoastTrainIdToIndexedOccurrenceId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
     const pacedTrainId = 123;
     const occurrenceIndex = 1;
-    const result = formatEditoastTrainIdToOccurrenceId({ pacedTrainId, occurrenceIndex });
-    expect(result).toBe(`occurrence-${occurrenceIndex}-paced-${pacedTrainId}`);
+    const result = formatEditoastTrainIdToIndexedOccurrenceId({ pacedTrainId, occurrenceIndex });
+    expect(result).toBe(`indexedoccurrence_${pacedTrainId}_${occurrenceIndex}`);
+  });
+});
+
+describe('formatEditoastTrainIdToExceptionId', () => {
+  it('should format a valid paced train ID and occurrence index correctly', () => {
+    const pacedTrainId = 123;
+    const exceptionId = 'exception-uuid';
+    const result = formatEditoastTrainIdToExceptionId({ pacedTrainId, exceptionId });
+    expect(result).toBe(`exception_${pacedTrainId}_${exceptionId}`);
   });
 });
 
 describe('formatTrainScheduleIdToEditoastTrainId', () => {
   it('should return a valid editoast id', () => {
-    const trainScheduleId = 'trainschedule-123' as TrainScheduleId;
+    const trainScheduleId = 'trainschedule_123' as TrainScheduleId;
     const result = formatTrainScheduleIdToEditoastTrainId(trainScheduleId);
     expect(result).toBe(123);
   });
 
   it("should throw an error if the trainScheduleId doesn't start correctly", () => {
-    const trainScheduleId = 'invalid-123' as TrainScheduleId;
+    const trainScheduleId = 'invalid_123' as TrainScheduleId;
     expect(() => formatTrainScheduleIdToEditoastTrainId(trainScheduleId)).toThrow(
-      'The train schedule id should start with "trainschedule-"'
+      'The train schedule id should start with "trainschedule_"'
     );
   });
 
   it("should throw an error if the return train id isn't a number", () => {
-    const trainScheduleId = 'trainschedule-onetwo' as TrainScheduleId;
+    const trainScheduleId = 'trainschedule_onetwo' as TrainScheduleId;
     expect(() => formatTrainScheduleIdToEditoastTrainId(trainScheduleId)).toThrow(
       `Invalid train ID: ${trainScheduleId}`
     );
@@ -63,20 +74,20 @@ describe('formatTrainScheduleIdToEditoastTrainId', () => {
 
 describe('formatPacedTrainIdToEditoastTrainId', () => {
   it('should return a valid editoast id', () => {
-    const pacedTrainId = 'paced-123' as PacedTrainId;
+    const pacedTrainId = 'paced_123' as PacedTrainId;
     const result = formatPacedTrainIdToEditoastTrainId(pacedTrainId);
     expect(result).toBe(123);
   });
 
   it("should throw an error if the pacedTrainId doesn't start correctly", () => {
-    const pacedTrainId = 'invalid-123' as PacedTrainId;
+    const pacedTrainId = 'invalid_123' as PacedTrainId;
     expect(() => formatPacedTrainIdToEditoastTrainId(pacedTrainId)).toThrow(
-      'The paced train id should start with "paced-"'
+      'The paced train id should start with "paced_"'
     );
   });
 
   it("should throw an error if the return train id isn't a number", () => {
-    const pacedTrainId = 'paced-onetwo' as PacedTrainId;
+    const pacedTrainId = 'paced_onetwo' as PacedTrainId;
     expect(() => formatPacedTrainIdToEditoastTrainId(pacedTrainId)).toThrow(
       `Invalid paced train ID: ${pacedTrainId}`
     );
@@ -84,103 +95,108 @@ describe('formatPacedTrainIdToEditoastTrainId', () => {
 });
 
 describe('formatOccurrenceIdToEditoastTrainId', () => {
-  it('should return a valid editoast id', () => {
-    const occurrenceId = 'occurrence-1-paced-123' as OccurrenceId;
+  it('should return a valid editoast id for a regular occurrence', () => {
+    const occurrenceId = 'indexedoccurrence_123_1' as OccurrenceId;
     const result = formatOccurrenceIdToEditoastTrainId(occurrenceId);
     expect(result).toBe(123);
   });
 
-  it('should throw an error for an invalid pacedTrain key format', () => {
-    const occurrenceId = 'occurrence-1-invalid-123' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
-    );
+  it('should return a valid editoast id for an added exception', () => {
+    const occurrenceId = 'exception_123_1' as OccurrenceId;
+    const result = formatOccurrenceIdToEditoastTrainId(occurrenceId);
+    expect(result).toBe(123);
   });
 
   it('should throw an error for an invalid occurrence key format', () => {
-    const occurrenceId = 'train-1-paced-123' as OccurrenceId;
+    const occurrenceId = 'train_123_1' as OccurrenceId;
     expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
     );
   });
 
   it("should throw an error if the paced train id isn't a number", () => {
-    const occurrenceId = 'occurrence-3-paced-onetwo' as OccurrenceId;
+    const occurrenceId = 'indexedoccurrence_onetwo_3' as OccurrenceId;
     expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      `Invalid paced train ID or occurrence index: ${occurrenceId}`
-    );
-  });
-
-  it("should throw an error if the occurrence id isn't a number", () => {
-    const occurrenceId = 'occurrence-five-paced-2' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      `Invalid paced train ID or occurrence index: ${occurrenceId}`
+      `Invalid paced train ID : ${occurrenceId}`
     );
   });
 });
 
 describe('formatPacedTrainIdToOccurrenceId', () => {
   it('should return the occurrenceId', () => {
-    const pacedTrainId = 'paced-123' as PacedTrainId;
+    const pacedTrainId = 'paced_123' as PacedTrainId;
     const result = formatPacedTrainIdToOccurrenceId(pacedTrainId, 0);
-    expect(result).toBe('occurrence-0-paced-123');
+    expect(result).toBe('indexedoccurrence_123_0');
   });
 
   it('should throw if pacedTrainId is invalid', () => {
-    const pacedTrainId = 'invalid-paced-123' as PacedTrainId;
+    const pacedTrainId = 'invalid_paced_123' as PacedTrainId;
     expect(() => formatPacedTrainIdToOccurrenceId(pacedTrainId, 0)).toThrow(
-      'The paced train id should start with "paced-"'
+      'The paced train id should start with "paced_"'
     );
   });
 });
 
 describe('extractPacedTrainIdFromOccurrenceId', () => {
-  it('should return the pacedTrainId', () => {
-    const occurenceId = 'occurrence-0-paced-123' as OccurrenceId;
+  it('should return the pacedTrainId for a regular occurrence', () => {
+    const occurenceId = 'indexedoccurrence_123_0' as OccurrenceId;
     const result = extractPacedTrainIdFromOccurrenceId(occurenceId);
-    expect(result).toBe('paced-123');
+    expect(result).toBe('paced_123');
   });
 
-  it('should throw if occurrenceId is invalid', () => {
-    const occurenceId = 'invalid-occurrence-0-paced-123' as OccurrenceId;
+  it('should return the pacedTrainId for an added exception', () => {
+    const occurenceId = 'exception_123_0' as OccurrenceId;
+    const result = extractPacedTrainIdFromOccurrenceId(occurenceId);
+    expect(result).toBe('paced_123');
+  });
+
+  it('should throw if the key is invalid', () => {
+    const occurenceId = 'exception-indexedoccurrence_123_0' as OccurrenceId;
     expect(() => extractPacedTrainIdFromOccurrenceId(occurenceId)).toThrow(
-      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
     );
   });
 });
 
 describe('getOccurrenceIndexFromOccurrenceId', () => {
   it('should return the occurrence index', () => {
-    const occurrenceId = 'occurrence-1-paced-123' as OccurrenceId;
+    const occurrenceId = 'indexedoccurrence_123_1' as OccurrenceId;
     const result = getOccurrenceIndexFromOccurrenceId(occurrenceId);
     expect(result).toBe(1);
   });
 
-  it('should throw an error for an invalid pacedTrain key format', () => {
-    const occurrenceId = 'occurrence-1-invalid-123' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+  it('should throw an error for an invalid key format', () => {
+    const occurrenceId = 'exception_123_1' as OccurrenceId;
+    expect(() => getOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
+      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}"'
     );
   });
 
-  it('should throw an error for an invalid occurrence key format', () => {
-    const occurrenceId = 'train-1-paced-123' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
+  it("should throw an error if the occurrence index isn't a number", () => {
+    const occurrenceId = 'indexedoccurrence_123_three' as OccurrenceId;
+    expect(() => getOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
+      `Invalid occurrence index: ${occurrenceId}`
     );
   });
+});
 
-  it("should throw an error if the paced train id isn't a number", () => {
-    const occurrenceId = 'occurrence-3-paced-onetwo' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      `Invalid paced train ID or occurrence index: ${occurrenceId}`
-    );
+describe('getExceptionIdFromOccurrenceId', () => {
+  it('should return the exception id', () => {
+    const occurrenceId = 'exception_123_exception-uuid' as OccurrenceId;
+    const result = getExceptionIdFromOccurrenceId(occurrenceId);
+    expect(result).toBe('exception-uuid');
   });
 
-  it("should throw an error if the occurrence id isn't a number", () => {
-    const occurrenceId = 'occurrence-five-paced-2' as OccurrenceId;
-    expect(() => formatOccurrenceIdToEditoastTrainId(occurrenceId)).toThrow(
-      `Invalid paced train ID or occurrence index: ${occurrenceId}`
+  it('should return the whole exception id if it contains underscores', () => {
+    const occurrenceId = 'exception_123_exception_uuid_with_underscores' as OccurrenceId;
+    const result = getExceptionIdFromOccurrenceId(occurrenceId);
+    expect(result).toBe('exception_uuid_with_underscores');
+  });
+
+  it('should throw an error for an invalid key format', () => {
+    const occurrenceId = 'indexedoccurrence_123_exception-uuid' as OccurrenceId;
+    expect(() => getExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
+      'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
     );
   });
 });

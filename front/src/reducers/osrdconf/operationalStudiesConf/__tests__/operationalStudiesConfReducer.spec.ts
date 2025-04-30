@@ -41,7 +41,7 @@ describe('simulationConfReducer', () => {
   describe('selectTrainToEdit', () => {
     it('train schedule case', () => {
       const trainSchedule: TrainScheduleWithDetails = {
-        id: 'trainschedule-1' as TrainScheduleId,
+        id: 'trainschedule_1' as TrainScheduleId,
         name: 'train1',
         constraint_distribution: 'MARECO',
         rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
@@ -101,7 +101,7 @@ describe('simulationConfReducer', () => {
 
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
-        id: 'paced-1' as PacedTrainId,
+        id: 'paced_1' as PacedTrainId,
         name: 'train1',
         constraint_distribution: 'MARECO',
         rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,

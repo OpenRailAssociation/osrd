@@ -80,8 +80,25 @@ export type TimetableFilters = {
 
 export type Occurrence = {
   id: OccurrenceId;
+  /**
+   * Field present only for a regular occurrence.
+   * An added exception can only be deleted, not disabled.
+   */
+  disabled?: boolean;
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   arrivalTime: Date;
+  exceptionChangeGroups?: ExceptionChangeGroup[];
 };
+
+export type ExceptionChangeGroup =
+  | 'pathAndSchedule'
+  | 'convoy'
+  | 'name'
+  | 'speedLimitByTag'
+  | 'labels'
+  | 'departureTime'
+  | 'constraintDistribution'
+  | 'initialVelocity'
+  | 'electricalProfiles';

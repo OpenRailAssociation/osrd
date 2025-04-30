@@ -13,7 +13,7 @@ import {
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
-  formatEditoastTrainIdToOccurrenceId,
+  formatEditoastTrainIdToIndexedOccurrenceId,
   formatPacedTrainIdToEditoastTrainId,
   isPacedTrain,
   isTrainSchedule,
@@ -75,7 +75,7 @@ const useAutoUpdateProjection = (
       }
       if (isPacedTrain(firstValidTrain.id)) {
         const editoastPacedTrainId = formatPacedTrainIdToEditoastTrainId(firstValidTrain.id);
-        const occurrenceIdToSelect = formatEditoastTrainIdToOccurrenceId({
+        const occurrenceIdToSelect = formatEditoastTrainIdToIndexedOccurrenceId({
           pacedTrainId: editoastPacedTrainId,
           occurrenceIndex: 0,
         });
