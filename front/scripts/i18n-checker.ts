@@ -55,10 +55,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:infraManagement.grants\..*/,
 
   // Map
-  /map-settings:layers\..*/,
-  /map-settings:smoothTravel/,
-  /map-settings:map-key.alternatingCurrent/,
-  /map-settings:map-key.directCurrent/,
+  /translation:mapKey.alternatingCurrent/,
+  /translation:mapKey.directCurrent/,
+  /translation:mapSettings.layers\..*/,
+  /translation:mapSettings.smoothTravel/,
 
   // Import train schedule
   /operationalStudies\/importTimetableItem:errorMessages.errorEmptyFile/,

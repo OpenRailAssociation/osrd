@@ -10,7 +10,7 @@ import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
 const MapSettingsMapStyle = () => {
-  const { t } = useTranslation(['map-settings']);
+  const { t } = useTranslation();
   const { mapStyle } = useSelector(getMap);
   const dispatch = useAppDispatch();
 
@@ -22,7 +22,7 @@ const MapSettingsMapStyle = () => {
         onClick={() => dispatch(updateMapStyle('normal'))}
       >
         <img src={picNormalMode} alt="normal mode" />
-        <span>{t('mapstyles.normal')}</span>
+        <span>{t('mapSettings.mapstyles.normal')}</span>
       </button>
       <button
         className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'minimal' && 'active')}
@@ -30,7 +30,7 @@ const MapSettingsMapStyle = () => {
         onClick={() => dispatch(updateMapStyle('minimal'))}
       >
         <img src={picMinimalMode} alt="minimal mode" />
-        <span>{t('mapstyles.minimal')}</span>
+        <span>{t('mapSettings.mapstyles.minimal')}</span>
       </button>
       <button
         className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'dark' && 'active')}
@@ -38,7 +38,7 @@ const MapSettingsMapStyle = () => {
         onClick={() => dispatch(updateMapStyle('dark'))}
       >
         <img src={picDarkMode} alt="dark mode" />
-        <span>{t('mapstyles.darkmode')}</span>
+        <span>{t('mapSettings.mapstyles.darkmode')}</span>
       </button>
     </div>
   );

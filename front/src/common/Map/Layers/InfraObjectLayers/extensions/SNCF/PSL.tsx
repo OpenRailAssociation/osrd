@@ -42,7 +42,7 @@ export function getPSLSpeedValueLayerProps({
       'symbol-placement': 'line-center',
       'text-field': [
         'concat',
-        t ? t('zone').toUpperCase() : 'zone',
+        t ? t('mapSettings.zone').toUpperCase() : 'zone',
         ' ',
         ['to-string', getSpeedSectionsName(layersSettings)],
         'km/h',
@@ -157,7 +157,7 @@ const SNCF_PSL = ({
   infraID,
   layersSettings,
 }: SNCF_PSLProps) => {
-  const { t } = useTranslation('map-settings');
+  const { t } = useTranslation();
   const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings);
 
   const speedValueParams = {

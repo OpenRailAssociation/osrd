@@ -23,7 +23,7 @@ type MapSearchLineProps = {
 const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLineProps) => {
   const infraID = useInfraID();
   const map = useSelector(getMap);
-  const { t } = useTranslation('map-settings');
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -97,7 +97,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
       <InputSNCF
         id="map-search-line"
         type="text"
-        placeholder={t('map-search.placeholder-line')}
+        placeholder={t('mapSearch.placeholder-line')}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           setSearchTerm(e.target.value);
         }}
@@ -112,8 +112,8 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
       />
       <h2 className="text-center mt-3">
         {searchResults.length > 100
-          ? t('map-search.too-many-results')
-          : t('map-search.results-count', {
+          ? t('mapSearch.too-many-results')
+          : t('mapSearch.results-count', {
               count: searchResults.length,
             })}
       </h2>

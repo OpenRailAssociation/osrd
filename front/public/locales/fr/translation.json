@@ -573,6 +573,78 @@
     "uploadError": "Erreur lors du chargement du fichier"
   },
   "map": "Cartographie",
+  "mapKey": {
+    "alternatingCurrent": "Alternatif",
+    "directCurrent": "Continu",
+    "electrifications": "Électrification",
+    "keyTitle": "Légende",
+    "lower_pantograph": "Zone « baissez panto »",
+    "neutral_sections": "BP / CC",
+    "speedlimit": "Vitesse",
+    "switch_off": "Coupez Courant"
+  },
+  "mapSearch": {
+    "all": "Tous",
+    "aspects": "Aspects",
+    "line": "Ligne",
+    "line-code": "Code ligne",
+    "main-operational-points-only": "BV seuls",
+    "name": "Nom",
+    "no-aspect-selected": "Aucun aspect sélectionné",
+    "operational-point": "Point remarquable",
+    "placeholder-ch-code": "CH",
+    "placeholder-line": "Nom ou numéro de ligne",
+    "placeholder-name": "Nom, appelation, libellé, code CI",
+    "placeholder-signal": "Nom du signal",
+    "results-count_one": "1 résultat",
+    "results-count_other": "{{ count }} résultats",
+    "results-count_zero": "Aucun résultat",
+    "signal": "Signal",
+    "signal-settings": {
+      "Nf": "Non franchissable",
+      "distant": "Distant",
+      "is_430": "430"
+    },
+    "signal-system": "Système de signalisation",
+    "too-many-results": "Il y a plus de 100 résultats, merci d'affiner votre recherche.",
+    "type": "Type",
+    "unable-to-search-signal": "Recherche du signal impossible"
+  },
+  "mapSettings": {
+    "layers": {
+      "buffer_stops": "Heurtoirs",
+      "detectors": "Détecteurs",
+      "electrifications": "Électrification",
+      "neutral_sections": "BP / CC",
+      "operational_points": "Points remarquables",
+      "platforms": "Quais",
+      "routes": "Cantons",
+      "showIGNBDORTHO": "BD Ortho photo ©IGN",
+      "showIGNCadastre": "Cadastre ©IGN",
+      "showIGNSCAN25": "SCAN PLAN/25/100 ©IGN",
+      "showOSM": "Fond de carte OSM",
+      "showOSM3dBuildings": "Bâtiments 3D",
+      "showOSMtracksections": "Voies OSM",
+      "signals": "Signaux",
+      "smoothTravel": "Transition douce",
+      "sncf_psl": "Limitations permanentes de vitesse",
+      "speed_limits": "Vitesses de ligne",
+      "stops": "Pancartes d'arrêt",
+      "switches": "Appareils de voie",
+      "tivs": "Limites de vitesse",
+      "tvds": "Circuits de voie"
+    },
+    "map-layers": "Couches de données",
+    "mapSettings": "Paramètres cartographie",
+    "mapstyles": {
+      "darkmode": "Sombre",
+      "minimal": "Minimal",
+      "normal": "Normal"
+    },
+    "noSpeedLimitByTag": "Aucun code de composition",
+    "terrain3DExaggeration": "Échelle du relief en 3D",
+    "zone": "Zone"
+  },
   "nav-bar": {
     "about": "À propos",
     "disconnect": "Déconnexion",

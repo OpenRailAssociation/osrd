@@ -26,7 +26,7 @@ interface FormatSwitchProps {
 }
 export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('map-settings');
+  const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
 
   const setLayerSettings = useCallback(
@@ -52,7 +52,7 @@ export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps)
         disabled={disabled}
       />
       <span className={`px-1 d-flex align-items-center ${color}`}>{icon}</span>
-      <small>{t(`layers.${name}`)}</small>
+      <small>{t(`mapSettings.layers.${name}`)}</small>
     </div>
   );
 };

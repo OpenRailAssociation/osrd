@@ -41,16 +41,16 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
     [dispatch, map]
   );
 
-  const { t } = useTranslation(['map-settings', 'translation']);
+  const { t } = useTranslation();
 
   return (
     <div className="map-modal">
-      <MapModalHeader title={t('translation:common.search')} closeAction={closeMapSearchPopUp} />
+      <MapModalHeader title={t('common.search')} closeAction={closeMapSearchPopUp} />
       <Tabs
         tabs={[
           {
             id: 'station',
-            label: t('map-search.operational-point'),
+            label: t('mapSearch.operational-point'),
             content: (
               <MapSearchOperationalPoint
                 updateExtViewport={updateViewportChange}
@@ -60,7 +60,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
           },
           {
             id: 'line',
-            label: t('map-search.line'),
+            label: t('mapSearch.line'),
             content: (
               <MapSearchLine
                 updateExtViewport={updateViewportChange}
@@ -70,7 +70,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
           },
           {
             id: 'signal',
-            label: t('map-search.signal'),
+            label: t('mapSearch.signal'),
             content: (
               <MapSearchSignal
                 updateExtViewport={updateViewportChange}

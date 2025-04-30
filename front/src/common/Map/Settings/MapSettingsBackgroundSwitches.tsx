@@ -31,7 +31,7 @@ type FormatSwitchProps = {
 };
 
 const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps) => {
-  const { t } = useTranslation(['map-settings']);
+  const { t } = useTranslation();
   return (
     <div className="d-flex align-items-center">
       <SwitchSNCF
@@ -42,13 +42,13 @@ const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps)
         checked={state}
       />
       <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
-      <span className="ml-2">{t(`layers.${label}`)}</span>
+      <span className="ml-2">{t(`mapSettings.layers.${label}`)}</span>
     </div>
   );
 };
 
 const MapSettingsBackgroundSwitches = () => {
-  const { t } = useTranslation(['map-settings']);
+  const { t } = useTranslation();
   const {
     showIGNBDORTHO,
     showIGNSCAN25,
@@ -113,7 +113,7 @@ const MapSettingsBackgroundSwitches = () => {
 
       <div className="my-3 pb-3">
         <div className="d-flex align-item-center">
-          <span className="flex-grow-1">{t('terrain3DExaggeration')}</span>
+          <span className="flex-grow-1">{t('mapSettings.terrain3DExaggeration')}</span>
           <span className="font-weight-bolder">x{terrain3DExaggeration}</span>
         </div>
         <div className="slider p-1">

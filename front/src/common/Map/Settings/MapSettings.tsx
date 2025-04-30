@@ -13,13 +13,13 @@ interface MapSettingsProps {
   closeMapSettingsPopUp: () => void;
 }
 const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
-  const { t } = useTranslation(['translation', 'map-settings']);
+  const { t } = useTranslation();
   const [showSettingsLayers, setShowSettingsLayers] = useState(false);
   const [showSettingsSpeedLimits, setShowSettingsSpeedLimits] = useState(false);
 
   return (
     <div className="map-modal">
-      <MapModalHeader closeAction={closeMapSettingsPopUp} title={t('map-settings:mapSettings')} />
+      <MapModalHeader closeAction={closeMapSettingsPopUp} title={t('mapSettings.mapSettings')} />
       <div className="my-1" />
       <MapSettingsMapStyle />
       <div className="my-1" />
@@ -30,7 +30,7 @@ const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
         role="button"
         tabIndex={0}
       >
-        {t('map-settings:map-layers')}
+        {t('mapSettings.map-layers')}
         <span className="ml-2">
           {showSettingsLayers ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
         </span>
@@ -42,7 +42,7 @@ const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
         role="button"
         tabIndex={0}
       >
-        {t('map-settings:layers.speed_limits')}
+        {t('mapSettings.layers.speed_limits')}
         <span className="ml-2">
           {showSettingsSpeedLimits ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
         </span>
