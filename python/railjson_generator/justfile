@@ -19,15 +19,13 @@ test:
 
 # Format the source code
 format:
-    poetry run black .
-    poetry run isort .
+    poetry run ruff format
 
 # Verify code lints without applying any fix
 lint:
-    poetry run pflake8 --config ./pyproject.toml
-    poetry run pytype -j auto
+    poetry run ruff check
+    poetry run pyright .
 
 # Fix all the lints that can be automatically applied
 fix-lint:
-    poetry run black .
-    poetry run isort .
+    @echo "No linter can automatically fix"
