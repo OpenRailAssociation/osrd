@@ -29,10 +29,6 @@ export function sec2time(sec: number) {
   return new Date(sec * 1000).toISOString().substr(11, 8);
 }
 
-export function sec2datetime(sec: number) {
-  return d3.timeParse('%H:%M:%S')(sec2time(sec))!; // We consider it's utc to avoid +0 delta
-}
-
 /**
  * Given a timeString, returns the number of seconds from midnight
  *
