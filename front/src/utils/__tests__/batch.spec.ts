@@ -17,16 +17,16 @@ describe('getBatchPackage', () => {
     const lowerIndex = 0;
     const trainIdsPackage = getBatchPackage(lowerIndex, trainIds, BATCH_SIZE);
     expect(trainIdsPackage).toEqual([
-      'trainschedule-0',
-      'paced-1',
-      'trainschedule-2',
-      'paced-3',
-      'trainschedule-4',
-      'paced-5',
-      'trainschedule-6',
-      'paced-7',
-      'trainschedule-8',
-      'paced-9',
+      'trainschedule_0',
+      'paced_1',
+      'trainschedule_2',
+      'paced_3',
+      'trainschedule_4',
+      'paced_5',
+      'trainschedule_6',
+      'paced_7',
+      'trainschedule_8',
+      'paced_9',
     ]);
   });
 
@@ -34,16 +34,16 @@ describe('getBatchPackage', () => {
     const lowerIndex = 10;
     const trainIdsPackage = getBatchPackage(lowerIndex, trainIds, BATCH_SIZE);
     expect(trainIdsPackage).toEqual([
-      'trainschedule-10',
-      'paced-11',
-      'trainschedule-12',
-      'paced-13',
-      'trainschedule-14',
-      'paced-15',
-      'trainschedule-16',
-      'paced-17',
-      'trainschedule-18',
-      'paced-19',
+      'trainschedule_10',
+      'paced_11',
+      'trainschedule_12',
+      'paced_13',
+      'trainschedule_14',
+      'paced_15',
+      'trainschedule_16',
+      'paced_17',
+      'trainschedule_18',
+      'paced_19',
     ]);
   });
 
@@ -51,11 +51,11 @@ describe('getBatchPackage', () => {
     const lowerIndex = 20;
     const trainIdsPackage = getBatchPackage(lowerIndex, trainIds, BATCH_SIZE);
     expect(trainIdsPackage).toEqual([
-      'trainschedule-20',
-      'paced-21',
-      'trainschedule-22',
-      'paced-23',
-      'trainschedule-24',
+      'trainschedule_20',
+      'paced_21',
+      'trainschedule_22',
+      'paced_23',
+      'trainschedule_24',
     ]);
   });
 });
