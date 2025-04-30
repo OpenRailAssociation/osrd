@@ -284,7 +284,9 @@ async fn stdcm(
     let stdcm_request = core_client::stdcm::Request {
         infra: infra.id,
         expected_version: infra.version,
-        rolling_stock_loading_gauge: physics_consist_parameters.traction_engine.loading_gauge,
+        rolling_stock_loading_gauge: stdcm_request
+            .loading_gauge_type
+            .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
         rolling_stock_supported_signaling_systems: physics_consist_parameters
             .traction_engine
             .supported_signaling_systems
