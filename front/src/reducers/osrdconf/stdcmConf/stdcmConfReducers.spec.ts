@@ -7,6 +7,7 @@ import {
   type LinkedTrains,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
+import type { LoadingGaugeType } from 'common/api/osrdEditoastApi';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -230,6 +231,7 @@ describe('stdcmConfReducers', () => {
         totalMass: 100,
         totalLength: 50,
         maxSpeed: 25,
+        loadingGauge: 'GA' as LoadingGaugeType,
         speedLimitByTag: 'new-tag',
       },
     };
@@ -253,6 +255,7 @@ describe('stdcmConfReducers', () => {
             totalMass: 75,
             totalLength: 20,
             maxSpeed: 10,
+            loadingGauge: 'GA',
             speedLimitByTag: 'new-tag',
           },
         },

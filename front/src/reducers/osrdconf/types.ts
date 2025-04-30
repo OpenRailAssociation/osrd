@@ -12,6 +12,7 @@ import type {
 import type {
   Comfort,
   Distribution,
+  LoadingGaugeType,
   OperationalPointReference,
   PacedTrainResponse,
   PathItemLocation,
@@ -66,6 +67,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
+  loadingGauge: LoadingGaugeType;
   towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
   simulations: StdcmSimulation[];

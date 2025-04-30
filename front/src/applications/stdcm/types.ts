@@ -127,6 +127,7 @@ export type StdcmSimulationInputs = {
     totalLength?: number;
     /** In km/s */
     maxSpeed?: number;
+    loadingGauge: LoadingGaugeType;
     speedLimitByTag?: string;
   };
   linkedTrains: LinkedTrains;

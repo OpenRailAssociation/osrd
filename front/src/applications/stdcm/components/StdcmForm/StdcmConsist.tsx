@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { Input, ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
+import { Input, ComboBox, useDefaultComboBox, Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -14,7 +14,11 @@ import {
   validateTotalLength,
   validateTotalMass,
 } from 'applications/stdcm/utils/consistValidation';
-import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
+import type {
+  LightRollingStockWithLiveries,
+  LoadingGaugeType,
+  TowedRollingStock,
+} from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
@@ -28,6 +32,7 @@ import {
   getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
+import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import StdcmCard from './StdcmCard';
 import useStdcmConsist from '../../hooks/useStdcmConsist';
@@ -52,6 +57,8 @@ export type StdcmConsistProps = {
   consistErrors: ConsistErrors;
   setConsistErrors: React.Dispatch<React.SetStateAction<ConsistErrors>>;
 };
+
+const GAUGE_LIST: LoadingGaugeType[] = ['GA', 'GB'];
 
 const StdcmConsist = ({
   isDebugMode,
@@ -85,6 +92,8 @@ const StdcmConsist = ({
     onTotalLengthChange,
     maxSpeed,
     onMaxSpeedChange,
+    loadingGauge,
+    onLoadingGaugeChange,
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
@@ -242,6 +251,20 @@ const StdcmConsist = ({
           {...towedRollingStockComboBoxDefaultProps}
           autoComplete="off"
           disabled={disabled}
+          narrow
+        />
+      </div>
+      <div className="loading-gauge">
+        <Select
+          id="loading-gauge-selector"
+          value={loadingGauge}
+          label={t('consist.loadingGauge')}
+          onChange={(e) => {
+            if (e) {
+              onLoadingGaugeChange(e);
+            }
+          }}
+          {...createStandardSelectOptions(GAUGE_LIST)}
           narrow
         />
       </div>

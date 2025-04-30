@@ -43,6 +43,7 @@ const buildStdcmConfSelectors = () => {
     getTotalMass: makeOsrdConfSelector('totalMass'),
     getTotalLength: makeOsrdConfSelector('totalLength'),
     getMaxSpeed: makeOsrdConfSelector('maxSpeed'),
+    getLoadingGauge: makeOsrdConfSelector('loadingGauge'),
     getTowedRollingStockID: makeOsrdConfSelector('towedRollingStockID'),
 
     getStdcmPathSteps,
@@ -98,6 +99,7 @@ export const {
   getTotalMass,
   getTotalLength,
   getMaxSpeed,
+  getLoadingGauge,
   getTowedRollingStockID,
   getStdcmPathSteps,
   getStdcmOrigin,

@@ -58,6 +58,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
   totalMass: undefined,
   totalLength: undefined,
   maxSpeed: undefined,
+  loadingGauge: 'GA',
   towedRollingStockID: undefined,
   linkedTrains: {
     anteriorTrain: undefined,
@@ -126,6 +127,12 @@ export const stdcmConfSlice = createSlice({
       action: PayloadAction<OsrdStdcmConfState['maxSpeed']>
     ) {
       state.maxSpeed = action.payload;
+    },
+    updateLoadingGauge(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['loadingGauge']>
+    ) {
+      state.loadingGauge = action.payload;
     },
     updateTowedRollingStockID(
       state: Draft<OsrdStdcmConfState>,
@@ -313,6 +320,7 @@ export const {
   updateTotalMass,
   updateTotalLength,
   updateMaxSpeed,
+  updateLoadingGauge,
   updateTowedRollingStockID,
   resetMargins,
   updateGridMarginAfter,
