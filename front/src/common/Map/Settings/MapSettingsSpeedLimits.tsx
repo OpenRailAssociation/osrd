@@ -32,7 +32,7 @@ type FormatSwitchProps = {
 
 const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['map-settings', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const { layersSettings } = useSelector(getMap);
   const infraID = useInfraID();
   const {
@@ -48,7 +48,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
   const allSpeedLimitTags = uniq(speedLimitsTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
-  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('noSpeedLimitByTag'), [t]);
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('mapSettings.noSpeedLimitByTag'), [t]);
 
   const setLayerSettings = (setting: keyof MapState['layersSettings']) => {
     dispatch(

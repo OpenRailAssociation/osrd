@@ -75,7 +75,7 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
   const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
-  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('mapSettings.noSpeedLimitByTag'), [t]);
   const selectionCounts = useMemo(
     () =>
       selection

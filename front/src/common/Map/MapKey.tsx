@@ -8,7 +8,7 @@ import { electrificationMapKey, type MapKeyProps, speedLimitMapKey } from './con
 import MapModalHeader from './MapModalHeader';
 
 const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
-  const { t } = useTranslation('map-settings');
+  const { t } = useTranslation();
   const mapStyle = useSelector(getMapStyle);
 
   const speedLimits = speedLimitMapKey.map((key) => (
@@ -33,30 +33,30 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         />
       </div>
       <div className="mapkey-text">
-        {`${key.text} ${key.current && t(`map-key.${key.current}`)}`}
+        {`${key.text} ${key.current && t(`mapKey.${key.current}`)}`}
       </div>
     </div>
   ));
 
   return (
     <div className="map-modal map-modal-dark">
-      <MapModalHeader closeAction={closeMapKeyPopUp} title={t('map-key.keyTitle')} textLight />
+      <MapModalHeader closeAction={closeMapKeyPopUp} title={t('mapKey.keyTitle')} textLight />
       <div className="row">
         <div className="col-lg-6">
           <div className="mapkey">
-            <div className="mapkey-title">{t('map-key.speedlimit')}</div>
+            <div className="mapkey-title">{t('mapKey.speedlimit')}</div>
             {speedLimits}
           </div>
         </div>
         <div className="col-lg-6">
           <div className="mapkey">
-            <div className="mapkey-title">{t('map-key.electrifications')}</div>
+            <div className="mapkey-title">{t('mapKey.electrifications')}</div>
             {electrifications}
           </div>
         </div>
         <div className="col-lg-6">
           <div className="mapkey">
-            <div className="mapkey-title">{t('map-key.neutral_sections')}</div>
+            <div className="mapkey-title">{t('mapKey.neutral_sections')}</div>
             <div className="mapkey-item" key="lower_pantograph">
               <div className="mapkey-icon">
                 <i
@@ -64,7 +64,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
                   style={{ background: colors[mapStyle].neutral_sections.lower_pantograph }}
                 />
               </div>
-              <div className="mapkey-text">{t('map-key.lower_pantograph')}</div>
+              <div className="mapkey-text">{t('mapKey.lower_pantograph')}</div>
             </div>
             <div className="mapkey-item" key="switch_off">
               <div className="mapkey-icon">
@@ -73,7 +73,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
                   style={{ background: colors[mapStyle].neutral_sections.switch_off }}
                 />
               </div>
-              <div className="mapkey-text">{t('map-key.switch_off')}</div>
+              <div className="mapkey-text">{t('mapKey.switch_off')}</div>
             </div>
           </div>
         </div>
