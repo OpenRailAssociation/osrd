@@ -5,13 +5,13 @@
 //! This library mainly provides two things:
 //!
 //! 1. A way to modelize OpenFGA objects and relations in a type-safe way. Types are regular Rust structures
-//!     and relations are any type implementing the trait [model::Relation]. Are also provided a few macros
-//!     to define and manipulate relations in a declarative way, close to OpenFGA syntax.
+//!    and relations are any type implementing the trait [model::Relation]. Are also provided a few macros
+//!    to define and manipulate relations in a declarative way, close to OpenFGA syntax.
 //! 2. A [client::Client] allowing to interact with an OpenFGA server **over HTTP only**. It doesn't cover all the
-//!     OpenFGA API at the moment but the most common operations are implemented. This client supports the setup
-//!     of stores and authorization models, writing tuples, performing queries such as permission checks, and more.
-//!     The high-level API interfaces with the high-level modelization of OpenFGA objects and relations
-//!     available in this library through the [model] module.
+//!    OpenFGA API at the moment but the most common operations are implemented. This client supports the setup
+//!    of stores and authorization models, writing tuples, performing queries such as permission checks, and more.
+//!    The high-level API interfaces with the high-level modelization of OpenFGA objects and relations
+//!    available in this library through the [model] module.
 //!
 //! # High-level modelization of OpenFGA objects
 //!

@@ -13,11 +13,11 @@ use super::ModelError;
 /// This struct is useful for several things:
 ///
 /// * Provides a function [Patch::apply] that applies the changeset to the model
-///     row and updates the model instance with the new values
+///   row and updates the model instance with the new values
 /// * Takes the model instance as a mutable reference ensuring no concurrent
-///     modification can be made to the instance
+///   modification can be made to the instance
 /// * The `Model` derive macro generates a builder similar to the changeset
-///     for `Patch<'a, YourModel>` as well making this struct easier to use.
+///   for `Patch<'a, YourModel>` as well making this struct easier to use.
 ///
 /// # Example
 ///

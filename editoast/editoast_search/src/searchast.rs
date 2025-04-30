@@ -29,7 +29,7 @@ pub enum SearchAstError {
 /// * Strings
 /// * Arrays
 ///     * `["column"]`: represents the value of a column (differs from `"column"`
-///        which is just a plain string)
+///       which is just a plain string)
 ///     * `["function", arg1, arg2, ...]`: a function call where `argN` are sub-queries
 ///
 /// Note that the empty array `[]` and all objects `{...}` are invalid queries.

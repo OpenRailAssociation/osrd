@@ -135,21 +135,21 @@
 //! Before turning the query into SQL code, we need to make sure of two things:
 //!
 //! 1. The query needs to typecheck. For instance, we disallow using the AND
-//!     operator with an operand that is not either a boolean of `null`.
-//!     The same goes for the LIKE operator that expects as a second operand
-//!     only `null` or a string.
+//!    operator with an operand that is not either a boolean of `null`.
+//!    The same goes for the LIKE operator that expects as a second operand
+//!    only `null` or a string.
 //! 2. The query needs to represent a constraint that can be inserted as a WHERE
-//!     clause in the final SQL query. Therefore, the type of the whole query
-//!     needs to be a boolean, or `null`.
+//!    clause in the final SQL query. Therefore, the type of the whole query
+//!    needs to be a boolean, or `null`.
 //!
 //! However, to accurately determine the type of every part of the request, we
 //! need some extra information:
 //!
 //! - The type of each column involved in the request: `["=", ["col"], 12]` only
-//!     makes sense if the column `col` represents an integer.
+//!   makes sense if the column `col` represents an integer.
 //! - The signature of each function in the query: `["like", ["name"], 12]` doesn't
-//!     makes sense because the SQL LIKE operator expects a string pattern and
-//!     not an integer.
+//!   makes sense because the SQL LIKE operator expects a string pattern and
+//!   not an integer.
 //!
 //! The structure that represents that context is [editoast_search::QueryContext] which provides
 //! the function [editoast_search::QueryContext::typecheck_search_query()]. The functions the
@@ -166,8 +166,8 @@
 //!
 //! - The list of expected columns and their type. That data is extracted from `search.yml`.
 //! - The name of the search table (e.g.: `search_operational_point`). That
-//!     information is useful to prevent ambiguities in the SQL query because of
-//!     column name conflicts.
+//!   information is useful to prevent ambiguities in the SQL query because of
+//!   column name conflicts.
 //! - The list of functions (or operators) the query can use, their type signatures
 //!   (with possible overloads) and their definition.
 //!
