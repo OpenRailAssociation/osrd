@@ -13,7 +13,7 @@ import { useAppDispatch } from 'store';
 import Map from './Map';
 
 const HomeReferenceMap = () => {
-  const { t } = useTranslation(['translation', 'referenceMap']);
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const { updateInfraID } = useInfraActions();
@@ -44,11 +44,11 @@ const HomeReferenceMap = () => {
             {t('map')}
             {infra ? (
               <span className="ml-2 text-muted">
-                {t('referenceMap:infrastructure', { name: infra.name })}
+                {`${t('infrastructure')} ${infra.name}`}
                 <span className="ml-2">{infra.locked && <Lock />}</span>
               </span>
             ) : (
-              <span className="ml-2 text-orange">{t('referenceMap:mapNoInfraSelected')}</span>
+              <span className="ml-2 text-orange">{t('infraManagement.noInfraSelected')}</span>
             )}
           </>
         }

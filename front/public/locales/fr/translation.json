@@ -554,8 +554,10 @@
     "infrasFound_zero": "Aucune infrastructure trouvée",
     "locked": "Verrouillée",
     "no": "Non",
+    "noInfraSelected": "Aucune infrastructure sélectionnée",
     "yes": "Oui"
   },
+  "infrastructure": "Infrastructure {{name}}",
   "interval-editor": {
     "add": "Ajouter",
     "begin": "Début",
