@@ -11,6 +11,7 @@ import type {
   TrainTypeFilter,
   TimetableItemWithDetails,
   ValidityFilter,
+  TrainCategoryFilter,
 } from './types';
 import { extractTagCode, keepItem } from './utils';
 
@@ -29,6 +30,7 @@ const useFilterTimetableItems = (
     useState<ScheduledPointsHonoredFilter>('both');
   const [trainTypeFilter, setTrainTypeFilter] = useState<TrainTypeFilter>('both');
   const [selectedTags, setSelectedTags] = useState<Set<string | null>>(new Set());
+  const [trainCategoryFilter, setTrainCategoryFilter] = useState<TrainCategoryFilter>('all');
 
   const debouncedNameLabelFilter = useDebounce(nameLabelFilter, 500);
   const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
@@ -94,6 +96,15 @@ const useFilterTimetableItems = (
             return false;
         }
 
+        if (trainCategoryFilter !== 'all') {
+          if (trainCategoryFilter === 'noCategory' && timetableItem?.category) return false;
+          if (
+            trainCategoryFilter !== 'noCategory' &&
+            timetableItem?.category !== trainCategoryFilter
+          )
+            return false;
+        }
+
         return true;
       }),
     [
@@ -104,6 +115,7 @@ const useFilterTimetableItems = (
       scheduledPointsHonoredFilter,
       trainTypeFilter,
       selectedTags,
+      trainCategoryFilter,
     ]
   );
 
@@ -122,6 +134,8 @@ const useFilterTimetableItems = (
     setTrainTypeFilter,
     selectedTags,
     setSelectedTags,
+    trainCategoryFilter,
+    setTrainCategoryFilter,
   };
 };
 

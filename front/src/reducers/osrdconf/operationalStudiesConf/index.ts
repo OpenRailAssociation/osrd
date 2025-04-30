@@ -24,6 +24,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   initialSpeed: 0,
   labels: [],
   rollingStockComfort: 'STANDARD',
+  category: null,
   // Corresponds to origin and destination not defined
   pathSteps: [null, null],
   constraintDistribution: 'MARECO',
@@ -61,6 +62,7 @@ export const operationalStudiesConfSlice = createSlice({
         power_restrictions,
         path,
         constraint_distribution,
+        category,
       } = action.payload;
 
       state.rollingStockID = rollingStock?.id;
@@ -68,6 +70,7 @@ export const operationalStudiesConfSlice = createSlice({
       state.startTime = startTime;
 
       state.name = name;
+      state.category = category ?? null;
       state.initialSpeed = initial_speed ? Math.floor(msToKmh(initial_speed) * 10) / 10 : 0;
 
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;
@@ -131,6 +134,7 @@ export const {
   updateTimeWindow,
   updateInterval,
   toggleEditingTrainIsPacedTrain,
+  updateCategory,
 
   // itinerary reducer
   updatePathSteps,

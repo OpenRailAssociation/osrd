@@ -32,6 +32,7 @@ const buildOperationalStudiesConfSelectors = () => {
     getStartTime: makeOsrdConfSelector('startTime'),
     getInitialSpeed: makeOsrdConfSelector('initialSpeed'),
     getLabels: makeOsrdConfSelector('labels'),
+    getCategory: makeOsrdConfSelector('category'),
 
     getRollingStockComfort: makeOsrdConfSelector('rollingStockComfort'),
 
@@ -88,6 +89,7 @@ export const {
   getTrainCount,
   getTrainDelta,
   getTrainStep,
+  getCategory,
 
   getEditingTrainIsPacedTrain,
   getTimeWindow,

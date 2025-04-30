@@ -3,6 +3,11 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import useCategoryOptions, {
+  type CategoryOptionWithId,
+} from 'modules/rollingStock/hooks/useCategoryOptions';
+
 import type {
   ValidityFilter,
   ScheduledPointsHonoredFilter,
@@ -17,6 +22,7 @@ type FilterPanelProps = {
 
 const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const categoryOptions = useCategoryOptions(false);
 
   const {
     nameLabelFilter,
@@ -29,6 +35,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
     setScheduledPointsHonoredFilter,
     trainTypeFilter,
     setTrainTypeFilter,
+    trainCategoryFilter,
+    setTrainCategoryFilter,
     uniqueTags,
     selectedTags,
     setSelectedTags,
@@ -50,6 +58,18 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
     { value: 'both', label: t('timetable.showAllTrains') },
     { value: 'pacedTrain', label: t('timetable.pacedTrain') },
     { value: 'trainSchedule', label: t('timetable.trainSchedule') },
+  ];
+
+  const formattedCategoryOptions: {
+    id: TrainCategory | 'all' | 'noCategory';
+    label: string;
+  }[] = [
+    { id: 'all', label: t('timetable.showAllCategories') },
+    { id: 'noCategory', label: t('timetable.showTrainsWithNoCategory') },
+    ...categoryOptions.map((option) => ({
+      id: (option as CategoryOptionWithId).id,
+      label: option.label,
+    })),
   ];
 
   const toggleTagSelection = (tag: string | null) => {
@@ -160,6 +180,24 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
               scheduledPointsHonoredOptions.find(
                 (option) => option.value === scheduledPointsHonoredFilter
               ) || scheduledPointsHonoredOptions[0]
+            }
+          />
+          <Select
+            getOptionLabel={(option) => option.label}
+            getOptionValue={(option) => option.label}
+            id="timetable-train-category-filter"
+            label={t('timetable.trainCategories')}
+            narrow
+            small
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                setTrainCategoryFilter(selectedOption.id);
+              }
+            }}
+            options={formattedCategoryOptions}
+            value={
+              formattedCategoryOptions.find((option) => option.id === trainCategoryFilter) ||
+              formattedCategoryOptions[0]
             }
           />
         </div>

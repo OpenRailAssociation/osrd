@@ -16,6 +16,12 @@ const trainSettingsReducer = {
   ) {
     state.name = action.payload;
   },
+  updateCategory(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<OperationalStudiesConfState['category']>
+  ) {
+    state.category = action.payload;
+  },
   updateTrainCount(
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<OperationalStudiesConfState['trainCount']>

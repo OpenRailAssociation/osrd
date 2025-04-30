@@ -14,6 +14,7 @@ export function formatTimetableItemPayload(
   rollingStockName: string
 ): TrainSchedule {
   return {
+    category: osrdconf.category,
     comfort: osrdconf.rollingStockComfort,
     constraint_distribution: osrdconf.constraintDistribution,
     initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
