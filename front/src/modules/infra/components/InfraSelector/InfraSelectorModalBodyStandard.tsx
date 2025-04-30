@@ -47,7 +47,7 @@ const InfraSelectorModalBodyStandard = ({
   onlySelectionMode = false,
   isInEditor,
 }: InfraSelectorModalBodyStandardProps) => {
-  const { t } = useTranslation(['translation', 'infraManagement']);
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { mode } = useOsrdContext();
   const { updateInfraID } = useInfraActions();
@@ -88,7 +88,7 @@ const InfraSelectorModalBodyStandard = ({
         />
       </div>
       <div className="text-center small text-muted infras-count">
-        {infrasList && t('infraManagement:infrasFound', { count: infrasList.length })}
+        {infrasList && t('infraManagement.infrasFound', { count: infrasList.length })}
       </div>
       <div className="infraslist" data-testid="infra-list">
         {infrasList.map((infra) => {
@@ -114,7 +114,7 @@ const InfraSelectorModalBodyStandard = ({
                 <span className="infraslist-item-choice-name">{infra.name}</span>
                 {infra.locked && (
                   <span className="infra-lock">
-                    <small>{t('infraManagement:locked')}</small>
+                    <small>{t('infraManagement.locked')}</small>
                     <Lock />
                   </span>
                 )}

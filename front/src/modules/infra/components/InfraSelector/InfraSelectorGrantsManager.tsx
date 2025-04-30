@@ -26,7 +26,7 @@ const InfraSelectorGrantsManager = ({
   userSubjectsList,
 }: InfraSelectorGrantsManagerProps) => {
   const [displayGrantSection, setDisplayGrantSection] = React.useState(false);
-  const { t } = useTranslation('infraManagement');
+  const { t } = useTranslation();
 
   const updateUserInfraGrant = (userId: number, grant?: string) => {
     const basePayload = {
@@ -48,7 +48,9 @@ const InfraSelectorGrantsManager = ({
     <div className="infra-selector-grants-manager">
       <div className="infra-selector-grants-header">
         <span className="user-infra-grant">
-          {capitalizeFirstLetter(t(`grants.${GrantsLabel[userGrant as GrantsLabelKeys]}`))}
+          {capitalizeFirstLetter(
+            t(`infraManagement.grants.${GrantsLabel[userGrant as GrantsLabelKeys]}`)
+          )}
         </span>
         <button
           type="button"
@@ -59,7 +61,9 @@ const InfraSelectorGrantsManager = ({
           }}
         >
           <span className={displayGrantSection ? 'blue-label' : 'grey-label'}>
-            {displayGrantSection ? t('actions.collapse') : t('actions.details')}
+            {displayGrantSection
+              ? t('infraManagement.actions.collapse')
+              : t('infraManagement.actions.details')}
             {displayGrantSection ? <ChevronUp /> : <ChevronDown />}
           </span>
         </button>

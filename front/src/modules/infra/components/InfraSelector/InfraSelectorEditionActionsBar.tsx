@@ -19,7 +19,7 @@ type ActionBarProps = {
 };
 
 const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) => {
-  const { t } = useTranslation('infraManagement');
+  const { t } = useTranslation();
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useAppDispatch();
 
@@ -105,8 +105,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
         <button
           className="infraslist-item-action cancel"
           type="button"
-          aria-label={t('actions.cancel')}
-          title={t('actions.cancel')}
+          aria-label={t('infraManagement.actions.cancel')}
+          title={t('infraManagement.actions.cancel')}
           onClick={() => setIsFocused(undefined)}
         >
           <MdCancel />
@@ -114,8 +114,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
         <button
           className="infraslist-item-action check"
           type="button"
-          aria-label={t('actions.check')}
-          title={t('actions.check')}
+          aria-label={t('infraManagement.actions.check')}
+          title={t('infraManagement.actions.check')}
           onClick={handleRename}
         >
           <MdCheck />
@@ -128,8 +128,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       <button
         className="infraslist-item-action waiting disabled"
         type="button"
-        aria-label={t('actions.waiting')}
-        title={t('actions.waiting')}
+        aria-label={t('infraManagement.actions.waiting')}
+        title={t('infraManagement.actions.waiting')}
       >
         <div className="spinner-border" />
       </button>
@@ -140,8 +140,10 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       <button
         className="infraslist-item-action unlock"
         type="button"
-        aria-label={t('actions.unlock')}
-        title={infra.locked ? t('actions.unlock') : t('actions.lock')}
+        aria-label={t('infraManagement.actions.unlock')}
+        title={
+          infra.locked ? t('infraManagement.actions.unlock') : t('infraManagement.actions.lock')
+        }
         onClick={() => protectWithOwnerGrant(toggleLockedState)}
       >
         {infra.locked ? <Unlock /> : <Lock />}
@@ -149,8 +151,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       <button
         className="infraslist-item-action rename"
         type="button"
-        aria-label={t('actions.rename')}
-        title={t('actions.rename')}
+        aria-label={t('infraManagement.actions.rename')}
+        title={t('infraManagement.actions.rename')}
         onClick={() => protectWithWritePrivilege(() => setIsFocused(infra.id))}
       >
         <Pencil />
@@ -158,8 +160,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       <button
         className="infraslist-item-action copy"
         type="button"
-        aria-label={t('actions.copy')}
-        title={t('actions.copy')}
+        aria-label={t('infraManagement.actions.copy')}
+        title={t('infraManagement.actions.copy')}
         onClick={handleDuplicate}
       >
         <Duplicate />
@@ -167,8 +169,8 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       <button
         className="infraslist-item-action export"
         type="button"
-        aria-label={t('actions.export')}
-        title={t('actions.export')}
+        aria-label={t('infraManagement.actions.export')}
+        title={t('infraManagement.actions.export')}
         onClick={handleExport}
       >
         <Download />

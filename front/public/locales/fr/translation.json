@@ -513,6 +513,49 @@
     "zoom-reset": "Réinitialiser le zoom"
   },
   "editor": "Éditeur d'infrastructure",
+  "infraManagement": {
+    "actions": {
+      "cancel": "Annuler",
+      "check": "Valider",
+      "collapse": "réduire",
+      "copy": "Dupliquer",
+      "delete": "Supprimer",
+      "details": "détails",
+      "export": "Exporter au format RailJSON",
+      "lock": "Verrouiller",
+      "rename": "Renommer",
+      "unlock": "Déverrouiller",
+      "waiting": "Veuillez patienter"
+    },
+    "addInfra": "Créer une infrastructure",
+    "addInfraJSON": "Créer une infrastructure, à partir d'un fichier RailJSON",
+    "addInfraJSONFile": "Ajouter un fichier RailJSON",
+    "addInfraJSONFileRemove": "Annuler l'import RailJSON",
+    "createInfra": "Création",
+    "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
+    "errorMessages": {
+      "noEmptyName": "Veuillez renseigner un nom",
+      "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
+    },
+    "goToEditionMode": "Éditer",
+    "goToStandardMode": "Retour à la sélection",
+    "grants": {
+      "edit": "écriture",
+      "full": "accès total",
+      "none": "pas d'accès",
+      "read": "lecture"
+    },
+    "infraChoice": "Infrastructures",
+    "infraDeleted": "L'infrastructure {{name}} a bien été supprimée.",
+    "infraManagement": "Gestion des infrastructures",
+    "infraName": "Nom de l'infrastructure",
+    "infrasFound_one": "{{count}} infrastructure trouvée",
+    "infrasFound_other": "{{count}} infrastructures trouvées",
+    "infrasFound_zero": "Aucune infrastructure trouvée",
+    "locked": "Verrouillée",
+    "no": "Non",
+    "yes": "Oui"
+  },
   "interval-editor": {
     "add": "Ajouter",
     "begin": "Début",

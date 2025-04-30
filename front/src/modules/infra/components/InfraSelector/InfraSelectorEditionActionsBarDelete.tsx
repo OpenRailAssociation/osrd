@@ -17,7 +17,7 @@ const InfraSelectorEditionActionsBarDelete = ({
   infra,
   setRunningDelete,
 }: InfraSelectorEditionActionsBarDeleteProps) => {
-  const { t } = useTranslation('infraManagement');
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const currentInfraID = useInfraID();
   const { updateInfraID } = useInfraActions();
@@ -31,7 +31,7 @@ const InfraSelectorEditionActionsBarDelete = ({
       setRunningDelete(false);
       dispatch(
         setSuccess({
-          title: t('infraDeleted', { name: infra.name }),
+          title: t('infraManagement.infraDeleted', { name: infra.name }),
           text: '',
         })
       );
@@ -51,7 +51,7 @@ const InfraSelectorEditionActionsBarDelete = ({
           className="infraslist-item-edition-delete-buttons yes"
           onClick={handleDeleteInfra}
         >
-          {t('yes')}
+          {t('infraManagement.yes')}
         </button>
       );
     }
@@ -66,7 +66,7 @@ const InfraSelectorEditionActionsBarDelete = ({
     <div className="infraslist-item-edition-delete">
       <div className="infraslist-item-edition-delete-main">
         <div>
-          <div className="small">{t('deleteConfirm')}</div>
+          <div className="small">{t('infraManagement.deleteConfirm')}</div>
           <div className="font-weight-bold">{infra.name}</div>
         </div>
       </div>
@@ -82,7 +82,7 @@ const InfraSelectorEditionActionsBarDelete = ({
                 setRunningDelete(false);
               }}
             >
-              {t('no')}
+              {t('infraManagement.no')}
             </button>
             <Countdown date={Date.now() + 3000} renderer={countDownDelete} />
           </>

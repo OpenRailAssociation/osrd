@@ -24,7 +24,7 @@ type InfraSelectorModalProps = {
 };
 
 const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSelectorModalProps) => {
-  const { t } = useTranslation(['translation', 'infraManagement']);
+  const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
   const dispatch = useAppDispatch();
   const [filter, setFilter] = useState('');
@@ -69,7 +69,7 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
       dispatch(
         setFailure(
           castErrorToFailure(error, {
-            name: t('infraManagement:errorMessages.unableToRetrieveInfraList'),
+            name: t('infraManagement.errorMessages.unableToRetrieveInfraList'),
           })
         )
       );
@@ -90,8 +90,8 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
           <div className="w-100 text-center d-flex">
             <span className="flex-grow-1">
               {editionMode
-                ? t('infraManagement:infraManagement')
-                : t('infraManagement:infraChoice')}
+                ? t('infraManagement.infraManagement')
+                : t('infraManagement.infraChoice')}
             </span>
             {!onlySelectionMode && canEditInfra && (
               <button
@@ -102,12 +102,12 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
                 {editionMode ? (
                   <>
                     <MdList />
-                    <span className="ml-1">{t('infraManagement:goToStandardMode')}</span>
+                    <span className="ml-1">{t('infraManagement.goToStandardMode')}</span>
                   </>
                 ) : (
                   <>
                     <MdEditNote />
-                    <span className="ml-1">{t('infraManagement:goToEditionMode')}</span>
+                    <span className="ml-1">{t('infraManagement.goToEditionMode')}</span>
                   </>
                 )}
               </button>
