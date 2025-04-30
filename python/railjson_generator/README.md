@@ -3,7 +3,7 @@
 Use uv to install dependencies:
 
 ```sh
-uv sync
+uv sync --all-extras
 ```
 
 ## Running generation scripts
