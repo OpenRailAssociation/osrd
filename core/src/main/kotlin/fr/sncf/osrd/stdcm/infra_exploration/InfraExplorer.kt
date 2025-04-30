@@ -15,11 +15,8 @@ import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
-import fr.sncf.osrd.utils.AppendOnlySet
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.appendOnlyMapOf
-import fr.sncf.osrd.utils.createAppendOnlySet
-import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.makePathProps
@@ -123,10 +120,6 @@ fun initInfraExplorer(
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
-    // Determined empirically on a timetable import
-    val maxExpectedTracks = 1600
-    val falsePositiveRate = 0.03
-
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = makePathProps(blockInfra, rawInfra, block)
@@ -142,7 +135,6 @@ fun initInfraExplorer(
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
                 appendOnlyMapOf(),
-                createAppendOnlySet(maxExpectedTracks, falsePositiveRate),
                 null,
                 incrementalPath,
                 blockToPathProperties,
@@ -161,7 +153,6 @@ private class InfraExplorerImpl(
     private var blocks: AppendOnlyLinkedList<BlockId>,
     private var routes: AppendOnlyLinkedList<RouteId>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
-    private var visitedTracks: AppendOnlySet<TrackSectionId>,
     private var lastTrack: TrackSectionId?,
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
@@ -268,7 +259,6 @@ private class InfraExplorerImpl(
             this.blocks.shallowCopy(),
             this.routes.shallowCopy(),
             this.blockRoutes.shallowCopy(),
-            this.visitedTracks.shallowCopy(),
             this.lastTrack,
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
@@ -301,7 +291,6 @@ private class InfraExplorerImpl(
         val addedBlocks = mutableListOf<BlockId>()
 
         for (block in routeBlocks) {
-            if (hasRepeatedElements(block)) return false
             addedBlocks.add(block)
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true
@@ -367,25 +356,6 @@ private class InfraExplorerImpl(
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
         return true
-    }
-
-    /**
-     * Return true if parts of the new block have already been visited, otherwise mark tracks as
-     * visited.
-     */
-    private fun hasRepeatedElements(block: StaticIdx<Block>): Boolean {
-        val tracks =
-            blockInfra
-                .getBlockZonePaths(block)
-                .flatMap { rawInfra.getZonePathChunks(it) }
-                .map { rawInfra.getTrackFromChunk(it.value) }
-        for (track in tracks) {
-            if (track == lastTrack) continue
-            if (visitedTracks.contains(track)) return true
-            visitedTracks.add(track)
-            lastTrack = track
-        }
-        return false
     }
 
     private fun findStopsInTravelledPathAndOnBlock(
