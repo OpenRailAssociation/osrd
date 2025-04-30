@@ -20,11 +20,6 @@ export function minToMs(min: number) {
   return min * 60 * 1000;
 }
 
-function datetime2time(datetime: Date) {
-  const formatTime = d3.timeFormat('%H:%M:%S');
-  return formatTime(datetime);
-}
-
 export function sec2time(sec: number) {
   return new Date(sec * 1000).toISOString().substr(11, 8);
 }
@@ -39,10 +34,6 @@ export function time2sec(timeString: TimeString) {
   const timeArray = timeString.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;
   return Number(timeArray[0]) * 3600 + Number(timeArray[1]) * 60 + seconds;
-}
-
-export function datetime2sec(time: Date): number {
-  return time2sec(datetime2time(time));
 }
 
 export function durationInSeconds(start: number, end: number) {
