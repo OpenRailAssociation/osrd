@@ -181,9 +181,9 @@ export default function RollingStockCurve({
   hoveredElectricalParam?: string | null;
   selectedElectricalParam?: string | null;
 }) {
-  const { t, ready } = useTranslation(['rollingstock']);
+  const { t, ready } = useTranslation();
   const mode2name = (mode: string) =>
-    mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t(THERMAL_TRACTION_IDENTIFIER);
+    mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t('rollingStock.thermal');
 
   const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};

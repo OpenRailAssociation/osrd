@@ -23,7 +23,7 @@ const RollingStockEditorFormModal = ({
   deleteAction,
 }: RollingStockEditorFormModalProps) => {
   const { closeModal } = useModal();
-  const { t } = useTranslation(['translation', 'rollingstock']);
+  const { t } = useTranslation();
 
   const displayErrorObject = (errorList: ScenarioReference[]) => {
     const projectList = groupBy(errorList, 'project_name');
@@ -34,10 +34,10 @@ const RollingStockEditorFormModal = ({
     return (
       <div className=" d-flex flex-column form-error mb-3">
         <span className="text-uppercase text-center mb-2">{mainText}</span>
-        <span>{t('rollingstock:errorMessages.rollingStockUsed')}</span>
+        <span>{t('rollingStock.errorMessages.rollingStockUsed')}</span>
         {Object.keys(projectList).map((projectName: string, index: number) => (
           <ul className="mt-1 mb-0">
-            <span>{t('rollingstock:project', { projectName })}</span>
+            <span>{t('rollingStock.project', { projectName })}</span>
             {Object.keys(scenarioList[index]).map((scenarioName) => (
               <li className="ml-5">{scenarioName}</li>
             ))}

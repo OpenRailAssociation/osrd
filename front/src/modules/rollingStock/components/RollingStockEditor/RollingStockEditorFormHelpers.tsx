@@ -37,7 +37,7 @@ const RollingStockEditorMetadataFormColumn = ({
   rollingStockValues,
   setRollingStockValues,
 }: RollingStockMetadataFormProps & { propertiesList: SchemaProperty[] }) => {
-  const { t } = useTranslation(['rollingstock', 'translation']);
+  const { t } = useTranslation();
   return (
     <>
       {propertiesList.map((property, index) => {
@@ -119,7 +119,7 @@ const RollingStockEditorParameterFormColumn = ({
 }: RollingStockEditorParameterFormProps & {
   propertiesList: SchemaProperty[];
 }) => {
-  const { t } = useTranslation(['rollingstock', 'translation']);
+  const { t } = useTranslation();
 
   const handleUnitChange = <U extends MultiUnit>(
     option: InputGroupSNCFValue<U>,
@@ -211,7 +211,7 @@ const RollingStockEditorParameterFormColumn = ({
                   currentParam.value < currentParam.min ||
                   currentParam.value > currentParam.max
                 }
-                errorMsg={t('errorMessages.minMaxRangeError', {
+                errorMsg={t('rollingStock.errorMessages.minMaxRangeError', {
                   min: currentParam.min?.toString().replace('.', ','),
                   max: floor(currentParam.max, 6).toString().replace('.', ','),
                 })}
@@ -242,11 +242,11 @@ const RollingStockEditorParameterFormColumn = ({
             }
             errorMsg={
               property.max
-                ? t('errorMessages.minMaxRangeError', {
+                ? t('rollingStock.errorMessages.minMaxRangeError', {
                     min: property.min?.toString().replace('.', ','),
                     max: property.max?.toString().replace('.', ','),
                   })
-                : t('errorMessages.minRangeError', {
+                : t('rollingStock.errorMessages.minRangeError', {
                     min: property.min?.toString().replace('.', ','),
                   })
             }
@@ -284,7 +284,7 @@ export const RollingStockEditorParameterForm = ({
 }: RollingStockEditorParameterFormProps & {
   effortCurves: EffortCurveForms | null;
 }) => {
-  const { t } = useTranslation(['rollingstock', 'translation']);
+  const { t } = useTranslation();
   const refListOfProperties = Object.keys(RollingStockEditorParameter);
 
   const {
@@ -311,8 +311,8 @@ export const RollingStockEditorParameterForm = ({
       </div>
       <div className="d-flex flex-column justify-content-between col-xl-4 pb-3">
         <div className="d-flex flex-xl-column mb-2 mt-3 mt-xl-0">
-          <span className="ml-xl-2 text-gray-dark">{t('rollingResistance')}</span>
-          <span className="ml-4 text-muted">{t('rollingResistanceFormula')}</span>
+          <span className="ml-xl-2 text-gray-dark">{t('rollingStock.rollingResistance')}</span>
+          <span className="ml-4 text-muted">{t('rollingStock.rollingResistanceFormula')}</span>
         </div>
         <RollingStockEditorParameterFormColumn
           rollingStockValues={rollingStockValues}
@@ -335,7 +335,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
   rsSignalingSystemsList,
   setRollingStockValues,
 }: RollingStockEditorOnboardSystemEquipmentFormProps) => {
-  const { t } = useTranslation(['rollingstock']);
+  const { t } = useTranslation();
 
   const rollingStockSchemasProperties = useCompleteRollingStockSchemasProperties();
 
@@ -374,7 +374,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
     <div className="d-lg-flex rollingstock-editor-input-container px-1 pb-3">
       <div className="d-flex justify-content-space-around mr-2">
         <label className="signaling-systems-label col-xl-3" htmlFor="supportedSignalingSystems">
-          {t('supportedSignalingSystems')}
+          {t('rollingStock.supportedSignalingSystems')}
         </label>
         <div className="d-flex flex-wrap col-xl-9 ">{signalingSystemCheckboxes}</div>
       </div>
@@ -388,13 +388,13 @@ export const RollingStockEditorCategoryForm = ({
   rollingStockValues,
   setRollingStockValues,
 }: RollingStockEditorParameterFormProps) => {
-  const { t } = useTranslation(['rollingstock']);
+  const { t } = useTranslation();
 
   const categoryOptions: CategoryOption[] = [
-    { label: t('categoriesOptions.choose') },
+    { label: t('rollingStock.categoriesOptions.choose') },
     ...Object.values(TrainCategoryDict).map((category) => ({
       id: category,
-      label: t(`categoriesOptions.${category}`),
+      label: t(`rollingStock.categoriesOptions.${category}`),
     })),
   ];
 
@@ -431,14 +431,14 @@ export const RollingStockEditorCategoryForm = ({
           id="primary-category-selector"
           data-testid="primary-category-selector"
           name="primary-category-selector"
-          label={t('primaryCategory')}
+          label={t('rollingStock.primaryCategory')}
           value={
             rollingStockValues.primaryCategory
               ? {
                   id: rollingStockValues.primaryCategory,
                   label: t(rollingStockValues.primaryCategory),
                 }
-              : { label: t('categoriesOptions.choose') }
+              : { label: t('rollingStock.categoriesOptions.choose') }
           }
           options={categoryOptions}
           onChange={handlePrimaryCategoryChange}
@@ -448,7 +448,7 @@ export const RollingStockEditorCategoryForm = ({
       {/* Other Categories Selection */}
       <div className="col">
         <label className="form-label" htmlFor="rs_category_checkboxes">
-          {t('otherCategories')}
+          {t('rollingStock.otherCategories')}
         </label>
         <div className="d-flex flex-wrap" id="rs_category_checkboxes">
           {Object.values(TrainCategoryDict).map((category) => (
@@ -458,7 +458,7 @@ export const RollingStockEditorCategoryForm = ({
                 id={`category-checkbox-${category}`}
                 data-testid={`category-checkbox-${category}`}
                 name={`category-checkbox-${category}`}
-                label={t(`categoriesOptions.${category}`)}
+                label={t(`rollingStock.categoriesOptions.${category}`)}
                 checked={rollingStockValues.categories.has(category)}
                 onChange={handleOtherCategoryChange(category)}
                 disabled={rollingStockValues.primaryCategory === category}

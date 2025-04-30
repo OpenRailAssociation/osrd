@@ -14,7 +14,7 @@ import { SearchRollingStock } from 'modules/rollingStock/components/RollingStock
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 
 const RollingStockEditor = () => {
-  const { t } = useTranslation('rollingstock');
+  const { t } = useTranslation();
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -50,7 +50,7 @@ const RollingStockEditor = () => {
               role="button"
               tabIndex={-1}
               className="d-flex align-self-start rollingstock-elements w-100 rollingstock-editor-list-cards"
-              aria-label={t('selectRollingStock')}
+              aria-label={t('rollingStock.selectRollingStock')}
               onClick={() => {
                 setIsEditing(false);
                 setIsAdding(false);
@@ -100,10 +100,10 @@ const RollingStockEditor = () => {
 
   function displayList() {
     if (searchIsLoading) {
-      return <Loader msg={t('waitingLoader')} />;
+      return <Loader msg={t('rollingStock.waitingLoader')} />;
     }
     if (filteredRollingStockList.length === 0) {
-      return <div className="rollingstock-empty">{t('rollingstock:resultFound_zero')}</div>;
+      return <div className="rollingstock-empty">{t('rollingStock.resultFound_zero')}</div>;
     }
     return rollingStocksList;
   }
@@ -132,17 +132,17 @@ const RollingStockEditor = () => {
             onClick={() => {
               openModal(
                 <RollingStockEditorFormModal
-                  mainText={t('translation:common.leaveEditionMode')}
+                  mainText={t('common.leaveEditionMode')}
                   request={() => {
                     setIsAdding(false);
                     setIsEditing(false);
                   }}
-                  buttonText={t('translation:common.confirm')}
+                  buttonText={t('common.confirm')}
                 />
               );
             }}
           >
-            <span>{t('listDisabled')}</span>
+            <span>{t('rollingStock.listDisabled')}</span>
           </div>
         )}
         <div className="d-flex justify-content-center w-100">
@@ -155,7 +155,7 @@ const RollingStockEditor = () => {
               setOpenedRollingStockCardId(undefined);
             }}
           >
-            {t('addNewRollingStock')}
+            {t('rollingStock.addNewRollingStock')}
           </button>
         </div>
         {isAdding && (
@@ -177,7 +177,9 @@ const RollingStockEditor = () => {
         {displayList()}
       </div>
       {!openedRollingStockCardId && !isAdding && (
-        <p className="rollingstock-editor-unselected pt-1 px-5">{t('chooseRollingStock')}</p>
+        <p className="rollingstock-editor-unselected pt-1 px-5">
+          {t('rollingStock.chooseRollingStock')}
+        </p>
       )}
     </div>
   );

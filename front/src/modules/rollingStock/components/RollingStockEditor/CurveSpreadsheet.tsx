@@ -34,11 +34,11 @@ const CurveSpreadsheet = ({
   selectedTractionMode,
   isDefaultCurve,
 }: CurveSpreadsheetProps) => {
-  const { t } = useTranslation('rollingstock');
+  const { t } = useTranslation();
   const columns = useMemo(
     () => [
-      { ...keyColumn('speed', intColumn), title: t('speed') },
-      { ...keyColumn('effort', floatColumn), title: t('effort') },
+      { ...keyColumn('speed', intColumn), title: t('rollingStock.speed') },
+      { ...keyColumn('effort', floatColumn), title: t('rollingStock.effort') },
     ],
     [t]
   );

@@ -20,13 +20,15 @@ const RollingStockCardButtons = ({
   curvesComfortList,
   onSelectRollingStock,
 }: RollingStockCardButtonsProps) => {
-  const { t } = useTranslation(['rollingstock']);
+  const { t } = useTranslation();
 
   const currentComfortInStore = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState<string>(currentComfortInStore);
 
   const comfortOptions = useMemo(() => {
-    const options: Option[] = [{ value: 'STANDARD', label: t('comfortTypes.STANDARD') }];
+    const options: Option[] = [
+      { value: 'STANDARD', label: t('rollingStock.comfortTypes.STANDARD') },
+    ];
     if (curvesComfortList.includes('HEATING')) {
       options.push({
         value: 'HEATING',
@@ -35,7 +37,7 @@ const RollingStockCardButtons = ({
             data-testid="comfort-heating-button"
             className="rollingstock-footer-button-with-picto"
           >
-            {comfort2pictogram('HEATING')} {t('comfortTypes.HEATING')}
+            {comfort2pictogram('HEATING')} {t('rollingStock.comfortTypes.HEATING')}
           </span>
         ),
       });
@@ -45,7 +47,8 @@ const RollingStockCardButtons = ({
         value: 'AIR_CONDITIONING',
         label: (
           <span data-testid="comfort-ac-button" className="rollingstock-footer-button-with-picto">
-            {comfort2pictogram('AIR_CONDITIONING')} {t('comfortTypes.AIR_CONDITIONING')}
+            {comfort2pictogram('AIR_CONDITIONING')}{' '}
+            {t('rollingStock.comfortTypes.AIR_CONDITIONING')}
           </span>
         ),
       });
@@ -81,7 +84,7 @@ const RollingStockCardButtons = ({
         className="ml-2 btn btn-primary btn-sm"
         onClick={() => onSelectRollingStock(id, comfort as Comfort)}
       >
-        {t('selectRollingStock')}
+        {t('rollingStock.selectRollingStock')}
       </button>
     </div>
   );

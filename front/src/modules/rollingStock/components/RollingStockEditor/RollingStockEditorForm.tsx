@@ -62,11 +62,7 @@ const RollingStockEditorForm = ({
   isAdding,
 }: RollingStockParametersProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation([
-    'rollingstock',
-    'translation',
-    'operationalStudies/manageTrainSchedule',
-  ]);
+  const { t } = useTranslation();
   const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
   const [patchRollingStock] =
@@ -105,8 +101,8 @@ const RollingStockEditorForm = ({
         if (setOpenedRollingStockCardId) setOpenedRollingStockCardId(res.id);
         dispatch(
           setSuccess({
-            title: t('messages.success'),
-            text: t('messages.rollingStockAdded'),
+            title: t('rollingStock.messages.success'),
+            text: t('rollingStock.messages.rollingStockAdded'),
           })
         );
         setAddOrEditState(false);
@@ -115,7 +111,7 @@ const RollingStockEditorForm = ({
         dispatch(
           setFailure(
             castErrorToFailure(error, {
-              name: t('messages.failure'),
+              name: t('rollingStock.messages.failure'),
             })
           )
         );
@@ -132,8 +128,8 @@ const RollingStockEditorForm = ({
         .then(() => {
           dispatch(
             setSuccess({
-              title: t('messages.success'),
-              text: t('messages.rollingStockUpdated'),
+              title: t('rollingStock.messages.success'),
+              text: t('rollingStock.messages.rollingStockUpdated'),
             })
           );
           setAddOrEditState(false);
@@ -142,7 +138,7 @@ const RollingStockEditorForm = ({
           dispatch(
             setFailure(
               castErrorToFailure(error, {
-                name: t('messages.failure'),
+                name: t('rollingStock.messages.failure'),
               })
             )
           );
@@ -155,18 +151,18 @@ const RollingStockEditorForm = ({
     let error: undefined | { name: string; message: string };
     if (!data.name) {
       error = {
-        name: t('messages.invalidForm'),
-        message: t('messages.missingName'),
+        name: t('rollingStock.messages.invalidForm'),
+        message: t('rollingStock.messages.missingName'),
       };
     } else if (!data.primaryCategory) {
       error = {
-        name: t('messages.invalidForm'),
-        message: t('messages.missingPrimaryCategory'),
+        name: t('rollingStock.messages.invalidForm'),
+        message: t('rollingStock.messages.missingPrimaryCategory'),
       };
     } else if (!selectedTractionMode || !effortCurves) {
       error = {
-        name: t('messages.invalidForm'),
-        message: t('messages.missingEffortCurves'),
+        name: t('rollingStock.messages.invalidForm'),
+        message: t('rollingStock.messages.missingEffortCurves'),
       };
     }
     if (error) {
@@ -179,7 +175,7 @@ const RollingStockEditorForm = ({
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(
-        t('messages.missingInformationAutomaticallyFilled', {
+        t('rollingStock.messages.missingInformationAutomaticallyFilled', {
           invalidFields: invalidFields.map((field) => t(field).toLowerCase()).join(', '),
           count: invalidFields.length,
         })
@@ -190,7 +186,9 @@ const RollingStockEditorForm = ({
 
     if (invalidEffortCurves.length > 0) {
       setErrorMessage(
-        t('messages.invalidEffortCurves', { invalidEffortCurves: invalidEffortCurves.join(', ') })
+        t('rollingStock.messages.invalidEffortCurves', {
+          invalidEffortCurves: invalidEffortCurves.join(', '),
+        })
       );
       return;
     }
@@ -204,8 +202,12 @@ const RollingStockEditorForm = ({
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
         request={isAdding ? addNewRollingstock(payload) : updateRollingStock(payload)}
-        mainText={isAdding ? t('confirmAddRollingStock') : t('confirmUpdateRollingStock')}
-        buttonText={t('translation:common.yes')}
+        mainText={
+          isAdding
+            ? t('rollingStock.confirmAddRollingStock')
+            : t('rollingStock.confirmUpdateRollingStock')
+        }
+        buttonText={t('common.yes')}
       />
     );
   };
@@ -214,8 +216,8 @@ const RollingStockEditorForm = ({
     openModal(
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
-        mainText={t('cancelUpdateRollingStock')}
-        buttonText={t('translation:common.yes')}
+        mainText={t('rollingStock.cancelUpdateRollingStock')}
+        buttonText={t('common.yes')}
       />
     );
   };
@@ -233,9 +235,9 @@ const RollingStockEditorForm = ({
 
   const tabRollingStockDetails: TabProps = {
     id: 'rollingstock-details',
-    title: t('tabs.rollingStockDetails'),
+    title: t('rollingStock.tabs.rollingStockDetails'),
     withWarning: false,
-    label: t('tabs.rollingStockDetails'),
+    label: t('rollingStock.tabs.rollingStockDetails'),
     content: (
       <>
         <RollingStockEditorMetadataForm
@@ -264,9 +266,9 @@ const RollingStockEditorForm = ({
 
   const tabRollingStockCurves: TabProps = {
     id: 'rollingstock-curves',
-    title: `${t('tabs.rollingStockCurves')} *`,
+    title: `${t('rollingStock.tabs.rollingStockCurves')} *`,
     withWarning: false,
-    label: t('tabs.rollingStockCurves'),
+    label: t('rollingStock.tabs.rollingStockCurves'),
     content: (
       <RollingStockEditorCurves
         effortCurves={effortCurves}
@@ -303,14 +305,14 @@ const RollingStockEditorForm = ({
               className="btn btn-secondary mr-2 py-1 px-2"
               onClick={() => cancel()}
             >
-              {t('translation:common.cancel')}
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="btn btn-primary py-1 px-2"
               data-testid="submit-rollingstock-button"
             >
-              {t('translation:common.confirm')}
+              {t('common.confirm')}
             </button>
           </div>
         </div>

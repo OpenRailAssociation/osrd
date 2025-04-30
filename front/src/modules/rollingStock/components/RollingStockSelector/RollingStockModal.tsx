@@ -22,7 +22,7 @@ function RollingStockModal({
   ref2scroll,
   onSelectRollingStock,
 }: RollingStockModal) {
-  const { t } = useTranslation(['translation', 'rollingstock']);
+  const { t } = useTranslation();
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockId);
   const { closeModal } = useContext(ModalContext);
 
@@ -54,7 +54,7 @@ function RollingStockModal({
           />
         ))
       ) : (
-        <div className="rollingstock-empty">{t('rollingstock:resultFound_zero')}</div>
+        <div className="rollingstock-empty">{t('rollingStock.resultFound_zero')}</div>
       ),
     [filteredRollingStockList, openRollingStockCardId, ref2scroll, openRollingStockCardId]
   );
@@ -74,7 +74,7 @@ function RollingStockModal({
           />
         </div>
         <div className="rollingstock-search-list">
-          {searchIsLoading ? <Loader msg={t('rollingstock:waitingLoader')} /> : rollingStocksList}
+          {searchIsLoading ? <Loader msg={t('rollingStock.waitingLoader')} /> : rollingStocksList}
         </div>
       </div>
     </ModalBodySNCF>
