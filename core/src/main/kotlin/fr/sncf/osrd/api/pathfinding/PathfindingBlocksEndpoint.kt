@@ -195,7 +195,9 @@ private fun computePaths(
 
     if (pathFound != null) {
         pathfindingLogger.info("Path found, start postprocessing")
-        return makeBlockPath(pathFound)!!
+        val res = makeBlockPath(pathFound)!!
+        if (!hasDuplicateTracks(infra, res)) return res
+        else pathfindingLogger.info("Path has duplicate tracks, dismissing")
     }
 
     // Handling errors
@@ -211,6 +213,33 @@ private fun computePaths(
         initialRequest,
         timeout?.minus(elapsedSeconds)
     )
+}
+
+/**
+ * Return true if the path contains a duplicated track. This kind of path is not supported by OSRD
+ * yet.
+ */
+fun hasDuplicateTracks(infra: FullInfra, path: PathfindingResultId<Block>): Boolean {
+    val seenTracks = mutableSetOf<TrackSectionId>()
+    var lastTrack: TrackSectionId? = null
+    for (blockRange in path.ranges) {
+        val zonePaths = infra.blockInfra.getBlockZonePaths(blockRange.edge)
+        for (zonePath in zonePaths) {
+            val chunks = infra.rawInfra.getZonePathChunks(zonePath)
+            val tracks = chunks.map { infra.rawInfra.getTrackFromChunk(it.value) }
+            for (track in tracks) {
+                if (lastTrack == track) {
+                    continue
+                }
+                if (seenTracks.contains(track)) {
+                    return true
+                }
+                seenTracks.add(track)
+                lastTrack = track
+            }
+        }
+    }
+    return false
 }
 
 const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2

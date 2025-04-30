@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.stdcm
 import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
+import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
 import fr.sncf.osrd.conflicts.*
@@ -134,7 +135,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                 )
-            if (path == null) {
+            if (path == null || hasDuplicateTracks(infra, path.blocks)) {
                 val response = PathNotFound()
                 return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
             }

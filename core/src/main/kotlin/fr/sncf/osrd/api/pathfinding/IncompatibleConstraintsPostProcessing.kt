@@ -24,7 +24,8 @@ fun buildIncompatibleConstraintsResponse(
 ): IncompatibleConstraintsPathResponse? {
     if (
         possiblePathWithoutErrorNoConstraints == null ||
-            possiblePathWithoutErrorNoConstraints.ranges.isEmpty()
+            possiblePathWithoutErrorNoConstraints.ranges.isEmpty() ||
+            hasDuplicateTracks(infra, possiblePathWithoutErrorNoConstraints)
     )
         return null
 
