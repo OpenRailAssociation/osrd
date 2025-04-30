@@ -8,16 +8,8 @@ dayjs.extend(duration);
 
 export const SECONDS_IN_A_DAY = 86400;
 
-export function sec2ms(sec: number) {
-  return sec * 1000;
-}
-
 export function ms2sec(ms: number) {
   return ms / 1000;
-}
-
-export function minToMs(min: number) {
-  return min * 60 * 1000;
 }
 
 export function sec2time(sec: number) {
@@ -60,8 +52,4 @@ export function secToHoursString(sec: number | null, { withSeconds = false } = {
   }
   const format = withSeconds ? '%H:%M:%S' : '%H:%M';
   return d3.utcFormat(format)(new Date(sec * 1000));
-}
-
-export function secToMin(sec: number) {
-  return sec / 60;
 }
