@@ -9,7 +9,7 @@ import { useCurrentInfra } from 'modules/infra/useInfra';
 import Editor from './Editor';
 
 export default function HomeEditorUnplugged() {
-  const { t } = useTranslation(['translation', 'referenceMap']);
+  const { t } = useTranslation();
   const { data: infra } = useCurrentInfra();
 
   return (
@@ -20,7 +20,7 @@ export default function HomeEditorUnplugged() {
             {t('editor')}
             {infra ? (
               <span className="ml-2 text-muted">
-                <span>{t('referenceMap:infrastructure', { name: infra.name })}</span>
+                <span>{`${t('infrastructure')} ${infra.name}`}</span>
                 {infra.locked && (
                   <span className="ml-2 text-yellow">
                     <Lock />
@@ -28,7 +28,7 @@ export default function HomeEditorUnplugged() {
                 )}
               </span>
             ) : (
-              <span className="ml-2 text-orange">{t('referenceMap:mapNoInfraSelected')}</span>
+              <span className="ml-2 text-orange">{t('infraManagement.noInfraSelected')}</span>
             )}
           </>
         }
