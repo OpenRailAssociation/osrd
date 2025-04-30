@@ -1,1 +1,2 @@
-osrd_schemas.egg-info
+build/
+osrd_schemas.egg-info/
