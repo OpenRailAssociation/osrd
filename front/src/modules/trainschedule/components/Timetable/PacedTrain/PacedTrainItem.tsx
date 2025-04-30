@@ -23,7 +23,6 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { ms2min } from 'utils/timeManipulation';
 import {
   formatEditoastTrainIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
@@ -220,7 +219,7 @@ const PacedTrainItem = ({
           <div className="paced-train-right-zone">
             {pacedTrain.isValid && (
               <div data-testid="paced-train-interval">
-                &mdash;&nbsp;{`${ms2min(pacedTrain.paced.interval.ms)}min`}
+                &mdash;&nbsp;{`${pacedTrain.paced.interval.total('minute')}min`}
               </div>
             )}
             <div
