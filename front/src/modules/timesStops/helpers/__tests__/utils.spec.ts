@@ -228,8 +228,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '10:00:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T10:00:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -262,8 +261,7 @@ describe('updateDaySinceDeparture', () => {
           stopFor: '1800',
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T10:00:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -304,8 +302,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '01:00:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T00:00:00');
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+      const result = updateDaySinceDeparture(pathWaypointRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -347,8 +344,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '00:30:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:50:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -388,8 +384,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '00:00:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:50:00');
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+      const result = updateDaySinceDeparture(pathWaypointRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -436,8 +431,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '01:30:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:45:00');
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+      const result = updateDaySinceDeparture(pathWaypointRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -499,8 +493,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '00:50:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:50:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -564,8 +557,7 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '00:56:00' },
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:50:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -644,8 +636,7 @@ describe('updateDaySinceDeparture', () => {
           stopFor: '3600',
         },
       ] as TimesStopsInputRow[];
-      const startTime = new Date('2024-08-13T23:50:00');
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+      const result = updateDaySinceDeparture(TimesStopsInputRows, {
         keepFirstIndexArrival: true,
       });
       const expected = [
@@ -751,8 +742,7 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
 
-      const startTime = new Date('2024-08-13T23:45:00');
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+      const result = updateDaySinceDeparture(pathWaypointRows, {
         keepFirstIndexArrival: true,
       });
 

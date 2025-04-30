@@ -13,7 +13,6 @@ import { Duration } from 'utils/duration';
 import { msToS } from 'utils/physics';
 import { NO_BREAK_SPACE } from 'utils/strings';
 import {
-  datetime2sec,
   durationInSeconds,
   sec2time,
   SECONDS_IN_A_DAY,
@@ -220,11 +219,10 @@ export function normalizeNullablesInRow(row: TimesStopsInputRow): TimesStopsInpu
  */
 export function updateDaySinceDeparture(
   pathWaypointRows: TimesStopsInputRow[],
-  startTime?: Date,
   { keepFirstIndexArrival = false } = {}
 ): TimesStopsInputRow[] {
   let currentDaySinceDeparture = 0;
-  let previousTime = startTime ? datetime2sec(startTime) : Number.NEGATIVE_INFINITY;
+  let previousTime = Number.NEGATIVE_INFINITY;
 
   return pathWaypointRows.map((pathWaypoint, index) => {
     const { arrival, stopFor } = pathWaypoint;

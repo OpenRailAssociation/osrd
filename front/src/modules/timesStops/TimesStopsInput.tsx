@@ -111,7 +111,7 @@ const TimesStopsInput = ({
         operation,
         rows.length
       );
-      updatedRows = updateDaySinceDeparture(updatedRows, startTime);
+      updatedRows = updateDaySinceDeparture(updatedRows);
 
       if (!updatedRows[operation.fromRowIndex].isMarginValid) {
         newRows[operation.fromRowIndex].isMarginValid = false;
@@ -156,7 +156,7 @@ const TimesStopsInput = ({
           startTime,
           TableType.Input
         );
-        setRows(updateDaySinceDeparture(formatedRows, startTime, { keepFirstIndexArrival: true }));
+        setRows(updateDaySinceDeparture(formatedRows, { keepFirstIndexArrival: true }));
       }
     };
 
