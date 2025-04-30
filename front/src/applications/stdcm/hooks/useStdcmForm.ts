@@ -7,6 +7,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import {
   getLinkedTrains,
   getMaxSpeed,
+  getLoadingGauge,
   getStdcmOrigin,
   getStdcmPathSteps,
   getStdcmRollingStockID,
@@ -24,6 +25,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
   const totalMass = useSelector(getTotalMass);
   const totalLength = useSelector(getTotalLength);
   const maxSpeed = useSelector(getMaxSpeed);
+  const loadingGauge = useSelector(getLoadingGauge);
   const linkedTrains = useSelector(getLinkedTrains);
   const origin = useSelector(getStdcmOrigin);
   const rollingStockId = useSelector(getStdcmRollingStockID);
@@ -43,6 +45,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
         totalMass,
         totalLength,
         maxSpeed,
+        loadingGauge,
         speedLimitByTag,
       },
       linkedTrains,
@@ -55,6 +58,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
     totalMass,
     totalLength,
     maxSpeed,
+    loadingGauge,
     linkedTrains,
   ]);
 

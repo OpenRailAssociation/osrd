@@ -28,6 +28,7 @@
       "totalMass": "The weight has been updated to reflect the new consist data."
     },
     "length": "Length",
+    "loadingGauge": "Loading gauge",
     "maxSpeed": "Max speed",
     "tonnage": "Tonnage",
     "towedRollingStock": "Towed rolling stock",

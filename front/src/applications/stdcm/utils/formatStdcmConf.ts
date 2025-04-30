@@ -2,7 +2,11 @@ import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
-import type { PathfindingItem, PostTimetableByIdStdcmApiArg } from 'common/api/osrdEditoastApi';
+import type {
+  LoadingGaugeType,
+  PathfindingItem,
+  PostTimetableByIdStdcmApiArg,
+} from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
@@ -23,6 +27,7 @@ type ValidStdcmConfig = {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
+  loadingGauge: LoadingGaugeType;
   margin?: StandardAllowance;
   gridMarginBefore?: Duration;
   gridMarginAfter?: Duration;
@@ -51,6 +56,7 @@ export const checkStdcmConf = (
     totalLength,
     totalMass,
     maxSpeed,
+    loadingGauge,
   } = osrdconf;
   let error = false;
 
@@ -190,6 +196,7 @@ export const checkStdcmConf = (
     totalMass,
     totalLength,
     maxSpeed,
+    loadingGauge,
     towedRollingStockID,
     margin: standardAllowance,
     gridMarginBefore,
@@ -220,6 +227,6 @@ export const formatStdcmPayload = (
     work_schedule_group_id: validConfig.workScheduleGroupId,
     temporary_speed_limit_group_id: validConfig.temporarySpeedLimitGroupId,
     electrical_profile_set_id: validConfig.electricalProfileSetId,
-    loading_gauge_type: 'GA', // default value as the user can't select one
+    loading_gauge_type: validConfig.loadingGauge,
   },
 });

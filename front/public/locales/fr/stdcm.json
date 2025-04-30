@@ -28,6 +28,7 @@
       "totalMass": "Le poids a été mis à jour en fonction des nouvelles données de convoi."
     },
     "length": "Longueur",
+    "loadingGauge": "Gabarit",
     "maxSpeed": "Vitesse max.",
     "tonnage": "Tonnage",
     "towedRollingStock": "Matériel remorqué",

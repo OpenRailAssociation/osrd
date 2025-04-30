@@ -4,9 +4,23 @@ import type { InputProps } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
-import { updateTotalMass, updateTotalLength, updateMaxSpeed } from 'reducers/osrdconf/stdcmConf';
-import { getTotalMass, getTotalLength, getMaxSpeed } from 'reducers/osrdconf/stdcmConf/selectors';
+import type {
+  LightRollingStockWithLiveries,
+  LoadingGaugeType,
+  TowedRollingStock,
+} from 'common/api/osrdEditoastApi';
+import {
+  updateTotalMass,
+  updateTotalLength,
+  updateMaxSpeed,
+  updateLoadingGauge,
+} from 'reducers/osrdconf/stdcmConf';
+import {
+  getTotalMass,
+  getTotalLength,
+  getMaxSpeed,
+  getLoadingGauge,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { kgToT } from 'utils/physics';
 
@@ -45,6 +59,11 @@ const useStdcmConsist = () => {
     const totalMaxSpeed = Number(e.target.value);
     setMaxSpeedChanged(true);
     dispatch(updateMaxSpeed(totalMaxSpeed === 0 ? undefined : totalMaxSpeed));
+  };
+
+  const loadingGauge = useSelector(getLoadingGauge);
+  const onLoadingGaugeChange = (option: LoadingGaugeType) => {
+    dispatch(updateLoadingGauge(option));
   };
 
   const prefillConsist = (
@@ -96,6 +115,8 @@ const useStdcmConsist = () => {
     onTotalLengthChange,
     maxSpeed,
     onMaxSpeedChange,
+    loadingGauge,
+    onLoadingGaugeChange,
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
