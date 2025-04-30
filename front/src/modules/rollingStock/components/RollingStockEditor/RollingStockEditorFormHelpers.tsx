@@ -15,6 +15,7 @@ import {
   RS_REQUIRED_FIELDS,
 } from 'modules/rollingStock/consts';
 import { handleUnitValue, splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
+import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
   EffortCurveForms,
@@ -390,13 +391,7 @@ export const RollingStockEditorCategoryForm = ({
 }: RollingStockEditorParameterFormProps) => {
   const { t } = useTranslation();
 
-  const categoryOptions: CategoryOption[] = [
-    { label: t('rollingStock.categoriesOptions.choose') },
-    ...Object.values(TrainCategoryDict).map((category) => ({
-      id: category,
-      label: t(`rollingStock.categoriesOptions.${category}`),
-    })),
-  ];
+  const categoryOptions = useCategoryOptions();
 
   const handlePrimaryCategoryChange = (selectedCategory?: CategoryOption) => {
     setRollingStockValues((prevValues) => {

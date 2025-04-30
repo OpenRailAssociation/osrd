@@ -16,6 +16,7 @@ import type {
   PacedTrainResponse,
   PathItemLocation,
   ReceptionSignal,
+  TrainCategory,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
@@ -39,6 +40,7 @@ export type StandardAllowance = {
 
 export type OperationalStudiesConfState = OsrdConfState & {
   name: string;
+  category: TrainCategory | null;
   startTime: Date;
   initialSpeed?: number;
   labels: string[];

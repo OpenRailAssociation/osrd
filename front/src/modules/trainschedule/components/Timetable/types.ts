@@ -2,6 +2,7 @@ import type {
   LightRollingStockWithLiveries,
   PathfindingInputError,
   PathfindingNotFound,
+  TrainCategory,
   SimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -13,6 +14,8 @@ export type ValidityFilter = 'both' | 'valid' | 'invalid';
 export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
 export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
+
+export type TrainCategoryFilter = 'all' | 'noCategory' | TrainCategory;
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
@@ -76,6 +79,8 @@ export type TimetableFilters = {
   setTrainTypeFilter: (trainType: TrainTypeFilter) => void;
   selectedTags: Set<string | null>;
   setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
+  trainCategoryFilter: TrainCategoryFilter;
+  setTrainCategoryFilter: (categoryOption: TrainCategoryFilter) => void;
 };
 
 export type Occurrence = {

@@ -33,6 +33,7 @@ const testTrainSettingsReducer = () => {
     updateStartTime,
     updateTimeWindow,
     updateInterval,
+    updateCategory,
   } = slice.actions;
 
   const getState = () => defaultStore.getState()[operationalStudiesConfSlice.name];
@@ -104,6 +105,13 @@ const testTrainSettingsReducer = () => {
     defaultStore.dispatch(updateInitialSpeed(newInitialSpeed));
     const state = getState();
     expect(state.initialSpeed).toBe(newInitialSpeed);
+  });
+
+  it('should handle updateCategory', () => {
+    const newCategory = 'HIGH_SPEED_TRAIN';
+    defaultStore.dispatch(updateCategory(newCategory));
+    const state = getState();
+    expect(state.category).toBe(newCategory);
   });
 
   it('should handle updateRollingStockComfort', () => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { Ruby } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineTags } from 'react-icons/ai';
 import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
@@ -9,17 +10,23 @@ import { useSelector } from 'react-redux';
 import { isInvalidName } from 'applications/operationalStudies/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import useCategoryOptions, {
+  type CategoryOption,
+} from 'modules/rollingStock/hooks/useCategoryOptions';
 import {
   updateLabels,
   updateName,
   updateStartTime,
   updateInitialSpeed,
+  updateCategory,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getLabels,
   getName,
   getInitialSpeed,
   getStartTime,
+  getCategory,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
 import { parseLocalDateTime, formatLocalDateTime } from 'utils/date';
@@ -29,15 +36,25 @@ import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 export default function TrainSettings() {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const categoryOptions = useCategoryOptions();
 
   const labels = useSelector(getLabels);
   const nameFromStore = useSelector(getName);
   const initialSpeedFromStore = useSelector(getInitialSpeed);
   const startTimeFromStore = useSelector(getStartTime);
+  const categoryFromStore = useSelector(getCategory);
 
   const [name, setName] = useState<string>(nameFromStore);
   const [startTime, setStartTime] = useState(formatLocalDateTime(startTimeFromStore));
   const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
+  const [trainCategory, setTrainCategory] = useState<CategoryOption | null>(
+    categoryFromStore
+      ? {
+          id: categoryFromStore,
+          label: t(`categoriesOptions.${categoryFromStore}`),
+        }
+      : null
+  );
   const dispatch = useAppDispatch();
 
   const debouncedName = useDebounce(name, 500);
@@ -59,6 +76,10 @@ export default function TrainSettings() {
   useEffect(() => {
     dispatch(updateName(debouncedName));
   }, [debouncedName]);
+
+  useEffect(() => {
+    dispatch(updateCategory(trainCategory?.id || null));
+  }, [trainCategory]);
 
   useEffect(() => {
     const newStartTime = parseLocalDateTime(debouncedStartTime);
@@ -95,7 +116,7 @@ export default function TrainSettings() {
           }}
         />
       </div>
-      <div className="col-xl-4 col-lg-5 pr-2">
+      <div className="col-xl-3 col-lg-5 pr-2">
         <InputSNCF
           type="datetime-local"
           label={
@@ -111,6 +132,27 @@ export default function TrainSettings() {
           isInvalid={!startTime}
           errorMsg={t('errorMessages.mandatoryField')}
           noMargin
+        />
+      </div>
+      <div className="col-xl-2 col-lg-3 pr-xl-2">
+        <SelectSNCF
+          id="category-selector"
+          name="category-selector"
+          label={
+            <>
+              <Ruby />
+              <small className="text-nowrap">{t('category')}</small>
+            </>
+          }
+          onChange={(option) => {
+            if (option) {
+              setTrainCategory(option);
+            } else {
+              setTrainCategory(null);
+            }
+          }}
+          value={trainCategory ?? undefined}
+          options={categoryOptions}
         />
       </div>
       <div className="col-xl-2 col-lg-3 pr-xl-2">
@@ -133,7 +175,7 @@ export default function TrainSettings() {
           errorMsg={t('errorMessages.invalidInitialSpeed')}
         />
       </div>
-      <div className="col-xl-4 col-lg-12 mt-xl-0 mt-lg-3">
+      <div className="col-xl-3 col-lg-12 mt-xl-0 mt-lg-3">
         <ChipsSNCF
           addTag={addTag}
           tags={labels}
