@@ -2,6 +2,7 @@ import { compact } from 'lodash';
 
 import type {
   GeoJsonLineString,
+  LoadingGaugeType,
   PathItemLocation,
   PathProperties,
   PathfindingInput,
@@ -59,10 +60,12 @@ export const getPathfindingQuery = ({
   infraId,
   rollingStock,
   pathSteps,
+  loadingGauge,
 }: {
   infraId?: number;
   rollingStock?: RollingStockWithLiveries;
   pathSteps: (PathItemLocation | null)[];
+  loadingGauge?: LoadingGaugeType;
 }): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   const origin = pathSteps.at(0);
   const destination = pathSteps.at(-1);
@@ -77,7 +80,7 @@ export const getPathfindingQuery = ({
       pathfindingInput: {
         path_items: pathItems,
         rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
-        rolling_stock_loading_gauge: rollingStock.loading_gauge,
+        rolling_stock_loading_gauge: loadingGauge ?? rollingStock.loading_gauge,
         rolling_stock_supported_electrifications: getSupportedElectrification(
           rollingStock.effort_curves.modes
         ),

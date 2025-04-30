@@ -11,7 +11,11 @@ import {
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { getStdcmPathSteps, getStdcmRollingStockID } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getStdcmPathSteps,
+  getStdcmRollingStockID,
+  getLoadingGauge,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 /**
@@ -29,6 +33,7 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
 
   const rollingStockId = useSelector(getStdcmRollingStockID);
   const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const loadingGauge = useSelector(getLoadingGauge);
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();
 
@@ -72,6 +77,7 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
         infraId: infra.id,
         rollingStock,
         pathSteps: pathStepsLocations,
+        loadingGauge,
       });
 
       if (payload === null) {
@@ -84,7 +90,7 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
     };
 
     launchPathfinding();
-  }, [pathStepsLocations, rollingStock, infra]);
+  }, [pathStepsLocations, rollingStock, loadingGauge, infra]);
 
   const result = useMemo(
     () =>
