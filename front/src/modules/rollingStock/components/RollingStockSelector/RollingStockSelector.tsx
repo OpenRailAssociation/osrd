@@ -42,7 +42,7 @@ const RollingStockSelector = ({
     [onSelectRollingStock]
   );
 
-  const { t } = useTranslation('rollingstock');
+  const { t } = useTranslation();
 
   return (
     <div className="osrd-config-item mb-2">
@@ -92,10 +92,12 @@ const RollingStockSelector = ({
                 </div>
                 <div className="rollingstock-minicard-end">
                   <span className="rollingstock-info-comfort text-uppercase small">
-                    <span className="text-uppercase font-weight-bold">{t('comfort')}</span>
+                    <span className="text-uppercase font-weight-bold">
+                      {t('rollingStock.comfort')}
+                    </span>
                     <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
                     <span data-testid="selected-comfort-type-info">
-                      {t(`comfortTypes.${rollingStockComfort}`)}
+                      {t(`rollingStock.comfortTypes.${rollingStockComfort}`)}
                     </span>
                   </span>
                   {rollingStockSelected.locked && (
@@ -113,7 +115,7 @@ const RollingStockSelector = ({
         ) : (
           <div data-testid="rollingstock-selector-empty" className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            {t('rollingstockChoice')}
+            {t('rollingStock.rollingstockChoice')}
           </div>
         )}
       </div>

@@ -10,12 +10,12 @@ import CommonPage from '../common-page';
 
 type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
 
-const enTranslations: RollingStockTranslations = readJsonFile(
-  'public/locales/en/rollingstock.json'
-);
-const frTranslations: RollingStockTranslations = readJsonFile(
-  'public/locales/fr/rollingstock.json'
-);
+const enTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
+  'public/locales/en/translation.json'
+).rollingStock;
+const frTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
+  'public/locales/fr/translation.json'
+).rollingStock;
 
 class RollingstockEditorPage extends CommonPage {
   private readonly translations: RollingStockTranslations;

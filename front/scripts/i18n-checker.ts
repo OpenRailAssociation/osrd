@@ -93,16 +93,18 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:study\.studyStates\..*/,
 
   // Rolling stock
-  /rollingstock:categoriesOptions\..*/,
-  /rollingstock:curves\..*/,
-  /rollingstock:delete\..*/,
-  /rollingstock:errorMessages\..*/,
-  /rollingstock:length/,
-  /rollingstock:mass/,
-  /rollingstock:maxSpeed/,
-  /rollingstock:messages\..*/,
-  /rollingstock:metadata\..*/,
-  /rollingstock:unspecified/,
+  /translation:rollingStock.categoriesOptions\..*/,
+  /translation:rollingStock.curves\..*/,
+  /translation:rollingStock.delete\..*/,
+  /translation:rollingStock.errorMessages\..*/,
+  /translation:rollingStock.electricalPowerStartupTime/,
+  /translation:rollingStock.length/,
+  /translation:rollingStock.mass/,
+  /translation:rollingStock.maxSpeed/,
+  /translation:rollingStock.messages\..*/,
+  /translation:rollingStock.metadata\..*/,
+  /translation:rollingStock.raisePantographTime/,
+  /translation:rollingStock.unspecified/,
 
   // Simulation
   /simulation:departureTime/,

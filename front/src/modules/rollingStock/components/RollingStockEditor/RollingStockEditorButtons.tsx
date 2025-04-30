@@ -28,7 +28,7 @@ const RollingStockEditorButtons = ({
   isCondensed,
 }: RollingStockEditorButtonsProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['rollingstock', 'translation']);
+  const { t } = useTranslation();
   const { openModal } = useModal();
   const [deleteRollingStockById] =
     osrdEditoastApi.endpoints.deleteRollingStockByRollingStockId.useMutation();
@@ -42,8 +42,8 @@ const RollingStockEditorButtons = ({
         .then(() => {
           dispatch(
             setSuccess({
-              title: t('messages.success'),
-              text: t('messages.rollingStockDeleted'),
+              title: t('rollingStock.messages.success'),
+              text: t('rollingStock.messages.rollingStockDeleted'),
             })
           );
         })
@@ -51,7 +51,7 @@ const RollingStockEditorButtons = ({
           if (getErrorStatus(error) === 409) {
             openModal(
               <RollingStockEditorFormModal
-                mainText={t('messages.rollingStockNotDeleted')}
+                mainText={t('rollingStock.messages.rollingStockNotDeleted')}
                 errorObject={error.data.context.usage}
               />
             );
@@ -59,8 +59,8 @@ const RollingStockEditorButtons = ({
           dispatch(
             setFailure(
               castErrorToFailure(error, {
-                name: t('messages.failure'),
-                message: t('messages.rollingStockNotDeleted'),
+                name: t('rollingStock.messages.failure'),
+                message: t('rollingStock.messages.rollingStockNotDeleted'),
               })
             )
           );
@@ -81,13 +81,15 @@ const RollingStockEditorButtons = ({
         resetFilters();
         dispatch(
           setSuccess({
-            title: t('messages.success'),
-            text: t('messages.rollingStockAdded'),
+            title: t('rollingStock.messages.success'),
+            text: t('rollingStock.messages.rollingStockAdded'),
           })
         );
       })
       .catch((error) => {
-        dispatch(setFailure(castErrorToFailure(error, { name: t('messages.failure') })));
+        dispatch(
+          setFailure(castErrorToFailure(error, { name: t('rollingStock.messages.failure') }))
+        );
       });
   };
 
@@ -95,8 +97,8 @@ const RollingStockEditorButtons = ({
     openModal(
       <RollingStockEditorFormModal
         request={deleteRollingStock}
-        mainText={t('deleteRollingStock')}
-        buttonText={t('translation:common.yes')}
+        mainText={t('rollingStock.deleteRollingStock')}
+        buttonText={t('common.yes')}
         deleteAction
       />
     );
@@ -112,8 +114,8 @@ const RollingStockEditorButtons = ({
         data-testid="rollingstock-edit-button"
         type="button"
         className="btn btn-primary bg-orange px-1 py-0"
-        aria-label={t('translation:common.edit')}
-        title={t('translation:common.edit')}
+        aria-label={t('common.edit')}
+        title={t('common.edit')}
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
@@ -124,8 +126,8 @@ const RollingStockEditorButtons = ({
         data-testid="rollingstock-duplicate-button"
         type="button"
         className="btn btn-primary px-1 py-0"
-        aria-label={t('translation:common.duplicate')}
-        title={t('translation:common.duplicate')}
+        aria-label={t('common.duplicate')}
+        title={t('common.duplicate')}
         tabIndex={0}
         onClick={() => duplicateRollingStock()}
       >
@@ -135,8 +137,8 @@ const RollingStockEditorButtons = ({
         data-testid="rollingstock-delete-button"
         type="button"
         className="btn btn-primary bg-red px-1 py-0"
-        aria-label={t('translation:common.delete')}
-        title={t('translation:common.delete')}
+        aria-label={t('common.delete')}
+        title={t('common.delete')}
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => confirmDelete()}

@@ -49,7 +49,7 @@ export default function RollingStockCardDetail({
   setCurvesComfortList,
 }: RollingStockCardDetailProps) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['rollingstock']);
+  const { t } = useTranslation();
 
   // we only fetch the whole rollingStock here, when we open the card and display its details
   const { data: rollingStock, error } =
@@ -69,8 +69,8 @@ export default function RollingStockCardDetail({
       dispatch(
         setFailure(
           castErrorToFailure(error, {
-            name: t('errorMessages.unableToRetrieveRollingStockMessage'),
-            message: t('errorMessages.unableToRetrieveRollingStock'),
+            name: t('rollingStock.errorMessages.unableToRetrieveRollingStockMessage'),
+            message: t('rollingStock.errorMessages.unableToRetrieveRollingStock'),
           })
         )
       );
@@ -81,43 +81,43 @@ export default function RollingStockCardDetail({
     <table className="rollingstock-details-table">
       <tbody>
         <tr>
-          <td className="text-primary">{t('startupTime')}</td>
+          <td className="text-primary">{t('rollingStock.startupTime')}</td>
           <td>
             {rs.startup_time}
             <span className="small ml-1 text-muted">s</span>
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('startupAcceleration')}</td>
+          <td className="text-primary">{t('rollingStock.startupAcceleration')}</td>
           <td>
             {rs.startup_acceleration}
             <span className="small ml-1 text-muted">m/s²</span>
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('comfortAcceleration')}</td>
+          <td className="text-primary">{t('rollingStock.comfortAcceleration')}</td>
           <td>
             {rs.comfort_acceleration}
             <span className="small ml-1 text-muted">m/s²</span>
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('inertiaCoefficient')}</td>
+          <td className="text-primary">{t('rollingStock.inertiaCoefficient')}</td>
           <td>{rs.inertia_coefficient}</td>
         </tr>
         <tr>
-          <td className="text-primary">{t('constGamma')}</td>
+          <td className="text-primary">{t('rollingStock.constGamma')}</td>
           <td>
             {rs.const_gamma}
             <span className="small ml-1 text-muted">m/s²</span>
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('loadingGauge')}</td>
+          <td className="text-primary">{t('rollingStock.loadingGauge')}</td>
           <td>{rs.loading_gauge}</td>
         </tr>
         <tr>
-          <td className="text-primary">{t('basePowerClass')}</td>
+          <td className="text-primary">{t('rollingStock.basePowerClass')}</td>
           <td>{rs.base_power_class}</td>
         </tr>
       </tbody>
@@ -127,20 +127,20 @@ export default function RollingStockCardDetail({
     <table className="rollingstock-details-table">
       <tbody>
         <tr>
-          <td className={cx({ formResistance: form })}>{t('rollingResistance')}</td>
+          <td className={cx({ formResistance: form })}>{t('rollingStock.rollingResistance')}</td>
           <td className={cx('text-primary text-muted', { formResistance: form })}>
-            {t('rollingResistanceFormula')}
+            {t('rollingStock.rollingResistanceFormula')}
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('rollingResistanceA')}</td>
+          <td className="text-primary">{t('rollingStock.rollingResistanceA')}</td>
           <td>
             {convertUnits('N', 'kN', rs.rolling_resistance.A, 2)}
             <span className="small ml-1 text-muted">kN</span>
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('rollingResistanceB')}</td>
+          <td className="text-primary">{t('rollingStock.rollingResistanceB')}</td>
           <td>
             {/* The b resistance received is in N/(m/s) and should appear in N/(km/h) */}
             {convertUnits('N/(m/s)', 'kN/(km/h)', rs.rolling_resistance.B, 6)}
@@ -148,7 +148,7 @@ export default function RollingStockCardDetail({
           </td>
         </tr>
         <tr>
-          <td className="text-primary">{t('rollingResistanceC')}</td>
+          <td className="text-primary">{t('rollingStock.rollingResistanceC')}</td>
           <td title={rs.rolling_resistance.C.toString()}>
             {/* The c resistance received is in N/(m/s)² and should appear in N/(km/h)² */}
             {convertUnits('N/(m/s)²', 'kN/(km/h)²', rs.rolling_resistance.C, 6)}
@@ -157,14 +157,16 @@ export default function RollingStockCardDetail({
         </tr>
         {!isEmpty(rs.supported_signaling_systems) && (
           <tr>
-            <td className="text-primary text-nowrap pr-1">{t('supportedSignalingSystems')}</td>
+            <td className="text-primary text-nowrap pr-1">
+              {t('rollingStock.supportedSignalingSystems')}
+            </td>
             <td>{rs.supported_signaling_systems.join(', ')}</td>
           </tr>
         )}
         {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (
           <tr>
             <td className="text-primary text-nowrap pr-1">
-              {t('powerRestrictionsInfos', {
+              {t('rollingStock.powerRestrictionsInfos', {
                 count: Object.keys(rs.power_restrictions).length,
               })}
             </td>
@@ -174,15 +176,15 @@ export default function RollingStockCardDetail({
           </tr>
         )}
         <tr>
-          <td className="text-primary text-nowrap pr-1">{t('primaryCategory')}</td>
-          <td> {t(`categoriesOptions.${rs.primary_category}`)} </td>
+          <td className="text-primary text-nowrap pr-1">{t('rollingStock.primaryCategory')}</td>
+          <td> {t(`rollingStock.categoriesOptions.${rs.primary_category}`)} </td>
         </tr>
         {!isEmpty(rs.other_categories) && (
           <tr>
-            <td className="text-primary text-nowrap pr-1">{t('otherCategories')}</td>
+            <td className="text-primary text-nowrap pr-1">{t('rollingStock.otherCategories')}</td>
             <td>
               {rs.other_categories
-                .map((category) => t(`categoriesOptions.${category}`))
+                .map((category) => t(`rollingStock.categoriesOptions.${category}`))
                 .toSorted()
                 .join(', ')}
             </td>

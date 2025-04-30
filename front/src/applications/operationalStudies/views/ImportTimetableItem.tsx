@@ -23,7 +23,7 @@ type ImportTimetableItemProps = {
 
 const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimetableItemProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['rollingstock']);
+  const { t } = useTranslation();
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trainsJsonData, setTrainsJsonData] = useState<TimetableJsonPayload>({
@@ -41,8 +41,8 @@ const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimeta
     if (isError) {
       dispatch(
         setFailure({
-          name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
-          message: t('rollingstock:errorMessages.unableToRetrieveRollingStockMessage'),
+          name: t('rollingStock.errorMessages.unableToRetrieveRollingStock'),
+          message: t('rollingStock.errorMessages.unableToRetrieveRollingStockMessage'),
         })
       );
     }

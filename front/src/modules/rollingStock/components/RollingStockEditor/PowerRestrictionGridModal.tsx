@@ -21,7 +21,7 @@ const PowerRestrictionGridModal = ({
   currentPowerRestrictions,
 }: PowerRestrictionGridModalProps) => {
   const { closeModal } = useModal();
-  const { t } = useTranslation('rollingstock');
+  const { t } = useTranslation();
 
   const [filter, setFilter] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,7 @@ const PowerRestrictionGridModal = ({
               addNewPowerRestriction(filter);
             }}
           >
-            {t('add')}
+            {t('rollingStock.add')}
           </button>
         )}
       </ModalHeaderSNCF>

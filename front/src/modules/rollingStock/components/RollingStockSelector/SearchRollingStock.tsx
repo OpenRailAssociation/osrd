@@ -24,7 +24,7 @@ const SearchRollingStock = ({
   toggleFilter,
   hasWhiteBackground,
 }: SearchRollingStockProps) => {
-  const { t } = useTranslation('rollingstock');
+  const { t } = useTranslation();
 
   return (
     <div className="row no-gutters">
@@ -34,7 +34,7 @@ const SearchRollingStock = ({
           type="text"
           value={filters.text}
           onChange={(e) => searchRollingStock(e.target.value)}
-          placeholder={t('translation:common.search')}
+          placeholder={t('common.search')}
           noMargin
           unit={<Search />}
           whiteBG={hasWhiteBackground}
@@ -52,7 +52,7 @@ const SearchRollingStock = ({
                 <span className="text-primary mr-1">
                   <BsLightningFill />
                 </span>
-                {t('electric')}
+                {t('rollingStock.electric')}
               </span>
             }
             type="checkbox"
@@ -69,7 +69,7 @@ const SearchRollingStock = ({
                 <span className="text-pink mr-1">
                   <MdLocalGasStation />
                 </span>
-                {t('thermal')}
+                {t('rollingStock.thermal')}
               </span>
             }
             type="checkbox"
@@ -86,7 +86,7 @@ const SearchRollingStock = ({
                 <span className="text-black mr-1">
                   <BiLockAlt />
                 </span>
-                {t('locked')}
+                {t('rollingStock.locked')}
               </span>
             }
             type="checkbox"
@@ -103,7 +103,7 @@ const SearchRollingStock = ({
                 <span className="text-black mr-1">
                   <BiLockOpenAlt />
                 </span>
-                {t('notLocked')}
+                {t('rollingStock.notLocked')}
               </span>
             }
             type="checkbox"
@@ -113,7 +113,7 @@ const SearchRollingStock = ({
       </div>
       <div className="col-md-2 mt-1 ml-auto">
         <small data-testid="search-results-text">
-          {t('resultFound', { count: filteredRollingStockList.length })}
+          {t('rollingStock.resultFound', { count: filteredRollingStockList.length })}
         </small>
       </div>
     </div>
