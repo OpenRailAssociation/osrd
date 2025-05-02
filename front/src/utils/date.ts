@@ -14,10 +14,6 @@ dayjs.extend(customParseFormat);
 
 const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
 
-export function formatIsoDate(date: Date) {
-  return date.toISOString().substring(0, 10);
-}
-
 export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
   let locale;
   switch (i18n.language) {
@@ -48,6 +44,11 @@ export const parseLocalDateTime = (inputDateTime: string) => {
 
 export const formatLocalDateTime = (date: Date) =>
   dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
+
+/**
+ * Format a local date suitable for an <input type="date">.
+ */
+export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-MM-DD');
 
 /**
  * Transform a date format ISO 8601 to a milliseconds date (elapsed from January 1st 1970)
