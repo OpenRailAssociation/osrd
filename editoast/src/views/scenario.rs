@@ -35,8 +35,8 @@ use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::views::projects::ProjectError;
-use crate::views::projects::ProjectIdParam;
+use crate::views::project::ProjectError;
+use crate::views::project::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
 

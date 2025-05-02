@@ -13,7 +13,7 @@ use crate::models::Document;
 use crate::models::Study;
 use crate::models::Tags;
 use crate::models::prelude::*;
-use crate::views::projects::ProjectError;
+use crate::views::project::ProjectError;
 use editoast_models::DbConnection;
 use editoast_models::model;
 
