@@ -42,6 +42,9 @@ export const parseLocalDateTime = (inputDateTime: string) => {
   return null;
 };
 
+/**
+ * Format a local date suitable for an <input type="datetime-local">.
+ */
 export const formatLocalDateTime = (date: Date) =>
   dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
 
