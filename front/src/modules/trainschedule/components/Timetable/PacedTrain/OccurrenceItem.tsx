@@ -19,6 +19,7 @@ import { addElementAtIndex } from 'utils/array';
 import { getExceptionType, isException } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
+import ArrivalTimeLoader from '../ArrivalTimeLoader';
 import type { Occurrence, PacedTrainWithDetails } from '../types';
 import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
 
@@ -207,19 +208,19 @@ const OccurrenceItem = ({
           {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
         </div>
 
-        {occurrence.isValid && (
-          <div className="occurrence-item-horaries">
-            <div className="status-icon after-midnight">
-              {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
-            </div>
-            <div className="occurrence-item-time departure-time">
-              {roundAndFormatToNearestMinute(startTime)}
-            </div>
-            <div className="occurrence-item-time arrival-time">
-              {roundAndFormatToNearestMinute(occurrence.arrivalTime)}
-            </div>
+        <div className="occurrence-item-horaries">
+          <div className="status-icon after-midnight">
+            {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
           </div>
-        )}
+          <div className="occurrence-item-time departure-time">
+            {roundAndFormatToNearestMinute(startTime)}
+          </div>
+          <div className="occurrence-item-time arrival-time">
+            {occurrence.isValid && roundAndFormatToNearestMinute(occurrence.arrivalTime)}
+            {!occurrence.isValid && !occurrence.invalidReason && <ArrivalTimeLoader />}
+          </div>
+        </div>
+
         {nextOccurrence && isNextAfterMidnight && (
           <ConsecutiveDayDateDisplay
             departureTime={startTime}

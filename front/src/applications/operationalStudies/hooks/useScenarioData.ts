@@ -9,6 +9,7 @@ import {
   type ScenarioResponse,
 } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import formatBaseTimetableItemWithDetails from 'modules/trainschedule/helpers/formatBaseTimetableItemWithDetails';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   TimetableItemId,
@@ -131,9 +132,14 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     );
 
   const timetableItemsWithDetails = useMemo(() => {
-    const filteredTimetableItemsSummaries = Array.from(simulatedTrainsById.values());
-    return sortBy(filteredTimetableItemsSummaries, 'startTime');
-  }, [simulatedTrainsById]);
+    const items = (timetableItems || []).map((timetableItem) => {
+      const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
+      return (
+        simulatedTrain ?? formatBaseTimetableItemWithDetails(timetableItem, rollingStocks ?? [])
+      );
+    });
+    return sortBy(items, 'startTime');
+  }, [timetableItems, rollingStocks, simulatedTrainsById]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
@@ -154,20 +160,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   // first load of the summaries
   useEffect(() => {
-    // TODO Paced trains : remove the if and extra depth in https://github.com/OpenRailAssociation/osrd/issues/10791
-    // We also want to update timetableItemIdsToFetch if it's the first time we activate the paced train mode
-    // pacedTrainWithDetails.length will be equal to 0 at that point
-    const pacedTrainWithDetails = timetableItemsWithDetails.filter((timetableItem) =>
-      isPacedTrainId(timetableItem.id)
-    );
-    if (
-      timetableItems &&
-      infra.state === 'CACHED' &&
-      (timetableItemsWithDetails.length === 0 || pacedTrainWithDetails.length === 0)
-    ) {
+    if (timetableItems && infra.state === 'CACHED' && simulatedTrainsById.size === 0) {
       simulateTimetableItems(timetableItems);
     }
-  }, [timetableItems, infra.state]);
+  }, [timetableItems, infra.state, simulatedTrainsById]);
 
   const broadcastChannel = useRef<BroadcastChannel>();
 

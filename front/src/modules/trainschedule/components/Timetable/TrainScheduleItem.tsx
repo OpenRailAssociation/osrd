@@ -25,6 +25,7 @@ import {
   extractEditoastIdFromTrainScheduleId,
 } from 'utils/trainId';
 
+import ArrivalTimeLoader from './ArrivalTimeLoader';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
@@ -197,14 +198,12 @@ const TrainScheduleItem = ({
           {!train.invalidReason ? (
             <div className="train-time">
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
-              {train.isValid && (
-                <div
-                  className="scenario-timetable-train-times"
-                  title={formatFullDate(train.startTime)}
-                >
-                  {roundAndFormatToNearestMinute(train.startTime)}
-                </div>
-              )}
+              <div
+                className="scenario-timetable-train-times"
+                title={formatFullDate(train.startTime)}
+              >
+                {roundAndFormatToNearestMinute(train.startTime)}
+              </div>
               <div
                 className={cx('status-icon', {
                   'not-honored-or-too-fast': train.notHonoredReason,
@@ -213,15 +212,17 @@ const TrainScheduleItem = ({
                 {train.notHonoredReason &&
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
-              {train.arrivalTime && (
-                <div
-                  data-testid="train-arrival-time"
-                  className="scenario-timetable-train-times"
-                  title={formatFullDate(train.arrivalTime)}
-                >
-                  {roundAndFormatToNearestMinute(train.arrivalTime)}
-                </div>
-              )}
+              <div
+                data-testid="train-arrival-time"
+                className="scenario-timetable-train-times"
+                title={train.arrivalTime ? formatFullDate(train.arrivalTime) : undefined}
+              >
+                {train.arrivalTime ? (
+                  roundAndFormatToNearestMinute(train.arrivalTime)
+                ) : (
+                  <ArrivalTimeLoader />
+                )}
+              </div>
               <div
                 className={cx('status-dot', {
                   'not-honored-or-too-fast':

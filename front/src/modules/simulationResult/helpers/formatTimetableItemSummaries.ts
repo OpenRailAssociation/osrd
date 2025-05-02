@@ -4,11 +4,11 @@ import type {
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import formatBaseTimetableItemWithDetails from 'modules/trainschedule/helpers/formatBaseTimetableItemWithDetails';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 /**
@@ -25,8 +25,6 @@ const formatTimetableItemSummaries = (
       throw new Error('Missing timetable item');
     }
 
-    const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-
     let notHonoredReason: TimetableItemWithDetails['notHonoredReason'];
     if (timetableItemSummary.status === 'success') {
       if (isTooFast(timetableItem, timetableItemSummary)) notHonoredReason = 'trainTooFast';
@@ -34,13 +32,15 @@ const formatTimetableItemSummaries = (
         notHonoredReason = 'scheduleNotHonored';
     }
 
-    const startTime = new Date(timetableItem.start_time);
-
-    const otherProps =
-      timetableItemSummary.status === 'success'
+    const baseItem = formatBaseTimetableItemWithDetails(timetableItem, rollingStocks);
+    return {
+      ...baseItem,
+      scheduledPointsNotHonored: notHonoredReason !== undefined,
+      notHonoredReason,
+      ...(timetableItemSummary.status === 'success'
         ? {
             isValid: true,
-            arrivalTime: new Date(startTime.getTime() + timetableItemSummary.time),
+            arrivalTime: new Date(baseItem.startTime.getTime() + timetableItemSummary.time),
             duration: new Duration({ milliseconds: timetableItemSummary.time }),
             pathLength: formatKmValue(timetableItemSummary.length, 'millimeters', 1),
             mechanicalEnergyConsumed: jouleToKwh(timetableItemSummary.energy_consumption, true),
@@ -61,35 +61,8 @@ const formatTimetableItemSummaries = (
               timetableItemSummary.status === 'pathfinding_input_error'
                 ? timetableItemSummary.error_type
                 : timetableItemSummary.status,
-          };
-
-    const formattedItem = {
-      ...timetableItem,
-      name: timetableItem.train_name,
-      startTime,
-      stopsCount:
-        (timetableItem.schedule?.filter(
-          (step) => step.stop_for && Duration.parse(step.stop_for).ms > 0
-        ).length ?? 0) + 1, // +1 to take the final stop (destination) into account
-      speedLimitTag: timetableItem.speed_limit_tag ?? null,
-      labels: timetableItem.labels ?? [],
-      rollingStock,
-      scheduledPointsNotHonored: notHonoredReason !== undefined,
-      notHonoredReason,
-      ...otherProps,
+          }),
     };
-
-    if (isPacedTrainResponseWithPacedTrainId(formattedItem)) {
-      return {
-        ...formattedItem,
-        paced: {
-          timeWindow: Duration.parse(formattedItem.paced.time_window),
-          interval: Duration.parse(formattedItem.paced.interval),
-        },
-        exceptions: [],
-      };
-    }
-    return formattedItem;
   });
 
   return mapBy(items, 'id');

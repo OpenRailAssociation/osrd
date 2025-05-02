@@ -111,7 +111,7 @@ export type Occurrence = {
       mechanicalEnergyConsumed: number;
       duration: Duration | null;
     }
-  | { isValid: false }
+  | { isValid: false; invalidReason?: InvalidReason }
 );
 
 export type ExceptionChangeGroup =
