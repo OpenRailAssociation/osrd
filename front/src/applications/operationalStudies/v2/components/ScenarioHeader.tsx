@@ -1,6 +1,7 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { X, ChevronDown, Question } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useAuth from 'utils/hooks/useAuth';
@@ -12,8 +13,18 @@ type ScenarioHeaderProps = {
 const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { t } = useTranslation('common');
+  const [activeBoards, setActiveBoards] = useState<string[]>([]);
 
   const boards = ['Traits', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
+
+  const toggleBoard = (selectedBoard: string) => {
+    setActiveBoards((prevBoards) => {
+      if (prevBoards.includes(selectedBoard)) {
+        return prevBoards.filter((b) => b !== selectedBoard);
+      }
+      return [...prevBoards, selectedBoard];
+    });
+  };
 
   return (
     <header className="scenario-header">
@@ -42,7 +53,15 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
         <div className="board-btns">
           {boards.map((board, index) => (
             <Fragment key={board}>
-              <button className="board-btn" type="button">
+              <button
+                className={cx('board-btn', {
+                  on: activeBoards.includes(board),
+                })}
+                type="button"
+                onClick={() => {
+                  toggleBoard(board);
+                }}
+              >
                 {board}
               </button>
               {index < boards.length - 1 && <div className="board-separator" />}
