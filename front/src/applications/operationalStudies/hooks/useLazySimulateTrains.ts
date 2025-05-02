@@ -58,7 +58,6 @@ export default function useLazySimulateTrains({
       electricalProfileSetId,
       onProgress: (rawSummaries: Map<TimetableItemId, SimulationSummaryResult>) => {
         const summaries = formatTimetableItemSummaries(
-          [...rawSummaries.keys()],
           rawSummaries,
           timetableItemsByIdRef.current,
           rollingStocks
