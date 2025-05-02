@@ -1,5 +1,3 @@
-import { compact } from 'lodash';
-
 import { isScheduledPointsNotHonored, isTooFast } from 'applications/operationalStudies/utils';
 import type {
   LightRollingStockWithLiveries,
@@ -17,23 +15,17 @@ import { mapBy } from 'utils/types';
  * Format the timetable items with their simulation summaries
  */
 const formatTimetableItemSummaries = (
-  timetableItemIds: TimetableItemId[],
   rawSummaries: Map<TimetableItemId, SimulationSummaryResult>,
   rawTimetableItems: Map<TimetableItemId, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<TimetableItemId, TimetableItemWithDetails> => {
-  const relevantTimetableItems = compact(
-    timetableItemIds.map((timetableItemId) => rawTimetableItems.get(timetableItemId))
-  );
-
-  const items = relevantTimetableItems.map((timetableItem): TimetableItemWithDetails => {
-    const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-
-    const timetableItemSummary = rawSummaries.get(timetableItem.id);
-
-    if (!timetableItemSummary) {
-      throw new Error('Missing timetable item summary');
+  const items = [...rawSummaries].map(([id, timetableItemSummary]): TimetableItemWithDetails => {
+    const timetableItem = rawTimetableItems.get(id);
+    if (!timetableItem) {
+      throw new Error('Missing timetable item');
     }
+
+    const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
 
     let notHonoredReason: TimetableItemWithDetails['notHonoredReason'];
     if (timetableItemSummary.status === 'success') {
