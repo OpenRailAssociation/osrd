@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { insertViaFromMap } from 'reducers/osrdconf/helpers';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { store } from 'store';
@@ -10,7 +10,7 @@ export function setPointIti(
   pathStep: PathStep,
   launchPathfinding: (newPathSteps: (PathStep | null)[]) => void,
   resetFeatureInfoClick: () => void,
-  pathProperties?: ManageTrainSchedulePathProperties
+  pathProperties?: MapPathProperties
 ) {
   const { pathSteps } = store.getState().operationalStudiesConf;
 
