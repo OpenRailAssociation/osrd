@@ -101,14 +101,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
 };
 
 /**
- * Converts an UTC date in seconds since 1970 to a local date in seconds since 1970
- */
-export function convertUTCDateToLocalDate(date: number) {
-  const timeDifferenceMinutes = new Date().getTimezoneOffset();
-  return Math.abs(timeDifferenceMinutes) * 60 + date;
-}
-
-/**
  * Serializes a Date object to a string format 'DD/MM HH:mm:ss' without the year.
  * @param {Date} date - The Date object to be serialized.
  * @returns {string} The formatted date-time string without the year.
