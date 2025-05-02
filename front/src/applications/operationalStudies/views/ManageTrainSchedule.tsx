@@ -152,14 +152,18 @@ const ManageTrainSchedule = () => {
         <div className="floating-itinerary">
           <Itinerary rollingStockId={rollingStockId} />
         </div>
-
-        <Map
-          pathProperties={pathProperties}
-          simulationPathSteps={markersInformation}
-          pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
-        >
-          <IncompatibleConstraints pathProperties={pathProperties} />
-        </Map>
+        {pathProperties && (
+          <Map
+            pathProperties={{
+              length: pathProperties.length,
+              geometry: pathProperties.geometry,
+            }}
+            simulationPathSteps={markersInformation}
+            pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
+          >
+            <IncompatibleConstraints pathProperties={pathProperties} />
+          </Map>
+        )}
       </div>
     ),
   };

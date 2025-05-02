@@ -8,8 +8,7 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { SnappedMarker } from 'common/Map/Layers';
@@ -32,8 +31,7 @@ import ItineraryMarkers, {
 import type { FeatureInfoClick, SuggestedOP } from './types';
 
 type MapProps = {
-  pathProperties?: ManageTrainSchedulePathProperties;
-  pathGeometry?: NonNullable<PathProperties['geometry']>;
+  pathProperties?: MapPathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
   hideAttribution?: boolean;
   hideItinerary?: boolean;
@@ -47,7 +45,6 @@ type MapProps = {
 
 const Map = ({
   pathProperties,
-  pathGeometry: geometry,
   setMapCanvas,
   hideAttribution = false,
   hideItinerary = false,
@@ -65,10 +62,7 @@ const Map = ({
   const mapRef = useRef<MapRef | null>(null);
   const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
 
-  const pathGeometry = useMemo(
-    () => geometry || pathProperties?.geometry,
-    [pathProperties, geometry]
-  );
+  const pathGeometry = useMemo(() => pathProperties?.geometry, [pathProperties]);
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();

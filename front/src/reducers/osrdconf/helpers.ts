@@ -3,7 +3,7 @@ import { compact, last, pick } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { pathStepMatchesOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { addElementAtIndex } from 'utils/array';
@@ -14,7 +14,7 @@ export const insertViaFromMap = (
   pathSteps: OperationalStudiesConfState['pathSteps'],
   // newVia comes from a map click either on a track section or an operational point
   newVia: PathStep,
-  pathProperties: ManageTrainSchedulePathProperties
+  pathProperties: MapPathProperties
 ): OperationalStudiesConfState['pathSteps'] => {
   // If one of these is missing, via is not valid (it hasn't been added via click on map) and we return the same array
   if (!newVia.coordinates) return pathSteps;

@@ -13,7 +13,7 @@ import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
 import { setPointIti } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -25,7 +25,7 @@ import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;
-  pathProperties?: ManageTrainSchedulePathProperties;
+  pathProperties?: MapPathProperties;
   featureInfoClick: FeatureInfoClick;
   resetFeatureInfoClick: () => void;
 };

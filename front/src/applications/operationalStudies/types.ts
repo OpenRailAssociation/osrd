@@ -82,6 +82,8 @@ export type ManageTrainSchedulePathProperties = {
   incompatibleConstraints?: IncompatibleConstraints;
 };
 
+export type MapPathProperties = Pick<ManageTrainSchedulePathProperties, 'length' | 'geometry'>;
+
 export type PositionData<T extends 'gradient' | 'radius'> = {
   [key in T]: number;
 } & {
