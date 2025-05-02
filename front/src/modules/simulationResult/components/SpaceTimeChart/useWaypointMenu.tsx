@@ -4,11 +4,16 @@ import { EyeClosed } from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import AnchoredMenu from 'common/AnchoredMenu';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
+import OSRDMenu from 'common/OSRDMenu';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
+const useWaypointMenu = (
+  activeWaypointRef: React.RefObject<HTMLDivElement>,
+  waypointsPanelData?: WaypointsPanelData
+) => {
   const { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId } =
     waypointsPanelData || {};
   const { t } = useTranslation('simulation');
@@ -72,11 +77,19 @@ const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
     },
   ];
 
+  const waypointMenu = AnchoredMenu({
+    children: activeWaypointId && (
+      <OSRDMenu menuRef={menuRef} items={menuItems} className="waypoint-menu" />
+    ),
+    anchorRef: activeWaypointRef,
+    onDismiss: closeMenu,
+  });
+
   const handleWaypointClick = (id: string) => {
     setActiveWaypointId(id);
   };
 
-  return { menuRef, menuItems, activeWaypointId, handleWaypointClick };
+  return { activeWaypointId, handleWaypointClick, waypointMenu };
 };
 
 export default useWaypointMenu;
