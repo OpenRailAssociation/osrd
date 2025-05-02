@@ -19,7 +19,7 @@ import UploadFileModal from 'common/uploadFileModal';
 import StationSelector from 'modules/trainschedule/components/ImportTimetableItem/ImportTimetableItemStationSelector';
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { formatIsoDate } from 'utils/date';
+import { formatLocalDate } from 'utils/date';
 
 import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
 import {
@@ -46,7 +46,7 @@ const ImportTimetableItemConfig = ({
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<ImportStation | undefined>();
   const [toSearchString, setToSearchString] = useState('');
-  const [date, setDate] = useState(formatIsoDate(new Date()));
+  const [date, setDate] = useState(formatLocalDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useAppDispatch();
