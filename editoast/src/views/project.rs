@@ -32,7 +32,7 @@ use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Tags;
 use crate::models::Update;
-use crate::models::projects;
+use crate::models::project;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 
@@ -72,7 +72,7 @@ pub enum ProjectError {
     #[error(transparent)]
     #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(projects::Error),
+    Database(project::Error),
 }
 
 /// Creation form for a project
