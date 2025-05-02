@@ -76,6 +76,7 @@ const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: Std
   state.totalLength = consist?.totalLength;
   state.totalMass = consist?.totalMass;
   state.maxSpeed = consist?.maxSpeed;
+  state.loadingGauge = consist?.loadingGauge ?? 'GA';
   state.speedLimitByTag = consist?.speedLimitByTag;
   state.stdcmPathSteps = pathSteps;
 };
