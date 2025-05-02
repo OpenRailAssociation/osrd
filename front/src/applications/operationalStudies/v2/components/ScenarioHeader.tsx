@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import { X, ChevronDown, Question } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
@@ -35,11 +37,20 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
 
       {/* board display management */}
       <nav className="board-bar">
-        {boards.map((board) => (
-          <button key={board} className="board-btn" type="button">
-            {board}
-          </button>
-        ))}
+        <div className="spacer" />
+
+        <div className="board-btns">
+          {boards.map((board, index) => (
+            <Fragment key={board}>
+              <button className="board-btn" type="button">
+                {board}
+              </button>
+              {index < boards.length - 1 && <div className="board-separator" />}
+            </Fragment>
+          ))}
+        </div>
+
+        <div className="spacer" />
       </nav>
 
       {/* user informations */}

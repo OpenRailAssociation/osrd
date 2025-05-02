@@ -52,6 +52,7 @@
       position: absolute;
       transition: opacity 0.3s ease-in-out;
       left: 32px;
+      font-size: 0.875rem;
     }
 
     .close-label {
@@ -90,14 +91,34 @@
   }
 
   .board-bar {
-    .board-btn {
-      padding: 1px 8px 3px 8px;
-      margin-right: 8px;
-      color: var(--grey80);
-      font-size: 0.75rem;
-      line-height: 16px;
-      border-radius: 4px;
-      background-color: var(--ambientB5);
+    display: flex;
+    align-items: center;
+    height: 100%;
+
+    .spacer {
+      width: 32px;
+      height: 100%;
+    }
+
+    .board-btns {
+      display: flex;
+      align-items: center;
+      height: 100%;
+
+      .board-btn {
+        padding: 1px 8px 3px 8px;
+        color: var(--grey80);
+        font-size: 0, 750rem;
+        line-height: 16px;
+        border-radius: 4px;
+        background-color: var(--ambientB5);
+      }
+
+      .board-separator {
+        width: 8px;
+        height: 100%;
+        background-color: var(--ambientB20);
+      }
     }
   }
 
