@@ -7,14 +7,14 @@ import { positionMmToKm } from '../utils';
 
 type WaypointProps = {
   waypoint: InteractiveWaypoint;
-  nameRef?: React.RefObject<HTMLDivElement>;
+  waypointRef?: React.RefObject<HTMLDivElement>;
   isActive: boolean;
   isMenuActive?: boolean;
 };
 
 const Waypoint = ({
   waypoint: { name, secondaryCode, id, position, onClick },
-  nameRef,
+  waypointRef,
   isActive,
   isMenuActive,
 }: WaypointProps) => (
@@ -24,15 +24,14 @@ const Waypoint = ({
       'menu-active': isMenuActive,
     })}
     id={id}
+    ref={waypointRef}
     onClick={() => {
       if (onClick && !isMenuActive) onClick(id);
     }}
   >
     <div className="waypoint-position justify-self-start text-end">{positionMmToKm(position)}</div>
 
-    <div ref={nameRef} className="waypoint-name mx-2 justify-self-start">
-      {name}
-    </div>
+    <div className="waypoint-name mx-2 justify-self-start">{name}</div>
     <div className="waypoint-separator"></div>
     <div className="waypoint-ch font-mono justify-self-end">{secondaryCode}</div>
     <div className="waypoint-separator"></div>

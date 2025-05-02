@@ -13,12 +13,7 @@ export { DEFAULT_ZOOM_MS_PER_PX } from './consts';
 export { default as useManchetteWithSpaceTimeChart } from './hooks/useManchetteWithSpaceTimeChart';
 export { default as usePaths } from './hooks/usePaths';
 
-export type {
-  WaypointMenuData,
-  Waypoint,
-  ProjectPathTrainResult,
-  InteractiveWaypoint,
-} from './types';
+export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint } from './types';
 
 export { positionMmToKm } from './utils';
 export { timeScaleToZoomValue, isInteractiveWaypoint } from './utils/helpers';

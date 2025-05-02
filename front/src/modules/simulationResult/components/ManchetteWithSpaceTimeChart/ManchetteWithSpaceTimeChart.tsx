@@ -14,7 +14,6 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
   Manchette,
-  type WaypointMenuData,
   isSegmentPickingElement,
   isPointPickingElement,
   usePaths,
@@ -24,12 +23,10 @@ import { Slider } from '@osrd-project/ui-core';
 import { KebabHorizontal, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
-import { createPortal } from 'react-dom';
 
 import type { OperationalPoint } from 'applications/operationalStudies/types';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
-import OSRDMenu from 'common/OSRDMenu';
 import cutSpaceTimeRect from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
@@ -88,8 +85,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
-  const manchetteWithSpaceTimeCharWrappertRef = useRef<HTMLDivElement>(null);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
+  const activeWaypointRef = useRef<HTMLDivElement>(null);
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<{
@@ -322,7 +319,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }
   };
 
-  const waypointMenuData = useWaypointMenu(waypointsPanelData);
+  const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
+    activeWaypointRef,
+    waypointsPanelData
+  );
 
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
@@ -331,17 +331,14 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         isInteractiveWaypoint(content)
           ? {
               ...content,
-              onClick: waypointMenuData.handleWaypointClick,
+              onClick: handleWaypointClick,
             }
           : content
       ),
-      waypointMenuData: {
-        menu: <OSRDMenu menuRef={waypointMenuData.menuRef} items={waypointMenuData.menuItems} />,
-        activeWaypointId: waypointMenuData.activeWaypointId,
-        manchetteWrapperRef: manchetteWithSpaceTimeCharWrappertRef,
-      } as WaypointMenuData,
+      activeWaypointId,
+      activeWaypointRef,
     }),
-    [manchetteProps, waypointMenuData]
+    [manchetteProps, activeWaypointId, handleWaypointClick]
   );
 
   const handleHoveredChildUpdate: SpaceTimeChartProps['onHoveredChildUpdate'] = useCallback(
@@ -367,25 +364,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   };
 
   return (
-    <div
-      ref={manchetteWithSpaceTimeCharWrappertRef}
-      data-testid="manchette-space-time-chart"
-      className="manchette-space-time-chart-wrapper"
-    >
-      {waypointMenuData.activeWaypointId &&
-        manchetteWithSpaceTimeCharWrappertRef.current &&
-        createPortal(
-          <div
-            style={{
-              width: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-            }}
-          />,
-          manchetteWithSpaceTimeCharWrappertRef.current
-        )}
+    <div data-testid="manchette-space-time-chart" className="manchette-space-time-chart-wrapper">
       <div className="header">
         {waypointsPanelData && (
           <>
@@ -410,13 +389,12 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       <div className="header-separator" />
       <div
         ref={manchetteWithSpaceTimeChartRef}
-        className={cx('manchette flex', {
-          'no-scroll': !!waypointMenuData.activeWaypointId,
-        })}
+        className="manchette flex"
         style={{ height }}
         onScroll={handleScroll}
       >
         <Manchette {...manchettePropsWithWaypointMenu} />
+        {waypointMenu}
         <div
           ref={spaceTimeChartRef}
           data-testid="space-time-chart-container"

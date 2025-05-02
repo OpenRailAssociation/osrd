@@ -40,10 +40,6 @@
     overflow-y: auto;
     overflow-x: hidden;
 
-    &.no-scroll {
-      overflow-y: clip;
-    }
-
     .osrd-menu {
       width: 305px;
       transform: translateY(-2px);
@@ -66,4 +62,9 @@
 .manchette-menu {
   margin-left: -4px;
   margin-top: -5px;
+}
+
+.osrd-menu.waypoint-menu {
+  margin-top: -2px;
+  width: 305px;
 }
