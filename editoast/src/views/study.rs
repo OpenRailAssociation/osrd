@@ -32,8 +32,8 @@ use crate::models::prelude::*;
 use crate::models::projects;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
-use crate::views::projects::ProjectError;
-use crate::views::projects::ProjectIdParam;
+use crate::views::project::ProjectError;
+use crate::views::project::ProjectIdParam;
 
 crate::routes! {
     "/studies" => {

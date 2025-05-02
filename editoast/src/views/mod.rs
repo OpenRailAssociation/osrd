@@ -9,8 +9,8 @@ pub mod operational_studies;
 pub mod pagination;
 pub mod params;
 pub mod path;
+pub mod project;
 pub mod projection;
-pub mod projects;
 pub mod rolling_stock;
 pub mod scenario;
 pub mod search;
@@ -106,7 +106,7 @@ crate::routes! {
     &fonts,
     &infra,
     &layers,
-    &projects,
+    &project,
     &rolling_stock,
     &search,
     &sprites,
@@ -135,7 +135,7 @@ editoast_common::schemas! {
     operational_studies::schemas(),
     pagination::schemas(),
     path::schemas(),
-    projects::schemas(),
+    project::schemas(),
     projection::schemas(),
     rolling_stock::schemas(),
     scenario::schemas(),
