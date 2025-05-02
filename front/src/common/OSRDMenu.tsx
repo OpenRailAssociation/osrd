@@ -1,5 +1,7 @@
 import React from 'react';
 
+import cx from 'classnames';
+
 export type OSRDMenuItem = {
   title: string;
   icon: React.ReactNode;
@@ -11,10 +13,11 @@ export type OSRDMenuItem = {
 type OSRDMenuProps = {
   menuRef: React.RefObject<HTMLDivElement>;
   items: OSRDMenuItem[];
+  className?: string;
 };
 
-const OSRDMenu = ({ menuRef, items }: OSRDMenuProps) => (
-  <div ref={menuRef} className="osrd-menu">
+const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
+  <div ref={menuRef} className={cx('osrd-menu', className)}>
     {items.map(({ title, icon, disabled, disabledMessage, onClick }) => (
       <button
         disabled={disabled}

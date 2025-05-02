@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Eye, KebabHorizontal } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import AnchoredMenu from 'common/AnchoredMenu';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
-import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 type ManchetteMenuButtonProps = {
   setWaypointsPanelIsOpen: (waypointsModalOpen: boolean) => void;
@@ -32,29 +32,13 @@ const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonPro
     },
   ];
 
-  useModalFocusTrap(menuRef, closeMenu, { focusOnFirstElement: true });
-
-  useEffect(() => {
-    // TODO : refacto useOutsideClick to accept a list of refs and use the hook here
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        !menuRef.current?.contains(event.target as Node) &&
-        !menuButtonRef.current?.contains(event.target as Node)
-      ) {
-        closeMenu();
-      }
-    };
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen]);
+  const manchetteMenu = AnchoredMenu({
+    children: isMenuOpen && (
+      <OSRDMenu menuRef={menuRef} items={menuItems} className="manchette-menu" />
+    ),
+    anchorRef: menuButtonRef,
+    onDismiss: closeMenu,
+  });
 
   return (
     <>
@@ -68,7 +52,7 @@ const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonPro
       >
         <KebabHorizontal />
       </button>
-      {isMenuOpen && <OSRDMenu menuRef={menuRef} items={menuItems} />}
+      {manchetteMenu}
     </>
   );
 };

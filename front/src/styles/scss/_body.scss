@@ -1,5 +1,18 @@
+html:has(> body > .menu-overlay) {
+  overflow: hidden;
+}
+
 body {
   min-height: 100vh;
+}
+
+.menu-overlay {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 9999;
 }
 
 .mastcontainer-map {
