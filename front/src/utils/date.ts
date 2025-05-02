@@ -5,7 +5,7 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import i18next from 'i18next';
 
-import type { ScheduleConstraint, StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
+import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
 import i18n from 'i18n';
 
 dayjs.extend(utc);
@@ -48,13 +48,6 @@ export const parseLocalDateTime = (inputDateTime: string) => {
 
 export const formatLocalDateTime = (date: Date) =>
   dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
-
-/**
- * Transform a locale date to an ISO 8601 date
- * @param date Date we want to transform to ISO 8601
- * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
- */
-export const formatLocaleDateToIsoDate = (date: Date) => dayjs.tz(date).format();
 
 /**
  * Transform a date format ISO 8601 to a milliseconds date (elapsed from January 1st 1970)
@@ -133,17 +126,6 @@ export function isArrivalDateInSearchTimeWindow(
   }
   return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
 }
-
-/**
- * Generates an ISO date string from a given date and time.
- * @param {ScheduleConstraint} - An object containing the base date, the hours, and the minutes.
- * @returns {string} The ISO formatted date string.
- */
-export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleConstraint) => {
-  date.setHours(hours);
-  date.setMinutes(minutes);
-  return formatLocaleDateToIsoDate(date);
-};
 
 /** Format a date to a string 'DD/MM/YY', for instance '01/01/24' */
 export const formatDateString = (date?: Date | null) => {
