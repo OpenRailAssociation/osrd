@@ -26,7 +26,7 @@ const formatTimetableItemSummaries = (
     timetableItemIds.map((timetableItemId) => rawTimetableItems.get(timetableItemId))
   );
 
-  const items = relevantTimetableItems.map((timetableItem): TimetableItemWithDetails | null => {
+  const items = relevantTimetableItems.map((timetableItem): TimetableItemWithDetails => {
     const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
 
     const timetableItemSummary = rawSummaries.get(timetableItem.id);
@@ -100,7 +100,7 @@ const formatTimetableItemSummaries = (
     return formattedItem;
   });
 
-  return mapBy(compact(items), 'id');
+  return mapBy(items, 'id');
 };
 
 export default formatTimetableItemSummaries;
