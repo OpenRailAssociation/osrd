@@ -33,8 +33,10 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
     pathLength,
     duration,
     isValid,
+    invalidReason,
     exceptions,
   } = pacedTrain;
+
   const occurrencesState = useMemo<OccurrencesState>(() => {
     const occurrencesCount = getOccurrencesNb(paced);
     const computedOccurrences: Occurrence[] = [];
@@ -71,6 +73,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
             }
           : {
               isValid: false,
+              invalidReason,
             }),
       });
     }
