@@ -251,7 +251,7 @@ const TimetableToolbar = ({
       return trainScheduleLabel;
     }
 
-    if (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length > 0) {
+    if (selectedTrainScheduleIds.length > 0 || selectedPacedTrainIds.length > 0) {
       return t('pacedTrainAndTrainCount', {
         pacedTrainCount: selectedPacedTrainIds.length,
         totalPacedTrainCount,
