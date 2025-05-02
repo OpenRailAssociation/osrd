@@ -64,14 +64,6 @@ export const isoDateToMs = (isoDate: string) => {
   return isoCurrentDate.getTime();
 };
 
-/**
- * Transform a date format ISO 8601 to seconds (elapsed from January 1st 1970, with timezone difference)
- */
-export const isoDateWithTimezoneToSec = (isoDate: string) => {
-  const timeDifferenceMinutes = new Date().getTimezoneOffset();
-  return isoDateToMs(isoDate) / 1000 + Math.abs(timeDifferenceMinutes) * 60;
-};
-
 export function formatDay(dateString: string, locale: string = 'fr'): string {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');
