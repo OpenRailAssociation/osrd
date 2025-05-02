@@ -19,6 +19,8 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
           <X />
         </button>
 
+        <div className="spacer" />
+
         <span className="scenario-name">{scenarioName}</span>
 
         <button className="chevron-btn" type="button">
