@@ -1,8 +1,6 @@
-import dayjs from 'dayjs';
-
 import type { PostTimetableByIdStdcmApiArg } from 'common/api/osrdEditoastApi';
 import { isoDateToMs } from 'utils/date';
-import { Duration } from 'utils/duration';
+import { Duration, addDurationToDate, subtractDurationFromDate } from 'utils/duration';
 
 import type { StdcmSimulationInputs } from '../types';
 
@@ -66,17 +64,14 @@ export const adjustInputByDirection = (
   const adjustedPathSteps = simulationInputs.pathSteps.map((step) => {
     if (step.isVia || !step.arrival || !step.tolerances) return step;
 
-    const toleranceBeforeMs = step.tolerances.before.valueOf();
-    const toleranceAfterMs = step.tolerances.after.valueOf();
-
     const adjustedProps =
       direction === 'upstream'
         ? {
-            arrival: dayjs(step.arrival).add(toleranceAfterMs, 'millisecond').toDate(),
+            arrival: addDurationToDate(step.arrival, step.tolerances.after),
             tolerances: { before: new Duration({ seconds: 0 }), after: step.tolerances.after },
           }
         : {
-            arrival: dayjs(step.arrival).subtract(toleranceBeforeMs, 'millisecond').toDate(),
+            arrival: subtractDurationFromDate(step.arrival, step.tolerances.before),
             tolerances: { before: step.tolerances.before, after: new Duration({ seconds: 0 }) },
           };
 
