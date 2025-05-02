@@ -10,11 +10,9 @@ import type {
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { ms2sec } from 'utils/timeManipulation';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -198,15 +196,6 @@ export const preparePathPropertiesData = (
     geometry: geometry!,
     voltages: voltageRanges,
   };
-};
-
-/**
- * Convert an UTC departure time in ISO8601 to seconds and
- * convert it to local time
- */
-export const convertDepartureTimeIntoSec = (departureTime: string) => {
-  const isoDateInSec = ms2sec(isoDateToMs(departureTime));
-  return convertUTCDateToLocalDate(isoDateInSec);
 };
 
 export const isInvalidName = (name?: string | null) =>
