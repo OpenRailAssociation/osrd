@@ -9,6 +9,7 @@ import type {
   SimulationResponse,
   TowedRollingStock,
   PathProperties,
+  LoadingGaugeType,
 } from 'common/api/osrdEditoastApi';
 import type {
   PathOperationalPoint,

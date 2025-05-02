@@ -86,6 +86,7 @@
     "formattedDateScenario": "Simulation sheet generated on {{day}}/{{month}}/{{year}} at {{hours}}:{{minutes}}",
     "from": "from",
     "length": "length",
+    "loadingGauge": "loading gauge",
     "maxLength": "max. length",
     "maxSpeed": "max. speed",
     "maxWeight": "max. weight",
