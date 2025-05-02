@@ -312,9 +312,9 @@ impl EditoastError for core::Error {
     fn get_status(&self) -> StatusCode {
         match self {
             core::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
-            core::Error::StandardCoreError(error) => match error.cause {
-                core::CoreErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-                core::CoreErrorCause::User => StatusCode::BAD_REQUEST,
+            core::Error::RawError(error) => match error.cause {
+                core::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+                core::ErrorCause::User => StatusCode::BAD_REQUEST,
             },
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
@@ -327,7 +327,7 @@ impl EditoastError for core::Error {
             core::Error::UnparsableErrorOutput => "editoast:coreclient:UnparsableErrorOutput",
             core::Error::BrokenPipe => "editoast:coreclient:BrokenPipe",
             core::Error::MqClientError(_) => "editoast:coreclient:MqClientError",
-            core::Error::StandardCoreError(_) => "editoast:coreclient:StandardCoreError",
+            core::Error::RawError(_) => "editoast:coreclient:RawError",
             #[cfg(test)]
             core::Error::NoResponseContent => "editoast:coreclient:NoResponseContent",
         }

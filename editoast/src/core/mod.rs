@@ -10,16 +10,13 @@ pub mod simulation;
 pub mod stdcm;
 pub mod version;
 
-use std::collections::HashMap;
-use std::fmt::Display;
-use std::marker::PhantomData;
-
-use axum::http::StatusCode;
 use mq_client::MqClientError;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use serde_json::Value;
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::marker::PhantomData;
 use thiserror::Error;
 use tracing::error;
 use tracing::trace;
@@ -246,7 +243,7 @@ pub enum Error {
     MqClientError(#[from] MqClientError),
 
     #[error(transparent)]
-    StandardCoreError(#[from] StandardCoreError),
+    RawError(#[from] RawError),
 
     #[cfg(test)]
     #[error(
@@ -257,53 +254,12 @@ pub enum Error {
 
 impl Error {
     fn parse(bytes: &[u8], url: String) -> Error {
-        // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
-        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+        // We try to deserialize the response as an RawError in order to retain the context of the core error
+        if let Ok(mut core_error) = <Json<RawError>>::from_bytes(bytes) {
             core_error.context.insert("url".to_owned(), url.into());
-            return Error::StandardCoreError(core_error);
+            return Error::RawError(core_error);
         }
         Error::UnparsableErrorOutput
-    }
-}
-
-#[derive(Debug, Deserialize, PartialEq)]
-pub struct StandardCoreError {
-    #[serde(skip)]
-    pub status: StatusCode,
-    #[serde(rename = "type")]
-    pub error_type: String,
-    pub context: HashMap<String, Value>,
-    pub message: String,
-    #[serde(default = "CoreErrorCause::default")]
-    pub cause: CoreErrorCause,
-}
-
-#[derive(Debug, Deserialize, Default, PartialEq)]
-pub enum CoreErrorCause {
-    #[default]
-    Internal,
-    User,
-}
-
-impl crate::error::EditoastError for StandardCoreError {
-    fn get_type(&self) -> &str {
-        &self.error_type
-    }
-
-    fn get_status(&self) -> StatusCode {
-        self.status
-    }
-
-    fn context(&self) -> HashMap<String, Value> {
-        self.context.clone()
-    }
-}
-
-impl std::error::Error for StandardCoreError {}
-
-impl Display for StandardCoreError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.message)
     }
 }
 
@@ -314,6 +270,14 @@ pub struct RawError {
     pub message: String,
     pub context: HashMap<String, serde_json::Value>,
     pub cause: ErrorCause,
+}
+
+impl std::error::Error for RawError {}
+
+impl Display for RawError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
@@ -333,7 +297,7 @@ mod tests {
 
     use crate::core::AsCoreRequest;
     use crate::core::Bytes;
-    use crate::core::StandardCoreError;
+    use crate::core::RawError;
     use crate::core::mocking::MockingClient;
 
     use super::Error;
@@ -405,6 +369,7 @@ mod tests {
             },
             "message": "assert check failed",
             "type": "assert_error",
+            "cause": "Internal"
         });
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -412,9 +377,9 @@ mod tests {
             .response(StatusCode::NOT_FOUND)
             .body(error.to_string())
             .finish();
-        let expected_error: StandardCoreError = serde_json::from_value(error).unwrap();
+        let expected_error: RawError = serde_json::from_value(error).unwrap();
         let result = Req.fetch(&core.into()).await;
         let result = result.err().unwrap();
-        assert_eq!(result, Error::StandardCoreError(expected_error));
+        assert_eq!(result, Error::RawError(expected_error));
     }
 }
