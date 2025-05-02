@@ -1,5 +1,4 @@
 import type { PostTimetableByIdStdcmApiArg } from 'common/api/osrdEditoastApi';
-import { isoDateToMs } from 'utils/date';
 import { Duration, addDurationToDate, subtractDurationFromDate } from 'utils/duration';
 
 import type { StdcmSimulationInputs } from '../types';
@@ -22,22 +21,24 @@ export const adjustPayloadByDirection = (
       if (index !== 0 && index !== steps.length - 1) return step;
       if (!step.timing_data) return step;
 
-      const {
-        arrival_time,
-        arrival_time_tolerance_before: beforeTolerance,
-        arrival_time_tolerance_after: afterTolerance,
-      } = step.timing_data;
+      const arrivalTime = new Date(step.timing_data.arrival_time);
+      const toleranceBefore = new Duration({
+        milliseconds: step.timing_data.arrival_time_tolerance_before,
+      });
+      const toleranceAfter = new Duration({
+        milliseconds: step.timing_data.arrival_time_tolerance_after,
+      });
 
       const timingData =
         direction === 'upstream'
           ? {
-              arrival_time: new Date(isoDateToMs(arrival_time) + afterTolerance).toISOString(),
+              arrival_time: addDurationToDate(arrivalTime, toleranceAfter).toISOString(),
               arrival_time_tolerance_before: 0,
-              arrival_time_tolerance_after: afterTolerance,
+              arrival_time_tolerance_after: toleranceAfter.ms,
             }
           : {
-              arrival_time: new Date(isoDateToMs(arrival_time) - beforeTolerance).toISOString(),
-              arrival_time_tolerance_before: beforeTolerance,
+              arrival_time: subtractDurationFromDate(arrivalTime, toleranceBefore).toISOString(),
+              arrival_time_tolerance_before: toleranceBefore.ms,
               arrival_time_tolerance_after: 0,
             };
       return {
