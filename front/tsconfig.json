@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "include": ["."],
-  "exclude": ["node_modules", "ui"],
+  "exclude": ["node_modules", "ui", "build", "test-results", "playwright-report"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
