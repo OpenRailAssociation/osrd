@@ -98,6 +98,7 @@
     "pacedTrainCountSelected_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",
     "pacedTrainCount_one": "1/{{totalCount}} mission",
     "pacedTrainCount_other": "{{count}}/{{totalCount}} missions",
+    "pacedTrainCount_zero": "0/{{totalCount}} mission",
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "",
@@ -199,6 +200,7 @@
     "trainCountSelected_zero": "$t(main.train, { 'count': {{totalCount}} })",
     "trainCount_one": "1/{{totalCount}} train",
     "trainCount_other": "{{count}}/{{totalCount}} trains",
+    "trainCount_zero": "0/{{totalCount}} train",
     "train_one": "1 train",
     "train_other": "{{count}} trains",
     "train_zero": ""
