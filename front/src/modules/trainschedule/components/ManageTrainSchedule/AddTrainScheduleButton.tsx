@@ -15,9 +15,8 @@ import type {
 } from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
+import { isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
-import { sec2time } from 'utils/timeManipulation';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
@@ -81,7 +80,7 @@ const AddTrainScheduleButton = ({
           dispatch(
             setSuccess({
               title: t('pacedTrains.added'),
-              text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
+              text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
             })
           );
           upsertTimetableItems([formattedNewPacedTrain]);
@@ -104,7 +103,7 @@ const AddTrainScheduleButton = ({
           dispatch(
             setSuccess({
               title: t('trainAdded'),
-              text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
+              text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
             })
           );
           upsertTimetableItems([formattedNewTrainSchedule]);
@@ -151,7 +150,7 @@ const AddTrainScheduleButton = ({
         dispatch(
           setSuccess({
             title: t('trainAdded'),
-            text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
+            text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
           })
         );
         setIsWorking(false);
