@@ -66,3 +66,6 @@ export class Duration {
 }
 
 export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);
+
+export const subtractDurationFromDate = (date: Date, dur: Duration) =>
+  new Date(date.getTime() - dur.ms);
