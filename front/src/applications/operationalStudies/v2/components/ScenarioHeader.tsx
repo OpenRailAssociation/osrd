@@ -1,4 +1,5 @@
 import { X, ChevronDown, Question } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
 
 import useAuth from 'utils/hooks/useAuth';
 
@@ -8,6 +9,7 @@ type ScenarioHeaderProps = {
 
 const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
   const { username } = useAuth();
+  const { t } = useTranslation('common');
 
   const boards = ['Traits', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
 
@@ -21,11 +23,14 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
 
         <div className="spacer" />
 
-        <span className="scenario-name">{scenarioName}</span>
+        <span className="close-label">{t('close')}</span>
 
-        <button className="chevron-btn" type="button">
-          <ChevronDown />
-        </button>
+        <div className="scenario-name-container">
+          <span className="scenario-name-label">{scenarioName}</span>
+          <button className="chevron-btn" type="button">
+            <ChevronDown />
+          </button>
+        </div>
       </div>
 
       {/* board display management */}
