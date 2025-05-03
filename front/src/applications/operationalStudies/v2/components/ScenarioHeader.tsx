@@ -34,15 +34,20 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
           <X />
         </button>
 
-        <div className="spacer" />
+        <div className="inactive-area" />
 
         <span className="close-label">{t('close')}</span>
 
         <div className="scenario-name-container">
           <span className="scenario-name-label">{scenarioName}</span>
-          <button className="chevron-btn" type="button">
-            <ChevronDown />
-          </button>
+
+          <div className="chevron-container">
+            <button className="chevron-btn" type="button">
+              <ChevronDown />
+            </button>
+
+            <div className="spacer" />
+          </div>
         </div>
       </div>
 
@@ -64,7 +69,7 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
               >
                 {board}
               </button>
-              {index < boards.length - 1 && <div className="board-separator" />}
+              {index < boards.length - 1 && <div className="inactive-area" />}
             </Fragment>
           ))}
         </div>
