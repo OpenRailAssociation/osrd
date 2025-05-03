@@ -8,9 +8,20 @@
     0px 2px 2px -1px rgba(255, 171, 88, 0.27);
   background-color: var(--ambientB10);
   margin-bottom: 8px;
+  min-width: 780px;
 
   button:focus {
     outline: none;
+  }
+
+  .inactive-area {
+    width: 8px;
+    pointer-events: none;
+  }
+
+  .spacer {
+    width: 32px;
+    border: 1px solid red;
   }
 
   .scenario-info {
@@ -19,8 +30,8 @@
     font-size: 0.875rem;
     line-height: 20px;
     letter-spacing: 0px;
-    margin-right: 32px;
     position: relative;
+    height: 100%;
 
     .close-btn {
       padding: 8px 0px 8px 8px;
@@ -41,18 +52,13 @@
       }
     }
 
-    .spacer {
-      width: 8px;
-      height: 32px;
-      pointer-events: none;
-    }
-
     .close-label,
     .scenario-name-container {
       position: absolute;
       transition: opacity 0.3s ease-in-out;
       left: 32px;
       font-size: 0.875rem;
+      text-align: left;
     }
 
     .close-label {
@@ -64,11 +70,18 @@
       display: flex;
       align-items: center;
       opacity: 1;
+      height: 100%;
       color: var(--grey50);
 
-      .chevron-btn {
-        padding: 4px;
-        color: var(--black25);
+      .chevron-container {
+        display: flex;
+        align-items: center;
+        height: 100%;
+
+        .chevron-btn {
+          padding: 4px;
+          color: var(--black25);
+        }
       }
 
       &:hover {
@@ -94,11 +107,6 @@
     display: flex;
     align-items: center;
     height: 100%;
-
-    .spacer {
-      width: 32px;
-      height: 100%;
-    }
 
     .board-btns {
       display: flex;
@@ -146,12 +154,6 @@
         }
         // END HANDLE BOARD STATE
       }
-
-      .board-separator {
-        width: 8px;
-        height: 100%;
-        background-color: var(--ambientB20);
-      }
     }
   }
 
@@ -160,11 +162,6 @@
     align-items: center;
     height: 100%;
     margin-right: 8px;
-
-    .spacer {
-      width: 32px;
-      height: 100%;
-    }
 
     .user-name {
       color: var(--grey30);
