@@ -13,6 +13,10 @@
     0px -0.094rem 0.063rem rgba(0, 47, 152, 0.83) inset,
     0px 0.063rem 0.125rem rgba(0, 0, 0, 0.5);
   text-shadow: 0px 0.063rem 0px rgba(0, 0, 0, 0.36);
+  &:focus {
+    outline: 2px solid theme('colors.primary.50');
+    outline-offset: 2px;
+  }
   &.medium {
     height: 2rem;
     font-size: 1rem;
