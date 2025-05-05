@@ -144,7 +144,7 @@ editoast_osrdyne_client.workspace = true
 editoast_schemas.workspace = true
 editoast_search = { workspace = true }
 enum-map.workspace = true
-enumset = "1.1.5"
+enumset = "1.1.6"
 fga.workspace = true
 futures.workspace = true
 futures-util.workspace = true
