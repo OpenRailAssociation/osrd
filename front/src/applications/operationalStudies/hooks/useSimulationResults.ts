@@ -11,7 +11,7 @@ import type { PacedTrainResponseWithPacedTrainId } from 'reducers/osrdconf/types
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
-  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   formatOccurrenceIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
@@ -135,7 +135,7 @@ const useSimulationResults = (): SimulationResultsData => {
 
     const updatedSelectedPacedTrain: PacedTrainResponseWithPacedTrainId = {
       ...selectedPacedTrain,
-      id: formatEditoastTrainIdToPacedTrainId(selectedPacedTrain.id),
+      id: formatEditoastIdToPacedTrainId(selectedPacedTrain.id),
       start_time: selectedOccurrenceStartTime,
     };
 

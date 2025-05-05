@@ -1,14 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-  formatEditoastTrainIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { getBatchPackage } from '../batch';
 
 const trainIds = [...Array(25)].map((_, i) =>
-  i % 2 === 0 ? formatEditoastIdToTrainScheduleId(i) : formatEditoastTrainIdToPacedTrainId(i)
+  i % 2 === 0 ? formatEditoastIdToTrainScheduleId(i) : formatEditoastIdToPacedTrainId(i)
 );
 const BATCH_SIZE = 10;
 

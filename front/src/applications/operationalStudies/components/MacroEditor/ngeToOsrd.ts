@@ -19,7 +19,7 @@ import type {
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
-  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrainId,
@@ -329,7 +329,7 @@ const handleCreateTimetableItem = async (
   }
   const newPacedTrain: PacedTrainResponseWithPacedTrainId = {
     ...newTimetableItems[0],
-    id: formatEditoastTrainIdToPacedTrainId(newTimetableItems[0].id),
+    id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
   };
   state.timetableItemIdByNgeId.set(trainrun.id, newPacedTrain.id);
   addUpsertedTimetableItems([newPacedTrain]);

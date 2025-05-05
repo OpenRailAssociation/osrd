@@ -18,10 +18,7 @@ import type {
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastTrainIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
 import { findValidTrainNameKey } from '../ManageTrainSchedule/helpers/trainNameHelper';
@@ -121,7 +118,7 @@ const ImportTimetableItemTrainsList = ({
 
         formattedPacedTrains = pacedTrains.map((pacedTrain) => ({
           ...pacedTrain,
-          id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
+          id: formatEditoastIdToPacedTrainId(pacedTrain.id),
         }));
       }
 

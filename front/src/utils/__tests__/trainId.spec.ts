@@ -8,7 +8,7 @@ import {
   formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
   formatOccurrenceIdToEditoastTrainId,
-  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
@@ -25,10 +25,10 @@ describe('formatEditoastIdToTrainScheduleId', () => {
   });
 });
 
-describe('formatEditoastTrainIdToPacedTrainId', () => {
+describe('formatEditoastIdToPacedTrainId', () => {
   it('should format to a PacedTrainId', () => {
     const trainId = 123;
-    const result = formatEditoastTrainIdToPacedTrainId(trainId);
+    const result = formatEditoastIdToPacedTrainId(trainId);
     expect(result).toEqual(`paced_${trainId}`);
   });
 });

@@ -12,7 +12,7 @@ import {
   formatPacedTrainIdToEditoastTrainId,
   formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
-  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastIdToPacedTrainId,
   isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -71,7 +71,7 @@ async function createPacedTrain(
       body: [pacedTrain],
     })
   ).unwrap();
-  return { ...newPacedTrains[0], id: formatEditoastTrainIdToPacedTrainId(newPacedTrains[0].id) };
+  return { ...newPacedTrains[0], id: formatEditoastIdToPacedTrainId(newPacedTrains[0].id) };
 }
 
 async function updateTrainSchedule(

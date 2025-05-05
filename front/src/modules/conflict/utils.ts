@@ -2,10 +2,7 @@ import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
-import {
-  formatEditoastIdToTrainScheduleId,
-  formatEditoastTrainIdToPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import type { ConflictWithTrainNames } from './types';
 
@@ -17,7 +14,7 @@ function getConflictTrainNames(
     trainNameMap.get(formatEditoastIdToTrainScheduleId(id))
   );
   const occurenceNames = conflict.paced_train_occurrence_ids.map(({ paced_train_id, index }) => {
-    const pacedTrainName = trainNameMap.get(formatEditoastTrainIdToPacedTrainId(paced_train_id));
+    const pacedTrainName = trainNameMap.get(formatEditoastIdToPacedTrainId(paced_train_id));
     if (!pacedTrainName) return undefined;
     return computeOccurrenceName(pacedTrainName, index);
   });

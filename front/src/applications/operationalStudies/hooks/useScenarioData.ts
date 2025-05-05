@@ -21,7 +21,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import {
-  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrainId,
@@ -85,7 +85,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       showPacedTrains
         ? (fetchedPacedTrains || []).map((pacedTrain) => ({
             ...pacedTrain,
-            id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
+            id: formatEditoastIdToPacedTrainId(pacedTrain.id),
           }))
         : [],
     [showPacedTrains, fetchedPacedTrains]
