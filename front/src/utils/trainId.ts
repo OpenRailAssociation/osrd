@@ -73,7 +73,7 @@ export const formatEditoastIdToPacedTrainId = (trainId: number): PacedTrainId =>
  * Given a paced train id in the Editoast format (used for api),
  * returns the occurrence id with an IndexedOccurrenceId format (used across the front).
  */
-export const formatEditoastTrainIdToIndexedOccurrenceId = ({
+export const formatEditoastIdToIndexedOccurrenceId = ({
   pacedTrainId,
   occurrenceIndex,
 }: {
@@ -86,7 +86,7 @@ export const formatEditoastTrainIdToIndexedOccurrenceId = ({
  * Given a paced train id in the Editoast format (used for api) and an exception id,
  * returns the added exception id with an AddedExceptionId format (used across the front).
  */
-export const formatEditoastTrainIdToExceptionId = ({
+export const formatEditoastIdToExceptionId = ({
   pacedTrainId,
   exceptionId,
 }: {
@@ -157,7 +157,7 @@ export const formatPacedTrainIdToOccurrenceId = (
   occurrenceIndex: number
 ): IndexedOccurrenceId => {
   const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrainId);
-  return formatEditoastTrainIdToIndexedOccurrenceId({
+  return formatEditoastIdToIndexedOccurrenceId({
     pacedTrainId: editoastTrainId,
     occurrenceIndex,
   });
