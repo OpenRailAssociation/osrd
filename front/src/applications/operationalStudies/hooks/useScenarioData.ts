@@ -43,9 +43,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const showPacedTrains = useSelector(getShowPacedTrains);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
-  const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
-    new Set()
-  );
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
 
@@ -55,10 +52,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const projectionPath = usePathProjection(infra);
 
   useEffect(() => {
-    if (!scenario) {
-      return undefined;
-    }
-
     const trainSchedulesResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
         timetableId: scenario.timetable_id,
@@ -97,7 +90,21 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       trainSchedulesResult.unsubscribe();
       pacedTrainsResult?.unsubscribe();
     };
-  }, [scenario?.timetable_id, showPacedTrains]);
+  }, [scenario.timetable_id, showPacedTrains]);
+
+  const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
+
+  const {
+    projectedTrainsById,
+    allTrainsProjected,
+    projectTimetableItems,
+    removeProjectedTimetableItems,
+    updateTimetableItemDepartureTime,
+  } = useLazyProjectTrains({
+    infraId: scenario.infra_id,
+    electricalProfileSetId,
+    path: projectionPath?.path,
+  });
 
   const {
     simulatedTrainsById,
@@ -109,27 +116,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     electricalProfileSetId,
     rollingStocks,
     onProgress: (summaries) => {
-      // TODO Paced trains : remove this filter when paced trains are handled in projection
-      setTimetableItemIdsToProject((prev) => new Set([...prev, ...summaries.keys()]));
+      projectTimetableItems([...summaries.keys()].map((id) => timetableItemsById.get(id)!));
     },
   });
-
-  const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
-    infraId: scenario.infra_id,
-    electricalProfileSetId,
-    timetableItemIdsToProject,
-    path: projectionPath?.path,
-    timetableItems,
-    moreTrainsToCome: !allTrainsSimulated,
-    setTimetableItemIdsToProject,
-  });
-
-  useEffect(() => {
-    if (timetableItems && projectionPath?.path && allTrainsSimulated) {
-      const trainIds = timetableItems.map((timetableItem) => timetableItem.id);
-      setTimetableItemIdsToProject(new Set(trainIds));
-    }
-  }, [projectionPath?.path]);
 
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
   const { data: conflicts, refetch: refetchConflicts } =
@@ -160,7 +149,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   const trainScheduleUsedForProjection = useMemo(
-    () => timetableItems?.find((timetableItem) => timetableItem.id === trainIdUsedForProjection),
+    () => (trainIdUsedForProjection ? timetableItemsById.get(trainIdUsedForProjection) : undefined),
     [trainIdUsedForProjection, timetableItems]
   );
 
@@ -195,14 +184,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   };
 
   const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
-    setProjectedTrainsById((prev) => {
-      const newProjectedTrainsById = new Map(prev);
-      timetableItemsToUpsert.forEach((trainSchedule) => {
-        newProjectedTrainsById.delete(trainSchedule.id);
-      });
-      return newProjectedTrainsById;
-    });
-
     setTimetableItems((prev) =>
       sortBy(
         Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
@@ -210,27 +191,22 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       )
     );
 
+    removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
+
     simulateTimetableItems(timetableItemsToUpsert);
   }, []);
 
   const removeTimetableItems = useCallback((_timetableItemsToRemove: TimetableItemId[]) => {
     setTimetableItems((prev) => {
-      const timetableItemsById = mapBy(prev, 'id');
+      const prevTimetableItemsById = mapBy(prev, 'id');
       _timetableItemsToRemove.forEach((timetableItemId) => {
-        timetableItemsById.delete(timetableItemId);
+        prevTimetableItemsById.delete(timetableItemId);
       });
-      return Array.from(timetableItemsById.values());
+      return Array.from(prevTimetableItemsById.values());
     });
 
     removeSimulatedTimetableItems(_timetableItemsToRemove);
-
-    setProjectedTrainsById((prev) => {
-      const newProjectedTrainsById = new Map(prev);
-      _timetableItemsToRemove.forEach((trainId) => {
-        newProjectedTrainsById.delete(trainId as TrainScheduleId);
-      });
-      return newProjectedTrainsById;
-    });
+    removeProjectedTimetableItems(_timetableItemsToRemove);
   }, []);
 
   // TODO Paced train : change this function to handle paced trains in https://github.com/OpenRailAssociation/osrd/issues/10781
@@ -258,15 +234,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
       };
 
-      setProjectedTrainsById((prev) => {
-        const newProjectedTrainsById = new Map(prev);
-        newProjectedTrainsById.set(updatedTrainScheduleResponse.id, {
-          ...newProjectedTrainsById.get(updatedTrainScheduleResponse.id)!,
-          departureTime: newDeparture,
-        });
-        return newProjectedTrainsById;
-      });
-
       setTimetableItems((prev) => {
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
@@ -276,6 +243,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       });
 
       simulateTimetableItems([updatedTrainScheduleResponse]);
+      updateTimetableItemDepartureTime(trainId, newDeparture);
 
       // fetch conflicts
       refetchConflicts();

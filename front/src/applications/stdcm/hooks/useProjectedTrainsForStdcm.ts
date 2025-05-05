@@ -16,6 +16,7 @@ import {
 import type { TimetableItemId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { mapBy } from 'utils/types';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
@@ -64,9 +65,6 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const electricalProfileSetId = useSelector(getStdcmElectricalProfileSetId);
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-  const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
-    new Set()
-  );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
     timetableId,
@@ -84,6 +82,18 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     [timetable]
   );
 
+  const trainSchedulesById: Map<TimetableItemId, TrainScheduleResponseWithTrainId> = useMemo(
+    () => mapBy(formattedTrainSchedules, 'id'),
+    [formattedTrainSchedules]
+  );
+
+  // Progressive projection of the trains
+  const { projectedTrainsById, allTrainsProjected, projectTimetableItems } = useLazyProjectTrains({
+    infraId,
+    electricalProfileSetId,
+    path: stdcmResponse?.path,
+  });
+
   // Progressive loading of the trains
   const { simulatedTrainsById, simulateTimetableItems } = useLazySimulateTrains({
     infraId,
@@ -92,23 +102,13 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     onProgress: (results) => {
       if (!stdcmResponse) return;
       const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(stdcmResponse, results);
-      setTimetableItemIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
+      projectTimetableItems([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
     },
   });
 
   useEffect(() => {
     simulateTimetableItems(formattedTrainSchedules);
   }, [formattedTrainSchedules]);
-
-  // Progressive projection of the trains
-  const { projectedTrainsById, allTrainsProjected } = useLazyProjectTrains({
-    infraId,
-    electricalProfileSetId,
-    timetableItemIdsToProject,
-    path: stdcmResponse?.path,
-    timetableItems: formattedTrainSchedules,
-    setTimetableItemIdsToProject,
-  });
 
   useEffect(() => {
     if (stdcmResponse) {
@@ -118,7 +118,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
         stdcmResponse,
         simulatedTrainsById
       );
-      setTimetableItemIdsToProject(new Set(relevantTrainScheduleIds));
+      projectTimetableItems([...relevantTrainScheduleIds].map((id) => trainSchedulesById.get(id)!));
     }
   }, [stdcmResponse]);
 
