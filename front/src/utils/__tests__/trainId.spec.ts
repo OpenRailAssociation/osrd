@@ -10,7 +10,7 @@ import {
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastIdToPacedTrainId,
   extractEditoastIdFromPacedTrainId,
-  getOccurrenceIndexFromOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToExceptionId,
   getExceptionIdFromOccurrenceId,
@@ -159,23 +159,23 @@ describe('extractPacedTrainIdFromOccurrenceId', () => {
   });
 });
 
-describe('getOccurrenceIndexFromOccurrenceId', () => {
+describe('extractOccurrenceIndexFromOccurrenceId', () => {
   it('should return the occurrence index', () => {
     const occurrenceId = 'indexedoccurrence_123_1' as OccurrenceId;
-    const result = getOccurrenceIndexFromOccurrenceId(occurrenceId);
+    const result = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
     expect(result).toBe(1);
   });
 
   it('should throw an error for an invalid key format', () => {
     const occurrenceId = 'exception_123_1' as OccurrenceId;
-    expect(() => getOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
+    expect(() => extractOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
       'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}"'
     );
   });
 
   it("should throw an error if the occurrence index isn't a number", () => {
     const occurrenceId = 'indexedoccurrence_123_three' as OccurrenceId;
-    expect(() => getOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
+    expect(() => extractOccurrenceIndexFromOccurrenceId(occurrenceId)).toThrow(
       `Invalid occurrence index: ${occurrenceId}`
     );
   });
