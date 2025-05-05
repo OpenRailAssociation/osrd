@@ -25,10 +25,7 @@ import TimetableManageTrainSchedule from 'modules/trainschedule/components/Manag
 import Timetable from 'modules/trainschedule/components/Timetable';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastTrainIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
@@ -91,7 +88,7 @@ const ScenarioContent = ({
       .filter((pacedTrain) => pacedTrain.path.length >= 2)
       .map((pacedTrain) => ({
         ...pacedTrain,
-        id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
+        id: formatEditoastIdToPacedTrainId(pacedTrain.id),
       }));
     const state = new MacroEditorState(scenario, [...trainSchedules, ...pacedTrains]);
     await loadAndIndexNge(state, dispatch, t);

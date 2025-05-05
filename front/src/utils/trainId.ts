@@ -66,7 +66,7 @@ export const formatEditoastIdToTrainScheduleId = (trainId: number): TrainSchedul
  * Given a train id in the Editoast format (used for api),
  * returns the paced train id with a PacedTrainId format (used across the front).
  */
-export const formatEditoastTrainIdToPacedTrainId = (trainId: number): PacedTrainId =>
+export const formatEditoastIdToPacedTrainId = (trainId: number): PacedTrainId =>
   `paced_${trainId}` as PacedTrainId;
 
 /**
@@ -172,7 +172,7 @@ export const extractPacedTrainIdFromOccurenceId = (occurrenceId: OccurrenceId): 
  */
 export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId): PacedTrainId => {
   const editoastTrainId = formatOccurrenceIdToEditoastTrainId(occurrenceId);
-  return formatEditoastTrainIdToPacedTrainId(editoastTrainId);
+  return formatEditoastIdToPacedTrainId(editoastTrainId);
 };
 
 /**

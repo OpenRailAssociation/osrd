@@ -25,10 +25,7 @@ import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import {
-  formatEditoastTrainIdToPacedTrainId,
-  formatPacedTrainIdToEditoastTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatPacedTrainIdToEditoastTrainId } from 'utils/trainId';
 
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
@@ -150,7 +147,7 @@ const PacedTrainItem = ({
 
     const formattedPacedTrainResponse: PacedTrainResponseWithPacedTrainId = {
       ...pacedTrainResult,
-      id: formatEditoastTrainIdToPacedTrainId(pacedTrainResult.id),
+      id: formatEditoastIdToPacedTrainId(pacedTrainResult.id),
     };
     upsertTimetableItems([formattedPacedTrainResponse]);
     dispatch(

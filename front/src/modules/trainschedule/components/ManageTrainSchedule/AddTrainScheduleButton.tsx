@@ -18,10 +18,7 @@ import { useAppDispatch } from 'store';
 import { isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
-import {
-  formatEditoastTrainIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
@@ -78,7 +75,7 @@ const AddTrainScheduleButton = ({
           // We can only add one paced train at a time
           const formattedNewPacedTrain: PacedTrainResponseWithPacedTrainId = {
             ...newPacedTrain.at(0)!,
-            id: formatEditoastTrainIdToPacedTrainId(newPacedTrain.at(0)!.id),
+            id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
           };
 
           dispatch(
