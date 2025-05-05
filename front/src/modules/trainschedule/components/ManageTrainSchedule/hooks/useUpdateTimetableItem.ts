@@ -26,7 +26,7 @@ import {
   extractPacedTrainIdFromOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
   isOccurrence,
-  isPacedTrain,
+  isPacedTrainId,
 } from 'utils/trainId';
 
 import {
@@ -95,7 +95,7 @@ const useUpdateTimetableItem = (
     // dispatch success and update the selected train id
     dispatch(
       setSuccess({
-        title: isPacedTrain(timetableItemIdToEdit)
+        title: isPacedTrainId(timetableItemIdToEdit)
           ? t('pacedTrainUpdated')
           : t('trainScheduleUpdated'),
         text: `${confName}: ${startTime.toLocaleString()}`,

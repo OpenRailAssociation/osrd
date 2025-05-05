@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { uniq } from 'lodash';
 
 import { useDebounce } from 'utils/helpers';
-import { isPacedTrain, isTrainSchedule } from 'utils/trainId';
+import { isPacedTrainId, isTrainSchedule } from 'utils/trainId';
 
 import type {
   ScheduledPointsHonoredFilter,
@@ -66,7 +66,7 @@ const useFilterTimetableItems = (
         // Apply train type filter
         if (trainTypeFilter !== 'both') {
           if (trainTypeFilter === 'pacedTrain' && isTrainSchedule(timetableItem.id)) return false;
-          if (trainTypeFilter === 'trainSchedule' && isPacedTrain(timetableItem.id)) return false;
+          if (trainTypeFilter === 'trainSchedule' && isPacedTrainId(timetableItem.id)) return false;
         }
 
         // Apply tag filter

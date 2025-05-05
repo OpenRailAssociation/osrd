@@ -13,7 +13,7 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
-  isPacedTrain,
+  isPacedTrainId,
   isTrainSchedule,
 } from 'utils/trainId';
 
@@ -21,7 +21,7 @@ export async function fetchTimetableItem(
   timetableItemId: TimetableItemId,
   dispatch: AppDispatch
 ): Promise<TimetableItemWithTimetableId> {
-  if (isPacedTrain(timetableItemId)) {
+  if (isPacedTrainId(timetableItemId)) {
     const pacedTrain = await dispatch(
       osrdEditoastApi.endpoints.getPacedTrainById.initiate(
         {
@@ -148,7 +148,7 @@ export async function storePacedTrain(
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
 ): Promise<PacedTrainResponseWithPacedTrainId> {
-  if (isPacedTrain(timetableItemIdToUpdate)) {
+  if (isPacedTrainId(timetableItemIdToUpdate)) {
     await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
     const updatedPacedTrain = {
       ...pacedTrain,

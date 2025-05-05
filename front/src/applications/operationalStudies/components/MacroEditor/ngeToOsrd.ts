@@ -22,7 +22,7 @@ import {
   formatEditoastTrainIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
-  isPacedTrain,
+  isPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
@@ -420,10 +420,10 @@ const handleDeleteTimetableItem = async (
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
 ) => {
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)!;
-  const editoastTrainId = isPacedTrain(timetableItemId)
+  const editoastTrainId = isPacedTrainId(timetableItemId)
     ? formatPacedTrainIdToEditoastTrainId(timetableItemId)
     : formatTrainScheduleIdToEditoastTrainId(timetableItemId);
-  const endpoint = isPacedTrain(timetableItemId)
+  const endpoint = isPacedTrainId(timetableItemId)
     ? osrdEditoastApi.endpoints.deletePacedTrain
     : osrdEditoastApi.endpoints.deleteTrainSchedule;
   await dispatch(
