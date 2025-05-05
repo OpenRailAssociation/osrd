@@ -100,15 +100,13 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
   };
 };
 
-export const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
-
 export function getEarliestDate(date1: string | null | undefined, dat2: string | null | undefined) {
-  const formatedDate1 = formatDateForInput(date1);
-  const formatedDate2 = formatDateForInput(dat2);
+  const formatedDate1 = date1;
+  const formatedDate2 = dat2;
   if (formatedDate1 && formatedDate2) {
     return formatedDate1 < formatedDate2 ? formatedDate1 : formatedDate2;
   }
-  return formatedDate1 || formatedDate2;
+  return formatedDate1 || formatedDate2 || '';
 }
 
 /**

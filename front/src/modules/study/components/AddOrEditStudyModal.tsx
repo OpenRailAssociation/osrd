@@ -25,7 +25,7 @@ import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { formatDateForInput, getEarliestDate } from 'utils/date';
+import { getEarliestDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -331,7 +331,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('study.studyStartDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.start_date)}
+              value={currentStudy?.start_date || ''}
               onChange={(e) => handleStudyInputChange('start_date', e.target.value || null)}
               max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
@@ -347,9 +347,9 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('study.studyExpectedEndDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.expected_end_date)}
+              value={currentStudy?.expected_end_date || ''}
               onChange={(e) => handleStudyInputChange('expected_end_date', e.target.value || null)}
-              min={formatDateForInput(currentStudy.start_date)}
+              min={currentStudy.start_date || ''}
               isInvalid={!isExpectedEndDateValid}
             />
             <InputSNCF
@@ -364,9 +364,9 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('study.studyRealEndDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.actual_end_date)}
+              value={currentStudy?.actual_end_date || ''}
               onChange={(e) => handleStudyInputChange('actual_end_date', e.target.value || null)}
-              min={formatDateForInput(currentStudy.start_date)}
+              min={currentStudy.start_date || ''}
               isInvalid={!isActualEndDateValid}
             />
           </div>
