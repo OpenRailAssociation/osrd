@@ -36,12 +36,12 @@ use utoipa::ToSchema;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Document;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::RollingStockSeparatedImageModel;
 use crate::models::prelude::*;
+use crate::models::rolling_stock;
+use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
-use crate::models::rolling_stock_model;
-use crate::models::rolling_stock_model::ScenarioReference;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
@@ -78,12 +78,12 @@ editoast_common::schemas! {
 pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     #[schema(value_type = RollingStock)]
-    pub rolling_stock: RollingStockModel,
+    pub rolling_stock: RollingStock,
     pub liveries: Vec<RollingStockLivery>,
 }
 
 impl RollingStockWithLiveries {
-    async fn try_fetch(conn: &mut DbConnection, rolling_stock: RollingStockModel) -> Result<Self> {
+    async fn try_fetch(conn: &mut DbConnection, rolling_stock: RollingStock) -> Result<Self> {
         let rolling_stock_id = rolling_stock.id;
         let liveries = RollingStockLiveryModel::list(
             conn,
@@ -180,12 +180,12 @@ pub(crate) enum LiveryMultipartError {
 }
 
 // This implementation could be generated rather trivially...
-impl From<rolling_stock_model::Error> for RollingStockError {
-    fn from(e: rolling_stock_model::Error) -> Self {
+impl From<rolling_stock::Error> for RollingStockError {
+    fn from(e: rolling_stock::Error) -> Self {
         match e {
-            rolling_stock_model::Error::NameAlreadyUsed { name } => Self::NameAlreadyUsed { name },
-            rolling_stock_model::Error::BasePowerClassEmpty => Self::BasePowerClassEmpty,
-            rolling_stock_model::Error::Database(error) => Self::Database(error),
+            rolling_stock::Error::NameAlreadyUsed { name } => Self::NameAlreadyUsed { name },
+            rolling_stock::Error::BasePowerClassEmpty => Self::BasePowerClassEmpty,
+            rolling_stock::Error::Database(error) => Self::Database(error),
         }
     }
 }
@@ -285,7 +285,7 @@ async fn get_power_restrictions(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
-    let power_restrictions = RollingStockModel::get_power_restrictions(conn).await?;
+    let power_restrictions = RollingStock::get_power_restrictions(conn).await?;
     Ok(Json(
         power_restrictions
             .into_iter()
@@ -316,7 +316,7 @@ async fn create(
     Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
-) -> Result<Json<RollingStockModel>> {
+) -> Result<Json<RollingStock>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -326,7 +326,7 @@ async fn create(
     }
 
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+    let rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.into();
     rolling_stock_changeset.validate()?;
 
     let rolling_stock = rolling_stock_changeset
@@ -363,7 +363,7 @@ async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+    let rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.into();
     rolling_stock_changeset.validate()?;
 
     let new_rolling_stock = db_pool
@@ -372,14 +372,13 @@ async fn update(
         .transaction::<_, InternalError, _>(|conn| {
             async move {
                 #[expect(deprecated)]
-                let previous_rolling_stock = RollingStockModel::retrieve_or_fail(
-                    &mut conn.clone(),
-                    rolling_stock_id,
-                    || RollingStockError::KeyNotFound {
-                        rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-                    },
-                )
-                .await?;
+                let previous_rolling_stock =
+                    RollingStock::retrieve_or_fail(&mut conn.clone(), rolling_stock_id, || {
+                        RollingStockError::KeyNotFound {
+                            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+                        }
+                    })
+                    .await?;
                 assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
                 let mut new_rolling_stock = rolling_stock_changeset
@@ -445,12 +444,11 @@ async fn delete(
     let conn = &mut db_pool.get().await?;
 
     #[expect(deprecated)]
-    let rolling_stock = RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
-        RollingStockError::KeyNotFound {
+    let rolling_stock =
+        RollingStock::retrieve_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        }
-    })
-    .await?;
+        })
+        .await?;
     assert_rolling_stock_unlocked(&rolling_stock)?;
 
     if force {
@@ -471,7 +469,7 @@ async fn delete(
 }
 
 async fn delete_rolling_stock(conn: &mut DbConnection, rolling_stock_id: i64) -> Result<()> {
-    RollingStockModel::delete_static_or_fail(conn, rolling_stock_id, || {
+    RollingStock::delete_static_or_fail(conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
@@ -513,7 +511,7 @@ async fn update_locked(
 
     let conn = &mut db_pool.get().await?;
 
-    RollingStockModel::changeset()
+    RollingStock::changeset()
         .locked(locked)
         .update_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
@@ -653,7 +651,7 @@ pub async fn get_usage(
     let mut conn = db_pool.get().await?;
 
     #[expect(deprecated)]
-    let rolling_stock = RollingStockModel::retrieve_or_fail(&mut conn, rolling_stock_id, || {
+    let rolling_stock = RollingStock::retrieve_or_fail(&mut conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
@@ -669,12 +667,12 @@ pub async fn get_usage(
 pub async fn retrieve_existing_rolling_stock(
     conn: &mut DbConnection,
     rolling_stock_key: RollingStockKey,
-) -> Result<RollingStockModel> {
+) -> Result<RollingStock> {
     match rolling_stock_key.clone() {
         RollingStockKey::Id(id) =>
         {
             #[expect(deprecated)]
-            RollingStockModel::retrieve_or_fail(conn, id, || RollingStockError::KeyNotFound {
+            RollingStock::retrieve_or_fail(conn, id, || RollingStockError::KeyNotFound {
                 rolling_stock_key: rolling_stock_key.clone(),
             })
             .await
@@ -682,7 +680,7 @@ pub async fn retrieve_existing_rolling_stock(
         RollingStockKey::Name(name) =>
         {
             #[expect(deprecated)]
-            RollingStockModel::retrieve_or_fail(conn, name, || RollingStockError::KeyNotFound {
+            RollingStock::retrieve_or_fail(conn, name, || RollingStockError::KeyNotFound {
                 rolling_stock_key,
             })
             .await
@@ -690,7 +688,7 @@ pub async fn retrieve_existing_rolling_stock(
     }
 }
 
-fn assert_rolling_stock_unlocked(rolling_stock: &RollingStockModel) -> Result<()> {
+fn assert_rolling_stock_unlocked(rolling_stock: &RollingStock) -> Result<()> {
     if rolling_stock.locked {
         return Err(RollingStockError::IsLocked {
             rolling_stock_id: rolling_stock.id,
@@ -800,7 +798,7 @@ pub mod tests {
     use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::get_rolling_stock_with_invalid_effort_curves;
     use crate::models::fixtures::simple_train_schedule_changeset;
-    use crate::models::rolling_stock_model::RollingStockModel;
+    use crate::models::rolling_stock::RollingStock;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
@@ -841,10 +839,10 @@ pub mod tests {
         let raw_response = app.fetch(request);
 
         // THEN
-        let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database
         #[expect(deprecated)]
-        let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -873,10 +871,10 @@ pub mod tests {
         let raw_response = app.fetch(request);
 
         // THEN
-        let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database with locked = true
         #[expect(deprecated)]
-        let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -913,8 +911,7 @@ pub mod tests {
         let stock_name = Uuid::new_v4().to_string();
         let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
         let request = app.rolling_stock_create_request(&rolling_stock);
-        let RollingStockModel { id, .. } =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let RollingStock { id, .. } = app.fetch(request).assert_status(StatusCode::OK).json_into();
         let request = app.get(&format!("/rolling_stock/{id}/usage"));
         let related_schedules: Vec<ScenarioReference> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -928,13 +925,13 @@ pub mod tests {
 
         let create_rolling_stock_request =
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let rolling_stock: RollingStockModel = app
+        let rolling_stock: RollingStock = app
             .fetch(create_rolling_stock_request)
             .assert_status(StatusCode::OK)
             .json_into();
         let create_other_rolling_stock_request =
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let other_rolling_stock: RollingStockModel = app
+        let other_rolling_stock: RollingStock = app
             .fetch(create_other_rolling_stock_request)
             .assert_status(StatusCode::OK)
             .json_into();
@@ -1023,7 +1020,7 @@ pub mod tests {
     async fn get_invalid_rolling_stock_id_returns_404_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let _ = RollingStockModel::delete_static(&mut db_pool.get_ok(), 1).await;
+        let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
 
         let request = app.get("/rolling_stock/1/usage");
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -1087,7 +1084,7 @@ pub mod tests {
         let raw_response = app.fetch(request);
 
         // THEN
-        let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response, fast_rolling_stock);
     }
@@ -1107,7 +1104,7 @@ pub mod tests {
         let raw_response = app.fetch(request);
 
         // THEN
-        let response: RollingStockModel = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response, fast_rolling_stock);
     }
@@ -1156,8 +1153,8 @@ pub mod tests {
         raw_response.assert_status(StatusCode::OK);
 
         #[expect(deprecated)]
-        let updated_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1205,8 +1202,8 @@ pub mod tests {
         raw_response.assert_status(StatusCode::OK);
 
         #[expect(deprecated)]
-        let updated_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1254,8 +1251,8 @@ pub mod tests {
         );
 
         #[expect(deprecated)]
-        let updated_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1359,8 +1356,8 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         #[expect(deprecated)]
-        let fast_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1390,8 +1387,8 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         #[expect(deprecated)]
-        let fast_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1451,7 +1448,7 @@ pub mod tests {
         assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
 
         let rolling_stock_exists =
-            RollingStockModel::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
+            RollingStock::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to check if rolling stock exists");
 
@@ -1478,7 +1475,7 @@ pub mod tests {
         raw_response.assert_status(StatusCode::NO_CONTENT);
 
         let rolling_stock_exists =
-            RollingStockModel::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to check if rolling stock exists");
         assert!(!rolling_stock_exists);
@@ -1531,7 +1528,7 @@ pub mod tests {
         assert_eq!(response.error_type, "editoast:rollingstocks:IsUsed");
 
         let rolling_stock_exists =
-            RollingStockModel::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to check if rolling stock exists");
 
@@ -1544,7 +1541,7 @@ pub mod tests {
         raw_response_forced.assert_status(StatusCode::NO_CONTENT);
 
         let rolling_stock_exists =
-            RollingStockModel::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to check if rolling stock exists");
 

@@ -12,7 +12,6 @@ use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_common::units;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::PathItemLocation;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
@@ -34,7 +33,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::Retrieve;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::train_schedule::TrainSchedule;
 use crate::valkey_utils::ValkeyConnection;
 use crate::views::AuthenticationExt;
@@ -390,8 +389,8 @@ pub async fn pathfinding_from_train(
     train_schedule: TrainSchedule,
 ) -> Result<PathfindingResult> {
     #[expect(deprecated)]
-    let rolling_stock: Vec<RollingStock> =
-        RollingStockModel::retrieve(conn, train_schedule.rolling_stock_name.clone())
+    let rolling_stock: Vec<_> =
+        RollingStock::retrieve(conn, train_schedule.rolling_stock_name.clone())
             .await?
             .into_iter()
             .map_into()
@@ -412,7 +411,7 @@ pub async fn pathfinding_from_train_batch(
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[TrainSchedule],
-    rolling_stocks: &[RollingStock],
+    rolling_stocks: &[editoast_schemas::RollingStock],
 ) -> Result<Vec<PathfindingResult>> {
     let mut results = vec![
         PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(

@@ -18,9 +18,9 @@ pub mod pagination;
 pub mod prelude;
 pub mod project;
 pub mod railjson;
+pub mod rolling_stock;
 pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
-pub mod rolling_stock_model;
 pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
@@ -38,8 +38,8 @@ pub use infra::Infra;
 pub use infra_objects::*;
 pub use paced_train::PacedTrain;
 pub use project::Project;
+pub use rolling_stock::RollingStock;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
-pub use rolling_stock_model::RollingStockModel;
 pub use scenario::Scenario;
 pub use study::Study;
 pub use tags::Tags;
@@ -48,7 +48,7 @@ pub use train_schedule::TrainSchedule;
 editoast_common::schemas! {
     infra::schemas(),
     project::schemas(),
-    rolling_stock_model::schemas(),
+    rolling_stock::schemas(),
     stdcm_log::schemas(),
     tags::schemas(),
 }

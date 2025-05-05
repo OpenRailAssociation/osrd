@@ -182,9 +182,9 @@ async fn post(
     let rolling_stock_changeset: Changeset<TowedRollingStockModel> =
         towed_rolling_stock_form.into();
 
-    let rolling_stock_model = rolling_stock_changeset.version(0).create(conn).await?;
+    let rolling_stock = rolling_stock_changeset.version(0).create(conn).await?;
 
-    Ok(Json(TowedRollingStock::from(rolling_stock_model)))
+    Ok(Json(TowedRollingStock::from(rolling_stock)))
 }
 
 #[derive(Serialize, ToSchema)]

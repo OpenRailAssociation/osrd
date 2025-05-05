@@ -46,7 +46,7 @@ use crate::core::simulation::SpacingRequirement;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::prelude::*;
 use crate::models::stdcm_log::StdcmLog;
 use crate::models::stdcm_log::StdcmResponseOrError;
@@ -192,7 +192,7 @@ async fn stdcm(
 
     #[expect(deprecated)]
     let rolling_stock =
-        RollingStockModel::retrieve_or_fail(&mut conn, stdcm_request.rolling_stock_id, || {
+        RollingStock::retrieve_or_fail(&mut conn, stdcm_request.rolling_stock_id, || {
             StdcmError::RollingStockNotFound {
                 rolling_stock_id: stdcm_request.rolling_stock_id,
             }

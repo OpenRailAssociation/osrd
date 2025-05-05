@@ -8,7 +8,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::RollingStockModel;
+use super::RollingStock;
 use crate::error::Result;
 
 editoast_common::schemas! {
@@ -21,7 +21,7 @@ pub struct PowerRestriction {
     pub power_restriction: String,
 }
 
-impl RollingStockModel {
+impl RollingStock {
     pub async fn get_power_restrictions(conn: &mut DbConnection) -> Result<Vec<PowerRestriction>> {
         let power_restrictions = sql_query(include_str!("sql/get_power_restrictions.sql"))
             .load::<PowerRestriction>(conn.write().await.deref_mut())

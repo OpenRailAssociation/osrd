@@ -32,7 +32,7 @@ use crate::core::simulation::SignalCriticalPosition;
 use crate::core::simulation::ZoneUpdate;
 use crate::error::Result;
 use crate::models;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
@@ -342,7 +342,7 @@ pub async fn compute_projected_train_paths(
     })
     .await?;
 
-    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStock::retrieve_batch(
         conn,
         trains_schedules
             .iter()

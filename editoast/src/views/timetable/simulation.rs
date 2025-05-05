@@ -19,7 +19,7 @@ use crate::core::simulation::SpeedLimitProperties;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::views::CoreClient;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
@@ -210,7 +210,7 @@ pub async fn train_simulation_batch(
         .map::<String, _>(|t| t.rolling_stock_name.clone());
 
     let rolling_stocks: Vec<_> =
-        RollingStockModel::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids)
+        RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids)
             .await
             .map_err(RollingStockError::from)?;
 
