@@ -18,7 +18,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastTrainIdToTrainScheduleId, isTrainSchedule } from 'utils/trainId';
+import { formatEditoastTrainIdToTrainScheduleId, isTrainScheduleId } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
@@ -174,7 +174,7 @@ const Timetable = ({
                   {currentDepartureDates[index]}
                 </div>
               )}
-              {isTrainSchedule(timetableItem.id) ? (
+              {isTrainScheduleId(timetableItem.id) ? (
                 <TrainScheduleItem
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   handleSelectTrain={handleSelectTimetableItem}

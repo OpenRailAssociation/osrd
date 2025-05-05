@@ -25,10 +25,10 @@ const isAddedExceptionId = (id: string): id is AddedExceptionId => id.startsWith
 export const isOccurrenceId = (id: string): id is OccurrenceId =>
   isIndexedOccurrenceId(id) || isAddedExceptionId(id);
 
-export const isTrainSchedule = (id: string): id is TrainScheduleId =>
+export const isTrainScheduleId = (id: string): id is TrainScheduleId =>
   id.startsWith('trainschedule_');
 
-export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isTrainSchedule(id);
+export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isTrainScheduleId(id);
 
 /**
  * Given an occurrence id, return the type of the exception.
@@ -99,7 +99,7 @@ export const formatEditoastTrainIdToExceptionId = ({
  * returns the train id in the Editoast format (used for api).
  */
 export const formatTrainScheduleIdToEditoastTrainId = (trainId: TrainScheduleId): number => {
-  if (!isTrainSchedule(trainId)) {
+  if (!isTrainScheduleId(trainId)) {
     throw new Error('The train schedule id should start with "trainschedule_"');
   }
   const formattedTrainId = Number(trainId.split('_')[1]);
@@ -219,4 +219,4 @@ export const getExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): stri
 export const isTrainScheduleProjection = (
   timetableItem: TrainSpaceTimeData
 ): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
-  isTrainSchedule(timetableItem.id);
+  isTrainScheduleId(timetableItem.id);

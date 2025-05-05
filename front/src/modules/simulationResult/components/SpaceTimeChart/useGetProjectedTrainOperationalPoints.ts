@@ -15,7 +15,7 @@ import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import {
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 const useGetProjectedTrainOperationalPoints = ({
@@ -45,7 +45,7 @@ const useGetProjectedTrainOperationalPoints = ({
       const trainIdUsedForProjection = timetableItemUsedForProjection.id;
 
       let path: PathfindingResult;
-      if (isTrainSchedule(trainIdUsedForProjection)) {
+      if (isTrainScheduleId(trainIdUsedForProjection)) {
         path = await getTrainSchedulePath({
           id: formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection),
           infraId,

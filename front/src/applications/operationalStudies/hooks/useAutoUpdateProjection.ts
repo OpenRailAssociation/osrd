@@ -14,7 +14,7 @@ import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 /**
@@ -44,7 +44,7 @@ const useAutoUpdateProjection = (
 
     let timetableItemId: TimetableItemId | undefined;
     if (selectedTrainId) {
-      timetableItemId = isTrainSchedule(selectedTrainId)
+      timetableItemId = isTrainScheduleId(selectedTrainId)
         ? selectedTrainId
         : extractPacedTrainIdFromOccurrenceId(selectedTrainId);
     }
@@ -66,7 +66,7 @@ const useAutoUpdateProjection = (
     const firstValidTrain = timetableItemsWithDetails.find((item) => item.isValid);
     if (firstValidTrain) {
       dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
-      const newTrainIdToSelect = isTrainSchedule(firstValidTrain.id)
+      const newTrainIdToSelect = isTrainScheduleId(firstValidTrain.id)
         ? firstValidTrain.id
         : formatPacedTrainIdToOccurrenceId(firstValidTrain.id, 0);
       dispatch(updateSelectedTrainId(newTrainIdToSelect));

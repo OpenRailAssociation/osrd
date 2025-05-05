@@ -17,7 +17,7 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   formatPacedTrainIdToEditoastTrainId,
-  isTrainSchedule,
+  isTrainScheduleId,
   formatEditoastTrainIdToPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
@@ -86,7 +86,7 @@ const useLazyProjectTrains = ({
         editoastPacedTrainIds: number[];
       }>(
         (acc, trainId) => {
-          if (isTrainSchedule(trainId)) {
+          if (isTrainScheduleId(trainId)) {
             acc.editoastTrainIds.push(formatTrainScheduleIdToEditoastTrainId(trainId));
           } else {
             acc.editoastPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(trainId));

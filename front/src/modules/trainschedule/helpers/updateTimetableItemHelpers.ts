@@ -14,7 +14,7 @@ import {
   formatTrainScheduleIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
   isPacedTrainId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 export async function fetchTimetableItem(
@@ -120,7 +120,7 @@ export async function storeTrainSchedule(
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
 ): Promise<TrainScheduleResponseWithTrainId> {
-  if (isTrainSchedule(timetableItemIdToUpdate)) {
+  if (isTrainScheduleId(timetableItemIdToUpdate)) {
     await updateTrainSchedule(dispatch, timetableItemIdToUpdate, trainSchedule);
     const updatedTrainSchedule = {
       ...trainSchedule,

@@ -11,7 +11,7 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 const BATCH_SIZE = 20;
@@ -78,7 +78,7 @@ export default class TrainSimulationLazyLoader {
     const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];
     for (const id of batch) {
-      if (isTrainSchedule(id)) {
+      if (isTrainScheduleId(id)) {
         rawTrainScheduleIds.push(formatTrainScheduleIdToEditoastTrainId(id));
       } else {
         rawPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(id));
