@@ -1,9 +1,7 @@
-use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
-use thiserror::Error;
-use tracing::warn;
+
 use utoipa::ToSchema;
 
 use crate::ListAndCount;
@@ -118,11 +116,41 @@ pub trait PaginatedList: ListAndCount + 'static {
 
 impl<T> PaginatedList for T where T: ListAndCount + 'static {}
 
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub struct PaginationQueryParams<const MAX_PAGE_SIZE: u64 = 25> {
-    #[serde(default = "default_page")]
     pub page: u64,
-    pub page_size: Option<u64>,
+    pub page_size: u64,
+}
+
+impl<'de, const MAX_PAGE_SIZE: u64> serde::de::Deserialize<'de>
+    for PaginationQueryParams<MAX_PAGE_SIZE>
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Schema {
+            page: Option<u64>,
+            page_size: Option<u64>,
+        }
+        let Schema { page, page_size } = Schema::deserialize(deserializer)?;
+        let page = page.unwrap_or(1);
+        if page == 0 {
+            return Err(serde::de::Error::custom("invalid page 0, pages start at 1"));
+        }
+        if let Some(size) = page_size {
+            if !(0 < size && size <= MAX_PAGE_SIZE) {
+                return Err(serde::de::Error::custom(format!(
+                    "invalid page size ({size}), expected an integer 0 < page_size <= {MAX_PAGE_SIZE}",
+                )));
+            }
+        }
+        Ok(Self {
+            page,
+            page_size: page_size.unwrap_or(MAX_PAGE_SIZE),
+        })
+    }
 }
 
 impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_PAGE_SIZE> {
@@ -148,7 +176,7 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
                         .schema_type(SchemaType::Integer)
                         .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
                         .minimum(Some(1f64))
-                        .default(Some(json!(default_page()))),
+                        .default(Some(json!(1))),
                 ))
                 .build(),
             ParameterBuilder::new()
@@ -170,47 +198,11 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
     }
 }
 
-const fn default_page() -> u64 {
-    1
-}
-
 impl<const MAX_PAGE_SIZE: u64> PaginationQueryParams<MAX_PAGE_SIZE> {
     /// Returns a pre-filled [SelectionSettings] from the pagination settings
     /// that can then be used to list or count models
     pub fn into_selection_settings<M: Model + 'static>(self) -> SelectionSettings<M> {
         self.into()
-    }
-
-    pub fn validate(self) -> Result<Self> {
-        let (page, page_size) = self.unpack();
-        let max_page_size = MAX_PAGE_SIZE as i64;
-        if page < 1 {
-            return Err(PaginationError::InvalidPage { page }.into());
-        }
-        if page_size > max_page_size || page_size < 1 {
-            return Err(PaginationError::InvalidPageSize {
-                provided_page_size: page_size,
-                max_page_size,
-            }
-            .into());
-        }
-        Ok(self)
-    }
-
-    pub fn warn_page_size(self, warn_page_size: i64) -> Self {
-        let (_, page_size) = self.unpack();
-        if page_size > warn_page_size {
-            warn!(
-                "Too many elements per page, should be lower or equal to {}.",
-                warn_page_size
-            );
-        }
-        self
-    }
-
-    pub fn unpack(&self) -> (i64, i64) {
-        let page_size = self.page_size.unwrap_or(MAX_PAGE_SIZE);
-        (self.page as i64, page_size as i64)
     }
 }
 
@@ -220,26 +212,8 @@ impl<M: Model + 'static, const MAX_PAGE_SIZE: u64> From<PaginationQueryParams<MA
     fn from(
         PaginationQueryParams { page, page_size }: PaginationQueryParams<MAX_PAGE_SIZE>,
     ) -> Self {
-        let page_size = page_size.unwrap_or(MAX_PAGE_SIZE);
         SelectionSettings::from_pagination_settings(page, page_size)
     }
-}
-
-/// Simple pagination error
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "pagination")]
-pub enum PaginationError {
-    #[error(
-        "Invalid page size ({provided_page_size}), expected an integer 0 < page_size <= {max_page_size}"
-    )]
-    #[editoast_error(status = 400)]
-    InvalidPageSize {
-        provided_page_size: i64,
-        max_page_size: i64,
-    },
-    #[error("Invalid page ({page}), expected a positive integer ")]
-    #[editoast_error(status = 400)]
-    InvalidPage { page: i64 },
 }
 
 #[cfg(test)]

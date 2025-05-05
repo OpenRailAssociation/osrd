@@ -129,10 +129,6 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "NotFound": "Paced train '{{paced_train_id}}' could not be found"
     },
-    "pagination": {
-      "InvalidPage": "Invalid page number ({{page}})",
-      "InvalidPageSize": "Invalid page size ({{provided_page_size}}), expected an integer 0 < page_size <= {{max_page_size}}"
-    },
     "pathfinding": {
       "ElectricalProfilesOverlap": "Electrical Profile overlaps with others",
       "ElectrificationOverlap": "Electrification '{{electrification_id}}' overlaps with other electrifications",

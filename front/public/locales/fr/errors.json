@@ -129,10 +129,6 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Mission '{{paced_train_id}}' non trouvée"
     },
-    "pagination": {
-      "InvalidPage": "Le numéro de page '{{page}}' est invalide",
-      "InvalidPageSize": "La taille de la page '{{provided_page_size}}' est invalide, il doit être un entier compris entre 0 et {{max_page_size}}"
-    },
     "pathfinding": {
       "ElectricalProfilesOverlap": "Des profils électriques se chevauchent",
       "ElectrificationOverlap": "Electrification {{electrification_id}} se supperpose avec d'autres",

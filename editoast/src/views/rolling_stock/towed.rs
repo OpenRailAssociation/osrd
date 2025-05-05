@@ -217,7 +217,6 @@ async fn get_list(
         return Err(AuthorizationError::Forbidden.into());
     }
     let settings = page_settings
-        .validate()?
         .into_selection_settings()
         .order_by(|| TowedRollingStockModel::ID.asc());
     let (towed_rolling_stocks, stats) =

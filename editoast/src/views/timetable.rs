@@ -171,7 +171,6 @@ async fn get_train_schedules(
     }
 
     let settings = pagination_params
-        .validate()?
         .into_selection_settings()
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
@@ -368,7 +367,6 @@ async fn get_paced_trains(
     }
 
     let settings = pagination_params
-        .validate()?
         .into_selection_settings()
         .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id));
 
@@ -791,14 +789,10 @@ mod tests {
 
         assert!(response.len() == 2);
 
-        let settings = PaginationQueryParams::<25> {
-            page: 1,
-            page_size: Some(20),
-        }
-        .validate()
-        .expect("Invalid pagination parameters")
-        .into_selection_settings()
-        .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id));
+        let settings = SelectionSettings::default()
+            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id))
+            .limit(25)
+            .offset(0);
 
         let list_result = models::PacedTrain::list_paginated(&mut pool.get_ok(), settings)
             .await

@@ -486,8 +486,6 @@ async fn list(
     }
 
     let settings = pagination_params
-        .validate()?
-        .warn_page_size(100)
         .into_selection_settings()
         .order_by(move || ordering.as_scenario_ordering())
         .filter(move || Scenario::STUDY_ID.eq(study_id));

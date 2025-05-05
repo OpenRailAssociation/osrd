@@ -74,7 +74,7 @@ async fn list_errors(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams<100>>,
+    Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
     Query(ErrorListQueryParams {
         level,
         error_type,
@@ -88,9 +88,6 @@ async fn list_errors(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-
-    let (page, page_size) = pagination_params.validate()?.warn_page_size(100).unpack();
-    let (page, page_size) = (page as u64, page_size as u64);
 
     let error_type = match error_type.map(|et| InfraErrorTypeLabel::from_str(&et).ok()) {
         Some(None) => return Err(ListErrorsErrors::WrongErrorTypeProvided.into()),
