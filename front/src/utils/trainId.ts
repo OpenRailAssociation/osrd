@@ -15,7 +15,7 @@ import type {
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
 
-export const isPacedTrain = (id: string): id is PacedTrainId => id.startsWith('paced_');
+export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith('paced_');
 
 const isIndexedOccurrence = (id: string): id is IndexedOccurrenceId =>
   id.startsWith('indexedoccurrence_');
@@ -49,11 +49,11 @@ export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' |
 
 export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItemWithTimetableId
-): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrain(timetableItem.id);
+): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrainId(timetableItem.id);
 
 export const isPacedTrainWithDetails = (
   timetableItem: TimetableItemWithDetails
-): timetableItem is PacedTrainWithDetails => isPacedTrain(timetableItem.id);
+): timetableItem is PacedTrainWithDetails => isPacedTrainId(timetableItem.id);
 
 /**
  * Given a train id in the Editoast format (used for api),
@@ -116,7 +116,7 @@ export const formatTrainScheduleIdToEditoastTrainId = (trainId: TrainScheduleId)
  * returns the train id in the Editoast format (used for api).
  */
 export const formatPacedTrainIdToEditoastTrainId = (pacedTrainId: PacedTrainId): number => {
-  if (!isPacedTrain(pacedTrainId)) {
+  if (!isPacedTrainId(pacedTrainId)) {
     throw new Error('The paced train id should start with "paced_"');
   }
   const formattedPacedTrainId = Number(pacedTrainId.split('_')[1]);

@@ -24,7 +24,7 @@ import {
   formatEditoastTrainIdToPacedTrainId,
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
-  isPacedTrain,
+  isPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -140,7 +140,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     // Allow to hide or show paced trains in the timetable when toggling the paced train mode in the settings
     if (!showPacedTrains) {
       filteredTimetableItemsSummaries = filteredTimetableItemsSummaries.filter(
-        (timetableItem) => !isPacedTrain(timetableItem.id)
+        (timetableItem) => !isPacedTrainId(timetableItem.id)
       );
     }
     return sortBy(filteredTimetableItemsSummaries, 'startTime');
@@ -177,7 +177,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     // We also want to update timetableItemIdsToFetch if it's the first time we activate the paced train mode
     // pacedTrainWithDetails.length will be equal to 0 at that point
     const pacedTrainWithDetails = timetableItemsWithDetails.filter((timetableItem) =>
-      isPacedTrain(timetableItem.id)
+      isPacedTrainId(timetableItem.id)
     );
     if (
       timetableItems &&
