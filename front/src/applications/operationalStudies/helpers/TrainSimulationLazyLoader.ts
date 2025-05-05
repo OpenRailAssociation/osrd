@@ -9,7 +9,7 @@ import type { AppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
-  formatPacedTrainIdToEditoastTrainId,
+  extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -81,7 +81,7 @@ export default class TrainSimulationLazyLoader {
       if (isTrainScheduleId(id)) {
         rawTrainScheduleIds.push(extractEditoastIdFromTrainScheduleId(id));
       } else {
-        rawPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(id));
+        rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
       }
     }
 

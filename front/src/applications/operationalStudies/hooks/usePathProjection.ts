@@ -11,7 +11,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
-  formatPacedTrainIdToEditoastTrainId,
+  extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -40,7 +40,7 @@ const usePathProjection = (infra: InfraWithState) => {
         }).unwrap();
       } else {
         path = await getPacedTrainPath({
-          id: formatPacedTrainIdToEditoastTrainId(trainIdUsedForProjection),
+          id: extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
           infraId: infra.id,
         }).unwrap();
       }

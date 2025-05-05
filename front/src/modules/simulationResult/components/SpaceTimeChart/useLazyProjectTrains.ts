@@ -16,7 +16,7 @@ import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
-  formatPacedTrainIdToEditoastTrainId,
+  extractEditoastIdFromPacedTrainId,
   isTrainScheduleId,
   formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
@@ -89,7 +89,7 @@ const useLazyProjectTrains = ({
           if (isTrainScheduleId(trainId)) {
             acc.editoastTrainIds.push(extractEditoastIdFromTrainScheduleId(trainId));
           } else {
-            acc.editoastPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(trainId));
+            acc.editoastPacedTrainIds.push(extractEditoastIdFromPacedTrainId(trainId));
           }
           return acc;
         },

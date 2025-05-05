@@ -13,7 +13,7 @@ import {
 import { isStation } from 'modules/pathfinding/utils';
 import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import {
-  formatPacedTrainIdToEditoastTrainId,
+  extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -52,7 +52,7 @@ const useGetProjectedTrainOperationalPoints = ({
         }).unwrap();
       } else {
         path = await getPacedTrainPath({
-          id: formatPacedTrainIdToEditoastTrainId(trainIdUsedForProjection),
+          id: extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
           infraId,
         }).unwrap();
       }
