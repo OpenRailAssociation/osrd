@@ -455,7 +455,7 @@ struct ListScenariosResponse {
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, PaginationQueryParams, OperationalStudiesOrderingParam),
+    params(ProjectIdParam, StudyIdParam, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
     responses(
         (status = 200, description = "A paginated list of scenarios", body = inline(ListScenariosResponse)),
         (status = 404, description = "Project or study doesn't exist")
@@ -465,7 +465,7 @@ async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
     let authorized = auth
@@ -486,7 +486,7 @@ async fn list(
     }
 
     let settings = pagination_params
-        .validate(1000)?
+        .validate()?
         .warn_page_size(100)
         .into_selection_settings()
         .order_by(move || ordering.as_scenario_ordering())

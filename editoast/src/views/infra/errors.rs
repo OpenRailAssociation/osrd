@@ -65,7 +65,7 @@ pub(in crate::views) struct InfraErrorResponse {
 #[utoipa::path(
     get, path = "",
      tag = "infra",
-     params(InfraIdParam, PaginationQueryParams, ErrorListQueryParams),
+     params(InfraIdParam, PaginationQueryParams<100>, ErrorListQueryParams),
      responses(
          (status = 200, body = inline(ErrorListResponse), description = "A paginated list of errors"),
      ),
@@ -74,7 +74,7 @@ async fn list_errors(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
     Query(ErrorListQueryParams {
         level,
         error_type,
@@ -89,10 +89,7 @@ async fn list_errors(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (page, page_size) = pagination_params
-        .validate(100)?
-        .warn_page_size(100)
-        .unpack();
+    let (page, page_size) = pagination_params.validate()?.warn_page_size(100).unpack();
     let (page, page_size) = (page as u64, page_size as u64);
 
     let error_type = match error_type.map(|et| InfraErrorTypeLabel::from_str(&et).ok()) {

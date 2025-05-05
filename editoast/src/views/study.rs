@@ -401,7 +401,7 @@ struct StudyListResponse {
 #[utoipa::path(
     get, path = "",
     tag = "studies",
-    params(ProjectIdParam, PaginationQueryParams, OperationalStudiesOrderingParam),
+    params(ProjectIdParam, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = inline(StudyListResponse), description = "The list of studies"),
     )
@@ -410,7 +410,7 @@ async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
     let authorized = auth
@@ -430,7 +430,7 @@ async fn list(
     }
 
     let settings = pagination_params
-        .validate(1000)?
+        .validate()?
         .warn_page_size(100)
         .into_selection_settings()
         .filter(move || Study::PROJECT_ID.eq(project_id))

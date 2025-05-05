@@ -134,7 +134,7 @@ struct MacroNodeListResponse {
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams),
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams<100>),
     responses(
         (status = 200, body = MacroNodeListResponse, description = "List of macro nodes for the requested scenario"),
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
@@ -144,7 +144,7 @@ async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<MacroNodeListResponse>> {
     // Checking role
     let authorized = auth
@@ -162,7 +162,7 @@ async fn list(
 
     // Ask the db
     let settings = pagination_params
-        .validate(100)?
+        .validate()?
         .into_selection_settings()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
     let (result, stats) = MacroNode::list_paginated(conn, settings).await?;

@@ -199,7 +199,7 @@ struct TowedRollingStockCountList {
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
-    params(PaginationQueryParams),
+    params(PaginationQueryParams<50>),
     responses(
         (status = 200, body = inline(TowedRollingStockCountList)),
     )
@@ -207,7 +207,7 @@ struct TowedRollingStockCountList {
 async fn get_list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Query(page_settings): Query<PaginationQueryParams>,
+    Query(page_settings): Query<PaginationQueryParams<50>>,
 ) -> Result<Json<TowedRollingStockCountList>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
@@ -217,7 +217,7 @@ async fn get_list(
         return Err(AuthorizationError::Forbidden.into());
     }
     let settings = page_settings
-        .validate(50)?
+        .validate()?
         .into_selection_settings()
         .order_by(|| TowedRollingStockModel::ID.asc());
     let (towed_rolling_stocks, stats) =
