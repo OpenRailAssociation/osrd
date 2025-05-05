@@ -20,7 +20,6 @@ use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
-use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::rolling_stock::TrainCategories;
@@ -35,7 +34,7 @@ use crate::models;
 use crate::models::Document;
 use crate::models::Infra;
 use crate::models::Project;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
@@ -194,9 +193,9 @@ pub async fn create_scenario_fixtures_set(
     }
 }
 
-pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> {
-    Changeset::<RollingStockModel>::from(
-        serde_json::from_str::<editoast_schemas::rolling_stock::RollingStock>(include_str!(
+pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStock> {
+    Changeset::<RollingStock>::from(
+        serde_json::from_str::<editoast_schemas::RollingStock>(include_str!(
             "../tests/example_rolling_stock_1.json"
         ))
         .expect("Unable to parse example rolling stock"),
@@ -205,16 +204,16 @@ pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> 
     .version(0)
 }
 
-pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStockModel {
+pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStock {
     fast_rolling_stock_changeset(name)
         .create(conn)
         .await
         .expect("Failed to create rolling stock")
 }
 
-pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStockModel> {
-    Changeset::<RollingStockModel>::from(
-        serde_json::from_str::<editoast_schemas::rolling_stock::RollingStock>(include_str!(
+pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStock> {
+    Changeset::<RollingStock>::from(
+        serde_json::from_str::<editoast_schemas::RollingStock>(include_str!(
             "../tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse rolling stock with energy sources"),
@@ -226,7 +225,7 @@ pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<Roll
 pub async fn create_rolling_stock_with_energy_sources(
     conn: &mut DbConnection,
     name: &str,
-) -> RollingStockModel {
+) -> RollingStock {
     rolling_stock_with_energy_sources_changeset(name)
         .create(conn)
         .await
@@ -283,8 +282,8 @@ pub fn create_towed_rolling_stock() -> TowedRollingStock {
     }
 }
 
-pub fn create_simple_rolling_stock() -> RollingStock {
-    RollingStock {
+pub fn create_simple_rolling_stock() -> editoast_schemas::RollingStock {
+    editoast_schemas::RollingStock {
         name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
         supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
@@ -339,7 +338,7 @@ pub async fn create_document_example(conn: &mut DbConnection) -> Document {
 pub async fn create_rolling_stock_livery_fixture(
     conn: &mut DbConnection,
     name: &str,
-) -> (RollingStockLiveryModel, RollingStockModel, Document) {
+) -> (RollingStockLiveryModel, RollingStock, Document) {
     let rolling_stock = create_fast_rolling_stock(conn, name).await;
     let document_exemple = create_document_example(conn).await;
     let rs_livery =

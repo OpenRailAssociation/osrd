@@ -9,7 +9,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::rolling_stock_model::RollingStockModel;
+use crate::models::rolling_stock::RollingStock;
 use editoast_models::DbConnection;
 use editoast_models::tables::project;
 use editoast_models::tables::rolling_stock;
@@ -44,7 +44,7 @@ impl From<SchedulesFromRollingStock> for ScenarioReference {
 
 type SchedulesFromRollingStock = (i64, String, i64, String, i64, String);
 
-impl RollingStockModel {
+impl RollingStock {
     pub async fn get_usage(&self, conn: &mut DbConnection) -> Result<Vec<ScenarioReference>> {
         let schedules: Vec<_> = train_schedule::table
             .inner_join(

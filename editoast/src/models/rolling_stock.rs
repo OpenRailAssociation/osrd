@@ -20,7 +20,6 @@ use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use power_restrictions::PowerRestriction;
@@ -37,7 +36,7 @@ mod schedules_from_rolling_stock;
 pub use schedules_from_rolling_stock::ScenarioReference;
 
 editoast_common::schemas! {
-    RollingStockModel,
+    RollingStock,
     PowerRestriction,
 }
 
@@ -46,8 +45,7 @@ editoast_common::schemas! {
 #[model(table = editoast_models::tables::rolling_stock, error = Error)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(derive(Deserialize), public))]
-#[schema(as = RollingStock)]
-pub struct RollingStockModel {
+pub struct RollingStock {
     pub id: i64,
     pub railjson_version: String,
     #[model(identifier)]
@@ -143,7 +141,7 @@ impl From<model::Error> for Error {
     }
 }
 
-impl RollingStockModelChangeset {
+impl RollingStockChangeset {
     pub fn validate(&self) -> std::result::Result<(), ValidationErrors> {
         let mut validation_errors = ValidationErrors::new();
 
@@ -217,34 +215,34 @@ impl RollingStockModelChangeset {
     }
 }
 
-impl From<RollingStockModel> for RollingStock {
-    fn from(rolling_stock_model: RollingStockModel) -> Self {
-        RollingStock {
-            railjson_version: rolling_stock_model.railjson_version,
-            locked: rolling_stock_model.locked,
-            metadata: rolling_stock_model.metadata,
-            name: rolling_stock_model.name,
-            effort_curves: rolling_stock_model.effort_curves,
-            base_power_class: rolling_stock_model.base_power_class,
-            length: rolling_stock_model.length,
-            max_speed: rolling_stock_model.max_speed,
-            startup_time: rolling_stock_model.startup_time,
-            startup_acceleration: rolling_stock_model.startup_acceleration,
-            comfort_acceleration: rolling_stock_model.comfort_acceleration,
-            const_gamma: rolling_stock_model.const_gamma,
-            etcs_brake_params: rolling_stock_model.etcs_brake_params,
-            inertia_coefficient: rolling_stock_model.inertia_coefficient,
-            mass: rolling_stock_model.mass,
-            rolling_resistance: rolling_stock_model.rolling_resistance,
-            loading_gauge: rolling_stock_model.loading_gauge,
-            power_restrictions: rolling_stock_model.power_restrictions,
-            energy_sources: rolling_stock_model.energy_sources,
-            electrical_power_startup_time: rolling_stock_model.electrical_power_startup_time,
-            raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
-            supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
-            primary_category: rolling_stock_model.primary_category.deref().clone(),
+impl From<RollingStock> for editoast_schemas::RollingStock {
+    fn from(rolling_stock: RollingStock) -> Self {
+        editoast_schemas::RollingStock {
+            railjson_version: rolling_stock.railjson_version,
+            locked: rolling_stock.locked,
+            metadata: rolling_stock.metadata,
+            name: rolling_stock.name,
+            effort_curves: rolling_stock.effort_curves,
+            base_power_class: rolling_stock.base_power_class,
+            length: rolling_stock.length,
+            max_speed: rolling_stock.max_speed,
+            startup_time: rolling_stock.startup_time,
+            startup_acceleration: rolling_stock.startup_acceleration,
+            comfort_acceleration: rolling_stock.comfort_acceleration,
+            const_gamma: rolling_stock.const_gamma,
+            etcs_brake_params: rolling_stock.etcs_brake_params,
+            inertia_coefficient: rolling_stock.inertia_coefficient,
+            mass: rolling_stock.mass,
+            rolling_resistance: rolling_stock.rolling_resistance,
+            loading_gauge: rolling_stock.loading_gauge,
+            power_restrictions: rolling_stock.power_restrictions,
+            energy_sources: rolling_stock.energy_sources,
+            electrical_power_startup_time: rolling_stock.electrical_power_startup_time,
+            raise_pantograph_time: rolling_stock.raise_pantograph_time,
+            supported_signaling_systems: rolling_stock.supported_signaling_systems,
+            primary_category: rolling_stock.primary_category.deref().clone(),
             other_categories: editoast_schemas::rolling_stock::TrainCategories(
-                rolling_stock_model
+                rolling_stock
                     .other_categories
                     .iter()
                     .map(|c| c.deref().clone())
@@ -254,9 +252,9 @@ impl From<RollingStockModel> for RollingStock {
     }
 }
 
-impl From<RollingStock> for RollingStockModelChangeset {
-    fn from(rolling_stock: RollingStock) -> Self {
-        RollingStockModel::changeset()
+impl From<editoast_schemas::RollingStock> for RollingStockChangeset {
+    fn from(rolling_stock: editoast_schemas::RollingStock) -> Self {
+        RollingStock::changeset()
             .railjson_version(rolling_stock.railjson_version)
             .locked(rolling_stock.locked)
             .metadata(rolling_stock.metadata)
@@ -297,7 +295,7 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainCategory;
     use rstest::rstest;
 
-    use super::RollingStockModel;
+    use super::RollingStock;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::fast_rolling_stock_changeset;
@@ -317,7 +315,7 @@ pub mod tests {
         let rs_name_with_energy_sources_name = "other_rolling_stock_update_rolling_stock";
         let rolling_stock_id = created_fast_rolling_stock.id;
 
-        let rolling_stock_with_energy_sources: Changeset<RollingStockModel> =
+        let rolling_stock_with_energy_sources: Changeset<RollingStock> =
             rolling_stock_with_energy_sources_changeset(rs_name_with_energy_sources_name);
 
         // WHEN

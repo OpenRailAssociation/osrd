@@ -38,7 +38,7 @@ use crate::List;
 use crate::SelectionSettings;
 use crate::error::Result;
 use crate::models::Retrieve;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
@@ -74,10 +74,7 @@ struct LightRollingStockWithLiveries {
 }
 
 impl LightRollingStockWithLiveries {
-    async fn try_fetch(
-        conn: &mut DbConnection,
-        light_rolling_stock: RollingStockModel,
-    ) -> Result<Self> {
+    async fn try_fetch(conn: &mut DbConnection, light_rolling_stock: RollingStock) -> Result<Self> {
         let light_rolling_stock_id = light_rolling_stock.id;
         let liveries = RollingStockLiveryModel::list(
             conn,
@@ -130,9 +127,9 @@ async fn list(
         .validate(1000)?
         .warn_page_size(100)
         .into_selection_settings()
-        .order_by(|| RollingStockModel::ID.asc());
+        .order_by(|| RollingStock::ID.asc());
     let (rolling_stocks, stats) =
-        RollingStockModel::list_paginated(&mut db_pool.get().await?, settings).await?;
+        RollingStock::list_paginated(&mut db_pool.get().await?, settings).await?;
 
     let results = rolling_stocks.into_iter().zip(db_pool.iter_conn()).map(
         |(rolling_stock, conn)| async move {
@@ -170,14 +167,13 @@ async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     #[expect(deprecated)]
-    let rolling_stock = RollingStockModel::retrieve_or_fail(
-        &mut db_pool.get().await?,
-        light_rolling_stock_id,
-        || RollingStockError::KeyNotFound {
-            rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
-        },
-    )
-    .await?;
+    let rolling_stock =
+        RollingStock::retrieve_or_fail(&mut db_pool.get().await?, light_rolling_stock_id, || {
+            RollingStockError::KeyNotFound {
+                rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
+            }
+        })
+        .await?;
     let light_rolling_stock_with_liveries =
         LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(light_rolling_stock_with_liveries))
@@ -205,7 +201,7 @@ async fn get_by_name(
         return Err(AuthorizationError::Forbidden.into());
     }
     #[expect(deprecated)]
-    let rolling_stock = RollingStockModel::retrieve_or_fail(
+    let rolling_stock = RollingStock::retrieve_or_fail(
         &mut db_pool.get().await?,
         light_rolling_stock_name.clone(),
         || RollingStockError::KeyNotFound {
@@ -258,9 +254,9 @@ struct LightRollingStock {
     other_categories: TrainCategories,
 }
 
-impl From<RollingStockModel> for LightRollingStock {
+impl From<RollingStock> for LightRollingStock {
     fn from(
-        RollingStockModel {
+        RollingStock {
             id,
             railjson_version,
             name,
@@ -285,7 +281,7 @@ impl From<RollingStockModel> for LightRollingStock {
             primary_category,
             other_categories,
             ..
-        }: RollingStockModel,
+        }: RollingStock,
     ) -> Self {
         LightRollingStock {
             id,

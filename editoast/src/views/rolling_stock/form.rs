@@ -18,7 +18,7 @@ use utoipa::ToSchema;
 
 use crate::models::Changeset;
 use crate::models::Model;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
@@ -67,9 +67,9 @@ pub struct RollingStockForm {
     pub other_categories: TrainCategories,
 }
 
-impl From<RollingStockForm> for Changeset<RollingStockModel> {
+impl From<RollingStockForm> for Changeset<RollingStock> {
     fn from(rolling_stock: RollingStockForm) -> Self {
-        RollingStockModel::changeset()
+        RollingStock::changeset()
             .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
             .flat_locked(rolling_stock.locked)
             .metadata(rolling_stock.metadata)
@@ -99,8 +99,8 @@ impl From<RollingStockForm> for Changeset<RollingStockModel> {
 
 // Used in some tests where we import a rolling stock as a fixture
 #[cfg(test)]
-impl From<RollingStockModel> for RollingStockForm {
-    fn from(value: RollingStockModel) -> Self {
+impl From<RollingStock> for RollingStockForm {
+    fn from(value: RollingStock) -> Self {
         RollingStockForm {
             name: value.name,
             effort_curves: value.effort_curves,

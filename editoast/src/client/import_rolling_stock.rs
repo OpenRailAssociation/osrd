@@ -7,12 +7,11 @@ use std::sync::Arc;
 use clap::Args;
 use colored::Colorize as _;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use validator::ValidationErrorsKind;
 
 use crate::CliError;
-use crate::models::RollingStockModel;
+use crate::models::RollingStock;
 use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStockModel;
 
@@ -34,10 +33,10 @@ pub async fn import_rolling_stock(
     for rolling_stock_path in args.rolling_stock_path {
         let mut conn = db_pool.get().await?;
         let rolling_stock_file = File::open(rolling_stock_path)?;
-        let rolling_stock: RollingStock =
+        let rolling_stock: editoast_schemas::RollingStock =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         let rolling_stock_name = rolling_stock.name.clone();
-        let rolling_stock: Changeset<RollingStockModel> = rolling_stock.into();
+        let rolling_stock: Changeset<RollingStock> = rolling_stock.into();
         match rolling_stock.validate() {
             Ok(()) => {
                 println!(
@@ -50,7 +49,7 @@ pub async fn import_rolling_stock(
                 );
                 #[expect(deprecated)]
                 let existing_rolling_stock =
-                    RollingStockModel::retrieve(&mut conn, rolling_stock_name.clone()).await?;
+                    RollingStock::retrieve(&mut conn, rolling_stock_name.clone()).await?;
                 match (existing_rolling_stock, args.force) {
                     (Some(_), true) => {
                         let rolling_stock = rolling_stock
@@ -153,8 +152,8 @@ mod tests {
         use editoast_models::DbConnectionPoolV2;
         use rstest::rstest;
 
-        fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
-            let mut rolling_stock_form: RollingStock =
+        fn get_fast_rolling_stock_schema(name: &str) -> editoast_schemas::RollingStock {
+            let mut rolling_stock_form: editoast_schemas::RollingStock =
                 serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
                     .expect("Unable to parse");
             rolling_stock_form.name = name.to_string();
@@ -202,7 +201,7 @@ mod tests {
             );
             #[expect(deprecated)]
             let created_rs =
-                RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .unwrap();
             assert!(created_rs.is_some());
@@ -230,11 +229,11 @@ mod tests {
             assert!(result.is_ok(), "import should succeed");
             #[expect(deprecated)]
             let created_rs =
-                RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .expect("failed to retrieve rolling stock")
                     .unwrap();
-            let RollingStockModel {
+            let RollingStock {
                 electrical_power_startup_time,
                 raise_pantograph_time,
                 ..
@@ -268,7 +267,7 @@ mod tests {
             );
             #[expect(deprecated)]
             let created_rs =
-                RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .unwrap();
             assert!(created_rs.is_none());
@@ -294,11 +293,11 @@ mod tests {
             assert!(result.is_ok(), "import should succeed");
             #[expect(deprecated)]
             let created_rs =
-                RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .expect("Failed to retrieve rolling stock")
                     .unwrap();
-            let RollingStockModel {
+            let RollingStock {
                 electrical_power_startup_time,
                 raise_pantograph_time,
                 ..
@@ -315,7 +314,7 @@ mod tests {
             let existing_rolling_stock_form =
                 get_fast_rolling_stock_schema(existing_rolling_stock_name);
 
-            let existing_rolling_stock: Changeset<RollingStockModel> =
+            let existing_rolling_stock: Changeset<RollingStock> =
                 existing_rolling_stock_form.clone().into();
             existing_rolling_stock
                 .locked(false)
@@ -325,7 +324,7 @@ mod tests {
                 .unwrap();
 
             // second rolling stock with same values except length (100.0 instead of 400.0)
-            let mut updated_rolling_stock_form: RollingStock = existing_rolling_stock_form.clone();
+            let mut updated_rolling_stock_form = existing_rolling_stock_form.clone();
             updated_rolling_stock_form.length = units::meter::new(100.0);
             let file = generate_temp_file(&updated_rolling_stock_form);
             let args = ImportRollingStockArgs {
@@ -342,7 +341,7 @@ mod tests {
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
             #[expect(deprecated)]
-            let rolling_stock = RollingStockModel::retrieve(
+            let rolling_stock = RollingStock::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),
             )
@@ -359,7 +358,7 @@ mod tests {
             let existing_rolling_stock_name = "existing_rolling_stock";
             let existing_rolling_stock_form =
                 get_fast_rolling_stock_schema(existing_rolling_stock_name);
-            let existing_rolling_stock: Changeset<RollingStockModel> =
+            let existing_rolling_stock: Changeset<RollingStock> =
                 existing_rolling_stock_form.clone().into();
             existing_rolling_stock
                 .locked(false)
@@ -369,7 +368,7 @@ mod tests {
                 .unwrap();
 
             // second rolling stock with same values except length (100.0 instead of 400.0)
-            let mut updated_rolling_stock_form: RollingStock = existing_rolling_stock_form.clone();
+            let mut updated_rolling_stock_form = existing_rolling_stock_form.clone();
             updated_rolling_stock_form.length = units::meter::new(100.0);
             let file = generate_temp_file(&updated_rolling_stock_form);
             let args = ImportRollingStockArgs {
@@ -386,7 +385,7 @@ mod tests {
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
             #[expect(deprecated)]
-            let rolling_stock = RollingStockModel::retrieve(
+            let rolling_stock = RollingStock::retrieve(
                 &mut db_pool.get_ok(),
                 existing_rolling_stock_name.to_string(),
             )
