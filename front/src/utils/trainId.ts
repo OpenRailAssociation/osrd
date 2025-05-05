@@ -199,7 +199,7 @@ export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceI
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the exception id.
  */
-export const getExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): string => {
+export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): string => {
   if (!isAddedExceptionId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'

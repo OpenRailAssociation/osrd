@@ -13,7 +13,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToExceptionId,
-  getExceptionIdFromOccurrenceId,
+  extractExceptionIdFromOccurrenceId,
   extractPacedTrainIdFromOccurenceId,
 } from '../trainId';
 
@@ -181,22 +181,22 @@ describe('extractOccurrenceIndexFromOccurrenceId', () => {
   });
 });
 
-describe('getExceptionIdFromOccurrenceId', () => {
+describe('extractExceptionIdFromOccurrenceId', () => {
   it('should return the exception id', () => {
     const occurrenceId = 'exception_123_exception-uuid' as OccurrenceId;
-    const result = getExceptionIdFromOccurrenceId(occurrenceId);
+    const result = extractExceptionIdFromOccurrenceId(occurrenceId);
     expect(result).toBe('exception-uuid');
   });
 
   it('should return the whole exception id if it contains underscores', () => {
     const occurrenceId = 'exception_123_exception_uuid_with_underscores' as OccurrenceId;
-    const result = getExceptionIdFromOccurrenceId(occurrenceId);
+    const result = extractExceptionIdFromOccurrenceId(occurrenceId);
     expect(result).toBe('exception_uuid_with_underscores');
   });
 
   it('should throw an error for an invalid key format', () => {
     const occurrenceId = 'indexedoccurrence_123_exception-uuid' as OccurrenceId;
-    expect(() => getExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
+    expect(() => extractExceptionIdFromOccurrenceId(occurrenceId)).toThrow(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
     );
   });
