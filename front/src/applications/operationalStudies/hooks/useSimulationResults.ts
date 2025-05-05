@@ -17,7 +17,7 @@ import {
   formatTrainScheduleIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { SimulationResultsData } from '../types';
@@ -32,7 +32,7 @@ const useSimulationResults = (): SimulationResultsData => {
 
   const editoastSelectedTrainId = useMemo(() => {
     if (!selectedTrainId) return undefined;
-    if (isTrainSchedule(selectedTrainId)) {
+    if (isTrainScheduleId(selectedTrainId)) {
       return formatTrainScheduleIdToEditoastTrainId(selectedTrainId);
     }
     return formatOccurrenceIdToEditoastTrainId(selectedTrainId);
@@ -42,7 +42,7 @@ const useSimulationResults = (): SimulationResultsData => {
     {
       id: editoastSelectedTrainId!,
     },
-    { skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainSchedule(selectedTrainId)) }
+    { skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)) }
   );
 
   const { data: selectedPacedTrain } = osrdEditoastApi.endpoints.getPacedTrainById.useQuery(
@@ -62,7 +62,7 @@ const useSimulationResults = (): SimulationResultsData => {
         skip:
           !editoastSelectedTrainId ||
           !infraId ||
-          (selectedTrainId && !isTrainSchedule(selectedTrainId)),
+          (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
       }
     );
 
@@ -81,7 +81,7 @@ const useSimulationResults = (): SimulationResultsData => {
   const path = useMemo(() => {
     if (!selectedTrainId) return undefined;
 
-    if (isTrainSchedule(selectedTrainId)) {
+    if (isTrainScheduleId(selectedTrainId)) {
       return rawTrainSchedulePath?.status === 'success' ? rawTrainSchedulePath : undefined;
     }
     return rawPacedTrainPath?.status === 'success' ? rawPacedTrainPath : undefined;
@@ -94,7 +94,7 @@ const useSimulationResults = (): SimulationResultsData => {
         skip:
           !editoastSelectedTrainId ||
           !infraId ||
-          (selectedTrainId && !isTrainSchedule(selectedTrainId)),
+          (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
       }
     );
 
@@ -112,7 +112,7 @@ const useSimulationResults = (): SimulationResultsData => {
   const selectedTimetableItemSimulationData = useMemo(() => {
     if (!selectedTrainId) return undefined;
 
-    if (isTrainSchedule(selectedTrainId)) {
+    if (isTrainScheduleId(selectedTrainId)) {
       return selectedTrainSchedule
         ? {
             selectedTimetableItem: {

@@ -46,7 +46,7 @@ import {
   formatPacedTrainIdToOccurrenceId,
   extractPacedTrainIdFromOccurenceId,
   isTrainScheduleProjection,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
@@ -301,7 +301,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
 
       // TODO Paced trains : handle mission drag
-      if (isTrainSchedule(draggedTrain.id)) {
+      if (isTrainScheduleId(draggedTrain.id)) {
         await handleTrainDrag(draggedTrain.id, newDeparture, {
           stopPanning: !isPanning,
         });

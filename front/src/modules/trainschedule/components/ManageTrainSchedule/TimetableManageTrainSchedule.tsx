@@ -15,7 +15,7 @@ import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osr
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { isPacedTrainId, isTrainSchedule } from 'utils/trainId';
+import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
@@ -66,13 +66,13 @@ const TimetableManageTrainSchedule = ({
   const getEditLabel = (_itemIdToEdit: TimetableItemId) => {
     if (!showPacedTrains) return t('updateTrainSchedule');
 
-    if (isTrainSchedule(_itemIdToEdit) && !editingTrainIsPacedTrain) {
+    if (isTrainScheduleId(_itemIdToEdit) && !editingTrainIsPacedTrain) {
       return t('updateTrainSchedule');
     }
     if (isPacedTrainId(_itemIdToEdit) && editingTrainIsPacedTrain) {
       return t('updatePacedTrain');
     }
-    return isTrainSchedule(_itemIdToEdit)
+    return isTrainScheduleId(_itemIdToEdit)
       ? t('turnTrainScheduleIntoPacedTrain')
       : t('turnPacedTrainIntoTrainSchedule');
   };

@@ -9,7 +9,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isOccurrenceId, isPacedTrainId, isTrainSchedule } from 'utils/trainId';
+import { isOccurrenceId, isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 type SimulationParams = {
   projectId: string;
@@ -62,13 +62,13 @@ const useScenarioQueryParams = () => {
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
     if (
       selectedTrainFromUrl &&
-      (isTrainSchedule(selectedTrainFromUrl) || isOccurrenceId(selectedTrainFromUrl))
+      (isTrainScheduleId(selectedTrainFromUrl) || isOccurrenceId(selectedTrainFromUrl))
     ) {
       dispatch(updateSelectedTrainId(selectedTrainFromUrl));
     }
     if (
       projectionFromUrl &&
-      (isTrainSchedule(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
+      (isTrainScheduleId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
     ) {
       dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
     }

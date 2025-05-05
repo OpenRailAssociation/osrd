@@ -27,7 +27,7 @@ import {
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrainResponseWithPacedTrainId,
-  isTrainSchedule,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import FilterPanel from './FilterPanel';
@@ -73,7 +73,7 @@ const TimetableToolbar = ({
     () =>
       selectedTimetableItemIds.reduce(
         (acc, timetableItemId) => {
-          if (isTrainSchedule(timetableItemId)) {
+          if (isTrainScheduleId(timetableItemId)) {
             acc.selectedTrainScheduleIds.push(timetableItemId);
           } else {
             acc.selectedPacedTrainIds.push(timetableItemId);
@@ -92,7 +92,7 @@ const TimetableToolbar = ({
     () =>
       timetableItemsWithDetails.reduce(
         (acc, { id }) => {
-          if (isTrainSchedule(id)) {
+          if (isTrainScheduleId(id)) {
             acc.totalTrainScheduleCount += 1;
           } else {
             acc.totalPacedTrainCount += 1;
@@ -126,7 +126,7 @@ const TimetableToolbar = ({
     const isSelectedTimetableItemInSelection =
       currentSelectedTrainId !== undefined &&
       selectedTimetableItemIds.some((timetableItemId) =>
-        isTrainSchedule(timetableItemId)
+        isTrainScheduleId(timetableItemId)
           ? timetableItemId === currentSelectedTrainId
           : currentSelectedTrainId.includes(timetableItemId)
       );
