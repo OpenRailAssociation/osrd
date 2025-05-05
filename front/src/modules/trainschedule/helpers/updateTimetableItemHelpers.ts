@@ -10,7 +10,7 @@ import type {
 import type { AppDispatch } from 'store';
 import {
   formatPacedTrainIdToEditoastTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   formatEditoastTrainIdToPacedTrainId,
   isPacedTrainId,
@@ -56,7 +56,7 @@ async function createTrainSchedule(
   ).unwrap();
   return {
     ...newTrainSchedules[0],
-    id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedules[0].id),
+    id: formatEditoastIdToTrainScheduleId(newTrainSchedules[0].id),
   };
 }
 

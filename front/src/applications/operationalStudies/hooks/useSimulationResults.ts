@@ -12,7 +12,7 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatOccurrenceIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
@@ -117,7 +117,7 @@ const useSimulationResults = (): SimulationResultsData => {
         ? {
             selectedTimetableItem: {
               ...selectedTrainSchedule,
-              id: formatEditoastTrainIdToTrainScheduleId(selectedTrainSchedule.id),
+              id: formatEditoastIdToTrainScheduleId(selectedTrainSchedule.id),
             },
             selectedTimetableItemSimulation: selectedTrainScheduleSimulation,
             selectedTimetableItemStartTime: selectedTrainSchedule?.start_time,

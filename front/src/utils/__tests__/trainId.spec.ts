@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 
 import {
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatEditoastTrainIdToIndexedOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
@@ -17,10 +17,10 @@ import {
   extractPacedTrainIdFromOccurenceId,
 } from '../trainId';
 
-describe('formatEditoastTrainIdToTrainScheduleId', () => {
+describe('formatEditoastIdToTrainScheduleId', () => {
   it('should format to a TrainScheduleId', () => {
     const trainId = 123;
-    const result = formatEditoastTrainIdToTrainScheduleId(trainId);
+    const result = formatEditoastIdToTrainScheduleId(trainId);
     expect(result).toEqual(`trainschedule_${trainId}`);
   });
 });

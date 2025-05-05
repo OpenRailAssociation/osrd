@@ -18,7 +18,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastTrainIdToTrainScheduleId, isTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId, isTrainScheduleId } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
@@ -102,7 +102,7 @@ const Timetable = ({
   const handleConflictClick = (conflict: Conflict) => {
     if (conflict.train_schedule_ids.length > 0) {
       // TODO Paced train : Adapt this to handle paced trains in conflict issue
-      const formattedFirstTrainId = formatEditoastTrainIdToTrainScheduleId(
+      const formattedFirstTrainId = formatEditoastIdToTrainScheduleId(
         conflict.train_schedule_ids[0]
       );
       dispatch(updateSelectedTrainId(formattedFirstTrainId));

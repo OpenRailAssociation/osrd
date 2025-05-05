@@ -22,7 +22,7 @@ import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrainId,
 } from 'utils/trainId';
@@ -75,7 +75,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     () =>
       (fetchedTrainSchedulesResults || []).map((trainSchedule) => ({
         ...trainSchedule,
-        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+        id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
       })),
     [fetchedTrainSchedulesResults]
   );
@@ -258,7 +258,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
       const updatedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
         ...trainScheduleResponse,
-        id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResponse.id),
+        id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
       };
 
       setProjectedTrainsById((prev) => {

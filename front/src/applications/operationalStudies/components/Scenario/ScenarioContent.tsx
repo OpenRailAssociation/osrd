@@ -27,7 +27,7 @@ import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osr
 import { useAppDispatch } from 'store';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
 import ScenarioDescription from './ScenarioDescription';
@@ -79,7 +79,7 @@ const ScenarioContent = ({
       .filter((trainSchedule) => trainSchedule.path.length >= 2)
       .map((trainSchedule) => ({
         ...trainSchedule,
-        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+        id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
       }));
     const pacedTrainsPromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(

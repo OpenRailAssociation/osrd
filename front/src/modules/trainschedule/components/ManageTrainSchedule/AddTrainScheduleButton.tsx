@@ -20,7 +20,7 @@ import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
@@ -101,7 +101,7 @@ const AddTrainScheduleButton = ({
           // We can only add one train schedule at a time
           const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
             ...newTrainSchedule.at(0)!,
-            id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
+            id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
           };
 
           dispatch(
@@ -147,7 +147,7 @@ const AddTrainScheduleButton = ({
         const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId[] = newTrainSchedules.map(
           (trainSchedule) => ({
             ...trainSchedule,
-            id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+            id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
           })
         );
 

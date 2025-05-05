@@ -33,7 +33,7 @@ import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import useStdcmForm from './useStdcmForm';
 import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
@@ -105,7 +105,7 @@ const useStdcm = ({
     let outputs;
     if (formattedResponse.status === 'success') {
       const stdcmTrain: TimetableItemWithTimetableId = {
-        id: formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID),
+        id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',

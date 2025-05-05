@@ -20,7 +20,7 @@ import type {
 import { useAppDispatch } from 'store';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
@@ -108,7 +108,7 @@ const ImportTimetableItemTrainsList = ({
 
         formattedTrainSchedules = trainSchedules.map((trainSchedule) => ({
           ...trainSchedule,
-          id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+          id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
         }));
       }
 

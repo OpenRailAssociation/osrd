@@ -3,7 +3,7 @@ import type { TimetableItemWithDetails } from 'modules/trainschedule/components/
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatEditoastTrainIdToPacedTrainId,
 } from 'utils/trainId';
 
@@ -14,7 +14,7 @@ function getConflictTrainNames(
   trainNameMap: Map<TimetableItemId, string>
 ): string[] {
   const trainScheduleNames = conflict.train_schedule_ids.map((id) =>
-    trainNameMap.get(formatEditoastTrainIdToTrainScheduleId(id))
+    trainNameMap.get(formatEditoastIdToTrainScheduleId(id))
   );
   const occurenceNames = conflict.paced_train_occurrence_ids.map(({ paced_train_id, index }) => {
     const pacedTrainName = trainNameMap.get(formatEditoastTrainIdToPacedTrainId(paced_train_id));
