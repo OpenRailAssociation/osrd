@@ -4,7 +4,7 @@ import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdc
 
 import {
   formatEditoastIdToTrainScheduleId,
-  formatEditoastTrainIdToIndexedOccurrenceId,
+  formatEditoastIdToIndexedOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
   formatTrainScheduleIdToEditoastTrainId,
   formatOccurrenceIdToEditoastTrainId,
@@ -12,7 +12,7 @@ import {
   formatPacedTrainIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  formatEditoastTrainIdToExceptionId,
+  formatEditoastIdToExceptionId,
   getExceptionIdFromOccurrenceId,
   extractPacedTrainIdFromOccurenceId,
 } from '../trainId';
@@ -33,20 +33,20 @@ describe('formatEditoastIdToPacedTrainId', () => {
   });
 });
 
-describe('formatEditoastTrainIdToIndexedOccurrenceId', () => {
+describe('formatEditoastIdToIndexedOccurrenceId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
     const pacedTrainId = 123;
     const occurrenceIndex = 1;
-    const result = formatEditoastTrainIdToIndexedOccurrenceId({ pacedTrainId, occurrenceIndex });
+    const result = formatEditoastIdToIndexedOccurrenceId({ pacedTrainId, occurrenceIndex });
     expect(result).toBe(`indexedoccurrence_${pacedTrainId}_${occurrenceIndex}`);
   });
 });
 
-describe('formatEditoastTrainIdToExceptionId', () => {
+describe('formatEditoastIdToExceptionId', () => {
   it('should format a valid paced train ID and occurrence index correctly', () => {
     const pacedTrainId = 123;
     const exceptionId = 'exception-uuid';
-    const result = formatEditoastTrainIdToExceptionId({ pacedTrainId, exceptionId });
+    const result = formatEditoastIdToExceptionId({ pacedTrainId, exceptionId });
     expect(result).toBe(`exception_${pacedTrainId}_${exceptionId}`);
   });
 });
