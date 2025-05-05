@@ -22,7 +22,6 @@ use editoast_schemas::rolling_stock::EtcsBrakeParams;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::ModeEffortCurves;
 use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use itertools::Itertools as _;
@@ -39,7 +38,7 @@ use crate::SelectionSettings;
 use crate::error::Result;
 use crate::models::Retrieve;
 use crate::models::RollingStock;
-use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -70,17 +69,17 @@ editoast_common::schemas! {
 struct LightRollingStockWithLiveries {
     #[serde(flatten)]
     rolling_stock: LightRollingStock,
-    liveries: Vec<RollingStockLivery>,
+    #[schema(value_type = Vec<RollingStockLivery>)]
+    liveries: Vec<editoast_schemas::rolling_stock::RollingStockLivery>,
 }
 
 impl LightRollingStockWithLiveries {
     async fn try_fetch(conn: &mut DbConnection, light_rolling_stock: RollingStock) -> Result<Self> {
         let light_rolling_stock_id = light_rolling_stock.id;
-        let liveries = RollingStockLiveryModel::list(
+        let liveries = RollingStockLivery::list(
             conn,
-            SelectionSettings::new().filter(move || {
-                RollingStockLiveryModel::ROLLING_STOCK_ID.eq(light_rolling_stock_id)
-            }),
+            SelectionSettings::new()
+                .filter(move || RollingStockLivery::ROLLING_STOCK_ID.eq(light_rolling_stock_id)),
         )
         .await?
         .into_iter()

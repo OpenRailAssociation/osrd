@@ -40,7 +40,7 @@ use crate::models::Study;
 use crate::models::Tags;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::prelude::*;
-use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
@@ -240,8 +240,8 @@ pub fn rolling_stock_livery_changeset(
     name: &str,
     rolling_stock_id: i64,
     compound_image_id: i64,
-) -> Changeset<RollingStockLiveryModel> {
-    RollingStockLiveryModel::changeset()
+) -> Changeset<RollingStockLivery> {
+    RollingStockLivery::changeset()
         .name(name.to_string())
         .rolling_stock_id(rolling_stock_id)
         .compound_image_id(Some(compound_image_id))
@@ -252,7 +252,7 @@ pub async fn create_rolling_stock_livery(
     name: &str,
     rolling_stock_id: i64,
     compound_image_id: i64,
-) -> RollingStockLiveryModel {
+) -> RollingStockLivery {
     rolling_stock_livery_changeset(name, rolling_stock_id, compound_image_id)
         .create(conn)
         .await
@@ -338,12 +338,12 @@ pub async fn create_document_example(conn: &mut DbConnection) -> Document {
 pub async fn create_rolling_stock_livery_fixture(
     conn: &mut DbConnection,
     name: &str,
-) -> (RollingStockLiveryModel, RollingStock, Document) {
+) -> (RollingStockLivery, RollingStock, Document) {
     let rolling_stock = create_fast_rolling_stock(conn, name).await;
-    let document_exemple = create_document_example(conn).await;
+    let document_example = create_document_example(conn).await;
     let rs_livery =
-        create_rolling_stock_livery(conn, name, rolling_stock.id, document_exemple.id).await;
-    (rs_livery, rolling_stock, document_exemple)
+        create_rolling_stock_livery(conn, name, rolling_stock.id, document_example.id).await;
+    (rs_livery, rolling_stock, document_example)
 }
 
 pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
