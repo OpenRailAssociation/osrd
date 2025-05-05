@@ -179,7 +179,7 @@ export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId):
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the occurrence index.
  */
-export const getOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
+export const extractOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
   if (!isIndexedOccurrenceId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}"'

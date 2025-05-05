@@ -15,7 +15,7 @@ import {
   formatEditoastIdToTrainScheduleId,
   formatOccurrenceIdToEditoastTrainId,
   extractEditoastIdFromTrainScheduleId,
-  getOccurrenceIndexFromOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -126,7 +126,7 @@ const useSimulationResults = (): SimulationResultsData => {
     }
     if (!selectedPacedTrain) return undefined;
 
-    const selectedOccurrenceIndex = getOccurrenceIndexFromOccurrenceId(selectedTrainId);
+    const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
     const pacedTrainIntervalInMs = Duration.parse(selectedPacedTrain.paced.interval).ms;
 
     const selectedOccurrenceStartTime: string = dayjs(selectedPacedTrain.start_time)
