@@ -127,7 +127,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-only-warn": "^1.1.0",
-    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-prettier": "^5.4.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-vitest": "^0.3.21",
