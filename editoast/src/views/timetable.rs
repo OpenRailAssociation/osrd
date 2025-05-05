@@ -144,7 +144,7 @@ struct ListTrainSchedulesResponse {
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
-    params(TimetableIdParam, PaginationQueryParams),
+    params(TimetableIdParam, PaginationQueryParams<25>),
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = inline(ListTrainSchedulesResponse)),
         (status = 404, description = "Timetable not found"),
@@ -154,7 +154,7 @@ async fn get_train_schedules(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
@@ -171,7 +171,7 @@ async fn get_train_schedules(
     }
 
     let settings = pagination_params
-        .validate(25)?
+        .validate()?
         .into_selection_settings()
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
@@ -340,7 +340,7 @@ struct ListPacedTrainsResponse {
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
-    params(TimetableIdParam, PaginationQueryParams),
+    params(TimetableIdParam, PaginationQueryParams<25>),
     responses(
         (status = 200, description = "Timetable with paced train ids", body = inline(ListPacedTrainsResponse)),
         (status = 404, description = "Timetable not found"),
@@ -350,7 +350,7 @@ async fn get_paced_trains(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<ListPacedTrainsResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -368,7 +368,7 @@ async fn get_paced_trains(
     }
 
     let settings = pagination_params
-        .validate(25)?
+        .validate()?
         .into_selection_settings()
         .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id));
 
@@ -791,11 +791,11 @@ mod tests {
 
         assert!(response.len() == 2);
 
-        let settings = PaginationQueryParams {
+        let settings = PaginationQueryParams::<25> {
             page: 1,
             page_size: Some(20),
         }
-        .validate(25)
+        .validate()
         .expect("Invalid pagination parameters")
         .into_selection_settings()
         .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id));

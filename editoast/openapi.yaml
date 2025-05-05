@@ -195,8 +195,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 100
           nullable: true
+          maximum: 100
           minimum: 1
       responses:
         '200':
@@ -478,8 +479,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       responses:
         '200':
@@ -896,8 +898,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 100
           nullable: true
+          maximum: 100
           minimum: 1
       - name: level
         in: query
@@ -1617,8 +1620,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       responses:
         '200':
@@ -1903,8 +1907,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       - name: ordering
         in: query
@@ -2050,8 +2055,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       - name: ordering
         in: query
@@ -2228,8 +2234,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       - name: ordering
         in: query
@@ -2438,8 +2445,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 100
           nullable: true
+          maximum: 100
           minimum: 1
       responses:
         '200':
@@ -2874,8 +2882,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 1000
           nullable: true
+          maximum: 1000
           minimum: 1
       requestBody:
         content:
@@ -3007,6 +3016,7 @@ paths:
           format: int64
           default: 25
           nullable: true
+          maximum: 25
           minimum: 1
       responses:
         '200':
@@ -3175,6 +3185,7 @@ paths:
           format: int64
           default: 25
           nullable: true
+          maximum: 25
           minimum: 1
       responses:
         '200':
@@ -3446,6 +3457,7 @@ paths:
           format: int64
           default: 25
           nullable: true
+          maximum: 25
           minimum: 1
       responses:
         '200':
@@ -3514,8 +3526,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 50
           nullable: true
+          maximum: 50
           minimum: 1
       responses:
         '200':
@@ -3916,8 +3929,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 100
           nullable: true
+          maximum: 100
           minimum: 1
       - name: id
         in: path

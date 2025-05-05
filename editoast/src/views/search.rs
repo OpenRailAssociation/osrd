@@ -338,7 +338,7 @@ struct SearchDBResult {
 #[utoipa::path(
     post, path = "",
     tag = "search",
-    params(PaginationQueryParams),
+    params(PaginationQueryParams<1000>),
     request_body = SearchPayload,
     responses(
         (status = 200, body = Vec<SearchResultItem>, description = "The search results"),
@@ -347,7 +347,7 @@ struct SearchDBResult {
 async fn search(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Query(query_params): Query<PaginationQueryParams>,
+    Query(query_params): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<Role> = match object.as_str() {
@@ -373,7 +373,7 @@ async fn search(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
+    let (page, per_page) = query_params.validate()?.warn_page_size(100).unpack();
     let search_config =
         SearchConfigFinder::find(&object).ok_or_else(|| SearchApiError::ObjectType {
             object_type: object.to_owned(),

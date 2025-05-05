@@ -485,7 +485,7 @@ pub struct WorkScheduleOrderingParam {
 #[utoipa::path(
     get, path = "",
     tag = "work_schedules",
-    params(PaginationQueryParams, WorkScheduleGroupIdParam, WorkScheduleOrderingParam),
+    params(PaginationQueryParams<100>, WorkScheduleGroupIdParam, WorkScheduleOrderingParam),
     responses(
         (status = 200, description = "The work schedules in the group", body = inline(GroupContentResponse)),
         (status = 404, description = "Work schedule group not found"),
@@ -495,7 +495,7 @@ async fn get_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
     Query(ordering_params): Query<WorkScheduleOrderingParam>,
 ) -> Result<Json<GroupContentResponse>> {
     let authorized = auth
@@ -508,7 +508,7 @@ async fn get_group(
 
     let ordering = ordering_params.ordering;
     let settings = pagination_params
-        .validate(100)?
+        .validate()?
         .into_selection_settings()
         .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(group_id))
         .order_by(move || ordering.as_work_schedule_ordering());

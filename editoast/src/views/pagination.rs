@@ -4,7 +4,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use tracing::warn;
-use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::ListAndCount;
@@ -15,8 +14,6 @@ use crate::error::Result;
 editoast_common::schemas! {
     PaginationStats,
 }
-
-const DEFAULT_PAGE_SIZE: u64 = 25;
 
 /// Statistics about a paginated editoast response
 ///
@@ -121,29 +118,72 @@ pub trait PaginatedList: ListAndCount + 'static {
 
 impl<T> PaginatedList for T where T: ListAndCount + 'static {}
 
-#[derive(Debug, Clone, Copy, Deserialize, IntoParams)]
-#[into_params(parameter_in = Query)]
-pub struct PaginationQueryParams {
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub struct PaginationQueryParams<const MAX_PAGE_SIZE: u64 = 25> {
     #[serde(default = "default_page")]
-    #[param(minimum = 1, default = 1)]
     pub page: u64,
-    #[param(minimum = 1, default = 25)]
     pub page_size: Option<u64>,
+}
+
+impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_PAGE_SIZE> {
+    fn into_params(
+        _parameter_in_provider: impl Fn() -> Option<utoipa::openapi::path::ParameterIn>,
+    ) -> Vec<utoipa::openapi::path::Parameter> {
+        use serde_json::json;
+        use utoipa::openapi::KnownFormat;
+        use utoipa::openapi::ObjectBuilder;
+        use utoipa::openapi::Required;
+        use utoipa::openapi::SchemaFormat;
+        use utoipa::openapi::SchemaType;
+        use utoipa::openapi::path::ParameterBuilder;
+        use utoipa::openapi::path::ParameterIn;
+
+        [
+            ParameterBuilder::new()
+                .name("page")
+                .parameter_in(ParameterIn::Query)
+                .required(Required::False)
+                .schema(Some(
+                    ObjectBuilder::new()
+                        .schema_type(SchemaType::Integer)
+                        .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
+                        .minimum(Some(1f64))
+                        .default(Some(json!(default_page()))),
+                ))
+                .build(),
+            ParameterBuilder::new()
+                .name("page_size")
+                .parameter_in(ParameterIn::Query)
+                .required(Required::False)
+                .schema(Some(
+                    ObjectBuilder::new()
+                        .schema_type(SchemaType::Integer)
+                        .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
+                        .minimum(Some(1f64))
+                        .maximum(Some(MAX_PAGE_SIZE as f64))
+                        .default(Some(json!(MAX_PAGE_SIZE)))
+                        .nullable(true),
+                ))
+                .build(),
+        ]
+        .to_vec()
+    }
 }
 
 const fn default_page() -> u64 {
     1
 }
 
-impl PaginationQueryParams {
+impl<const MAX_PAGE_SIZE: u64> PaginationQueryParams<MAX_PAGE_SIZE> {
     /// Returns a pre-filled [SelectionSettings] from the pagination settings
     /// that can then be used to list or count models
     pub fn into_selection_settings<M: Model + 'static>(self) -> SelectionSettings<M> {
         self.into()
     }
 
-    pub fn validate(self, max_page_size: i64) -> Result<PaginationQueryParams> {
+    pub fn validate(self) -> Result<Self> {
         let (page, page_size) = self.unpack();
+        let max_page_size = MAX_PAGE_SIZE as i64;
         if page < 1 {
             return Err(PaginationError::InvalidPage { page }.into());
         }
@@ -157,7 +197,7 @@ impl PaginationQueryParams {
         Ok(self)
     }
 
-    pub fn warn_page_size(self, warn_page_size: i64) -> PaginationQueryParams {
+    pub fn warn_page_size(self, warn_page_size: i64) -> Self {
         let (_, page_size) = self.unpack();
         if page_size > warn_page_size {
             warn!(
@@ -169,14 +209,18 @@ impl PaginationQueryParams {
     }
 
     pub fn unpack(&self) -> (i64, i64) {
-        let page_size = self.page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+        let page_size = self.page_size.unwrap_or(MAX_PAGE_SIZE);
         (self.page as i64, page_size as i64)
     }
 }
 
-impl<M: Model + 'static> From<PaginationQueryParams> for SelectionSettings<M> {
-    fn from(PaginationQueryParams { page, page_size }: PaginationQueryParams) -> Self {
-        let page_size = page_size.unwrap_or(DEFAULT_PAGE_SIZE);
+impl<M: Model + 'static, const MAX_PAGE_SIZE: u64> From<PaginationQueryParams<MAX_PAGE_SIZE>>
+    for SelectionSettings<M>
+{
+    fn from(
+        PaginationQueryParams { page, page_size }: PaginationQueryParams<MAX_PAGE_SIZE>,
+    ) -> Self {
+        let page_size = page_size.unwrap_or(MAX_PAGE_SIZE);
         SelectionSettings::from_pagination_settings(page, page_size)
     }
 }

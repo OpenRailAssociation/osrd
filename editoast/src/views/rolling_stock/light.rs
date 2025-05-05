@@ -109,7 +109,7 @@ struct LightRollingStockWithLiveriesCountList {
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
-    params(PaginationQueryParams),
+    params(PaginationQueryParams<1000>),
     responses(
         (status = 200, body = inline(LightRollingStockWithLiveriesCountList)),
     )
@@ -117,7 +117,7 @@ struct LightRollingStockWithLiveriesCountList {
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Query(page_settings): Query<PaginationQueryParams>,
+    Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
@@ -127,7 +127,7 @@ async fn list(
         return Err(AuthorizationError::Forbidden.into());
     }
     let settings = page_settings
-        .validate(1000)?
+        .validate()?
         .warn_page_size(100)
         .into_selection_settings()
         .order_by(|| RollingStockModel::ID.asc());

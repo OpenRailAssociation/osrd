@@ -210,7 +210,7 @@ struct InfraListResponse {
 #[utoipa::path(
     get, path = "",
     tag = "infra",
-    params(PaginationQueryParams),
+    params(PaginationQueryParams<1000>),
     responses(
         (status = 200, description = "All infras, paginated", body = inline(InfraListResponse))
     ),
@@ -222,7 +222,7 @@ async fn list(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
@@ -233,7 +233,7 @@ async fn list(
     }
 
     let settings = pagination_params
-        .validate(1000)?
+        .validate()?
         .warn_page_size(100)
         .into_selection_settings();
 

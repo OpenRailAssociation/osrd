@@ -64,7 +64,7 @@ struct StdcmLogListResponse {
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_log",
-    params(PaginationQueryParams),
+    params(PaginationQueryParams<25>),
     responses(
         (status = 200, body = inline(StdcmLogListResponse), description = "The list of STDCM Logs"),
     )
@@ -72,7 +72,7 @@ struct StdcmLogListResponse {
 async fn list_stdcm_logs(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<StdcmLogListResponse>> {
     let authorized = auth
         .check_roles([Role::Admin].into())
@@ -84,7 +84,7 @@ async fn list_stdcm_logs(
 
     let conn = &mut db_pool.get().await?;
 
-    let settings = pagination_params.validate(25)?.into_selection_settings();
+    let settings = pagination_params.validate()?.into_selection_settings();
 
     let (stdcm_logs, stats) = StdcmLog::list_paginated(conn, settings).await?;
 

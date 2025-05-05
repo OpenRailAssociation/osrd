@@ -12,7 +12,8 @@ use axum::response::IntoResponse;
 use axum::response::Json;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use strum::Display;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -254,7 +255,7 @@ struct ResourceIdParam {
     get,
     path = "",
     tag = "authz",
-    params(ResourceTypeParam, ResourceIdParam, PaginationQueryParams),
+    params(ResourceTypeParam, ResourceIdParam, PaginationQueryParams<100>),
     responses(
         (status = 200, description = "Get list of user that have access to the resource", body = inline(Vec<SubjectGrant>)),
     ),
@@ -263,10 +264,10 @@ async fn users_grants_for_resource_id(
     State(AppState { regulator, .. }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
     // Validate pagination params
-    let (page, page_size) = pagination_params.validate(100)?.unpack();
+    let (page, page_size) = pagination_params.validate()?.unpack();
     let mut skip = (page - 1) * page_size;
 
     let mut result: Vec<SubjectGrant> = Vec::new();
