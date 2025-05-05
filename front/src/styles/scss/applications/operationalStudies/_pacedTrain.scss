@@ -141,21 +141,6 @@
       &.next-after-midnight {
         border-bottom: 1px solid var(--black50);
       }
-      &-name {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        direction: rtl;
-        width: 56px;
-        height: 24px;
-        line-height: 24px;
-        margin-inline: 8px;
-
-        span {
-          unicode-bidi: embed;
-          direction: ltr;
-        }
-      }
       &:last-child {
         border-bottom: none;
       }
@@ -165,118 +150,134 @@
       .main {
         display: flex;
         padding-top: 4px;
-      }
-      .occurrence-item-dot {
-        position: relative;
-        height: 24px;
-        color: var(--grey40);
 
-        .exception-info {
-          padding: 9px 8px 11px;
-          margin-left: 7px;
-          min-width: 200px;
-          position: fixed;
-          z-index: 10;
-          background-color: var(--black85);
-          border-radius: 8px;
-          box-shadow: 0 4px 6px -2px var(--black28);
-          font-size: 0.875rem;
+        .occurrence-item-dot {
+          position: relative;
+          height: 24px;
+          color: var(--grey40);
 
-          hr {
-            border-top: 1px solid var(--white50);
-            margin-block: 7px 5px;
-          }
+          .exception-info {
+            padding: 9px 8px 11px;
+            margin-left: 7px;
+            min-width: 200px;
+            position: fixed;
+            z-index: 10;
+            background-color: var(--black85);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -2px var(--black28);
+            font-size: 0.875rem;
 
-          .exception-type {
-            color: var(--highlight30);
-            text-transform: uppercase;
-            font-size: 12px;
-            line-height: 20px;
-            margin-inline: 4px;
-          }
+            hr {
+              border-top: 1px solid var(--white50);
+              margin-block: 7px 5px;
+            }
 
-          .change-groups {
-            display: flex;
-            flex-direction: column;
-            color: var(--white100);
-            line-height: 20px;
-          }
+            .exception-type {
+              color: var(--highlight30);
+              text-transform: uppercase;
+              font-size: 12px;
+              line-height: 20px;
+              margin-inline: 4px;
+            }
 
-          .change-group {
-            margin-inline: 4px;
-            margin-top: 4px;
+            .change-groups {
+              display: flex;
+              flex-direction: column;
+              color: var(--white100);
+              line-height: 20px;
+            }
+
+            .change-group {
+              margin-inline: 4px;
+              margin-top: 4px;
+            }
           }
         }
-      }
+        .occurrence-item-name {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          direction: rtl;
+          width: 56px;
+          height: 24px;
+          line-height: 24px;
+          margin-inline: 8px;
 
-      .status-icon {
-        margin-left: 8px;
-        min-width: 16px;
-        height: 24px;
-      }
-
-      .rolling-stock {
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        height: 24px;
-        position: relative;
-
-        &::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 24px;
-          height: 22px;
-          background: linear-gradient(270deg, rgba(247, 246, 238, 0), rgba(247, 246, 238, 1));
-          z-index: 1;
+          span {
+            unicode-bidi: embed;
+            direction: ltr;
+          }
         }
-
-        img {
-          min-width: 40px;
-          height: 16px;
-          object-fit: cover;
-          object-position: left;
-          transform: scaleX(-1);
-        }
-      }
-
-      &-horaries {
-        display: flex;
-        align-items: center;
-        margin-left: auto;
-        margin-right: 16px;
-      }
-
-      &-time {
-        width: 44px;
-        text-align: right;
-        &.departure-time {
+        .status-icon {
           margin-left: 8px;
+          min-width: 16px;
+          height: 24px;
         }
-        &.arrival-time {
-          margin-left: 32px;
-        }
-      }
-      .consecutive-day-display {
-        color: var(--black50);
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        transform: translate(-100%, 50%);
-        font-size: 10px;
-        display: flex;
-        align-items: center;
-        margin-right: 1px;
-        .date-display {
-          height: 16px;
-          line-height: 16px;
-          &.before-midnight {
-            transform: translateY(3px);
+
+        .rolling-stock {
+          display: flex;
+          align-items: center;
+          overflow: hidden;
+          height: 24px;
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 22px;
+            background: linear-gradient(270deg, rgba(247, 246, 238, 0), rgba(247, 246, 238, 1));
+            z-index: 1;
           }
-          &.after-midnight {
-            transform: translateY(-3px);
+
+          img {
+            min-width: 40px;
+            height: 16px;
+            object-fit: cover;
+            object-position: left;
+            transform: scaleX(-1);
+          }
+        }
+
+        .occurrence-item-horaries {
+          display: flex;
+          align-items: center;
+          margin-left: auto;
+          margin-right: 16px;
+        }
+
+        .occurrence-item-time {
+          width: 44px;
+          text-align: right;
+          &.departure-time {
+            margin-left: 8px;
+          }
+          &.arrival-time {
+            margin-left: 32px;
+          }
+        }
+
+        .consecutive-day-display {
+          color: var(--black50);
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          transform: translate(-100%, 50%);
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          margin-right: 1px;
+          .date-display {
+            height: 16px;
+            line-height: 16px;
+            &.before-midnight {
+              transform: translateY(3px);
+            }
+            &.after-midnight {
+              transform: translateY(-3px);
+            }
           }
         }
       }
