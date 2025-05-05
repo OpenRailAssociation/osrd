@@ -20,7 +20,6 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::rolling_stock::RollingStockLivery;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
@@ -41,7 +40,7 @@ use crate::models::RollingStockSeparatedImageModel;
 use crate::models::prelude::*;
 use crate::models::rolling_stock;
 use crate::models::rolling_stock::ScenarioReference;
-use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
@@ -79,16 +78,17 @@ pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     #[schema(value_type = RollingStock)]
     pub rolling_stock: RollingStock,
-    pub liveries: Vec<RollingStockLivery>,
+    #[schema(value_type = Vec<RollingStockLivery>)]
+    pub liveries: Vec<editoast_schemas::rolling_stock::RollingStockLivery>,
 }
 
 impl RollingStockWithLiveries {
     async fn try_fetch(conn: &mut DbConnection, rolling_stock: RollingStock) -> Result<Self> {
         let rolling_stock_id = rolling_stock.id;
-        let liveries = RollingStockLiveryModel::list(
+        let liveries = RollingStockLivery::list(
             conn,
             SelectionSettings::new()
-                .filter(move || RollingStockLiveryModel::ROLLING_STOCK_ID.eq(rolling_stock_id)),
+                .filter(move || RollingStockLivery::ROLLING_STOCK_ID.eq(rolling_stock_id)),
         )
         .await?
         .into_iter()
@@ -582,7 +582,7 @@ async fn create_livery(
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
-) -> Result<Json<RollingStockLivery>> {
+) -> Result<Json<editoast_schemas::rolling_stock::RollingStockLivery>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -602,13 +602,14 @@ async fn create_livery(
     let compound_image = create_compound_image(conn, formatted_images.clone()).await?;
 
     // create livery
-    let rolling_stock_livery: RollingStockLivery = RollingStockLiveryModel::changeset()
-        .name(name)
-        .rolling_stock_id(rolling_stock_id)
-        .compound_image_id(Some(compound_image.id))
-        .create(conn)
-        .await?
-        .into();
+    let rolling_stock_livery: editoast_schemas::rolling_stock::RollingStockLivery =
+        RollingStockLivery::changeset()
+            .name(name)
+            .rolling_stock_id(rolling_stock_id)
+            .compound_image_id(Some(compound_image.id))
+            .create(conn)
+            .await?
+            .into();
 
     // create separated images
     let FormattedImages { images, .. } = formatted_images;

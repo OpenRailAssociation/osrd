@@ -1,6 +1,5 @@
 use derivative::Derivative;
 use editoast_derive::Model;
-use editoast_schemas::rolling_stock::RollingStockLivery;
 
 use super::Document;
 use crate::error::Result;
@@ -25,16 +24,16 @@ use serde::Deserialize;
 #[derivative(Default)]
 #[model(table = editoast_models::tables::rolling_stock_livery)]
 #[model(gen(ops = crd, list))]
-pub struct RollingStockLiveryModel {
+pub struct RollingStockLivery {
     pub id: i64,
     pub name: String,
     pub rolling_stock_id: i64,
     pub compound_image_id: Option<i64>,
 }
 
-impl From<RollingStockLiveryModel> for RollingStockLivery {
-    fn from(livery_model: RollingStockLiveryModel) -> Self {
-        RollingStockLivery {
+impl From<RollingStockLivery> for editoast_schemas::rolling_stock::RollingStockLivery {
+    fn from(livery_model: RollingStockLivery) -> Self {
+        Self {
             id: livery_model.id,
             name: livery_model.name,
             rolling_stock_id: livery_model.rolling_stock_id,
@@ -43,10 +42,10 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
     }
 }
 
-impl RollingStockLiveryModel {
+impl RollingStockLivery {
     pub async fn delete_with_compound_image(&self, conn: &mut DbConnection) -> Result<bool> {
         use crate::models::DeleteStatic;
-        let livery = RollingStockLiveryModel::delete_static(conn, self.id).await?;
+        let livery = RollingStockLivery::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {
             let doc_delete_result = Document::delete_static(conn, image_id).await?;
             return Ok(doc_delete_result);
@@ -59,7 +58,7 @@ impl RollingStockLiveryModel {
 pub mod tests {
     use rstest::*;
 
-    use super::RollingStockLiveryModel;
+    use super::RollingStockLivery;
     use crate::models::Document;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::models::prelude::*;
@@ -73,7 +72,7 @@ pub mod tests {
             create_rolling_stock_livery_fixture(&mut db_pool.get_ok(), "rs_livery_name").await;
 
         assert!(
-            RollingStockLiveryModel::retrieve_real(db_pool.get_ok(), rs_livery.id)
+            RollingStockLivery::retrieve_real(db_pool.get_ok(), rs_livery.id)
                 .await
                 .is_ok()
         );
@@ -92,7 +91,7 @@ pub mod tests {
         );
 
         assert!(
-            RollingStockLiveryModel::retrieve_real(db_pool.get_ok(), rs_livery.id)
+            RollingStockLivery::retrieve_real(db_pool.get_ok(), rs_livery.id)
                 .await
                 .expect("Failed to retrieve rolling stock livery")
                 .is_none()
