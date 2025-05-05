@@ -23,7 +23,7 @@ import { useAppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
 } from 'utils/trainId';
 
@@ -126,7 +126,7 @@ const TrainScheduleItem = ({
         }).unwrap();
         const formattedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
           ...trainScheduleResponse,
-          id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResponse.id),
+          id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
         };
         upsertTrainSchedules([formattedTrainScheduleResponse]);
         dispatch(

@@ -15,7 +15,7 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { TimetableItemId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
@@ -79,7 +79,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     () =>
       timetable?.map((trainSchedule) => ({
         ...trainSchedule,
-        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+        id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
       })) || [],
     [timetable]
   );

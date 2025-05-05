@@ -14,7 +14,7 @@ import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
 import {
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   formatPacedTrainIdToEditoastTrainId,
   isTrainScheduleId,
@@ -117,7 +117,7 @@ const useLazyProjectTrains = ({
 
       const formattedRawProjectedTrains: Map<TimetableItemId, ProjectPathTrainResult> = new Map();
       for (const [editoastTrainId, projectedTrain] of Object.entries(rawProjectedTrains)) {
-        const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
+        const trainId = formatEditoastIdToTrainScheduleId(Number(editoastTrainId));
         formattedRawProjectedTrains.set(trainId, projectedTrain);
       }
 

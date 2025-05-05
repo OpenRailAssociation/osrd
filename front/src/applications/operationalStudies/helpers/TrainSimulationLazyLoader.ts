@@ -8,7 +8,7 @@ import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import {
   formatEditoastTrainIdToPacedTrainId,
-  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   isTrainScheduleId,
@@ -133,7 +133,7 @@ export default class TrainSimulationLazyLoader {
 
     const rawSummaries = new Map();
     for (const [rawId, rawSummary] of Object.entries(rawTrainScheduleSummaries)) {
-      const id = formatEditoastTrainIdToTrainScheduleId(Number(rawId));
+      const id = formatEditoastIdToTrainScheduleId(Number(rawId));
       rawSummaries.set(id, rawSummary);
     }
     for (const [rawId, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
