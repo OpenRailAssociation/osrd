@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { isOccurrence } from 'utils/trainId';
+import { isOccurrenceId } from 'utils/trainId';
 
 import type { Occurrence } from '../types';
 import { roundAndFormatToNearestMinute } from '../utils';
@@ -58,7 +58,7 @@ const OccurrenceItem = ({
       role="button"
       tabIndex={0}
       onClick={() => {
-        if (isOccurrence(occurrence.id)) {
+        if (isOccurrenceId(occurrence.id)) {
           selectOccurrence(occurrence.id);
         }
       }}

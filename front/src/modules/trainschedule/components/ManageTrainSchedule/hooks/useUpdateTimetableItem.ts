@@ -25,7 +25,7 @@ import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
   formatPacedTrainIdToOccurrenceId,
-  isOccurrence,
+  isOccurrenceId,
   isPacedTrainId,
 } from 'utils/trainId';
 
@@ -76,7 +76,7 @@ const useUpdateTimetableItem = (
       // else select the first Occurrence by default
       trainIdToSelect =
         selectedTrainId &&
-        isOccurrence(selectedTrainId) &&
+        isOccurrenceId(selectedTrainId) &&
         extractPacedTrainIdFromOccurrenceId(selectedTrainId) === timetableItemIdToEdit
           ? selectedTrainId
           : formatPacedTrainIdToOccurrenceId(updatedItem.id, 0);
