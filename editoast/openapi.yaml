@@ -1701,6 +1701,25 @@ paths:
       responses:
         '204':
           description: All paced_trains have been deleted
+  /paced_train/occupancy_blocks:
+    post:
+      tags:
+      - paced_train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccupancyBlockForm'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/OccupancyBlocks'
   /paced_train/project_path:
     post:
       tags:
@@ -3648,6 +3667,25 @@ paths:
       responses:
         '204':
           description: All train schedules have been deleted
+  /train_schedule/occupancy_blocks:
+    post:
+      tags:
+      - train_schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccupancyBlockForm'
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/OccupancyBlocks'
   /train_schedule/project_path:
     post:
       tags:
@@ -8543,6 +8581,67 @@ components:
       - Route
       - OperationalPoint
       - Electrification
+    OccupancyBlockForm:
+      type: object
+      required:
+      - infra_id
+      - ids
+      - path
+      properties:
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          uniqueItems: true
+        infra_id:
+          type: integer
+          format: int64
+        path:
+          type: object
+          description: Project path input is described by a list of routes and a list of track range
+          required:
+          - track_section_ranges
+          - routes
+          - blocks
+          properties:
+            blocks:
+              type: array
+              items:
+                type: string
+                maxLength: 255
+                minLength: 1
+              description: Path description as block ids
+              minItems: 1
+            routes:
+              type: array
+              items:
+                type: string
+                maxLength: 255
+                minLength: 1
+              description: List of route ids
+              minItems: 1
+            track_section_ranges:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrackRange'
+              description: List of track ranges
+              minItems: 1
+    OccupancyBlocks:
+      type: object
+      description: Occupancy block output is described by time-space points and blocks
+      required:
+      - signal_updates
+      properties:
+        signal_updates:
+          type: array
+          items:
+            $ref: '#/components/schemas/SignalUpdate'
+          description: list of signal updates along the path
     OffsetRange:
       type: object
       required:
@@ -9690,56 +9789,7 @@ components:
           signal_updates:
             type: array
             items:
-              type: object
-              required:
-              - signal_id
-              - signaling_system
-              - time_start
-              - time_end
-              - position_start
-              - position_end
-              - color
-              - blinking
-              - aspect_label
-              properties:
-                aspect_label:
-                  type: string
-                  description: The labels of the new aspect
-                blinking:
-                  type: boolean
-                  description: Whether the signal is blinking
-                color:
-                  type: integer
-                  format: int32
-                  description: |-
-                    The color of the aspect
-                    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-                position_end:
-                  type: integer
-                  format: int64
-                  description: The route ends at this position in mm on the train path
-                  minimum: 0
-                position_start:
-                  type: integer
-                  format: int64
-                  description: The route starts at this position in mm on the train path
-                  minimum: 0
-                signal_id:
-                  type: string
-                  description: The id of the updated signal
-                signaling_system:
-                  type: string
-                  description: The name of the signaling system of the signal
-                time_end:
-                  type: integer
-                  format: int64
-                  description: The aspects stop being displayed at this time (number of ms since `departure_time`)
-                  minimum: 0
-                time_start:
-                  type: integer
-                  format: int64
-                  description: The aspects start being displayed at this time (number of ms since `departure_time`)
-                  minimum: 0
+              $ref: '#/components/schemas/SignalUpdate'
             description: List of signal updates along the path
           space_time_curves:
             type: array
@@ -11196,6 +11246,57 @@ components:
           type: integer
           format: int64
           description: Time in ms
+          minimum: 0
+    SignalUpdate:
+      type: object
+      required:
+      - signal_id
+      - signaling_system
+      - time_start
+      - time_end
+      - position_start
+      - position_end
+      - color
+      - blinking
+      - aspect_label
+      properties:
+        aspect_label:
+          type: string
+          description: The labels of the new aspect
+        blinking:
+          type: boolean
+          description: Whether the signal is blinking
+        color:
+          type: integer
+          format: int32
+          description: |-
+            The color of the aspect
+            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+        position_end:
+          type: integer
+          format: int64
+          description: The route ends at this position in mm on the train path
+          minimum: 0
+        position_start:
+          type: integer
+          format: int64
+          description: The route starts at this position in mm on the train path
+          minimum: 0
+        signal_id:
+          type: string
+          description: The id of the updated signal
+        signaling_system:
+          type: string
+          description: The name of the signaling system of the signal
+        time_end:
+          type: integer
+          format: int64
+          description: The aspects stop being displayed at this time (number of ms since `departure_time`)
+          minimum: 0
+        time_start:
+          type: integer
+          format: int64
+          description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
     SimulationResponse:
       oneOf:
