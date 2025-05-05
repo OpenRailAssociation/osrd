@@ -25,7 +25,7 @@ import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId, formatPacedTrainIdToEditoastTrainId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
@@ -87,7 +87,7 @@ const PacedTrainItem = ({
 
     try {
       await deletePacedTrains({
-        body: { ids: [formatPacedTrainIdToEditoastTrainId(pacedTrain.id)] },
+        body: { ids: [extractEditoastIdFromPacedTrainId(pacedTrain.id)] },
       }).unwrap();
       removePacedTrains([pacedTrain.id]);
       dispatch(
@@ -109,7 +109,7 @@ const PacedTrainItem = ({
     const pacedTrainName = `${pacedTrain.name} (${t('timetable.copy')})`;
     const pacedTrainDelta = 5;
 
-    const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrain.id);
+    const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrain.id);
 
     let pacedTrainDetail: PacedTrainResponse;
     try {

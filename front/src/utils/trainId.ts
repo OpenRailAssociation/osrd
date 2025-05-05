@@ -115,7 +115,7 @@ export const extractEditoastIdFromTrainScheduleId = (trainId: TrainScheduleId): 
  * Given a paced train id with a PacedTrainId format (used across the front),
  * returns the train id in the Editoast format (used for api).
  */
-export const formatPacedTrainIdToEditoastTrainId = (pacedTrainId: PacedTrainId): number => {
+export const extractEditoastIdFromPacedTrainId = (pacedTrainId: PacedTrainId): number => {
   if (!isPacedTrainId(pacedTrainId)) {
     throw new Error('The paced train id should start with "paced_"');
   }
@@ -156,7 +156,7 @@ export const formatPacedTrainIdToOccurrenceId = (
   pacedTrainId: PacedTrainId,
   occurrenceIndex: number
 ): IndexedOccurrenceId => {
-  const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrainId);
+  const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
   return formatEditoastIdToIndexedOccurrenceId({
     pacedTrainId: editoastTrainId,
     occurrenceIndex,

@@ -9,7 +9,7 @@ import {
   extractEditoastIdFromTrainScheduleId,
   formatOccurrenceIdToEditoastTrainId,
   formatEditoastIdToPacedTrainId,
-  formatPacedTrainIdToEditoastTrainId,
+  extractEditoastIdFromPacedTrainId,
   getOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToExceptionId,
@@ -73,23 +73,23 @@ describe('extractEditoastIdFromTrainScheduleId', () => {
   });
 });
 
-describe('formatPacedTrainIdToEditoastTrainId', () => {
+describe('extractEditoastIdFromPacedTrainId', () => {
   it('should return a valid editoast id', () => {
     const pacedTrainId = 'paced_123' as PacedTrainId;
-    const result = formatPacedTrainIdToEditoastTrainId(pacedTrainId);
+    const result = extractEditoastIdFromPacedTrainId(pacedTrainId);
     expect(result).toBe(123);
   });
 
   it("should throw an error if the pacedTrainId doesn't start correctly", () => {
     const pacedTrainId = 'invalid_123' as PacedTrainId;
-    expect(() => formatPacedTrainIdToEditoastTrainId(pacedTrainId)).toThrow(
+    expect(() => extractEditoastIdFromPacedTrainId(pacedTrainId)).toThrow(
       'The paced train id should start with "paced_"'
     );
   });
 
   it("should throw an error if the return train id isn't a number", () => {
     const pacedTrainId = 'paced_onetwo' as PacedTrainId;
-    expect(() => formatPacedTrainIdToEditoastTrainId(pacedTrainId)).toThrow(
+    expect(() => extractEditoastIdFromPacedTrainId(pacedTrainId)).toThrow(
       `Invalid paced train ID: ${pacedTrainId}`
     );
   });
