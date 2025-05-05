@@ -14,7 +14,7 @@ import {
   formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   formatOccurrenceIdToEditoastTrainId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   getOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
   isTrainScheduleId,
@@ -33,7 +33,7 @@ const useSimulationResults = (): SimulationResultsData => {
   const editoastSelectedTrainId = useMemo(() => {
     if (!selectedTrainId) return undefined;
     if (isTrainScheduleId(selectedTrainId)) {
-      return formatTrainScheduleIdToEditoastTrainId(selectedTrainId);
+      return extractEditoastIdFromTrainScheduleId(selectedTrainId);
     }
     return formatOccurrenceIdToEditoastTrainId(selectedTrainId);
   }, [selectedTrainId]);

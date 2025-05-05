@@ -15,7 +15,7 @@ import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   formatPacedTrainIdToEditoastTrainId,
   isTrainScheduleId,
   formatEditoastIdToPacedTrainId,
@@ -87,7 +87,7 @@ const useLazyProjectTrains = ({
       }>(
         (acc, trainId) => {
           if (isTrainScheduleId(trainId)) {
-            acc.editoastTrainIds.push(formatTrainScheduleIdToEditoastTrainId(trainId));
+            acc.editoastTrainIds.push(extractEditoastIdFromTrainScheduleId(trainId));
           } else {
             acc.editoastPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(trainId));
           }

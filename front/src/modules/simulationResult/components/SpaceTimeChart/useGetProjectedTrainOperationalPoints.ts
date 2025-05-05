@@ -14,7 +14,7 @@ import { isStation } from 'modules/pathfinding/utils';
 import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import {
   formatPacedTrainIdToEditoastTrainId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -47,7 +47,7 @@ const useGetProjectedTrainOperationalPoints = ({
       let path: PathfindingResult;
       if (isTrainScheduleId(trainIdUsedForProjection)) {
         path = await getTrainSchedulePath({
-          id: formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection),
+          id: extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection),
           infraId,
         }).unwrap();
       } else {

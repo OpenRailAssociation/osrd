@@ -98,7 +98,7 @@ export const formatEditoastIdToExceptionId = ({
  * Given a train id with a TrainScheduleId format (used across the front),
  * returns the train id in the Editoast format (used for api).
  */
-export const formatTrainScheduleIdToEditoastTrainId = (trainId: TrainScheduleId): number => {
+export const extractEditoastIdFromTrainScheduleId = (trainId: TrainScheduleId): number => {
   if (!isTrainScheduleId(trainId)) {
     throw new Error('The train schedule id should start with "trainschedule_"');
   }

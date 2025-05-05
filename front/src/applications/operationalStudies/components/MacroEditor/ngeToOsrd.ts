@@ -19,9 +19,9 @@ import type {
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
+  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   formatPacedTrainIdToEditoastTrainId,
-  formatTrainScheduleIdToEditoastTrainId,
   isPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
@@ -422,7 +422,7 @@ const handleDeleteTimetableItem = async (
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)!;
   const editoastTrainId = isPacedTrainId(timetableItemId)
     ? formatPacedTrainIdToEditoastTrainId(timetableItemId)
-    : formatTrainScheduleIdToEditoastTrainId(timetableItemId);
+    : extractEditoastIdFromTrainScheduleId(timetableItemId);
   const endpoint = isPacedTrainId(timetableItemId)
     ? osrdEditoastApi.endpoints.deletePacedTrain
     : osrdEditoastApi.endpoints.deleteTrainSchedule;
