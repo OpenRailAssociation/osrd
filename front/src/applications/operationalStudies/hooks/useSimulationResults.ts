@@ -16,7 +16,7 @@ import {
   formatOccurrenceIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
   getOccurrenceIndexFromOccurrenceId,
-  isOccurrence,
+  isOccurrenceId,
   isTrainSchedule,
 } from 'utils/trainId';
 
@@ -49,7 +49,7 @@ const useSimulationResults = (): SimulationResultsData => {
     {
       id: editoastSelectedTrainId!,
     },
-    { skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrence(selectedTrainId)) }
+    { skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)) }
   );
 
   const { data: rawTrainSchedulePath } =
@@ -73,7 +73,9 @@ const useSimulationResults = (): SimulationResultsData => {
     },
     {
       skip:
-        !editoastSelectedTrainId || !infraId || (selectedTrainId && !isOccurrence(selectedTrainId)),
+        !editoastSelectedTrainId ||
+        !infraId ||
+        (selectedTrainId && !isOccurrenceId(selectedTrainId)),
     }
   );
   const path = useMemo(() => {
@@ -103,7 +105,7 @@ const useSimulationResults = (): SimulationResultsData => {
         skip:
           !editoastSelectedTrainId ||
           !infraId ||
-          (selectedTrainId && !isOccurrence(selectedTrainId)),
+          (selectedTrainId && !isOccurrenceId(selectedTrainId)),
       }
     );
 

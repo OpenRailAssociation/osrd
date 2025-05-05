@@ -3,7 +3,7 @@ import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import { PATH_COLORS } from 'modules/simulationResult/consts';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurenceId, isOccurrence } from 'utils/trainId';
+import { extractPacedTrainIdFromOccurenceId, isOccurrenceId } from 'utils/trainId';
 
 const getPathStyle = (
   hovered: HoveredItem | null,
@@ -25,7 +25,7 @@ const getPathStyle = (
   }
   // Apply occurrence style if selectedTrainId is an occurrence from the same paced
   if (selectedTrainId) {
-    if (isOccurrence(selectedTrainId)) {
+    if (isOccurrenceId(selectedTrainId)) {
       // Selected occurrence
       if (path.id === selectedTrainId) {
         return {
@@ -40,7 +40,7 @@ const getPathStyle = (
       }
       // Other occurrences from the same paced
       if (
-        isOccurrence(path.id) &&
+        isOccurrenceId(path.id) &&
         extractPacedTrainIdFromOccurenceId(path.id) ===
           extractPacedTrainIdFromOccurenceId(selectedTrainId)
       ) {

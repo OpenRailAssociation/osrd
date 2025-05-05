@@ -17,18 +17,18 @@ import type {
 
 export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith('paced_');
 
-const isIndexedOccurrence = (id: string): id is IndexedOccurrenceId =>
+const isIndexedOccurrenceId = (id: string): id is IndexedOccurrenceId =>
   id.startsWith('indexedoccurrence_');
 
-const isAddedException = (id: string): id is AddedExceptionId => id.startsWith('exception_');
+const isAddedExceptionId = (id: string): id is AddedExceptionId => id.startsWith('exception_');
 
-export const isOccurrence = (id: string): id is OccurrenceId =>
-  isIndexedOccurrence(id) || isAddedException(id);
+export const isOccurrenceId = (id: string): id is OccurrenceId =>
+  isIndexedOccurrenceId(id) || isAddedExceptionId(id);
 
 export const isTrainSchedule = (id: string): id is TrainScheduleId =>
   id.startsWith('trainschedule_');
 
-export const isTrainId = (id: string): id is TrainId => isOccurrence(id) || isTrainSchedule(id);
+export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isTrainSchedule(id);
 
 /**
  * Given an occurrence id, return the type of the exception.
@@ -38,10 +38,10 @@ export const isTrainId = (id: string): id is TrainId => isOccurrence(id) || isTr
  */
 export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' | null => {
   const { id, exceptionChangeGroups } = occurrence;
-  if (isAddedException(id)) {
+  if (isAddedExceptionId(id)) {
     return 'added';
   }
-  if (isIndexedOccurrence(id) && exceptionChangeGroups && exceptionChangeGroups.length > 0) {
+  if (isIndexedOccurrenceId(id) && exceptionChangeGroups && exceptionChangeGroups.length > 0) {
     return 'modified';
   }
   return null;
@@ -133,7 +133,7 @@ export const formatPacedTrainIdToEditoastTrainId = (pacedTrainId: PacedTrainId):
  * returns the paced train id in the Editoast format (used for api).
  */
 export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId): number => {
-  if (!isOccurrence(occurrenceId)) {
+  if (!isOccurrenceId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
     );
@@ -180,7 +180,7 @@ export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId):
  * returns the occurrence index.
  */
 export const getOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): number => {
-  if (!isIndexedOccurrence(occurrenceId)) {
+  if (!isIndexedOccurrenceId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}"'
     );
@@ -200,7 +200,7 @@ export const getOccurrenceIndexFromOccurrenceId = (occurrenceId: OccurrenceId): 
  * returns the exception id.
  */
 export const getExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): string => {
-  if (!isAddedException(occurrenceId)) {
+  if (!isAddedExceptionId(occurrenceId)) {
     throw new Error(
       'The occurrence id should match the format "exception_{pacedTrainId}_{exceptionId}"'
     );
