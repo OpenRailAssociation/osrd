@@ -152,7 +152,7 @@ async fn get_level_order(
     params(ElectricalProfileSetId),
     responses(
         (status = 204, description = "The electrical profile was deleted successfully"),
-        (status = 404, body = InternalError, description = "The requested electrical profie was not found"),
+        (status = 404, body = InternalError, description = "The requested electrical profile was not found"),
     )
 )]
 async fn delete(

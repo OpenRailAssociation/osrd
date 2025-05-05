@@ -385,7 +385,7 @@ paths:
         '204':
           description: The electrical profile was deleted successfully
         '404':
-          description: The requested electrical profie was not found
+          description: The requested electrical profile was not found
           content:
             application/json:
               schema:
