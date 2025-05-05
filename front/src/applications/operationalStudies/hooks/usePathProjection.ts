@@ -12,7 +12,7 @@ import {
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
   formatPacedTrainIdToEditoastTrainId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -35,7 +35,7 @@ const usePathProjection = (infra: InfraWithState) => {
       let path: PathfindingResult;
       if (isTrainScheduleId(trainIdUsedForProjection)) {
         path = await getTrainSchedulePath({
-          id: formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection),
+          id: extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection),
           infraId: infra.id,
         }).unwrap();
       } else {

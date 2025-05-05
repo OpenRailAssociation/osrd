@@ -11,7 +11,7 @@ import type { AppDispatch } from 'store';
 import {
   formatPacedTrainIdToEditoastTrainId,
   formatEditoastIdToTrainScheduleId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
   isTrainScheduleId,
@@ -35,7 +35,7 @@ export async function fetchTimetableItem(
   const trainSchedule = await dispatch(
     osrdEditoastApi.endpoints.getTrainScheduleById.initiate(
       {
-        id: formatTrainScheduleIdToEditoastTrainId(timetableItemId),
+        id: extractEditoastIdFromTrainScheduleId(timetableItemId),
       },
       { subscribe: false }
     )
@@ -81,7 +81,7 @@ async function updateTrainSchedule(
 ) {
   await dispatch(
     osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
-      id: formatTrainScheduleIdToEditoastTrainId(id),
+      id: extractEditoastIdFromTrainScheduleId(id),
       trainScheduleForm: trainSchedule,
     })
   ).unwrap();
@@ -99,7 +99,7 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
 async function deleteTrainSchedule(dispatch: AppDispatch, id: TrainScheduleId) {
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
-      body: { ids: [formatTrainScheduleIdToEditoastTrainId(id)] },
+      body: { ids: [extractEditoastIdFromTrainScheduleId(id)] },
     })
   ).unwrap();
 }

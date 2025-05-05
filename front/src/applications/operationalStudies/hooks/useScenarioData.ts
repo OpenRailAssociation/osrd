@@ -23,7 +23,7 @@ import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   isPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
@@ -240,7 +240,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   /** Update only depature time of a train */
   const updateTrainDepartureTime = useCallback(
     async (trainId: TimetableItemId, newDeparture: Date) => {
-      const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId);
+      const editoastTrainId = extractEditoastIdFromTrainScheduleId(trainId as TrainScheduleId);
 
       const trainSchedule = timetableItems?.find((timetableItem) => timetableItem.id === trainId);
 

@@ -24,7 +24,7 @@ import { Duration, addDurationToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
 } from 'utils/trainId';
 
 import TimetableItemActions from './TimetableItemActions';
@@ -74,7 +74,7 @@ const TrainScheduleItem = ({
     }
 
     deleteTrainSchedule({
-      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id)] },
+      body: { ids: [extractEditoastIdFromTrainScheduleId(train.id)] },
     })
       .unwrap()
       .then(() => {
@@ -101,7 +101,7 @@ const TrainScheduleItem = ({
     const trainCount = 1;
     const actualTrainCount = 1;
 
-    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id);
+    const editoastTrainId = extractEditoastIdFromTrainScheduleId(train.id);
     const trainDetail = await getTrainSchedule({
       id: editoastTrainId,
     })

@@ -25,7 +25,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatPacedTrainIdToEditoastTrainId,
-  formatTrainScheduleIdToEditoastTrainId,
+  extractEditoastIdFromTrainScheduleId,
   isPacedTrainResponseWithPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -138,7 +138,7 @@ const TimetableToolbar = ({
     }
 
     const editoastSelectedTrainScheduleIds = selectedTrainScheduleIds.map((id) =>
-      formatTrainScheduleIdToEditoastTrainId(id)
+      extractEditoastIdFromTrainScheduleId(id)
     );
     const editoastSelectedPacedTrainIds = selectedPacedTrainIds.map((id) =>
       formatPacedTrainIdToEditoastTrainId(id)
