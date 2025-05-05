@@ -5359,8 +5359,6 @@ components:
       - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
-      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
-      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
@@ -5943,57 +5941,6 @@ components:
           type: string
           enum:
           - editoast:paced_train:NotFound
-    EditoastPaginationErrorInvalidPage:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - page
-          properties:
-            page:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:pagination:InvalidPage
-    EditoastPaginationErrorInvalidPageSize:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - max_page_size
-          - provided_page_size
-          properties:
-            max_page_size:
-              type: integer
-            provided_page_size:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:pagination:InvalidPageSize
     EditoastPathfindingErrorInfraNotFound:
       type: object
       required:

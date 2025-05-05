@@ -162,7 +162,6 @@ async fn list(
 
     // Ask the db
     let settings = pagination_params
-        .validate()?
         .into_selection_settings()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
     let (result, stats) = MacroNode::list_paginated(conn, settings).await?;

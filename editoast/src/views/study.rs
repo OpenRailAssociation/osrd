@@ -430,8 +430,6 @@ async fn list(
     }
 
     let settings = pagination_params
-        .validate()?
-        .warn_page_size(100)
         .into_selection_settings()
         .filter(move || Study::PROJECT_ID.eq(project_id))
         .order_by(move || ordering.as_study_ordering());

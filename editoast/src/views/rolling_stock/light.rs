@@ -123,8 +123,6 @@ async fn list(
         return Err(AuthorizationError::Forbidden.into());
     }
     let settings = page_settings
-        .validate()?
-        .warn_page_size(100)
         .into_selection_settings()
         .order_by(|| RollingStock::ID.asc());
     let (rolling_stocks, stats) =
@@ -484,13 +482,6 @@ mod tests {
 
         let request = app.get("/light_rolling_stock/?page_size=1010");
 
-        let response: InternalError = app
-            .fetch(request)
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
-
-        assert_eq!(response.error_type, "editoast:pagination:InvalidPageSize");
-        assert_eq!(response.context["provided_page_size"], 1010);
-        assert_eq!(response.context["max_page_size"], 1000);
+        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 }

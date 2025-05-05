@@ -84,7 +84,7 @@ async fn list_stdcm_logs(
 
     let conn = &mut db_pool.get().await?;
 
-    let settings = pagination_params.validate()?.into_selection_settings();
+    let settings = pagination_params.into_selection_settings();
 
     let (stdcm_logs, stats) = StdcmLog::list_paginated(conn, settings).await?;
 

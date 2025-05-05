@@ -211,8 +211,6 @@ async fn list(
 
     let ordering = ordering_params.ordering;
     let settings = pagination_params
-        .validate()?
-        .warn_page_size(100)
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
 

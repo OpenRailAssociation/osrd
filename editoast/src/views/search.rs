@@ -347,7 +347,7 @@ struct SearchDBResult {
 async fn search(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Query(query_params): Query<PaginationQueryParams<1000>>,
+    Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<Role> = match object.as_str() {
@@ -373,14 +373,19 @@ async fn search(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (page, per_page) = query_params.validate()?.warn_page_size(100).unpack();
     let search_config =
         SearchConfigFinder::find(&object).ok_or_else(|| SearchApiError::ObjectType {
             object_type: object.to_owned(),
         })?;
-    let offset = (page - 1) * per_page;
-    let (sql, bindings) = query_into_sql(query, &search_config, per_page, offset, "result")
-        .map_err(SearchApiError::from)?;
+    let offset = (page - 1) * page_size;
+    let (sql, bindings) = query_into_sql(
+        query,
+        &search_config,
+        page_size as i64,
+        offset as i64,
+        "result",
+    )
+    .map_err(SearchApiError::from)?;
 
     let mut query = sql_query(sql).into_boxed();
     for string in bindings {

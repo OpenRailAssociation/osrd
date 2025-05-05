@@ -232,10 +232,7 @@ async fn list(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let settings = pagination_params
-        .validate()?
-        .warn_page_size(100)
-        .into_selection_settings();
+    let settings = pagination_params.into_selection_settings();
 
     let (infras, stats) = {
         let conn = &mut db_pool.get().await?;
