@@ -25,7 +25,6 @@ import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { getEarliestDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -206,6 +205,15 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
 
   useModalFocusTrap(modalRef, closeModal);
 
+  let maxStudyStartDate = currentStudy.expected_end_date;
+  if (
+    maxStudyStartDate &&
+    currentStudy.actual_end_date &&
+    currentStudy.actual_end_date < maxStudyStartDate
+  ) {
+    maxStudyStartDate = currentStudy.actual_end_date;
+  }
+
   return (
     <div data-testid="study-edition-modal" className="study-edition-modal" ref={modalRef}>
       {clickedOutside && (
@@ -333,7 +341,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               }
               value={currentStudy?.start_date || ''}
               onChange={(e) => handleStudyInputChange('start_date', e.target.value || null)}
-              max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
+              max={maxStudyStartDate || ''}
             />
             <InputSNCF
               id="studyInputExpectedEndDate"

@@ -100,15 +100,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
   };
 };
 
-export function getEarliestDate(date1: string | null | undefined, dat2: string | null | undefined) {
-  const formatedDate1 = date1;
-  const formatedDate2 = dat2;
-  if (formatedDate1 && formatedDate2) {
-    return formatedDate1 < formatedDate2 ? formatedDate1 : formatedDate2;
-  }
-  return formatedDate1 || formatedDate2 || '';
-}
-
 /**
  * Converts an UTC date in seconds since 1970 to a local date in seconds since 1970
  */
