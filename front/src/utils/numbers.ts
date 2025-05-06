@@ -27,27 +27,6 @@ export function valueToInterval(value?: number, intervals?: number[]) {
 export function isFloat(n: number) {
   return Number(n) === n && n % 1 !== 0;
 }
-/**
- * If it a float number it will strip the decimal digits
- * @param value value to strip
- * @param decimalPlaces number of decimal places to keep
- * @returns stripped number
- */
-export function stripDecimalDigits(value: number, decimalPlaces: number): number {
-  if (!isFloat(value) || !Number.isInteger(decimalPlaces) || decimalPlaces < 0) {
-    return value;
-  }
-
-  const parts = value.toString().split('.');
-
-  if (parts.length !== 2) {
-    return value;
-  }
-
-  const stripedDecimal = parts[1].substring(0, decimalPlaces);
-  const result = Number(`${parts[0]}.${stripedDecimal}`);
-  return result;
-}
 
 /**
  * Checks if a floating-point number has more decimal places than specified.
