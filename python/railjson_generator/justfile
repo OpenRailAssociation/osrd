@@ -28,4 +28,4 @@ lint:
 
 # Fix all the lints that can be automatically applied
 fix-lint:
-    @echo "No linter can automatically fix"
+    uv run ruff check --fix
