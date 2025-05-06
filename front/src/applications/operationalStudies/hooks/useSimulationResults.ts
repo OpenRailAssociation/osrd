@@ -13,11 +13,12 @@ import { Duration } from 'utils/duration';
 import {
   formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
-  formatOccurrenceIdToEditoastTrainId,
   extractEditoastIdFromTrainScheduleId,
   extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
   isTrainScheduleId,
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
 } from 'utils/trainId';
 
 import type { SimulationResultsData } from '../types';
@@ -35,7 +36,8 @@ const useSimulationResults = (): SimulationResultsData => {
     if (isTrainScheduleId(selectedTrainId)) {
       return extractEditoastIdFromTrainScheduleId(selectedTrainId);
     }
-    return formatOccurrenceIdToEditoastTrainId(selectedTrainId);
+    const pacedTrainId = extractPacedTrainIdFromOccurrenceId(selectedTrainId);
+    return extractEditoastIdFromPacedTrainId(pacedTrainId);
   }, [selectedTrainId]);
 
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(

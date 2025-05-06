@@ -129,26 +129,6 @@ export const extractEditoastIdFromPacedTrainId = (pacedTrainId: PacedTrainId): n
 };
 
 /**
- * Given a occurrence id with an OccurrenceId format (used across the front),
- * returns the paced train id in the Editoast format (used for api).
- */
-export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId): number => {
-  if (!isOccurrenceId(occurrenceId)) {
-    throw new Error(
-      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
-    );
-  }
-
-  const formattedPacedTrainId = Number(occurrenceId.split('_')[1]);
-
-  if (Number.isNaN(formattedPacedTrainId)) {
-    throw new Error(`Invalid paced train ID : ${occurrenceId}`);
-  }
-
-  return formattedPacedTrainId;
-};
-
-/**
  * Given a paced train id with a PacedTrainId format (used across the front),
  * returns the occurrence id with an OccurrenceId format (used across the front).
  */
@@ -163,16 +143,23 @@ export const formatPacedTrainIdToOccurrenceId = (
   });
 };
 
-export const extractPacedTrainIdFromOccurenceId = (occurrenceId: OccurrenceId): PacedTrainId =>
-  `paced_${occurrenceId.split('_')[1]}` as PacedTrainId;
-
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * extract its paced train id with a PacedTrainId format (used across the front).
  */
 export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId): PacedTrainId => {
-  const editoastTrainId = formatOccurrenceIdToEditoastTrainId(occurrenceId);
-  return formatEditoastIdToPacedTrainId(editoastTrainId);
+  if (!isOccurrenceId(occurrenceId)) {
+    throw new Error(
+      'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
+    );
+  }
+
+  const editoastPacedTrainId = Number(occurrenceId.split('_')[1]);
+  if (Number.isNaN(editoastPacedTrainId)) {
+    throw new Error(`Invalid paced train ID : ${occurrenceId}`);
+  }
+
+  return formatEditoastIdToPacedTrainId(editoastPacedTrainId);
 };
 
 /**
