@@ -38,7 +38,12 @@ const GrantsManagerSubjects = ({
     });
 
   return (
-    <>
+    <div
+      className="grant-manager-body"
+      onClick={(e) => e.stopPropagation()}
+      role="button"
+      tabIndex={0}
+    >
       <div className="subject-search">
         <button
           type="button"
@@ -76,7 +81,7 @@ const GrantsManagerSubjects = ({
         ))}
         {loading && <LoaderFill />}
       </div>
-    </>
+    </div>
   );
 };
 
