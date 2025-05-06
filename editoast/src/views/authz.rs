@@ -80,9 +80,6 @@ enum AuthzError {
     Authz(#[from] AuthorizationError),
     #[error("Grant and Revoke cannot be defined at the same time")]
     SimultaneousGrantsAndRevokes,
-    #[error("Unauthorized")]
-    #[editoast_error(status = 403)]
-    Unauthorized,
 }
 
 impl From<AuthorizerError> for AuthzError {
@@ -94,7 +91,6 @@ impl From<AuthorizerError> for AuthzError {
             AuthorizerError::UnknownSubject(subject_id) => {
                 AuthzError::UnknownSubject { subject_id }
             }
-            AuthorizerError::Unauthorized => AuthzError::Unauthorized,
             err => AuthzError::Authorizer(err),
         }
     }
@@ -490,23 +486,18 @@ async fn update_grants(
         }
     }
     if let Some(revoke) = revoke {
-        for grant in revoke {
-            match grant.resource_type {
+        for SubjectResource {
+            resource_type,
+            resource_id,
+            subject_id,
+        } in revoke
+        {
+            match resource_type {
                 Resource::Infra => {
                     authorizer
-                        .revoke_infra_reader(grant.subject_id, grant.resource_id)
-                        .await
-                        .map_err(AuthzError::from)?;
-
-                    authorizer
-                        .revoke_infra_writer(grant.subject_id, grant.resource_id)
-                        .await
-                        .map_err(AuthzError::from)?;
-
-                    authorizer
-                        .revoke_infra_owner(grant.subject_id, grant.resource_id)
-                        .await
-                        .map_err(AuthzError::from)?;
+                        .revoke_infra_grants(subject_id, resource_id)
+                        .await?
+                        .allowed()?;
                 }
             }
         }
