@@ -59,8 +59,6 @@ pub enum Error<StorageError: std::error::Error> {
     OpenFgaParsing(#[from] fga::model::ParsingError),
     #[error(transparent)]
     Storage(StorageError),
-    #[error("Unauthorized")]
-    Unauthorized,
 }
 
 impl<StorageError: std::error::Error> From<fga::client::QueryError> for Error<StorageError> {

@@ -713,9 +713,8 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_writer_unchecked(user_id, infra_id)
+        self.revoke_infra_grants_unchecked(user_id, infra_id)
             .await?;
-        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
 
         // Grant the new one
         self.openfga
@@ -775,9 +774,8 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_reader_unchecked(user_id, infra_id)
+        self.revoke_infra_grants_unchecked(user_id, infra_id)
             .await?;
-        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
 
         // Grant the new one
         self.openfga
@@ -837,9 +835,7 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_reader_unchecked(user_id, infra_id)
-            .await?;
-        self.revoke_infra_writer_unchecked(user_id, infra_id)
+        self.revoke_infra_grants_unchecked(user_id, infra_id)
             .await?;
 
         // Grant the new one
@@ -867,159 +863,64 @@ impl<S: StorageDriver> Regulator<S> {
             .await
     }
 
-    pub async fn revoke_infra_reader_unchecked(
-        &self,
-        user_id: i64,
-        infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra_id)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra_id));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
-        }
-
-        // Check if the user has already the grant, if not, grant it
-        let has_grant = self.check_infra_grant_reader(user_id, infra_id).await?;
-        if has_grant {
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_deletes()
-                .delete(&Infra::reader().tuple(&user, &infra))
-                .execute()
-                .await?;
-        }
-
-        Ok(())
-    }
-
-    pub async fn revoke_infra_reader(
+    pub async fn revoke_infra_grants(
         &self,
         issuer_id: i64,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that the connected user has the right to remove the grants
-        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
-        if !is_owner {
-            return Err(Error::Unauthorized);
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        if !self
+            .openfga
+            .check(Infra::owner().check(&fga!(User:issuer_id), &fga!(Infra:infra_id)))
+            .await?
+        {
+            return Ok(Authorization::Denied {
+                reason: "only owners can revoke grants",
+            });
         }
-
-        // Revoke
-        self.revoke_infra_reader_unchecked(user_id, infra_id)
+        self.revoke_infra_grants_unchecked(user_id, infra_id)
             .await?;
-        Ok(())
+        Ok(Authorization::Granted(()))
     }
 
-    pub async fn revoke_infra_writer_unchecked(
+    pub async fn revoke_infra_grants_unchecked(
         &self,
         user_id: i64,
         infra_id: i64,
     ) -> Result<(), Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra_id)
-            .await
-            .map_err(Error::Storage)?
+        // No need to check if the infra exists. If it doesn't, there won't be any tuples in OpenFGA.
+        // And even if there is, we're about to remove them anyway.
+        // Likewise about both users.
+
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let mut delete = self.openfga.prepare_deletes();
+
+        if self
+            .openfga
+            .check(Infra::reader().check(&user, &infra))
+            .await?
         {
-            return Err(Error::UnknownResource(infra_id));
+            delete.push(&Infra::reader().tuple(&user, &infra));
         }
 
-        // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
-        }
-
-        let has_grant = self.check_infra_grant_writer(user_id, infra_id).await?;
-        if has_grant {
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_deletes()
-                .delete(&Infra::writer().tuple(&user, &infra))
-                .execute()
-                .await?;
-        }
-
-        Ok(())
-    }
-
-    pub async fn revoke_infra_writer(
-        &self,
-        issuer_id: i64,
-        user_id: i64,
-        infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that the connected user has the right to remove the grants
-        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
-        if !is_owner {
-            return Err(Error::Unauthorized);
-        }
-
-        // Revoke
-        self.revoke_infra_writer_unchecked(user_id, infra_id)
-            .await?;
-        Ok(())
-    }
-
-    pub async fn revoke_infra_owner_unchecked(
-        &self,
-        user_id: i64,
-        infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra_id)
-            .await
-            .map_err(Error::Storage)?
+        if self
+            .openfga
+            .check(Infra::writer().check(&user, &infra))
+            .await?
         {
-            return Err(Error::UnknownResource(infra_id));
+            delete.push(&Infra::writer().tuple(&user, &infra));
         }
 
-        // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if self
+            .openfga
+            .check(Infra::owner().check(&user, &infra))
+            .await?
+        {
+            delete.push(&Infra::owner().tuple(&user, &infra));
         }
 
-        let has_grant = self.check_infra_grant_owner(user_id, infra_id).await?;
-        if has_grant {
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_deletes()
-                .delete(&Infra::owner().tuple(&user, &infra))
-                .execute()
-                .await?;
-        }
-
-        Ok(())
-    }
-
-    pub async fn revoke_infra_owner(
-        &self,
-        issuer_id: i64,
-        user_id: i64,
-        infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that the connected user has the right to remove the grants
-        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
-        if !is_owner {
-            return Err(Error::Unauthorized);
-        }
-
-        // Revoke
-        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+        delete.execute().await?;
         Ok(())
     }
 }
