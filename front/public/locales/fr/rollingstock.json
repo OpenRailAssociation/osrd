@@ -42,6 +42,7 @@
   "deleteRollingStock": "Voulez-vous supprimer ce matériel roulant ?",
   "effort": "Effort (kN)",
   "electric": "Électrique",
+  "electricalPowerStartupTime": "Temps de reprise de courant",
   "electricalProfiles": "Profils électriques",
   "errorMessages": {
     "invalidConversion": "Conversion invalide",
@@ -99,6 +100,7 @@
   "powerRestrictionsInfos": "Codes de restriction",
   "primaryCategory": "Catégorie principale",
   "project": "Projet {{projectName}} :",
+  "raisePantographTime": "Temps de lever panto",
   "resultFound_one": "1 résultat trouvé",
   "resultFound_other": "{{count}} résultats trouvés",
   "resultFound_zero": "Aucun résultat",
