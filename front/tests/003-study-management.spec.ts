@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, Study } from 'common/api/osrdEditoastApi';
@@ -108,11 +109,6 @@ test.describe('Validate the Study creation workflow', () => {
       tags: ['update-tag'],
     });
 
-    // Navigate back to the project page
-    await page.goto(`/operational-studies/projects/${project.id}`);
-
-    // Reopen the updated study and validate the updated data
-    await studyPage.openStudyByTestId(`${study.name} (updated)`);
     await studyPage.validateStudyData({
       name: `${study.name} (updated)`,
       description: `${study.description} (updated)`,
@@ -127,6 +123,12 @@ test.describe('Validate the Study creation workflow', () => {
       tags: ['update-tag'],
       isUpdate: true, // Indicate that this is an update
     });
+
+    // Navigate back to the project page
+    await page.goto(`/operational-studies/projects/${project.id}`);
+
+    await expect(page.getByTestId(`${study.name} (updated)`).first()).toBeVisible();
+
     await deleteStudy(project.id, `${study.name} (updated)`);
   });
 
