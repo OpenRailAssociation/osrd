@@ -474,7 +474,7 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_privilege_can_share_read(
+    pub async fn authorize_infra_sharing_read(
         &self,
         user_id: i64,
         infra_id: i64,
@@ -510,7 +510,7 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_privilege_can_share_write(
+    pub async fn authorize_infra_sharing_write(
         &self,
         user_id: i64,
         infra_id: i64,
@@ -546,7 +546,7 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_privilege_can_share_ownership(
+    pub async fn authorize_infra_sharing_ownership(
         &self,
         user_id: i64,
         infra_id: i64,
@@ -744,7 +744,7 @@ impl<S: StorageDriver> Regulator<S> {
         user_id: i64,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.check_infra_privilege_can_share_read(issuer_id, infra_id)
+        self.authorize_infra_sharing_read(issuer_id, infra_id)
             .await?
             .allowed_then_try(async |()| {
                 self.grant_infra_reader_unchecked(user_id, infra_id).await?;
@@ -807,7 +807,7 @@ impl<S: StorageDriver> Regulator<S> {
         user_id: i64,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.check_infra_privilege_can_share_write(issuer_id, infra_id)
+        self.authorize_infra_sharing_write(issuer_id, infra_id)
             .await?
             .allowed_then_try(async |()| {
                 self.grant_infra_writer_unchecked(user_id, infra_id).await?;
@@ -870,7 +870,7 @@ impl<S: StorageDriver> Regulator<S> {
         user_id: i64,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.check_infra_privilege_can_share_ownership(issuer_id, infra_id)
+        self.authorize_infra_sharing_ownership(issuer_id, infra_id)
             .await?
             .allowed_then_try(async |()| {
                 self.grant_infra_owner_unchecked(user_id, infra_id).await?;
