@@ -344,6 +344,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(user_roles.contains(&Role::Admin))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_reader(
         &self,
         user_id: i64,
@@ -374,6 +375,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(result)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_writer(
         &self,
         user_id: i64,
@@ -404,6 +406,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(result)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_owner(
         &self,
         user_id: i64,
@@ -434,6 +437,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(result)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra_read(
         &self,
         user_id: i64,
@@ -469,6 +473,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::from_privilege_check(check))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_privilege_can_share_read(
         &self,
         user_id: i64,
@@ -504,6 +509,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::from_privilege_check(result))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_privilege_can_share_write(
         &self,
         user_id: i64,
@@ -539,6 +545,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::from_privilege_check(result))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_privilege_can_share_ownership(
         &self,
         user_id: i64,
@@ -574,6 +581,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::from_privilege_check(result))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_readers(
         &self,
         infra_id: i64,
@@ -598,6 +606,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(users)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_writers(
         &self,
         infra_id: i64,
@@ -622,6 +631,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(users)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_owners(
         &self,
         infra_id: i64,
@@ -680,6 +690,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(users)
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_reader_unchecked(
         &self,
         user_id: i64,
@@ -726,6 +737,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_reader(
         &self,
         issuer_id: i64,
@@ -741,6 +753,7 @@ impl<S: StorageDriver> Regulator<S> {
             .await
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_writer_unchecked(
         &self,
         user_id: i64,
@@ -787,6 +800,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_writer(
         &self,
         issuer_id: i64,
@@ -802,6 +816,7 @@ impl<S: StorageDriver> Regulator<S> {
             .await
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_owner_unchecked(
         &self,
         user_id: i64,
@@ -848,6 +863,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_owner(
         &self,
         issuer_id: i64,
@@ -863,6 +879,7 @@ impl<S: StorageDriver> Regulator<S> {
             .await
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn revoke_infra_grants(
         &self,
         issuer_id: i64,
@@ -883,6 +900,7 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(Authorization::Granted(()))
     }
 
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn revoke_infra_grants_unchecked(
         &self,
         user_id: i64,
