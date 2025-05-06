@@ -88,7 +88,7 @@ pub struct RollingStock {
     #[serde(with = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[serde(with = "units::basis_point")]
+    #[serde(with = "units::ratio")]
     pub inertia_coefficient: Ratio,
     #[serde(with = "units::kilogram")]
     pub mass: Mass,

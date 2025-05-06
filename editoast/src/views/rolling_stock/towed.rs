@@ -70,7 +70,7 @@ struct TowedRollingStock {
     comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     startup_acceleration: Acceleration,
-    #[serde(with = "units::basis_point")]
+    #[serde(with = "units::ratio")]
     inertia_coefficient: Ratio,
     rolling_resistance: RollingResistancePerWeight,
     #[serde(with = "units::meter_per_second_squared")]
@@ -130,7 +130,7 @@ pub struct TowedRollingStockForm {
     pub comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     pub startup_acceleration: Acceleration,
-    #[serde(with = "units::basis_point")]
+    #[serde(with = "units::ratio")]
     pub inertia_coefficient: Ratio,
     pub rolling_resistance: RollingResistancePerWeight,
     #[serde(with = "units::meter_per_second_squared")]

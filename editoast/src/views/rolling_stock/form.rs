@@ -39,7 +39,7 @@ pub struct RollingStockForm {
     pub comfort_acceleration: Acceleration,
     #[serde(with = "meter_per_second_squared")]
     pub const_gamma: Deceleration,
-    #[serde(with = "basis_point")]
+    #[serde(with = "ratio")]
     pub inertia_coefficient: Ratio,
     #[serde(with = "kilogram")]
     pub mass: Mass,

@@ -20,7 +20,7 @@ pub struct TowedRollingStock {
     pub comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     pub startup_acceleration: Acceleration,
-    #[serde(with = "units::basis_point")]
+    #[serde(with = "units::ratio")]
     pub inertia_coefficient: Ratio,
     pub rolling_resistance: RollingResistancePerWeight,
     /// The constant gamma braking coefficient used when NOT circulating
