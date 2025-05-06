@@ -5,7 +5,7 @@ import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/
 import { infrastructureName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import ScenarioPage from './pages/operational-studies/scenario-page';
-import { generateUniqueName } from './utils';
+import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
@@ -70,12 +70,24 @@ test.describe('Validate the Scenario creation workflow', () => {
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
     await scenarioPage.openScenarioByTestId(scenario.name);
 
+    // Wait for infra to be in 'CACHED' state before proceeding
+    await waitForInfraStateToBeCached(scenario.infra_id);
+
     // Update the scenario with new details
     const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
     await scenarioPage.updateScenario({
       name: updatedScenarioName,
       description: `${scenario.description} (updated)`,
       tags: ['update-tag'],
+    });
+
+    // TODO: check another way to wait for the scenario to be updated
+    await page.waitForTimeout(500);
+
+    await scenarioPage.validateScenarioData({
+      name: updatedScenarioName,
+      description: `${scenario.description} (updated)`,
+      infraName: infrastructureName,
     });
 
     // Navigate back to the study page to verify the updated tags
@@ -85,14 +97,6 @@ test.describe('Validate the Scenario creation workflow', () => {
     expect(await scenarioPage.getScenarioTags(updatedScenarioName).textContent()).toContain(
       `${scenarioData.tags.join('')}update-tag`
     );
-
-    // Reopen the updated scenario and validate the updated data
-    await scenarioPage.openScenarioByTestId(updatedScenarioName);
-    await scenarioPage.validateScenarioData({
-      name: updatedScenarioName,
-      description: `${scenario.description} (updated)`,
-      infraName: infrastructureName,
-    });
 
     // Delete the scenario
     await deleteScenario(project.id, study.id, updatedScenarioName);
