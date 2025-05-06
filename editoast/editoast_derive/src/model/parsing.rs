@@ -177,7 +177,7 @@ impl ModelConfig {
             } = options.row;
             Row {
                 name: type_name.unwrap_or(syn::Ident::new(
-                    &format!("{}Row", model_name),
+                    &format!("{model_name}Row"),
                     Span::call_site(),
                 )),
                 derive,
@@ -201,7 +201,7 @@ impl ModelConfig {
             };
             Changeset {
                 name: type_name.unwrap_or(syn::Ident::new(
-                    &format!("{}Changeset", model_name),
+                    &format!("{model_name}Changeset"),
                     Span::call_site(),
                 )),
                 derive,

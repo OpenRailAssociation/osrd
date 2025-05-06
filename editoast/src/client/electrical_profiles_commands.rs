@@ -95,9 +95,9 @@ pub async fn electrical_profile_set_delete(
                 .await
                 .unwrap();
         if !deleted {
-            println!("❎ Electrical profile set {} not found", profile_set_id);
+            println!("❎ Electrical profile set {profile_set_id} not found");
         } else {
-            println!("✅ Electrical profile set {} deleted", profile_set_id);
+            println!("✅ Electrical profile set {profile_set_id} deleted");
         }
     }
     Ok(())

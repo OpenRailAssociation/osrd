@@ -94,7 +94,7 @@ pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::R
         name: args.name.unwrap_or_default(),
     };
     let subject_id = driver.ensure_user(&user_info).await?;
-    println!("User added with id: {}", subject_id);
+    println!("User added with id: {subject_id}");
     Ok(())
 }
 

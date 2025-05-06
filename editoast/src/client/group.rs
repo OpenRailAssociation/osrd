@@ -75,7 +75,7 @@ pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
         return Ok(());
     }
     for (id, GroupInfo { name }) in &groups {
-        println!("[{}]: {}", id, name);
+        println!("[{id}]: {name}");
     }
     Ok(())
 }

@@ -704,7 +704,7 @@ pub mod tests {
                     .start_date_time(start_date_time)
                     .end_date_time(end_date_time)
                     .track_ranges(track_ranges)
-                    .obj_id(format!("work_schedule_{}", index))
+                    .obj_id(format!("work_schedule_{index}"))
                     .work_schedule_type(WorkScheduleType::Track)
             })
             .collect();

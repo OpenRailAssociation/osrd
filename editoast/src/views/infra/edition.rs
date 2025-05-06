@@ -470,7 +470,7 @@ fn get_split_operations_for_impacted(
                 for (key, value) in switch.ports.iter() {
                     if value.track == tracksection.id {
                         patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                            path: format!("/ports/{}/track", key).parse().unwrap(),
+                            path: format!("/ports/{key}/track").parse().unwrap(),
                             value: if value.endpoint == Endpoint::Begin {
                                 json!(Identifier::from(left_tracksection_id))
                             } else {
@@ -531,7 +531,7 @@ fn get_split_operations_for_impacted(
                             distance,
                             left_tracksection_id,
                             right_tracksection_id,
-                            format!("/extensions/psl_sncf/announcement/{}", index),
+                            format!("/extensions/psl_sncf/announcement/{index}"),
                             sign,
                         ));
                     }
@@ -542,7 +542,7 @@ fn get_split_operations_for_impacted(
                             distance,
                             left_tracksection_id,
                             right_tracksection_id,
-                            format!("/extensions/psl_sncf/r/{}", index),
+                            format!("/extensions/psl_sncf/r/{index}"),
                             sign,
                         ));
                     }
@@ -560,12 +560,12 @@ fn get_split_operations_for_impacted(
                     if part.track == tracksection.id {
                         if part.position <= distance {
                             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                                path: format!("/parts/{}/track", index).parse().unwrap(),
+                                path: format!("/parts/{index}/track").parse().unwrap(),
                                 value: json!(Identifier::from(left_tracksection_id)),
                             }));
                         } else {
                             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                                path: format!("/parts/{}", index).parse().unwrap(),
+                                path: format!("/parts/{index}").parse().unwrap(),
                                 value: json!(OperationalPointPartCache {
                                     track: Identifier::from(right_tracksection_id),
                                     position: part.position - distance,
@@ -610,7 +610,7 @@ fn get_split_operations_for_impacted(
                             distance,
                             left_tracksection_id,
                             right_tracksection_id,
-                            format!("/extensions/neutral_sncf/announcement/{}", index),
+                            format!("/extensions/neutral_sncf/announcement/{index}"),
                             sign,
                         ));
                     }
@@ -621,7 +621,7 @@ fn get_split_operations_for_impacted(
                             distance,
                             left_tracksection_id,
                             right_tracksection_id,
-                            format!("/extensions/neutral_sncf/end/{}", index),
+                            format!("/extensions/neutral_sncf/end/{index}"),
                             sign,
                         ));
                     }
@@ -632,7 +632,7 @@ fn get_split_operations_for_impacted(
                             distance,
                             left_tracksection_id,
                             right_tracksection_id,
-                            format!("/extensions/neutral_sncf/rev/{}", index),
+                            format!("/extensions/neutral_sncf/rev/{index}"),
                             sign,
                         ));
                     }
@@ -676,16 +676,16 @@ fn get_split_patch_operations_for_sign(
     if sign.track == tracksection_id {
         if sign.position <= distance {
             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                path: format!("{}/track", path).parse().unwrap(),
+                path: format!("{path}/track").parse().unwrap(),
                 value: json!(Identifier::from(left_tracksection_id)),
             }));
         } else {
             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                path: format!("{}/track", path).parse().unwrap(),
+                path: format!("{path}/track").parse().unwrap(),
                 value: json!(Identifier::from(right_tracksection_id)),
             }));
             patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                path: format!("{}/position", path).parse().unwrap(),
+                path: format!("{path}/position").parse().unwrap(),
                 value: json!(sign.position - distance),
             }));
         }
@@ -718,7 +718,7 @@ fn get_split_patch_operations_for_applicable_ranges(
             // so we just need to change the track
             if range.end <= distance {
                 patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                    path: format!("{}/{}/track", path, index).parse().unwrap(),
+                    path: format!("{path}/{index}/track").parse().unwrap(),
                     value: json!(Identifier::from(left_tracksection_id)),
                 }));
             } else {
@@ -726,25 +726,25 @@ fn get_split_patch_operations_for_applicable_ranges(
                 // so we need to change the track and to subtract the distance on begin & end
                 if range.begin >= distance {
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/track", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/track").parse().unwrap(),
                         value: json!(Identifier::from(right_tracksection_id)),
                     }));
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/begin", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/begin").parse().unwrap(),
                         value: json!(range.begin - distance),
                     }));
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/end", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/end").parse().unwrap(),
                         value: json!(range.end - distance),
                     }));
                 }
                 // Case where the range is on left AND right side
                 else {
                     patch_operations.push(PatchOperation::Remove(RemoveOperation {
-                        path: format!("{}/{}", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}").parse().unwrap(),
                     }));
                     patch_operations.push(PatchOperation::Add(AddOperation {
-                        path: format!("{}/-", path).parse().unwrap(),
+                        path: format!("{path}/-").parse().unwrap(),
                         value: json!(ApplicableDirectionsTrackRange {
                             track: Identifier::from(left_tracksection_id),
                             end: distance,
@@ -752,7 +752,7 @@ fn get_split_patch_operations_for_applicable_ranges(
                         }),
                     }));
                     patch_operations.push(PatchOperation::Add(AddOperation {
-                        path: format!("{}/-", path).parse().unwrap(),
+                        path: format!("{path}/-").parse().unwrap(),
                         value: json!(ApplicableDirectionsTrackRange {
                             track: Identifier::from(right_tracksection_id),
                             begin: 0.0,
@@ -793,7 +793,7 @@ fn get_split_patch_operations_for_ranges(
             // so we just need to change the track
             if range.end <= distance {
                 patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                    path: format!("{}/{}/track", path, index).parse().unwrap(),
+                    path: format!("{path}/{index}/track").parse().unwrap(),
                     value: json!(Identifier::from(left_tracksection_id)),
                 }));
             } else {
@@ -801,25 +801,25 @@ fn get_split_patch_operations_for_ranges(
                 // so we need to change the track and to subtract the distance on begin & end
                 if range.begin >= distance {
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/track", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/track").parse().unwrap(),
                         value: json!(Identifier::from(right_tracksection_id)),
                     }));
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/begin", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/begin").parse().unwrap(),
                         value: json!(range.begin - distance),
                     }));
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
-                        path: format!("{}/{}/end", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}/end").parse().unwrap(),
                         value: json!(range.end - distance),
                     }));
                 }
                 // Case where the range is on left AND right side
                 else {
                     patch_operations.push(PatchOperation::Remove(RemoveOperation {
-                        path: format!("{}/{}", path, index).parse().unwrap(),
+                        path: format!("{path}/{index}").parse().unwrap(),
                     }));
                     patch_operations.push(PatchOperation::Add(AddOperation {
-                        path: format!("{}/-", path).parse().unwrap(),
+                        path: format!("{path}/-").parse().unwrap(),
                         value: json!(DirectionalTrackRange {
                             track: Identifier::from(left_tracksection_id),
                             end: distance,
@@ -827,7 +827,7 @@ fn get_split_patch_operations_for_ranges(
                         }),
                     }));
                     patch_operations.push(PatchOperation::Add(AddOperation {
-                        path: format!("{}/-", path).parse().unwrap(),
+                        path: format!("{path}/-").parse().unwrap(),
                         value: json!(DirectionalTrackRange {
                             track: Identifier::from(right_tracksection_id),
                             begin: 0.0,

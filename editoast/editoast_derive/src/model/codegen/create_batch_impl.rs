@@ -26,7 +26,7 @@ impl ToTokens for CreateBatchImpl {
             field_count,
             columns,
         } = self;
-        let span_name = format!("model:create_batch<{}>", model);
+        let span_name = format!("model:create_batch<{model}>");
 
         let create_loop = LibpqChunkedIteration {
             parameters_per_row: *field_count,

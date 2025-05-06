@@ -30,8 +30,8 @@ impl ToTokens for RetrieveBatchImpl {
         let id_ident = identifier.get_lvalue();
         let parameters_per_row = identifier.get_idents().len();
         let filters = identifier.get_diesel_eq_and_fold();
-        let span_name = format!("model:retrieve_batch_unchecked<{}>", model);
-        let span_name_with_key = format!("model:retrieve_batch_with_key_unchecked<{}>", model);
+        let span_name = format!("model:retrieve_batch_unchecked<{model}>");
+        let span_name_with_key = format!("model:retrieve_batch_with_key_unchecked<{model}>");
 
         let retrieve_loop = LibpqChunkedIteration {
             parameters_per_row,

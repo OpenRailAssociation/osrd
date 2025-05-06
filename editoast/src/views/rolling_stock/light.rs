@@ -410,7 +410,7 @@ mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
-        let request = app.get(format!("/light_rolling_stock/name/{}", rs_name).as_str());
+        let request = app.get(format!("/light_rolling_stock/name/{rs_name}").as_str());
 
         // WHEN
         let response: LightRollingStockWithLiveries =
@@ -440,7 +440,7 @@ mod tests {
             .map(|(rs_id, conn)| async move {
                 let fixtures = create_rolling_stock_livery_fixture(
                     &mut conn.await.unwrap(),
-                    &format!("rs_name_{}", rs_id),
+                    &format!("rs_name_{rs_id}"),
                 )
                 .await;
                 let fixtures: Result<_, InternalError> = Ok(fixtures);

@@ -92,8 +92,7 @@ impl<'de> Deserialize<'de> for TemporarySpeedLimitItemForm {
 
         if end_date_time <= start_date_time {
             return Err(SerdeError::custom(format!(
-                "The temporary_speed_limit start date '{}' must be before the end date '{}'",
-                start_date_time, end_date_time
+                "The temporary_speed_limit start date '{start_date_time}' must be before the end date '{end_date_time}'"
             )));
         }
 

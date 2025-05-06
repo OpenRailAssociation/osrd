@@ -146,8 +146,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         for boundary in &internal.margins.boundaries {
             if !path_ids.contains(&boundary) {
                 return Err(SerdeError::custom(format!(
-                    "Invalid boundary, path waypoint '{}' not found",
-                    boundary
+                    "Invalid boundary, path waypoint '{boundary}' not found"
                 )));
             }
         }

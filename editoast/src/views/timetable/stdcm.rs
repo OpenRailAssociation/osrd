@@ -1229,10 +1229,9 @@ mod tests {
                     vec![],
                     work_schedule_ids
                         .iter()
-                        .map(|ws| ws.parse::<i64>().unwrap_or_else(|_| panic!(
-                            "Failed to parse work schedule id '{}'",
-                            ws
-                        )))
+                        .map(|ws| ws
+                            .parse::<i64>()
+                            .unwrap_or_else(|_| panic!("Failed to parse work schedule id '{ws}'")))
                         .collect()
                 )],
             }

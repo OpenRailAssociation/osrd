@@ -200,8 +200,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             let search_type = if *textual_search {
                 if st != ColumnType::String {
                     return Err(Error::custom(format!(
-                        "cannot perform textual search on non-text column '{}'",
-                        name
+                        "cannot perform textual search on non-text column '{name}'"
                     )));
                 }
                 st = ColumnType::TextualSearchString;
@@ -211,8 +210,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             };
             let Some(sql) = sql else {
                 return Err(Error::custom(format!(
-                    "missing SQL query for search criteria '{}'",
-                    name
+                    "missing SQL query for search criteria '{name}'"
                 )));
             };
             let index = if index.unwrap_or(true) {

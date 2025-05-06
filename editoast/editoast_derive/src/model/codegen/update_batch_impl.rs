@@ -35,8 +35,8 @@ impl ToTokens for UpdateBatchImpl {
         let id_ident = identifier.get_lvalue();
         let parameters_per_row = identifier.get_idents().len();
         let filters = identifier.get_diesel_eq_and_fold();
-        let span_name = format!("model:update_batch_unchecked<{}>", model);
-        let span_name_with_key = format!("model:update_batch_unchecked<{}>", model);
+        let span_name = format!("model:update_batch_unchecked<{model}>");
+        let span_name_with_key = format!("model:update_batch_unchecked<{model}>");
 
         let update_loop = LibpqChunkedIteration {
             // FIXME: that count is correct for each row, but the maximum buffer size

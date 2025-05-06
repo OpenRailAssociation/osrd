@@ -22,7 +22,7 @@ impl ToTokens for ExistsImpl {
         let id_ident = identifier.get_lvalue();
         let id_ref_ident = identifier.get_ref_lvalue();
         let eqs = identifier.get_diesel_eqs();
-        let span_name = format!("model:exists<{}>", model);
+        let span_name = format!("model:exists<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]

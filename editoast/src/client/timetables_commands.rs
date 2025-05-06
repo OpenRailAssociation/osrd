@@ -95,7 +95,7 @@ pub async fn trains_import(
         Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
             Some(timetable) => timetable,
             None => {
-                let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", timetable));
+                let error = CliError::new(1, format!("❌ Timetable not found, id: {timetable}"));
                 return Err(Box::new(error));
             }
         },
@@ -160,7 +160,7 @@ mod tests {
             id: Some(timetable.id),
         };
         let result = trains_import(args, db_pool.clone().into()).await;
-        assert!(result.is_ok(), "{:?}", result);
+        assert!(result.is_ok(), "{result:?}");
 
         // Test to export the import
         let export_file = NamedTempFile::new().unwrap();
@@ -169,7 +169,7 @@ mod tests {
             id: timetable.id,
         };
         let export_result = trains_export(args, db_pool.clone().into()).await;
-        assert!(export_result.is_ok(), "{:?}", export_result);
+        assert!(export_result.is_ok(), "{export_result:?}");
 
         // Test to reimport the exported import
         let reimport_args = ImportTimetableArgs {
@@ -177,7 +177,7 @@ mod tests {
             id: Some(timetable.id),
         };
         let reimport_result = trains_import(reimport_args, db_pool.clone().into()).await;
-        assert!(reimport_result.is_ok(), "{:?}", reimport_result);
+        assert!(reimport_result.is_ok(), "{reimport_result:?}");
 
         Timetable::delete_static(&mut db_pool.get_ok(), timetable.id)
             .await
