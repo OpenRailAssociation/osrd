@@ -25,7 +25,7 @@ export function valueToInterval(value?: number, intervals?: number[]) {
 }
 
 export function isFloat(n: number) {
-  return Number(n) === n && n % 1 !== 0;
+  return Number.isFinite(n) && !Number.isInteger(n);
 }
 
 /**
