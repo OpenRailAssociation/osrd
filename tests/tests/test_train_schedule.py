@@ -21,6 +21,7 @@ SPEED_LIMIT_112 = kph2ms(111.9996)
 SAFE_SPEED_30 = kph2ms(29.9988)
 SHORT_SLIP_SPEED_10 = kph2ms(10.0008)
 RELEASE_SPEED_40 = kph2ms(40)
+SPEED_0 = kph2ms(0)
 
 
 def _update_simulation_with_mareco_allowances(editoast_url, train_Schedule_id):
@@ -631,7 +632,7 @@ def test_etcs_schedule_result_slowdowns(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
         json=[
             {
-                "train_name": "slowdowns to respect MRSP and safe approach speed",
+                "train_name": "slowdowns to respect MRSP and ETCS",
                 "labels": [],
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
@@ -744,89 +745,187 @@ def test_etcs_schedule_result_slowdowns(
 
     # Second slowdown
     offset_start_brake_142_to_112 = 44_413_825
-    speed_before_brake_142_to_120 = _get_current_or_next_speed_at(
+    speed_before_brake_142_to_112 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_142_to_112
     )
-    _assert_equal_speeds(speed_before_brake_142_to_120, SPEED_LIMIT_142)
+    _assert_equal_speeds(speed_before_brake_142_to_112, SPEED_LIMIT_142)
     assert (
         _get_current_or_next_speed_at(
             simulation_final_output, offset_start_brake_142_to_112 + 1
         )
-        < speed_before_brake_142_to_120
+        < speed_before_brake_142_to_112
     )
-    offset_end_brake_142_to_120 = 44_948_022
-    speed_after_brake_142_to_120 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_end_brake_142_to_120
-    )
-    assert (
-        _get_current_or_prev_speed_at(
-            simulation_final_output, offset_end_brake_142_to_120 - 1
-        )
-        > speed_after_brake_142_to_120
-    )
-    _assert_equal_speeds(speed_after_brake_142_to_120, SPEED_LIMIT_112)
-
-    # Slowdown for Safety Speed stop: should probably disappear for ETCS at some point.
-    offset_start_brake_112_to_30 = 45_635_533
-    speed_before_brake_120_to_30 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_start_brake_112_to_30
-    )
-    _assert_equal_speeds(speed_before_brake_120_to_30, SPEED_LIMIT_112)
-    assert (
-        _get_current_or_next_speed_at(
-            simulation_final_output, offset_start_brake_112_to_30 + 1
-        )
-        < speed_before_brake_120_to_30
-    )
-    offset_end_brake_120_to_30 = 46_654_236
-    speed_after_brake_120_to_30 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_end_brake_120_to_30
+    offset_end_brake_142_to_112 = 44_948_022
+    speed_after_brake_142_to_112 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_142_to_112
     )
     assert (
         _get_current_or_prev_speed_at(
-            simulation_final_output, offset_end_brake_120_to_30 - 1
+            simulation_final_output, offset_end_brake_142_to_112 - 1
         )
-        > speed_after_brake_120_to_30
+        > speed_after_brake_142_to_112
     )
-    _assert_equal_speeds(speed_after_brake_120_to_30, SAFE_SPEED_30)
+    _assert_equal_speeds(speed_after_brake_142_to_112, SPEED_LIMIT_112)
 
-    # Slowdown for short slip stop: should probably disappear for ETCS at some point.
-    offset_start_brake_30_to_10 = 46_697_340
-    speed_before_brake_30_to_10 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_start_brake_30_to_10
+    # Third slowdown, reaching release speed
+    offset_start_brake_112_to_40 = 45_762_292
+    speed_before_brake_112_to_40 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_112_to_40
     )
-    _assert_equal_speeds(speed_before_brake_30_to_10, SAFE_SPEED_30)
+    _assert_equal_speeds(speed_before_brake_112_to_40, SPEED_LIMIT_112)
     assert (
         _get_current_or_next_speed_at(
-            simulation_final_output, offset_start_brake_30_to_10 + 1
+            simulation_final_output, offset_start_brake_112_to_40 + 1
         )
-        < speed_before_brake_30_to_10
+        < speed_before_brake_112_to_40
     )
-    offset_end_brake_30_to_10 = 46_848_695
-    speed_after_brake_30_to_10 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_end_brake_30_to_10
+    offset_end_brake_112_to_40 = 46_689_738
+    speed_after_brake_112_to_40 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_112_to_40
     )
     assert (
         _get_current_or_prev_speed_at(
-            simulation_final_output, offset_end_brake_30_to_10 - 1
+            simulation_final_output, offset_end_brake_112_to_40 - 1
         )
-        > speed_after_brake_30_to_10
+        > speed_after_brake_112_to_40
     )
-    _assert_equal_speeds(speed_after_brake_30_to_10, SHORT_SLIP_SPEED_10)
+    _assert_equal_speeds(speed_after_brake_112_to_40, RELEASE_SPEED_40)
 
-    # Final slowdown: EoA (complete stop) braking curve is applied.
-    # Note: This should also be impacted if Safety Speed stop and short slip stop disappear for ETCS.
-    offset_start_brake_10_to_0 = 46_953_500
-    speed_before_brake_10_to_0 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_start_brake_10_to_0
+    # Last slowdown, EoA (complete stop) braking curve is applied
+    offset_start_brake_40_to_0 = 46_754_587
+    speed_before_brake_40_to_0 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_40_to_0
     )
-    _assert_equal_speeds(speed_before_brake_10_to_0, SHORT_SLIP_SPEED_10)
+    _assert_equal_speeds(speed_before_brake_40_to_0, RELEASE_SPEED_40)
     assert (
         _get_current_or_next_speed_at(
-            simulation_final_output, offset_start_brake_10_to_0 + 1
+            simulation_final_output, offset_start_brake_40_to_0 + 1
         )
-        < speed_before_brake_10_to_0
+        < speed_before_brake_40_to_0
     )
+    offset_end_brake_40_to_0 = 47_000_000
+    speed_after_brake_40_to_0 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_end_brake_40_to_0
+    )
+    assert (
+        _get_current_or_prev_speed_at(
+            simulation_final_output, offset_end_brake_40_to_0 - 1
+        )
+        > speed_after_brake_40_to_0
+    )
+    _assert_equal_speeds(speed_after_brake_40_to_0, SPEED_0)
+
+
+def test_etcs_schedule_result_slowdowns_with_stop(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = requests.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "stop", "track": "TH0", "offset": 662_000},
+                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "stop", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # Check that the curves do respect Ends of Authority (EoA = stops), and that there is an
+    # acceleration then deceleration in between (maintain speed when reach the MRSP).
+    # This is the case here because MRSP is not doing ups-and-downs.
+    final_stop_offset = 47_000_000
+    stop_offsets = [
+        0,
+        final_stop_offset,
+    ]
+
+    # Check null speed at stops
+    for stop_offset in stop_offsets:
+        assert _get_current_or_next_speed_at(simulation_final_output, stop_offset) == 0
+
+    # Check only one acceleration then only one deceleration between begin and end
+    for offset_index in range(1, len(stop_offsets) - 1):
+        accelerating = True
+        prev_speed = 0
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
+        for pos_index in range(start_pos_index, end_pos_index):
+            current_speed = simulation_final_output["speeds"][pos_index]
+            if accelerating:
+                if prev_speed > current_speed:
+                    accelerating = False
+            else:
+                assert prev_speed >= current_speed
+            prev_speed = current_speed
+
+    # Check that the train strictly decelerates to the stop position, and does not
+    # stays at safe speed when reaching the intermediate stop.
+    # Check the same for the strict accerelation after the stop.
+    positions = simulation_final_output["positions"]
+    speeds = simulation_final_output["speeds"]
+
+    offset_start_deceleration_to_stop = 33_985_530
+    offset_intermediate_stop = 41_662_000
+    offset_end_acceleration_from_stop = 43_806_384
+
+    start_index = bisect.bisect_left(positions, offset_start_deceleration_to_stop)
+    intermediate_index = bisect.bisect_left(positions, offset_intermediate_stop)
+    end_index = bisect.bisect_left(positions, offset_end_acceleration_from_stop)
+
+    # Strict deceleration to the intermediate stop
+    for i in range(start_index + 1, intermediate_index):
+        assert speeds[i] < speeds[i - 1], (
+            f"Speed not strictly decreasing at index {i}: {speeds[i]} >= {speeds[i - 1]}"
+        )
+
+    # Strict acceleration after the intermediate stop
+    # Assert starting at {intermediate_index + 2} to skip the first speed after the stop
+    # which is the speed at the stop (0 m/s).
+    for i in range(intermediate_index + 2, end_index):
+        assert speeds[i] > speeds[i - 1], (
+            f"Speed not strictly increasing at index {i}: {speeds[i]} <= {speeds[i - 1]}"
+        )
 
 
 def _assert_equal_speeds(left, right):
