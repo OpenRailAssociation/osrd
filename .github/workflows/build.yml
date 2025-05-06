@@ -223,7 +223,7 @@ jobs:
       - name: Generate railjson
         run: |
           mkdir /tmp/generated_infras
-          uv --directory python/railjson_generator/ run python -m railjson_generator /tmp/generated_infras $(pwd)/tests/infra-scripts/*.py
+          uv --directory python/railjson_generator/ run -m railjson_generator /tmp/generated_infras $(pwd)/tests/infra-scripts/*.py
 
       - name: Ensure generated infrastructures are up to date
         run: diff -r -u tests/data/infras /tmp/generated_infras
