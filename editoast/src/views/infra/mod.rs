@@ -25,6 +25,7 @@ use editoast_models::DbConnectionPoolV2;
 use editoast_models::model;
 use editoast_osrdyne_client::OsrdyneClient;
 use editoast_schemas::infra::SwitchType;
+use editoast_schemas::primitives::Identifier;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -47,11 +48,21 @@ use crate::map;
 use crate::models::Infra;
 use crate::models::List as _;
 use crate::models::SwitchTypeModel;
+use crate::models::TrackSectionModel;
 use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
+use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::path_item_cache::retrieve_op_from_ids;
+use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
+use crate::views::path::path_item_cache::retrieve_op_from_uic;
+use editoast_authz::Role;
+use editoast_schemas::infra::OperationalPoint;
 use editoast_schemas::infra::builtin_node_types_list;
+use editoast_schemas::train_schedule::OperationalPointIdentifier;
+use editoast_schemas::train_schedule::OperationalPointReference;
+use editoast_schemas::train_schedule::PathItemLocation;
 
 crate::routes! {
     "/infra" => {
@@ -81,6 +92,7 @@ crate::routes! {
             "/speed_limit_tags" => get_speed_limit_tags,
             "/voltages" => get_voltages,
             "/switch_types" => get_switch_types,
+            "/match_operational_points" => match_operational_points,
         },
     },
 }
@@ -915,6 +927,150 @@ pub async fn fetch_all_infra_states(
         .collect())
 }
 
+#[derive(Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
+struct MatchOperationalPointsForm {
+    operational_point_references: Vec<OperationalPointReference>,
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct MatchOperationalPointsResponse {
+    related_operational_points: Vec<Vec<OperationalPoint>>,
+    track_names: HashMap<Identifier, Option<String>>,
+}
+
+#[utoipa::path(
+    post, path = "",
+    tag = "infra",
+    params(InfraIdParam),
+    request_body = inline(MatchOperationalPointsForm),
+    responses(
+        (status = 200, description = "
+Take a list of operational point references and return for each of them the list of operational
+points that they match on a given infrastructure and a mapping between the track indentifiers of
+the returned operational points parts their related track name.
+If an input OperationalPointReference contains a track reference, that track reference is also
+used to filter out operational points that match the input operational point identifier but do
+not match the input track reference (i.e. operational points which do not have any part that
+matches the input track reference).
+", body = inline(MatchOperationalPointsResponse))
+    ),
+)]
+async fn match_operational_points(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    Json(MatchOperationalPointsForm {
+        operational_point_references,
+    }): Json<MatchOperationalPointsForm>,
+) -> Result<Json<MatchOperationalPointsResponse>> {
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&editoast_authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+    let mut operational_points: Vec<Vec<OperationalPoint>> = vec![];
+    let mut conn = db_pool.get().await?;
+    let path_item_locations = operational_point_references
+        .iter()
+        .map(|op_ref| PathItemLocation::OperationalPointReference(op_ref.clone()))
+        .collect::<Vec<_>>();
+    let path_item_cache = PathItemCache::load(
+        &mut conn,
+        infra_id,
+        &path_item_locations.iter().collect::<Vec<_>>(),
+    )
+    .await?;
+    for operational_point_reference in operational_point_references {
+        // Retrieve related OPs based on the input operational point identifier:
+        let mut related_operational_points = match operational_point_reference.reference {
+            OperationalPointIdentifier::OperationalPointId {
+                ref operational_point,
+            } => retrieve_op_from_ids(&mut conn, infra_id, &[operational_point.0.clone()])
+                .await?
+                .into_values()
+                .map(|op_model| op_model.schema)
+                .collect::<Vec<_>>(),
+            OperationalPointIdentifier::OperationalPointDescription { ref trigram, .. } => {
+                retrieve_op_from_trigrams(&mut conn, infra_id, &[trigram.0.clone()])
+                    .await?
+                    .into_iter()
+                    .flat_map(|(_, op_models)| op_models)
+                    .map(|op_model| op_model.schema)
+                    .collect::<Vec<_>>()
+            }
+            OperationalPointIdentifier::OperationalPointUic { uic, .. } => {
+                retrieve_op_from_uic(&mut conn, infra_id, &[i64::from(uic)])
+                    .await?
+                    .into_iter()
+                    .flat_map(|(_, op_models)| op_models)
+                    .map(|op_model| op_model.schema)
+                    .collect::<Vec<_>>()
+            }
+        };
+        // Filter OPs according to the input `TrackReference` if provided:
+        related_operational_points = related_operational_points
+            .into_iter()
+            .filter(|op| {
+                !path_item_cache
+                    .track_reference_filter(
+                        op.track_offset(),
+                        &operational_point_reference.track_reference,
+                    )
+                    .is_empty()
+            })
+            .collect_vec();
+        // Add the operational point reference related operational points to the response:
+        operational_points.push(related_operational_points);
+    }
+    let track_names = find_track_names(
+        db_pool,
+        infra_id,
+        &operational_points.iter().flatten().collect::<Vec<_>>(),
+    )
+    .await?;
+    Ok(Json(MatchOperationalPointsResponse {
+        related_operational_points: operational_points,
+        track_names,
+    }))
+}
+
+/// Take a list of [OperationalPoint] and return a mapping between the identifiers of the tracks
+/// contained in their operational point parts of the name of the tracks (if any).
+async fn find_track_names(
+    db_pool: Arc<DbConnectionPoolV2>,
+    infra_id: i64,
+    operational_points: &[&OperationalPoint],
+) -> Result<HashMap<Identifier, Option<String>>> {
+    let track_ids: Vec<(i64, String)> = operational_points
+        .iter()
+        .flat_map(|op| &op.parts)
+        .map(|part| (infra_id, part.track.to_string()))
+        .collect::<Vec<_>>();
+    let (tracks, _): (Vec<_>, _) =
+        TrackSectionModel::retrieve_batch(&mut db_pool.get().await?, track_ids).await?;
+    Ok(HashMap::from_iter(tracks.into_iter().map(
+        |TrackSectionModel { schema: track, .. }| {
+            (
+                track.id.clone(),
+                track
+                    .extensions
+                    .sncf
+                    .map(|sncf_ext| sncf_ext.track_name.to_string()),
+            )
+        },
+    )))
+}
+
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
@@ -931,6 +1087,7 @@ pub mod tests {
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::primitives::ObjectType;
+    use editoast_schemas::train_schedule::TrackReference;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -948,6 +1105,7 @@ pub mod tests {
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_schemas::train_schedule::OperationalPointIdentifier;
 
     impl TestApp {
         fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {
@@ -1376,5 +1534,103 @@ pub mod tests {
         let req = app.get(format!("/infra/{}/", empty_infra.id).as_str());
         let response: InfraWithState = app.fetch(req).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.state, InfraState::Cached);
+    }
+
+    #[rstest]
+    async fn match_operational_points() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let operational_point_references = vec![
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: ("West_station").into(),
+                },
+                track_reference: None,
+            },
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointDescription {
+                    trigram: "MES".into(),
+                    secondary_code: None,
+                },
+                track_reference: Some(TrackReference::Name {
+                    track_name: "V1".into(),
+                }),
+            },
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointUic {
+                    uic: 8,
+                    secondary_code: None,
+                },
+                track_reference: Some(TrackReference::Id {
+                    track_id: "TH1".into(),
+                }),
+            },
+        ];
+        let request = app
+            .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
+            .json(&json!({"operational_point_references": operational_point_references}));
+        let response: MatchOperationalPointsResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response_op_identifiers = response
+            .related_operational_points
+            .iter()
+            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
+            .collect_vec();
+        let expected_identifiers = [
+            ["West_station"],
+            ["Mid_East_station"],
+            ["South_East_station"],
+        ];
+        assert_eq!(response_op_identifiers, expected_identifiers);
+        let expected_track_names: HashMap<Identifier, Option<String>> = HashMap::from([
+            ("TA0".into(), Some("V1".to_string())),
+            ("TA1".into(), Some("V2".to_string())),
+            ("TA2".into(), Some("A".to_string())),
+            ("TD0".into(), Some("V1".to_string())),
+            ("TD1".into(), Some("V2".to_string())),
+            ("TH1".into(), Some("V1".to_string())),
+        ]);
+        assert_eq!(response.track_names, expected_track_names);
+    }
+
+    #[rstest]
+    async fn match_operational_point_input_with_incompatible_op_id_and_track_reference_gets_filtered_out()
+     {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let operational_point_references = vec![
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointDescription {
+                    trigram: "MES".into(),
+                    secondary_code: None,
+                },
+                track_reference: Some(TrackReference::Name {
+                    track_name: "does_not_exist".into(),
+                }),
+            },
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointUic {
+                    uic: 8,
+                    secondary_code: None,
+                },
+                track_reference: Some(TrackReference::Id {
+                    track_id: "does_not_exist".into(),
+                }),
+            },
+        ];
+        let request = app
+            .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
+            .json(&json!({"operational_point_references": operational_point_references}));
+        let response: MatchOperationalPointsResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response_op_identifiers = response
+            .related_operational_points
+            .iter()
+            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        let expected_identifiers: [Vec<&str>; 2] = [vec![], vec![]];
+        assert_eq!(response_op_identifiers, expected_identifiers);
     }
 }

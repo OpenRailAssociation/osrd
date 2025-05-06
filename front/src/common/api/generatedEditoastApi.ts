@@ -294,6 +294,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock`, method: 'POST' }),
         invalidatesTags: ['infra'],
       }),
+      postInfraByInfraIdMatchOperationalPoints: build.mutation<
+        PostInfraByInfraIdMatchOperationalPointsApiResponse,
+        PostInfraByInfraIdMatchOperationalPointsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/match_operational_points`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
       postInfraByInfraIdObjectsAndObjectType: build.query<
         PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
         PostInfraByInfraIdObjectsAndObjectTypeApiArg
@@ -1478,6 +1489,27 @@ export type PostInfraByInfraIdLockApiResponse = unknown;
 export type PostInfraByInfraIdLockApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
+Take a list of operational point references and return for each of them the list of operational
+points that they match on a given infrastructure and a mapping between the track indentifiers of
+the returned operational points parts their related track name.
+If an input OperationalPointReference contains a track reference, that track reference is also
+used to filter out operational points that match the input operational point identifier but do
+not match the input track reference (i.e. operational points which do not have any part that
+matches the input track reference).
+ */ {
+  related_operational_points: OperationalPoint[][];
+  track_names: {
+    [key: string]: string | null;
+  };
+};
+export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  body: {
+    operational_point_references: OperationalPointReference[];
+  };
 };
 export type PostInfraByInfraIdObjectsAndObjectTypeApiResponse =
   /** status 200 The list of objects */ InfraObjectWithGeometry[];
@@ -2839,6 +2871,31 @@ export type InfraErrorTypeLabel =
   | 'unknown_port_name'
   | 'unused_port';
 export type BoundingBox = (number & number)[][];
+export type TrackReference =
+  | {
+      track_id: string;
+    }
+  | {
+      track_name: string;
+    };
+export type OperationalPointReference = (
+  | {
+      operational_point: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      trigram: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    }
+) & {
+  track_reference?: TrackReference | null;
+};
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
@@ -2986,31 +3043,6 @@ export type TrackOffset = {
   /** Offset in mm */
   offset: number;
   track: string;
-};
-export type TrackReference =
-  | {
-      track_id: string;
-    }
-  | {
-      track_name: string;
-    };
-export type OperationalPointReference = (
-  | {
-      operational_point: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      trigram: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-      uic: number;
-    }
-) & {
-  track_reference?: TrackReference | null;
 };
 export type PathItemLocation = TrackOffset | OperationalPointReference;
 export type PathfindingInputError =

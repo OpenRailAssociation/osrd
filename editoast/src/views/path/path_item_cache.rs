@@ -215,7 +215,7 @@ impl PathItemCache {
 
     /// Filter operational points parts by a track label or a track id
     /// If neither a track label or id is provided, the original list is returned
-    fn track_reference_filter(
+    pub fn track_reference_filter(
         &self,
         track_offsets: Vec<TrackOffset>,
         track_reference: &Option<TrackReference>,
@@ -275,7 +275,7 @@ fn collect_path_item_ids(path_items: &[&PathItemLocation]) -> (Vec<String>, Vec<
 }
 
 /// Retrieve operational points from operational point uic codes
-async fn retrieve_op_from_uic(
+pub async fn retrieve_op_from_uic(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_uic: &[i64],
@@ -294,7 +294,7 @@ async fn retrieve_op_from_uic(
 }
 
 /// Retrieve operational points from operational point trigams
-async fn retrieve_op_from_trigrams(
+pub async fn retrieve_op_from_trigrams(
     conn: &mut DbConnection,
     infra_id: i64,
     trigrams: &[String],
@@ -313,7 +313,7 @@ async fn retrieve_op_from_trigrams(
 }
 
 /// Retrieve operational points from operational point ids
-async fn retrieve_op_from_ids(
+pub async fn retrieve_op_from_ids(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_id: &[String],
