@@ -307,24 +307,36 @@ private fun maintainSpeedUntil(
     maintainSpeed: Double,
     targetPosition: Double
 ): ETCSBrakingCurve {
-    val brakingCurve = etcsBrakingCurve.brakingCurve.first()
+    val brakingCurve = etcsBrakingCurve.brakingCurve
     assert(brakingCurve.beginPos < targetPosition && brakingCurve.endSpeed <= maintainSpeed)
-    val intersection = brakingCurve.interpolatePosition(maintainSpeed)
-    val brakingCurveWithMaintain =
-        Envelope.make(
-            brakingCurve.sliceWithSpeeds(
-                brakingCurve.beginPos,
-                brakingCurve.beginSpeed,
-                intersection,
-                maintainSpeed
-            )!!,
-            EnvelopePart.generateTimes(
-                listOf(EnvelopeProfile.CONSTANT_SPEED),
-                doubleArrayOf(intersection, targetPosition),
-                doubleArrayOf(maintainSpeed, maintainSpeed)
+    val brakingCurveWithMaintain = mutableListOf<EnvelopePart>()
+    for (currentPart in brakingCurve.stream()) {
+        if (currentPart.endSpeed > maintainSpeed) {
+            brakingCurveWithMaintain.add(currentPart)
+        } else {
+            val intersection = currentPart.interpolatePosition(maintainSpeed)
+            brakingCurveWithMaintain.add(
+                currentPart.sliceWithSpeeds(
+                    currentPart.beginPos,
+                    currentPart.beginSpeed,
+                    intersection,
+                    maintainSpeed
+                )!!
             )
-        )
-    return ETCSBrakingCurve(etcsBrakingCurve.brakingCurveType, brakingCurveWithMaintain)
+            brakingCurveWithMaintain.add(
+                EnvelopePart.generateTimes(
+                    listOf(EnvelopeProfile.CONSTANT_SPEED),
+                    doubleArrayOf(intersection, targetPosition),
+                    doubleArrayOf(maintainSpeed, maintainSpeed)
+                )
+            )
+            break
+        }
+    }
+    return ETCSBrakingCurve(
+        etcsBrakingCurve.brakingCurveType,
+        Envelope.make(*brakingCurveWithMaintain.toTypedArray())
+    )
 }
 
 /** Compute braking curve: used to compute EBD, SBD or GUI. */
