@@ -85,33 +85,6 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn check_infra_privilege_can_share_read(
-        &self,
-        infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_privilege_can_share_read(self.user_id, infra_id)
-            .await
-    }
-
-    pub async fn check_infra_privilege_can_write(
-        &self,
-        infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_privilege_can_share_write(self.user_id, infra_id)
-            .await
-    }
-
-    pub async fn check_infra_privilege_can_share_ownership(
-        &self,
-        infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_privilege_can_share_ownership(self.user_id, infra_id)
-            .await
-    }
-
     pub async fn grant_infra_reader(
         &self,
         user_id: i64,
