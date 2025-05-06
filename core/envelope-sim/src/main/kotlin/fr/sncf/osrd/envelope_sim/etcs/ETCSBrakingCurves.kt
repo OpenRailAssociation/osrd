@@ -31,6 +31,7 @@ enum class BrakingCurveType {
     SBI_1, // Service Brake Intervention 1 - SBI curve computed from SBD
     SBI_2, // Service Brake Intervention 2 - SBI curve computed from EBD
     GUI, // Guidance
+    PRE_PS, // Permitted Speed before applying minimum with guidance
     PS, // Permitted Speed
     IND // Indication
 }
@@ -464,7 +465,8 @@ private fun computeEbiBrakingCurveFromEbd(
  * Compute braking curves from ref. Braking curves are computed as follows (see Subset 026: figures
  * 45 and 46):
  * - EBI/SBD -> SBI
- * - SBI -> PS
+ * - SBI -> pre-PS
+ * - pre-PS + GUI -> PS
  * - PS -> IND
  */
 private fun computeBrakingCurvesFromRefs(
@@ -487,15 +489,12 @@ private fun computeBrakingCurvesFromRefs(
     val refBrakingPoints = refBrakingCurve.brakingCurve.iteratePoints().distinct()
     val pointCount = refBrakingPoints.size
     val sbiPositions = DoubleArray(pointCount)
-    val psPositions = DoubleArray(pointCount)
-    val indPositions = DoubleArray(pointCount)
+    val prePsPositions = DoubleArray(pointCount)
     val newSpeeds = DoubleArray(pointCount)
     for (i in 0 until pointCount) {
         val speed = refBrakingPoints[i].speed
         sbiPositions[i] = getSbiPosition(refBrakingPoints[i].position, speed, tBs)
-        val prePSPosition = getPermittedSpeedPosition(sbiPositions[i], speed)
-        psPositions[i] = getAdjustedPermittedSpeedPosition(prePSPosition, speed, guiCurve)
-        indPositions[i] = getIndicationPosition(psPositions[i], speed, tBs)
+        prePsPositions[i] = getPrePermittedSpeedPosition(sbiPositions[i], speed)
         newSpeeds[i] = speed
     }
 
@@ -506,18 +505,29 @@ private fun computeBrakingCurvesFromRefs(
                 EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), sbiPositions, newSpeeds)
             )
         )
-    val psCurve =
+
+    val prePsCurve =
         ETCSBrakingCurve(
-            PS,
+            PRE_PS,
             Envelope.make(
-                EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), psPositions, newSpeeds)
+                EnvelopePart.generateTimes(
+                    listOf(EnvelopeProfile.BRAKING),
+                    prePsPositions,
+                    newSpeeds
+                )
             )
         )
+    val psCurve = computeMinETCSBrakingCurves(prePsCurve, guiCurve)!!
+
+    val psPoints = psCurve.brakingCurve.iteratePoints().distinct()
+    val indPositions =
+        psPoints.map { getIndicationPosition(it.position, it.speed, tBs) }.toDoubleArray()
+    val indSpeeds = psPoints.map { it.speed }.toDoubleArray()
     val indCurve =
         ETCSBrakingCurve(
             IND,
             Envelope.make(
-                EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), indPositions, newSpeeds)
+                EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), indPositions, indSpeeds)
             )
         )
 
@@ -530,7 +540,9 @@ private fun computeBrakingCurvesFromRefs(
 
 /**
  * Computes the mininum ETCS braking curve. Both curves must have the same braking curve type.
- * Should be used to compare EoA curves to SvL curves, for GUI, PS and IND.
+ * Should be used to:
+ * - compare EoA curves to SvL curves, for GUI, PS and IND.
+ * - compare pre PS curve to GUI curve.
  */
 private fun computeMinETCSBrakingCurves(
     etcsBrakingCurve1: ETCSBrakingCurve?,
@@ -541,7 +553,15 @@ private fun computeMinETCSBrakingCurves(
 
     val brakingCurveType1 = etcsBrakingCurve1.brakingCurveType
     val brakingCurveType2 = etcsBrakingCurve2.brakingCurveType
-    assert(brakingCurveType1 == brakingCurveType2)
+    val brakingCurveType =
+        if (brakingCurveType1 == brakingCurveType2) brakingCurveType1
+        else {
+            assert(
+                (brakingCurveType1 == PRE_PS && brakingCurveType2 == GUI) ||
+                    (brakingCurveType1 == GUI && brakingCurveType2 == PRE_PS)
+            )
+            PS
+        }
 
     val endPos1 = etcsBrakingCurve1.brakingCurve.endPos
     val endPos2 = etcsBrakingCurve2.brakingCurve.endPos
@@ -582,7 +602,7 @@ private fun computeMinETCSBrakingCurves(
             etcsBrakingCurve2.brakingCurve.slice(beginPos2, intersectingRangeBegin).toList()
         )
 
-    return ETCSBrakingCurve(brakingCurveType1, Envelope.make(*minCurve.toTypedArray()))
+    return ETCSBrakingCurve(brakingCurveType, Envelope.make(*minCurve.toTypedArray()))
 }
 
 /**
@@ -736,26 +756,8 @@ private fun getSbiPosition(ebiOrSbdPosition: Double, speed: Double, tbs: Double)
 }
 
 /** See Subset 026: §3.13.9.3.5.1. */
-private fun getPermittedSpeedPosition(sbiPosition: Double, speed: Double): Double {
+private fun getPrePermittedSpeedPosition(sbiPosition: Double, speed: Double): Double {
     return getPreviousPosition(sbiPosition, speed, T_DRIVER)
-}
-
-/** See Subset 026: §3.13.9.3.5.4. */
-private fun getAdjustedPermittedSpeedPosition(
-    permittedSpeedPosition: Double,
-    speed: Double,
-    guiCurve: ETCSBrakingCurve
-): Double {
-    assert(guiCurve.brakingCurveType == GUI)
-    assert(guiCurve.brakingCurve.stream().count() == 1L)
-    val guiPart = guiCurve.brakingCurve.stream().findFirst().get()
-    val guiPosition =
-        if (speed > guiPart.maxSpeed) guiPart.beginPos else guiPart.interpolatePosition(speed)
-    // Interpolating adds a position inaccuracy. If both positions are equal, keep more accurate
-    // permitted speed position.
-    return if (TrainPhysicsIntegrator.arePositionsEqual(permittedSpeedPosition, guiPosition))
-        permittedSpeedPosition
-    else min(permittedSpeedPosition, guiPosition)
 }
 
 /** See Subset 026: §3.13.9.3.6.1 and §3.13.9.3.6.2. */
