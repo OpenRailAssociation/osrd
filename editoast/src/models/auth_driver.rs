@@ -1,7 +1,6 @@
 use std::ops::DerefMut;
 use std::sync::Arc;
 
-use crate::error::InternalError;
 use crate::models::Infra;
 use crate::models::prelude::Exists;
 use diesel::dsl;
@@ -20,14 +19,13 @@ use editoast_models::tables::*;
 use futures::StreamExt;
 use tracing::Level;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, derive_more::From)]
 pub enum AuthDriverError {
     #[error(transparent)]
-    Internal(#[from] InternalError),
+    #[from(editoast_models::DatabaseError)]
+    Database(#[from] editoast_models::model::Error),
     #[error(transparent)]
-    Database(#[from] editoast_models::DatabaseError),
-    #[error(transparent)]
-    DbPoolError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
+    DatabaseUnavailable(#[from] editoast_models::db_connection_pool::DatabasePoolError),
     #[error("Subject with id {subject_id} not found")]
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
@@ -245,11 +243,7 @@ impl StorageDriver for PgAuthDriver {
     }
 
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
-        let conn = &mut self.pool.get().await?;
-        let exists = Infra::exists(conn, infra_id)
-            .await
-            .map_err(InternalError::from)?;
-        Ok(exists)
+        Ok(Infra::exists(&mut self.pool.get().await?, infra_id).await?)
     }
 }
 
