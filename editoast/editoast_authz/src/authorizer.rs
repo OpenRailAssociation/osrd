@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use tracing::Level;
 use tracing::debug;
 
+use crate::Authorization;
 use crate::Error;
 use crate::Regulator;
 use crate::Role;
@@ -76,12 +77,12 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn check_infra_privilege_can_read(
+    pub async fn authorize_infra_read(
         &self,
         infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .check_infra_privilege_can_read(self.user_id, infra_id)
+            .authorize_infra_read(self.user_id, infra_id)
             .await
     }
 

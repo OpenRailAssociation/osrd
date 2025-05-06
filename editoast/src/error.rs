@@ -342,6 +342,19 @@ impl EditoastError for core::Error {
     }
 }
 
+impl From<editoast_authz::Unauthorized> for InternalError {
+    fn from(editoast_authz::Unauthorized { reason }: editoast_authz::Unauthorized) -> Self {
+        tracing::error!(reason, "Unauthorized operation");
+        crate::views::AuthorizationError::Forbidden.into()
+    }
+}
+
+impl From<crate::views::AuthorizerError> for InternalError {
+    fn from(value: crate::views::AuthorizerError) -> Self {
+        crate::views::AuthorizationError::from(value).into()
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

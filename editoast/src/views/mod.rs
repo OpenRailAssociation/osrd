@@ -316,7 +316,7 @@ async fn authentication_middleware(
     Ok(next.run(req).await)
 }
 
-type AuthorizerError =
+pub type AuthorizerError =
     editoast_authz::Error<<PgAuthDriver as editoast_authz::StorageDriver>::Error>;
 
 #[derive(Debug, Error, EditoastError)]

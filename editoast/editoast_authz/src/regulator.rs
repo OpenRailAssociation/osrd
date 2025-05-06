@@ -7,6 +7,7 @@ use fga::model::Relation;
 use futures::stream;
 use tracing::Level;
 
+use crate::Authorization;
 use crate::Error;
 use crate::Role;
 use crate::model;
@@ -338,6 +339,11 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(false)
     }
 
+    pub async fn is_admin(&self, user_id: i64) -> Result<bool, Error<S::Error>> {
+        let user_roles = self.user_roles(user_id).await?;
+        Ok(user_roles.contains(&Role::Admin))
+    }
+
     pub async fn check_infra_grant_reader(
         &self,
         user_id: i64,
@@ -428,11 +434,11 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(result)
     }
 
-    pub async fn check_infra_privilege_can_read(
+    pub async fn authorize_infra_read(
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -449,18 +455,18 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
+        if self.is_admin(user_id).await? {
+            return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
         let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
-        let result = self
+        let check = self
             .openfga
             .check(model::Infra::can_read().check(&user, &infra))
             .await?;
-        Ok(result)
+        Ok(Authorization::from_privilege_check(check))
     }
 
     pub async fn check_infra_privilege_can_share_read(

@@ -72,6 +72,45 @@ impl<StorageError: std::error::Error> From<fga::client::QueryError> for Error<St
     }
 }
 
+/// A representation of an authorization decision over some resource
+#[derive(derive_more::Debug, derive_more::Display)]
+pub enum Authorization<T> {
+    /// The initiator of the authorization is allowed to access the resource
+    Granted(T),
+    /// The initiator of the authorization is an admin and bypassed the authorization checks
+    Bypassed(T),
+    /// The initiator of the authorization is denied access to the resource
+    Denied { reason: &'static str },
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("Unauthorized (reason: {reason})")]
+pub struct Unauthorized {
+    pub reason: &'static str,
+}
+
+impl<T> Authorization<T> {
+    pub fn allowed(self) -> Result<T, Unauthorized> {
+        match self {
+            Authorization::Granted(value) | Authorization::Bypassed(value) => Ok(value),
+            Authorization::Denied { reason } => Err(Unauthorized { reason }),
+        }
+    }
+}
+
+impl<T: Default> Authorization<T> {
+    #[inline]
+    fn from_privilege_check(allowed: bool) -> Self {
+        if allowed {
+            Authorization::Granted(T::default())
+        } else {
+            Authorization::Denied {
+                reason: "insufficient privileges",
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 /// The [fga::client::ConnectionSettings] to use for unit and doc tests
 ///
