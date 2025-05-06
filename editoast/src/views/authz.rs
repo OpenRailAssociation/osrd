@@ -261,6 +261,7 @@ struct ResourceIdParam {
     ),
 )]
 async fn users_grants_for_resource_id(
+    Extension(authn): AuthenticationExt,
     State(AppState { regulator, .. }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
@@ -268,6 +269,14 @@ async fn users_grants_for_resource_id(
 ) -> Result<Json<Vec<SubjectGrant>>> {
     // Validate pagination params
     let mut skip = (page - 1) * page_size;
+
+    // One must be able to interact with the resource in order to
+    // consult who has access to it.
+    authn
+        .authorizer()?
+        .authorize_infra_read(resource_id)
+        .await?
+        .allowed()?;
 
     let mut result: Vec<SubjectGrant> = Vec::new();
 
