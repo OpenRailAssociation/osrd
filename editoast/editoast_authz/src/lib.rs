@@ -96,6 +96,20 @@ impl<T> Authorization<T> {
             Authorization::Denied { reason } => Err(Unauthorized { reason }),
         }
     }
+
+    pub fn denied(&self) -> bool {
+        matches!(self, Self::Denied { .. })
+    }
+
+    pub async fn allowed_then_try<U, E>(
+        self,
+        f: impl AsyncFnOnce(T) -> Result<Authorization<U>, E>,
+    ) -> Result<Authorization<U>, E> {
+        match self {
+            Authorization::Granted(t) | Authorization::Bypassed(t) => f(t).await,
+            Authorization::Denied { reason } => Ok(Authorization::Denied { reason }),
+        }
+    }
 }
 
 impl<T: Default> Authorization<T> {

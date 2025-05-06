@@ -90,33 +90,30 @@ impl<S: StorageDriver> Authorizer<S> {
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
             .grant_infra_reader(self.user_id, user_id, infra_id)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn grant_infra_writer(
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
             .grant_infra_writer(self.user_id, user_id, infra_id)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn grant_infra_owner(
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
             .grant_infra_owner(self.user_id, user_id, infra_id)
-            .await?;
-        Ok(())
+            .await
     }
 
     pub async fn revoke_infra_reader(
