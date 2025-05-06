@@ -86,7 +86,7 @@ fn parse_error_definition(
     let name = variant.ident.unraw().to_string();
 
     // Compute its id
-    let id = format!("editoast:{}:{}", base_id, name);
+    let id = format!("editoast:{base_id}:{name}");
 
     // Retieve error status (or get the default one)
     let status = match variant.params.status.as_ref() {

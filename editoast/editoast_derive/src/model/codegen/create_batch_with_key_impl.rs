@@ -31,7 +31,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
             columns,
         } = self;
         let ty = identifier.get_type();
-        let span_name = format!("model:create_batch_with_key<{}>", model);
+        let span_name = format!("model:create_batch_with_key<{model}>");
 
         let create_loop = LibpqChunkedIteration {
             parameters_per_row: *field_count,

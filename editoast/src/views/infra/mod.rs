@@ -899,7 +899,7 @@ pub mod tests {
             .expect("Failed to create switch_type object");
 
         let req_clone =
-            app.post(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str());
+            app.post(format!("/infra/{small_infra_id}/clone/?name=cloned_infra").as_str());
 
         let cloned_infra_id: i64 = app
             .fetch(req_clone)
@@ -925,8 +925,7 @@ pub mod tests {
         for table in tables {
             for inf_id in [small_infra_id, cloned_infra_id] {
                 let count_object = sql_query(format!(
-                    "SELECT COUNT (*) as nb from {} where infra_id = $1",
-                    table
+                    "SELECT COUNT (*) as nb from {table} where infra_id = $1"
                 ))
                 .bind::<BigInt, _>(inf_id)
                 .get_result::<Count>(&mut db_pool.get_ok().write().await.deref_mut())

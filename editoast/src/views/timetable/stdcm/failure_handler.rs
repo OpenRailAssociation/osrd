@@ -101,7 +101,7 @@ impl SimulationFailureHandler {
                     .filter(|ts| *ts != &virtual_train_id_str)
                     .map(|ts| {
                         ts.parse::<i64>()
-                            .unwrap_or_else(|_| panic!("Failed to parse train_id '{}'", ts))
+                            .unwrap_or_else(|_| panic!("Failed to parse train_id '{ts}'"))
                     })
                     .collect(),
                 paced_train_occurrence_ids: vec![],
@@ -110,7 +110,7 @@ impl SimulationFailureHandler {
                     .iter()
                     .map(|ws| {
                         ws.parse::<i64>()
-                            .unwrap_or_else(|_| panic!("Failed to parse work_schedule_id '{}'", ws))
+                            .unwrap_or_else(|_| panic!("Failed to parse work_schedule_id '{ws}'"))
                     })
                     .collect(),
                 start_time: conflict.start_time,

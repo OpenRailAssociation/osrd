@@ -140,7 +140,7 @@ pub async fn refresh_search_tables(
             eprintln!("❌ No migration defined for {object}");
             continue;
         }
-        println!("🤖 Refreshing search table for {}", object);
+        println!("🤖 Refreshing search table for {object}");
         println!("🚮 Dropping {} content", search_config.table);
         sql_query(search_config.clear_sql())
             .execute(&mut db_pool.get().await?.write().await)
@@ -149,7 +149,7 @@ pub async fn refresh_search_tables(
         sql_query(search_config.refresh_table_sql())
             .execute(&mut db_pool.get().await?.write().await)
             .await?;
-        println!("✅ Search table for {} refreshed!", object);
+        println!("✅ Search table for {object} refreshed!");
     }
     Ok(())
 }

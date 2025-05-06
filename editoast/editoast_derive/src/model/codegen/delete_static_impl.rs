@@ -22,7 +22,7 @@ impl ToTokens for DeleteStaticImpl {
         let id_ident = identifier.get_lvalue();
         let id_ref_ident = identifier.get_ref_lvalue();
         let eqs = identifier.get_diesel_eqs();
-        let span_name = format!("model:delete_static<{}>", model);
+        let span_name = format!("model:delete_static<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]

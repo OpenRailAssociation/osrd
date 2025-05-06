@@ -20,7 +20,7 @@ impl ToTokens for CreateImpl {
             empty_changeset,
             columns,
         } = self;
-        let span_name = format!("model:create<{}>", model);
+        let span_name = format!("model:create<{model}>");
 
         // If the changeset has no fields, it cannot derive Insertable.
         let values = if *empty_changeset {

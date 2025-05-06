@@ -14,7 +14,7 @@ impl ToTokens for DeleteImpl {
             table_mod,
             primary_key,
         } = self;
-        let span_name = format!("model:delete<{}>", model);
+        let span_name = format!("model:delete<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]

@@ -94,8 +94,7 @@ impl OpenApiPathScope {
             let (a, b) = (a.as_ref(), b.as_ref());
             match (a.ends_with('/'), b.starts_with('/')) {
                 (true, true) => format!("{}{}", a, &b[1..]),
-                (false, false) => format!("{}/{}", a, b),
-                _ => format!("{}{}", a, b),
+                _ => format!("{a}{b}"),
             }
         }
 

@@ -654,11 +654,7 @@ mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(
-            format!(
-                "/paced_train/{}/simulation/?infra_id={}",
-                train_schedule_id, infra_id
-            )
-            .as_str(),
+            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
         let response: core::simulation::Response =
             app.fetch(request).assert_status(StatusCode::OK).json_into();

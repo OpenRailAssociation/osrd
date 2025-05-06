@@ -91,7 +91,7 @@ impl Display for Subject {
         let Self { id, info } = self;
         match info {
             SubjectInfo::User(UserInfo { name, identity }) => {
-                write!(f, "User {}#{} ({})", identity, id, name)
+                write!(f, "User {identity}#{id} ({name})")
             }
             SubjectInfo::Group(info) => write!(f, "Group #{} ({})", id, info.name),
         }

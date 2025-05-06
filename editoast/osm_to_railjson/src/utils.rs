@@ -416,7 +416,7 @@ pub fn electrifications(edge: &Edge) -> Option<Electrification> {
             .next()
             .map(|v| {
                 if v.parse::<f64>().is_ok() {
-                    format!("{}V", v)
+                    format!("{v}V")
                 } else {
                     v.to_string()
                 }

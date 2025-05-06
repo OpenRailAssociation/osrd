@@ -99,9 +99,9 @@ impl Serialize for MarginValue {
         S: serde::Serializer,
     {
         match self {
-            MarginValue::Percentage(value) => serializer.serialize_str(&format!("{}%", value)),
+            MarginValue::Percentage(value) => serializer.serialize_str(&format!("{value}%")),
             MarginValue::MinPer100Km(value) => {
-                serializer.serialize_str(&format!("{}min/100km", value))
+                serializer.serialize_str(&format!("{value}min/100km"))
             }
         }
     }

@@ -27,7 +27,7 @@ impl ToTokens for DeleteBatchImpl {
         let id_ident = identifier.get_lvalue();
         let parameters_per_row = identifier.get_idents().len();
         let filters = identifier.get_diesel_eq_and_fold();
-        let span_name = format!("model:delete_batch<{}>", model);
+        let span_name = format!("model:delete_batch<{model}>");
 
         let delete_loop = LibpqChunkedIteration {
             parameters_per_row,

@@ -51,7 +51,7 @@ where
     <T as Model>::Error: Sync + 'static,
 {
     if !T::exists(conn, object_id).await? {
-        let err_msg = format!("❌ {0} not found, id: {1}", readable_name, object_id);
+        let err_msg = format!("❌ {readable_name} not found, id: {object_id}");
         return Err(Box::new(CliError::new(1, err_msg)));
     }
     Ok(())
@@ -210,10 +210,7 @@ async fn resolve_search_window(
     };
 
     if begin >= end {
-        let error_msg = format!(
-            "❌ Resolved window is empty: begin ({0}) >= end ({1})",
-            begin, end
-        );
+        let error_msg = format!("❌ Resolved window is empty: begin ({begin}) >= end ({end})");
         return Err(Box::new(CliError::new(1, error_msg)));
     }
 
@@ -228,7 +225,7 @@ async fn show_stdcm_search_env(
         println!("{search_env:#?}");
 
         let n_trains = Timetable::trains_count(search_env.timetable_id, conn).await?;
-        println!("🚆 Number of trains in timetable: {0}", n_trains);
+        println!("🚆 Number of trains in timetable: {n_trains}");
     } else {
         println!("🔎 No STDCM search environment has been set up yet")
     };

@@ -640,11 +640,7 @@ pub mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_train_schedule_id_for_simulation_tests().await;
         let request = app.get(
-            format!(
-                "/train_schedule/{}/simulation/?infra_id={}",
-                train_schedule_id, infra_id
-            )
-            .as_str(),
+            format!("/train_schedule/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
         app.fetch(request).assert_status(StatusCode::OK);
     }

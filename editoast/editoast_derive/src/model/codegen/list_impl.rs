@@ -16,7 +16,7 @@ impl ToTokens for ListImpl {
             row,
             columns,
         } = self;
-        let span_name = format!("model:list<{}>", model);
+        let span_name = format!("model:list<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]
