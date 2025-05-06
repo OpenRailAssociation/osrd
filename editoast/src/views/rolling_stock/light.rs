@@ -9,7 +9,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use editoast_models::DbConnection;
@@ -236,8 +235,7 @@ struct LightRollingStock {
     const_gamma: Deceleration,
     #[schema(required)]
     etcs_brake_params: Option<EtcsBrakeParams>,
-    #[serde(with = "units::ratio")]
-    inertia_coefficient: Ratio,
+    inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     mass: Mass,
     rolling_resistance: RollingResistance,

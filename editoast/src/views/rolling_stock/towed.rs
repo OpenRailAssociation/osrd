@@ -20,7 +20,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -70,8 +69,7 @@ struct TowedRollingStock {
     comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     startup_acceleration: Acceleration,
-    #[serde(with = "units::ratio")]
-    inertia_coefficient: Ratio,
+    inertia_coefficient: f64,
     rolling_resistance: RollingResistancePerWeight,
     #[serde(with = "units::meter_per_second_squared")]
     const_gamma: Deceleration,
@@ -130,8 +128,7 @@ pub struct TowedRollingStockForm {
     pub comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     pub startup_acceleration: Acceleration,
-    #[serde(with = "units::ratio")]
-    pub inertia_coefficient: Ratio,
+    pub inertia_coefficient: f64,
     pub rolling_resistance: RollingResistancePerWeight,
     #[serde(with = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,

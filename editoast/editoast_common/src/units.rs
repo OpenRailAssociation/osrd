@@ -39,7 +39,6 @@ pub mod quantities {
     pub use uom::si::f64::Acceleration;
     pub use uom::si::f64::Length;
     pub use uom::si::f64::Mass;
-    pub use uom::si::f64::Ratio;
     pub use uom::si::f64::Time;
     pub use uom::si::f64::Velocity;
     pub type SolidFriction = uom::si::f64::Force;
@@ -81,9 +80,6 @@ macro_rules! quantity_to_path {
     };
     (Time, $unit:ident) => {
         uom::si::time::$unit
-    };
-    (Ratio, $unit:ident) => {
-        uom::si::ratio::$unit
     };
 }
 
@@ -221,4 +217,3 @@ define_unit!(kilogram_per_meter, AerodynamicDrag);
 define_unit!(per_meter, AerodynamicDragPerWeight);
 define_unit!(second, Time);
 define_unit!(millisecond, Time);
-define_unit!(ratio, Ratio);

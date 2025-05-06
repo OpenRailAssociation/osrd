@@ -41,7 +41,6 @@ fn get_abbreviation(value: &str) -> Option<&'static str> {
         "kilogram_per_meter" => Some("Aerodynamic drag in kg·m⁻¹"),
         "kilogram_per_second" => Some("Viscosity friction in kg·s⁻¹"),
         "per_meter" => Some("Aerodynamic drag per kg in m⁻¹"),
-        "ratio" => Some("Ratio 1:1"),
         _ => None,
     }
 }

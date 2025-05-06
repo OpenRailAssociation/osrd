@@ -45,7 +45,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use serde::Deserialize;
@@ -88,8 +87,7 @@ pub struct RollingStock {
     #[serde(with = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[serde(with = "units::ratio")]
-    pub inertia_coefficient: Ratio,
+    pub inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     pub mass: Mass,
     pub rolling_resistance: RollingResistance,
