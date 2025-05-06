@@ -60,6 +60,7 @@
               diesel-cli
               cargo-watch
               taplo
+              uv
 
               # API
               ruff-lsp
