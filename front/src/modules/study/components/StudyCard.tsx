@@ -64,9 +64,7 @@ export default function StudyCard({
         </button>
       </div>
       {study.study_type && (
-        <div className="study-card-type">
-          {t(`operationalStudies/study:studyCategories.${study.study_type}`)}
-        </div>
+        <div className="study-card-type">{t(`study.studyCategories.${study.study_type}`)}</div>
       )}
       <div className="study-card-description">{study.description}</div>
 

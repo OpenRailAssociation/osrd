@@ -42,6 +42,7 @@
   "deleteRollingStock": "Would you like to delete this rolling stock?",
   "effort": "Effort (kN)",
   "electric": "Electric",
+  "electricalPowerStartupTime": "Power recovery time",
   "electricalProfiles": "Electrical Profiles",
   "errorMessages": {
     "invalidConversion": "Invalid conversion",
@@ -99,6 +100,7 @@
   "powerRestrictionsInfos": "Power restriction",
   "primaryCategory": "Primary category",
   "project": "Project {{projectName}}:",
+  "raisePantographTime": "Pantograph lift time",
   "resultFound_one": "1 result found",
   "resultFound_other": "{{count}} results found",
   "resultFound_zero": "No results found",
