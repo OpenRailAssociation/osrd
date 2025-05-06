@@ -1,10 +1,9 @@
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import cx from 'classnames';
-import { isNil } from 'lodash';
 
 import type { MultiUnit } from 'modules/rollingStock/types';
-import { isFloat, stripDecimalDigits } from 'utils/numbers';
+import { isFloat } from 'utils/numbers';
 
 type Option = {
   id: string;
@@ -29,13 +28,13 @@ type Props<U> = {
   max?: number;
   step?: number | string;
   disabled?: boolean;
-  limitDecimal?: number;
+  limitPrecision?: number;
   inputDataTestId?: string;
 };
 
-const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
+const isNeedLimitPrecision = (inputValue: string, limit?: number) => {
   const eventValue = Number(inputValue);
-  return !isNil(limit) && limit > 0 && inputValue !== '' && isFloat(eventValue);
+  return limit !== undefined && limit > 0 && inputValue !== '' && isFloat(eventValue);
 };
 
 export default function InputGroupSNCF<U extends string | MultiUnit>({
@@ -50,7 +49,7 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
   max,
   step = 'any',
   disabled = false,
-  limitDecimal = 10,
+  limitPrecision = 10,
   inputDataTestId,
 }: Props<U>) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
@@ -58,26 +57,28 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
   const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const eventValue = Number(event.target.value);
-      let newValue: InputGroupSNCFValue<U>['value'] =
-        limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)
-          ? stripDecimalDigits(eventValue, limitDecimal)
-          : eventValue;
+      let newValue: InputGroupSNCFValue<U>['value'] = isNeedLimitPrecision(
+        event.target.value,
+        limitPrecision
+      )
+        ? Number(eventValue.toPrecision(limitPrecision))
+        : eventValue;
       if (event.target.value === '') newValue = undefined;
       onChange({ unit: currentValue.unit, value: newValue });
     },
-    [onChange, currentValue.unit, limitDecimal]
+    [onChange, currentValue.unit, limitPrecision]
   );
 
   const inputValue = useMemo(() => {
     const { value } = currentValue;
     if (value !== undefined && !disabled) {
-      if (limitDecimal && isNeedStripDecimalDigits(value.toString(), limitDecimal)) {
-        return stripDecimalDigits(Number(value), limitDecimal);
+      if (isNeedLimitPrecision(value.toString(), limitPrecision)) {
+        return Number(value.toPrecision(limitPrecision));
       }
       return value;
     }
     return '';
-  }, [currentValue.value, limitDecimal, disabled]);
+  }, [currentValue.value, limitPrecision, disabled]);
 
   const inputField = (
     <div
