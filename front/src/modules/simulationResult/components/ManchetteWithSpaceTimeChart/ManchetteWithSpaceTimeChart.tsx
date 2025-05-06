@@ -44,7 +44,7 @@ import { useAppDispatch } from 'store';
 import {
   isTrainId,
   formatPacedTrainIdToOccurrenceId,
-  extractPacedTrainIdFromOccurenceId,
+  extractPacedTrainIdFromOccurrenceId,
   isTrainScheduleProjection,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -112,7 +112,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         if (isTrainScheduleProjection(train)) {
           return train;
         }
-        const pacedTrainId = extractPacedTrainIdFromOccurenceId(train.id);
+        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
         const occurrencesCount = getOccurrencesNb(train.paced);
         const occurrences = [];
         for (let i = 0; i < occurrencesCount; i += 1) {
