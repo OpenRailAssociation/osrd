@@ -8,7 +8,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use editoast_schemas::primitives::Identifier;
@@ -75,10 +74,8 @@ pub struct PhysicsConsist {
     #[schema(value_type = f64)]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[derivative(Hash(hash_with = "units::ratio::hash"))]
-    #[serde(with = "units::ratio")]
-    #[schema(value_type = f64)]
-    pub inertia_coefficient: Ratio,
+    #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
+    pub inertia_coefficient: f64,
     /// Mass of the rolling stock
     #[derivative(Hash(hash_with = "units::kilogram::hash"))]
     #[serde(with = "units::kilogram::u64")]
@@ -172,7 +169,7 @@ impl PhysicsConsistParameters {
             .unwrap_or(self.traction_engine.comfort_acceleration)
     }
 
-    pub fn compute_inertia_coefficient(&self) -> Ratio {
+    pub fn compute_inertia_coefficient(&self) -> f64 {
         if let (Some(towed_rolling_stock), Some(total_mass)) =
             (self.towed_rolling_stock.as_ref(), self.total_mass)
         {
@@ -180,7 +177,7 @@ impl PhysicsConsistParameters {
             let traction_engine_inertia =
                 self.traction_engine.mass * self.traction_engine.inertia_coefficient;
             let towed_inertia = towed_mass * towed_rolling_stock.inertia_coefficient;
-            (traction_engine_inertia + towed_inertia) / total_mass
+            ((traction_engine_inertia + towed_inertia) / total_mass).into()
         } else {
             self.traction_engine.inertia_coefficient
         }
@@ -653,16 +650,10 @@ mod tests {
     fn physics_consist_compute_inertia_coefficient() {
         let mut physics_consist = create_physics_consist();
 
-        approx::assert_relative_eq!(
-            units::ratio::from(physics_consist.compute_inertia_coefficient()),
-            1.065
-        );
+        approx::assert_relative_eq!(physics_consist.compute_inertia_coefficient(), 1.065);
 
         physics_consist.towed_rolling_stock = None;
-        assert_eq!(
-            physics_consist.compute_inertia_coefficient(),
-            units::ratio::new(1.10,)
-        );
+        assert_eq!(physics_consist.compute_inertia_coefficient(), 1.10,);
     }
 
     #[test]

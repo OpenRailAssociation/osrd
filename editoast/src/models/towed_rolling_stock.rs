@@ -3,7 +3,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
@@ -44,9 +43,7 @@ pub struct TowedRollingStockModel {
     #[model(uom_unit = "units::meter_per_second_squared")]
     #[serde(with = "units::meter_per_second_squared")]
     pub startup_acceleration: Acceleration,
-    #[model(uom_unit = "units::ratio")]
-    #[serde(with = "units::ratio")]
-    pub inertia_coefficient: Ratio,
+    pub inertia_coefficient: f64,
     #[model(json)]
     pub rolling_resistance: RollingResistancePerWeight,
     #[model(uom_unit = "units::meter_per_second_squared")]

@@ -19,7 +19,7 @@ pub fn simple_rolling_stock() -> RollingStock {
         supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
         base_power_class: None,
         comfort_acceleration: units::meter_per_second_squared::new(0.1),
-        inertia_coefficient: units::ratio::new(1.10),
+        inertia_coefficient: 1.10,
         startup_acceleration: units::meter_per_second_squared::new(0.04),
         startup_time: units::second::new(1.0),
         effort_curves: EffortCurves::default(),
@@ -56,7 +56,7 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
         length: units::meter::new(30.0),
         comfort_acceleration: units::meter_per_second_squared::new(0.2),
         startup_acceleration: units::meter_per_second_squared::new(0.06),
-        inertia_coefficient: units::ratio::new(1.05),
+        inertia_coefficient: 1.05,
         rolling_resistance: RollingResistancePerWeight {
             rolling_resistance_type: "davis".to_string(),
             // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)² per weight

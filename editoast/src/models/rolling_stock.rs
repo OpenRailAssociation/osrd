@@ -8,7 +8,6 @@ use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
@@ -76,9 +75,7 @@ pub struct RollingStock {
     #[model(json)]
     #[schema(required)]
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[serde(with = "units::ratio")]
-    #[model(uom_unit = "units::ratio")]
-    pub inertia_coefficient: Ratio,
+    pub inertia_coefficient: f64,
     #[schema(required)]
     pub base_power_class: Option<String>,
     #[serde(with = "units::kilogram")]

@@ -3145,7 +3145,6 @@ export type LightRollingStock = {
   energy_sources: EnergySource[];
   etcs_brake_params: EtcsBrakeParams | null;
   id: number;
-  /** Ratio 1:1 */
   inertia_coefficient: number;
   /** Length in m */
   length: number;
@@ -3624,7 +3623,6 @@ export type RollingStock = {
   energy_sources: EnergySource[];
   etcs_brake_params: EtcsBrakeParams | null;
   id: number;
-  /** Ratio 1:1 */
   inertia_coefficient: number;
   /** Length in m */
   length: number;
@@ -3664,7 +3662,6 @@ export type RollingStockForm = {
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
   etcs_brake_params?: EtcsBrakeParams | null;
-  /** Ratio 1:1 */
   inertia_coefficient: number;
   /** Length in m */
   length: number;
@@ -4063,7 +4060,6 @@ export type TowedRollingStock = {
   /** Acceleration in m·s⁻² */
   const_gamma: number;
   id: number;
-  /** Ratio 1:1 */
   inertia_coefficient: number;
   label: string;
   /** Length in m */
@@ -4084,7 +4080,6 @@ export type TowedRollingStockForm = {
   comfort_acceleration: number;
   /** Acceleration in m·s⁻² */
   const_gamma: number;
-  /** Ratio 1:1 */
   inertia_coefficient: number;
   label: string;
   /** Length in m */
