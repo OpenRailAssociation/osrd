@@ -17,6 +17,13 @@
       color: var(--grey30);
     }
   }
+
+  &-body {
+    // Overrides the default "pointer" cursor style applied to the div.grant-manager-body with role="button"
+    // Necessary because we want to keep the role for accessibility but without the visual cursor effect
+    cursor: default !important;
+  }
+
   .subject {
     &-search {
       display: flex;

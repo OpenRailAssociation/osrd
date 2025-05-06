@@ -109,40 +109,42 @@ const InfraSelectorModalBodyStandard = ({
               active: infra.id === infraID,
             })}
           >
-            <button
-              className="infraslist-item-choice-main"
-              type="button"
+            <div
               onClick={() => {
                 setInfraID(infra.id);
               }}
+              tabIndex={0}
+              role="button"
             >
-              <span className="infraslist-item-choice-name">{infra.name}</span>
-              {infra.locked && (
-                <span className="infra-lock">
-                  <small>{t('infraManagement.locked')}</small>
-                  <Lock />
-                </span>
-              )}
-            </button>
-            <GrantsManager
-              resourceId={infra.id}
-              resourceType="infra"
-              userGrant={
-                userGrantsByInfraId.type === 'ready'
-                  ? userGrantsByInfraId.data[infra.id]
-                  : undefined
-              }
-              userPrivileges={
-                userPrivilegesByInfraId.type === 'ready'
-                  ? userPrivilegesByInfraId.data[infra.id]
-                  : undefined
-              }
-              onChangeSuccess={(subjectId) => {
-                // In case the current user has changed his own grant, we need to redraw the list
-                // to update the grant display on each infra
-                if (subjectId === userId) setRedraw((prev) => prev + 1);
-              }}
-            />
+              <div className="infraslist-item-info-header">
+                <span className="infraslist-item-choice-name">{infra.name}</span>
+                {infra.locked && (
+                  <span className="infra-lock">
+                    <small>{t('infraManagement.locked')}</small>
+                    <Lock />
+                  </span>
+                )}
+              </div>
+              <GrantsManager
+                resourceId={infra.id}
+                resourceType="infra"
+                userGrant={
+                  userGrantsByInfraId.type === 'ready'
+                    ? userGrantsByInfraId.data[infra.id]
+                    : undefined
+                }
+                userPrivileges={
+                  userPrivilegesByInfraId.type === 'ready'
+                    ? userPrivilegesByInfraId.data[infra.id]
+                    : undefined
+                }
+                onChangeSuccess={(subjectId) => {
+                  // In case the current user has changed his own grant, we need to redraw the list
+                  // to update the grant display on each infra
+                  if (subjectId === userId) setRedraw((prev) => prev + 1);
+                }}
+              />
+            </div>
             <div className="infraslist-item-choice-footer">
               <span>ID {infra.id}</span>
               <span>RAILJSON V{infra.railjson_version}</span>

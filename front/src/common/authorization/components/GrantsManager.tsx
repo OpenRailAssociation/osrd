@@ -28,13 +28,7 @@ const GrantsManager = ({
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
 
   return (
-    <div
-      className="grant-manager"
-      role="button"
-      tabIndex={0}
-      // We need that to prevent the modal to close when clicking on this section
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="grant-manager">
       <div className="grant-manager-header">
         <span className="user-grant">
           {t('authorization.yourGrant', {
@@ -45,7 +39,8 @@ const GrantsManager = ({
         </span>
         <button
           type="button"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setDisplayGrantSection(!displayGrantSection);
           }}
         >
