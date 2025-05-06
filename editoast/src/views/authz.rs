@@ -470,20 +470,20 @@ async fn update_grants(
                     InfraGrant::Reader => {
                         authorizer
                             .grant_infra_reader(grant.subject_id, grant.resource_id)
-                            .await
-                            .map_err(AuthzError::from)?;
+                            .await?
+                            .allowed()?;
                     }
                     InfraGrant::Writer => {
                         authorizer
                             .grant_infra_writer(grant.subject_id, grant.resource_id)
-                            .await
-                            .map_err(AuthzError::from)?;
+                            .await?
+                            .allowed()?;
                     }
                     InfraGrant::Owner => {
                         authorizer
                             .grant_infra_owner(grant.subject_id, grant.resource_id)
-                            .await
-                            .map_err(AuthzError::from)?;
+                            .await?
+                            .allowed()?;
                     }
                 },
             }

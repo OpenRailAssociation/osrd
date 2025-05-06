@@ -473,7 +473,7 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -491,7 +491,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
+            return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
@@ -501,14 +501,14 @@ impl<S: StorageDriver> Regulator<S> {
             .openfga
             .check(model::Infra::can_share_read().check(&user, &infra))
             .await?;
-        Ok(result)
+        Ok(Authorization::from_privilege_check(result))
     }
 
     pub async fn check_infra_privilege_can_share_write(
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -526,7 +526,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
+            return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
@@ -536,14 +536,14 @@ impl<S: StorageDriver> Regulator<S> {
             .openfga
             .check(model::Infra::can_share_write().check(&user, &infra))
             .await?;
-        Ok(result)
+        Ok(Authorization::from_privilege_check(result))
     }
 
     pub async fn check_infra_privilege_can_share_ownership(
         &self,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -561,7 +561,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
+            return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
@@ -571,7 +571,7 @@ impl<S: StorageDriver> Regulator<S> {
             .openfga
             .check(model::Infra::can_share_ownership().check(&user, &infra))
             .await?;
-        Ok(result)
+        Ok(Authorization::from_privilege_check(result))
     }
 
     pub async fn get_infra_readers(
@@ -700,21 +700,29 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user_id));
         }
 
-        let has_grant = self.check_infra_grant_reader(user_id, infra_id).await?;
-        if !has_grant {
-            // Remove other grants before to add the new one
-            self.revoke_infra_writer_unchecked(user_id, infra_id)
-                .await?;
-            self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
-            // Grant the new one
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_writes()
-                .write(&Infra::reader().tuple(&user, &infra))
-                .execute()
-                .await?;
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+
+        // Avoid creating an existing tuple
+        if self
+            .openfga
+            .check(Infra::reader().check(&user, &infra))
+            .await?
+        {
+            return Ok(());
         }
+
+        // Remove other grants before to add the new one
+        self.revoke_infra_writer_unchecked(user_id, infra_id)
+            .await?;
+        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+
+        // Grant the new one
+        self.openfga
+            .prepare_writes()
+            .write(&Infra::reader().tuple(&user, &infra))
+            .execute()
+            .await?;
 
         Ok(())
     }
@@ -724,18 +732,14 @@ impl<S: StorageDriver> Regulator<S> {
         issuer_id: i64,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that issuer has the right to add the grants
-        let can_share = self
-            .check_infra_privilege_can_share_read(issuer_id, infra_id)
-            .await?;
-        if !can_share {
-            return Err(Error::Unauthorized);
-        }
-
-        // Grant
-        self.grant_infra_reader_unchecked(user_id, infra_id).await?;
-        Ok(())
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        self.check_infra_privilege_can_share_read(issuer_id, infra_id)
+            .await?
+            .allowed_then_try(async |()| {
+                self.grant_infra_reader_unchecked(user_id, infra_id).await?;
+                Ok(Authorization::Granted(()))
+            })
+            .await
     }
 
     pub async fn grant_infra_writer_unchecked(
@@ -758,41 +762,46 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user_id));
         }
 
-        let has_grant = self.check_infra_grant_writer(user_id, infra_id).await?;
-        if !has_grant {
-            // Remove other grants before to add the new one
-            self.revoke_infra_reader_unchecked(user_id, infra_id)
-                .await?;
-            self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
-            // Grant the new one
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_writes()
-                .write(&Infra::writer().tuple(&user, &infra))
-                .execute()
-                .await?;
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+
+        // Avoid creating an existing tuple
+        if self
+            .openfga
+            .check(Infra::writer().check(&user, &infra))
+            .await?
+        {
+            return Ok(());
         }
+
+        // Remove other grants before to add the new one
+        self.revoke_infra_reader_unchecked(user_id, infra_id)
+            .await?;
+        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+
+        // Grant the new one
+        self.openfga
+            .prepare_writes()
+            .write(&Infra::writer().tuple(&user, &infra))
+            .execute()
+            .await?;
 
         Ok(())
     }
+
     pub async fn grant_infra_writer(
         &self,
         issuer_id: i64,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that issuer has the right to add the grants
-        let can_share = self
-            .check_infra_privilege_can_share_write(issuer_id, infra_id)
-            .await?;
-        if !can_share {
-            return Err(Error::Unauthorized);
-        }
-
-        // Grant
-        self.grant_infra_writer_unchecked(user_id, infra_id).await?;
-        Ok(())
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        self.check_infra_privilege_can_share_write(issuer_id, infra_id)
+            .await?
+            .allowed_then_try(async |()| {
+                self.grant_infra_writer_unchecked(user_id, infra_id).await?;
+                Ok(Authorization::Granted(()))
+            })
+            .await
     }
 
     pub async fn grant_infra_owner_unchecked(
@@ -815,22 +824,30 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user_id));
         }
 
-        let has_grant = self.check_infra_grant_owner(user_id, infra_id).await?;
-        if !has_grant {
-            // Remove other grants before to add the new one
-            self.revoke_infra_reader_unchecked(user_id, infra_id)
-                .await?;
-            self.revoke_infra_writer_unchecked(user_id, infra_id)
-                .await?;
-            // Grant the new one
-            let user = fga!(User:user_id);
-            let infra = fga!(Infra:infra_id);
-            self.openfga
-                .prepare_writes()
-                .write(&Infra::owner().tuple(&user, &infra))
-                .execute()
-                .await?;
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+
+        // Avoid creating an existing tuple
+        if self
+            .openfga
+            .check(Infra::owner().check(&user, &infra))
+            .await?
+        {
+            return Ok(());
         }
+
+        // Remove other grants before to add the new one
+        self.revoke_infra_reader_unchecked(user_id, infra_id)
+            .await?;
+        self.revoke_infra_writer_unchecked(user_id, infra_id)
+            .await?;
+
+        // Grant the new one
+        self.openfga
+            .prepare_writes()
+            .write(&Infra::owner().tuple(&user, &infra))
+            .execute()
+            .await?;
 
         Ok(())
     }
@@ -840,18 +857,14 @@ impl<S: StorageDriver> Regulator<S> {
         issuer_id: i64,
         user_id: i64,
         infra_id: i64,
-    ) -> Result<(), Error<S::Error>> {
-        // Check that issuer has the right to add the grants
-        let can_share = self
-            .check_infra_privilege_can_share_ownership(issuer_id, infra_id)
-            .await?;
-        if !can_share {
-            return Err(Error::Unauthorized);
-        }
-
-        // Grant
-        self.grant_infra_owner_unchecked(user_id, infra_id).await?;
-        Ok(())
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        self.check_infra_privilege_can_share_ownership(issuer_id, infra_id)
+            .await?
+            .allowed_then_try(async |()| {
+                self.grant_infra_owner_unchecked(user_id, infra_id).await?;
+                Ok(Authorization::Granted(()))
+            })
+            .await
     }
 
     pub async fn revoke_infra_reader_unchecked(
