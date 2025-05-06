@@ -498,41 +498,6 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(result)
     }
 
-    pub async fn check_infra_privilege_can_write(
-        &self,
-        user_id: i64,
-        infra_id: i64,
-    ) -> Result<bool, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra_id)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra_id));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
-        }
-
-        // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
-        }
-
-        // Calling openfga
-        let user = fga!(User:user_id);
-        let infra = fga!(Infra:infra_id);
-        let result = self
-            .openfga
-            .check(model::Infra::can_write().check(&user, &infra))
-            .await?;
-        Ok(result)
-    }
-
     pub async fn check_infra_privilege_can_share_write(
         &self,
         user_id: i64,
