@@ -75,8 +75,8 @@ pub struct PhysicsConsist {
     #[schema(value_type = f64)]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[derivative(Hash(hash_with = "units::basis_point::hash"))]
-    #[serde(with = "units::basis_point")]
+    #[derivative(Hash(hash_with = "units::ratio::hash"))]
+    #[serde(with = "units::ratio")]
     #[schema(value_type = f64)]
     pub inertia_coefficient: Ratio,
     /// Mass of the rolling stock
@@ -654,14 +654,14 @@ mod tests {
         let mut physics_consist = create_physics_consist();
 
         approx::assert_relative_eq!(
-            units::basis_point::from(physics_consist.compute_inertia_coefficient()),
+            units::ratio::from(physics_consist.compute_inertia_coefficient()),
             1.065
         );
 
         physics_consist.towed_rolling_stock = None;
         assert_eq!(
             physics_consist.compute_inertia_coefficient(),
-            units::basis_point::new(1.10,)
+            units::ratio::new(1.10,)
         );
     }
 
