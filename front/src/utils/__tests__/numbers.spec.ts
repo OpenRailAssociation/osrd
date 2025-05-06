@@ -22,10 +22,16 @@ describe('isFloat', () => {
 
   it('should return false if the number is an integer', () => {
     expect(isFloat(1)).toBe(false);
+    expect(isFloat(2.0)).toBe(false);
   });
 
   it('should return false if the number is NaN', () => {
     expect(isFloat(NaN)).toBe(false);
+  });
+
+  it('should return false if the number is infinite', () => {
+    expect(isFloat(Infinity)).toBe(false);
+    expect(isFloat(-Infinity)).toBe(false);
   });
 });
 
