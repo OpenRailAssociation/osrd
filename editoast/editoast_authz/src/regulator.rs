@@ -358,11 +358,6 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user_id));
         }
 
-        // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
-        }
-
         // Calling openfga
         let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
@@ -393,11 +388,6 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user_id));
         }
 
-        // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
-        }
-
         // Calling openfga
         let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
@@ -426,11 +416,6 @@ impl<S: StorageDriver> Regulator<S> {
         // Check if user exists
         if !self.user_exists(user_id).await? {
             return Err(Error::UnknownSubject(user_id));
-        }
-
-        // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
-            return Ok(true);
         }
 
         // Calling openfga
