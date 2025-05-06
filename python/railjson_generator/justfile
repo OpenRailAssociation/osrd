@@ -4,10 +4,9 @@
 help:
     @just --list --unsorted
 
-# Generate small infra
+# Update (regenerate) tests infras
 run:
-    mkdir -p small_infra_out
-    uv run scripts/small_infra.py small_infra_out
+    uv run -m railjson_generator ../../tests/data/infras ../../tests/infra-scripts/*.py
 
 # Install required dependencies
 install:

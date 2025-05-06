@@ -12,13 +12,13 @@ To run a generation script, pass its output directory as its first argument:
 
 ```sh
 mkdir small_infra_out
-uv run scripts/small_infra.py small_infra_out
+uv run ../../tests/infra-scripts/small_infra.py small_infra_out
 ```
 
 This library provides an helper to generate multiple infrastructures at once:
 
 ```sh
-uv run python3 -m railjson_generator /tmp/all_infras scripts/*.py
+uv run -m railjson_generator ../../tests/data/infras ../../tests/infra-scripts/*.py
 ```
 
 ## API
