@@ -24,3 +24,6 @@ osrd-schemas = { path = "../osrd_schemas", editable = true }
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
