@@ -72,7 +72,7 @@ pub async fn list_user(
             .collect::<HashSet<_>>();
         users?
             .into_iter()
-            .filter(|(user_id, _)| !group_members.contains(user_id))
+            .filter(|(user_id, _)| !group_members.contains(&authz::User(*user_id)))
             .collect::<Vec<_>>()
     } else {
         users?
@@ -118,7 +118,7 @@ pub async fn user_info(
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
-    let groups = regulator.user_groups(uid).await?;
+    let groups = regulator.user_groups(&authz::User(uid)).await?;
 
     println!("id      : {uid}");
     println!("identity: {identity}");

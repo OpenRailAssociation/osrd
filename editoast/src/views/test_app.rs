@@ -428,7 +428,7 @@ impl<'a> UserBuilder<'a> {
                 .expect("User should be created successfully");
             if !authz_disabled {
                 regulator
-                    .grant_user_roles(user.id, roles)
+                    .grant_user_roles(&editoast_authz::User(user.id), roles)
                     .await
                     .expect("roles should be granted successfully");
 
@@ -436,19 +436,28 @@ impl<'a> UserBuilder<'a> {
                     match grant {
                         InfraGrant::Owner => {
                             regulator
-                                .grant_infra_owner_unchecked(user.id, infra_id)
+                                .grant_infra_owner_unchecked(
+                                    &editoast_authz::User(user.id),
+                                    infra_id,
+                                )
                                 .await
                                 .expect("Infra owner should be granted successfully");
                         }
                         InfraGrant::Writer => {
                             regulator
-                                .grant_infra_writer_unchecked(user.id, infra_id)
+                                .grant_infra_writer_unchecked(
+                                    &editoast_authz::User(user.id),
+                                    infra_id,
+                                )
                                 .await
                                 .expect("Infra writer should be granted successfully");
                         }
                         InfraGrant::Reader => {
                             regulator
-                                .grant_infra_reader_unchecked(user.id, infra_id)
+                                .grant_infra_reader_unchecked(
+                                    &editoast_authz::User(user.id),
+                                    infra_id,
+                                )
                                 .await
                                 .expect("Infra reader should be granted successfully");
                         }

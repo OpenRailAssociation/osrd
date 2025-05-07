@@ -7,6 +7,7 @@ use crate::Error;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
+use crate::model::User;
 use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
 
@@ -50,30 +51,30 @@ impl<S: StorageDriver> Authorizer<S> {
     }
 
     pub async fn user_roles(&self) -> Result<HashSet<Role>, Error<S::Error>> {
-        self.regulator.user_roles(self.user_id).await
+        self.regulator.user_roles(&User(self.user_id)).await
     }
 
     /// Check that the user has any of the required roles
     #[tracing::instrument(skip_all, fields(user = %self.user, ?roles), ret(level = Level::DEBUG))]
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
-        self.regulator.check_roles(self.user_id, roles).await
+        self.regulator.check_roles(&User(self.user_id), roles).await
     }
 
     pub async fn check_infra_grant_reader(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
         self.regulator
-            .check_infra_grant_reader(self.user_id, infra_id)
+            .check_infra_grant_reader(&User(self.user_id), infra_id)
             .await
     }
 
     pub async fn check_infra_grant_writer(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
         self.regulator
-            .check_infra_grant_writer(self.user_id, infra_id)
+            .check_infra_grant_writer(&User(self.user_id), infra_id)
             .await
     }
 
     pub async fn check_infra_grant_owner(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
         self.regulator
-            .check_infra_grant_owner(self.user_id, infra_id)
+            .check_infra_grant_owner(&User(self.user_id), infra_id)
             .await
     }
 
@@ -82,47 +83,47 @@ impl<S: StorageDriver> Authorizer<S> {
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .authorize_infra_read(self.user_id, infra_id)
+            .authorize_infra_read(&User(self.user_id), infra_id)
             .await
     }
 
     pub async fn grant_infra_reader(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .grant_infra_reader(self.user_id, user_id, infra_id)
+            .grant_infra_reader(&User(self.user_id), user, infra_id)
             .await
     }
 
     pub async fn grant_infra_writer(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .grant_infra_writer(self.user_id, user_id, infra_id)
+            .grant_infra_writer(&User(self.user_id), user, infra_id)
             .await
     }
 
     pub async fn grant_infra_owner(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .grant_infra_owner(self.user_id, user_id, infra_id)
+            .grant_infra_owner(&User(self.user_id), user, infra_id)
             .await
     }
 
     pub async fn revoke_infra_grants(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .revoke_infra_grants(self.user_id, user_id, infra_id)
+            .revoke_infra_grants(&User(self.user_id), user, infra_id)
             .await
     }
 }
@@ -184,7 +185,7 @@ mod tests {
 
         authorizer
             .regulator
-            .grant_infra_reader_unchecked(authorizer.user_id(), 1)
+            .grant_infra_reader_unchecked(&User(authorizer.user_id()), 1)
             .await
             .expect("Update grants should be successful");
         let is_reader = authorizer
@@ -195,7 +196,7 @@ mod tests {
 
         authorizer
             .regulator
-            .grant_infra_writer_unchecked(user_id, 1)
+            .grant_infra_writer_unchecked(&User(user_id), 1)
             .await
             .expect("Update grants should be successful");
         let is_writer = authorizer
@@ -206,7 +207,7 @@ mod tests {
 
         authorizer
             .regulator
-            .grant_infra_writer_unchecked(user_id, 1)
+            .grant_infra_writer_unchecked(&User(user_id), 1)
             .await
             .expect("Update grants should be successful");
         let is_owner = authorizer
@@ -251,7 +252,7 @@ mod tests {
         {
             regulator()
                 .grant_user_roles(
-                    user_id,
+                    &User(user_id),
                     HashSet::from([Role::OperationalStudies, Role::Stdcm]),
                 )
                 .await
@@ -286,7 +287,7 @@ mod tests {
         // remove role
         {
             regulator()
-                .revoke_user_roles(user_id, HashSet::from([Role::OperationalStudies]))
+                .revoke_user_roles(&User(user_id), HashSet::from([Role::OperationalStudies]))
                 .await
                 .expect("roles should be stripped");
         }
@@ -321,14 +322,14 @@ mod tests {
         // unknown user
         assert!(
             !regulator()
-                .check_roles(i64::MAX, HashSet::from([Role::Stdcm]))
+                .check_roles(&User(i64::MAX), HashSet::from([Role::Stdcm]))
                 .await
                 .expect("should check roles successfully")
         );
 
         assert_eq!(
             regulator()
-                .user_roles(i64::MAX)
+                .user_roles(&User(i64::MAX))
                 .await
                 .expect("should query roles successfully"),
             HashSet::new()
@@ -378,7 +379,7 @@ mod tests {
 
         // add members
         regulator()
-            .add_members(&friends, HashSet::from([alice_id, bob_id]))
+            .add_members(&friends, HashSet::from([User(alice_id), User(bob_id)]))
             .await
             .expect("members should be added");
 
@@ -389,7 +390,7 @@ mod tests {
             .expect("group's roles should be granted");
 
         regulator()
-            .grant_user_roles(bob_id, HashSet::from([Role::Stdcm]))
+            .grant_user_roles(&User(bob_id), HashSet::from([Role::Stdcm]))
             .await
             .expect("bob's roles should be granted");
 
@@ -432,7 +433,7 @@ mod tests {
 
         // remove user
         regulator()
-            .remove_members(&friends, HashSet::from([bob_id]))
+            .remove_members(&friends, &HashSet::from([User(bob_id)]))
             .await
             .expect("bob should be removed from the group");
 

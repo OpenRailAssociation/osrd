@@ -101,7 +101,7 @@ pub async fn group_info(
     println!("id     : {group_id}");
     println!("name   : {name}");
     println!("members:");
-    for user_id in user_ids {
+    for authz::User(user_id) in user_ids {
         let Some(UserInfo { identity, name }) = driver.get_user_info(user_id).await? else {
             tracing::error!(user.id = user_id, "user not found, skipping it!");
             continue;
@@ -128,7 +128,7 @@ pub async fn exclude_group(
         bail!("No such group: '{group_name}'");
     };
 
-    let mut user_ids = HashSet::new();
+    let mut authz_users = HashSet::new();
     for user in &users {
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
@@ -136,11 +136,11 @@ pub async fn exclude_group(
             let uid = driver.get_user_id(user).await?;
             uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
         };
-        user_ids.insert(uid);
+        authz_users.insert(authz::User(uid));
     }
 
     regulator
-        .remove_members(&authz::Group(group_id), user_ids)
+        .remove_members(&authz::Group(group_id), &authz_users)
         .await?;
     Ok(())
 }
@@ -162,7 +162,7 @@ pub async fn include_group(
         bail!("No such group: '{group_name}'");
     };
 
-    let mut user_ids = HashSet::new();
+    let mut authz_users = HashSet::new();
     for user in &users {
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
@@ -170,11 +170,11 @@ pub async fn include_group(
             let uid = driver.get_user_id(user).await?;
             uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
         };
-        user_ids.insert(uid);
+        authz_users.insert(authz::User(uid));
     }
 
     regulator
-        .add_members(&authz::Group(group_id), user_ids)
+        .add_members(&authz::Group(group_id), authz_users)
         .await?;
     Ok(())
 }
