@@ -261,30 +261,6 @@ pub trait Relation: fmt::Debug + Sized {
         let _ = object;
         todo!()
     }
-
-    // ----- Extra
-
-    /// Parses an OpenFGA userset expression and returns the id of the object used in it
-    ///
-    /// Returns an error if the relation used to define the userset is not [`Relation::NAME`].
-    ///
-    /// This function is used by the [`Client`](crate::client::Client) to parse the results of
-    /// some queries.
-    fn parse_userset_object(ident: &str) -> Result<Self::Object, ParsingError> {
-        // TODO: use strip_suffix
-        let (object_ident, relation) = ident.split_once('#').ok_or_else(|| ParsingError {
-            ident: ident.to_string(),
-            expected_type: "userset", // TODO: make a new error variant
-        })?;
-        let object = Self::Object::parse_fga_object(object_ident)?;
-        if relation != Self::NAME {
-            return Err(ParsingError {
-                ident: ident.to_string(),
-                expected_type: Self::NAME,
-            });
-        }
-        Ok(object)
-    }
 }
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA object (tuple position)
