@@ -137,17 +137,14 @@ paths:
                   items:
                     type: object
                     required:
-                    - resource_type
-                    - resource_id
+                    - id
                     - grant
                     properties:
                       grant:
                         $ref: '#/components/schemas/InfraGrant'
-                      resource_id:
+                      id:
                         type: integer
                         format: int64
-                      resource_type:
-                        $ref: '#/components/schemas/Resource'
   /authz/{resource_type}/{resource_id}:
     get:
       tags:

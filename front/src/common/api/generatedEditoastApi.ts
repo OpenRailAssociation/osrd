@@ -1273,8 +1273,7 @@ export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
     [key: string]: {
       grant: InfraGrant;
-      resource_id: number;
-      resource_type: Resource;
+      id: number;
     }[];
   };
 export type PostAuthzMeGrantsApiArg = {

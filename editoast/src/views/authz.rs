@@ -137,9 +137,8 @@ async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiRespons
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
-struct ResourceGrant {
-    resource_type: Resource,
-    resource_id: i64,
+struct UserResourceGrant {
+    id: i64,
     grant: InfraGrant,
 }
 
@@ -154,64 +153,58 @@ struct ResourceGrant {
     responses((
         status = 200,
         description = "Get grants info of the current user for the given resources in body",
-        body = inline(HashMap<Resource, Vec<ResourceGrant>>)
+        body = inline(HashMap<Resource, Vec<UserResourceGrant>>)
     )),
 )]
 async fn user_authorizations(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<HashMap<Resource, Vec<i64>>>,
-) -> Result<Json<HashMap<Resource, Vec<ResourceGrant>>>> {
+) -> Result<Json<HashMap<Resource, Vec<UserResourceGrant>>>> {
     let authorizer = auth.authorizer()?;
-    let mut result = HashMap::new();
+    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     let conn = &mut db_pool.get().await?;
 
     if let Some(infra_ids) = body.get(&Resource::Infra) {
-        let mut infra_authz: Vec<ResourceGrant> = Vec::new();
         for infra_id in infra_ids {
             // check that the infra exists before to check the grants
             if Infra::exists(conn, *infra_id).await? {
-                let is_reader = authorizer
-                    .check_infra_grant_reader(&authz::Infra(*infra_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                if is_reader {
-                    infra_authz.push(ResourceGrant {
-                        resource_type: Resource::Infra,
-                        resource_id: *infra_id,
-                        grant: InfraGrant::Reader,
+                let infra = authz::Infra(*infra_id);
+                let (is_reader, is_writer, is_owner) = tokio::try_join!(
+                    authorizer.check_infra_grant_reader(&infra),
+                    authorizer.check_infra_grant_writer(&infra),
+                    authorizer.check_infra_grant_owner(&infra)
+                )
+                .map_err(AuthzError::from)?;
+                let grant = match (is_reader, is_writer, is_owner) {
+                    (true, false, false) => InfraGrant::Reader,
+                    (false, true, false) => InfraGrant::Writer,
+                    (false, false, true) => InfraGrant::Owner,
+                    (false, false, false) => continue,
+                    _ => {
+                        tracing::error!(
+                            is_reader,
+                            is_writer,
+                            is_owner,
+                            user_id = authorizer.user_id(),
+                            infra_id = *infra_id,
+                            "User has multiple grants on the same resource"
+                        );
+                        continue;
+                    }
+                };
+                response
+                    .entry(Resource::Infra)
+                    .or_default()
+                    .push(UserResourceGrant {
+                        id: *infra_id,
+                        grant,
                     });
-                }
-
-                let is_writer = authorizer
-                    .check_infra_grant_writer(&authz::Infra(*infra_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                if is_writer {
-                    infra_authz.push(ResourceGrant {
-                        resource_type: Resource::Infra,
-                        resource_id: *infra_id,
-                        grant: InfraGrant::Writer,
-                    });
-                }
-
-                let is_owner = authorizer
-                    .check_infra_grant_owner(&authz::Infra(*infra_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                if is_owner {
-                    infra_authz.push(ResourceGrant {
-                        resource_type: Resource::Infra,
-                        resource_id: *infra_id,
-                        grant: InfraGrant::Owner,
-                    });
-                }
             }
         }
-        result.insert(Resource::Infra, infra_authz);
     }
 
-    Ok(Json(result))
+    Ok(Json(response))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -537,20 +530,18 @@ mod tests {
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
             "infra": [infra.id],
         }));
-        let response: HashMap<String, Vec<ResourceGrant>> =
+        let response: HashMap<String, Vec<UserResourceGrant>> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // Checks
         assert_eq!(response.contains_key("infra"), true);
         let infra_grants = response.get("infra").unwrap();
-        assert_eq!(infra_grants.len(), 1);
         assert_eq!(
-            infra_grants[0],
-            ResourceGrant {
-                resource_type: Resource::Infra,
-                resource_id: infra.id,
+            infra_grants,
+            &[UserResourceGrant {
+                id: infra.id,
                 grant: InfraGrant::Owner
-            }
+            }]
         );
     }
 
