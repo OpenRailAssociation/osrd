@@ -35,7 +35,7 @@ wheels = [
 [[package]]
 name = "osrd-schemas"
 version = "0.8.17"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "geojson-pydantic" },
     { name = "pydantic" },
