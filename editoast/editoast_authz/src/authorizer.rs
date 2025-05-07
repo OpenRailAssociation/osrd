@@ -140,6 +140,8 @@ impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
 mod tests {
     use super::*;
     use crate::Role;
+    use crate::model;
+    use crate::model::Group;
     use crate::subject::GroupInfo;
     use crate::subject::GroupName;
     use crate::subject::User;
@@ -366,21 +368,23 @@ mod tests {
             .await
             .expect("bob should be created")
             .id;
-        let friends_id = regulator()
-            .driver
-            .ensure_group(&friends())
-            .await
-            .expect("group should be created");
+        let friends = model::Group(
+            regulator()
+                .driver
+                .ensure_group(&friends())
+                .await
+                .expect("group should be created"),
+        );
 
         // add members
         regulator()
-            .add_members(friends_id, HashSet::from([alice_id, bob_id]))
+            .add_members(&friends, HashSet::from([alice_id, bob_id]))
             .await
             .expect("members should be added");
 
         // setup roles
         regulator()
-            .grant_group_roles(friends_id, HashSet::from([Role::OperationalStudies]))
+            .grant_group_roles(&friends, HashSet::from([Role::OperationalStudies]))
             .await
             .expect("group's roles should be granted");
 
@@ -428,7 +432,7 @@ mod tests {
 
         // remove user
         regulator()
-            .remove_members(friends_id, HashSet::from([bob_id]))
+            .remove_members(&friends, HashSet::from([bob_id]))
             .await
             .expect("bob should be removed from the group");
 
@@ -453,7 +457,7 @@ mod tests {
         // unknown group
         assert_eq!(
             regulator()
-                .group_roles(i64::MAX)
+                .group_roles(&Group(i64::MAX))
                 .await
                 .expect("should query roles successfully"),
             HashSet::new()

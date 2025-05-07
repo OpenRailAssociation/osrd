@@ -9,6 +9,8 @@ pub use regulator::Regulator;
 pub use regulator::StorageDriver;
 pub use role::Role;
 
+pub use model::Group;
+
 use futures::TryStreamExt;
 
 pub const AUTHORIZATION_MODEL: &str = include_str!("../authorization_model.fga");

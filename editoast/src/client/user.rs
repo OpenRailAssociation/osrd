@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use clap::Args;
 use clap::Subcommand;
+use editoast_authz as authz;
 use editoast_authz::StorageDriver;
 use editoast_authz::subject::GroupInfo;
 use editoast_authz::subject::UserInfo;
@@ -59,15 +60,16 @@ pub async fn list_user(
         async { driver.list_groups().await?.try_collect::<Vec<_>>().await }
     );
     let users = if without_groups {
-        let group_members = try_join_all(
-            groups?
-                .into_iter()
-                .map(|(group_id, _)| regulator.group_members(group_id)),
-        )
-        .await?
-        .into_iter()
-        .flatten()
-        .collect::<HashSet<_>>();
+        let group_members =
+            try_join_all(groups?.into_iter().zip(std::iter::repeat(regulator)).map(
+                |((group_id, _), regulator)| async move {
+                    regulator.group_members(&authz::Group(group_id)).await
+                },
+            ))
+            .await?
+            .into_iter()
+            .flatten()
+            .collect::<HashSet<_>>();
         users?
             .into_iter()
             .filter(|(user_id, _)| !group_members.contains(user_id))
@@ -116,13 +118,13 @@ pub async fn user_info(
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
-    let group_ids = regulator.user_groups(uid).await?;
+    let groups = regulator.user_groups(uid).await?;
 
     println!("id      : {uid}");
     println!("identity: {identity}");
     println!("name    : {name}");
     println!("groups  :");
-    for group_id in group_ids {
+    for authz::Group(group_id) in groups {
         let Some(GroupInfo { name }) = driver.get_group_info(group_id).await? else {
             tracing::warn!(
                 group.id = group_id,

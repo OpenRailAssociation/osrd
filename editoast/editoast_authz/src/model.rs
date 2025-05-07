@@ -1,8 +1,8 @@
 #[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
 pub(crate) struct User(pub(crate) String);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
-pub(crate) struct Group(pub(crate) String);
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, PartialEq, Eq, Hash)]
+pub struct Group(pub i64);
 
 #[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
 pub(crate) struct Infra(pub(crate) String);
