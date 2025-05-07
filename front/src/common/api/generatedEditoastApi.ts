@@ -1273,14 +1273,15 @@ export type PostAuthzMeGrantsApiArg = {
   };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
-  /** status 200 Get list of user that have access to the resource */ {
-    grant: InfraGrant;
-    subject: {
+  /** status 200 Get list of user that have a grant on the resource */ {
+    stats: PaginationStats;
+    subjects: {
+      grant: InfraGrant;
       id: number;
       name: string;
       type: SubjectType;
-    };
-  }[];
+    }[];
+  };
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
@@ -2262,6 +2263,20 @@ export type InfraPrivilege =
   | 'can_delete'
   | 'can_share_ownership';
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
+export type PaginationStats = {
+  /** The total number of items */
+  count: number;
+  /** The current page number */
+  current: number;
+  /** The next page number, if any */
+  next: number | null;
+  /** The total number of pages */
+  page_count: number;
+  /** The number of items per page */
+  page_size: number;
+  /** The previous page number, if any */
+  previous: number | null;
+};
 export type SubjectType = 'User' | 'Group';
 export type NewDocumentResponse = {
   document_key: number;
@@ -2303,20 +2318,6 @@ export type ElectricalProfileSet = {
   data: ElectricalProfileSetData;
   id: number;
   name: string;
-};
-export type PaginationStats = {
-  /** The total number of items */
-  count: number;
-  /** The current page number */
-  current: number;
-  /** The next page number, if any */
-  next: number | null;
-  /** The total number of pages */
-  page_count: number;
-  /** The number of items per page */
-  page_size: number;
-  /** The previous page number, if any */
-  previous: number | null;
 };
 export type Infra = {
   created: string;

@@ -29,6 +29,7 @@ pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
+pub mod user;
 pub mod work_schedules;
 
 pub use prelude::*;
@@ -44,6 +45,7 @@ pub use scenario::Scenario;
 pub use study::Study;
 pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
+pub use user::User;
 
 editoast_common::schemas! {
     infra::schemas(),
