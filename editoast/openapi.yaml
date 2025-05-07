@@ -12,57 +12,34 @@ paths:
       tags:
       - authz
       requestBody:
-        description: List of new authorization to add or to remove (ie grants a resource to a person). Expect grant XOR revoke, not both
+        description: List of new authorization to add or to remove (i.e. grants a resource to a person)
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                grant:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                    - resource_type
-                    - resource_id
-                    - subject_id
-                    - grant
-                    properties:
-                      grant:
-                        $ref: '#/components/schemas/InfraGrant'
-                      resource_id:
-                        type: integer
-                        format: int64
-                      resource_type:
-                        type: string
-                        enum:
-                        - infra
-                      subject_id:
-                        type: integer
-                        format: int64
-                  nullable: true
-                revoke:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                    - resource_type
-                    - resource_id
-                    - subject_id
-                    properties:
-                      resource_id:
-                        type: integer
-                        format: int64
-                      resource_type:
-                        $ref: '#/components/schemas/Resource'
-                      subject_id:
-                        type: integer
-                        format: int64
-                  nullable: true
+              oneOf:
+              - type: object
+                required:
+                - grant
+                properties:
+                  grant:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrantBody'
+              - type: object
+                required:
+                - revoke
+                properties:
+                  revoke:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RevokeBody'
+              description: '`grant` XOR `revoke` is expected'
         required: true
       responses:
         '201':
-          description: Grants updated
+          description: Successful granting
+        '204':
+          description: Successful revoking
   /authz/grants/{resource_type}:
     get:
       tags:
@@ -4889,25 +4866,6 @@ components:
           type: string
           enum:
           - editoast:authz:Authz
-    EditoastAuthzErrorSimultaneousGrantsAndRevokes:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:authz:SimultaneousGrantsAndRevokes
     EditoastAuthzErrorUnknownResource:
       type: object
       required:
@@ -5389,7 +5347,6 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthz'
-      - $ref: '#/components/schemas/EditoastAuthzErrorSimultaneousGrantsAndRevokes'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
@@ -7724,6 +7681,24 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/GeoJsonLineStringValue'
+    GrantBody:
+      type: object
+      required:
+      - resource_type
+      - resource_id
+      - subject_id
+      - grant
+      properties:
+        grant:
+          $ref: '#/components/schemas/InfraGrant'
+        resource_id:
+          type: integer
+          format: int64
+        resource_type:
+          $ref: '#/components/schemas/Resource'
+        subject_id:
+          type: integer
+          format: int64
     IncompatibleConstraints:
       type: object
       required:
@@ -10243,6 +10218,21 @@ components:
       type: string
       enum:
       - infra
+    RevokeBody:
+      type: object
+      required:
+      - resource_type
+      - resource_id
+      - subject_id
+      properties:
+        resource_id:
+          type: integer
+          format: int64
+        resource_type:
+          $ref: '#/components/schemas/Resource'
+        subject_id:
+          type: integer
+          format: int64
     RjsPowerRestrictionRange:
       type: object
       description: A range along the train path where a power restriction is applied.

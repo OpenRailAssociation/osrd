@@ -41,6 +41,10 @@ editoast_common::schemas! {
     Resource,
     Role,
     SubjectType,
+
+    // not inlined because BodyUpdateGrants is an enum and derive(ToSchema) cannot iniline
+    GrantBody,
+    RevokeBody,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -82,8 +86,6 @@ enum AuthzError {
     UnknownSubject { subject_id: i64 },
     #[error("Authorization error")]
     Authz(#[from] AuthorizationError),
-    #[error("Grant and Revoke cannot be defined at the same time")]
-    SimultaneousGrantsAndRevokes,
 }
 
 impl From<AuthorizerError> for AuthzError {
@@ -397,8 +399,7 @@ async fn privileges_by_resource_type(
 }
 
 #[derive(Deserialize, ToSchema)]
-struct SubjectResourceGrant {
-    #[schema(inline)]
+struct GrantBody {
     resource_type: Resource,
     resource_id: i64,
     subject_id: i64,
@@ -406,98 +407,98 @@ struct SubjectResourceGrant {
 }
 
 #[derive(Deserialize, ToSchema)]
-struct SubjectResource {
+struct RevokeBody {
     resource_type: Resource,
     resource_id: i64,
     subject_id: i64,
 }
 
+/// `grant` XOR `revoke` is expected
 #[derive(Deserialize, ToSchema)]
-struct BodyUpdateGrants {
-    #[schema(inline)]
-    grant: Option<Vec<SubjectResourceGrant>>,
-    #[schema(inline)]
-    revoke: Option<Vec<SubjectResource>>,
+#[serde(rename_all = "lowercase")]
+enum BodyUpdateGrants {
+    Grant(Vec<GrantBody>),
+    Revoke(Vec<RevokeBody>),
 }
+
 #[utoipa::path(
     post,
     path = "",
     tag = "authz",
     request_body(
         content = inline(BodyUpdateGrants),
-        description = "List of new authorization to add or to remove (ie grants a resource to a person). Expect grant XOR revoke, not both",
+        description = "List of new authorization to add or to remove (i.e. grants a resource to a person)",
     ),
-    responses((
-        status = 201,
-        description = "Grants updated"
-    )),
+    responses(
+        (status = 201, description = "Successful granting"),
+        (status = 204, description = "Successful revoking"),
+    ),
 )]
 async fn update_grants(
     Extension(auth): AuthenticationExt,
-    Json(BodyUpdateGrants { grant, revoke }): Json<BodyUpdateGrants>,
+    Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
     let authorizer = auth.authorizer()?;
-    if grant.is_none() && revoke.is_none() {
-        return Err(AuthzError::SimultaneousGrantsAndRevokes.into());
-    }
-    if grant.is_some() && revoke.is_some() {
-        return Err(AuthzError::SimultaneousGrantsAndRevokes.into());
-    }
-
-    if let Some(grants) = grant {
-        for grant in grants {
-            match grant.resource_type {
-                Resource::Infra => match grant.grant {
-                    InfraGrant::Reader => {
-                        authorizer
-                            .grant_infra_reader(
-                                &authz::User(grant.subject_id),
-                                &authz::Infra(grant.resource_id),
-                            )
-                            .await?
-                            .allowed()?;
+    match body {
+        BodyUpdateGrants::Grant(grants) => {
+            for GrantBody {
+                resource_type,
+                resource_id,
+                subject_id,
+                grant,
+            } in grants
+            {
+                let subject = authz::User(subject_id);
+                match resource_type {
+                    Resource::Infra => {
+                        let resource = authz::Infra(resource_id);
+                        match grant {
+                            InfraGrant::Reader => {
+                                authorizer
+                                    .grant_infra_reader(&subject, &resource)
+                                    .await?
+                                    .allowed()?;
+                            }
+                            InfraGrant::Writer => {
+                                authorizer
+                                    .grant_infra_writer(&subject, &resource)
+                                    .await?
+                                    .allowed()?;
+                            }
+                            InfraGrant::Owner => {
+                                authorizer
+                                    .grant_infra_owner(&subject, &resource)
+                                    .await?
+                                    .allowed()?;
+                            }
+                        }
                     }
-                    InfraGrant::Writer => {
-                        authorizer
-                            .grant_infra_writer(
-                                &authz::User(grant.subject_id),
-                                &authz::Infra(grant.resource_id),
-                            )
-                            .await?
-                            .allowed()?;
-                    }
-                    InfraGrant::Owner => {
-                        authorizer
-                            .grant_infra_owner(
-                                &authz::User(grant.subject_id),
-                                &authz::Infra(grant.resource_id),
-                            )
-                            .await?
-                            .allowed()?;
-                    }
-                },
-            }
-        }
-    }
-    if let Some(revoke) = revoke {
-        for SubjectResource {
-            resource_type,
-            resource_id,
-            subject_id,
-        } in revoke
-        {
-            match resource_type {
-                Resource::Infra => {
-                    authorizer
-                        .revoke_infra_grants(&authz::User(subject_id), &authz::Infra(resource_id))
-                        .await?
-                        .allowed()?;
                 }
             }
+            Ok(StatusCode::CREATED)
+        }
+        BodyUpdateGrants::Revoke(revoke) => {
+            for RevokeBody {
+                resource_type,
+                resource_id,
+                subject_id,
+            } in revoke
+            {
+                match resource_type {
+                    Resource::Infra => {
+                        authorizer
+                            .revoke_infra_grants(
+                                &authz::User(subject_id),
+                                &authz::Infra(resource_id),
+                            )
+                            .await?
+                            .allowed()?;
+                    }
+                }
+            }
+            Ok(StatusCode::NO_CONTENT)
         }
     }
-
-    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]
@@ -624,8 +625,7 @@ mod tests {
                 }
             ]
         }));
-        app.fetch(request_grant)
-            .assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request_grant).assert_status(StatusCode::CREATED);
         // Check that the new user has the good grant
         check_grant_on_resource(&app, &owner, infra.id, writer.id, Some(InfraGrant::Writer));
 
@@ -681,8 +681,7 @@ mod tests {
                 }
             ]
         }));
-        app.fetch(request_revoke)
-            .assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request_revoke).assert_status(StatusCode::CREATED);
     }
 
     #[rstest]

@@ -1237,24 +1237,14 @@ const injectedRtkApi = api
 export { injectedRtkApi as generatedEditoastApi };
 export type PostAuthzGrantsApiResponse = unknown;
 export type PostAuthzGrantsApiArg = {
-  /** List of new authorization to add or to remove (ie grants a resource to a person). Expect grant XOR revoke, not both */
-  body: {
-    grant?:
-      | {
-          grant: InfraGrant;
-          resource_id: number;
-          resource_type: 'infra';
-          subject_id: number;
-        }[]
-      | null;
-    revoke?:
-      | {
-          resource_id: number;
-          resource_type: Resource;
-          subject_id: number;
-        }[]
-      | null;
-  };
+  /** List of new authorization to add or to remove (i.e. grants a resource to a person) */
+  body:
+    | {
+        grant: GrantBody[];
+      }
+    | {
+        revoke: RevokeBody[];
+      };
 };
 export type GetAuthzGrantsByResourceTypeApiResponse =
   /** status 200 Get privileges for each grant associated to the resource type */ {
@@ -2253,6 +2243,17 @@ export type PostWorkSchedulesProjectPathApiArg = {
 };
 export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
 export type Resource = 'infra';
+export type GrantBody = {
+  grant: InfraGrant;
+  resource_id: number;
+  resource_type: Resource;
+  subject_id: number;
+};
+export type RevokeBody = {
+  resource_id: number;
+  resource_type: Resource;
+  subject_id: number;
+};
 export type InfraPrivilege =
   | 'can_read'
   | 'can_share_read'
