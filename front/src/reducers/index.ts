@@ -110,7 +110,13 @@ export const persistConfig = {
     operationalStudiesFilter,
     operationalStudiesDateTransform,
   ],
-  blacklist: [stdcmConfSlice.name],
+  whitelist: [
+    userSlice.name,
+    mapSlice.name,
+    mainSlice.name,
+    simulationResultsSlice.name,
+    mapViewerSlice.name,
+  ],
 };
 
 type AllActions = Action;
