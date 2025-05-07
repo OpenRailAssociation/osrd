@@ -36,13 +36,16 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
+    InfraGrant,
+    InfraPrivilege,
     Resource,
     Role,
+    SubjectType,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Debug))]
-enum Subject {
+enum SubjectType {
     User,
     Group,
 }
@@ -135,10 +138,8 @@ async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiRespons
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
 struct ResourceGrant {
-    #[schema(inline)]
     resource_type: Resource,
     resource_id: i64,
-    #[schema(inline)]
     grant: InfraGrant,
 }
 
@@ -218,8 +219,7 @@ async fn user_authorizations(
 struct SubjectItem {
     pub id: i64,
     pub name: String,
-    #[schema(inline)]
-    pub r#type: Subject,
+    pub r#type: SubjectType,
 }
 
 #[derive(Serialize, ToSchema)]
@@ -227,7 +227,6 @@ struct SubjectItem {
 struct SubjectGrant {
     #[schema(inline)]
     subject: SubjectItem,
-    #[schema(inline)]
     grant: InfraGrant,
 }
 
@@ -287,7 +286,7 @@ async fn users_grants_for_resource_id(
                         subject: SubjectItem {
                             id: owner.id,
                             name: owner.info.name,
-                            r#type: Subject::User,
+                            r#type: SubjectType::User,
                         },
                         grant: InfraGrant::Owner,
                     });
@@ -309,7 +308,7 @@ async fn users_grants_for_resource_id(
                         subject: SubjectItem {
                             id: writer.id,
                             name: writer.info.name,
-                            r#type: Subject::User,
+                            r#type: SubjectType::User,
                         },
                         grant: InfraGrant::Writer,
                     });
@@ -331,7 +330,7 @@ async fn users_grants_for_resource_id(
                         subject: SubjectItem {
                             id: reader.id,
                             name: reader.info.name,
-                            r#type: Subject::User,
+                            r#type: SubjectType::User,
                         },
                         grant: InfraGrant::Reader,
                     });
@@ -363,7 +362,7 @@ pub enum InfraPrivilege {
     tag = "authz",
     params(ResourceTypeParam),
     responses(
-        (status = 200, description = "Get privileges for each grant associated to the resource type", body = inline(HashMap<Grant, Vec<InfraPrivilege>>)),
+        (status = 200, description = "Get privileges for each grant associated to the resource type", body = HashMap<InfraGrant, Vec<InfraPrivilege>>),
     ),
 )]
 async fn privileges_by_resource_type(
@@ -410,7 +409,6 @@ struct SubjectResourceGrant {
     resource_type: Resource,
     resource_id: i64,
     subject_id: i64,
-    #[schema(inline)]
     grant: InfraGrant,
 }
 
