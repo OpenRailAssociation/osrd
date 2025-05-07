@@ -1,15 +1,14 @@
 mod authorizer;
 mod model;
 mod regulator;
-mod role;
 pub mod subject;
 
 pub use authorizer::Authorizer;
 pub use regulator::Regulator;
 pub use regulator::StorageDriver;
-pub use role::Role;
 
 pub use model::Group;
+pub use model::Role;
 
 use futures::TryStreamExt;
 
