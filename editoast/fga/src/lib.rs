@@ -49,6 +49,7 @@
 //! A definition of this model in Rust looks like this:
 //!
 //! ```rust
+//! # use std::str::FromStr;
 //! // Types
 //! // -----------
 //!
@@ -68,9 +69,10 @@
 //! impl fga::model::User for Person {}
 //!
 //! // needed to build back Persons from OpenFGA's responses (such as /list-users)
-//! impl From<String> for Person {
-//!     fn from(s: String) -> Self {
-//!         Self(s)
+//! impl FromStr for Person {
+//!     type Err = ();
+//!     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//!         Ok(Self(s.to_owned()))
 //!     }
 //! }
 //!
@@ -90,9 +92,10 @@
 //! impl fga::model::Object for Document {}
 //!
 //! // needed to build back Documents from OpenFGA's responses (such as /list-objects)
-//! impl From<String> for Document {
-//!     fn from(s: String) -> Self {
-//!         Self(s)
+//! impl FromStr for Document {
+//!     type Err = ();
+//!     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//!         Ok(Self(s.to_owned()))
 //!     }
 //! }
 //!
@@ -122,12 +125,10 @@
 //!
 //! ```rust
 //! # use fga::model::{Relation, User, Object, Type};
-//! # #[derive(Debug)] struct Person(String);
-//! # impl From<String> for Person { fn from(s: String) -> Self { Self(s) } }
+//! # #[derive(Debug, derive_more::FromStr)] struct Person(String);
 //! # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> &str { self.0.as_str() } }
 //! # impl User for Person {}
-//! # #[derive(Debug)] struct Document(String);
-//! # impl From<String> for Document { fn from(s: String) -> Self { Self(s) } }
+//! # #[derive(Debug, derive_more::FromStr)] struct Document(String);
 //! # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> &str { self.0.as_str() } }
 //! # impl Object for Document {}
 //! # #[derive(Debug)] struct DocumentReader;
@@ -163,14 +164,14 @@
 //! This library provides a bunch of macros to define types, relations and OpenFGA objects in a more concise way.
 //! We tried to stay as close as possible / necessary to OpenFGA syntaxes.
 //!
-//! For the derive macros [`fga::User`](User) and [`fga::Type`](Type), it is recommended to use the `derive_more::From` derive
-//! macro to generate the `From<String>` bound required by [`trait User`](model::User) and [`trait Object`](model::Object).
+//! For the derive macros [`fga::User`](User) and [`fga::Type`](Type), it is recommended to use the `derive_more::FromStr` derive
+//! macro to generate the `FromStr` implementation required by [`trait User`](model::User) and [`trait Object`](model::Object).
 //!
 //! ```
-//! #[derive(fga::Type, fga::User, derive_more::From, Debug)]
+//! #[derive(fga::Type, fga::User, derive_more::FromStr, Debug)]
 //! struct Person(String);
 //!
-//! #[derive(fga::Type, fga::Object, derive_more::From, Debug)]
+//! #[derive(fga::Type, fga::Object, derive_more::FromStr, Debug)]
 //! struct Document(String);
 //!
 //! fga::relations! {
@@ -420,7 +421,7 @@ pub fn compile_model(model: &str) -> serde_json::Value {
 /// println!("{tuple:?}");
 ///
 /// // Types with variables implementing ToString
-/// let user_id = 42;
+/// let user_id = 42i32;
 /// let user = fga!(Person:user_id);
 /// println!("{user:?}");
 /// # }
@@ -432,11 +433,11 @@ macro_rules! fga {
 
     // fga!(User:"bob") => "user:bob"
     ($ty:ident : $id:literal) => {
-        $ty::from($id.to_string())
+        <$ty as std::str::FromStr>::from_str(&$id.to_string()).unwrap()
     };
 
     ($ty:ident : $var:ident) => {
-        $ty::from($var.to_string())
+        <$ty as std::str::FromStr>::from_str(&$var.to_string()).unwrap()
     };
 
     // fga!(User:*) => "user:*"
@@ -494,14 +495,12 @@ fn connection_settings() -> client::ConnectionSettings {
 
 #[cfg(test)]
 mod defs {
-    use derive_more::From;
-
     // We can't use the derive macros `fga::Type`, `fga::User` and `fga::Object` in the tests
     // as we're still in the `fga` crate.
     macro_rules! fga_type {
         (@ $vis:vis struct $name:ident $ns:literal) => {
-            #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
-            pub struct $name(#[from] pub String);
+            #[derive(Debug, derive_more::FromStr, PartialEq, Eq, PartialOrd, Ord, Clone)]
+            pub struct $name(pub String);
             #[automatically_derived]
             impl crate::model::Type for $name {
                 const NAMESPACE: &'static str = $ns;

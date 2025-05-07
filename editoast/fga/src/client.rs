@@ -20,7 +20,7 @@ use uuid::Uuid;
 use std::collections::HashMap;
 use std::future::Future;
 use std::future::{self};
-use std::str::FromStr as _;
+use std::str::FromStr;
 
 use futures::TryStreamExt as _;
 use futures::stream;
@@ -29,7 +29,6 @@ use itertools::Itertools as _;
 use crate::model::AsUser;
 use crate::model::Check;
 use crate::model::Object;
-use crate::model::ParsingError;
 use crate::model::QueryObjects;
 use crate::model::QueryUsers;
 use crate::model::QueryUsersets;
@@ -106,10 +105,30 @@ pub struct TooManyTuples {
 
 #[derive(Debug, thiserror::Error)]
 pub enum QueryError {
-    #[error(transparent)]
-    Parsing(#[from] ParsingError),
+    #[error("Cannot parse OpenFGA value identifier as '{expected_type}': '{ident}'")]
+    Parsing {
+        ident: String,
+        expected_type: &'static str,
+    },
     #[error(transparent)]
     Request(#[from] RequestFailure),
+}
+
+impl QueryError {
+    pub fn parsing_ok(self) -> RequestFailure {
+        match self {
+            QueryError::Parsing {
+                ident,
+                expected_type,
+            } => {
+                tracing::error!(ident, expected_type, "failed to parse OpenFGA value");
+                panic!(
+                    "failed to parse OpenFGA value '{ident}' as '{expected_type}': a migration is probably missing",
+                );
+            }
+            QueryError::Request(request_failure) => request_failure,
+        }
+    }
 }
 
 impl From<reqwest::Error> for RequestFailure {
@@ -458,7 +477,16 @@ impl Client {
             )
             .await?
             .into_iter()
-            .map(|ident| R::Object::parse_fga_object(&ident))
+            .map(|ident| {
+                let prefix: String = format!("{}:", R::Object::NAMESPACE);
+                let Some(id) = ident.strip_prefix(&prefix) else {
+                    unreachable!("OpenFGA always return a valid type value in the form `type:id` (got '{ident}')");
+                };
+                <R::Object as FromStr>::from_str(id).map_err(|_| {
+                    tracing::error!(ident, type = R::Object::NAMESPACE, "failed to parse OpenFGA object");
+                    QueryError::Parsing { ident, expected_type: R::Object::NAMESPACE }
+                })
+            })
             .collect::<Result<Vec<_>, _>>()?;
         Ok(objects)
     }
@@ -473,7 +501,7 @@ impl Client {
     pub async fn list_users<R: Relation>(
         &self,
         QueryUsers(object): QueryUsers<'_, R>,
-    ) -> Result<UserList<R::User>, RequestFailure> {
+    ) -> Result<UserList<R::User>, QueryError> {
         let raw_users = self
             .post_stores_list_users(
                 &self.store.id,
@@ -494,7 +522,10 @@ impl Client {
                 match raw_user {
                     RawUser::Object { r#type, id } => {
                         debug_assert_eq!(r#type.as_str(), R::User::NAMESPACE);
-                        let user = R::User::from(id.to_owned());
+                        let user = R::User::from_str(&id).map_err(|_| {
+                            tracing::error!(id, type = R::User::NAMESPACE, "failed to parse OpenFGA user");
+                            QueryError::Parsing { ident: id, expected_type: R::User::NAMESPACE }
+                        })?;
                         users.push(user);
                     }
                     RawUser::Wildcard { r#type } => {
@@ -543,7 +574,7 @@ impl Client {
     pub async fn list_usersets<R: Relation, S: Relation>(
         &self,
         QueryUsersets(object, _): QueryUsersets<'_, R, S>,
-    ) -> Result<Vec<S::Object>, RequestFailure> {
+    ) -> Result<Vec<S::Object>, QueryError> {
         let users = self
             .post_stores_list_users(
                 &self.store.id,
@@ -558,19 +589,22 @@ impl Client {
                 None,
             )
             .await?;
-        Ok(users
+        users
             .into_iter()
             .map(|user| match user {
                 RawUser::UserSet { r#type, id, relation } => {
                     debug_assert_eq!(r#type.as_str(), S::Object::NAMESPACE);
                     debug_assert_eq!(relation.as_str(), S::NAME);
-                    S::Object::from(id)
+                    S::Object::from_str(&id).map_err(|_| {
+                        tracing::error!(id, type = S::Object::NAMESPACE, "failed to parse OpenFGA userset");
+                        QueryError::Parsing { ident: id, expected_type: S::Object::NAMESPACE }
+                    })
                 }
                 _ => {
                     unreachable!("OpenFGA cannot return anything other than usersets when the `user_filter` is configured like above");
                 }
             })
-            .collect_vec())
+            .collect()
     }
 }
 
@@ -858,7 +892,7 @@ where
 impl<R: Relation> Request for QueryUsers<'_, R> {
     type Response = UserList<R::User>;
 
-    type Error = RequestFailure;
+    type Error = QueryError;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.list_users(self).await
@@ -868,7 +902,7 @@ impl<R: Relation> Request for QueryUsers<'_, R> {
 impl<R: Relation, S: Relation> Request for QueryUsersets<'_, R, S> {
     type Response = Vec<S::Object>;
 
-    type Error = RequestFailure;
+    type Error = QueryError;
 
     async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
         client.list_usersets(self).await

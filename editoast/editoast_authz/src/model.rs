@@ -1,13 +1,13 @@
-#[derive(fga::Type, fga::User, fga::Object, derive_more::From, Debug)]
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
 pub(crate) struct User(pub(crate) String);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::From, Debug)]
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
 pub(crate) struct Group(pub(crate) String);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::From, Debug)]
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
 pub(crate) struct Infra(pub(crate) String);
 
-#[derive(fga::Type, fga::User, derive_more::From, Debug)]
+#[derive(fga::Type, fga::User, derive_more::FromStr, Debug)]
 pub(crate) struct Role(pub(crate) String);
 
 fga::relations! {
