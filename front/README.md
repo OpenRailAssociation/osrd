@@ -45,6 +45,10 @@ Launches the test runner in the interactive watch mode.
 
 Builds the app for production to the `build` folder.
 
+### `npm run generate-types`
+
+Update endpoints and data-types in /src/common/api/generatedEditoastApi.ts from openapi.yaml
+
 ### `npm run generate-licenses`
 
 Update licenses attributions in /src/common/ReleaseInformations/json/
