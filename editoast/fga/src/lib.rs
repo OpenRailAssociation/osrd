@@ -60,8 +60,8 @@
 //! impl fga::model::Type for Person {
 //!     const NAMESPACE: &'static str = "person";
 //!
-//!     fn id(&self) -> &str {
-//!        self.0.as_str()
+//!     fn id(&self) -> impl ToString {
+//!        &self.0
 //!     }
 //! }
 //!
@@ -83,8 +83,8 @@
 //! impl fga::model::Type for Document {
 //!     const NAMESPACE: &'static str = "document";
 //!
-//!     fn id(&self) -> &str {
-//!        self.0.as_str()
+//!     fn id(&self) -> impl ToString {
+//!        &self.0
 //!     }
 //! }
 //!
@@ -126,10 +126,10 @@
 //! ```rust
 //! # use fga::model::{Relation, User, Object, Type};
 //! # #[derive(Debug, derive_more::FromStr)] struct Person(String);
-//! # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> &str { self.0.as_str() } }
+//! # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> impl ToString { &self.0 } }
 //! # impl User for Person {}
 //! # #[derive(Debug, derive_more::FromStr)] struct Document(String);
-//! # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> &str { self.0.as_str() } }
+//! # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> impl ToString { &self.0 } }
 //! # impl Object for Document {}
 //! # #[derive(Debug)] struct DocumentReader;
 //! # impl Relation for DocumentReader { const NAME: &'static str = "reader"; type User = Person; type Object = Document; }
@@ -504,8 +504,8 @@ mod defs {
             #[automatically_derived]
             impl crate::model::Type for $name {
                 const NAMESPACE: &'static str = $ns;
-                fn id(&self) -> &str {
-                    self.0.as_str()
+                fn id(&self) -> impl ToString {
+                    &self.0
                 }
             }
         };

@@ -58,8 +58,8 @@ fn expand_type(input: &DeriveInput) -> darling::Result<TokenStream> {
     Ok(quote::quote! {
         impl fga::model::Type for #ident {
             const NAMESPACE: &'static str = #name;
-            fn id(&self) -> &str {
-                self.#id_field_ident.as_ref()
+            fn id(&self) -> impl ToString {
+                &self.#id_field_ident
             }
         }
     }

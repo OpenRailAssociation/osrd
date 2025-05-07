@@ -37,7 +37,7 @@ use std::str::FromStr;
 /// impl fga::model::Type for Group {
 ///     const NAMESPACE: &'static str = "group";
 ///
-///     fn id(&self) -> &str {
+///     fn id(&self) -> impl ToString {
 ///         &self.0
 ///     }
 /// }
@@ -51,7 +51,7 @@ pub trait Type: FromStr + Sized {
     const NAMESPACE: &'static str;
 
     /// The identifier of the instance of the `type` `Self`
-    fn id(&self) -> &str;
+    fn id(&self) -> impl ToString;
 }
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA user (tuple position)
@@ -79,7 +79,7 @@ pub trait Type: FromStr + Sized {
 /// impl fga::model::Type for Person {
 ///     const NAMESPACE: &'static str = "person";
 ///
-///     fn id(&self) -> &str {
+///     fn id(&self) -> impl ToString {
 ///         &self.0
 ///     }
 /// }
@@ -104,7 +104,7 @@ pub trait User: Type + fmt::Debug + Sized {
     /// # use fga::model::Type;
     /// # #[derive(Debug, derive_more::FromStr)]
     /// # struct Person(String);
-    /// # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> &str { &self.0 } }
+    /// # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> impl ToString { &self.0 } }
     /// impl User for Person {}
     /// assert_eq!(Person::NAMESPACE, "person");
     /// assert_eq!(fga!(Person:"bob").fga_user(), "person:bob");
@@ -137,7 +137,7 @@ pub trait User: Type + fmt::Debug + Sized {
     /// If this function is overridden, **unless you absolutely know what you're doing**,
     /// a panic should be triggered when `self.id() == "*"`.
     fn fga_user(&self) -> String {
-        let id = self.id();
+        let id = self.id().to_string();
         if id == "*" {
             panic!(
                 "Refusing to generate an identifier for a type-bound public access\n\
@@ -292,7 +292,7 @@ pub trait Relation: fmt::Debug + Sized {
 /// impl fga::model::Type for Document {
 ///     const NAMESPACE: &'static str = "document";
 ///
-///     fn id(&self) -> &str {
+///     fn id(&self) -> impl ToString {
 ///         &self.0
 ///     }
 /// }
@@ -317,13 +317,13 @@ pub trait Object: Type + fmt::Debug {
     /// # use fga::model::Type;
     /// # #[derive(Debug, derive_more::FromStr)]
     /// # struct Document(String);
-    /// # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> &str { &self.0 } }
+    /// # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> impl ToString { &self.0 } }
     /// impl Object for Document {}
     /// assert_eq!(Document::NAMESPACE, "document");
     /// assert_eq!(fga!(Document:"budget").fga_object(), "document:budget");
     /// ```
     fn fga_object(&self) -> String {
-        format!("{}:{}", Self::NAMESPACE, self.id())
+        format!("{}:{}", Self::NAMESPACE, self.id().to_string())
     }
 }
 
@@ -444,7 +444,12 @@ impl<R: Relation> AsUser for UserSet<'_, R> {
     type User = R::User;
 
     fn fga_user(&self) -> String {
-        format!("{}:{}#{}", R::Object::NAMESPACE, self.0.id(), R::NAME)
+        format!(
+            "{}:{}#{}",
+            R::Object::NAMESPACE,
+            self.0.id().to_string(),
+            R::NAME
+        )
     }
 }
 
