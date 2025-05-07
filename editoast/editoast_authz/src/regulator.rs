@@ -133,23 +133,22 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     /// Returns the IDs of the groups for the provided user
-    #[tracing::instrument(skip_all, fields(user_id), ret(level = Level::DEBUG), err)]
-    pub async fn user_groups(&self, user_id: i64) -> Result<HashSet<Group>, Error<S::Error>> {
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+    #[tracing::instrument(skip_all, fields(user), ret(level = Level::DEBUG), err)]
+    pub async fn user_groups(&self, user: &User) -> Result<HashSet<Group>, Error<S::Error>> {
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
-        let user = fga!(User:user_id);
         let groups = self
             .openfga
-            .list_users(User::group().query_users(&user))
+            .list_users(User::group().query_users(user))
             .await
             .map_err(QueryError::parsing_ok)?;
         Ok(groups.users.into_iter().collect())
     }
 
     /// Returns the IDs of the users which are members of the provided group
-    #[tracing::instrument(skip_all, fields(user_id, group), ret(level = Level::DEBUG), err)]
-    pub async fn group_members(&self, group: &Group) -> Result<HashSet<i64>, Error<S::Error>> {
+    #[tracing::instrument(skip_all, fields(group), ret(level = Level::DEBUG), err)]
+    pub async fn group_members(&self, group: &Group) -> Result<HashSet<User>, Error<S::Error>> {
         if !self.group_exists(group.0).await? {
             return Err(Error::UnknownSubject(group.0));
         }
@@ -163,65 +162,52 @@ impl<S: StorageDriver> Regulator<S> {
             members.public_access.is_none(),
             "we don't write public accesses for groups"
         );
-        Ok(members
-            .users
-            .into_iter()
-            .filter_map(|User(user)| match user.parse() {
-                Ok(id) => Some(id),
-                Err(_) => {
-                    tracing::error!(user, "unparsable group member — skipping it");
-                    None
-                }
-            })
-            .collect())
+        Ok(members.users.into_iter().collect())
     }
 
     /// Adds some users to a group
-    #[tracing::instrument(skip_all, fields(group, ?user_ids), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?members), ret(level = Level::DEBUG), err)]
     pub async fn add_members(
         &self,
         group: &Group,
-        user_ids: HashSet<i64>,
+        members: HashSet<User>,
     ) -> Result<(), Error<S::Error>> {
         let existing_members = self.group_members(group).await?;
-        let new_members = user_ids.difference(&existing_members);
+        let new_members = members.difference(&existing_members);
         let mut writes = self.openfga.prepare_writes();
-        for user_id in new_members {
-            if !self.user_exists(*user_id).await? {
-                return Err(Error::UnknownSubject(*user_id));
+        for user in new_members {
+            if !self.user_exists(user.0).await? {
+                return Err(Error::UnknownSubject(user.0));
             }
-            let user = fga!(User:user_id);
-            writes.push(&Group::member().tuple(&user, group));
-            writes.push(&User::group().tuple(group, &user));
+            writes.push(&Group::member().tuple(user, group));
+            writes.push(&User::group().tuple(group, user));
         }
         writes.execute().await?;
         Ok(())
     }
 
     /// Removes some users from a group
-    #[tracing::instrument(skip_all, fields(group, ?user_ids), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?members), ret(level = Level::DEBUG), err)]
     pub async fn remove_members(
         &self,
         group: &Group,
-        user_ids: HashSet<i64>,
+        members: &HashSet<User>,
     ) -> Result<(), Error<S::Error>> {
         let existing_members = self.group_members(group).await?;
-        let members = user_ids.intersection(&existing_members);
+        let members = members.intersection(&existing_members);
         let mut deletes = self.openfga.prepare_deletes();
-        for user_id in members {
-            let user = fga!(User:user_id);
-            deletes.push(&Group::member().tuple(&user, group));
-            deletes.push(&User::group().tuple(group, &user));
+        for user in members {
+            deletes.push(&Group::member().tuple(user, group));
+            deletes.push(&User::group().tuple(group, user));
         }
         deletes.execute().await?;
         Ok(())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn user_roles(&self, user_id: i64) -> Result<HashSet<Role>, Error<S::Error>> {
+    pub async fn user_roles(&self, user: &User) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
-        let roles =
-            Role::list_roles(&self.openfga, model::User::role(), &fga!(User:user_id)).await?;
+        let roles = Role::list_roles(&self.openfga, model::User::role(), user).await?;
         Ok(roles.into_iter().collect())
     }
 
@@ -232,39 +218,37 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(roles.into_iter().collect())
     }
 
-    #[tracing::instrument(skip_all, fields(user_id, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn grant_user_roles(
         &self,
-        user_id: i64,
+        user: &User,
         roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
-        let user = fga!(User:user_id);
         let mut writes = self.openfga.prepare_writes();
-        let existing_roles = self.user_roles(user_id).await?;
+        let existing_roles = self.user_roles(user).await?;
         for role in roles.difference(&existing_roles) {
-            writes.push(&User::role().tuple(role, &user));
+            writes.push(&User::role().tuple(role, user));
         }
         writes.execute().await?;
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(user_id, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn revoke_user_roles(
         &self,
-        user_id: i64,
+        user: &User,
         roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
-        let user = fga!(User:user_id);
         let mut deletes = self.openfga.prepare_deletes();
-        let existing_roles = self.user_roles(user_id).await?;
+        let existing_roles = self.user_roles(user).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes.push(&User::role().tuple(role, &user));
+            deletes.push(&User::role().tuple(role, user));
         }
         deletes.execute().await?;
         Ok(())
@@ -306,36 +290,36 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
-    #[tracing::instrument(skip(self), fields(%user_id, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip(self), fields(user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn check_roles(
         &self,
-        user_id: i64,
+        user: &User,
         roles: HashSet<Role>,
     ) -> Result<bool, Error<S::Error>> {
         // checks will fail if the user doesn't exist, so no need to query the DB
         if roles.is_empty() {
             return Ok(true);
         }
-        let user_roles = self.user_roles(user_id).await?;
+        let user_roles = self.user_roles(user).await?;
         if !roles.is_disjoint(&user_roles) {
             return Ok(true);
         }
         if user_roles.contains(&Role::Admin) {
-            tracing::info!(user_id, "role check bypassed for admin");
+            tracing::info!(user_id = user.0, "role check bypassed for admin");
             return Ok(true);
         }
         Ok(false)
     }
 
-    pub async fn is_admin(&self, user_id: i64) -> Result<bool, Error<S::Error>> {
-        let user_roles = self.user_roles(user_id).await?;
+    pub async fn is_admin(&self, user: &User) -> Result<bool, Error<S::Error>> {
+        let user_roles = self.user_roles(user).await?;
         Ok(user_roles.contains(&Role::Admin))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_reader(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
@@ -349,16 +333,15 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::reader().check(&user, &infra))
+            .check(model::Infra::reader().check(user, &infra))
             .await?;
         Ok(result)
     }
@@ -366,7 +349,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_writer(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
@@ -380,16 +363,15 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::writer().check(&user, &infra))
+            .check(model::Infra::writer().check(user, &infra))
             .await?;
         Ok(result)
     }
@@ -397,7 +379,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn check_infra_grant_owner(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
@@ -411,16 +393,15 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::owner().check(&user, &infra))
+            .check(model::Infra::owner().check(user, &infra))
             .await?;
         Ok(result)
     }
@@ -428,7 +409,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra_read(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
@@ -442,21 +423,20 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Bypass if user is an admin
-        if self.is_admin(user_id).await? {
+        if self.is_admin(user).await? {
             return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let check = self
             .openfga
-            .check(model::Infra::can_read().check(&user, &infra))
+            .check(model::Infra::can_read().check(user, &infra))
             .await?;
         Ok(Authorization::from_privilege_check(check))
     }
@@ -464,7 +444,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra_sharing_read(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
@@ -478,21 +458,20 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
+        if self.check_roles(user, [Role::Admin].into()).await? {
             return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_read().check(&user, &infra))
+            .check(model::Infra::can_share_read().check(user, &infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -500,7 +479,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra_sharing_write(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
@@ -514,21 +493,20 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
+        if self.check_roles(user, [Role::Admin].into()).await? {
             return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_write().check(&user, &infra))
+            .check(model::Infra::can_share_write().check(user, &infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -536,7 +514,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn authorize_infra_sharing_ownership(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
@@ -550,21 +528,20 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
         // Bypass if user is an admin
-        if self.check_roles(user_id, [Role::Admin].into()).await? {
+        if self.check_roles(user, [Role::Admin].into()).await? {
             return Ok(Authorization::Bypassed(()));
         }
 
         // Calling openfga
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_ownership().check(&user, &infra))
+            .check(model::Infra::can_share_ownership().check(user, &infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -651,20 +628,8 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         userlist: UserList<User>,
     ) -> Result<Vec<UserSubject>, Error<S::Error>> {
-        let user_ids =
-            userlist
-                .users
-                .into_iter()
-                .filter_map(|User(user)| match user.parse::<i64>() {
-                    Ok(id) => Some(id),
-                    Err(_) => {
-                        tracing::error!(user, "unparsable user member — skipping it");
-                        None
-                    }
-                });
-
         let mut users = Vec::new();
-        for user_id in user_ids {
+        for User(user_id) in userlist.users {
             let user_info = self
                 .driver
                 .get_user_info(user_id)
@@ -684,7 +649,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_reader_unchecked(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
@@ -698,30 +663,28 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
 
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::reader().check(&user, &infra))
+            .check(Infra::reader().check(user, &infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user_id, infra_id)
-            .await?;
+        self.revoke_infra_grants_unchecked(user, infra_id).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::reader().tuple(&user, &infra))
+            .write(&Infra::reader().tuple(user, &infra))
             .execute()
             .await?;
 
@@ -731,14 +694,14 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_reader(
         &self,
-        issuer_id: i64,
-        user_id: i64,
+        issuer: &User,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_read(issuer_id, infra_id)
+        self.authorize_infra_sharing_read(issuer, infra_id)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_reader_unchecked(user_id, infra_id).await?;
+                self.grant_infra_reader_unchecked(user, infra_id).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -747,7 +710,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_writer_unchecked(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
@@ -761,30 +724,28 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
 
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::writer().check(&user, &infra))
+            .check(Infra::writer().check(user, &infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user_id, infra_id)
-            .await?;
+        self.revoke_infra_grants_unchecked(user, infra_id).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::writer().tuple(&user, &infra))
+            .write(&Infra::writer().tuple(user, &infra))
             .execute()
             .await?;
 
@@ -794,14 +755,14 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_writer(
         &self,
-        issuer_id: i64,
-        user_id: i64,
+        issuer: &User,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_write(issuer_id, infra_id)
+        self.authorize_infra_sharing_write(issuer, infra_id)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_writer_unchecked(user_id, infra_id).await?;
+                self.grant_infra_writer_unchecked(user, infra_id).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -810,7 +771,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_owner_unchecked(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
@@ -824,30 +785,28 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Check if user exists
-        if !self.user_exists(user_id).await? {
-            return Err(Error::UnknownSubject(user_id));
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
         }
 
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
 
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::owner().check(&user, &infra))
+            .check(Infra::owner().check(user, &infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user_id, infra_id)
-            .await?;
+        self.revoke_infra_grants_unchecked(user, infra_id).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::owner().tuple(&user, &infra))
+            .write(&Infra::owner().tuple(user, &infra))
             .execute()
             .await?;
 
@@ -857,14 +816,14 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_owner(
         &self,
-        issuer_id: i64,
-        user_id: i64,
+        issuer: &User,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_ownership(issuer_id, infra_id)
+        self.authorize_infra_sharing_ownership(issuer, infra_id)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_owner_unchecked(user_id, infra_id).await?;
+                self.grant_infra_owner_unchecked(user, infra_id).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -873,60 +832,58 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn revoke_infra_grants(
         &self,
-        issuer_id: i64,
-        user_id: i64,
+        issuer: &User,
+        user: &User,
         infra_id: i64,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         if !self
             .openfga
-            .check(Infra::owner().check(&fga!(User:issuer_id), &fga!(Infra:infra_id)))
+            .check(Infra::owner().check(issuer, &fga!(Infra:infra_id)))
             .await?
         {
             return Ok(Authorization::Denied {
                 reason: "only owners can revoke grants",
             });
         }
-        self.revoke_infra_grants_unchecked(user_id, infra_id)
-            .await?;
+        self.revoke_infra_grants_unchecked(user, infra_id).await?;
         Ok(Authorization::Granted(()))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn revoke_infra_grants_unchecked(
         &self,
-        user_id: i64,
+        user: &User,
         infra_id: i64,
     ) -> Result<(), Error<S::Error>> {
         // No need to check if the infra exists. If it doesn't, there won't be any tuples in OpenFGA.
         // And even if there is, we're about to remove them anyway.
         // Likewise about both users.
 
-        let user = fga!(User:user_id);
         let infra = fga!(Infra:infra_id);
         let mut delete = self.openfga.prepare_deletes();
 
         if self
             .openfga
-            .check(Infra::reader().check(&user, &infra))
+            .check(Infra::reader().check(user, &infra))
             .await?
         {
-            delete.push(&Infra::reader().tuple(&user, &infra));
+            delete.push(&Infra::reader().tuple(user, &infra));
         }
 
         if self
             .openfga
-            .check(Infra::writer().check(&user, &infra))
+            .check(Infra::writer().check(user, &infra))
             .await?
         {
-            delete.push(&Infra::writer().tuple(&user, &infra));
+            delete.push(&Infra::writer().tuple(user, &infra));
         }
 
         if self
             .openfga
-            .check(Infra::owner().check(&user, &infra))
+            .check(Infra::owner().check(user, &infra))
             .await?
         {
-            delete.push(&Infra::owner().tuple(&user, &infra));
+            delete.push(&Infra::owner().tuple(user, &infra));
         }
 
         delete.execute().await?;

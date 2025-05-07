@@ -10,6 +10,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
+use editoast_authz as authz;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
@@ -465,19 +466,19 @@ async fn update_grants(
                 Resource::Infra => match grant.grant {
                     InfraGrant::Reader => {
                         authorizer
-                            .grant_infra_reader(grant.subject_id, grant.resource_id)
+                            .grant_infra_reader(&authz::User(grant.subject_id), grant.resource_id)
                             .await?
                             .allowed()?;
                     }
                     InfraGrant::Writer => {
                         authorizer
-                            .grant_infra_writer(grant.subject_id, grant.resource_id)
+                            .grant_infra_writer(&authz::User(grant.subject_id), grant.resource_id)
                             .await?
                             .allowed()?;
                     }
                     InfraGrant::Owner => {
                         authorizer
-                            .grant_infra_owner(grant.subject_id, grant.resource_id)
+                            .grant_infra_owner(&authz::User(grant.subject_id), grant.resource_id)
                             .await?
                             .allowed()?;
                     }
@@ -495,7 +496,7 @@ async fn update_grants(
             match resource_type {
                 Resource::Infra => {
                     authorizer
-                        .revoke_infra_grants(subject_id, resource_id)
+                        .revoke_infra_grants(&authz::User(subject_id), resource_id)
                         .await?
                         .allowed()?;
                 }

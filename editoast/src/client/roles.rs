@@ -130,7 +130,7 @@ pub async fn list_subject_roles(
         Subject {
             id,
             info: SubjectInfo::User(_),
-        } => regulator.user_roles(id).await?,
+        } => regulator.user_roles(&authz::User(id)).await?,
         Subject {
             id,
             info: SubjectInfo::Group(_),
@@ -179,7 +179,7 @@ pub async fn add_roles(
         Subject {
             id,
             info: SubjectInfo::User(_),
-        } => regulator.grant_user_roles(id, roles).await?,
+        } => regulator.grant_user_roles(&authz::User(id), roles).await?,
         Subject {
             id,
             info: SubjectInfo::Group(_),
@@ -215,7 +215,7 @@ pub async fn remove_roles(
         Subject {
             id,
             info: SubjectInfo::User(_),
-        } => regulator.revoke_user_roles(id, roles).await?,
+        } => regulator.revoke_user_roles(&authz::User(id), roles).await?,
         Subject {
             id,
             info: SubjectInfo::Group(_),
