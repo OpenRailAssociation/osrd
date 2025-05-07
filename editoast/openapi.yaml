@@ -158,26 +158,29 @@ paths:
           minimum: 1
       responses:
         '200':
-          description: Get list of user that have access to the resource
+          description: Get list of user that have a grant on the resource
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - subject
-                  - grant
-                  properties:
-                    grant:
-                      $ref: '#/components/schemas/InfraGrant'
-                    subject:
+                type: object
+                required:
+                - subjects
+                - stats
+                properties:
+                  stats:
+                    $ref: '#/components/schemas/PaginationStats'
+                  subjects:
+                    type: array
+                    items:
                       type: object
                       required:
                       - id
                       - name
                       - type
+                      - grant
                       properties:
+                        grant:
+                          $ref: '#/components/schemas/InfraGrant'
                         id:
                           type: integer
                           format: int64

@@ -6,13 +6,17 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, PartialEq, Eq, Hash)]
+#[derive(
+    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
+)]
 pub struct User(pub i64);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, PartialEq, Eq, Hash)]
+#[derive(
+    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
+)]
 pub struct Group(pub i64);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone)]
 pub struct Infra(pub i64);
 
 #[derive(

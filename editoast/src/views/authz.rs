@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
+use crate::models;
 use crate::models::Infra;
 use crate::models::prelude::*;
 use axum::Extension;
@@ -13,6 +14,7 @@ use axum::response::Json;
 use editoast_authz as authz;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -23,14 +25,16 @@ use super::AppState;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 use super::AuthorizerError;
+use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
+use super::pagination::PaginationStats;
 
 crate::routes! {
     "/authz" => {
         "/me" => whoami,
         "/me/grants" => user_authorizations,
         "/grants" => update_grants,
-        "/{resource_type}/{resource_id}" =>  users_grants_for_resource_id,
+        "/{resource_type}/{resource_id}" => subjects_with_grant_on_resource,
         "/grants/{resource_type}"=> privileges_by_resource_type,
     },
 }
@@ -62,7 +66,7 @@ enum ResourceType {
     Infra,
 }
 
-#[derive(Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(test, derive(Debug))]
@@ -209,22 +213,6 @@ async fn user_authorizations(
     Ok(Json(response))
 }
 
-#[derive(Serialize, ToSchema)]
-#[cfg_attr(test, derive(Debug, Deserialize))]
-struct SubjectItem {
-    pub id: i64,
-    pub name: String,
-    pub r#type: SubjectType,
-}
-
-#[derive(Serialize, ToSchema)]
-#[cfg_attr(test, derive(Debug, Deserialize))]
-struct SubjectGrant {
-    #[schema(inline)]
-    subject: SubjectItem,
-    grant: InfraGrant,
-}
-
 #[derive(Deserialize, IntoParams)]
 struct ResourceTypeParam {
     resource_type: ResourceType,
@@ -235,106 +223,103 @@ struct ResourceIdParam {
     resource_id: i64,
 }
 
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Debug, Deserialize))]
+struct SubjectGrant {
+    id: i64,
+    name: String,
+    r#type: SubjectType,
+    grant: InfraGrant,
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Debug, Deserialize))]
+struct SubjectsWithGrantOnResource {
+    #[schema(inline)]
+    subjects: Vec<SubjectGrant>,
+    stats: PaginationStats,
+}
+
 #[utoipa::path(
     get,
     path = "",
     tag = "authz",
     params(ResourceTypeParam, ResourceIdParam, PaginationQueryParams<100>),
     responses(
-        (status = 200, description = "Get list of user that have access to the resource", body = inline(Vec<SubjectGrant>)),
+        (status = 200, description = "Get list of user that have a grant on the resource", body = inline(SubjectsWithGrantOnResource)),
     ),
 )]
-async fn users_grants_for_resource_id(
-    Extension(auth): AuthenticationExt,
-    State(AppState { regulator, .. }): State<AppState>,
+async fn subjects_with_grant_on_resource(
+    Extension(authn): AuthenticationExt,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
-    Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
-) -> Result<Json<Vec<SubjectGrant>>> {
-    // Validate pagination params
-    let mut skip = (page - 1) * page_size;
-    let mut result: Vec<SubjectGrant> = Vec::new();
-
-    match resource_type {
+    Query(pagination): Query<PaginationQueryParams<100>>,
+) -> Result<Json<SubjectsWithGrantOnResource>> {
+    let (readers, writers, owners) = match resource_type {
         ResourceType::Infra => {
+            let infra = authz::Infra(resource_id);
             // One must be able to interact with the resource in order to
             // consult who has access to it.
-            auth.check_authorization(async |authorizer| {
-                authorizer
-                    .authorize_infra_read(&authz::Infra(resource_id))
-                    .await
-            })
-            .await?;
-
-            // Work on infra owners
-            if result.len() < page_size as usize {
-                let owners = regulator
-                    .get_infra_owners(&authz::Infra(resource_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                for owner in owners {
-                    if skip > 0 {
-                        skip -= 1;
-                        continue;
-                    }
-                    result.push(SubjectGrant {
-                        subject: SubjectItem {
-                            id: owner.id,
-                            name: owner.info.name,
-                            r#type: SubjectType::User,
-                        },
-                        grant: InfraGrant::Owner,
-                    });
-                }
-            }
-
-            // Work on infra Writers
-            if result.len() < page_size as usize {
-                let writers = regulator
-                    .get_infra_writers(&authz::Infra(resource_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                for writer in writers {
-                    if skip > 0 {
-                        skip -= 1;
-                        continue;
-                    }
-                    result.push(SubjectGrant {
-                        subject: SubjectItem {
-                            id: writer.id,
-                            name: writer.info.name,
-                            r#type: SubjectType::User,
-                        },
-                        grant: InfraGrant::Writer,
-                    });
-                }
-            }
-
-            // Work on infra readers
-            if result.len() < page_size as usize {
-                let readers = regulator
-                    .get_infra_readers(&authz::Infra(resource_id))
-                    .await
-                    .map_err(AuthzError::from)?;
-                for reader in readers {
-                    if skip > 0 {
-                        skip -= 1;
-                        continue;
-                    }
-                    result.push(SubjectGrant {
-                        subject: SubjectItem {
-                            id: reader.id,
-                            name: reader.info.name,
-                            r#type: SubjectType::User,
-                        },
-                        grant: InfraGrant::Reader,
-                    });
-                }
-            }
+            authn
+                .check_authorization(async |authorizer| {
+                    authorizer.authorize_infra_read(&infra).await
+                })
+                .await?;
+            tokio::try_join!(
+                regulator.get_infra_readers(&infra),
+                regulator.get_infra_writers(&infra),
+                regulator.get_infra_owners(&infra)
+            )
+            .map_err(AuthzError::from)?
         }
-    }
+    };
 
-    Ok(Json(result))
+    let subjects_grant = readers
+        .into_iter()
+        .map(|s| (s, InfraGrant::Reader))
+        .chain(writers.into_iter().map(|s| (s, InfraGrant::Writer)))
+        .chain(owners.into_iter().map(|s| (s, InfraGrant::Owner)))
+        .map(|(subject, grant)| {
+            (
+                subject.expect_left("group support has not yet been implemented"),
+                grant,
+            )
+        })
+        .collect::<HashMap<_, _>>();
+    let user_ids = subjects_grant
+        .keys()
+        .map(|authz::User(id)| *id)
+        .collect_vec();
+
+    let (users, stats) = models::User::list_paginated(
+        &mut db_pool.get().await?,
+        pagination
+            .into_selection_settings()
+            .filter(move || models::User::ID.eq_any(user_ids.clone())),
+    )
+    .await?;
+
+    let subjects_grant = users
+        .into_iter()
+        .filter_map(|models::User { id, name, .. }| {
+            let user = authz::User(id);
+            let grant = subjects_grant.get(&user)?;
+            Some(SubjectGrant {
+                id,
+                name,
+                r#type: SubjectType::User,
+                grant: *grant,
+            })
+        })
+        .collect_vec();
+
+    Ok(Json(SubjectsWithGrantOnResource {
+        subjects: subjects_grant,
+        stats,
+    }))
 }
 
 #[derive(Display, Serialize, ToSchema)]
@@ -575,11 +560,11 @@ mod tests {
                 infra.id
             ))
             .by_user(&user);
-        let readers: Vec<SubjectGrant> = app
+        let SubjectsWithGrantOnResource { subjects, .. } = app
             .fetch(request_all)
             .assert_status(StatusCode::OK)
             .json_into();
-        assert_eq!(readers.len(), 6);
+        assert_eq!(subjects.len(), 6);
 
         // Get the partial user list for the infra to test pagination
         let request_all = app
@@ -589,11 +574,11 @@ mod tests {
                 infra.id
             ))
             .by_user(&user);
-        let users: Vec<SubjectGrant> = app
+        let SubjectsWithGrantOnResource { subjects, .. } = app
             .fetch(request_all)
             .assert_status(StatusCode::OK)
             .json_into();
-        assert_eq!(users.len(), 1);
+        assert_eq!(subjects.len(), 1);
     }
 
     #[rstest]
@@ -759,20 +744,22 @@ mod tests {
         let request = app
             .get(&format!("/authz/{}/{}", ResourceType::Infra, infra_id))
             .by_user(by_user);
-        let response: Vec<SubjectGrant> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let SubjectsWithGrantOnResource {
+            subjects: subjects_grant,
+            ..
+        } = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         match grant {
             Some(grant) => {
                 assert_eq!(
                     true,
-                    response
+                    subjects_grant
                         .into_iter()
-                        .any(|s| s.subject.id == user_id && s.grant == grant)
+                        .any(|s| s.id == user_id && s.grant == grant)
                 );
             }
             None => {
-                assert_eq!(false, response.into_iter().any(|s| s.subject.id == user_id));
+                assert_eq!(false, subjects_grant.into_iter().any(|s| s.id == user_id));
             }
         }
     }

@@ -5,6 +5,7 @@ use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation;
 use futures::stream;
+use itertools::Either;
 use tracing::Level;
 
 use crate::Authorization;
@@ -610,7 +611,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn get_infra_readers(
         &self,
         infra: &Infra,
-    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -621,21 +622,20 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let result = self
+        let UserList { users, .. } = self
             .openfga
             .list_users(Infra::reader().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
-        let users = self.parse_userlist(result).await?;
-        Ok(users)
+        Ok(users.into_iter().map(Either::Left).collect())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_writers(
         &self,
         infra: &Infra,
-    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -646,21 +646,20 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let result = self
+        let UserList { users, .. } = self
             .openfga
             .list_users(Infra::writer().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
-        let users = self.parse_userlist(result).await?;
-        Ok(users)
+        Ok(users.into_iter().map(Either::Left).collect())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_owners(
         &self,
         infra: &Infra,
-    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -671,36 +670,13 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let result = self
+        let UserList { users, .. } = self
             .openfga
             .list_users(Infra::owner().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
-        let users = self.parse_userlist(result).await?;
-        Ok(users)
-    }
-
-    async fn parse_userlist(
-        &self,
-        userlist: UserList<User>,
-    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
-        let mut users = Vec::new();
-        for User(user_id) in userlist.users {
-            let user_info = self
-                .driver
-                .get_user_info(user_id)
-                .await
-                .map_err(Error::Storage)?;
-
-            if let Some(user_info) = user_info {
-                users.push(UserSubject {
-                    id: user_id,
-                    info: user_info,
-                });
-            }
-        }
-        Ok(users)
+        Ok(users.into_iter().map(Either::Left).collect())
     }
 
     /// Get IDS of infras a subject can read
