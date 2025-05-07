@@ -49,7 +49,7 @@ paths:
         in: path
         required: true
         schema:
-          $ref: '#/components/schemas/Resource'
+          $ref: '#/components/schemas/ResourceType'
       responses:
         '200':
           description: Get privileges for each grant associated to the resource type
@@ -131,7 +131,7 @@ paths:
         in: path
         required: true
         schema:
-          $ref: '#/components/schemas/Resource'
+          $ref: '#/components/schemas/ResourceType'
       - name: resource_id
         in: path
         required: true
@@ -7695,7 +7695,7 @@ components:
           type: integer
           format: int64
         resource_type:
-          $ref: '#/components/schemas/Resource'
+          $ref: '#/components/schemas/ResourceType'
         subject_id:
           type: integer
           format: int64
@@ -10214,7 +10214,7 @@ components:
             type: integer
             format: int64
             minimum: 0
-    Resource:
+    ResourceType:
       type: string
       enum:
       - infra
@@ -10229,7 +10229,7 @@ components:
           type: integer
           format: int64
         resource_type:
-          $ref: '#/components/schemas/Resource'
+          $ref: '#/components/schemas/ResourceType'
         subject_id:
           type: integer
           format: int64
