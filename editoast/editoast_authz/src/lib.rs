@@ -56,18 +56,7 @@ pub enum Error<StorageError: std::error::Error> {
     #[error(transparent)]
     OpenFga(#[from] fga::client::RequestFailure),
     #[error(transparent)]
-    OpenFgaParsing(#[from] fga::model::ParsingError),
-    #[error(transparent)]
     Storage(StorageError),
-}
-
-impl<StorageError: std::error::Error> From<fga::client::QueryError> for Error<StorageError> {
-    fn from(err: fga::client::QueryError) -> Self {
-        match err {
-            fga::client::QueryError::Parsing(parsing_error) => Self::OpenFgaParsing(parsing_error),
-            fga::client::QueryError::Request(request_failure) => Self::OpenFga(request_failure),
-        }
-    }
 }
 
 /// A representation of an authorization decision over some resource

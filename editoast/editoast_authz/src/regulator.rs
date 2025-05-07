@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::future::Future;
 
+use fga::client::QueryError;
 use fga::client::UserList;
 use fga::fga;
 use fga::model::Relation;
@@ -141,7 +142,8 @@ impl<S: StorageDriver> Regulator<S> {
         let groups = self
             .openfga
             .list_users(User::group().query_users(&user))
-            .await?;
+            .await
+            .map_err(QueryError::parsing_ok)?;
         Ok(groups
             .users
             .into_iter()
@@ -165,7 +167,8 @@ impl<S: StorageDriver> Regulator<S> {
         let members = self
             .openfga
             .list_users(Group::member().query_users(&group))
-            .await?;
+            .await
+            .map_err(QueryError::parsing_ok)?;
 
         debug_assert!(
             members.public_access.is_none(),
@@ -600,7 +603,8 @@ impl<S: StorageDriver> Regulator<S> {
         let result = self
             .openfga
             .list_users(Infra::reader().query_users(&infra))
-            .await?;
+            .await
+            .map_err(QueryError::parsing_ok)?;
 
         let users = self.parse_userlist(result).await?;
         Ok(users)
@@ -625,7 +629,8 @@ impl<S: StorageDriver> Regulator<S> {
         let result = self
             .openfga
             .list_users(Infra::writer().query_users(&infra))
-            .await?;
+            .await
+            .map_err(QueryError::parsing_ok)?;
 
         let users = self.parse_userlist(result).await?;
         Ok(users)
@@ -650,7 +655,8 @@ impl<S: StorageDriver> Regulator<S> {
         let result = self
             .openfga
             .list_users(Infra::owner().query_users(&infra))
-            .await?;
+            .await
+            .map_err(QueryError::parsing_ok)?;
 
         let users = self.parse_userlist(result).await?;
         Ok(users)

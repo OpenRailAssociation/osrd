@@ -1,12 +1,12 @@
 use fga::model::Relation as _;
 
-#[derive(Debug, PartialEq, Eq, fga::Type, fga::User, derive_more::From)]
+#[derive(Debug, PartialEq, Eq, fga::Type, fga::User, derive_more::FromStr)]
 struct Person(String);
 
-#[derive(Debug, PartialEq, Eq, fga::Type, fga::User, fga::Object, derive_more::From)]
+#[derive(Debug, PartialEq, Eq, fga::Type, fga::User, fga::Object, derive_more::FromStr)]
 struct Group(String);
 
-#[derive(Debug, PartialEq, Eq, fga::Type, fga::Object, derive_more::From)]
+#[derive(Debug, PartialEq, Eq, fga::Type, fga::Object, derive_more::FromStr)]
 struct Document(String);
 
 fga::relations! {

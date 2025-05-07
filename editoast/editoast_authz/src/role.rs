@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use fga::client::QueryError;
 use fga::client::Request as _;
 use fga::model::Object;
 use fga::model::Relation;
@@ -50,7 +51,11 @@ impl Role {
         relation: R,
         object: &R::Object,
     ) -> Result<Vec<Self>, fga::client::RequestFailure> {
-        let roles = relation.query_users(object).fetch(openfga).await?;
+        let roles = relation
+            .query_users(object)
+            .fetch(openfga)
+            .await
+            .map_err(QueryError::parsing_ok)?;
         debug_assert!(
             roles.public_access.is_none(),
             "we don't write public accesses for roles"
@@ -72,6 +77,6 @@ impl Role {
 
 impl From<Role> for model::Role {
     fn from(value: Role) -> Self {
-        model::Role::from(value.as_ref().to_string())
+        model::Role::from_str(value.as_ref()).unwrap()
     }
 }

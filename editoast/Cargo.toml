@@ -32,7 +32,12 @@ chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 darling = "0.20"
 derivative = "2.2.0"
-derive_more = { version = "2.0.1", features = ["debug", "display", "from"] }
+derive_more = { version = "2.0.1", features = [
+  "debug",
+  "display",
+  "from",
+  "from_str",
+] }
 diesel = { version = "2.2", default-features = false, features = [
   "32-column-tables",
   "chrono",

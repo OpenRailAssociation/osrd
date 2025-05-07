@@ -7,11 +7,15 @@
 //! model, see the [crate-level documentation](crate).
 
 use core::fmt;
+use std::str::FromStr;
 
 /// Representation of an OpenFGA `type`
 ///
 /// In order to be used with the [`trait Relation`], the implementor type
 /// must also implement either or both of the [`trait User`] and [`trait Object`].
+///
+/// The implementor type must also implement [std::str::FromStr] in order to be constructed
+/// from values received in OpenFGA responses.
 ///
 /// # Example
 ///
@@ -27,7 +31,7 @@ use core::fmt;
 /// Rust representation:
 ///
 /// ```
-/// #[derive(Debug)]
+/// #[derive(Debug, derive_more::FromStr)]
 /// struct Group(String);
 ///
 /// impl fga::model::Type for Group {
@@ -42,7 +46,7 @@ use core::fmt;
 /// # OpenFGA concept
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-type-definition>
-pub trait Type: Sized {
+pub trait Type: FromStr + Sized {
     /// The name of the OpenFGA `type`
     const NAMESPACE: &'static str;
 
@@ -52,7 +56,7 @@ pub trait Type: Sized {
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA user (tuple position)
 ///
-/// The implementor type must also implement `From<String>` in order to be constructed
+/// The implementor type must also implement [std::str::FromStr] in order to be constructed
 /// from values received in OpenFGA responses.
 ///
 /// # Example
@@ -69,8 +73,8 @@ pub trait Type: Sized {
 /// Rust representation:
 ///
 /// ```
-/// #[derive(Debug, derive_more::From)]
-/// struct Person(#[from] String);
+/// #[derive(Debug, derive_more::FromStr)]
+/// struct Person(String);
 ///
 /// impl fga::model::Type for Person {
 ///     const NAMESPACE: &'static str = "person";
@@ -87,7 +91,7 @@ pub trait Type: Sized {
 /// # OpenFGA concept
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-user>
-pub trait User: Type + From<String> + fmt::Debug + Sized {
+pub trait User: Type + fmt::Debug + Sized {
     /// Builds the OpenFGA USER string from a [`User`] instance
     ///
     /// This string is sent to OpenFGA to represent the USER in a tuple.
@@ -98,8 +102,8 @@ pub trait User: Type + From<String> + fmt::Debug + Sized {
     /// # use fga::fga;
     /// # use fga::model::User;
     /// # use fga::model::Type;
-    /// # #[derive(Debug, derive_more::From)]
-    /// # struct Person(#[from] String);
+    /// # #[derive(Debug, derive_more::FromStr)]
+    /// # struct Person(String);
     /// # impl Type for Person { const NAMESPACE: &'static str = "person"; fn id(&self) -> &str { &self.0 } }
     /// impl User for Person {}
     /// assert_eq!(Person::NAMESPACE, "person");
@@ -119,8 +123,8 @@ pub trait User: Type + From<String> + fmt::Debug + Sized {
     /// # async fn main() {
     /// # let user_provided_data = "*".to_string();
     /// assert_eq!(user_provided_data, "*");
-    /// let user = Person::from(user_provided_data);
-    /// let object = Document::from("confidential".to_string());
+    /// let user = Person(user_provided_data);
+    /// let object = Document("confidential".to_string());
     /// let tuple = Document::can_read().tuple(&user, &object);
     /// // write the tuple
     /// // now the topsecret document is public and the world burns
@@ -265,7 +269,7 @@ pub trait Relation: fmt::Debug + Sized {
 
 /// Representation of an OpenFGA type that can be used as an OpenFGA object (tuple position)
 ///
-/// The implementor type must also implement `From<String>` in order to be constructed
+/// The implementor type must also implement [std::str::FromStr] in order to be constructed
 /// from values received in OpenFGA responses.
 ///
 /// # Example
@@ -282,8 +286,8 @@ pub trait Relation: fmt::Debug + Sized {
 /// Rust representation:
 ///
 /// ```
-/// #[derive(Debug, derive_more::From)]
-/// struct Document(#[from] String);
+/// #[derive(Debug, derive_more::FromStr)]
+/// struct Document(String);
 ///
 /// impl fga::model::Type for Document {
 ///     const NAMESPACE: &'static str = "document";
@@ -300,7 +304,7 @@ pub trait Relation: fmt::Debug + Sized {
 /// # OpenFGA concept
 ///
 /// <https://openfga.dev/docs/concepts#what-is-an-object>
-pub trait Object: Type + fmt::Debug + From<String> {
+pub trait Object: Type + fmt::Debug {
     /// Builds the OpenFGA OBJECT string from an [`Object`] instance
     ///
     /// This string is sent to OpenFGA to represent the OBJECT in a tuple.
@@ -311,8 +315,8 @@ pub trait Object: Type + fmt::Debug + From<String> {
     /// # use fga::fga;
     /// # use fga::model::Object;
     /// # use fga::model::Type;
-    /// # #[derive(Debug, derive_more::From)]
-    /// # struct Document(#[from] String);
+    /// # #[derive(Debug, derive_more::FromStr)]
+    /// # struct Document(String);
     /// # impl Type for Document { const NAMESPACE: &'static str = "document"; fn id(&self) -> &str { &self.0 } }
     /// impl Object for Document {}
     /// assert_eq!(Document::NAMESPACE, "document");
@@ -321,26 +325,6 @@ pub trait Object: Type + fmt::Debug + From<String> {
     fn fga_object(&self) -> String {
         format!("{}:{}", Self::NAMESPACE, self.id())
     }
-
-    /// Parses an OpenFGA OBJECT string as a Self instance
-    fn parse_fga_object(ident: &str) -> Result<Self, ParsingError> {
-        let prefix: String = format!("{}:", Self::NAMESPACE);
-        if let Some(id) = ident.strip_prefix(&prefix) {
-            Ok(Self::from(id.to_string()))
-        } else {
-            Err(ParsingError {
-                ident: ident.to_string(),
-                expected_type: Self::NAMESPACE,
-            })
-        }
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error("Cannot parse string as '{expected_type}': '{ident}'")]
-pub struct ParsingError {
-    ident: String,
-    expected_type: &'static str,
 }
 
 /// Indicates that the implementor can be used in the USER position of a tuple
