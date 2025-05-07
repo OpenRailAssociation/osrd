@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
+import { dateToDDMMYYYY, dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
@@ -57,13 +57,42 @@ const SimulationReportSheet = ({
 }: SimulationReportSheetProps) => {
   const { t, i18n } = useTranslation('stdcm');
   let renderedIndex = 0;
-
+  let renderedRefIndex = 0;
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
   const { anteriorTrain, posteriorTrain } = stdcmLinkedTrains;
 
   const consistMass = consist?.totalMass ?? rollingStock.mass / 1000;
   const consistLength = consist?.totalLength ?? rollingStock.length;
   const consistMaxSpeed = consist?.maxSpeed ?? msToKmh(rollingStock.max_speed);
+
+  const similarSchedulesMock = [
+    {
+      schedule_id: '123456789',
+      start_time: new Date('2025-05-07'),
+      begin: { ci: 87686006, ch: 'BV' },
+      end: { ci: 87751008, ch: 'BV' },
+    },
+    {
+      schedule_id: '234567890',
+      start_time: new Date('2025-05-07'),
+      begin: { ci: 5678, ch: 'B' },
+      end: { ci: 9101, ch: 'C' },
+    },
+  ];
+
+  const findSchedulesBetween = (
+    beginStep: StdcmPathStep,
+    endStep: StdcmPathStep,
+    schedules: typeof similarSchedulesMock
+  ) =>
+    schedules.filter(
+      (schedule) =>
+        schedule.begin.ci === beginStep.location!.uic &&
+        schedule.begin.ch === beginStep.location!.secondary_code &&
+        schedule.end.ci === endStep.location!.uic &&
+        schedule.end.ch === endStep.location!.secondary_code
+    );
+  const trimmedBorderIndexes = new Set<number>();
 
   return (
     <Document>
@@ -289,6 +318,104 @@ const SimulationReportSheet = ({
             )}
           </View>
         </View>
+        <View style={styles.schedulesToDuplicate.schedulesToDuplicate}>
+          <View style={styles.schedulesToDuplicate.titleBox}>
+            <Text style={styles.schedulesToDuplicate.title}>
+              {t('reportSheet.schedulesToDuplicate')}
+            </Text>
+
+            <View style={styles.schedulesToDuplicate.container}>
+              <Table style={styles.schedulesToDuplicate.table}>
+                <TH style={styles.schedulesToDuplicate.tableTH}>
+                  <View style={styles.schedulesToDuplicate.indexWidth}>
+                    <TD aria-label="line-count" />
+                  </View>
+                  <View style={styles.schedulesToDuplicate.opWidth}>
+                    <TD>{t('reportSheet.operationalPoint')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.chWidth}>
+                    <TD>{t('reportSheet.code')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.departureWidth}>
+                    <TD>{t('reportSheet.departureDate')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.scheduleNumberWidth}>
+                    <TD>{t('reportSheet.scheduleNumber')}</TD>
+                  </View>
+                </TH>
+                {stdcmData.simulationPathSteps.map((step, index, array) => {
+                  renderedRefIndex += 1;
+                  const nextStep = array[index + 1];
+                  const matchedSchedules = nextStep
+                    ? findSchedulesBetween(step, nextStep, similarSchedulesMock)
+                    : [];
+                  const hasMatchedSchedule = nextStep
+                    ? findSchedulesBetween(step, nextStep, similarSchedulesMock).length > 0
+                    : false;
+                  if (hasMatchedSchedule) {
+                    trimmedBorderIndexes.add(index + 1);
+                  }
+                  return (
+                    <>
+                      <TR
+                        key={index}
+                        style={{
+                          ...styles.schedulesToDuplicate.stopTableTbody,
+                          width: trimmedBorderIndexes.has(index) ? '408' : '1312',
+                        }}
+                      >
+                        <View style={styles.schedulesToDuplicate.indexWidth}>
+                          <TD style={styles.schedulesToDuplicate.indexColumn}>
+                            {renderedRefIndex}
+                          </TD>
+                        </View>
+                        <View style={styles.schedulesToDuplicate.opWidth}>
+                          <TD style={styles.schedulesToDuplicate.opColumn}>
+                            {step.location!.name}
+                          </TD>
+                        </View>
+                        <View style={styles.schedulesToDuplicate.chWidth}>
+                          <TD style={styles.schedulesToDuplicate.chColumn}>
+                            {getSecondaryCode(step)}
+                          </TD>
+                        </View>
+                      </TR>
+                      {matchedSchedules.length > 0 && (
+                        <TR style={styles.schedulesToDuplicate.schedulesToDuplicateTbody}>
+                          <View style={styles.schedulesToDuplicate.schedulesToDuplicateWidth}>
+                            {matchedSchedules.map((schedule, refIdx) => (
+                              <View
+                                key={`sched-wrapper-${index}-${refIdx}`}
+                                style={styles.schedulesToDuplicate.scheduleWrapper}
+                              >
+                                <View
+                                  key={`sched-wrapper-${index}-${refIdx}`}
+                                  style={styles.schedulesToDuplicate.scheduleWrapper}
+                                >
+                                  <View style={styles.schedulesToDuplicate.startDateWidth}>
+                                    <TD style={styles.schedulesToDuplicate.startDateColumn}>
+                                      {dateToDDMMYYYY(schedule.start_time)}
+                                    </TD>
+                                  </View>
+                                  <View style={styles.schedulesToDuplicate.scheduleIdWidth}>
+                                    <TD style={styles.schedulesToDuplicate.scheduleIdColumn}>
+                                      {schedule.schedule_id}
+                                    </TD>
+                                  </View>
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        </TR>
+                      )}
+                    </>
+                  );
+                })}
+              </Table>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.simulation.simulation}>
           <View style={styles.simulation.simulationContainer}>
             <Text style={styles.simulation.simulationUppercase}>{t('reportSheet.simulation')}</Text>

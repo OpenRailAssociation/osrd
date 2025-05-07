@@ -394,6 +394,153 @@ const styles = {
       marginTop: '8',
     },
   }),
+  schedulesToDuplicate: StyleSheet.create({
+    schedulesToDuplicate: {
+      height: 'auto',
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    titleBox: {
+      borderTop: '1 solid #D3D1CF',
+      width: '1344',
+    },
+    title: {
+      marginTop: '13',
+      marginBottom: '13',
+      marginLeft: '16',
+      textTransform: 'uppercase',
+      fontSize: '18',
+      fontWeight: 'bold',
+      color: '#000000',
+      letterSpacing: '0.4',
+    },
+    schedulesToDuplicateContainer: {
+      backgroundColor: '#EFF3F5',
+      marginBottom: '13',
+      height: 'auto',
+      width: '1344',
+    },
+    container: {
+      backgroundColor: '#EFF3F5',
+      marginBottom: '13',
+      height: 'auto',
+      marginLeft: '16',
+      marginRight: '16',
+    },
+    table: {
+      border: '0',
+    },
+    tableTH: {
+      fontSize: '14',
+      fontWeight: 'normal',
+      color: '#797671',
+      height: '40',
+      padding: '10',
+    },
+    indexWidth: {
+      width: '40',
+    },
+    opWidth: {
+      width: '256',
+    },
+    chColumn: {
+      fontSize: '14',
+      color: '#797671',
+      fontWeight: 'medium',
+      letterSpacing: '-0.17',
+      paddingLeft: '10',
+    },
+    chWidth: {
+      width: '112',
+    },
+    departureWidth: {
+      width: '150',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scheduleNumberWidth: {
+      width: '150',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    indexColumn: {
+      fontFamily: 'IBM Plex Mono',
+      fontSize: '16',
+      fontWeight: 'medium',
+      color: '#000000',
+      opacity: 0.25,
+      paddingLeft: '16',
+    },
+    opColumn: {
+      fontSize: '16',
+      fontWeight: 'semibold',
+      color: '#000000',
+      letterSpacing: '-0.2',
+      paddingLeft: '10',
+    },
+    stopTableStartColumn: {
+      fontSize: '16',
+      fontFamily: 'IBM Plex Mono',
+      fontWeight: 'medium',
+      color: '#000000',
+      letterSpacing: '-0.2',
+    },
+    stopTableStartWidth: {
+      width: '168',
+    },
+    schedulesToDuplicateWidth: {
+      width: '216',
+    },
+    stopTableTbody: {
+      borderTop: '1.6 solid #D3D1CF',
+      position: 'relative',
+      height: '40',
+      width: '1312',
+    },
+    schedulesToDuplicateTbody: {
+      marginLeft: '408',
+      position: 'absolute',
+      width: '863',
+      top: '100',
+      transform: 'translateY(-35px)',
+      height: '32',
+      backgroundColor: '#FFFFFF',
+      borderRadius: '6',
+      paddingLeft: '16',
+      paddingRight: '25',
+      display: 'flex',
+    },
+    scheduleWrapper: {
+      flexDirection: 'row',
+      paddingTop: '7.5',
+    },
+    departureDate: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex',
+    },
+    startDateWidth: {
+      width: '150',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scheduleIdWidth: {
+      width: '100',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingLeft: '40',
+    },
+    scheduleIdColumn: {
+      fontSize: '14',
+      fontWeight: 'semibold',
+      paddingLeft: '10',
+    },
+    startDateColumn: {
+      fontSize: '14',
+      paddingLeft: '10',
+    },
+  }),
+
   simulation: StyleSheet.create({
     simulation: {
       paddingBottom: '17',
