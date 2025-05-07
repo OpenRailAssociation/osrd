@@ -1241,7 +1241,7 @@ export type PostAuthzGrantsApiArg = {
   body: {
     grant?:
       | {
-          grant: 'READER' | 'WRITER' | 'OWNER';
+          grant: InfraGrant;
           resource_id: number;
           resource_type: 'infra';
           subject_id: number;
@@ -1258,14 +1258,7 @@ export type PostAuthzGrantsApiArg = {
 };
 export type GetAuthzGrantsByResourceTypeApiResponse =
   /** status 200 Get privileges for each grant associated to the resource type */ {
-    [key: string]: (
-      | 'can_read'
-      | 'can_share_read'
-      | 'can_write'
-      | 'can_share_write'
-      | 'can_delete'
-      | 'can_share_ownership'
-    )[];
+    [key: string]: InfraPrivilege[];
   };
 export type GetAuthzGrantsByResourceTypeApiArg = {
   resourceType: Resource;
@@ -1279,9 +1272,9 @@ export type GetAuthzMeApiArg = void;
 export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
     [key: string]: {
-      grant: 'READER' | 'WRITER' | 'OWNER';
+      grant: InfraGrant;
       resource_id: number;
-      resource_type: 'infra';
+      resource_type: Resource;
     }[];
   };
 export type PostAuthzMeGrantsApiArg = {
@@ -1292,11 +1285,11 @@ export type PostAuthzMeGrantsApiArg = {
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 Get list of user that have access to the resource */ {
-    grant: 'READER' | 'WRITER' | 'OWNER';
+    grant: InfraGrant;
     subject: {
       id: number;
       name: string;
-      type: 'User' | 'Group';
+      type: SubjectType;
     };
   }[];
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
@@ -2259,8 +2252,17 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
+export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
 export type Resource = 'infra';
+export type InfraPrivilege =
+  | 'can_read'
+  | 'can_share_read'
+  | 'can_write'
+  | 'can_share_write'
+  | 'can_delete'
+  | 'can_share_ownership';
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
+export type SubjectType = 'User' | 'Group';
 export type NewDocumentResponse = {
   document_key: number;
 };
