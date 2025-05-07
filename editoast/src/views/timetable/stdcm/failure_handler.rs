@@ -57,8 +57,24 @@ impl SimulationFailureHandler {
             .map(|ws| ws.start_date_time)
             .unwrap_or(earliest_departure_time);
         let virtual_train_id = train_schedule.id;
-        let work_schedules =
-            WorkSchedulesRequest::new(work_schedules, start_time, latest_simulation_end);
+        let work_schedules = if work_schedules.is_empty() {
+            None
+        } else {
+            // Filter the provided work schedules to find those that conflict with the given parameters
+            // This identifies any work schedules that may overlap with the earliest departure time and latest simulation end.
+            let work_schedule_requirements = work_schedules
+                .into_iter()
+                .filter_map(|ws| {
+                    ws.as_core_work_schedule(start_time, latest_simulation_end)
+                        .map(|core_ws| (ws.id.to_string(), core_ws))
+                })
+                .collect();
+
+            Some(WorkSchedulesRequest {
+                start_time,
+                work_schedule_requirements,
+            })
+        };
 
         // Combine the original train schedules with the virtual train schedule.
         train_schedules.push(train_schedule);
