@@ -1251,7 +1251,7 @@ export type GetAuthzGrantsByResourceTypeApiResponse =
     [key: string]: InfraPrivilege[];
   };
 export type GetAuthzGrantsByResourceTypeApiArg = {
-  resourceType: Resource;
+  resourceType: ResourceType;
 };
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
@@ -1282,7 +1282,7 @@ export type GetAuthzByResourceTypeAndResourceIdApiResponse =
     };
   }[];
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
-  resourceType: Resource;
+  resourceType: ResourceType;
   resourceId: number;
   page?: number;
   pageSize?: number | null;
@@ -2242,16 +2242,16 @@ export type PostWorkSchedulesProjectPathApiArg = {
   };
 };
 export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
-export type Resource = 'infra';
+export type ResourceType = 'infra';
 export type GrantBody = {
   grant: InfraGrant;
   resource_id: number;
-  resource_type: Resource;
+  resource_type: ResourceType;
   subject_id: number;
 };
 export type RevokeBody = {
   resource_id: number;
-  resource_type: Resource;
+  resource_type: ResourceType;
   subject_id: number;
 };
 export type InfraPrivilege =

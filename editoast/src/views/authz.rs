@@ -38,7 +38,7 @@ crate::routes! {
 editoast_common::schemas! {
     InfraGrant,
     InfraPrivilege,
-    Resource,
+    ResourceType,
     Role,
     SubjectType,
 
@@ -58,7 +58,7 @@ enum SubjectType {
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(test, derive(Debug))]
-enum Resource {
+enum ResourceType {
     Infra,
 }
 
@@ -161,13 +161,13 @@ struct UserResourceGrant {
 async fn user_authorizations(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Json(body): Json<HashMap<Resource, Vec<i64>>>,
-) -> Result<Json<HashMap<Resource, Vec<UserResourceGrant>>>> {
+    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
+) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let authorizer = auth.authorizer()?;
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     let conn = &mut db_pool.get().await?;
 
-    if let Some(infra_ids) = body.get(&Resource::Infra) {
+    if let Some(infra_ids) = body.get(&ResourceType::Infra) {
         for infra_id in infra_ids {
             // check that the infra exists before to check the grants
             if Infra::exists(conn, *infra_id).await? {
@@ -196,7 +196,7 @@ async fn user_authorizations(
                     }
                 };
                 response
-                    .entry(Resource::Infra)
+                    .entry(ResourceType::Infra)
                     .or_default()
                     .push(UserResourceGrant {
                         id: *infra_id,
@@ -227,7 +227,7 @@ struct SubjectGrant {
 
 #[derive(Deserialize, IntoParams)]
 struct ResourceTypeParam {
-    resource_type: Resource,
+    resource_type: ResourceType,
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -256,7 +256,7 @@ async fn users_grants_for_resource_id(
     let mut result: Vec<SubjectGrant> = Vec::new();
 
     match resource_type {
-        Resource::Infra => {
+        ResourceType::Infra => {
             // One must be able to interact with the resource in order to
             // consult who has access to it.
             auth.check_authorization(async |authorizer| {
@@ -363,7 +363,7 @@ pub enum InfraPrivilege {
 async fn privileges_by_resource_type(
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
 ) -> Result<Json<HashMap<InfraGrant, Vec<InfraPrivilege>>>> {
-    if resource_type != Resource::Infra {
+    if resource_type != ResourceType::Infra {
         return Err(ResourceError::UnknownResourceType {
             resource_type: resource_type.to_string(),
         })?;
@@ -400,7 +400,7 @@ async fn privileges_by_resource_type(
 
 #[derive(Deserialize, ToSchema)]
 struct GrantBody {
-    resource_type: Resource,
+    resource_type: ResourceType,
     resource_id: i64,
     subject_id: i64,
     grant: InfraGrant,
@@ -408,7 +408,7 @@ struct GrantBody {
 
 #[derive(Deserialize, ToSchema)]
 struct RevokeBody {
-    resource_type: Resource,
+    resource_type: ResourceType,
     resource_id: i64,
     subject_id: i64,
 }
@@ -450,7 +450,7 @@ async fn update_grants(
             {
                 let subject = authz::User(subject_id);
                 match resource_type {
-                    Resource::Infra => {
+                    ResourceType::Infra => {
                         let resource = authz::Infra(resource_id);
                         match grant {
                             InfraGrant::Reader => {
@@ -485,7 +485,7 @@ async fn update_grants(
             } in revoke
             {
                 match resource_type {
-                    Resource::Infra => {
+                    ResourceType::Infra => {
                         authorizer
                             .revoke_infra_grants(
                                 &authz::User(subject_id),
@@ -571,7 +571,7 @@ mod tests {
         let request_all = app
             .get(&format!(
                 "/authz/{}/{}?page=1&page_size=10",
-                Resource::Infra,
+                ResourceType::Infra,
                 infra.id
             ))
             .by_user(&user);
@@ -585,7 +585,7 @@ mod tests {
         let request_all = app
             .get(&format!(
                 "/authz/{}/{}?page=2&page_size=5",
-                Resource::Infra,
+                ResourceType::Infra,
                 infra.id
             ))
             .by_user(&user);
@@ -619,7 +619,7 @@ mod tests {
             "grant": [
                 {
                     "subject_id": writer.id,
-                    "resource_type": Resource::Infra,
+                    "resource_type": ResourceType::Infra,
                     "resource_id": infra.id,
                     "grant": InfraGrant::Writer
                 }
@@ -634,7 +634,7 @@ mod tests {
             "revoke": [
                 {
                     "subject_id": writer.id,
-                    "resource_type": Resource::Infra,
+                    "resource_type": ResourceType::Infra,
                     "resource_id": infra.id
                 }
             ]
@@ -649,7 +649,7 @@ mod tests {
     async fn privileges_by_resource_type_test() {
         let app = test_app!().enable_authorization(true).build();
 
-        let request = app.get(&format!("/authz/grants/{}", Resource::Infra));
+        let request = app.get(&format!("/authz/grants/{}", ResourceType::Infra));
         let response: HashMap<InfraGrant, Vec<InfraPrivilege>> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -675,7 +675,7 @@ mod tests {
             "grant": [
                 {
                     "subject_id": user.id,
-                    "resource_type": Resource::Infra,
+                    "resource_type": ResourceType::Infra,
                     "resource_id": infra.id,
                     "grant": InfraGrant::Owner
                 }
@@ -702,7 +702,7 @@ mod tests {
             "revoke": [
                 {
                     "subject_id": other.id,
-                    "resource_type": Resource::Infra,
+                    "resource_type": ResourceType::Infra,
                     "resource_id": infra.id,
                 }
             ]
@@ -757,7 +757,7 @@ mod tests {
         grant: Option<InfraGrant>,
     ) {
         let request = app
-            .get(&format!("/authz/{}/{}", Resource::Infra, infra_id))
+            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra_id))
             .by_user(by_user);
         let response: Vec<SubjectGrant> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
