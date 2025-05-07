@@ -505,7 +505,10 @@ impl Client {
         let raw_users = self
             .post_stores_list_users(
                 &self.store.id,
-                (<R::Object as crate::model::Type>::NAMESPACE, object.id()),
+                (
+                    <R::Object as crate::model::Type>::NAMESPACE,
+                    &object.id().to_string(),
+                ),
                 R::NAME,
                 UserFilter::User {
                     r#type: <R::User as crate::model::Type>::NAMESPACE,
@@ -578,7 +581,10 @@ impl Client {
         let users = self
             .post_stores_list_users(
                 &self.store.id,
-                (<R::Object as crate::model::Type>::NAMESPACE, object.id()),
+                (
+                    <R::Object as crate::model::Type>::NAMESPACE,
+                    &object.id().to_string(),
+                ),
                 R::NAME,
                 UserFilter::UserSet {
                     r#type: <S::Object as crate::model::Type>::NAMESPACE,
