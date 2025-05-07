@@ -41,31 +41,6 @@ pub struct WorkSchedulesRequest {
     pub start_time: DateTime<Utc>,
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
-impl WorkSchedulesRequest {
-    pub fn new(
-        work_schedules: Vec<crate::models::work_schedules::WorkSchedule>,
-        earliest_departure_time: DateTime<Utc>,
-        latest_simulation_end: DateTime<Utc>,
-    ) -> Option<Self> {
-        if work_schedules.is_empty() {
-            return None;
-        }
-        // Filter the provided work schedules to find those that conflict with the given parameters
-        // This identifies any work schedules that may overlap with the earliest departure time and latest simulation end.
-        let work_schedule_requirements = work_schedules
-            .into_iter()
-            .filter_map(|ws| {
-                ws.as_core_work_schedule(earliest_departure_time, latest_simulation_end)
-                    .map(|core_ws| (ws.id.to_string(), core_ws))
-            })
-            .collect();
-
-        Some(Self {
-            start_time: earliest_departure_time,
-            work_schedule_requirements,
-        })
-    }
-}
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
