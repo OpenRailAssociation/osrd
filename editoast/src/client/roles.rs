@@ -6,6 +6,7 @@ use anyhow::anyhow;
 use anyhow::bail;
 use clap::Args;
 use clap::Subcommand;
+use editoast_authz as authz;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
 use editoast_authz::subject::GroupInfo;
@@ -133,7 +134,7 @@ pub async fn list_subject_roles(
         Subject {
             id,
             info: SubjectInfo::Group(_),
-        } => regulator.group_roles(id).await?,
+        } => regulator.group_roles(&authz::Group(id)).await?,
     };
     if roles.is_empty() {
         info!("{subject} has no roles assigned");
@@ -182,7 +183,11 @@ pub async fn add_roles(
         Subject {
             id,
             info: SubjectInfo::Group(_),
-        } => regulator.grant_group_roles(id, roles).await?,
+        } => {
+            regulator
+                .grant_group_roles(&authz::Group(id), roles)
+                .await?
+        }
     }
     Ok(())
 }
@@ -214,7 +219,11 @@ pub async fn remove_roles(
         Subject {
             id,
             info: SubjectInfo::Group(_),
-        } => regulator.revoke_group_roles(id, roles).await?,
+        } => {
+            regulator
+                .revoke_group_roles(&authz::Group(id), roles)
+                .await?
+        }
     }
     Ok(())
 }

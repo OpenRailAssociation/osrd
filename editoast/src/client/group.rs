@@ -3,6 +3,7 @@ use anyhow::bail;
 use clap::Args;
 use clap::Subcommand;
 
+use editoast_authz as authz;
 use editoast_authz::StorageDriver;
 use editoast_authz::subject::GroupInfo;
 use editoast_authz::subject::UserInfo;
@@ -95,7 +96,7 @@ pub async fn group_info(
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
-    let user_ids = regulator.group_members(group_id).await?;
+    let user_ids = regulator.group_members(&authz::Group(group_id)).await?;
 
     println!("id     : {group_id}");
     println!("name   : {name}");
@@ -138,7 +139,9 @@ pub async fn exclude_group(
         user_ids.insert(uid);
     }
 
-    regulator.remove_members(group_id, user_ids).await?;
+    regulator
+        .remove_members(&authz::Group(group_id), user_ids)
+        .await?;
     Ok(())
 }
 
@@ -170,6 +173,8 @@ pub async fn include_group(
         user_ids.insert(uid);
     }
 
-    regulator.add_members(group_id, user_ids).await?;
+    regulator
+        .add_members(&authz::Group(group_id), user_ids)
+        .await?;
     Ok(())
 }

@@ -133,8 +133,8 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     /// Returns the IDs of the groups for the provided user
-    #[tracing::instrument(skip_all, fields(user_id, group_id), ret(level = Level::DEBUG), err)]
-    pub async fn user_groups(&self, user_id: i64) -> Result<HashSet<i64>, Error<S::Error>> {
+    #[tracing::instrument(skip_all, fields(user_id), ret(level = Level::DEBUG), err)]
+    pub async fn user_groups(&self, user_id: i64) -> Result<HashSet<Group>, Error<S::Error>> {
         if !self.user_exists(user_id).await? {
             return Err(Error::UnknownSubject(user_id));
         }
@@ -144,29 +144,18 @@ impl<S: StorageDriver> Regulator<S> {
             .list_users(User::group().query_users(&user))
             .await
             .map_err(QueryError::parsing_ok)?;
-        Ok(groups
-            .users
-            .into_iter()
-            .filter_map(|Group(group)| match group.parse() {
-                Ok(id) => Some(id),
-                Err(_) => {
-                    tracing::error!(group, "unparsable group - skipping it");
-                    None
-                }
-            })
-            .collect())
+        Ok(groups.users.into_iter().collect())
     }
 
     /// Returns the IDs of the users which are members of the provided group
-    #[tracing::instrument(skip_all, fields(user_id, group_id), ret(level = Level::DEBUG), err)]
-    pub async fn group_members(&self, group_id: i64) -> Result<HashSet<i64>, Error<S::Error>> {
-        if !self.group_exists(group_id).await? {
-            return Err(Error::UnknownSubject(group_id));
+    #[tracing::instrument(skip_all, fields(user_id, group), ret(level = Level::DEBUG), err)]
+    pub async fn group_members(&self, group: &Group) -> Result<HashSet<i64>, Error<S::Error>> {
+        if !self.group_exists(group.0).await? {
+            return Err(Error::UnknownSubject(group.0));
         }
-        let group = fga!(Group:group_id);
         let members = self
             .openfga
-            .list_users(Group::member().query_users(&group))
+            .list_users(Group::member().query_users(group))
             .await
             .map_err(QueryError::parsing_ok)?;
 
@@ -188,43 +177,41 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     /// Adds some users to a group
-    #[tracing::instrument(skip_all, fields(group_id, ?user_ids), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?user_ids), ret(level = Level::DEBUG), err)]
     pub async fn add_members(
         &self,
-        group_id: i64,
+        group: &Group,
         user_ids: HashSet<i64>,
     ) -> Result<(), Error<S::Error>> {
-        let existing_members = self.group_members(group_id).await?;
+        let existing_members = self.group_members(group).await?;
         let new_members = user_ids.difference(&existing_members);
-        let group = fga!(Group:group_id);
         let mut writes = self.openfga.prepare_writes();
         for user_id in new_members {
             if !self.user_exists(*user_id).await? {
                 return Err(Error::UnknownSubject(*user_id));
             }
             let user = fga!(User:user_id);
-            writes.push(&Group::member().tuple(&user, &group));
-            writes.push(&User::group().tuple(&group, &user));
+            writes.push(&Group::member().tuple(&user, group));
+            writes.push(&User::group().tuple(group, &user));
         }
         writes.execute().await?;
         Ok(())
     }
 
     /// Removes some users from a group
-    #[tracing::instrument(skip_all, fields(group_id, ?user_ids), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?user_ids), ret(level = Level::DEBUG), err)]
     pub async fn remove_members(
         &self,
-        group_id: i64,
+        group: &Group,
         user_ids: HashSet<i64>,
     ) -> Result<(), Error<S::Error>> {
-        let existing_members = self.group_members(group_id).await?;
+        let existing_members = self.group_members(group).await?;
         let members = user_ids.intersection(&existing_members);
-        let group = fga!(Group:group_id);
         let mut deletes = self.openfga.prepare_deletes();
         for user_id in members {
             let user = fga!(User:user_id);
-            deletes.push(&Group::member().tuple(&user, &group));
-            deletes.push(&User::group().tuple(&group, &user));
+            deletes.push(&Group::member().tuple(&user, group));
+            deletes.push(&User::group().tuple(group, &user));
         }
         deletes.execute().await?;
         Ok(())
@@ -239,9 +226,9 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn group_roles(&self, group_id: i64) -> Result<HashSet<Role>, Error<S::Error>> {
+    pub async fn group_roles(&self, group: &Group) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for group inexistence, an empty set will be returned in this case
-        let roles = Role::list_roles(&self.openfga, Group::role(), &fga!(Group:group_id)).await?;
+        let roles = Role::list_roles(&self.openfga, Group::role(), group).await?;
         Ok(roles.into_iter().collect())
     }
 
@@ -283,39 +270,37 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(group_id, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn grant_group_roles(
         &self,
-        group_id: i64,
+        group: &Group,
         roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
-        if !self.group_exists(group_id).await? {
-            return Err(Error::UnknownSubject(group_id));
+        if !self.group_exists(group.0).await? {
+            return Err(Error::UnknownSubject(group.0));
         }
-        let group = fga!(Group:group_id);
         let mut writes = self.openfga.prepare_writes();
-        let existing_roles = self.group_roles(group_id).await?;
+        let existing_roles = self.group_roles(group).await?;
         for role in roles.difference(&existing_roles) {
-            writes.push(&Group::role().tuple(&model::Role::from(*role), &group));
+            writes.push(&Group::role().tuple(&model::Role::from(*role), group));
         }
         writes.execute().await?;
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(group_id, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(group, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn revoke_group_roles(
         &self,
-        group_id: i64,
+        group: &Group,
         roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
-        if !self.group_exists(group_id).await? {
-            return Err(Error::UnknownSubject(group_id));
+        if !self.group_exists(group.0).await? {
+            return Err(Error::UnknownSubject(group.0));
         }
-        let group = fga!(Group:group_id);
         let mut deletes = self.openfga.prepare_deletes();
-        let existing_roles = self.group_roles(group_id).await?;
+        let existing_roles = self.group_roles(group).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes.push(&Group::role().tuple(&model::Role::from(*role), &group));
+            deletes.push(&Group::role().tuple(&model::Role::from(*role), group));
         }
         deletes.execute().await?;
         Ok(())
