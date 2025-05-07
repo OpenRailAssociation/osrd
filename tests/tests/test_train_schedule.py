@@ -213,7 +213,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
         )
         < 1
     )
-    offset_42_ms_brake_downhill = 27_365_028  # third stop is the end of the braking
+    offset_42_ms_brake_downhill = 27_318_065  # third stop is the end of the braking
     assert (
         abs(
             _get_current_or_next_speed_at(
@@ -235,32 +235,34 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     #   dodges this limit and starts under "high" MRSP (288 km/h), and the guidance curve change at 220 km/h is also
     #   noticeable.
     # In practice, check noticeable points of the braking curves (with the stops already checked)
-    offset_first_high_speed = 14_509_017
-    offset_first_brake_220_kph_speed = 17_544_856
+    offset_start_first_brake_high_speed = 14_509_004
+    offset_bending_guidance_point_first_brake = 17_684_268
     _assert_equal_speeds(
-        _get_current_or_next_speed_at(simulation_final_output, offset_first_high_speed),
-        kph2ms(274.176),
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_first_brake_high_speed
+        ),
+        kph2ms(274.178),
     )
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
-            simulation_final_output, offset_first_brake_220_kph_speed
+            simulation_final_output, offset_bending_guidance_point_first_brake
         ),
-        kph2ms(221.004),
+        kph2ms(217.970),
     )
 
-    offset_fourth_high_speed = 37_087_342
-    offset_fourth_brake_220_kph_speed = 37_661_601
+    offset_fourth_high_speed = 37_560_933
+    offset_fourth_brake_220_kph_speed = 37_819_833
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_fourth_high_speed
         ),
-        kph2ms(230.976),
+        kph2ms(221.94),
     )
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_fourth_brake_220_kph_speed
         ),
-        kph2ms(219.744),
+        kph2ms(215.7),
     )
 
 
@@ -366,7 +368,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
         )
         < speed_before_first_brake
     )
-    offset_start_second_brake = 40_663_532
+    offset_start_second_brake = 40_663_497
     speed_before_second_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_second_brake
     )
@@ -478,18 +480,18 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
         < speed_before_first_brake
     )
     # Check a bending point for the first stop's braking curve (where the Guidance curve's influence stops).
-    offset_bending_guidance_point = 37_210_260
+    offset_bending_guidance_point = 37_313_980
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
-    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(224.447_943_6))
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(222.444_095))
     # Check that the release part (where the speed stays at 40km/h) starts and ends at the expected offsets.
-    offset_start_release_speed = 40_827_882
+    offset_start_release_speed = 40_827_738
     speed_at_start_release_speed = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_release_speed
     )
     _assert_equal_speeds(speed_at_start_release_speed, RELEASE_SPEED_40)
-    offset_end_release_speed = 40_892_792
+    offset_end_release_speed = 40_892_587
     speed_at_end_release_speed = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_release_speed
     )
@@ -597,25 +599,25 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
         < speed_before_first_brake
     )
     # Check the first bending point for the first stop's braking curve (where the Guidance curve's influence stops).
-    offset_bending_guidance_point = 37_240_601
+    offset_bending_guidance_point = 37_239_933
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
-    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(219.751_941_6))
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(221.94))
     # Check the second bending point for the first stop's braking curve, where the indication curve followed switches
     # from the EoA indication curve to the SvL indication curve.
-    offset_bending_point_eoa_to_svl = 39_122_786
+    offset_bending_point_eoa_to_svl = 39_005_481
     speed_at_bending_point_eoa_to_svl = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_eoa_to_svl
     )
-    _assert_equal_speeds(speed_at_bending_point_eoa_to_svl, kph2ms(154.238_039_8))
+    _assert_equal_speeds(speed_at_bending_point_eoa_to_svl, kph2ms(159.411_475_5))
     # Check the third bending point for the first stop's braking curve, where the indication curve followed switches
     # back from the SvL indication curve to the EoA indication curve.
-    offset_bending_point_svl_to_eoa = 40_626_547
+    offset_bending_point_svl_to_eoa = 40_617_604
     speed_at_bending_point_svl_to_eoa = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_svl_to_eoa
     )
-    _assert_equal_speeds(speed_at_bending_point_svl_to_eoa, kph2ms(59.212_766_74))
+    _assert_equal_speeds(speed_at_bending_point_svl_to_eoa, kph2ms(60.013_601_2))
 
 
 def test_etcs_schedule_result_slowdowns(
@@ -708,7 +710,7 @@ def test_etcs_schedule_result_slowdowns(
     # * the initial target for ETCS is the actual MRSP, not adding any anticipation from driver behavior.
 
     # First slowdown
-    offset_start_brake_288_to_142 = 35_151_922
+    offset_start_brake_288_to_142 = 35_151_913
     speed_before_brake_288_to_142 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_288_to_142
     )
@@ -720,13 +722,13 @@ def test_etcs_schedule_result_slowdowns(
         < speed_before_brake_288_to_142
     )
 
-    offset_bending_guidance_point = 38_322_611
+    offset_bending_guidance_point = 38_296_384
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
     # Permitted Speed and Guidance intersect at speed ~65.8 m/s, testing a point of the curve close enough
-    # where speed is 65.307_740_6 m/s.
-    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.107_866_2))
+    # where speed is 65.499_773_3 m/s.
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.799_184_0))
 
     offset_end_brake_288_to_142 = 40_824_370
     speed_after_brake_288_to_142 = _get_current_or_next_speed_at(
@@ -741,14 +743,14 @@ def test_etcs_schedule_result_slowdowns(
     _assert_equal_speeds(speed_after_brake_288_to_142, SPEED_LIMIT_142)
 
     # Second slowdown
-    offset_start_brake_142_to_120 = 44_413_857
+    offset_start_brake_142_to_112 = 44_413_825
     speed_before_brake_142_to_120 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_start_brake_142_to_120
+        simulation_final_output, offset_start_brake_142_to_112
     )
     _assert_equal_speeds(speed_before_brake_142_to_120, SPEED_LIMIT_142)
     assert (
         _get_current_or_next_speed_at(
-            simulation_final_output, offset_start_brake_142_to_120 + 1
+            simulation_final_output, offset_start_brake_142_to_112 + 1
         )
         < speed_before_brake_142_to_120
     )
@@ -765,14 +767,14 @@ def test_etcs_schedule_result_slowdowns(
     _assert_equal_speeds(speed_after_brake_142_to_120, SPEED_LIMIT_112)
 
     # Slowdown for Safety Speed stop: should probably disappear for ETCS at some point.
-    offset_start_brake_120_to_30 = 45_635_550
+    offset_start_brake_112_to_30 = 45_635_533
     speed_before_brake_120_to_30 = _get_current_or_next_speed_at(
-        simulation_final_output, offset_start_brake_120_to_30
+        simulation_final_output, offset_start_brake_112_to_30
     )
     _assert_equal_speeds(speed_before_brake_120_to_30, SPEED_LIMIT_112)
     assert (
         _get_current_or_next_speed_at(
-            simulation_final_output, offset_start_brake_120_to_30 + 1
+            simulation_final_output, offset_start_brake_112_to_30 + 1
         )
         < speed_before_brake_120_to_30
     )
@@ -789,7 +791,7 @@ def test_etcs_schedule_result_slowdowns(
     _assert_equal_speeds(speed_after_brake_120_to_30, SAFE_SPEED_30)
 
     # Slowdown for short slip stop: should probably disappear for ETCS at some point.
-    offset_start_brake_30_to_10 = 46_697_503
+    offset_start_brake_30_to_10 = 46_697_340
     speed_before_brake_30_to_10 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_30_to_10
     )
@@ -814,7 +816,7 @@ def test_etcs_schedule_result_slowdowns(
 
     # Final slowdown: EoA (complete stop) braking curve is applied.
     # Note: This should also be impacted if Safety Speed stop and short slip stop disappear for ETCS.
-    offset_start_brake_10_to_0 = 46_953_914
+    offset_start_brake_10_to_0 = 46_953_500
     speed_before_brake_10_to_0 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_10_to_0
     )
