@@ -511,11 +511,10 @@ impl AsCoreRequest<Json<Response>> for Request {
 #[cfg(test)]
 mod tests {
     use editoast_common::units;
+    use editoast_schemas::fixtures::simple_rolling_stock;
+    use editoast_schemas::fixtures::towed_rolling_stock;
     use editoast_schemas::rolling_stock::RollingResistance;
     use pretty_assertions::assert_eq;
-
-    use crate::models::fixtures::create_simple_rolling_stock;
-    use crate::models::fixtures::create_towed_rolling_stock;
 
     use super::PhysicsConsistParameters;
 
@@ -524,8 +523,8 @@ mod tests {
             total_length: Some(units::meter::new(100.0)),
             total_mass: Some(units::kilogram::new(50000.0)),
             max_speed: Some(units::meter_per_second::new(22.0)),
-            towed_rolling_stock: Some(create_towed_rolling_stock()),
-            traction_engine: create_simple_rolling_stock(),
+            towed_rolling_stock: Some(towed_rolling_stock()),
+            traction_engine: simple_rolling_stock(),
         }
     }
 

@@ -1,4 +1,5 @@
 pub mod errors;
+pub mod fixtures;
 pub mod infra;
 pub mod paced_train;
 pub mod primitives;

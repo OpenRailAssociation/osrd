@@ -548,6 +548,8 @@ mod tests {
     use chrono::DateTime;
     use editoast_common::units;
     use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::fixtures::simple_rolling_stock;
+    use editoast_schemas::fixtures::towed_rolling_stock;
     use editoast_schemas::rolling_stock::RollingResistance;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -575,10 +577,8 @@ mod tests {
     use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_simple_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::create_towed_rolling_stock;
     use crate::models::work_schedules::WorkSchedule;
     use crate::models::work_schedules::WorkScheduleGroup;
     use crate::models::work_schedules::WorkScheduleType;
@@ -719,7 +719,7 @@ mod tests {
 
     #[test]
     fn simulation_with_towed_rolling_stock_parameters() {
-        let mut rolling_stock = create_simple_rolling_stock();
+        let mut rolling_stock = simple_rolling_stock();
         rolling_stock.mass = units::kilogram::new(100000.0);
         rolling_stock.length = units::meter::new(20.0);
         rolling_stock.inertia_coefficient = units::basis_point::new(1.10);
@@ -732,7 +732,7 @@ mod tests {
             C: units::kilogram_per_meter::new(0.0005),
         };
 
-        let towed_rolling_stock = create_towed_rolling_stock();
+        let towed_rolling_stock = towed_rolling_stock();
 
         let total_mass = units::kilogram::new(200000.0);
 
@@ -771,7 +771,7 @@ mod tests {
             total_length: Some(units::meter::new(455.0)),
             max_speed: Some(units::meter_per_second::new(10.0)),
             towed_rolling_stock: None,
-            traction_engine: create_simple_rolling_stock(),
+            traction_engine: simple_rolling_stock(),
         };
 
         let physics_consist: PhysicsConsist = simulation_parameters.into();
@@ -786,7 +786,7 @@ mod tests {
 
     #[test]
     fn simulation_without_parameters() {
-        let rolling_stock = create_simple_rolling_stock();
+        let rolling_stock = simple_rolling_stock();
         let simulation_parameters = PhysicsConsistParameters::from_traction_engine(rolling_stock);
 
         let physics_consist: PhysicsConsist = simulation_parameters.into();
@@ -801,8 +801,8 @@ mod tests {
 
     #[test]
     fn new_physics_rolling_stock_keeps_the_smallest_available_comfort_acceleration() {
-        let mut rolling_stock = create_simple_rolling_stock();
-        let mut towed_rolling_stock = create_towed_rolling_stock();
+        let mut rolling_stock = simple_rolling_stock();
+        let mut towed_rolling_stock = towed_rolling_stock();
         rolling_stock.comfort_acceleration = units::meter_per_second_squared::new(0.2);
         towed_rolling_stock.comfort_acceleration = units::meter_per_second_squared::new(0.1);
 
@@ -840,8 +840,8 @@ mod tests {
             max_speed: None,
             total_length: None,
             total_mass: None,
-            towed_rolling_stock: Some(create_towed_rolling_stock()),
-            traction_engine: create_simple_rolling_stock(),
+            towed_rolling_stock: Some(towed_rolling_stock()),
+            traction_engine: simple_rolling_stock(),
         };
 
         simulation_parameters.traction_engine.startup_acceleration =
@@ -878,7 +878,7 @@ mod tests {
             total_length: None,
             max_speed: Some(units::meter_per_second::new(30.0)),
             towed_rolling_stock: None,
-            traction_engine: create_simple_rolling_stock(),
+            traction_engine: simple_rolling_stock(),
         };
 
         let physics_consist: PhysicsConsist = simulation_parameters.into();
