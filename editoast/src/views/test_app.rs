@@ -506,6 +506,7 @@ impl TestResponse {
         self
     }
 
+    #[track_caller]
     fn render_response_lossy(self) -> String {
         if !self.log_payload {
             return "payload logging disabled".to_string();
@@ -517,6 +518,7 @@ impl TestResponse {
             .unwrap_or_else(|| "cannot render response body".to_string())
     }
 
+    #[track_caller]
     pub fn assert_status(self, expected_status: axum::http::StatusCode) -> Self {
         let actual_status = self.inner.status_code();
         if actual_status != expected_status {
@@ -536,6 +538,7 @@ impl TestResponse {
         self.inner.into_bytes().into()
     }
 
+    #[track_caller]
     pub fn content_type(&self) -> String {
         self.inner
             .header("Content-Type")
@@ -550,6 +553,7 @@ impl TestResponse {
         skip(self),
         fields(response_status = ?self.inner.status_code())
     )]
+    #[track_caller]
     pub fn json_into<T: DeserializeOwned>(self) -> T {
         let body = self.bytes();
         serde_json::from_slice(body.as_ref()).unwrap_or_else(|err| {
