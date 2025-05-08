@@ -611,23 +611,21 @@ mod tests {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let user = app
-            .user("authz", "Authz")
+        let owner = app
+            .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
             .create();
-        let user_data = whoami(&app, &user);
 
         // Check that user is the owner of the infra via /authz/Infra/{infra_id}
-        check_grant_on_resource(&app, &user, infra.id, user_data.id, Some(InfraGrant::Owner));
+        check_grant_on_resource(&app, &owner, infra.id, owner.id, Some(InfraGrant::Owner));
 
         // Create a new user and add it as a writer to the infra with the grant API
-        let user_new = app.user("new", "New Authz").create();
-        let user_new_data = whoami(&app, &user_new);
-        let request_grant = app.post("/authz/grants").by_user(&user).json(&json!({
+        let writer = app.user("writer", "Writer").create();
+        let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
             "grant": [
                 {
-                    "subject_id": user_new_data.id,
+                    "subject_id": writer.id,
                     "resource_type": Resource::Infra,
                     "resource_id": infra.id,
                     "grant": InfraGrant::Writer
@@ -637,19 +635,13 @@ mod tests {
         app.fetch(request_grant)
             .assert_status(StatusCode::NO_CONTENT);
         // Check that the new user has the good grant
-        check_grant_on_resource(
-            &app,
-            &user,
-            infra.id,
-            user_new_data.id,
-            Some(InfraGrant::Writer),
-        );
+        check_grant_on_resource(&app, &owner, infra.id, writer.id, Some(InfraGrant::Writer));
 
         // Remove the user from the API
-        let request_revoke = app.post("/authz/grants").by_user(&user).json(&json!({
+        let request_revoke = app.post("/authz/grants").by_user(&owner).json(&json!({
             "revoke": [
                 {
-                    "subject_id": user_new_data.id,
+                    "subject_id": writer.id,
                     "resource_type": Resource::Infra,
                     "resource_id": infra.id
                 }
@@ -658,7 +650,7 @@ mod tests {
         app.fetch(request_revoke)
             .assert_status(StatusCode::NO_CONTENT);
         // Check that the new user has the good grant
-        check_grant_on_resource(&app, &user, infra.id, user_new_data.id, None);
+        check_grant_on_resource(&app, &owner, infra.id, writer.id, None);
     }
 
     #[rstest]
@@ -686,13 +678,11 @@ mod tests {
             .with_infra_grant(infra.id, InfraGrant::Owner)
             .create();
 
-        let user_data = whoami(&app, &user);
-
         // Adding OWNER on the same user/infra
         let request_revoke = app.post("/authz/grants").by_user(&user).json(&json!({
             "grant": [
                 {
-                    "subject_id": user_data.id,
+                    "subject_id": user.id,
                     "resource_type": Resource::Infra,
                     "resource_id": infra.id,
                     "grant": InfraGrant::Owner
@@ -708,20 +698,19 @@ mod tests {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let user = app
-            .user("authz", "Authz")
+        let owner = app
+            .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
             .create();
 
-        let user_new = app.user("new", "New Authz").create();
-        let user_new_data = whoami(&app, &user_new);
+        let other = app.user("other", "Other").create();
 
         // Remove the READER grant should not fail
-        let request_grant = app.post("/authz/grants").by_user(&user).json(&json!({
+        let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
             "revoke": [
                 {
-                    "subject_id": user_new_data.id,
+                    "subject_id": other.id,
                     "resource_type": Resource::Infra,
                     "resource_id": infra.id,
                 }
@@ -767,11 +756,6 @@ mod tests {
             .json_into::<WhoamiResponse>();
 
         assert_eq!(roles, vec![Role::Admin]);
-    }
-
-    fn whoami(app: &TestApp, user: &impl AsRef<UserInfo>) -> WhoamiResponse {
-        let request = app.get("/authz/me").by_user(user);
-        app.fetch(request).assert_status(StatusCode::OK).json_into()
     }
 
     fn check_grant_on_resource(
