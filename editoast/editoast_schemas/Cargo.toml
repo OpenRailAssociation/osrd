@@ -4,6 +4,9 @@ license.workspace = true
 version.workspace = true
 edition.workspace = true
 
+[features]
+fixtures = []
+
 [dependencies]
 chrono.workspace = true
 derivative.workspace = true
