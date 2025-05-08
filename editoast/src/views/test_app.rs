@@ -438,7 +438,7 @@ impl<'a> UserBuilder<'a> {
                             regulator
                                 .grant_infra_owner_unchecked(
                                     &editoast_authz::User(user.id),
-                                    infra_id,
+                                    &editoast_authz::Infra(infra_id),
                                 )
                                 .await
                                 .expect("Infra owner should be granted successfully");
@@ -447,7 +447,7 @@ impl<'a> UserBuilder<'a> {
                             regulator
                                 .grant_infra_writer_unchecked(
                                     &editoast_authz::User(user.id),
-                                    infra_id,
+                                    &editoast_authz::Infra(infra_id),
                                 )
                                 .await
                                 .expect("Infra writer should be granted successfully");
@@ -456,7 +456,7 @@ impl<'a> UserBuilder<'a> {
                             regulator
                                 .grant_infra_reader_unchecked(
                                     &editoast_authz::User(user.id),
-                                    infra_id,
+                                    &editoast_authz::Infra(infra_id),
                                 )
                                 .await
                                 .expect("Infra reader should be granted successfully");
