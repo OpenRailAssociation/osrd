@@ -17,6 +17,7 @@ thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 url.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 derive_more.workspace = true

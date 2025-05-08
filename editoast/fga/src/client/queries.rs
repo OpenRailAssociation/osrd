@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::model::AsUser;
 use crate::model::Relation;
 use crate::model::Tuple;
@@ -46,8 +48,74 @@ pub(super) enum RawUser {
     },
 }
 
+#[derive(Debug, serde::Serialize)]
+pub(super) struct BatchCheckItem {
+    pub(super) correlation_id: String,
+    pub(super) tuple_key: RawTuple,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) contextual_tuples: Option<ContextualTuples>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub(super) struct BatchCheckSingleResult {
+    pub(super) allowed: bool,
+    pub(super) error: Option<CheckError>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub(super) struct CheckError {
+    pub(super) message: String,
+    // other schema fields are left out (input_error and internal_error)
+}
+
 impl Client {
-    #[tracing::instrument(skip(self), ret(level = "debug") err)]
+    // TODO: make the maximum number of checks configurable in the client
+    #[tracing::instrument(skip(self, checks), ret(level = "debug"), err)]
+    pub(super) async fn post_stores_batch_check(
+        &self,
+        store_id: &str,
+        checks: &[BatchCheckItem],
+        authorization_model_id: Option<&str>,
+        consistency: Option<Consistency>,
+    ) -> Result<HashMap<String, BatchCheckSingleResult>, RequestFailure> {
+        assert!(
+            checks.len() <= 50,
+            "OpenFGA doesn't support more than 50 batched checks by default"
+        );
+
+        #[derive(serde::Serialize)]
+        struct Request<'a> {
+            checks: &'a [BatchCheckItem],
+            #[serde(skip_serializing_if = "Option::is_none")]
+            authorization_model_id: Option<&'a str>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            consistency: Option<Consistency>,
+        }
+
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/batch-check").as_str())
+            .unwrap();
+        let response = self
+            .inner
+            .post(url)
+            .json(&Request {
+                checks,
+                authorization_model_id,
+                consistency,
+            })
+            .send()
+            .await?;
+
+        #[derive(serde::Deserialize)]
+        struct Response {
+            result: HashMap<String, BatchCheckSingleResult>,
+        }
+        let Response { result } = response.error_for_status()?.json().await?;
+        Ok(result)
+    }
+
+    #[tracing::instrument(skip(self), ret(level = "debug"), err)]
     pub(super) async fn post_stores_check(
         &self,
         store_id: &str,
