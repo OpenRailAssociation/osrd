@@ -13,7 +13,7 @@ pub struct User(pub i64);
 pub struct Group(pub i64);
 
 #[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug)]
-pub(crate) struct Infra(pub(crate) String);
+pub struct Infra(pub i64);
 
 #[derive(
     fga::User,

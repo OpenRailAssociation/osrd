@@ -170,7 +170,7 @@ async fn user_authorizations(
             // check that the infra exists before to check the grants
             if Infra::exists(conn, *infra_id).await? {
                 let is_reader = authorizer
-                    .check_infra_grant_reader(*infra_id)
+                    .check_infra_grant_reader(&authz::Infra(*infra_id))
                     .await
                     .map_err(AuthzError::from)?;
                 if is_reader {
@@ -185,7 +185,7 @@ async fn user_authorizations(
                 }
 
                 let is_writer = authorizer
-                    .check_infra_grant_writer(*infra_id)
+                    .check_infra_grant_writer(&authz::Infra(*infra_id))
                     .await
                     .map_err(AuthzError::from)?;
                 if is_writer {
@@ -200,7 +200,7 @@ async fn user_authorizations(
                 }
 
                 let is_owner = authorizer
-                    .check_infra_grant_owner(*infra_id)
+                    .check_infra_grant_owner(&authz::Infra(*infra_id))
                     .await
                     .map_err(AuthzError::from)?;
                 if is_owner {
@@ -271,7 +271,7 @@ async fn users_grants_for_resource_id(
     // consult who has access to it.
     authn
         .authorizer()?
-        .authorize_infra_read(resource_id)
+        .authorize_infra_read(&authz::Infra(resource_id))
         .await?
         .allowed()?;
 
@@ -282,7 +282,7 @@ async fn users_grants_for_resource_id(
             // Work on infra owners
             if result.len() < page_size as usize {
                 let owners = regulator
-                    .get_infra_owners(resource_id)
+                    .get_infra_owners(&authz::Infra(resource_id))
                     .await
                     .map_err(AuthzError::from)?;
                 for owner in owners {
@@ -304,7 +304,7 @@ async fn users_grants_for_resource_id(
             // Work on infra Writers
             if result.len() < page_size as usize {
                 let writers = regulator
-                    .get_infra_writers(resource_id)
+                    .get_infra_writers(&authz::Infra(resource_id))
                     .await
                     .map_err(AuthzError::from)?;
                 for writer in writers {
@@ -326,7 +326,7 @@ async fn users_grants_for_resource_id(
             // Work on infra readers
             if result.len() < page_size as usize {
                 let readers = regulator
-                    .get_infra_readers(resource_id)
+                    .get_infra_readers(&authz::Infra(resource_id))
                     .await
                     .map_err(AuthzError::from)?;
                 for reader in readers {
@@ -466,19 +466,28 @@ async fn update_grants(
                 Resource::Infra => match grant.grant {
                     InfraGrant::Reader => {
                         authorizer
-                            .grant_infra_reader(&authz::User(grant.subject_id), grant.resource_id)
+                            .grant_infra_reader(
+                                &authz::User(grant.subject_id),
+                                &authz::Infra(grant.resource_id),
+                            )
                             .await?
                             .allowed()?;
                     }
                     InfraGrant::Writer => {
                         authorizer
-                            .grant_infra_writer(&authz::User(grant.subject_id), grant.resource_id)
+                            .grant_infra_writer(
+                                &authz::User(grant.subject_id),
+                                &authz::Infra(grant.resource_id),
+                            )
                             .await?
                             .allowed()?;
                     }
                     InfraGrant::Owner => {
                         authorizer
-                            .grant_infra_owner(&authz::User(grant.subject_id), grant.resource_id)
+                            .grant_infra_owner(
+                                &authz::User(grant.subject_id),
+                                &authz::Infra(grant.resource_id),
+                            )
                             .await?
                             .allowed()?;
                     }
@@ -496,7 +505,7 @@ async fn update_grants(
             match resource_type {
                 Resource::Infra => {
                     authorizer
-                        .revoke_infra_grants(&authz::User(subject_id), resource_id)
+                        .revoke_infra_grants(&authz::User(subject_id), &authz::Infra(resource_id))
                         .await?
                         .allowed()?;
                 }

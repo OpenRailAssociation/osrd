@@ -3,7 +3,6 @@ use std::future::Future;
 
 use fga::client::QueryError;
 use fga::client::UserList;
-use fga::fga;
 use fga::model::Relation;
 use futures::stream;
 use tracing::Level;
@@ -320,16 +319,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn check_infra_grant_reader(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -338,10 +337,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::reader().check(user, &infra))
+            .check(model::Infra::reader().check(user, infra))
             .await?;
         Ok(result)
     }
@@ -350,16 +348,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn check_infra_grant_writer(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -368,10 +366,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::writer().check(user, &infra))
+            .check(model::Infra::writer().check(user, infra))
             .await?;
         Ok(result)
     }
@@ -380,16 +377,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn check_infra_grant_owner(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<bool, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -398,10 +395,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::owner().check(user, &infra))
+            .check(model::Infra::owner().check(user, infra))
             .await?;
         Ok(result)
     }
@@ -410,16 +406,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn authorize_infra_read(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -433,10 +429,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let check = self
             .openfga
-            .check(model::Infra::can_read().check(user, &infra))
+            .check(model::Infra::can_read().check(user, infra))
             .await?;
         Ok(Authorization::from_privilege_check(check))
     }
@@ -445,16 +440,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn authorize_infra_sharing_read(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -468,10 +463,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_read().check(user, &infra))
+            .check(model::Infra::can_share_read().check(user, infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -480,16 +474,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn authorize_infra_sharing_write(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -503,10 +497,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_write().check(user, &infra))
+            .check(model::Infra::can_share_write().check(user, infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -515,16 +508,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn authorize_infra_sharing_ownership(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -538,10 +531,9 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .check(model::Infra::can_share_ownership().check(user, &infra))
+            .check(model::Infra::can_share_ownership().check(user, infra))
             .await?;
         Ok(Authorization::from_privilege_check(result))
     }
@@ -549,22 +541,21 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_readers(
         &self,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Vec<UserSubject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .list_users(Infra::reader().query_users(&infra))
+            .list_users(Infra::reader().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
@@ -575,22 +566,21 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_writers(
         &self,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Vec<UserSubject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .list_users(Infra::writer().query_users(&infra))
+            .list_users(Infra::writer().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
@@ -601,22 +591,21 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn get_infra_owners(
         &self,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Vec<UserSubject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
-        let infra = fga!(Infra:infra_id);
         let result = self
             .openfga
-            .list_users(Infra::owner().query_users(&infra))
+            .list_users(Infra::owner().query_users(infra))
             .await
             .map_err(QueryError::parsing_ok)?;
 
@@ -650,16 +639,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn grant_infra_reader_unchecked(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -667,24 +656,22 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user.0));
         }
 
-        let infra = fga!(Infra:infra_id);
-
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::reader().check(user, &infra))
+            .check(Infra::reader().check(user, infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra_id).await?;
+        self.revoke_infra_grants_unchecked(user, infra).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::reader().tuple(user, &infra))
+            .write(&Infra::reader().tuple(user, infra))
             .execute()
             .await?;
 
@@ -696,12 +683,12 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         issuer: &User,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_read(issuer, infra_id)
+        self.authorize_infra_sharing_read(issuer, infra)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_reader_unchecked(user, infra_id).await?;
+                self.grant_infra_reader_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -711,16 +698,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn grant_infra_writer_unchecked(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -728,24 +715,22 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user.0));
         }
 
-        let infra = fga!(Infra:infra_id);
-
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::writer().check(user, &infra))
+            .check(Infra::writer().check(user, infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra_id).await?;
+        self.revoke_infra_grants_unchecked(user, infra).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::writer().tuple(user, &infra))
+            .write(&Infra::writer().tuple(user, infra))
             .execute()
             .await?;
 
@@ -757,12 +742,12 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         issuer: &User,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_write(issuer, infra_id)
+        self.authorize_infra_sharing_write(issuer, infra)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_writer_unchecked(user, infra_id).await?;
+                self.grant_infra_writer_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -772,16 +757,16 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn grant_infra_owner_unchecked(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
-            .infra_exists(infra_id)
+            .infra_exists(infra.0)
             .await
             .map_err(Error::Storage)?
         {
-            return Err(Error::UnknownResource(infra_id));
+            return Err(Error::UnknownResource(infra.0));
         }
 
         // Check if user exists
@@ -789,24 +774,22 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user.0));
         }
 
-        let infra = fga!(Infra:infra_id);
-
         // Avoid creating an existing tuple
         if self
             .openfga
-            .check(Infra::owner().check(user, &infra))
+            .check(Infra::owner().check(user, infra))
             .await?
         {
             return Ok(());
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra_id).await?;
+        self.revoke_infra_grants_unchecked(user, infra).await?;
 
         // Grant the new one
         self.openfga
             .prepare_writes()
-            .write(&Infra::owner().tuple(user, &infra))
+            .write(&Infra::owner().tuple(user, infra))
             .execute()
             .await?;
 
@@ -818,12 +801,12 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         issuer: &User,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_ownership(issuer, infra_id)
+        self.authorize_infra_sharing_ownership(issuer, infra)
             .await?
             .allowed_then_try(async |()| {
-                self.grant_infra_owner_unchecked(user, infra_id).await?;
+                self.grant_infra_owner_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
             .await
@@ -834,18 +817,18 @@ impl<S: StorageDriver> Regulator<S> {
         &self,
         issuer: &User,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         if !self
             .openfga
-            .check(Infra::owner().check(issuer, &fga!(Infra:infra_id)))
+            .check(Infra::owner().check(issuer, infra))
             .await?
         {
             return Ok(Authorization::Denied {
                 reason: "only owners can revoke grants",
             });
         }
-        self.revoke_infra_grants_unchecked(user, infra_id).await?;
+        self.revoke_infra_grants_unchecked(user, infra).await?;
         Ok(Authorization::Granted(()))
     }
 
@@ -853,37 +836,36 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn revoke_infra_grants_unchecked(
         &self,
         user: &User,
-        infra_id: i64,
+        infra: &Infra,
     ) -> Result<(), Error<S::Error>> {
         // No need to check if the infra exists. If it doesn't, there won't be any tuples in OpenFGA.
         // And even if there is, we're about to remove them anyway.
         // Likewise about both users.
 
-        let infra = fga!(Infra:infra_id);
         let mut delete = self.openfga.prepare_deletes();
 
         if self
             .openfga
-            .check(Infra::reader().check(user, &infra))
+            .check(Infra::reader().check(user, infra))
             .await?
         {
-            delete.push(&Infra::reader().tuple(user, &infra));
+            delete.push(&Infra::reader().tuple(user, infra));
         }
 
         if self
             .openfga
-            .check(Infra::writer().check(user, &infra))
+            .check(Infra::writer().check(user, infra))
             .await?
         {
-            delete.push(&Infra::writer().tuple(user, &infra));
+            delete.push(&Infra::writer().tuple(user, infra));
         }
 
         if self
             .openfga
-            .check(Infra::owner().check(user, &infra))
+            .check(Infra::owner().check(user, infra))
             .await?
         {
-            delete.push(&Infra::owner().tuple(user, &infra));
+            delete.push(&Infra::owner().tuple(user, infra));
         }
 
         delete.execute().await?;
