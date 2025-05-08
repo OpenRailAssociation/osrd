@@ -7,15 +7,20 @@ mod tuples;
 pub use authorization_models::AuthorizationModel;
 pub use authorization_models::StoreAuthorizationModel;
 use itertools::Either;
+use queries::BatchCheckItem;
+use queries::BatchCheckSingleResult;
 use queries::RawUser;
 use queries::UserFilter;
 pub use stores::Store;
 
 use tracing::Instrument;
 use tuples::RawTuple;
+use uuid::Uuid;
 
+use std::collections::HashMap;
 use std::future::Future;
 use std::future::{self};
+use std::str::FromStr as _;
 
 use futures::TryStreamExt as _;
 use futures::stream;
@@ -364,6 +369,25 @@ impl Client {
         .await
     }
 
+    /// Prepares multiple check requests to OpenFGA
+    ///
+    /// OpenFGA Check API do not accept more than 50 checks per request.
+    /// The [PreparedChecks] type returned by this function accepts any number
+    /// of checks through [PreparedChecks::push] and will chunk them into
+    /// requests of 50 checks each. The requests are sent concurrently when
+    /// [PreparedChecks::execute] is called.
+    ///
+    /// Beware that the checks injected into [PreparedChecks] cannot be accessed
+    /// after a [PreparedChecks::push]. So any form of post-processing is impossible.
+    /// Likewise, once a [Check] is injected into [PreparedChecks], all its typing information
+    /// is lost.
+    pub fn prepare_checks(&self) -> PreparedChecks<'_> {
+        PreparedChecks {
+            checks: Vec::new(),
+            client: self,
+        }
+    }
+
     pub async fn list_objects<R: Relation, U: AsUser<User = R::User>>(
         &self,
         QueryObjects(user, _): QueryObjects<'_, R, U>,
@@ -501,6 +525,83 @@ pub struct UserList<U: User> {
     pub users: Vec<U>,
     /// Whether the object has a user type `U` type-bound public access
     pub public_access: Option<Wildcard<U>>,
+}
+
+pub struct PreparedChecks<'a> {
+    checks: Vec<RawTuple>,
+    client: &'a Client,
+}
+
+impl PreparedChecks<'_> {
+    pub fn push<R: Relation>(&mut self, Check { user, object }: &Check<'_, R>) {
+        self.checks.push(RawTuple {
+            user: User::fga_user(*user),
+            relation: R::NAME.to_string(),
+            object: object.fga_object(),
+        });
+    }
+
+    pub fn check<R: Relation>(mut self, check: &Check<'_, R>) -> Self {
+        self.push(check);
+        self
+    }
+
+    /// Concurrently send batch-checks requests to OpenFGA in 50-check chunks
+    pub async fn execute(self) -> Result<Vec<bool>, RequestFailure> {
+        let count = self.checks.len();
+
+        // Prepare the request items
+        let (check_items, correlation_ids): (Vec<_>, HashMap<_, _>) = self
+            .checks
+            .into_iter()
+            .enumerate()
+            .map(|(check_index, tuple_key)| {
+                let correlation_id = Uuid::new_v4();
+                let item = BatchCheckItem {
+                    correlation_id: correlation_id.to_string(),
+                    tuple_key,
+                    contextual_tuples: None,
+                };
+                (item, (correlation_id, check_index))
+            })
+            .unzip();
+
+        // Prepare the requests
+        let futs = check_items.chunks(50).map(|checks| {
+            self.client
+                .post_stores_batch_check(
+                    &self.client.store.id,
+                    checks,
+                    self.client.authorization_model_id.as_deref(),
+                    None,
+                )
+                .in_current_span()
+        });
+
+        // Send the requests concurrently and combine all check results
+        let check_results = futures::future::try_join_all(futs)
+            .await?
+            .into_iter()
+            .flatten();
+
+        // Use the correlation IDs to find the index of the original checks in order to send the check results back
+        // in the same order as the checks
+        let mut result = vec![false; count];
+        for (correlation_id, BatchCheckSingleResult { allowed, error }) in check_results {
+            let Some(index) = Uuid::from_str(correlation_id.as_str())
+                .ok()
+                .and_then(|correlation_id| correlation_ids.get(&correlation_id))
+            else {
+                unreachable!("OpenFGA always returns correlation IDs we send it");
+            };
+            if let Some(error) = error {
+                tracing::error!(correlation_id, index, error = ?error.message, "batch check item failed");
+                // TODO: raise a proper error once OpenFGA errors are properly defined
+            }
+            result[*index] = allowed;
+        }
+        Ok(result)
+    }
 }
 
 pub struct PreparedWrites<'a> {
@@ -878,6 +979,30 @@ mod tests {
         client
             .assert_check(Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")))
             .assert_check_not(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+        client
+            .write_tuples(&[fga!(Infra:"france"#reader@User:"bob")])
+            .await
+            .unwrap();
+
+        // we try the operation a few times to make sure that each bool matches with the correct check
+        for _ in 0..10 {
+            let results = client
+                .prepare_checks()
+                .check(&Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")))
+                .check(&Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")))
+                .execute()
+                .await
+                .unwrap();
+            assert_eq!(results, vec![true, false]);
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
