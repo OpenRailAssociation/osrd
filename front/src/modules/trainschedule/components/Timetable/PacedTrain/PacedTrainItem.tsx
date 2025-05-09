@@ -18,7 +18,7 @@ import type {
   PacedTrainId,
   PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
@@ -41,7 +41,7 @@ type PacedTrainItemProps = {
   isProjectionPathUsed: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
 };
 

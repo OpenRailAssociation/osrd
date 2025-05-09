@@ -6,7 +6,7 @@ import type {
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
@@ -19,7 +19,7 @@ import { mapBy } from 'utils/types';
 const formatTimetableItemSummaries = (
   timetableItemIds: TimetableItemId[],
   rawSummaries: Map<TimetableItemId, SimulationSummaryResult>,
-  rawTimetableItems: Map<TimetableItemId, TimetableItemWithTimetableId>,
+  rawTimetableItems: Map<TimetableItemId, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<TimetableItemId, TimetableItemWithDetails> => {
   const relevantTimetableItems = compact(

@@ -13,12 +13,12 @@ import {
   ImportTimetableItemTrainsList,
 } from 'modules/trainschedule/components/ImportTimetableItem';
 import { setFailure } from 'reducers/main';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 type ImportTimetableItemProps = {
   timetableId: number;
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
 const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimetableItemProps) => {

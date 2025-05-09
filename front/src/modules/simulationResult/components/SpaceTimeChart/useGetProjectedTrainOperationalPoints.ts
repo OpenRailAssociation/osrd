@@ -11,7 +11,7 @@ import {
   type PathProperties,
 } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
@@ -25,7 +25,7 @@ const useGetProjectedTrainOperationalPoints = ({
 }: {
   infraId: number | undefined;
   timetableId: number | undefined;
-  timetableItemUsedForProjection?: TimetableItemWithTimetableId;
+  timetableItemUsedForProjection?: TimetableItem;
 }) => {
   const { t } = useTranslation('simulation');
 

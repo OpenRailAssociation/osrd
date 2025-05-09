@@ -14,7 +14,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
   TimetableItemId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -43,7 +43,7 @@ type TimetableToolbarProps = {
   selectedTimetableItemIds: TimetableItemId[];
   setSelectedTimetableItemIds: (selectedTimetableIds: TimetableItemId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
-  timetableItems: TimetableItemWithTimetableId[];
+  timetableItems: TimetableItem[];
 
   isInSelection: boolean;
 };

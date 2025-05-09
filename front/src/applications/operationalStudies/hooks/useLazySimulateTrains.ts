@@ -6,7 +6,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
@@ -41,9 +41,7 @@ export default function useLazySimulateTrains({
 }: UseLazySimulateTrainsOptions) {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainSimulationLazyLoader>();
-  const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItemWithTimetableId>>(
-    new Map()
-  );
+  const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItem>>(new Map());
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
     Map<TimetableItemId, TimetableItemWithDetails>
   >(new Map());
@@ -76,7 +74,7 @@ export default function useLazySimulateTrains({
     };
   }, [infraId, electricalProfileSetId, rollingStocks]);
 
-  const simulateTimetableItems = useCallback((timetableItems: TimetableItemWithTimetableId[]) => {
+  const simulateTimetableItems = useCallback((timetableItems: TimetableItem[]) => {
     for (const timetableItem of timetableItems) {
       timetableItemsByIdRef.current.set(timetableItem.id, timetableItem);
     }

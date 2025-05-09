@@ -11,7 +11,7 @@ import DotsLoader from 'common/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 import { toggleEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf';
 import { getEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
@@ -25,7 +25,7 @@ type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   itemIdToEdit?: TimetableItemId;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
   infraState?: InfraState;
   setItemIdToEdit: (itemIdToEdit?: TimetableItemId) => void;

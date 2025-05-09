@@ -6,7 +6,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
@@ -17,7 +17,7 @@ type TimesStopsOutputProps = {
   simulatedTimetableItem?: SimulationResponseSuccess;
   timetableItemWithDetails?: TimetableItemWithDetails;
   operationalPoints?: PathPropertiesFormatted['operationalPoints'];
-  selectedTimetableItem?: TimetableItemWithTimetableId;
+  selectedTimetableItem?: TimetableItem;
   path?: PathfindingResultSuccess;
   dataIsLoading: boolean;
 };

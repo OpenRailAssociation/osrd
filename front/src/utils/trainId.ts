@@ -10,7 +10,7 @@ import type {
   OccurrenceId,
   PacedTrainId,
   PacedTrainResponseWithPacedTrainId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -50,7 +50,7 @@ export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' |
 export const isException = (occurrence: Occurrence) => !!getExceptionType(occurrence);
 
 export const isPacedTrainResponseWithPacedTrainId = (
-  timetableItem: TimetableItemWithTimetableId
+  timetableItem: TimetableItem
 ): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrainId(timetableItem.id);
 
 export const isPacedTrainWithDetails = (

@@ -5,11 +5,11 @@ import type { StdcmPathProperties, StdcmSuccessResponse } from 'applications/std
 import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 const computeChartData = (
   stdcmResponse: StdcmSuccessResponse,
-  stdcmTrainResult: TimetableItemWithTimetableId,
+  stdcmTrainResult: TimetableItem,
   t: TFunction,
   rollingStock: RollingStockWithLiveries,
   pathProperties: StdcmPathProperties

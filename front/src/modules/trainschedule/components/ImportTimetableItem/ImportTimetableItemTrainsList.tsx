@@ -14,7 +14,7 @@ import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTi
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainResponseWithPacedTrainId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -37,7 +37,7 @@ type ImportTimetableItemTrainsListProps = {
   timetableId: number;
   trainsJsonData: TimetableJsonPayload;
   trainsXmlData: ImportedTrainSchedule[];
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
 const ImportTimetableItemTrainsList = ({

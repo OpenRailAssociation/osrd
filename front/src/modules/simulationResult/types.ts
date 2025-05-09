@@ -15,11 +15,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type {
-  OccurrenceId,
-  TimetableItemWithTimetableId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // Space Time Chart
@@ -49,7 +45,7 @@ export type SpeedSpaceChartData = {
 };
 
 export type ProjectionData = {
-  trainSchedule: TimetableItemWithTimetableId;
+  trainSchedule: TimetableItem;
   projectedTrains: TrainSpaceTimeData[];
   path: PathfindingResultSuccess;
   geometry: PathProperties['geometry'];

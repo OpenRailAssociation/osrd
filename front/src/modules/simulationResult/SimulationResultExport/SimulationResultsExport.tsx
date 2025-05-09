@@ -14,7 +14,7 @@ import type {
   PathfindingResultSuccess,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import exportTrainCSV from './exportTrainCSV';
 import SimulationReportSheetScenario from './SimulationReportSheetScenario';
@@ -23,7 +23,7 @@ import type { SimulationSheetData } from './types';
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
-  timetableItem: TimetableItemWithTimetableId;
+  timetableItem: TimetableItem;
   simulatedTimetableItem: SimulationResponseSuccess;
   pathElectrifications: PathPropertiesFormatted['electrifications'];
   operationalPoints: OperationalPointWithTimeAndSpeed[];

@@ -15,11 +15,7 @@ import {
   getOperationalStudiesConf,
   getOperationalStudiesTimetableID,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type {
-  TimetableItemId,
-  TimetableItemWithTimetableId,
-  TrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
@@ -37,7 +33,7 @@ import {
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void,
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void,
   setTimetableItemIdToEdit: (timetableItemIdToEdit?: TimetableItemId) => void,
   timetableItemIdToEdit?: TimetableItemId,

@@ -29,7 +29,7 @@ import {
   getStdcmTimetableID,
   getStdcmInfraID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -104,7 +104,7 @@ const useStdcm = ({
     // If the response is successful compute the chart data, otherwise only include conflicts.
     let outputs;
     if (formattedResponse.status === 'success') {
-      const stdcmTrain: TimetableItemWithTimetableId = {
+      const stdcmTrain: TimetableItem = {
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         timetable_id: timetableId,
         comfort: payload.body.comfort,

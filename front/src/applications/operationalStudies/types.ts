@@ -11,7 +11,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -146,7 +146,7 @@ export type ElectrificationVoltage = {
 };
 
 export type SimulationResultsData = {
-  selectedTimetableItem?: TimetableItemWithTimetableId;
+  selectedTimetableItem?: TimetableItem;
   selectedTimetableItemRollingStock?: RollingStockWithLiveries;
   selectedTimetableItemPowerRestrictions: LayerData<PowerRestrictionValues>[];
   timetableItemSimulation?: SimulationResponseSuccess;

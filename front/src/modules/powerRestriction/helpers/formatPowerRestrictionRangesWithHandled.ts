@@ -9,7 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { mmToKm, mToMm } from 'utils/physics';
 
 /**
@@ -79,7 +79,7 @@ const formatPowerRestrictionRangesWithHandled = ({
   pathfindingResult,
   pathProperties,
 }: {
-  selectedTimetableItem?: TimetableItemWithTimetableId;
+  selectedTimetableItem?: TimetableItem;
   selectedTrainRollingStock?: RollingStock;
   pathfindingResult: PathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;
