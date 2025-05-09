@@ -209,10 +209,9 @@ export const rollingStockEditorQueryArg = (
 
 type Conditions = Record<string, (effortCurves: EffortCurveForms | null) => boolean>;
 
-const isMultiUnitsParam = (
+export const isMultiUnitsParam = (
   param: RollingStockParametersValues[keyof RollingStockParametersValues]
-): param is MultiUnitsParameter =>
-  param ? Object.keys(param as MultiUnitsParameter).includes('value') : false;
+): param is MultiUnitsParameter => (param ? Object.keys(param).includes('value') : false);
 
 export const isInvalidCurve = (curve: EffortCurve) =>
   curve.max_efforts.length < 2 ||
