@@ -11,7 +11,7 @@ import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
-import { getExceptionType, isException, isOccurrenceId } from 'utils/trainId';
+import { getExceptionType, isException } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import type { Occurrence } from '../types';
@@ -144,7 +144,7 @@ const OccurrenceItem = ({
       tabIndex={0}
       onClick={() => {
         // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        if (isOccurrenceId(id)) selectOccurrence(id);
+        if (getExceptionType(occurrence) !== 'added') selectOccurrence(id);
       }}
     >
       <div className="main">
