@@ -41,7 +41,7 @@ const ImportTimetableItemConfig = ({
   setTrainsJsonData,
   setTrainsXmlData,
 }: ImportTimetableItemConfigProps) => {
-  const { t } = useTranslation(['operationalStudies/importTimetableItem']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<ImportStation | undefined>();

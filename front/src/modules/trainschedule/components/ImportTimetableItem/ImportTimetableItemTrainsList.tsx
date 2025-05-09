@@ -48,7 +48,7 @@ const ImportTimetableItemTrainsList = ({
   trainsXmlData,
   upsertTimetableItems,
 }: ImportTimetableItemTrainsListProps) => {
-  const { t } = useTranslation(['operationalStudies/importTimetableItem', 'translation']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
 
   const { train_schedules: trainSchedulesJsonData, paced_trains: pacedTrainsJsonData } =
     trainsJsonData;
@@ -159,10 +159,7 @@ const ImportTimetableItemTrainsList = ({
       count: trainsList.length || [...trainSchedulesJsonData, ...pacedTrainsJsonData].length,
       pacedTrainsFound: pacedTrainsJsonData.length,
       trainsFound: trainsList.length || trainSchedulesJsonData.length,
-      and:
-        !!trainSchedulesJsonData.length && !!pacedTrainsJsonData.length
-          ? t('translation:common.and')
-          : '',
+      and: !!trainSchedulesJsonData.length && !!pacedTrainsJsonData.length ? t('and') : '',
     });
   };
 

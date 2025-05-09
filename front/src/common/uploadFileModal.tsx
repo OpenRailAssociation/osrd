@@ -13,7 +13,7 @@ interface UploadFileModalProps {
 }
 
 const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
-  const { t } = useTranslation(['operationalStudies/importTimetableItem']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const { closeModal } = useContext(ModalContext);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 

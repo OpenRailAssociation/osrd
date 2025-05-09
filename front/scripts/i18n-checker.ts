@@ -61,9 +61,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:mapSettings.smoothTravel/,
 
   // Import train schedule
-  /operationalStudies\/importTimetableItem:errorMessages.errorEmptyFile/,
-  /operationalStudies\/importTimetableItem:pacedTrainCount/,
-  /operationalStudies\/importTimetableItem:trainCount/,
+  /operational-studies:importTrains.and/,
+  /operational-studies:importTrains.errorMessages.errorEmptyFile/,
+  /operational-studies:importTrains.pacedTrainCount/,
+  /operational-studies:importTrains.trainCount/,
 
   // Manage train schedule
   /operationalStudies\/manageTrainSchedule:errorMessages\..*/,

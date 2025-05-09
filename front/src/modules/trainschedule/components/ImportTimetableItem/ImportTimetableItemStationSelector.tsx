@@ -23,7 +23,7 @@ const ImportTimetableItemStationSelector = ({
   term = '',
   setTerm,
 }: ImportTimetableItemStationSelectorProps) => {
-  const { t } = useTranslation(['operationalStudies/importTimetableItem']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const [stationsList, setStationsList] = useState<ImportStation[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
