@@ -122,7 +122,8 @@ const RollingStockEditorParameterFormColumn = ({
 }) => {
   const { t } = useTranslation();
 
-  const handleUnitChange = <U extends MultiUnit>(
+  /** Handle change in value or unit in a multiunit input */
+  const handleMultiUnitParamChange = <U extends MultiUnit>(
     option: InputGroupSNCFValue<U>,
     property: SchemaProperty
   ) => {
@@ -204,7 +205,7 @@ const RollingStockEditorParameterFormColumn = ({
                   id: unit,
                   label: unit,
                 }))}
-                onChange={(option) => handleUnitChange(option, property)}
+                onChange={(option) => handleMultiUnitParamChange(option, property)}
                 min={currentParam.min}
                 max={currentParam.max}
                 isInvalid={
