@@ -143,6 +143,7 @@ const OccurrenceItem = ({
       role="button"
       tabIndex={0}
       onClick={() => {
+        if (isMenuOpen) return;
         // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
         if (getExceptionType(occurrence) !== 'added') selectOccurrence(id);
       }}
@@ -203,7 +204,10 @@ const OccurrenceItem = ({
           'show-menu': isMenuOpen,
         })}
         title={t('occurrenceMenu.occurrenceMenuButton')}
-        onClick={() => setIsMenuOpen(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsMenuOpen(true);
+        }}
       >
         <KebabHorizontal />
       </button>
