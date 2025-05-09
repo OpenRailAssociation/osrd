@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import cx from 'classnames';
 import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -121,6 +123,8 @@ const RollingStockEditorParameterFormColumn = ({
   propertiesList: SchemaProperty[];
 }) => {
   const { t } = useTranslation();
+  // The mass is sets by default to its min for a new rolling stock, so it should always be defined on first render
+  const [lastNonZeroMass, setLastNonZeroMass] = useState(rollingStockValues.mass!);
 
   /** Handle change in value or unit in a multiunit input */
   const handleMultiUnitParamChange = <U extends MultiUnit>(
@@ -129,14 +133,19 @@ const RollingStockEditorParameterFormColumn = ({
   ) => {
     const selectedParam = rollingStockValues[property.title] as MultiUnitsParameter;
 
+    const updatedSelectedParam = {
+      min: handleUnitValue(option, selectedParam, lastNonZeroMass, 'min'),
+      max: handleUnitValue(option, selectedParam, lastNonZeroMass, 'max'),
+      unit: option.unit,
+      value: handleUnitValue(option, selectedParam, lastNonZeroMass),
+    } as MultiUnitsParameter;
+    if (property.title === 'mass' && updatedSelectedParam.value) {
+      setLastNonZeroMass(updatedSelectedParam);
+    }
+
     setRollingStockValues({
       ...rollingStockValues,
-      [property.title]: {
-        min: handleUnitValue(option, selectedParam, rollingStockValues.mass, 'min'),
-        max: handleUnitValue(option, selectedParam, rollingStockValues.mass, 'max'),
-        unit: option.unit,
-        value: handleUnitValue(option, selectedParam, rollingStockValues.mass),
-      } as MultiUnitsParameter,
+      [property.title]: updatedSelectedParam,
     });
   };
 
