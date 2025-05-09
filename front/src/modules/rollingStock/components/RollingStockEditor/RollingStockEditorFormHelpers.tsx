@@ -16,7 +16,13 @@ import {
   RollingStockEditorParameter,
   RS_REQUIRED_FIELDS,
 } from 'modules/rollingStock/consts';
-import { handleUnitValue, splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
+import {
+  handleUnitValue,
+  isMassDependentUnit,
+  isMultiUnitsParam,
+  splitRollingStockProperties,
+  rescaleMassDependentParam,
+} from 'modules/rollingStock/helpers/utils';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
@@ -139,12 +145,32 @@ const RollingStockEditorParameterFormColumn = ({
       unit: option.unit,
       value: handleUnitValue(option, selectedParam, lastNonZeroMass),
     } as MultiUnitsParameter;
+
+    // If the mass has changed, we need to update the min and max of parameters expressed in mass dependent units.
+    // Undefined or zero value for the mass however would render the conversion meaningless or lose information.
+    let massDependentParams: Partial<RollingStockParametersValues> = {};
     if (property.title === 'mass' && updatedSelectedParam.value) {
+      massDependentParams = Object.fromEntries(
+        Object.entries(rollingStockValues)
+          .filter(
+            ([_, curParam]) => isMultiUnitsParam(curParam) && isMassDependentUnit(curParam.unit)
+            // TODO : investigate how curParam.unit can be undefined at runtime despite being defined according to typing
+          )
+          .map(([curPropertyTitle, massDependentParam]) => [
+            curPropertyTitle,
+            rescaleMassDependentParam(
+              massDependentParam as MultiUnitsParameter,
+              lastNonZeroMass,
+              updatedSelectedParam
+            ),
+          ])
+      );
       setLastNonZeroMass(updatedSelectedParam);
     }
 
     setRollingStockValues({
       ...rollingStockValues,
+      ...massDependentParams,
       [property.title]: updatedSelectedParam,
     });
   };
