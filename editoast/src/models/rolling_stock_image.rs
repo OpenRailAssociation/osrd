@@ -9,7 +9,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize, Model)]
 #[model(table = editoast_models::tables::rolling_stock_separate_image)]
 #[model(gen(ops = c))]
-pub struct RollingStockSeparatedImageModel {
+pub struct RollingStockImage {
     pub id: i64,
     pub order: i32,
     pub image_id: i64, // FK to document

@@ -36,7 +36,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Document;
 use crate::models::RollingStock;
-use crate::models::RollingStockSeparatedImageModel;
+use crate::models::RollingStockImage;
 use crate::models::prelude::*;
 use crate::models::rolling_stock;
 use crate::models::rolling_stock::ScenarioReference;
@@ -624,7 +624,7 @@ async fn create_livery(
             .create(conn)
             .await?;
 
-        let _ = RollingStockSeparatedImageModel::changeset()
+        let _ = RollingStockImage::changeset()
             .image_id(image.id)
             .livery_id(rolling_stock_livery.id)
             .order(index.try_into().unwrap())
