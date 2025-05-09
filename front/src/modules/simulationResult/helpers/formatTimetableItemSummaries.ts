@@ -94,6 +94,7 @@ const formatTimetableItemSummaries = (
           timeWindow: Duration.parse(formattedItem.paced.time_window),
           interval: Duration.parse(formattedItem.paced.interval),
         },
+        exceptions: [],
       };
     }
     return formattedItem;

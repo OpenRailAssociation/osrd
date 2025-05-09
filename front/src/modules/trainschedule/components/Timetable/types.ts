@@ -1,9 +1,10 @@
 import type {
   LightRollingStockWithLiveries,
+  PacedTrainException,
   PathfindingInputError,
   PathfindingNotFound,
-  TrainCategory,
   SimulationSummaryResult,
+  TrainCategory,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
@@ -55,6 +56,7 @@ export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
 
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   id: PacedTrainId;
+  exceptions: PacedTrainException[];
   paced: {
     timeWindow: Duration;
     interval: Duration;
@@ -83,6 +85,11 @@ export type TimetableFilters = {
   setTrainCategoryFilter: (categoryOption: TrainCategoryFilter) => void;
 };
 
+export type OccurrenceException = Omit<
+  PacedTrainException,
+  'key' | 'occurrence_index' | 'disabled'
+>;
+
 export type Occurrence = {
   id: OccurrenceId;
   /**
@@ -95,7 +102,7 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exceptionChangeGroups?: ExceptionChangeGroup[];
+  exceptions?: OccurrenceException;
 } & (
   | {
       isValid: true;
@@ -116,4 +123,7 @@ export type ExceptionChangeGroup =
   | 'departureTime'
   | 'constraintDistribution'
   | 'initialVelocity'
-  | 'electricalProfiles';
+  | 'electricalProfiles'
+  | 'category';
+
+export type OccurrenceExceptionChangeGroups = Extract<keyof OccurrenceException, string>;

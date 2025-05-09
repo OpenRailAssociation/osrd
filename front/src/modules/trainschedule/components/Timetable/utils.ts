@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Duration } from 'utils/duration';
 
-import specialCodeDictionary from './consts';
+import { specialCodeDictionary } from './consts';
 import type { TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */

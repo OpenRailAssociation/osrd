@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash';
+
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type {
   TimetableItemWithDetails,
@@ -17,7 +19,7 @@ import type {
 
 export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith('paced_');
 
-const isIndexedOccurrenceId = (id: string): id is IndexedOccurrenceId =>
+export const isIndexedOccurrenceId = (id: string): id is IndexedOccurrenceId =>
   id.startsWith('indexedoccurrence_');
 
 const isAddedExceptionId = (id: string): id is AddedExceptionId => id.startsWith('exception_');
@@ -37,11 +39,11 @@ export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || is
  * - An added exception that has been modified is still considered as an added exception.
  */
 export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' | null => {
-  const { id, exceptionChangeGroups } = occurrence;
+  const { id, exceptions } = occurrence;
   if (isAddedExceptionId(id)) {
     return 'added';
   }
-  if (isIndexedOccurrenceId(id) && exceptionChangeGroups && exceptionChangeGroups.length > 0) {
+  if (isIndexedOccurrenceId(id) && !isEmpty(exceptions)) {
     return 'modified';
   }
   return null;
