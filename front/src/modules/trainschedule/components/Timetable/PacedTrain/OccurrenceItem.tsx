@@ -52,7 +52,7 @@ const OccurrenceItem = ({
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
+  const { id, trainName, rollingStock, startTime, disabled, exceptions } = occurrence;
   const isAfterMidnight =
     occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
@@ -118,11 +118,11 @@ const OccurrenceItem = ({
     }
     const items = [getExceptionType(occurrence) === 'added' ? deleteItem : disable, edit, project];
 
-    if ((exceptionChangeGroups?.length ?? 0) > 0) {
+    if (exceptions && (Object.keys(exceptions).length ?? 0) > 0) {
       return addElementAtIndex(items, 2, restore);
     }
     return items;
-  }, [disabled, exceptionChangeGroups, id]);
+  }, [disabled, exceptions, id]);
 
   const occurrenceMenu = AnchoredMenu({
     children: isMenuOpen && (

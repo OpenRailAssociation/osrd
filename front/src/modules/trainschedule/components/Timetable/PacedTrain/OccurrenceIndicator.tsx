@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { getExceptionChangeGroups } from 'modules/trainschedule/helpers/pacedTrain';
 import { getExceptionType } from 'utils/trainId';
 
 import type { Occurrence } from '../types';
@@ -70,39 +71,43 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
         setIsHovering(false);
       }}
     >
-      {isHovering &&
-        occurrence.exceptionChangeGroups &&
-        occurrence.exceptionChangeGroups.length > 0 && (
-          <div
-            className="exception-info"
-            style={{
-              top: position?.top ? position.top - window.scrollY : undefined,
-              left: position?.left ? position.left - window.scrollX : undefined,
-              bottom: position?.bottom ? position.bottom - window.scrollY : undefined,
-            }}
-          >
-            <div ref={changeGroupsRef}>
-              <span className="exception-type">
-                {occurrence.disabled
-                  ? t('occurrenceType.disabledOccurrence')
-                  : exceptionType === 'modified'
-                    ? t('occurrenceType.editedOccurrence')
-                    : t('occurrenceType.addedOccurrence')}
-              </span>
-              <hr />
-              <div className="change-groups">
-                {occurrence.exceptionChangeGroups.map((changeGroup, i) => (
+      {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptions)) && (
+        <div
+          className="exception-info"
+          style={{
+            top: position?.top ? position.top - window.scrollY : undefined,
+            left: position?.left ? position.left - window.scrollX : undefined,
+            bottom: position?.bottom ? position.bottom - window.scrollY : undefined,
+          }}
+        >
+          <div ref={changeGroupsRef}>
+            <span className="exception-type">
+              {occurrence.disabled
+                ? t('occurrenceType.disabledOccurrence')
+                : exceptionType === 'modified'
+                  ? t('occurrenceType.editedOccurrence')
+                  : t('occurrenceType.addedOccurrence')}
+            </span>
+            <hr />
+            <div className="change-groups">
+              {occurrence.exceptions &&
+                getExceptionChangeGroups(occurrence.exceptions).map((changeGroup, i) => (
                   <span key={i} className="change-group">
-                    {t(`occurrenceChangeGroup.${changeGroup}`)}
+                    {changeGroup !== 'category'
+                      ? t(`occurrenceChangeGroup.${changeGroup}`)
+                      : t(
+                          `rollingStock.categoriesOptions.${occurrence.exceptions?.rolling_stock_category?.value}`,
+                          { ns: 'translation', keyPrefix: '' }
+                        )}
                   </span>
                 ))}
-              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       <span
         className={cx('icon', {
-          exception: !isEmpty(occurrence?.exceptionChangeGroups),
+          exception: !isEmpty(occurrence.exceptions),
           disabled: occurrence.disabled,
         })}
       />

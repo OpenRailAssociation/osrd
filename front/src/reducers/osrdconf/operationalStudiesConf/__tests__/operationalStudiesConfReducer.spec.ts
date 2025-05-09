@@ -124,6 +124,7 @@ describe('simulationConfReducer', () => {
           timeWindow: new Duration({ minutes: 60 }),
           interval: new Duration({ minutes: 30 }),
         },
+        exceptions: [],
       };
 
       const store = createStore();

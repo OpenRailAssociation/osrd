@@ -20,6 +20,8 @@ import type {
   TimetableItemId,
   TimetableItem,
   TrainId,
+  AddedExceptionId,
+  IndexedOccurrenceId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -61,7 +63,38 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
-  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
+  // TODO : remove this before merge
+  const testingPacedTrain: PacedTrainWithDetails = {
+    ...pacedTrain,
+    exceptions: [
+      {
+        key: 'exception_28_1234_2555_2456_4577' as AddedExceptionId,
+        train_name: {
+          value: 'coucou',
+        },
+      },
+      {
+        key: 'indexedoccurrence_28_0' as IndexedOccurrenceId,
+        occurrence_index: 2,
+        disabled: true,
+        train_name: {
+          value: 'hello',
+        },
+        rolling_stock_category: {
+          value: 'HIGH_SPEED_TRAIN',
+        },
+      },
+      {
+        key: 'indexedoccurrence_28_2' as IndexedOccurrenceId,
+        occurrence_index: 2,
+        disabled: false,
+        speed_limit_tag: {
+          value: 'MA100',
+        },
+      },
+    ],
+  };
+  const { occurrences, occurrencesCount } = useOccurrences(testingPacedTrain);
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
