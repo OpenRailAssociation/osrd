@@ -19,7 +19,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
 
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   if (!destination || pathSteps.length === 1)
     return (
       <>

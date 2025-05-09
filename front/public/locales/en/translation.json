@@ -647,6 +647,7 @@
     },
     "noSpeedLimitByTag": "No composition code",
     "terrain3DExaggeration": "3D relief scale",
+    "unableToRetrieveTags": "Impossible to get tags",
     "zone": "Zone"
   },
   "nav-bar": {

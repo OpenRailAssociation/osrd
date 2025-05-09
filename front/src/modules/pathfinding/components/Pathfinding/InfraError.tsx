@@ -2,7 +2,7 @@ import { Stop } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 export const InfraSoftError = ({ reloadCount }: { reloadCount: number }) => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   return (
     <div className="content pathfinding-error my-2">
       <span className="lead">
@@ -18,7 +18,7 @@ export const InfraSoftError = ({ reloadCount }: { reloadCount: number }) => {
 };
 
 export const InfraHardError = () => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   return (
     <div className="content pathfinding-error my-2">
       <span className="lead">

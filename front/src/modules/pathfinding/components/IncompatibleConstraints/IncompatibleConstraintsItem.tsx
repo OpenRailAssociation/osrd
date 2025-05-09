@@ -29,7 +29,7 @@ const IncompatibleConstraintItem = ({
   onClick,
   gotoMap,
 }: IncompatibleConstraintItemProps) => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const Icon = getIcon(data.type);
   let bgClass = 'bg-light';
   if (isSelected) bgClass = 'bg-success text-white';

@@ -30,7 +30,7 @@ interface IncompatibleConstraintsProps {
 }
 
 const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProps) => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const map = useMap();
 
   const [filtersConstraintState, setFiltersConstraintState] = useState<FiltersConstrainstState>({});

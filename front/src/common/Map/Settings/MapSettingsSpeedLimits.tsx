@@ -32,7 +32,7 @@ type FormatSwitchProps = {
 
 const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
   const infraID = useInfraID();
   const {
@@ -79,7 +79,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
       dispatch(
         setFailure(
           castErrorToFailure(getSpeedLimitTagsError, {
-            name: t('operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTags'),
+            name: t('mapSettings.unableToRetrieveTags'),
           })
         )
       );

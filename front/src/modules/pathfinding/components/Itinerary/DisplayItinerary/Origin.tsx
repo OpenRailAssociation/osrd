@@ -14,7 +14,7 @@ type OriginProps = {
 };
 
 const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { launchPathfinding } = useManageTrainScheduleContext();
 
   const origin = useSelector(getOrigin);

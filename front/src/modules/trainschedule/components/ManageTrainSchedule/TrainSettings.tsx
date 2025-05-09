@@ -28,7 +28,7 @@ import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 export default function TrainSettings() {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const labels = useSelector(getLabels);
   const nameFromStore = useSelector(getName);
