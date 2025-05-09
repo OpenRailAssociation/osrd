@@ -41,7 +41,7 @@ const TimetableManageTrainSchedule = ({
   setItemIdToEdit,
 }: TimetableManageTrainScheduleProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { showPacedTrains } = useSelector(getUserPreferences);
   const editingTrainIsPacedTrain = useSelector(getEditingTrainIsPacedTrain);
   const selectedTrainId = useSelector(getSelectedTrainId);

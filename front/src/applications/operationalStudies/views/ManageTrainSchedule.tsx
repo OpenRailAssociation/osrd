@@ -47,7 +47,7 @@ import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleCo
 
 const ManageTrainSchedule = () => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const {
     pathProperties,
     voltageRanges,

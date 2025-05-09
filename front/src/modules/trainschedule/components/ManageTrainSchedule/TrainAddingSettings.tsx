@@ -24,7 +24,7 @@ export default function TrainAddingSettings() {
   const [trainStep, setTrainStep] = useState(useSelector(getTrainStep));
   const [trainCount, setTrainCount] = useState(useSelector(getTrainCount));
   const [trainDelta, setTrainDelta] = useState(useSelector(getTrainDelta));
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
   const debouncedTrainStep = useDebounce(trainStep, 500);
   const debouncedTrainCount = useDebounce(trainCount, 500);

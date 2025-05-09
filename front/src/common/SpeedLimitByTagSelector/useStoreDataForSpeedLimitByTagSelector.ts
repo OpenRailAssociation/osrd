@@ -18,7 +18,7 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
   speedLimitByTag: string | undefined;
 }) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const infraID = useInfraID();
 

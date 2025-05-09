@@ -67,10 +67,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:importTrains.trainCount/,
 
   // Manage train schedule
-  /operationalStudies\/manageTrainSchedule:errorMessages\..*/,
-  /operationalStudies\/manageTrainSchedule:incompatibleConstraints\..*/,
-  /operationalStudies\/manageTrainSchedule:pathfindingErrors\..*/,
-  /operationalStudies\/manageTrainSchedule:tabs\..*/,
+  /operational-studies:manageTrainSchedule.errorMessages\..*/,
+  /operational-studies:manageTrainSchedule.incompatibleConstraints\..*/,
+  /operational-studies:manageTrainSchedule.pathfindingErrors\..*/,
+  /operational-studies:manageTrainSchedule.tabs\..*/,
 
   // Operational studies management
   /operational-studies:.*.delete/,

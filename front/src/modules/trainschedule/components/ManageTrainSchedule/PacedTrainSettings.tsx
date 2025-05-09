@@ -11,7 +11,7 @@ import { Duration } from 'utils/duration';
 const PacedTrainSettings = () => {
   const timeWindow = useSelector(getTimeWindow).total('minute');
   const interval = useSelector(getInterval).total('minute');
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
 
   return (

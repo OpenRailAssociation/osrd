@@ -30,7 +30,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
   const vias = useSelector(getVias());
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const isOriginOrDestination = useCallback(
     (op: SuggestedOP) =>

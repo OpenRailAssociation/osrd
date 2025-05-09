@@ -39,7 +39,7 @@ const AddTrainScheduleButton = ({
   isPacedTrainMode,
 }: AddTrainScheduleButtonProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const simulationConf = useSelector(getOperationalStudiesConf);
   const { showPacedTrains } = useSelector(getUserPreferences);

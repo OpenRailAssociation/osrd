@@ -4,12 +4,12 @@ import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile(
-  'public/locales/en/operationalStudies/manageTrainSchedule.json'
-);
-const frTranslations: FlatTranslations = readJsonFile(
-  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
-);
+const enTranslations: FlatTranslations = readJsonFile<{ manageTrainSchedule: FlatTranslations }>(
+  'public/locales/en/operational-studies.json'
+).manageTrainSchedule;
+const frTranslations: FlatTranslations = readJsonFile<{ manageTrainSchedule: FlatTranslations }>(
+  'public/locales/fr/operational-studies.json'
+).manageTrainSchedule;
 
 class RouteTab {
   readonly page: Page;

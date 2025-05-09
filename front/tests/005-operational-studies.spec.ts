@@ -49,12 +49,12 @@ import type {
   TimetableFilterTranslations,
 } from './utils/types';
 
-const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
-  'public/locales/en/operationalStudies/manageTrainSchedule.json'
-);
-const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
-  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
-);
+const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
+  manageTrainSchedule: ManageTrainScheduleTranslations;
+}>('public/locales/en/operational-studies.json').manageTrainSchedule;
+const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
+  manageTrainSchedule: ManageTrainScheduleTranslations;
+}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
 
 const enTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/en/translation.json'

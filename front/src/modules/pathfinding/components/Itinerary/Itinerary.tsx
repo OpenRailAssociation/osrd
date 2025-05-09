@@ -39,7 +39,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();
   const map = useSelector(getMap);
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { openModal } = useModal();
 
   const { pathProperties, setPathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =

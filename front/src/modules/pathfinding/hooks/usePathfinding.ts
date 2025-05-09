@@ -51,7 +51,7 @@ const usePathfinding = ({
   rollingStockId: number | undefined;
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
 }) => {
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
