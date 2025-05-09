@@ -40,7 +40,7 @@ import {
  */
 const getNgeTrainrunFrequencies = (
   state: MacroEditorState,
-  t: TFunction<'operationalStudies/scenario'>
+  t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] => {
   // Get the default frequencies (TrainSchedule/30min/60min/120min)
   const trainrunFrequencies = getDefaultTrainrunFrequencies(t);
@@ -55,7 +55,7 @@ const getNgeTrainrunFrequencies = (
           order: 0, // temporary order
           frequency: intervalInMinutes,
           offset: 0,
-          name: t('macroEditor.intervalXmin', { minutes: intervalInMinutes }),
+          name: t('main.macroEditor.intervalXmin', { minutes: intervalInMinutes }),
           shortName: `${intervalInMinutes}`,
           linePatternRef: '60',
         };
@@ -183,7 +183,7 @@ const castNodeToNge = (
 export const loadAndIndexNge = async (
   state: MacroEditorState,
   dispatch: AppDispatch,
-  t: TFunction<'operationalStudies/scenario'>
+  t: TFunction<'operational-studies'>
 ): Promise<void> => {
   // Load path items
   let nbNodesIndexed = 0;

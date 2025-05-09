@@ -16,7 +16,7 @@ type OccurrenceIndicatorProps = {
 const TOOLTIP_BOTTOM_MARGIN = 24;
 
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
-  const { t } = useTranslation('operationalStudies/scenario', { keyPrefix: 'timetable' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
   const exceptionType = getExceptionType(occurrence);
   const dotRef = useRef<HTMLDivElement>(null);
   const changeGroupsRef = useRef<HTMLDivElement>(null);

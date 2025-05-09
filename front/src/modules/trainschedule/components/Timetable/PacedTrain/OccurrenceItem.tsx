@@ -46,7 +46,7 @@ const OccurrenceItem = ({
   nextOccurrence,
   selectOccurrence,
 }: OccurrenceItemProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);

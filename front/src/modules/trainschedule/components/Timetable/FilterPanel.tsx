@@ -16,7 +16,7 @@ type FilterPanelProps = {
 };
 
 const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   const {
     nameLabelFilter,

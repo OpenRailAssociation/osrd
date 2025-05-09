@@ -14,23 +14,23 @@ const DeleteModal = ({
   selectedPacedTrainIds,
   selectedTrainScheduleIds,
 }: DeleteModalProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
+  const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal } = useModal();
 
   const deleteTimetableItemsComputedLabel = () => {
     if (selectedPacedTrainIds.length > 0 && selectedTrainScheduleIds.length === 0) {
-      return t('timetable.deletePacedTrainSelectionConfirmation', {
+      return t('main.timetable.deletePacedTrainSelectionConfirmation', {
         selectedPacedTrainsCount: selectedPacedTrainIds.length,
       });
     }
 
     if (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length === 0) {
-      return t('timetable.deleteTrainSelectionConfirmation', {
+      return t('main.timetable.deleteTrainSelectionConfirmation', {
         selectedTrainSchedulesCount: selectedTrainScheduleIds.length,
       });
     }
 
-    return t('timetable.deletePacedTrainAndTrainSelectionConfirmation', {
+    return t('main.timetable.deletePacedTrainAndTrainSelectionConfirmation', {
       selectedPacedTrainsCount: selectedPacedTrainIds.length,
       selectedTrainSchedulesCount: selectedTrainScheduleIds.length,
     });

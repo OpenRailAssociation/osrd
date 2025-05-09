@@ -26,7 +26,7 @@ const ConflictsList = ({
   toggleConflictsList,
   onConflictClick,
 }: ConflictsListProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const enrichedConflicts = useMemo(
     () => addTrainNamesToConflicts(conflicts, timetableItems),
     [conflicts, timetableItems]

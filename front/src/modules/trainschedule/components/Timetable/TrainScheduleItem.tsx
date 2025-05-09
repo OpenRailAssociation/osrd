@@ -54,7 +54,7 @@ const TrainScheduleItem = ({
   projectionPathIsUsed,
   selectTrainToEdit,
 }: TrainScheduleItemProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
   const [postTrainSchedule] =

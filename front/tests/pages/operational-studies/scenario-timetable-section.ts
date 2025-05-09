@@ -14,12 +14,12 @@ type ScenarioTranslations = {
   timetable: FlatTranslations;
 };
 
-const enTranslations: ScenarioTranslations = readJsonFile(
-  'public/locales/en/operationalStudies/scenario.json'
-);
-const frTranslations: ScenarioTranslations = readJsonFile(
-  'public/locales/fr/operationalStudies/scenario.json'
-);
+const enTranslations: ScenarioTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/en/operational-studies.json').main;
+const frTranslations: ScenarioTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/fr/operational-studies.json').main;
 
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainsMessage: Locator;

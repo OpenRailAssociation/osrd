@@ -180,14 +180,14 @@ export const getSavedMacroNodes = async (
  * Return the default TrainrunFrequencies with their translated names.
  */
 export const getDefaultTrainrunFrequencies = (
-  t: TFunction<'operationalStudies/scenario'>
+  t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] =>
   DEFAULT_TRAINRUN_FREQUENCIES.map((freq) => ({
     ...freq,
     name:
       freq.id === TRAIN_SCHEDULE_FREQUENCY_ID
-        ? t('macroEditor.uniqueTrainSchedule')
-        : t('macroEditor.intervalXmin', { minutes: freq.frequency }),
+        ? t('main.macroEditor.uniqueTrainSchedule')
+        : t('main.macroEditor.intervalXmin', { minutes: freq.frequency }),
   }));
 
 /**
