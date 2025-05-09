@@ -508,3 +508,54 @@ export const handleUnitValue = <U extends MultiUnit>(
   }
   return +valueToConvert;
 };
+
+/**
+ * Updates a value expressed in a mass dependent unit when the mass change
+ * so that the value expressed in a mass independent value does not change.
+ * We assume mass dependent units only depend on the mass as 'MultiUnit/t'.
+ */
+const rescaleMassDependentValue = (
+  massDependentValue: number,
+  previousMassValue: number,
+  previousMassUnit: MultiUnit,
+  newMassValue: number,
+  newMassUnit: MultiUnit
+) => {
+  const previousMassInTons =
+    previousMassUnit !== 't'
+      ? convertUnits(previousMassUnit, 't', previousMassValue)
+      : previousMassValue;
+  const newMassInTons =
+    newMassUnit !== 't' ? convertUnits(newMassUnit, 't', newMassValue) : newMassValue;
+
+  return (massDependentValue * previousMassInTons) / newMassInTons;
+};
+
+/** Updates the min and max of a mass dependent parameter so that they remain unchanged
+ *  in their initial mass independent unit.
+ *
+ *  We may want to update the value of the parameter too in the future, but for now
+ *  we assume the user inputed mass dependent value was deliberate and should remain.
+ */
+export const rescaleMassDependentParam = (
+  massDependentParam: MultiUnitsParameter,
+  previousMass: MultiUnitsParameter,
+  newMass: MultiUnitsParameter
+): MultiUnitsParameter => ({
+  min: rescaleMassDependentValue(
+    massDependentParam.min,
+    previousMass.value,
+    previousMass.unit,
+    newMass.value,
+    newMass.unit
+  ),
+  max: rescaleMassDependentValue(
+    massDependentParam.max,
+    previousMass.value,
+    previousMass.unit,
+    newMass.value,
+    newMass.unit
+  ),
+  unit: massDependentParam.unit,
+  value: massDependentParam.value,
+});

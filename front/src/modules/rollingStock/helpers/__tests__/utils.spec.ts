@@ -11,6 +11,7 @@ import {
   handleUnitValue,
   isMassDependentUnit,
   makeEffortCurve,
+  rescaleMassDependentParam,
 } from 'modules/rollingStock/helpers/utils';
 import type {
   EffortCurveForms,
@@ -408,6 +409,32 @@ describe('multi units parameter conversion', () => {
 
     it('should return false for tons themselves', () => {
       expect(isMassDependentUnit('t')).toBe(false);
+    });
+  });
+
+  describe('updateMassDependentParam', () => {
+    it('should update min and max based on new mass values with different units', () => {
+      const previousMass: MultiUnitsParameter = { value: 20000, unit: 'kg', min: 0, max: 0 };
+      const newMass: MultiUnitsParameter = { value: 10, unit: 't', min: 0, max: 0 };
+      const param: MultiUnitsParameter = { unit: 'kN/t', value: 1, min: 0.1, max: 2 };
+
+      const updated = rescaleMassDependentParam(param, previousMass, newMass);
+      expect(updated.min).toBeCloseTo(0.2, 10);
+      expect(updated.max).toBeCloseTo(4, 10);
+      expect(updated.value).toEqual(1);
+      expect(updated.unit).toEqual('kN/t');
+    });
+
+    it('should update min and max based on new mass values with the same unit', () => {
+      const previousMass: MultiUnitsParameter = { value: 5, unit: 't', min: 0, max: 0 };
+      const newMass: MultiUnitsParameter = { value: 10, unit: 't', min: 0, max: 0 };
+      const param: MultiUnitsParameter = { unit: 'kN/t', value: 2, min: 0.1, max: 2 };
+
+      const updated = rescaleMassDependentParam(param, previousMass, newMass);
+      expect(updated.min).toBeCloseTo(0.05, 10);
+      expect(updated.max).toBeCloseTo(1, 10);
+      expect(updated.value).toEqual(2); // This value thus becomes out of the defined range
+      expect(updated.unit).toEqual('kN/t');
     });
   });
 });
