@@ -39,7 +39,7 @@ pub use infra_objects::*;
 pub use paced_train::PacedTrain;
 pub use project::Project;
 pub use rolling_stock::RollingStock;
-pub use rolling_stock_image::RollingStockSeparatedImageModel;
+pub use rolling_stock_image::RollingStockImage;
 pub use scenario::Scenario;
 pub use study::Study;
 pub use tags::Tags;
