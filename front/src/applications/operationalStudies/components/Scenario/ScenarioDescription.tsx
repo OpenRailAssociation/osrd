@@ -27,7 +27,7 @@ const ScenarioDescription = ({
   infraReloadCount,
   collapseTimetable,
 }: ScenarioDescriptionProps) => {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const { openModal } = useModal();
   const [isOpenedDescription, setIsOpenedDescription] = useState<boolean>(false);
   const expandedDescriptionRef = useRef<HTMLDivElement | null>(null);

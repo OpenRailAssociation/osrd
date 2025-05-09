@@ -17,7 +17,7 @@ const TimetableItemActions = ({
   editTimetableItem,
   deleteTimetableItem,
 }: TimetableItemActionsProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   return (
     <div className="action-buttons">
       <button

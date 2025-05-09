@@ -7,7 +7,7 @@ type MicroMacroSwitchProps = {
 };
 
 const MicroMacroSwitch = ({ isMacro, setIsMacro }: MicroMacroSwitchProps) => {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('operational-studies');
   return (
     <div className="micro-macro-buttons">
       <button
@@ -16,7 +16,7 @@ const MicroMacroSwitch = ({ isMacro, setIsMacro }: MicroMacroSwitchProps) => {
         tabIndex={0}
         onClick={() => setIsMacro(false)}
       >
-        {t('microscopic')}
+        {t('main.microscopic')}
       </button>
       <div className="micro-macro-separator" />
       <button
@@ -25,7 +25,7 @@ const MicroMacroSwitch = ({ isMacro, setIsMacro }: MicroMacroSwitchProps) => {
         tabIndex={0}
         onClick={() => setIsMacro(true)}
       >
-        {t('macroscopic')}
+        {t('main.macroscopic')}
       </button>
     </div>
   );

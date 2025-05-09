@@ -62,7 +62,7 @@ const emptyScenario: ScenarioForm = {
 };
 
 const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScenarioModalProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
+  const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
 
   const noElectricalProfileSetOption = {
     key: undefined,
-    value: t('noElectricalProfileSet').toString(),
+    value: t('main.noElectricalProfileSet').toString(),
   };
 
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as createScenarioParams;
@@ -205,8 +205,8 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         .then(() => {
           dispatch(
             setSuccess({
-              title: t('scenarioUpdated'),
-              text: t('scenarioUpdatedDetails', { name: currentScenario.name }),
+              title: t('main.scenarioUpdated'),
+              text: t('main.scenarioUpdatedDetails', { name: currentScenario.name }),
             })
           );
           closeModal();
@@ -228,8 +228,8 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           closeModal();
           dispatch(
             setSuccess({
-              title: t('scenarioDeleted'),
-              text: t('scenarioDeletedDetails', { name: scenario.name }),
+              title: t('main.scenarioDeleted'),
+              text: t('main.scenarioDeletedDetails', { name: scenario.name }),
             })
           );
         })
@@ -237,8 +237,8 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           console.error(error);
           dispatch(
             setFailure({
-              name: t('errorMessages.error'),
-              message: t('errorMessages.unableToDeleteScenarioMessage'),
+              name: t('main.errorMessages.error'),
+              message: t('main.errorMessages.unableToDeleteScenarioMessage'),
             })
           );
         });
@@ -275,7 +275,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
       )}
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
-          {editionMode ? t('scenarioModificationTitle') : t('scenarioCreationTitle')}
+          {editionMode ? t('main.scenarioModificationTitle') : t('main.scenarioCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
@@ -292,13 +292,13 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
                     <span className="mr-2">
                       <MdTitle />
                     </span>
-                    <span className="font-weight-bold">{t('scenarioName')}</span>
+                    <span className="font-weight-bold">{t('main.scenarioName')}</span>
                   </div>
                 }
                 value={currentScenario.name || ''}
                 onChange={(e) => handleScenarioInputChange('name', e.target.value)}
                 isInvalid={displayErrors && invalidFields.name}
-                errorMsg={t('scenarioNameInvalid')}
+                errorMsg={t('main.scenarioNameInvalid')}
               />
             </div>
             <div className="scenario-edition-modal-description">
@@ -309,14 +309,14 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
                     <span className="mr-2">
                       <MdDescription />
                     </span>
-                    {t('scenarioDescription')}
+                    {t('main.scenarioDescription')}
                   </div>
                 }
                 value={currentScenario.description || ''}
                 onChange={(e) => handleScenarioInputChange('description', e.target.value)}
-                placeholder={t('scenarioDescriptionPlaceholder')}
+                placeholder={t('main.scenarioDescriptionPlaceholder')}
                 isInvalid={displayErrors && invalidFields.description}
-                errorMsg={t('scenarioDescriptionInvalid')}
+                errorMsg={t('main.scenarioDescriptionInvalid')}
               />
             </div>
             {!editionMode && electricalProfilOptions.length > 1 && (
@@ -327,7 +327,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
                       <span className="mr-2">
                         <GiElectric />
                       </span>
-                      {t('electricalProfileSet')}
+                      {t('main.electricalProfileSet')}
                     </div>
                   }
                   value={selectedValue}
@@ -348,7 +348,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               addTag={addTag}
               tags={currentScenario.tags || []}
               removeTag={removeTag}
-              title={t('scenarioTags')}
+              title={t('main.scenarioTags')}
               color="teal"
             />
           </div>
@@ -378,11 +378,11 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               <span className="mr-2">
                 <Trash />
               </span>
-              {t('scenarioDeleteButton')}
+              {t('main.scenarioDeleteButton')}
             </button>
           )}
           <button className="btn btn-sm btn-secondary mr-2" type="button" onClick={closeModal}>
-            {t('scenarioCancel')}
+            {t('main.scenarioCancel')}
           </button>
           {editionMode ? (
             <button
@@ -394,7 +394,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               <span className="mr-2">
                 <Pencil />
               </span>
-              {t('scenarioModifyButton')}
+              {t('main.scenarioModifyButton')}
             </button>
           ) : (
             <button
@@ -406,7 +406,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               <span className="mr-2">
                 <FaPlus />
               </span>
-              {t('scenarioCreateButton')}
+              {t('main.scenarioCreateButton')}
             </button>
           )}
         </div>

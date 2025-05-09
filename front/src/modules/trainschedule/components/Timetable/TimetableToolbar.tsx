@@ -60,7 +60,7 @@ const TimetableToolbar = ({
   timetableItems,
   isInSelection,
 }: TimetableToolbarProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
+  const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
 
@@ -260,7 +260,7 @@ const TimetableToolbar = ({
       });
     }
 
-    return `${pacedTrainLabel}\u00A0${t('translation:common.and')}\u00A0${trainScheduleLabel}`;
+    return `${pacedTrainLabel}\u00A0${t('and')}\u00A0${trainScheduleLabel}`;
   };
 
   return (

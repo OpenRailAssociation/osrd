@@ -18,12 +18,12 @@ import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type { CommonTranslations, TimetableFilterTranslations } from './utils/types';
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile(
-  'public/locales/en/operationalStudies/scenario.json'
-);
-const frScenarioTranslations: TimetableFilterTranslations = readJsonFile(
-  'public/locales/fr/operationalStudies/scenario.json'
-);
+const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/en/operational-studies.json').main;
+const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/fr/operational-studies.json').main;
 
 const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');

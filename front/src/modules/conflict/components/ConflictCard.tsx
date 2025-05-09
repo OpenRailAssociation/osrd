@@ -12,7 +12,7 @@ const ConflictCard = ({
   conflict: ConflictWithTrainNames;
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 }) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const start_time = formatToLocalTime(conflict.start_time);
   const end_time = formatToLocalTime(conflict.end_time);
   const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');

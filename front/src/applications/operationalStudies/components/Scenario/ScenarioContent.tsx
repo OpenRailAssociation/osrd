@@ -43,7 +43,7 @@ const ScenarioContent = ({
   infra,
   infraMetadata: { isInfraLoaded, reloadCount },
 }: ScenarioDescriptionProps) => {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(

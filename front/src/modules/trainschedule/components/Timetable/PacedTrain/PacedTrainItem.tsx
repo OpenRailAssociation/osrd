@@ -56,7 +56,7 @@ const PacedTrainItem = ({
   upsertTimetableItems,
   removePacedTrains,
 }: PacedTrainItemProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
 

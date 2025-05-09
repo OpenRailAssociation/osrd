@@ -18,7 +18,7 @@ type Props = {
 };
 
 export default function InfraLoadingState({ infra }: Props) {
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   return (
     <div

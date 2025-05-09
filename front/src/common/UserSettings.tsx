@@ -76,7 +76,7 @@ const UserSettings = () => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
   }, [debouncedSafeWord]);
 
-  const { t } = useTranslation(['translation', 'operationalStudies/scenario']);
+  const { t } = useTranslation(['translation', 'operational-studies']);
   return (
     <>
       <ModalHeaderSNCF withCloseButton>
@@ -143,7 +143,7 @@ const UserSettings = () => {
                   )
                 }
               />
-              <div className="ml-2">{t('operationalStudies/scenario:timetable.pacedTrain')}</div>
+              <div className="ml-2">{t('operational-studies:main.timetable.pacedTrain')}</div>
             </div>
           )
         }
