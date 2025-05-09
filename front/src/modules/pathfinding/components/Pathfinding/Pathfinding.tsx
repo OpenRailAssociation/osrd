@@ -94,7 +94,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
               </span>
               <span className="flex-grow-1">
                 {pathfindingState.error
-                  ? t('pathfindingError', { errorMessage: t(pathfindingState.error) })
+                  ? t('pathfindingError', { errorMessage: pathfindingState.error })
                   : t('InvalidTrainScheduleStep')}
               </span>
             </div>
