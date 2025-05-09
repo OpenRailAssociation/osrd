@@ -436,8 +436,11 @@ export const convertUnits = (
   return maxDecimals ? floor(result, maxDecimals) : result;
 };
 
-export const isConversionWithTon = (previousUnit: string, newUnit: string) =>
-  previousUnit !== 't' && newUnit !== 't' && (previousUnit.endsWith('t') || newUnit.endsWith('t'));
+export const isMassDependentUnit = (unit?: string) =>
+  unit !== undefined && unit !== 't' && unit.endsWith('t');
+
+export const isConversionWithTon = (previousUnit: MultiUnit, newUnit: MultiUnit) =>
+  isMassDependentUnit(previousUnit) || isMassDependentUnit(newUnit);
 
 /**
  * For the rollingstock resistance (a, b or c), check if its unit
@@ -450,21 +453,19 @@ export const convertUnitsWithMass = (
   previousUnit: MultiUnit,
   newUnit: MultiUnit,
   currentMassValue: number,
-  currentMassUnit: string,
+  currentMassUnit: MultiUnit,
   previousValue: number
 ) => {
-  let convertedValue = previousValue;
-
   const massInTons =
     currentMassUnit === 'kg' ? convertUnits('kg', 't', currentMassValue) : currentMassValue;
-  if (isConversionWithTon(previousUnit, newUnit)) {
-    if (newUnit.endsWith('t')) {
-      convertedValue =
-        convertUnits(previousUnit, newUnit.slice(0, -2) as MultiUnit, previousValue) / massInTons;
-    } else {
-      convertedValue =
-        convertUnits(previousUnit.slice(0, -2) as MultiUnit, newUnit, previousValue) * massInTons;
-    }
+
+  let convertedValue = previousValue;
+  if (isMassDependentUnit(newUnit)) {
+    convertedValue =
+      convertUnits(previousUnit, newUnit.slice(0, -2) as MultiUnit, previousValue) / massInTons;
+  } else if (isMassDependentUnit(previousUnit)) {
+    convertedValue =
+      convertUnits(previousUnit.slice(0, -2) as MultiUnit, newUnit, previousValue) * massInTons;
   }
 
   return convertedValue;

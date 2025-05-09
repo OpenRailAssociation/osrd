@@ -9,6 +9,7 @@ import {
   convertUnits,
   convertUnitsWithMass,
   handleUnitValue,
+  isMassDependentUnit,
   makeEffortCurve,
 } from 'modules/rollingStock/helpers/utils';
 import type {
@@ -389,6 +390,24 @@ describe('multi units parameter conversion', () => {
         multiUnitsParams.mass
       );
       expect(convertedValue).toEqual(0.15);
+    });
+  });
+
+  describe('isMassDependentUnit', () => {
+    it('should return true for a mass dependent unit like "kN/t"', () => {
+      expect(isMassDependentUnit('kN/t')).toBe(true);
+    });
+
+    it('should return false for a non-mass dependent unit like "kN"', () => {
+      expect(isMassDependentUnit('kN')).toBe(false);
+    });
+
+    it('should return false for null or undefined', () => {
+      expect(isMassDependentUnit(undefined)).toBe(false);
+    });
+
+    it('should return false for tons themselves', () => {
+      expect(isMassDependentUnit('t')).toBe(false);
     });
   });
 });
