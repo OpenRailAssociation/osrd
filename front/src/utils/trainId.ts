@@ -134,7 +134,7 @@ export const extractEditoastIdFromPacedTrainId = (pacedTrainId: PacedTrainId): n
  * Given a paced train id with a PacedTrainId format (used across the front),
  * returns the occurrence id with an OccurrenceId format (used across the front).
  */
-export const formatPacedTrainIdToOccurrenceId = (
+export const formatPacedTrainIdToIndexedOccurrenceId = (
   pacedTrainId: PacedTrainId,
   occurrenceIndex: number
 ): IndexedOccurrenceId => {

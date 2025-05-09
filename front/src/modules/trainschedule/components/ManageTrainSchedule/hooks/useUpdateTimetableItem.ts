@@ -20,7 +20,7 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
-  formatPacedTrainIdToOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
 } from 'utils/trainId';
@@ -75,7 +75,7 @@ const useUpdateTimetableItem = (
         isOccurrenceId(selectedTrainId) &&
         extractPacedTrainIdFromOccurrenceId(selectedTrainId) === timetableItemIdToEdit
           ? selectedTrainId
-          : formatPacedTrainIdToOccurrenceId(updatedItem.id, 0);
+          : formatPacedTrainIdToIndexedOccurrenceId(updatedItem.id, 0);
     } else {
       const updatedItem = await storeTrainSchedule(
         timetableItemIdToEdit,

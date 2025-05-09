@@ -5,7 +5,7 @@ import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdc
 import {
   formatEditoastIdToTrainScheduleId,
   formatEditoastIdToIndexedOccurrenceId,
-  formatPacedTrainIdToOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   extractEditoastIdFromPacedTrainId,
@@ -96,13 +96,13 @@ describe('extractEditoastIdFromPacedTrainId', () => {
 describe('formatPacedTrainIdToOccurrenceId', () => {
   it('should return the occurrenceId', () => {
     const pacedTrainId = 'paced_123' as PacedTrainId;
-    const result = formatPacedTrainIdToOccurrenceId(pacedTrainId, 0);
+    const result = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0);
     expect(result).toBe('indexedoccurrence_123_0');
   });
 
   it('should throw if pacedTrainId is invalid', () => {
     const pacedTrainId = 'invalid_paced_123' as PacedTrainId;
-    expect(() => formatPacedTrainIdToOccurrenceId(pacedTrainId, 0)).toThrow(
+    expect(() => formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0)).toThrow(
       'The paced train id should start with "paced_"'
     );
   });

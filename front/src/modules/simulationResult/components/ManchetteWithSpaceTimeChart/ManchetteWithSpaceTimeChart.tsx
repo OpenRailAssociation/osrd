@@ -43,7 +43,7 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
-  formatPacedTrainIdToOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   isTrainScheduleProjection,
   isOccurrenceId,
@@ -123,7 +123,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             .toDate();
           occurrences.push({
             ...train,
-            id: formatPacedTrainIdToOccurrenceId(pacedTrainId, i),
+            id: formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i),
             name: computeOccurrenceName(train.name, i),
             departureTime: occurrenceStartTime,
           });

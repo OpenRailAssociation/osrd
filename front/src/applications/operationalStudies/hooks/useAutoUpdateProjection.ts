@@ -13,7 +13,7 @@ import {
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
-  formatPacedTrainIdToOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -68,7 +68,7 @@ const useAutoUpdateProjection = (
       dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
       const newTrainIdToSelect = isTrainScheduleId(firstValidTrain.id)
         ? firstValidTrain.id
-        : formatPacedTrainIdToOccurrenceId(firstValidTrain.id, 0);
+        : formatPacedTrainIdToIndexedOccurrenceId(firstValidTrain.id, 0);
       dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }
   }, [timetableItemIds, infra, timetableItemsWithDetails]);
