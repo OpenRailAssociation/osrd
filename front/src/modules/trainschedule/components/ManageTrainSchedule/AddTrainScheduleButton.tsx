@@ -10,7 +10,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainResponseWithPacedTrainId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';
@@ -29,7 +29,7 @@ import {
 type AddTrainScheduleButtonProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   isPacedTrainMode: boolean;
 };
 

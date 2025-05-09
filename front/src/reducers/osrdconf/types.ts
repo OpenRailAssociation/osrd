@@ -169,6 +169,4 @@ export type PacedTrainResponseWithPacedTrainId = Omit<PacedTrainResponse, 'id'> 
   id: PacedTrainId;
 };
 
-export type TimetableItemWithTimetableId =
-  | TrainScheduleResponseWithTrainId
-  | PacedTrainResponseWithPacedTrainId;
+export type TimetableItem = TrainScheduleResponseWithTrainId | PacedTrainResponseWithPacedTrainId;

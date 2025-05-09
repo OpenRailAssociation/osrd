@@ -9,7 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
@@ -219,7 +219,7 @@ export const isInvalidName = (name?: string | null) =>
  * @returns true if the scheduled points are not honored
  */
 export const isScheduledPointsNotHonored = (
-  timetableItem: TimetableItemWithTimetableId,
+  timetableItem: TimetableItem,
   timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
   if (timetableItemSummary.path_item_times_final.length !== timetableItem.path.length) {
@@ -251,7 +251,7 @@ export const isScheduledPointsNotHonored = (
   });
 };
 
-export const getPathItemByIndexDict = (timetableItemResult: TimetableItemWithTimetableId) =>
+export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
   timetableItemResult.path.reduce((acc, pathItem, index) => {
     acc[pathItem.id] = index;
     return acc;
@@ -264,7 +264,7 @@ export const getPathItemByIndexDict = (timetableItemResult: TimetableItemWithTim
  * @returns true if the train is too fast
  */
 export const isTooFast = (
-  timetableItem: TimetableItemWithTimetableId,
+  timetableItem: TimetableItem,
   timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
   if (

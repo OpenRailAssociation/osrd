@@ -7,7 +7,7 @@ import {
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
@@ -223,7 +223,7 @@ export const getFrequencyFromFrequencyId = (
  * Get the associated TrainrunFrequency of a TimetableItem.
  */
 export const getTrainrunFrequencyFromTimetableItem = (
-  timetableItem: TimetableItemWithTimetableId,
+  timetableItem: TimetableItem,
   state: MacroEditorState
 ): TrainrunFrequency => {
   if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {

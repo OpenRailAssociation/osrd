@@ -2,7 +2,7 @@ import { keyBy } from 'lodash';
 import { describe, it, expect } from 'vitest';
 
 import type { ScheduleEntry } from 'modules/timesStops/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import computeMargins, { getTheoreticalMargins } from '../computeMargins';
 
@@ -51,7 +51,7 @@ describe('computeMargins', () => {
   ];
 
   it('should compute simple margin', () => {
-    const train = { path, margins, schedule } as TimetableItemWithTimetableId;
+    const train = { path, margins, schedule } as TimetableItem;
     const scheduleByAt: Record<string, ScheduleEntry> = keyBy(train.schedule, 'at');
     const theoreticalMargins = getTheoreticalMargins(train);
     expect(computeMargins(theoreticalMargins, train, scheduleByAt, 0, pathItemTimes)).toEqual({
@@ -96,7 +96,7 @@ describe('getTheoreticalMargins', () => {
   it('should compute theoretical margins with boundaries correctly', () => {
     const path = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
     const margins = { boundaries: ['c', 'd'], values: ['10%', '0%', '10 min/100km'] };
-    const trainSchedule = { path, margins } as TimetableItemWithTimetableId;
+    const trainSchedule = { path, margins } as TimetableItem;
 
     const theoreticalMargins = getTheoreticalMargins(trainSchedule);
 

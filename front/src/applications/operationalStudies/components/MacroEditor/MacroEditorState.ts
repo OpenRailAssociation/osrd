@@ -5,7 +5,7 @@ import type {
   ScenarioResponse,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 
 import type { TrainrunFrequency } from '../NGE/types';
 
@@ -24,7 +24,7 @@ export default class MacroEditorState {
   /**
    * TimetableItems (`TrainSchedule` or `PacedTrain`)
    */
-  timetableItems: TimetableItemWithTimetableId[];
+  timetableItems: TimetableItem[];
 
   /**
    * Nodes storage
@@ -71,7 +71,7 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, timetableItems: TimetableItemWithTimetableId[]) {
+  constructor(scenario: ScenarioResponse, timetableItems: TimetableItem[]) {
     // Empty
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
@@ -215,7 +215,7 @@ export default class MacroEditorState {
   /**
    * Given an path step, returns its pathKey
    */
-  static getPathKey(item: TimetableItemWithTimetableId['path'][0]): string {
+  static getPathKey(item: TimetableItem['path'][0]): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
     if ('operational_point' in item) return `op_id:${item.operational_point}`;

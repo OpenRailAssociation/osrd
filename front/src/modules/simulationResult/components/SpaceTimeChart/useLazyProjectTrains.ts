@@ -9,7 +9,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { setFailure } from 'reducers/main';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
@@ -29,7 +29,7 @@ type useLazyLoadTrainsParams = {
   electricalProfileSetId: number | undefined;
   timetableItemIdsToProject: Set<TimetableItemId>;
   path?: PathfindingResultSuccess;
-  timetableItems?: TimetableItemWithTimetableId[];
+  timetableItems?: TimetableItem[];
   moreTrainsToCome?: boolean;
   setTimetableItemIdsToProject: Dispatch<SetStateAction<Set<TimetableItemId>>>;
 };

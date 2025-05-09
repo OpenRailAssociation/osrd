@@ -14,7 +14,7 @@ import {
 import type {
   PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -301,7 +301,7 @@ const handleCreateTimetableItem = async (
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
-  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
   const { path, labels, startDate, schedule } = await generateTrainrunProperties(
     netzgrafikDto,
@@ -358,7 +358,7 @@ const handleUpdateTimetableItem = async ({
   timetableId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)!;
@@ -382,7 +382,7 @@ const handleUpdateTimetableItem = async ({
     paced: undefined,
   };
 
-  let updatedTimetableItem: TimetableItemWithTimetableId;
+  let updatedTimetableItem: TimetableItem;
   if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
     updatedTimetableItem = await storeTrainSchedule(
       timetableItemId,
@@ -453,7 +453,7 @@ const handleTrainrunOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
@@ -596,7 +596,7 @@ const handleLabelOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
@@ -641,7 +641,7 @@ const handleOperation = async ({
   infraId: number;
   state: MacroEditorState;
   dispatch: AppDispatch;
-  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemsIds: TimetableItemId[]) => void;
 }) => {
   const { type } = event;

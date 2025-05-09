@@ -23,7 +23,7 @@ import i18n from 'i18n';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -98,7 +98,7 @@ const ScenarioContent = ({
   }, [dispatch, scenario, scenario.timetable_id]);
 
   const upsertTimetableItemsWithNge = useCallback(
-    (updatedTimetableItems: TimetableItemWithTimetableId[]) => {
+    (updatedTimetableItems: TimetableItem[]) => {
       upsertTimetableItems(updatedTimetableItems);
       if (isMacro) {
         refreshNge();

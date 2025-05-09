@@ -11,7 +11,7 @@ import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -34,11 +34,11 @@ type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   infraState: InfraState;
   conflicts?: Conflict[];
-  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setItemIdToEdit: (trainId?: TimetableItemId) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
   itemIdToEdit?: TimetableItemId;
-  timetableItems?: TimetableItemWithTimetableId[];
+  timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
 };
 

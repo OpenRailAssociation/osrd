@@ -11,7 +11,7 @@ import type {
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -25,7 +25,7 @@ const useOutputTableData = (
   simulatedTrain?: SimulationResponseSuccess['final_output'],
   timetableItemWithDetails?: TimetableItemWithDetails,
   operationalPoints?: PathPropertiesFormatted['operationalPoints'],
-  selectedTimetableItem?: TimetableItemWithTimetableId,
+  selectedTimetableItem?: TimetableItem,
   path?: PathfindingResultSuccess
 ): TimesStopsRow[] => {
   const { t } = useTranslation('timesStops');

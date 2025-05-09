@@ -13,7 +13,7 @@ import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/o
 import type {
   PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
-  TimetableItemWithTimetableId,
+  TimetableItem,
   TrainScheduleId,
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
@@ -33,7 +33,7 @@ import useLazySimulateTrains from './useLazySimulateTrains';
 import usePathProjection from './usePathProjection';
 
 type ScenarioBroadcastMessage =
-  | { type: 'upsertTimetableItems'; timetableItems: TimetableItemWithTimetableId[] }
+  | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
   | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
   | { type: 'updateTrainDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
 
@@ -43,7 +43,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const showPacedTrains = useSelector(getShowPacedTrains);
 
-  const [timetableItems, setTimetableItems] = useState<TimetableItemWithTimetableId[]>();
+  const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
   const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
     new Set()
   );
@@ -194,27 +194,24 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTimetableItems = useCallback(
-    (timetableItemsToUpsert: TimetableItemWithTimetableId[]) => {
-      setProjectedTrainsById((prev) => {
-        const newProjectedTrainsById = new Map(prev);
-        timetableItemsToUpsert.forEach((trainSchedule) => {
-          newProjectedTrainsById.delete(trainSchedule.id);
-        });
-        return newProjectedTrainsById;
+  const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
+    setProjectedTrainsById((prev) => {
+      const newProjectedTrainsById = new Map(prev);
+      timetableItemsToUpsert.forEach((trainSchedule) => {
+        newProjectedTrainsById.delete(trainSchedule.id);
       });
+      return newProjectedTrainsById;
+    });
 
-      setTimetableItems((prev) =>
-        sortBy(
-          Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
-          'start_time'
-        )
-      );
+    setTimetableItems((prev) =>
+      sortBy(
+        Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+        'start_time'
+      )
+    );
 
-      simulateTimetableItems(timetableItemsToUpsert);
-    },
-    []
-  );
+    simulateTimetableItems(timetableItemsToUpsert);
+  }, []);
 
   const removeTimetableItems = useCallback((_timetableItemsToRemove: TimetableItemId[]) => {
     setTimetableItems((prev) => {
@@ -287,7 +284,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   const upsertTimetableItemsWithBroadcast = useCallback(
-    (timetableItemsToUpsert: TimetableItemWithTimetableId[]) => {
+    (timetableItemsToUpsert: TimetableItem[]) => {
       upsertTimetableItems(timetableItemsToUpsert);
       broadcastScenarioMessage({
         type: 'upsertTimetableItems',

@@ -1,5 +1,5 @@
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { formatDigitsAndUnit } from './utils';
@@ -7,7 +7,7 @@ import type { ScheduleEntry, TheoreticalMarginsRecord } from '../types';
 
 /** Extracts the theoretical margin for each path step in the train schedule,
  * and marks whether margins are repeated or correspond to a boundary between margin values */
-export function getTheoreticalMargins(selectedTimetableItem: TimetableItemWithTimetableId) {
+export function getTheoreticalMargins(selectedTimetableItem: TimetableItem) {
   const { margins } = selectedTimetableItem;
   if (!margins) {
     return undefined;
@@ -31,7 +31,7 @@ export function getTheoreticalMargins(selectedTimetableItem: TimetableItemWithTi
 /** Compute all margins to display for a given train schedule path step */
 function computeMargins(
   theoreticalMargins: TheoreticalMarginsRecord | undefined,
-  selectedTimetableItem: TimetableItemWithTimetableId,
+  selectedTimetableItem: TimetableItem,
   scheduleByAt: Record<string, ScheduleEntry>,
   pathStepIndex: number,
   pathItemTimes: NonNullable<TrainScheduleWithDetails['pathItemTimes']> // in ms
