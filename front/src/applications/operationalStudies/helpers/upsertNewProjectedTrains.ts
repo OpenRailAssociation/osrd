@@ -3,7 +3,7 @@ import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import {
-  formatPacedTrainIdToOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
@@ -29,7 +29,7 @@ const upsertNewProjectedTrains = (
       signalUpdates: trainData.signal_updates,
       ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)
         ? {
-            id: formatPacedTrainIdToOccurrenceId(matchingTrain.id, 0),
+            id: formatPacedTrainIdToIndexedOccurrenceId(matchingTrain.id, 0),
             paced: {
               timeWindow: Duration.parse(matchingTrain.paced.time_window),
               interval: Duration.parse(matchingTrain.paced.interval),
