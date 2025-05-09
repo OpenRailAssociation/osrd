@@ -253,6 +253,9 @@ async function run() {
       console.warn(missingKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
       console.warn();
       console.warn('/!\\ Failed: missing keys are not allowed in fr & en');
+    }
+
+    if (unusedKeys.length > 0 || missingKeys.length > 0) {
       process.exit(1);
     }
   } catch (err) {
