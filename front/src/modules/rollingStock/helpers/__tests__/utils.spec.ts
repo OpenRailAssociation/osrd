@@ -209,7 +209,7 @@ describe('checkRollingStockFormValidity', () => {
 });
 
 describe('multi units parameter conversion', () => {
-  describe('unit converter', () => {
+  describe('convertUnits', () => {
     it('should convert kg to t', () => {
       const convertedUnit = convertUnits('kg', 't', 1000);
       expect(convertedUnit).toEqual(1);
@@ -283,7 +283,8 @@ describe('multi units parameter conversion', () => {
       expect(convertedUnit).toEqual(7);
     });
   });
-  describe('mass converter', () => {
+
+  describe('convertUnitsWithMass', () => {
     it('should divide the unit value by mass with current mass in t', () => {
       const convertedValue = convertUnitsWithMass('kN', 'kN/t', 40, 't', 20);
       expect(convertedValue).toEqual(0.5);
@@ -301,7 +302,8 @@ describe('multi units parameter conversion', () => {
       expect(convertedValue).toEqual(20);
     });
   });
-  describe('parameter unit convertor', () => {
+
+  describe('handleUnitValue', () => {
     const values: InputGroupSNCFValue<MultiUnit>[] = [
       {
         unit: 'kg',
