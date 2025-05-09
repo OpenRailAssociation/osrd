@@ -369,6 +369,61 @@ impl Client {
         .await
     }
 
+    /// Performs multiple checks at once using OpenFGA `/batch-check` API
+    ///
+    /// Unlike [Client::prepare_checks] which ultimately returns a `Vec<bool>`,
+    /// this functions remembers the structure used to inject the checks.  This is
+    /// useful when you *statically* know the number of checks and want the individual
+    /// result afterwards instead of combining the `bool`s.
+    ///
+    /// You can provide this function a tuple from 2 to 8 checks, and it will return
+    /// a tuple from 2 to 8 `bool`s respectively.  Other structuring types can be supported
+    /// by implementing the [StructuredChecks] trait.
+    ///
+    /// # Which `check` function to use?
+    ///
+    /// As a rule of thumb:
+    ///
+    /// 1. If you only have one check to perform, use [Client::check].
+    /// 2. If you know which checks you want to perform at compile time and want the result
+    ///    of each check in its own binding, use [Client::checks].
+    /// 3. Otherwise (you dont know how many checks you will perform at compile time, or you
+    ///    don't care about each result individually), use [Client::prepare_checks].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # include!("doctest_setup.rs");
+    /// # use fga::fga;
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// # let mut client = fga::Client::try_new_store("doctest_checks".to_owned(), settings()).await.unwrap();
+    /// # client.update_authorization_model(&fga::compile_model(include_str!("../tests/doctest.fga"))).await.unwrap();
+    /// client
+    ///     .write_tuples(&[fga!(Document:"budget"#writer@Person:"alice")])
+    ///     .await
+    ///     .unwrap();
+    ///
+    /// let (alice_can_read, alice_can_write, bob_can_read) = client
+    ///     .checks((
+    ///         Document::can_read().check(&fga!(Person:"alice"), &fga!(Document:"budget")),
+    ///         Document::can_write().check(&fga!(Person:"alice"), &fga!(Document:"budget")),
+    ///         Document::can_read().check(&fga!(Person:"bob"), &fga!(Document:"budget")),
+    ///     ))
+    ///     .await
+    ///     .unwrap();
+    ///
+    /// assert!(alice_can_read && alice_can_write && !bob_can_read);
+    /// # }
+    /// ```
+    pub async fn checks<S: StructuredChecks>(
+        &self,
+        checks: S,
+    ) -> Result<S::Output, RequestFailure> {
+        let results = checks.prepare(self).execute().await?;
+        Ok(S::from_check_results(results))
+    }
+
     /// Prepares multiple check requests to OpenFGA
     ///
     /// OpenFGA Check API do not accept more than 50 checks per request.
@@ -603,6 +658,45 @@ impl PreparedChecks<'_> {
         Ok(result)
     }
 }
+
+pub trait StructuredChecks {
+    type Output;
+
+    fn prepare(self, client: &Client) -> PreparedChecks<'_>;
+    fn from_check_results(results: Vec<bool>) -> Self::Output;
+}
+
+macro_rules! impl_structured_checks {
+    ($output:ty, $($relations:ident)+, $($idents:ident)+) => {
+        impl<$($relations: Relation),+> StructuredChecks for ($(Check<'_, $relations>),+) {
+            type Output = $output;
+
+            fn prepare(self, client: &Client) -> PreparedChecks<'_> {
+                let ($($idents,)+) = self;
+                PreparedChecks {
+                    checks: Vec::new(),
+                    client,
+                }
+                .$(check(&$idents)).+
+            }
+
+            fn from_check_results(results: Vec<bool>) -> Self::Output {
+                match &results[..] {
+                    [$($idents),+] => ($(*$idents),+),
+                    _ => unreachable!("OpenFGA always returns the same number of results as checks"),
+                }
+            }
+        }
+    };
+}
+
+impl_structured_checks!((bool, bool), R1 R2, a b);
+impl_structured_checks!((bool, bool, bool), R1 R2 R3, a b c);
+impl_structured_checks!((bool, bool, bool, bool), R1 R2 R3 R4, a b c d);
+impl_structured_checks!((bool, bool, bool, bool, bool), R1 R2 R3 R4 R5, a b c d e);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6, a b c d e f);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7, a b c d e f g);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8, a b c d e f g h);
 
 pub struct PreparedWrites<'a> {
     writes: Vec<RawTuple>,
@@ -1002,6 +1096,16 @@ mod tests {
                 .await
                 .unwrap();
             assert_eq!(results, vec![true, false]);
+
+            let (bob, alice) = client
+                .checks((
+                    Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")),
+                    Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")),
+                ))
+                .await
+                .unwrap();
+            assert!(bob);
+            assert!(!alice);
         }
     }
 
