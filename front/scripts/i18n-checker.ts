@@ -78,12 +78,13 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:.*.create/,
   /operational-studies:.*.select/,
 
-  // Project
+  // Scenario
   /operationalStudies\/scenario:Routing/,
   /operationalStudies\/scenario:Spacing/,
   /operationalStudies\/scenario:pacedTrain/,
   /operationalStudies\/scenario:pacedTrainCount/,
   /operationalStudies\/scenario:timetable\.invalid\..*/,
+  /operationalStudies\/scenario:timetable\..*/,
   /operationalStudies\/scenario:train/,
   /operationalStudies\/scenario:trainCount/,
 
@@ -96,12 +97,14 @@ const IGNORE_UNUSED: RegExp[] = [
   /rollingstock:categoriesOptions\..*/,
   /rollingstock:curves\..*/,
   /rollingstock:delete\..*/,
+  /rollingstock:electricalPowerStartupTime/,
   /rollingstock:errorMessages\..*/,
   /rollingstock:length/,
   /rollingstock:mass/,
   /rollingstock:maxSpeed/,
   /rollingstock:messages\..*/,
   /rollingstock:metadata\..*/,
+  /rollingstock:raisePantographTime/,
   /rollingstock:unspecified/,
 
   // Simulation
