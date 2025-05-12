@@ -119,7 +119,7 @@ services:
     environment:
       # Actual values in ./docker/osrdyne.yml (please maintain consistency)
       # Provided here only for reuse in compose layers and doc
-      CORE_EDITOAST_URL: "http://editoast:8091"
+      CORE_EDITOAST_URL: "http://editoast:8089"
       JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
       CORE_MONITOR_TYPE: "opentelemetry"
       OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
