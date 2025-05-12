@@ -20,13 +20,14 @@ import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResul
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 
@@ -113,16 +114,17 @@ const SimulationResults = ({
     [timetableItemsWithDetails, selectedTimetableItem]
   );
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
   const handleTrainDrag = async (
-    draggedTrainId: TimetableItemId,
+    draggedTrainId: TrainId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => {
     if (stopPanning) {
       // update in the database
-      dispatch(updateSelectedTrainId(draggedTrainId as TrainScheduleId));
-      updateTrainDepartureTime(draggedTrainId, newDepartureTime);
+      const draggedItemId = isTrainScheduleId(draggedTrainId)
+        ? draggedTrainId
+        : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
+      updateTrainDepartureTime(draggedItemId, newDepartureTime);
     } else {
       // update in the state
       setProjectPathTrainResult(
