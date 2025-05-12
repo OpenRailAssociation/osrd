@@ -59,6 +59,7 @@ services:
       OPENFGA_DATASTORE_ENGINE: "postgres"
       OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
       OPENFGA_HTTP_ADDR: "0.0.0.0:8091"
+      OPENFGA_GRPC_ADDR: "0.0.0.0:8093" # avoid squatting 8081 (used by osrd-images in pr-tests)
       OPENFGA_PLAYGROUND_PORT: 8092
     command: run
     ports:
