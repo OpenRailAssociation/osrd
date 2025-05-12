@@ -32,9 +32,10 @@ const getPathStyle = (
           color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
           level: 1,
           border: {
-            offset: 3.5,
-            color: 'transparent',
-            backgroundColor: '#FAE6F6',
+            offset: 3,
+            width: 0.5,
+            color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
+            backgroundColor: PATH_COLORS.SELECTED_OCCURRENCE_BACKGROUND,
           },
         };
       }
@@ -46,12 +47,11 @@ const getPathStyle = (
       ) {
         return {
           color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
-          level: 2,
+          level: 1,
           border: {
-            offset: 3,
-            width: 0.5,
-            color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
-            backgroundColor: '#FAE6F6',
+            offset: 3.5,
+            color: 'transparent',
+            backgroundColor: PATH_COLORS.SELECTED_OCCURRENCE_BACKGROUND,
           },
         };
       }
