@@ -24,7 +24,6 @@ import {
 } from './api/generatedEditoastApi';
 import { osrdEditoastApi } from './api/osrdEditoastApi';
 import { ModalContext } from './BootstrapSNCF/ModalSNCF/ModalProvider';
-import SwitchSNCF from './BootstrapSNCF/SwitchSNCF';
 
 const UserSettings = () => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
@@ -125,28 +124,6 @@ const UserSettings = () => {
             />
           </>
         )}
-        {
-          // TODO PACEDTRAIN: Remove switch after development pacedTrain feature
-          isSuperUser && (
-            <div className="d-flex align-items-center mt-2">
-              <SwitchSNCF
-                id="paced-train-switch"
-                type="switch"
-                name="paced-train-switch"
-                checked={userPreferences.showPacedTrains}
-                onChange={() =>
-                  dispatch(
-                    updateUserPreferences({
-                      ...userPreferences,
-                      showPacedTrains: !userPreferences.showPacedTrains,
-                    })
-                  )
-                }
-              />
-              <div className="ml-2">{t('operational-studies:main.timetable.pacedTrain')}</div>
-            </div>
-          )
-        }
       </ModalBodySNCF>
     </>
   );

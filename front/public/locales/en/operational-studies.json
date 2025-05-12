@@ -209,7 +209,6 @@
     "InvalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
     "addPacedTrain": "Add a service",
     "addTrainSchedule": "Add a train",
-    "addTrainSchedules": "Add one or several trains",
     "addVia": "Add this waypoint",
     "addVias": "Add waypoints",
     "allowances": {

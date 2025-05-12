@@ -157,7 +157,6 @@
     "InvalidTrainScheduleStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
     "addPacedTrain": "Taktleistung hinzufügen",
     "addTrainSchedule": "Zug hinzufügen",
-    "addTrainSchedules": "Einen oder mehrere Züge hinzufügen",
     "addVia": "Wegepunkt hinzufügen",
     "addVias": "Wegepunkte hinzufügen",
     "allowances": {

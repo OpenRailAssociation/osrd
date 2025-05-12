@@ -10,16 +10,12 @@ const checkCurrentConfig = (
   t: TFunction,
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName?: string,
-  { showPacedTrains = false }: { showPacedTrains?: boolean } = {}
+  rollingStockName?: string
 ): boolean => {
   const {
     pathSteps,
     name: trainName,
     timetableID,
-    trainCount,
-    trainDelta,
-    trainStep,
     initialSpeed,
     startTime,
     interval,
@@ -92,63 +88,29 @@ const checkCurrentConfig = (
     );
   }
 
-  // TODO Paced trains : remove this in https://github.com/OpenRailAssociation/osrd/issues/10791
-  if (!showPacedTrains) {
-    if (trainCount < 1) {
+  // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
+  if (editingTrainIsPacedTrain) {
+    if (interval.total('minute') < 1) {
       error = true;
       dispatch(
         setFailure({
           name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.noTrainCount'),
+          message: t('errorMessages.tooLowValue', {
+            value: t('pacedTrains.interval').toLowerCase(),
+          }),
         })
       );
     }
-    if (trainDelta < 1) {
+    if (timeWindow.total('minute') < 1) {
       error = true;
       dispatch(
         setFailure({
           name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.noDelta'),
+          message: t('errorMessages.tooLowValue', {
+            value: t('pacedTrains.timeWindow').toLowerCase(),
+          }),
         })
       );
-    }
-    if (trainStep < 1) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.noTrainStep'),
-        })
-      );
-    }
-  }
-
-  // TODO Paced trains : remove the next if in https://github.com/OpenRailAssociation/osrd/issues/10791
-  if (showPacedTrains) {
-    // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
-    if (editingTrainIsPacedTrain) {
-      if (interval.total('minute') < 1) {
-        error = true;
-        dispatch(
-          setFailure({
-            name: t('errorMessages.trainScheduleTitle'),
-            message: t('errorMessages.tooLowValue', {
-              value: t('pacedTrains.interval').toLowerCase(),
-            }),
-          })
-        );
-      }
-      if (timeWindow.total('minute') < 1) {
-        error = true;
-        dispatch(
-          setFailure({
-            name: t('errorMessages.trainScheduleTitle'),
-            message: t('errorMessages.tooLowValue', {
-              value: t('pacedTrains.timeWindow').toLowerCase(),
-            }),
-          })
-        );
-      }
     }
   }
 

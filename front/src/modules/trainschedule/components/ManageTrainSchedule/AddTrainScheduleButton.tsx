@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
@@ -13,7 +12,6 @@ import type {
   TimetableItem,
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
-import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -42,7 +40,6 @@ const AddTrainScheduleButton = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const simulationConf = useSelector(getOperationalStudiesConf);
-  const { showPacedTrains } = useSelector(getUserPreferences);
 
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   const { rollingStock } = useStoreDataForRollingStockSelector({
@@ -62,20 +59,19 @@ const AddTrainScheduleButton = ({
 
     setIsWorking(true);
 
-    if (showPacedTrains) {
-      try {
-        if (isPacedTrainMode) {
-          const pacedTrainPayload = formatPacedTrainPayload(simulationConf, rollingStock!.name);
-          const newPacedTrain = await postPacedTrain({
-            id: timetableId,
-            body: [pacedTrainPayload],
-          }).unwrap();
+    try {
+      if (isPacedTrainMode) {
+        const pacedTrainPayload = formatPacedTrainPayload(simulationConf, rollingStock!.name);
+        const newPacedTrain = await postPacedTrain({
+          id: timetableId,
+          body: [pacedTrainPayload],
+        }).unwrap();
 
-          // We can only add one paced train at a time
-          const formattedNewPacedTrain: PacedTrainResponseWithPacedTrainId = {
-            ...newPacedTrain.at(0)!,
-            id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
-          };
+        // We can only add one paced train at a time
+        const formattedNewPacedTrain: PacedTrainResponseWithPacedTrainId = {
+          ...newPacedTrain.at(0)!,
+          id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
+        };
 
           dispatch(
             setSuccess({
@@ -94,11 +90,11 @@ const AddTrainScheduleButton = ({
             body: [trainSchedulePayload],
           }).unwrap();
 
-          // We can only add one train schedule at a time
-          const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
-            ...newTrainSchedule.at(0)!,
-            id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
-          };
+        // We can only add one train schedule at a time
+        const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
+          ...newTrainSchedule.at(0)!,
+          id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
+        };
 
           dispatch(
             setSuccess({
@@ -173,8 +169,7 @@ const AddTrainScheduleButton = ({
       <span className="mr-2">
         <Plus size="lg" />
       </span>
-      {!showPacedTrains && t('addTrainSchedules')}
-      {showPacedTrains && (isPacedTrainMode ? t('addPacedTrain') : t('addTrainSchedule'))}
+      {isPacedTrainMode ? t('addPacedTrain') : t('addTrainSchedule')}
     </button>
   );
 };

@@ -7,7 +7,6 @@ import {
   TOTAL_TRAINS,
 } from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
-import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { generateUniqueName, getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
@@ -36,7 +35,6 @@ test.describe('Verify train schedule elements and filters', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let scenarioTimetableSection: ScenarioTimetableSection;
-  let operationalStudiesPage: OperationalStudiesPage;
 
   let project: Project;
   let study: Study;
@@ -77,9 +75,6 @@ test.describe('Verify train schedule elements and filters', () => {
 
   test('Duplicate and delete a paced train', async ({ page }) => {
     scenarioTimetableSection = new ScenarioTimetableSection(page);
-    operationalStudiesPage = new OperationalStudiesPage(page);
-
-    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Verify total items count
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {

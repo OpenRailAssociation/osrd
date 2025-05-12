@@ -27,14 +27,6 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly trainCountInput: Locator;
 
-  private readonly operationStudiesSettings: Locator;
-
-  private readonly userSettings: Locator;
-
-  private readonly modalCloseButton: Locator;
-
-  private readonly pacedTrainSwitch: Locator;
-
   private readonly definePacedTrainCheckbox: Locator;
 
   private readonly definePacedTrainCheckboxLabel: Locator;
@@ -43,9 +35,9 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly pacedTrainIntervalInput: Locator;
 
-  private readonly trainNameInput: Locator;
+  private readonly TimetableItemNameInput: Locator;
 
-  private readonly trainInitialSpeedInput: Locator;
+  private readonly initialSpeedInput: Locator;
 
   private readonly trainTagsInput: Locator;
 
@@ -65,13 +57,9 @@ class OperationalStudiesPage extends CommonPage {
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
     this.timesAndStopsTab = page.getByTestId('tab-timesStops');
-    this.startTimeField = page.locator('#train-start-time');
+    this.startTimeField = page.locator('#start-time');
     this.returnSimulationResultButton = page.getByTestId('return-simulation-result');
     this.trainCountInput = page.locator('#osrdconf-traincount');
-    this.operationStudiesSettings = page.getByTestId('dropdown-sncf');
-    this.userSettings = page.getByTestId('user-settings-btn');
-    this.modalCloseButton = page.getByTestId('modal-close-button');
-    this.pacedTrainSwitch = page.getByTestId('paced-train-switch');
     this.definePacedTrainCheckbox = page.locator('#define-paced-train');
     this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
     this.pacedTrainTimeWindow = page.locator('#paced-train-time-window');
@@ -79,8 +67,8 @@ class OperationalStudiesPage extends CommonPage {
     this.addTrainButton = page.getByTestId('add-train');
     this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
-    this.trainNameInput = page.locator('#train-name');
-    this.trainInitialSpeedInput = page.locator('#train-initial-speed');
+    this.TimetableItemNameInput = page.locator('#timetable-item-name');
+    this.initialSpeedInput = page.locator('#initial-speed');
     this.trainTagsInput = page.getByTestId('chips-input');
 
     this.trainTimetable = page
@@ -161,22 +149,6 @@ class OperationalStudiesPage extends CommonPage {
     await this.trainCountInput.fill(trainCount);
   }
 
-  // TODO Paced train : remove this (and all related locator and data-testid) in https://github.com/OpenRailAssociation/osrd/issues/10791
-  async checkPacedTrainSwitch() {
-    await expect(this.operationStudiesSettings).toBeVisible();
-    await this.operationStudiesSettings.click();
-
-    await expect(this.userSettings).toBeVisible();
-    await this.userSettings.click();
-
-    await expect(this.pacedTrainSwitch).toBeVisible();
-    await expect(this.pacedTrainSwitch).not.toBeChecked();
-    await this.pacedTrainSwitch.click();
-    await expect(this.pacedTrainSwitch).toBeChecked();
-
-    await this.modalCloseButton.click();
-  }
-
   async checkInputsAndButtons(translations: ManageTrainScheduleTranslations, date: string) {
     await expect(this.addTrainButton).toBeVisible();
     await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
@@ -186,7 +158,7 @@ class OperationalStudiesPage extends CommonPage {
     );
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.returnSimulationResultButton).toBeVisible();
-    await expect(this.trainNameInput).toBeVisible();
+    await expect(this.TimetableItemNameInput).toBeVisible();
     await expect(this.startTimeField).toBeVisible();
     const startTimeDate = createDateInSpecialTimeZone(
       await this.startTimeField.inputValue(),
@@ -199,8 +171,8 @@ class OperationalStudiesPage extends CommonPage {
       startTimeDate.getDate() === scenarioCreationDate.getDate();
     expect(isSameDate).toBe(true);
 
-    await expect(this.trainInitialSpeedInput).toBeVisible();
-    await expect(this.trainInitialSpeedInput).toHaveValue('0');
+    await expect(this.initialSpeedInput).toBeVisible();
+    await expect(this.initialSpeedInput).toHaveValue('0');
 
     await expect(this.trainTagsInput).toBeVisible();
   }
@@ -298,8 +270,8 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   async setTrainScheduleName(name: string) {
-    await this.trainNameInput.fill(name);
-    await expect(this.trainNameInput).toHaveValue(name);
+    await this.TimetableItemNameInput.fill(name);
+    await expect(this.TimetableItemNameInput).toHaveValue(name);
 
     // we need to wait, because the input has a debounce of 500ms
     // TODO: remove this when the debounce is removed (https://github.com/OpenRailAssociation/osrd/issues/11294)

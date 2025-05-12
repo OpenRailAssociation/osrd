@@ -20,7 +20,6 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
-import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import {
@@ -65,7 +64,6 @@ const TimetableToolbar = ({
   const { openModal } = useContext(ModalContext);
 
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const showPacedTrains = useSelector(getShowPacedTrains);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -144,59 +142,34 @@ const TimetableToolbar = ({
       extractEditoastIdFromPacedTrainId(id)
     );
 
-    if (showPacedTrains) {
-      try {
-        let deletingTrainSchedulesPromise;
-        let deletingPacedTrainsPromise;
-        if (editoastSelectedTrainScheduleIds.length > 0) {
-          deletingTrainSchedulesPromise = deleteTrainSchedules({
-            body: { ids: editoastSelectedTrainScheduleIds },
-          }).unwrap();
-        }
-        if (editoastSelectedPacedTrainIds.length > 0) {
-          deletingPacedTrainsPromise = deletePacedTrains({
-            body: { ids: editoastSelectedPacedTrainIds },
-          }).unwrap();
-        }
-        await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
-
-        removeTrains(selectedTimetableItemIds);
-        dispatch(
-          setSuccess({
-            title: t('timetable.itemsSelectionDeletedCount', { count: itemsCount }),
-            text: '',
-          })
-        );
-      } catch (e) {
-        if (isSelectedTimetableItemInSelection) {
-          dispatch(updateSelectedTrainId(currentSelectedTrainId));
-        } else {
-          dispatch(setFailure(castErrorToFailure(e)));
-        }
+    try {
+      let deletingTrainSchedulesPromise;
+      let deletingPacedTrainsPromise;
+      if (editoastSelectedTrainScheduleIds.length > 0) {
+        deletingTrainSchedulesPromise = deleteTrainSchedules({
+          body: { ids: editoastSelectedTrainScheduleIds },
+        }).unwrap();
       }
-      // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
-    } else {
-      await deleteTrainSchedules({ body: { ids: editoastSelectedTrainScheduleIds } })
-        .unwrap()
-        .then(() => {
-          removeTrains(selectedTimetableItemIds);
-          dispatch(
-            setSuccess({
-              title: t('timetable.trainsSelectionDeletedCount', { count: itemsCount }),
-              text: '',
-            })
-          );
+      if (editoastSelectedPacedTrainIds.length > 0) {
+        deletingPacedTrainsPromise = deletePacedTrains({
+          body: { ids: editoastSelectedPacedTrainIds },
+        }).unwrap();
+      }
+      await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
+
+      removeTrains(selectedTimetableItemIds);
+      dispatch(
+        setSuccess({
+          title: t('timetable.itemsSelectionDeletedCount', { count: itemsCount }),
+          text: '',
         })
-        .catch((e) => {
-          if (
-            selectedTrainId &&
-            selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)
-          ) {
-            dispatch(updateSelectedTrainId(selectedTrainId));
-          } else {
-            dispatch(setFailure(castErrorToFailure(e)));
-          }
-        });
+      );
+    } catch (e) {
+      if (isSelectedTimetableItemInSelection) {
+        dispatch(updateSelectedTrainId(currentSelectedTrainId));
+      } else {
+        dispatch(setFailure(castErrorToFailure(e)));
+      }
     }
   };
 

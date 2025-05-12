@@ -8,8 +8,7 @@ export interface UserState {
   impersonatedUser?: SearchResultItemUser;
   loginError?: ApiError;
   username: string;
-  // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
-  userPreferences: { safeWord: string; showPacedTrains?: boolean };
+  userPreferences: { safeWord: string };
   userRoles: Role[];
   account: Record<string, string>;
 }
@@ -19,8 +18,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
-  userPreferences: { safeWord: '', showPacedTrains: false },
+  userPreferences: { safeWord: '' },
   userRoles: [],
   account: {},
 };
@@ -52,11 +50,7 @@ export const userSlice = createSlice({
     setImpersonatedUser(state, action: PayloadAction<SearchResultItemUser | undefined>) {
       state.impersonatedUser = action.payload;
     },
-    updateUserPreferences(
-      state,
-      // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
-      action: PayloadAction<{ safeWord: string; showPacedTrains?: boolean }>
-    ) {
+    updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
       state.userPreferences = action.payload;
     },
   },

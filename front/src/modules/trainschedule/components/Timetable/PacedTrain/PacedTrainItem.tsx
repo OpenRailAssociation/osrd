@@ -262,8 +262,7 @@ const PacedTrainItem = ({
           }}
         />
       </div>
-      {/* TODO PACED TRAIN: Remove conditon pacedTrain.duration after development paced train feature is done */}
-      {pacedTrain.isValid && pacedTrain.duration && (
+      {pacedTrain.isValid && (
         <div className="more-info">
           <div className="more-info-left">
             {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
@@ -276,7 +275,7 @@ const PacedTrainItem = ({
             </span>
           </div>
           <div className="duration-time">
-            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration)}</span>
+            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration!)}</span>
           </div>
         </div>
       )}
