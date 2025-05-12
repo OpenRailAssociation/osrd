@@ -92,7 +92,7 @@ services:
       RABBITMQ_CONFIG_FILE: "/etc/rabbitmq/rabbitmq.conf"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ../docker/rabbitmq-pr-tests.conf:/etc/rabbitmq/rabbitmq.conf
+      - "../docker/rabbitmq-pr-tests.conf:/etc/rabbitmq/rabbitmq.conf"
     healthcheck:
       test: [ "CMD", "rabbitmqctl", "status" ]
       interval: 5s
@@ -103,8 +103,8 @@ services:
 
   core:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}
-    platform: linux/x86_64
     container_name: osrd-core-dummy-pr-tests
+    platform: linux/x86_64
     restart: "no"
     command: "true"
     networks:
@@ -112,8 +112,8 @@ services:
 
   editoast:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:${PR_NB}
-    platform: linux/x86_64
     container_name: osrd-editoast-pr-tests
+    platform: linux/x86_64
     depends_on:
       postgres: { condition: service_healthy }
       valkey: { condition: service_healthy }
@@ -125,11 +125,11 @@ services:
       ROOT_URL: "http://localhost:4001/api"
       VALKEY_URL: "redis://valkey:6380"
       DATABASE_URL: "postgres://osrd:password@postgres:5433/osrd"
+      OSRDYNE_API_URL: "http://osrdyne:4243/"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4319"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5673/%2f"
       EDITOAST_OPENFGA_URL: "http://openfga:8191"
-      OSRDYNE_API_URL: "http://osrdyne:4243/"
     command:
       - /bin/sh
       - -c
@@ -142,21 +142,10 @@ services:
     networks:
       - pr-tests
 
-  osrd-images:
-    image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-v1.0.0}
-    platform: linux/x86_64
-    container_name: osrd-images-pr-tests
-    restart: unless-stopped
-    environment:
-      - NGINX_PORT=8081
-    ports: [ "8081:8081" ]
-    networks:
-      - pr-tests
-
   gateway:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${PR_NB}-front
-    platform: linux/x86_64
     container_name: osrd-gateway-pr-tests
+    platform: linux/x86_64
     volumes:
       - "../docker/gateway.pr-tests.simple.toml:/srv/gateway.toml"
     restart: unless-stopped
@@ -164,22 +153,33 @@ services:
     networks:
       - pr-tests
 
+  osrd-images:
+    image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-v1.0.0}
+    container_name: osrd-images-pr-tests
+    platform: linux/x86_64
+    restart: unless-stopped
+    environment:
+      - NGINX_PORT=8081
+    ports: [ "8081:8081" ]
+    networks:
+      - pr-tests
+
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${PR_NB}
-    platform: linux/x86_64
     container_name: osrd-osrdyne-pr-tests
+    platform: linux/x86_64
     depends_on:
       rabbitmq: { condition: service_healthy }
+    command: osrdyne
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
       - ../docker/osrdyne-pr-tests.yml:/osrdyne.yml
-    command: osrdyne
     restart: unless-stopped
     ports: [ "4243:4243" ]
     environment:
+      RUST_LOG: "info"
       OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://jaeger:4319"
       OSRDYNE__WORKER_DRIVER__WORKER_IMAGE: "ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}"
-      RUST_LOG: "info"
     networks:
       - pr-tests
 
