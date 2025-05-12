@@ -55,6 +55,11 @@ docker cp "$BACKUP_PATH" "$OSRD_POSTGRES:tmp/backup-osrd"
 echo "Restore backup..."
 docker exec "$OSRD_POSTGRES" pg_restore --if-exists -p "$OSRD_POSTGRES_PORT" -c -d osrd -x //tmp/backup-osrd > /dev/null
 
+# Allow openFGA to use PG
+# TODO: fix create-backup instead
+docker exec -it "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -d osrd -c "create schema openfga;" || true
+docker exec -it "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -d osrd -c "grant all privileges on schema openfga to osrd;" || true
+
 # analyze db for performances
 echo "Analyze for performances..."
 docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -d osrd -c 'ANALYZE;' > /dev/null
