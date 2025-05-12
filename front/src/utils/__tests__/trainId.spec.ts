@@ -93,7 +93,7 @@ describe('extractEditoastIdFromPacedTrainId', () => {
   });
 });
 
-describe('formatPacedTrainIdToOccurrenceId', () => {
+describe('formatPacedTrainIdToIndexedOccurrenceId', () => {
   it('should return the occurrenceId', () => {
     const pacedTrainId = 'paced_123' as PacedTrainId;
     const result = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0);

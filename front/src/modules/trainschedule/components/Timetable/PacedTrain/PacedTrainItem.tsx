@@ -68,14 +68,48 @@ const PacedTrainItem = ({
     ...pacedTrain,
     exceptions: [
       {
-        key: 'exception_28_1234_2555_2456_4577' as AddedExceptionId,
+        key: '1234_2555_2456_4577' as AddedExceptionId,
         train_name: {
           value: 'coucou',
+        },
+        path_and_schedule: {
+          // Paris Est - MeuseTGV - Strasbourg
+          path: [
+            {
+              id: 'id256',
+              uic: 87113001,
+              secondary_code: '00',
+            },
+            {
+              id: '23576418-08b3-4a42-a92e-18c7262dc778',
+              uic: 87147322,
+              secondary_code: 'BV',
+            },
+            {
+              id: 'id257',
+              uic: 87212027,
+              secondary_code: 'BV',
+            },
+          ],
+          schedule: [
+            {
+              at: 'id257',
+              arrival: null,
+              stop_for: 'P0D',
+              reception_signal: 'OPEN',
+              locked: false,
+            },
+          ],
+          margins: {
+            boundaries: [],
+            values: ['0%'],
+          },
+          power_restrictions: [],
         },
       },
       {
         key: 'indexedoccurrence_28_0' as IndexedOccurrenceId,
-        occurrence_index: 2,
+        occurrence_index: 0,
         disabled: true,
         train_name: {
           value: 'hello',
@@ -90,6 +124,10 @@ const PacedTrainItem = ({
         disabled: false,
         speed_limit_tag: {
           value: 'MA100',
+        },
+        rolling_stock: {
+          rolling_stock_name: 'TC64700',
+          comfort: 'STANDARD',
         },
       },
     ],
@@ -321,6 +359,8 @@ const PacedTrainItem = ({
               isSelected={selectedTrainId === occurrence.id}
               nextOccurrence={occurrences[index + 1]}
               selectOccurrence={selectOccurrence}
+              currentPacedTrain={testingPacedTrain}
+              // selectPacedTrainToEdit={selectPacedTrainToEdit}
             />
           ))}
         </div>

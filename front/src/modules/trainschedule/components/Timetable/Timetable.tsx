@@ -122,6 +122,7 @@ const Timetable = ({
       return show;
     });
   }, [currentDepartureDates]);
+
   const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
     dispatch(selectTrainToEdit(itemToEdit));
     setItemIdToEdit(itemToEdit.id);

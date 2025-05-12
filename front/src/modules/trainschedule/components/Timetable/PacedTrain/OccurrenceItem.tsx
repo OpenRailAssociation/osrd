@@ -7,14 +7,19 @@ import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
 import AnchoredMenu from 'common/AnchoredMenu';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import {
+  findExceptionWithOccurrenceId,
+  formatPacedTrainWithOccurenceDetails,
+} from 'modules/trainschedule/helpers/pacedTrain';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getExceptionType, isException } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
-import type { Occurrence } from '../types';
+import type { Occurrence, PacedTrainWithDetails } from '../types';
 import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
 
 const ConsecutiveDayDateDisplay = ({
@@ -38,6 +43,8 @@ type OccurrenceItemProps = {
   isSelected: boolean;
   nextOccurrence?: Occurrence;
   selectOccurrence: (occurrence: TrainId) => void;
+  currentPacedTrain: PacedTrainWithDetails;
+  // selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
 };
 
 const OccurrenceItem = ({
@@ -45,12 +52,17 @@ const OccurrenceItem = ({
   isSelected,
   nextOccurrence,
   selectOccurrence,
+  currentPacedTrain,
+  // selectPacedTrainToEdit,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const [getRollingStockByName] =
+    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
 
   const { id, trainName, rollingStock, startTime, disabled, exceptions } = occurrence;
   const isAfterMidnight =
@@ -61,6 +73,43 @@ const OccurrenceItem = ({
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  // We build a new timetable item to edit with the current paced train modified with
+  // the occurrence start time and all its eventual exceptions
+  const editOccurrence = async () => {
+    let updatedPacedtrain: PacedTrainWithDetails = {
+      ...currentPacedTrain,
+      name: occurrence.trainName,
+      startTime: occurrence.startTime,
+    };
+
+    const occurrenceToUpdateException = findExceptionWithOccurrenceId(
+      currentPacedTrain.exceptions,
+      id
+    );
+
+    if (occurrenceToUpdateException) {
+      const pacedTrainWithOccurrenceDetails = formatPacedTrainWithOccurenceDetails(
+        updatedPacedtrain,
+        occurrenceToUpdateException
+      );
+
+      let occurrenceRollingStock = currentPacedTrain.rollingStock;
+      if (occurrenceToUpdateException.rolling_stock) {
+        occurrenceRollingStock = await getRollingStockByName({
+          rollingStockName: occurrenceToUpdateException.rolling_stock.rolling_stock_name,
+        }).unwrap();
+      }
+
+      updatedPacedtrain = {
+        ...pacedTrainWithOccurrenceDetails,
+        rollingStock: occurrenceRollingStock,
+      };
+    }
+
+    // TODO exceptions : uncomment this on the update occurrence PR
+    // selectPacedTrainToEdit(updatedPacedtrain);
   };
 
   // TODO exceptions : add action to menu buttons
@@ -83,6 +132,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.edit'),
       icon: <Pencil />,
       onClick: () => {
+        editOccurrence();
         closeMenu();
       },
     },
