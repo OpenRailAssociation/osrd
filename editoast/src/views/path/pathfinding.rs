@@ -11,6 +11,14 @@ use axum::extract::State;
 use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_common::units;
+use editoast_core::AsCoreRequest;
+use editoast_core::CoreClient;
+use editoast_core::pathfinding::PathfindingCoreResult;
+use editoast_core::pathfinding::PathfindingInputError;
+use editoast_core::pathfinding::PathfindingNotFound;
+use editoast_core::pathfinding::PathfindingRequest;
+use editoast_core::pathfinding::PathfindingResultSuccess;
+use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use itertools::Itertools;
@@ -22,13 +30,6 @@ use tracing::info;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::pathfinding::PathfindingCoreResult;
-use crate::core::pathfinding::PathfindingInputError;
-use crate::core::pathfinding::PathfindingNotFound;
-use crate::core::pathfinding::PathfindingRequest;
-use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
@@ -41,7 +42,6 @@ use crate::views::AuthorizationError;
 use crate::views::get_app_version;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
-use editoast_models::DbConnection;
 
 crate::routes! {
     "/infra/{infra_id}/pathfinding/blocks" => post,
@@ -474,6 +474,10 @@ pub async fn pathfinding_from_train_batch(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use editoast_core::mocking::MockingClient;
+    use editoast_core::pathfinding::InvalidPathItem;
+    use editoast_core::pathfinding::PathfindingInputError;
+    use editoast_core::pathfinding::PathfindingResultSuccess;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
     use editoast_schemas::train_schedule::OperationalPointReference;
@@ -483,10 +487,6 @@ pub mod tests {
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::InvalidPathItem;
-    use crate::core::pathfinding::PathfindingInputError;
-    use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::models::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;

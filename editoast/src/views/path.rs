@@ -5,14 +5,14 @@ mod properties;
 
 pub use pathfinding::pathfinding_from_train_batch;
 
+use editoast_core::pathfinding::TrackRange;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
 use thiserror::Error;
 
-use crate::core::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::prelude::*;
-use editoast_models::DbConnection;
 
 crate::routes! {
     &properties,

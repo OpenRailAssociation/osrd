@@ -8,6 +8,7 @@ edition.workspace = true
 members = [
   ".",
   "editoast_common",
+  "editoast_core",
   "editoast_derive",
   "editoast_models",
   "editoast_osrdyne_client",
@@ -28,9 +29,16 @@ edition = "2024"
 license = "LGPL-3.0"
 
 [workspace.dependencies]
+approx = "0.5.1"
+async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
 chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 darling = "0.20"
+deadpool = { version = "0.12.2", features = [
+  "managed",
+  "rt_tokio_1",
+  "unmanaged",
+] }
 derivative = "2.2.0"
 derive_more = { version = "2.0.1", features = [
   "debug",
@@ -51,6 +59,7 @@ diesel-async = { version = "0.5", default-features = false, features = [
 ] }
 editoast_authz = { path = "./editoast_authz" }
 editoast_common = { path = "./editoast_common" }
+editoast_core = { path = "./editoast_core" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 editoast_osrdyne_client = { path = "./editoast_osrdyne_client" }
@@ -64,6 +73,7 @@ geojson = { version = "0.24", default-features = false }
 geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
 itertools = "0.14.0"
+lapin = "2.5.3"
 mvt = "0.10.1"
 openssl = "0.10.72"
 opentelemetry = { version = "0.29.1", default-features = false, features = [
@@ -82,7 +92,6 @@ quote = "1.0"
 rand = "0.9.1"
 rangemap = "1.5.1"
 regex = "1.11"
-syn = "2.0"
 # 0.12.0 to 0.12.4 have weird timeout issues https://github.com/seanmonstar/reqwest/issues/2283
 # This bug was introduced between 0.12.0 and 0.12.3.
 reqwest = { version = "0.12.15", features = ["json"] }
@@ -91,6 +100,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 stdext = "0.3.3"
 strum = { version = "0.26.3", features = ["derive"] }
+syn = "2.0"
 tempfile = "3.20.0"
 thiserror = "2.0.12"
 tokio = { version = "1.45.0", features = ["fs", "macros", "rt-multi-thread"] }
@@ -111,7 +121,7 @@ uuid = { version = "1.16.0", features = ["serde", "v4"] }
 
 [dependencies]
 anyhow = "1.0"
-approx = "0.5.1"
+approx.workspace = true
 axum = { version = "0.8.4", default-features = false, features = [
   "multipart",
   "tracing",
@@ -127,11 +137,7 @@ chrono.workspace = true
 clap.workspace = true
 colored = "3.0.0"
 dashmap = "6.1.0"
-deadpool = { version = "0.12.2", features = [
-  "managed",
-  "rt_tokio_1",
-  "unmanaged",
-] }
+deadpool.workspace = true
 deadpool-redis = { version = "0.21.0", features = [
   "tokio-comp",
   "tokio-native-tls-comp",
@@ -143,6 +149,7 @@ diesel-async = { workspace = true }
 diesel_json = "0.2.1"
 editoast_authz.workspace = true
 editoast_common = { workspace = true }
+editoast_core = { workspace = true, features = ["mocking_client"] }
 editoast_derive.workspace = true
 editoast_models.workspace = true
 editoast_osrdyne_client.workspace = true
@@ -169,7 +176,7 @@ itertools.workspace = true
 json-patch = { version = "4.0.0", default-features = false, features = [
   "utoipa",
 ] }
-lapin = "2.5.3"
+lapin.workspace = true
 lz4_flex = { version = "0.11.3", default-features = false, features = [
   "frame",
 ] }
@@ -223,13 +230,14 @@ uuid.workspace = true
 validator = { version = "0.19.0", features = ["derive"] }
 
 [dev-dependencies]
-async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
+async-std.workspace = true
 axum = { version = "0.8.4", default-features = false, features = [
   "macros",
   "multipart",
   "tracing",
 ] }
 editoast_authz = { workspace = true }
+editoast_core = { workspace = true, features = ["mocking_client"] }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
 editoast_schemas = { workspace = true, features = ["testing"] }

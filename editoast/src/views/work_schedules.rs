@@ -1,5 +1,4 @@
 use super::pagination::PaginatedList;
-use crate::core::pathfinding::TrackRange as CoreTrackRange;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::work_schedules;
@@ -208,7 +207,7 @@ async fn create(
 struct WorkScheduleProjectForm {
     work_schedule_group_id: i64,
     #[schema(value_type = Vec<TrackRange>)]
-    path_track_ranges: Vec<CoreTrackRange>,
+    path_track_ranges: Vec<editoast_core::pathfinding::TrackRange>,
 }
 
 /// Represents the projection of a work schedule on a path.
@@ -269,7 +268,7 @@ async fn project_path(
                 .clone()
                 .track_ranges
                 .into_iter()
-                .map(|tr| CoreTrackRange {
+                .map(|tr| editoast_core::pathfinding::TrackRange {
                     track_section: tr.track,
                     begin: (tr.begin * 1000.0) as u64,
                     end: (tr.end * 1000.0) as u64,

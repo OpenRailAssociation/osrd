@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use chrono::DateTime;
 use chrono::Utc;
+use editoast_core::AsCoreRequest;
+use editoast_core::CoreClient;
+use editoast_core::conflict_detection::ConflictDetectionRequest;
+use editoast_core::conflict_detection::WorkSchedulesRequest;
 
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::conflict_detection::ConflictDetectionRequest;
-use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;

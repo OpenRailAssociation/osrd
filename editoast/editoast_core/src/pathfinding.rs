@@ -7,9 +7,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::core::AsCoreRequest;
-use crate::core::Json;
-use crate::core::RawError;
+use crate::AsCoreRequest;
+use crate::Json;
+use crate::RawError;
 
 editoast_common::schemas! {
     IncompatibleConstraints,

@@ -16,8 +16,8 @@ use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation;
 use super::simulation::PhysicsConsist;
-use crate::core::AsCoreRequest;
-use crate::core::Json;
+use crate::AsCoreRequest;
+use crate::Json;
 
 editoast_common::schemas! {
     Request,

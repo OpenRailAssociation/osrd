@@ -7,6 +7,8 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use axum::Router;
+use axum_test::TestRequest;
+use axum_test::TestServer;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
 use editoast_authz::Role;
@@ -17,6 +19,8 @@ use editoast_common::tracing::Stream;
 use editoast_common::tracing::Telemetry;
 use editoast_common::tracing::TracingConfig;
 use editoast_common::tracing::create_tracing_subscriber;
+use editoast_core::CoreClient;
+use editoast_core::mocking::MockingClient;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::executor::block_on;
@@ -30,15 +34,11 @@ use url::Url;
 
 use crate::AppState;
 use crate::ValkeyClient;
-use crate::core::CoreClient;
-use crate::core::mocking::MockingClient;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
-use axum_test::TestRequest;
-use axum_test::TestServer;
 
 use super::CoreConfig;
 use super::OpenfgaConfig;

@@ -158,6 +158,13 @@ mod tests {
     use chrono::DateTime;
     use editoast_authz::Role;
     use editoast_authz::subject;
+    use editoast_core::CoreClient;
+    use editoast_core::mocking::MockingClient;
+    use editoast_core::pathfinding::PathfindingResultSuccess;
+    use editoast_core::simulation::CompleteReportTrain;
+    use editoast_core::simulation::ElectricalProfiles;
+    use editoast_core::simulation::ReportTrain;
+    use editoast_core::simulation::SpeedLimitProperties;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -168,14 +175,6 @@ mod tests {
     use tracing_subscriber::filter::Directive;
     use uuid::Uuid;
 
-    use crate::core;
-    use crate::core::CoreClient;
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::PathfindingResultSuccess;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
@@ -259,7 +258,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(core::stdcm::Response::Success {
+            .json(editoast_core::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -279,8 +278,8 @@ mod tests {
         }
     }
 
-    fn simulation_response() -> core::simulation::Response {
-        core::simulation::Response::Success {
+    fn simulation_response() -> editoast_core::simulation::Response {
+        editoast_core::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],

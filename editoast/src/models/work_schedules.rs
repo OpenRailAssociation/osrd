@@ -2,16 +2,14 @@ use std::cmp::max;
 
 use chrono::DateTime;
 use chrono::Utc;
+use editoast_core::stdcm::UndirectedTrackRange;
 use editoast_derive::Model;
 use editoast_models::model;
 use editoast_schemas::infra::TrackRange;
-use strum::FromRepr;
-
 use serde::Deserialize;
 use serde::Serialize;
+use strum::FromRepr;
 use utoipa::ToSchema;
-
-use crate::core::stdcm::UndirectedTrackRange;
 
 #[derive(Debug, Clone, Model)]
 #[model(table = editoast_models::tables::work_schedule_group, error = WsGroupError)]
@@ -73,7 +71,7 @@ impl WorkSchedule {
         &self,
         earliest_departure_time: DateTime<Utc>,
         latest_simulation_end: DateTime<Utc>,
-    ) -> Option<crate::core::stdcm::WorkSchedule> {
+    ) -> Option<editoast_core::stdcm::WorkSchedule> {
         let search_window_duration =
             (latest_simulation_end - earliest_departure_time).num_milliseconds() as u64;
 
@@ -84,7 +82,7 @@ impl WorkSchedule {
             return None;
         }
 
-        Some(crate::core::stdcm::WorkSchedule {
+        Some(editoast_core::stdcm::WorkSchedule {
             start_time,
             end_time,
             track_ranges: self

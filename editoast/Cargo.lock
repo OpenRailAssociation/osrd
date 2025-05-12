@@ -1272,6 +1272,7 @@ dependencies = [
  "diesel_json",
  "editoast_authz",
  "editoast_common",
+ "editoast_core",
  "editoast_derive",
  "editoast_models",
  "editoast_osrdyne_client",
@@ -1368,6 +1369,37 @@ dependencies = [
  "uom",
  "url",
  "utoipa",
+]
+
+[[package]]
+name = "editoast_core"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "async-std",
+ "chrono",
+ "deadpool",
+ "derivative",
+ "editoast_common",
+ "editoast_schemas",
+ "futures-util",
+ "hostname",
+ "http",
+ "itertools",
+ "lapin",
+ "opentelemetry",
+ "pretty_assertions",
+ "reqwest",
+ "rstest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "tracing",
+ "tracing-opentelemetry",
+ "url",
+ "utoipa",
+ "uuid",
 ]
 
 [[package]]

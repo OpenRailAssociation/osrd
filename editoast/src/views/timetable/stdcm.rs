@@ -10,6 +10,14 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use editoast_authz::Role;
+use editoast_core::AsCoreRequest;
+use editoast_core::CoreClient;
+use editoast_core::conflict_detection::TrainRequirements;
+use editoast_core::pathfinding::InvalidPathItem;
+use editoast_core::pathfinding::PathfindingResultSuccess;
+use editoast_core::simulation::PhysicsConsistParameters;
+use editoast_core::simulation::RoutingRequirement;
+use editoast_core::simulation::SpacingRequirement;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
@@ -34,15 +42,6 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::ValkeyClient;
-use crate::core;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::conflict_detection::TrainRequirements;
-use crate::core::pathfinding::InvalidPathItem;
-use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::simulation::PhysicsConsistParameters;
-use crate::core::simulation::RoutingRequirement;
-use crate::core::simulation::SpacingRequirement;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
@@ -272,7 +271,7 @@ async fn stdcm(
     let work_schedules = stdcm_request.get_work_schedules(&mut conn).await?;
 
     // 5. Build STDCM request
-    let stdcm_request = crate::core::stdcm::Request {
+    let stdcm_request = editoast_core::stdcm::Request {
         infra: infra.id,
         expected_version: infra.version,
         rolling_stock_loading_gauge: physics_consist_parameters.traction_engine.loading_gauge,
@@ -305,7 +304,7 @@ async fn stdcm(
             .collect(),
     };
 
-    let stdcm_response: Result<core::stdcm::Response, InternalError> = stdcm_request
+    let stdcm_response: Result<editoast_core::stdcm::Response, InternalError> = stdcm_request
         .fetch(core_client.as_ref())
         .await
         .map_err(Into::into);
@@ -347,7 +346,7 @@ async fn stdcm(
 
     // 7. Handle STDCM Core Response
     match stdcm_response? {
-        crate::core::stdcm::Response::Success {
+        editoast_core::stdcm::Response::Success {
             simulation,
             path,
             departure_time,
@@ -356,7 +355,7 @@ async fn stdcm(
             path,
             departure_time,
         })),
-        crate::core::stdcm::Response::PathNotFound => {
+        editoast_core::stdcm::Response::PathNotFound => {
             let simulation_failure_handler = SimulationFailureHandler {
                 core_client,
                 infra_id,
@@ -565,16 +564,6 @@ mod tests {
     use uom::si::quantities::Mass;
     use uuid::Uuid;
 
-    use crate::core;
-    use crate::core::conflict_detection::Conflict as CoreConflict;
-    use crate::core::conflict_detection::ConflictDetectionResponse;
-    use crate::core::conflict_detection::ConflictType;
-    use crate::core::mocking::MockingClient;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::PhysicsConsist;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
@@ -587,6 +576,16 @@ mod tests {
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
+    use editoast_core;
+    use editoast_core::conflict_detection::Conflict as CoreConflict;
+    use editoast_core::conflict_detection::ConflictDetectionResponse;
+    use editoast_core::conflict_detection::ConflictType;
+    use editoast_core::mocking::MockingClient;
+    use editoast_core::simulation::CompleteReportTrain;
+    use editoast_core::simulation::ElectricalProfiles;
+    use editoast_core::simulation::PhysicsConsist;
+    use editoast_core::simulation::ReportTrain;
+    use editoast_core::simulation::SpeedLimitProperties;
 
     use super::*;
 
@@ -677,8 +676,8 @@ mod tests {
         core
     }
 
-    fn simulation_response() -> core::simulation::Response {
-        core::simulation::Response::Success {
+    fn simulation_response() -> editoast_core::simulation::Response {
+        editoast_core::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],
@@ -921,7 +920,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(editoast_core::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -967,7 +966,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(editoast_core::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1011,7 +1010,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(editoast_core::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1057,7 +1056,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(editoast_core::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1184,7 +1183,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::PathNotFound)
+            .json(editoast_core::stdcm::Response::PathNotFound)
             .finish();
         core.stub("/conflict_detection")
             .method(reqwest::Method::POST)

@@ -4,10 +4,10 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use crate::core::AsCoreRequest;
-use crate::core::Json;
-use crate::core::simulation::SignalCriticalPosition;
-use crate::core::simulation::ZoneUpdate;
+use crate::AsCoreRequest;
+use crate::Json;
+use crate::simulation::SignalCriticalPosition;
+use crate::simulation::ZoneUpdate;
 
 use super::pathfinding::TrackRange;
 

@@ -21,6 +21,13 @@ use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_authz::Role;
+use editoast_core::AsCoreRequest;
+use editoast_core::CoreClient;
+use editoast_core::conflict_detection::Conflict as CoreConflict;
+use editoast_core::conflict_detection::ConflictDetectionRequest;
+use editoast_core::conflict_detection::ConflictRequirement;
+use editoast_core::conflict_detection::ConflictType;
+use editoast_core::conflict_detection::TrainRequirements;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
@@ -31,7 +38,10 @@ use itertools::Itertools;
 use paced_train::PacedTrainResponse;
 use serde::Deserialize;
 use serde::Serialize;
+use simulation::train_simulation_batch;
 use thiserror::Error;
+use train_schedule::TrainScheduleForm;
+use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -41,12 +51,7 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
-use crate::core::AsCoreRequest;
-use crate::core::conflict_detection::Conflict as CoreConflict;
-use crate::core::conflict_detection::ConflictDetectionRequest;
-use crate::core::conflict_detection::ConflictRequirement;
-use crate::core::conflict_detection::ConflictType;
-use crate::core::conflict_detection::TrainRequirements;
+use crate::ValkeyClient;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
@@ -55,14 +60,8 @@ use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
-
-use crate::ValkeyClient;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::CoreClient;
-use simulation::train_simulation_batch;
-use train_schedule::TrainScheduleForm;
-use train_schedule::TrainScheduleResponse;
 
 crate::routes! {
     "/timetable" => {

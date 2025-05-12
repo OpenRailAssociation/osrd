@@ -11,12 +11,6 @@ use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::pathfinding::TrackRange;
-use crate::core::signal_projection::SignalUpdate;
-use crate::core::signal_projection::SignalUpdatesRequest;
-use crate::core::signal_projection::TrainSimulation;
 use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;
@@ -24,6 +18,12 @@ use crate::views::projection::ProjectPathInput;
 use crate::views::projection::TrainSimulationDetails;
 use crate::views::projection::extract_train_details;
 use crate::views::timetable::simulation::train_simulation_batch;
+use editoast_core::AsCoreRequest;
+use editoast_core::CoreClient;
+use editoast_core::pathfinding::TrackRange;
+use editoast_core::signal_projection::SignalUpdate;
+use editoast_core::signal_projection::SignalUpdatesRequest;
+use editoast_core::signal_projection::TrainSimulation;
 
 editoast_common::schemas! {
     OccupancyBlockForm,

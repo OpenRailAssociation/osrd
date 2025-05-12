@@ -561,6 +561,12 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use chrono::Duration;
+    use editoast_core::mocking::MockingClient;
+    use editoast_core::pathfinding::PathfindingResultSuccess;
+    use editoast_core::simulation::CompleteReportTrain;
+    use editoast_core::simulation::ElectricalProfiles;
+    use editoast_core::simulation::ReportTrain;
+    use editoast_core::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
@@ -569,13 +575,6 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::core;
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::PathfindingResultSuccess;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::PartialProjectPathTrainResult;
@@ -729,12 +728,12 @@ mod tests {
         let request = app.get(
             format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
-        let response: core::simulation::Response =
+        let response: editoast_core::simulation::Response =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(
             response,
-            core::simulation::Response::Success {
+            editoast_core::simulation::Response::Success {
                 base: ReportTrain {
                     positions: vec![],
                     times: vec![],
