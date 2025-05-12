@@ -128,9 +128,16 @@
   .manchette-container {
     width: 200px;
     overflow: hidden;
+    flex-shrink: 0;
     height: fit-content;
   }
   .manchette-actions {
-    display: none;
+    position: absolute;
+    bottom: 0;
+    width: 200px;
+
+    * {
+      display: none;
+    }
   }
 }

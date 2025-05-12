@@ -7,7 +7,7 @@ import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
 import type { OccupancyZone, OccupancyZonePickingElement, Track } from './types';
 import { Manchette, useManchetteWithSpaceTimeChart } from '../../manchette';
-import { SpaceTimeChart } from '../../spaceTimeChart';
+import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
 import { HOUR } from '../../spaceTimeChart/lib/consts';
 
 const TrackOccupancyStandalone = ({
@@ -15,7 +15,7 @@ const TrackOccupancyStandalone = ({
   occupancyZones,
   selectedTrainId,
   onSelectedTrainIdChange,
-  height = TRACK_HEIGHT_CONTAINER * tracks.length,
+  height = TRACK_HEIGHT_CONTAINER * tracks.length + DEFAULT_THEME.timeCaptionsSize,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
@@ -46,7 +46,10 @@ const TrackOccupancyStandalone = ({
       {
         id: 'ACTUAL_TRACK_OCCUPANCY_DIAGRAM',
         position: 0,
-        size: Math.max(height, tracks.length * TRACK_HEIGHT_CONTAINER),
+        size: Math.max(
+          height,
+          tracks.length * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize
+        ),
         spaceTimeChartNode: (
           <TrackOccupancyCanvas
             position={0}
@@ -75,7 +78,7 @@ const TrackOccupancyStandalone = ({
     defaultTimeOrigin,
     verticalPadding: 0,
     options: {
-      displayTimeCaptions: false,
+      displayTimeCaptions: true,
       enableTimePan: true,
       enableSpacePan: true,
       enableTimeZoom: false,
