@@ -16,10 +16,14 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use core_client::AsCoreRequest;
+use core_client::infra_loading::InfraLoadRequest;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnectionPoolV2;
 use editoast_models::model;
 use editoast_osrdyne_client::OsrdyneClient;
+use editoast_schemas::infra::SwitchType;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -35,8 +39,6 @@ use super::pagination::PaginationStats;
 use super::params::List;
 use crate::AppState;
 use crate::Arc;
-use crate::core::AsCoreRequest;
-use crate::core::infra_loading::InfraLoadRequest;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
@@ -48,8 +50,6 @@ use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
-use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::infra::SwitchType;
 use editoast_schemas::infra::builtin_node_types_list;
 
 crate::routes! {
@@ -915,10 +915,19 @@ pub async fn fetch_all_infra_states(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use core_client::CoreClient;
+    use core_client::mocking::MockingClient;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
+    use editoast_osrdyne_client::OsrdyneClient;
     use editoast_osrdyne_client::WorkerStatus;
+    use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::RAILJSON_VERSION;
+    use editoast_schemas::infra::Speed;
+    use editoast_schemas::infra::SpeedSection;
+    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::primitives::ObjectType;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -926,8 +935,6 @@ pub mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
-    use crate::core::CoreClient;
-    use crate::core::mocking::MockingClient;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
@@ -938,13 +945,6 @@ pub mod tests {
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_osrdyne_client::OsrdyneClient;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::RAILJSON_VERSION;
-    use editoast_schemas::infra::Speed;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::primitives::ObjectType;
 
     impl TestApp {
         fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {

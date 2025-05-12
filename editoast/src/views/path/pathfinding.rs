@@ -8,9 +8,18 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::pathfinding::PathfindingCoreResult;
+use core_client::pathfinding::PathfindingInputError;
+use core_client::pathfinding::PathfindingNotFound;
+use core_client::pathfinding::PathfindingRequest;
+use core_client::pathfinding::PathfindingResultSuccess;
 use derivative::Derivative;
+use editoast_authz as authz;
 use editoast_authz::Role;
 use editoast_common::units;
+use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use itertools::Itertools;
@@ -22,13 +31,6 @@ use tracing::info;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::pathfinding::PathfindingCoreResult;
-use crate::core::pathfinding::PathfindingInputError;
-use crate::core::pathfinding::PathfindingNotFound;
-use crate::core::pathfinding::PathfindingRequest;
-use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
@@ -41,8 +43,6 @@ use crate::views::AuthorizationError;
 use crate::views::get_app_version;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
-use editoast_authz as authz;
-use editoast_models::DbConnection;
 
 crate::routes! {
     "/infra/{infra_id}/pathfinding/blocks" => post,
@@ -483,6 +483,10 @@ pub async fn pathfinding_from_train_batch(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::InvalidPathItem;
+    use core_client::pathfinding::PathfindingInputError;
+    use core_client::pathfinding::PathfindingResultSuccess;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
     use editoast_schemas::train_schedule::OperationalPointReference;
@@ -492,10 +496,6 @@ pub mod tests {
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::InvalidPathItem;
-    use crate::core::pathfinding::PathfindingInputError;
-    use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::models::fixtures::create_small_infra;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;

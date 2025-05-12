@@ -1,6 +1,7 @@
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use core_client::pathfinding::PathfindingInputError;
 use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
@@ -22,7 +23,6 @@ use utoipa::ToSchema;
 
 use crate::Retrieve;
 use crate::SelectionSettings;
-use crate::core::pathfinding::PathfindingInputError;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::temporary_speed_limits::TemporarySpeedLimit;
@@ -206,7 +206,7 @@ impl Request {
         &self,
         conn: &mut DbConnection,
         simulation_run_time: u64,
-    ) -> Result<Vec<crate::core::stdcm::TemporarySpeedLimit>> {
+    ) -> Result<Vec<core_client::stdcm::TemporarySpeedLimit>> {
         let start_date_time = self.get_earliest_departure_time(simulation_run_time);
         let end_date_time = self.get_latest_simulation_end(simulation_run_time);
         if end_date_time <= start_date_time || self.temporary_speed_limit_group_id.is_none() {
@@ -234,7 +234,7 @@ impl Request {
         &self,
         conn: &mut DbConnection,
         infra_id: i64,
-    ) -> Result<Vec<crate::core::stdcm::PathItem>> {
+    ) -> Result<Vec<core_client::stdcm::PathItem>> {
         let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
 
         let path_item_cache = PathItemCache::load(conn, infra_id, &locations).await?;
@@ -250,11 +250,11 @@ impl Request {
         Ok(track_offsets
             .iter()
             .zip(&self.steps)
-            .map(|(track_offset, path_item)| crate::core::stdcm::PathItem {
+            .map(|(track_offset, path_item)| core_client::stdcm::PathItem {
                 stop_duration: path_item.duration,
                 locations: track_offset.to_vec(),
                 step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
-                    crate::core::stdcm::StepTimingData {
+                    core_client::stdcm::StepTimingData {
                         arrival_time: timing_data.arrival_time,
                         arrival_time_tolerance_before: timing_data.arrival_time_tolerance_before,
                         arrival_time_tolerance_after: timing_data.arrival_time_tolerance_after,

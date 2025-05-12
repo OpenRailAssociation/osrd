@@ -9,6 +9,17 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use core_client::AsCoreRequest;
+use core_client::path_properties::OperationalPointOnPath;
+use core_client::path_properties::PathPropertiesRequest;
+use core_client::path_properties::PropertyElectrificationValues;
+use core_client::path_properties::PropertyValuesF64;
+use core_client::path_properties::PropertyZoneValues;
+use core_client::pathfinding::TrackRange;
+use editoast_authz as authz;
+use editoast_common::geometry::GeoJsonLineString;
+use editoast_schemas::infra::OperationalPointExtensions;
+use editoast_schemas::infra::OperationalPointPart;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Itertools;
@@ -24,20 +35,9 @@ use utoipa::ToSchema;
 use crate::AppState;
 use crate::ValkeyConnection;
 use crate::client::get_app_version;
-use crate::core::AsCoreRequest;
-use crate::core::path_properties::OperationalPointOnPath;
-use crate::core::path_properties::PathPropertiesRequest;
-use crate::core::path_properties::PropertyElectrificationValues;
-use crate::core::path_properties::PropertyValuesF64;
-use crate::core::path_properties::PropertyZoneValues;
-use crate::core::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
-use editoast_authz as authz;
-use editoast_common::geometry::GeoJsonLineString;
-use editoast_schemas::infra::OperationalPointExtensions;
-use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {
     "/infra/{infra_id}/path_properties" => post,

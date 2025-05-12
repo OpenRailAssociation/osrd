@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
 use anyhow::anyhow;
+use core_client::CoreClient;
+use core_client::mq_client;
 use editoast_models::DbConnectionPoolV2;
 
 use crate::ValkeyClient;
-use crate::core::CoreClient;
-use crate::core::mq_client;
 use crate::views;
 
 use super::ValkeyConfig;

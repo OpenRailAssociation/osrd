@@ -9,6 +9,14 @@ use axum::extract::State;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::conflict_detection::TrainRequirements;
+use core_client::pathfinding::InvalidPathItem;
+use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::simulation::PhysicsConsistParameters;
+use core_client::simulation::RoutingRequirement;
+use core_client::simulation::SpacingRequirement;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -35,15 +43,6 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::ValkeyClient;
-use crate::core;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::conflict_detection::TrainRequirements;
-use crate::core::pathfinding::InvalidPathItem;
-use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::simulation::PhysicsConsistParameters;
-use crate::core::simulation::RoutingRequirement;
-use crate::core::simulation::SpacingRequirement;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
@@ -282,7 +281,7 @@ async fn stdcm(
     let work_schedules = stdcm_request.get_work_schedules(&mut conn).await?;
 
     // 5. Build STDCM request
-    let stdcm_request = crate::core::stdcm::Request {
+    let stdcm_request = core_client::stdcm::Request {
         infra: infra.id,
         expected_version: infra.version,
         rolling_stock_loading_gauge: physics_consist_parameters.traction_engine.loading_gauge,
@@ -315,7 +314,7 @@ async fn stdcm(
             .collect(),
     };
 
-    let stdcm_response: Result<core::stdcm::Response, InternalError> = stdcm_request
+    let stdcm_response: Result<core_client::stdcm::Response, InternalError> = stdcm_request
         .fetch(core_client.as_ref())
         .await
         .map_err(Into::into);
@@ -357,7 +356,7 @@ async fn stdcm(
 
     // 7. Handle STDCM Core Response
     match stdcm_response? {
-        crate::core::stdcm::Response::Success {
+        core_client::stdcm::Response::Success {
             simulation,
             path,
             departure_time,
@@ -366,7 +365,7 @@ async fn stdcm(
             path,
             departure_time,
         })),
-        crate::core::stdcm::Response::PathNotFound => {
+        core_client::stdcm::Response::PathNotFound => {
             let simulation_failure_handler = SimulationFailureHandler {
                 core_client,
                 infra_id,
@@ -575,16 +574,6 @@ mod tests {
     use uom::si::quantities::Mass;
     use uuid::Uuid;
 
-    use crate::core;
-    use crate::core::conflict_detection::Conflict as CoreConflict;
-    use crate::core::conflict_detection::ConflictDetectionResponse;
-    use crate::core::conflict_detection::ConflictType;
-    use crate::core::mocking::MockingClient;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::PhysicsConsist;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
@@ -597,6 +586,16 @@ mod tests {
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
+    use core_client;
+    use core_client::conflict_detection::Conflict as CoreConflict;
+    use core_client::conflict_detection::ConflictDetectionResponse;
+    use core_client::conflict_detection::ConflictType;
+    use core_client::mocking::MockingClient;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::PhysicsConsist;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::SpeedLimitProperties;
 
     use super::*;
 
@@ -687,8 +686,8 @@ mod tests {
         core
     }
 
-    fn simulation_response() -> core::simulation::Response {
-        core::simulation::Response::Success {
+    fn simulation_response() -> core_client::simulation::Response {
+        core_client::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],
@@ -931,7 +930,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -977,7 +976,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1021,7 +1020,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1067,7 +1066,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
+            .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -1194,7 +1193,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::PathNotFound)
+            .json(core_client::stdcm::Response::PathNotFound)
             .finish();
         core.stub("/conflict_detection")
             .method(reqwest::Method::POST)

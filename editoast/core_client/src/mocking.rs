@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::http::StatusCode;
+use http::StatusCode;
 use reqwest::Body;
 use serde::Serialize;
 

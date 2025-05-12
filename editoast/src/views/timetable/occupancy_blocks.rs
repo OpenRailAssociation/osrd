@@ -1,3 +1,9 @@
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::pathfinding::TrackRange;
+use core_client::signal_projection::SignalUpdate;
+use core_client::signal_projection::SignalUpdatesRequest;
+use core_client::signal_projection::TrainSimulation;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use itertools::izip;
@@ -11,12 +17,6 @@ use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::pathfinding::TrackRange;
-use crate::core::signal_projection::SignalUpdate;
-use crate::core::signal_projection::SignalUpdatesRequest;
-use crate::core::signal_projection::TrainSimulation;
 use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;

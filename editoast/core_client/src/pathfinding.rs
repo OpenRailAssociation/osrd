@@ -7,9 +7,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::core::AsCoreRequest;
-use crate::core::Json;
-use crate::core::RawError;
+use crate::AsCoreRequest;
+use crate::Json;
+use crate::RawError;
 
 editoast_common::schemas! {
     IncompatibleConstraints,
@@ -106,7 +106,7 @@ pub enum PathfindingCoreResult {
 
 /// A successful pathfinding result. This is also used for STDCM response.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
-#[cfg_attr(test, derive(Default))]
+#[cfg_attr(feature = "mocking_client", derive(Default))]
 pub struct PathfindingResultSuccess {
     #[schema(inline)]
     /// Path description as block ids

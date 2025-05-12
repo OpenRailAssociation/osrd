@@ -27,8 +27,8 @@ use utoipa::ToSchema;
 
 use super::RawError;
 use super::pathfinding::TrackRange;
-use crate::core::AsCoreRequest;
-use crate::core::Json;
+use crate::AsCoreRequest;
+use crate::Json;
 
 editoast_common::schemas! {
     CompleteReportTrain,

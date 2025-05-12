@@ -19,6 +19,13 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::conflict_detection::Conflict as CoreConflict;
+use core_client::conflict_detection::ConflictDetectionRequest;
+use core_client::conflict_detection::ConflictRequirement;
+use core_client::conflict_detection::ConflictType;
+use core_client::conflict_detection::TrainRequirements;
 use derivative::Derivative;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
@@ -31,7 +38,10 @@ use itertools::Itertools;
 use paced_train::PacedTrainResponse;
 use serde::Deserialize;
 use serde::Serialize;
+use simulation::train_simulation_batch;
 use thiserror::Error;
+use train_schedule::TrainScheduleForm;
+use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -41,12 +51,7 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
-use crate::core::AsCoreRequest;
-use crate::core::conflict_detection::Conflict as CoreConflict;
-use crate::core::conflict_detection::ConflictDetectionRequest;
-use crate::core::conflict_detection::ConflictRequirement;
-use crate::core::conflict_detection::ConflictType;
-use crate::core::conflict_detection::TrainRequirements;
+use crate::ValkeyClient;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
@@ -55,14 +60,8 @@ use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
-
-use crate::ValkeyClient;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::CoreClient;
-use simulation::train_simulation_batch;
-use train_schedule::TrainScheduleForm;
-use train_schedule::TrainScheduleResponse;
 
 crate::routes! {
     "/timetable" => {
@@ -712,6 +711,14 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
     use chrono::NaiveDate;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::RoutingRequirement;
+    use core_client::simulation::RoutingZoneRequirement;
+    use core_client::simulation::SpacingRequirement;
+    use core_client::simulation::SpeedLimitProperties;
     use editoast_schemas::paced_train::ExceptionType;
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
@@ -723,14 +730,6 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::core::pathfinding::PathfindingResultSuccess;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::RoutingRequirement;
-    use crate::core::simulation::RoutingZoneRequirement;
-    use crate::core::simulation::SpacingRequirement;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;

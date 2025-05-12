@@ -619,6 +619,12 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use chrono::Duration;
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
@@ -627,13 +633,6 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::core;
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::PathfindingResultSuccess;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::PartialProjectPathTrainResult;
@@ -788,12 +787,12 @@ mod tests {
         let request = app.get(
             format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
-        let response: core::simulation::Response =
+        let response: core_client::simulation::Response =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(
             response,
-            core::simulation::Response::Success {
+            core_client::simulation::Response::Success {
                 base: ReportTrain {
                     positions: vec![],
                     times: vec![],

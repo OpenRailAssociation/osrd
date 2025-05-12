@@ -24,8 +24,6 @@ use utoipa::ToSchema;
 use validator::ValidationErrors;
 use validator::ValidationErrorsKind;
 
-use crate::core;
-
 editoast_common::schemas! {
     InternalError,
 }
@@ -308,33 +306,34 @@ inventory::submit! {
     crate::error::ErrorDefinition::new("editoast:coreclient:MqClientError", "MqClientError", "CoreError", 500u16, r#"{}"#)
 }
 
-impl EditoastError for core::Error {
+impl EditoastError for core_client::Error {
     fn get_status(&self) -> StatusCode {
         match self {
-            core::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
-            core::Error::RawError(error) => match error.cause {
-                core::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-                core::ErrorCause::User => StatusCode::BAD_REQUEST,
+            core_client::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
+            core_client::Error::RawError(error) => match error.cause {
+                core_client::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+                core_client::ErrorCause::User => StatusCode::BAD_REQUEST,
             },
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
     fn get_type(&self) -> &'static str {
         match self {
-            core::Error::CoreResponseFormatError { .. } => {
+            core_client::Error::CoreResponseFormatError { .. } => {
                 "editoast:coreclient:CoreResponseFormatError"
             }
-            core::Error::UnparsableErrorOutput => "editoast:coreclient:UnparsableErrorOutput",
-            core::Error::BrokenPipe => "editoast:coreclient:BrokenPipe",
-            core::Error::MqClientError(_) => "editoast:coreclient:MqClientError",
-            core::Error::RawError(_) => "editoast:coreclient:RawError",
-            #[cfg(test)]
-            core::Error::NoResponseContent => "editoast:coreclient:NoResponseContent",
+            core_client::Error::UnparsableErrorOutput => {
+                "editoast:coreclient:UnparsableErrorOutput"
+            }
+            core_client::Error::BrokenPipe => "editoast:coreclient:BrokenPipe",
+            core_client::Error::MqClientError(_) => "editoast:coreclient:MqClientError",
+            core_client::Error::RawError(_) => "editoast:coreclient:RawError",
+            core_client::Error::NoResponseContent => "editoast:coreclient:NoResponseContent",
         }
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
-            core::Error::CoreResponseFormatError { msg } => {
+            core_client::Error::CoreResponseFormatError { msg } => {
                 [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
             }
             _ => Default::default(),
@@ -392,11 +391,11 @@ impl ErrorDefinition {
     }
 }
 
-impl From<crate::core::RawError> for InternalError {
-    fn from(core_error: crate::core::RawError) -> Self {
+impl From<core_client::RawError> for InternalError {
+    fn from(core_error: core_client::RawError) -> Self {
         let status = match core_error.cause {
-            core::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-            core::ErrorCause::User => StatusCode::BAD_REQUEST,
+            core_client::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+            core_client::ErrorCause::User => StatusCode::BAD_REQUEST,
         };
         Self {
             status,

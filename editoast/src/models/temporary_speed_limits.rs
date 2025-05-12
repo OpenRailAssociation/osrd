@@ -6,8 +6,6 @@ use editoast_models::tables::temporary_speed_limit_group;
 use editoast_schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 
-use crate::core::stdcm::TemporarySpeedLimit as CoreTemporarySpeedLimit;
-
 #[derive(Debug, Clone, Model)]
 #[model(table = temporary_speed_limit_group, error = TslGroupError)]
 #[model(gen(ops = crd, batch_ops = c, list))]
@@ -58,9 +56,9 @@ pub struct TemporarySpeedLimit {
 #[error(transparent)]
 pub struct Error(#[from] model::Error);
 
-impl From<TemporarySpeedLimit> for CoreTemporarySpeedLimit {
+impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
     fn from(value: TemporarySpeedLimit) -> Self {
-        CoreTemporarySpeedLimit {
+        core_client::stdcm::TemporarySpeedLimit {
             speed_limit: value.speed_limit,
             track_ranges: value
                 .track_ranges

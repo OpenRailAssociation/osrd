@@ -1,32 +1,17 @@
-use crate::RetrieveBatchUnchecked;
-use crate::ValkeyClient;
-use crate::client::get_app_version;
-use crate::core;
-use crate::core::AsCoreRequest;
-use crate::core::pathfinding::PathfindingInputError;
-use crate::core::pathfinding::PathfindingNotFound;
-use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::simulation::CompleteReportTrain;
-use crate::core::simulation::ElectricalProfiles;
-use crate::core::simulation::PhysicsConsist;
-use crate::core::simulation::PhysicsConsistParameters;
-use crate::core::simulation::ReportTrain;
-use crate::core::simulation::SimulationMargins;
-use crate::core::simulation::SimulationPath;
-use crate::core::simulation::SimulationPowerRestrictionItem;
-use crate::core::simulation::SimulationScheduleItem;
-use crate::core::simulation::SpeedLimitProperties;
-use crate::error::InternalError;
-use crate::error::Result;
-use crate::models;
-use crate::models::RollingStock;
-use crate::views::CoreClient;
-use crate::views::path::pathfinding::PathfindingFailure;
-use crate::views::path::pathfinding_from_train_batch;
-use crate::views::rolling_stock::RollingStockError;
-use crate::views::timetable::Infra;
-use crate::views::timetable::PathfindingResult;
-use crate::views::timetable::simulation;
+use core_client::AsCoreRequest;
+use core_client::pathfinding::PathfindingInputError;
+use core_client::pathfinding::PathfindingNotFound;
+use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::simulation::CompleteReportTrain;
+use core_client::simulation::ElectricalProfiles;
+use core_client::simulation::PhysicsConsist;
+use core_client::simulation::PhysicsConsistParameters;
+use core_client::simulation::ReportTrain;
+use core_client::simulation::SimulationMargins;
+use core_client::simulation::SimulationPath;
+use core_client::simulation::SimulationPowerRestrictionItem;
+use core_client::simulation::SimulationScheduleItem;
+use core_client::simulation::SpeedLimitProperties;
 use editoast_models::DbConnection;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -40,6 +25,21 @@ use std::sync::Arc;
 use tracing::Instrument;
 use tracing::info;
 use utoipa::ToSchema;
+
+use crate::RetrieveBatchUnchecked;
+use crate::ValkeyClient;
+use crate::client::get_app_version;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models;
+use crate::models::RollingStock;
+use crate::views::CoreClient;
+use crate::views::path::pathfinding::PathfindingFailure;
+use crate::views::path::pathfinding_from_train_batch;
+use crate::views::rolling_stock::RollingStockError;
+use crate::views::timetable::Infra;
+use crate::views::timetable::PathfindingResult;
+use crate::views::timetable::simulation;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
 
@@ -91,10 +91,10 @@ impl Response {
     }
 }
 
-impl From<crate::core::simulation::Response> for Response {
-    fn from(response: crate::core::simulation::Response) -> Self {
+impl From<core_client::simulation::Response> for Response {
+    fn from(response: core_client::simulation::Response) -> Self {
         match response {
-            crate::core::simulation::Response::Success {
+            core_client::simulation::Response::Success {
                 base,
                 provisional,
                 final_output,
@@ -107,7 +107,7 @@ impl From<crate::core::simulation::Response> for Response {
                 mrsp,
                 electrical_profiles,
             },
-            crate::core::simulation::Response::SimulationFailed { core_error } => {
+            core_client::simulation::Response::SimulationFailed { core_error } => {
                 Self::SimulationFailed {
                     core_error: core_error.into(),
                 }
@@ -284,7 +284,7 @@ pub async fn consist_train_simulation_batch(
 
     let mut simulation_results = vec![None::<simulation::Response>; train_schedules.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
-    let mut sim_request_map: HashMap<String, core::simulation::Request> = HashMap::default();
+    let mut sim_request_map: HashMap<String, core_client::simulation::Request> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
         pathfinding_results.iter().zip(train_schedules).enumerate()
     {
@@ -412,7 +412,7 @@ fn build_simulation_request(
     path: SimulationPath,
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
-) -> core::simulation::Request {
+) -> core_client::simulation::Request {
     assert_eq!(path_item_positions.len(), train_schedule.path.len());
     // Project path items to path offset
     let path_items_to_position: HashMap<_, _> = train_schedule
@@ -459,7 +459,7 @@ fn build_simulation_request(
         })
         .collect();
 
-    core::simulation::Request {
+    core_client::simulation::Request {
         infra: infra.id,
         expected_version: infra.version,
         path,
@@ -479,7 +479,7 @@ fn build_simulation_request(
 fn compute_train_simulation_hash_with_versioning(
     infra_id: i64,
     infra_version: i64,
-    simulation_input: &core::simulation::Request,
+    simulation_input: &core_client::simulation::Request,
 ) -> String {
     let osrd_version = get_app_version().unwrap_or_default();
     let mut hasher = DefaultHasher::new();
