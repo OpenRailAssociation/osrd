@@ -97,6 +97,7 @@ services:
       RABBITMQ_DIST_PORT: 25673
       RABBITMQ_CONFIG_FILE: "/etc/rabbitmq/rabbitmq.conf"
     volumes:
+      - "../docker/rabbitmq.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
       - rabbitmq_data:/var/lib/rabbitmq
       - "../docker/rabbitmq-pr-tests.conf:/etc/rabbitmq/rabbitmq.conf"
     healthcheck:
@@ -108,11 +109,23 @@ services:
       - pr-tests
 
   core:
+    # This is a dummy container to build the core image
+    # and document/provide parameters to other compose files
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}
     container_name: osrd-core-dummy-pr-tests
     platform: linux/x86_64
     depends_on:
       rabbitmq: { condition: service_healthy }
+    environment:
+      # Actual values in ./docker/osrdyne.yml (please maintain consistency)
+      # Provided here only for reuse in compose layers and doc
+      CORE_EDITOAST_URL: "http://editoast:8091"
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
+      CORE_MONITOR_TYPE: "opentelemetry"
+      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4319"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
     restart: "no"
     command: "true"
     networks:
@@ -139,6 +152,7 @@ services:
       TELEMETRY_ENDPOINT: "http://jaeger:4319"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5673/%2f"
       EDITOAST_OPENFGA_URL: "http://openfga:8191"
+      EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-false}
     command:
       - /bin/sh
       - -c
