@@ -46,6 +46,9 @@ export default function useLazySimulateTrains({
     Map<TimetableItemId, TimetableItemWithDetails>
   >(new Map());
 
+  const onProgressRef = useRef<UseLazySimulateTrainsOptions['onProgress']>();
+  onProgressRef.current = onProgress;
+
   useEffect(() => {
     if (!rollingStocks) return undefined;
 
@@ -61,7 +64,7 @@ export default function useLazySimulateTrains({
           rollingStocks
         );
         setSimulatedTrainsById((prev) => new Map([...prev.entries(), ...summaries.entries()]));
-        if (onProgress) onProgress(summaries);
+        if (onProgressRef.current) onProgressRef.current(summaries);
       },
     });
 
