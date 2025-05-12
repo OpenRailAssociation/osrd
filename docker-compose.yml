@@ -101,7 +101,7 @@ services:
     environment:
       # Actual values in ./docker/osrdyne.yml (please maintain consistency)
       # Provided here only for reuse in compose layers and doc
-      CORE_EDITOAST_URL: "http://osrd-editoast"
+      CORE_EDITOAST_URL: "http://editoast"
       JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
       CORE_MONITOR_TYPE: "opentelemetry"
       OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
@@ -135,10 +135,10 @@ services:
       ROOT_URL: "http://localhost:4000/api"
       VALKEY_URL: "redis://valkey"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
-      OSRDYNE_API_URL: "http://osrd-osrdyne:4242/"
+      OSRDYNE_API_URL: "http://osrdyne:4242/"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
-      OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
+      OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5672/%2f"
       EDITOAST_OPENFGA_URL: "http://openfga:8091"
       EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-false}
     command:
@@ -191,7 +191,7 @@ services:
     ports: [ "4242:4242" ]
     environment:
       RUST_LOG: "info"
-      OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://osrd-jaeger:4317"
+      OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://jaeger:4317"
       OSRDYNE__WORKER_DRIVER__WORKER_IMAGE: "ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-core:${TAG-dev}"
 
   jaeger:

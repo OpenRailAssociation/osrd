@@ -5,7 +5,7 @@ worker_driver:
   container_prefix: "osrd"
   container_command: ["sh", "-c", "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar worker"]
   default_env:
-      - "CORE_EDITOAST_URL=http://osrd-editoast"
+      - "CORE_EDITOAST_URL=http://editoast"
       - "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar"
       - "CORE_MONITOR_TYPE=opentelemetry"
       - "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc"
