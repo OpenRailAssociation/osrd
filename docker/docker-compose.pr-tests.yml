@@ -188,7 +188,7 @@ services:
     image: jaegertracing/jaeger:latest
     container_name: osrd-jaeger-pr-tests
     restart: unless-stopped
-    command: --collector.otlp.grpc.host-port :4319 --collector.otlp.http.host-port :4320 --query.http-server.host-port :16687 --collector.grpc-server.host-port :14251
+    command: --set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4319 --set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4320 --set=receivers.jaeger.protocols.grpc.endpoint=0.0.0.0:14251 --set=extensions.jaeger_query.http.endpoint=0.0.0.0:16687
     ports:
       - "4319:4319"
       - "4320:4320"
