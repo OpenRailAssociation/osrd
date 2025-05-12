@@ -11,7 +11,6 @@ import {
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
-  PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
   TrainScheduleId,
@@ -55,41 +54,50 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const projectionPath = usePathProjection(infra);
 
-  const { data: fetchedTrainSchedulesResults } =
-    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
-      { timetableId: scenario?.timetable_id },
-      {
-        skip: !scenario,
-      }
-    );
+  useEffect(() => {
+    if (!scenario) {
+      return undefined;
+    }
 
-  const { data: fetchedPacedTrains } =
-    osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.useQuery(
-      { timetableId: scenario?.timetable_id },
-      {
-        skip: !scenario || !showPacedTrains,
-      }
+    const trainSchedulesResult = dispatch(
+      osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
+        timetableId: scenario.timetable_id,
+      })
     );
+    const pacedTrainsResult = showPacedTrains
+      ? dispatch(
+          osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate({
+            timetableId: scenario.timetable_id,
+          })
+        )
+      : null;
 
-  const formattedRawTrainSchedules = useMemo(
-    () =>
-      (fetchedTrainSchedulesResults || []).map((trainSchedule) => ({
+    const fetchTimetableItems = async () => {
+      const rawTrainSchedules = await trainSchedulesResult.unwrap();
+      const rawPacedTrains = (await pacedTrainsResult?.unwrap()) ?? [];
+
+      const trainSchedules = rawTrainSchedules.map((trainSchedule) => ({
         ...trainSchedule,
         id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
-      })),
-    [fetchedTrainSchedulesResults]
-  );
+      }));
+      const pacedTrains = rawPacedTrains.map((pacedTrain) => ({
+        ...pacedTrain,
+        id: formatEditoastIdToPacedTrainId(pacedTrain.id),
+      }));
 
-  const formattedRawPacedTrains: PacedTrainResponseWithPacedTrainId[] = useMemo(
-    () =>
-      showPacedTrains
-        ? (fetchedPacedTrains || []).map((pacedTrain) => ({
-            ...pacedTrain,
-            id: formatEditoastIdToPacedTrainId(pacedTrain.id),
-          }))
-        : [],
-    [showPacedTrains, fetchedPacedTrains]
-  );
+      setTimetableItems([
+        ...sortBy(trainSchedules, 'start_time'),
+        ...sortBy(pacedTrains, 'start_time'),
+      ]);
+    };
+
+    fetchTimetableItems();
+
+    return () => {
+      trainSchedulesResult.unsubscribe();
+      pacedTrainsResult?.unsubscribe();
+    };
+  }, [scenario?.timetable_id, showPacedTrains]);
 
   const {
     simulatedTrainsById,
@@ -162,14 +170,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   useAutoUpdateProjection(infra, timetableItemIds, timetableItemsWithDetails);
-
-  useEffect(() => {
-    const sortedTimetableItems = [
-      ...sortBy(formattedRawTrainSchedules, 'start_time'),
-      ...sortBy(formattedRawPacedTrains, 'start_time'),
-    ];
-    setTimetableItems(sortedTimetableItems);
-  }, [formattedRawTrainSchedules, formattedRawPacedTrains]);
 
   // first load of the summaries
   useEffect(() => {
@@ -367,7 +367,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
               projectedTrains,
               projectionLoaderData: {
                 allTrainsProjected,
-                totalTrains: formattedRawTrainSchedules.length,
+                totalTrains: timetableItems?.length ?? 0,
               },
             }
           : undefined,
@@ -383,7 +383,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       projectionPath,
       projectedTrains,
       allTrainsProjected,
-      formattedRawTrainSchedules.length,
+      timetableItems?.length ?? 0,
       conflicts,
       removeTimetableItemsWithBroadcast,
       upsertTimetableItemsWithBroadcast,
