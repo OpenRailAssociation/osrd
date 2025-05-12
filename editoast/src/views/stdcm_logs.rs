@@ -156,6 +156,13 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::DateTime;
+    use core_client::CoreClient;
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::SpeedLimitProperties;
     use editoast_authz as authz;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
@@ -167,14 +174,6 @@ mod tests {
     use tracing_subscriber::filter::Directive;
     use uuid::Uuid;
 
-    use crate::core;
-    use crate::core::CoreClient;
-    use crate::core::mocking::MockingClient;
-    use crate::core::pathfinding::PathfindingResultSuccess;
-    use crate::core::simulation::CompleteReportTrain;
-    use crate::core::simulation::ElectricalProfiles;
-    use crate::core::simulation::ReportTrain;
-    use crate::core::simulation::SpeedLimitProperties;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
@@ -258,7 +257,7 @@ mod tests {
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(core::stdcm::Response::Success {
+            .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
@@ -278,8 +277,8 @@ mod tests {
         }
     }
 
-    fn simulation_response() -> core::simulation::Response {
-        core::simulation::Response::Success {
+    fn simulation_response() -> core_client::simulation::Response {
+        core_client::simulation::Response::Success {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],

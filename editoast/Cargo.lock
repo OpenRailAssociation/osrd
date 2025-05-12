@@ -896,6 +896,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
+name = "core_client"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "async-std",
+ "chrono",
+ "core_client",
+ "deadpool",
+ "derivative",
+ "editoast_common",
+ "editoast_schemas",
+ "futures-util",
+ "hostname",
+ "http",
+ "itertools",
+ "lapin",
+ "opentelemetry",
+ "pretty_assertions",
+ "reqwest",
+ "rstest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "tracing",
+ "tracing-opentelemetry",
+ "url",
+ "utoipa",
+ "uuid",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1262,6 +1294,7 @@ dependencies = [
  "chrono",
  "clap",
  "colored",
+ "core_client",
  "dashmap",
  "deadpool",
  "deadpool-redis",

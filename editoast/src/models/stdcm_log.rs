@@ -1,13 +1,13 @@
 use chrono::DateTime;
 use chrono::Utc;
+use core_client::stdcm::Request;
+use core_client::stdcm::Response;
 use editoast_derive::Model;
 use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::core::stdcm::Request;
-use crate::core::stdcm::Response;
 use crate::models::prelude::*;
 
 editoast_common::schemas! {

@@ -1,0 +1,42 @@
+[package]
+name = "core_client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+mocking_client = []
+
+[dependencies]
+approx.workspace = true
+chrono.workspace = true
+deadpool.workspace = true
+derivative.workspace = true
+editoast_common = { workspace = true }
+editoast_schemas = { workspace = true }
+futures-util.workspace = true
+hostname.workspace = true
+http = "1.3.1"
+itertools.workspace = true
+lapin.workspace = true
+opentelemetry.workspace = true
+reqwest.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-opentelemetry.workspace = true
+url.workspace = true
+utoipa.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+async-std.workspace = true
+core_client = { path = "./", features = ["mocking_client"] }
+editoast_schemas = { workspace = true, features = ["testing"] }
+pretty_assertions.workspace = true
+rstest.workspace = true
+
+[lints]
+workspace = true

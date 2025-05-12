@@ -56,6 +56,10 @@ pub use openapi::OpenApiRoot;
 
 use axum::extract::Json;
 use axum::extract::State;
+use core_client::AsCoreRequest;
+use core_client::CoreClient;
+use core_client::mq_client;
+use core_client::version::CoreVersionRequest;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_models::db_connection_pool::ping_database;
@@ -74,11 +78,6 @@ use url::Url;
 
 use crate::ValkeyClient;
 use crate::client::get_app_version;
-use crate::core;
-use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
-use crate::core::mq_client;
-use crate::core::version::CoreVersionRequest;
 use crate::error::Result;
 use crate::error::{self};
 use crate::generated_data;
@@ -121,7 +120,7 @@ editoast_common::schemas! {
     editoast_common::schemas(),
     editoast_schemas::schemas(),
     models::schemas(),
-    core::schemas(),
+    core_client::schemas(),
     generated_data::schemas(),
     authz::schemas(),
     documents::schemas(),
@@ -385,7 +384,7 @@ pub enum AppHealthError {
     #[error(transparent)]
     Openfga(anyhow::Error),
     #[error(transparent)]
-    Core(#[from] crate::core::Error),
+    Core(#[from] core_client::Error),
 }
 
 #[utoipa::path(
@@ -723,12 +722,12 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
+    use core_client::mocking::MockingClient;
     use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
     use serde_json::json;
 
     use super::test_app::TestAppBuilder;
-    use crate::core::mocking::MockingClient;
 
     #[cfg(test)]
     pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {

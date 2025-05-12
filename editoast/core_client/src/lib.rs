@@ -1,7 +1,5 @@
 pub mod conflict_detection;
 pub mod infra_loading;
-#[cfg(test)]
-pub mod mocking;
 pub mod mq_client;
 pub mod path_properties;
 pub mod pathfinding;
@@ -9,6 +7,9 @@ pub mod signal_projection;
 pub mod simulation;
 pub mod stdcm;
 pub mod version;
+
+#[cfg(feature = "mocking_client")]
+pub mod mocking;
 
 use mq_client::MqClientError;
 use serde::Deserialize;
@@ -20,9 +21,6 @@ use std::marker::PhantomData;
 use thiserror::Error;
 use tracing::error;
 use tracing::trace;
-
-#[cfg(test)]
-use crate::core::mocking::MockingError;
 
 pub use mq_client::RabbitMQClient;
 
@@ -37,7 +35,7 @@ editoast_common::schemas! {
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     MessageQueue(RabbitMQClient),
-    #[cfg(test)]
+    #[cfg(feature = "mocking_client")]
     Mocked(mocking::MockingClient),
 }
 
@@ -56,7 +54,7 @@ impl CoreClient {
             CoreClient::MessageQueue(mq_client) => {
                 mq_client.ping().await.map_err(|_| Error::BrokenPipe)
             }
-            #[cfg(test)]
+            #[cfg(feature = "mocking_client")]
             CoreClient::Mocked(_) => Ok(true),
         }
     }
@@ -100,12 +98,12 @@ impl CoreClient {
 
                 todo!("TODO: handle protocol errors")
             }
-            #[cfg(test)]
+            #[cfg(feature = "mocking_client")]
             CoreClient::Mocked(client) => {
                 match client.fetch_mocked::<_, B, R>(method, path, body) {
                     Ok(Some(response)) => Ok(response),
                     Ok(None) => Err(Error::NoResponseContent),
-                    Err(MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
+                    Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
                 }
             }
         }
@@ -115,8 +113,11 @@ impl CoreClient {
 /// A struct implementing this trait represents a Core request payload
 ///
 /// For example:
-///
 /// ```
+/// # use core_client::AsCoreRequest;
+/// # use core_client::Json;
+/// # use serde::Serialize;
+/// # use serde::Deserialize;
 /// #[derive(Serialize, Default)]
 /// struct TestReq {
 ///     foo: String,
@@ -125,16 +126,24 @@ impl CoreClient {
 ///
 /// #[derive(Deserialize)]
 /// struct Response {
-///     message: String
+///     message: String,
 /// }
 ///
-/// impl AsCoreRequest<Response> for TestReq {
-///    const METHOD: reqwest::Method = reqwest::Method::POST;
-///    const URL_PATH: &'static str = "test01";
+/// impl AsCoreRequest<Json<Response>> for TestReq {
+///     const METHOD: reqwest::Method = reqwest::Method::POST;
+///     const URL_PATH: &'static str = "/some/path";
+///     fn infra_id(&self) -> std::option::Option<i64> { Some(42) }
 /// }
 ///
-/// // Builds the payload, executes the request at POST /test01 and deserializes its response
-/// let response: Response = TestReq::default().fetch(&coreclient).await.unwrap();
+/// # let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+/// # rt.block_on(async {
+/// #   let mut core_mock = core_client::mocking::MockingClient::default();
+/// #   core_mock.stub("/some/path").method(reqwest::Method::POST).response(reqwest::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
+/// #   let core_client = core_mock.into();
+/// // Builds the payload, executes the request at POST /some/path and deserializes its response
+/// let response = TestReq::default().fetch(&core_client).await.unwrap();
+/// assert_eq!(response.message, "YOU WON!");
+/// # });
 /// ```
 pub trait AsCoreRequest<R>
 where
@@ -246,7 +255,7 @@ pub enum Error {
     #[error(transparent)]
     RawError(#[from] RawError),
 
-    #[cfg(test)]
+    #[cfg(feature = "mocking_client")]
     #[error(
         "The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected"
     )]
@@ -290,16 +299,16 @@ pub enum ErrorCause {
 #[cfg(test)]
 mod tests {
 
-    use axum::http::StatusCode;
+    use http::StatusCode;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
     use serde::Serialize;
     use serde_json::json;
 
-    use crate::core::AsCoreRequest;
-    use crate::core::Bytes;
-    use crate::core::RawError;
-    use crate::core::mocking::MockingClient;
+    use crate::AsCoreRequest;
+    use crate::Bytes;
+    use crate::RawError;
+    use crate::mocking::MockingClient;
 
     use super::Error;
 

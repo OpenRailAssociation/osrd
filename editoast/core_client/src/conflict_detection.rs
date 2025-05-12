@@ -6,8 +6,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use crate::core::AsCoreRequest;
-use crate::core::Json;
+use crate::AsCoreRequest;
+use crate::Json;
 
 use super::simulation::RoutingRequirement;
 use super::simulation::SpacingRequirement;
@@ -42,8 +42,7 @@ pub struct WorkSchedulesRequest {
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(Serialize))]
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct ConflictDetectionResponse {
     /// List of conflicts detected
     #[schema(inline)]
