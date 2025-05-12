@@ -127,9 +127,9 @@ services:
       DATABASE_URL: "postgres://osrd:password@postgres:5433/osrd"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4319"
-      OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq-pr-tests:5673/%2f"
+      OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5673/%2f"
       EDITOAST_OPENFGA_URL: "http://openfga:8191"
-      OSRDYNE_API_URL: "http://osrd-osrdyne-pr-tests:4243/"
+      OSRDYNE_API_URL: "http://osrdyne:4243/"
     command:
       - /bin/sh
       - -c
@@ -177,8 +177,8 @@ services:
     restart: unless-stopped
     ports: [ "4243:4243" ]
     environment:
-      OSRDYNE__WORKER_DRIVER__WORKER_IMAGE: "ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}"
       OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://jaeger:4319"
+      OSRDYNE__WORKER_DRIVER__WORKER_IMAGE: "ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}"
       RUST_LOG: "info"
     networks:
       - pr-tests
