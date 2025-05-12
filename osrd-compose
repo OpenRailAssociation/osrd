@@ -111,6 +111,9 @@ fi
 
 if has_flag "sw"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.single-worker.yml")
+
+    # TODO: currently "single-worker" only works with "host", allowing no-host would be nice
+    compose_files+=("$OVERRIDE_DIR/docker-compose.host.yml")
 fi
 
 # Check if DOCKER_SOCKET is already set
