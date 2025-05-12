@@ -13,8 +13,7 @@ import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/o
 import type {
   TimetableItemId,
   TimetableItem,
-  TrainScheduleId,
-  TrainScheduleResponseWithTrainId,
+  PacedTrainResponseWithPacedTrainId,
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -23,6 +22,8 @@ import {
   formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   isPacedTrainId,
+  isTrainScheduleId,
+  extractEditoastIdFromPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -43,6 +44,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
+  const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
@@ -196,44 +198,71 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     });
 
     removeSimulatedTimetableItems(_timetableItemsToRemove);
-    removeProjectedTimetableItems(_timetableItemsToRemove);
   }, []);
 
-  // TODO Paced train : change this function to handle paced trains in https://github.com/OpenRailAssociation/osrd/issues/10781
-  /** Update only depature time of a train */
+  /** Update only departure time of a timetable item */
   const updateTrainDepartureTime = useCallback(
-    async (trainId: TimetableItemId, newDeparture: Date) => {
-      const editoastTrainId = extractEditoastIdFromTrainScheduleId(trainId as TrainScheduleId);
+    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+      const timetableItem = timetableItems?.find((item) => item.id === timetableItemId);
 
-      const trainSchedule = timetableItems?.find((timetableItem) => timetableItem.id === trainId);
-
-      if (!trainSchedule) {
-        throw new Error('Train non trouvé');
+      if (!timetableItem) {
+        throw new Error('Item non trouvé');
       }
 
-      const trainScheduleResponse = await putTrainScheduleById({
-        id: editoastTrainId,
-        trainScheduleForm: {
-          ...trainSchedule,
-          start_time: newDeparture.toISOString(),
-        },
-      }).unwrap();
+      let updateTimetableItem: TimetableItem | undefined;
 
-      const updatedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
-        ...trainScheduleResponse,
-        id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
-      };
+      if (isTrainScheduleId(timetableItemId)) {
+        const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItemId);
+
+        const trainScheduleResponse = await putTrainScheduleById({
+          id: editoastTrainId,
+          trainScheduleForm: {
+            ...timetableItem,
+            start_time: newDeparture.toISOString(),
+          },
+        }).unwrap();
+
+        updateTimetableItem = {
+          ...trainScheduleResponse,
+          id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
+        };
+      }
+
+      if (isPacedTrainId(timetableItemId)) {
+        const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItemId);
+
+        try {
+          await putPacedTrainById({
+            id: editoastPacedTrainId,
+            body: {
+              ...(timetableItem as PacedTrainResponseWithPacedTrainId),
+              start_time: newDeparture.toISOString(),
+            },
+          });
+
+          updateTimetableItem = {
+            ...timetableItem,
+            start_time: newDeparture.toISOString(),
+          };
+        } catch (error) {
+          console.error('Error updating paced train:', error);
+        }
+      }
+
+      if (!updateTimetableItem) {
+        throw new Error('Item non mis à jour');
+      }
 
       setTimetableItems((prev) => {
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
-          ...keyBy([updatedTrainScheduleResponse], 'id'),
+          ...keyBy([updateTimetableItem], 'id'),
         };
         return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
 
-      simulateTimetableItems([updatedTrainScheduleResponse]);
-      updateTimetableItemDepartureTime(trainId, newDeparture);
+      simulateTimetableItems([updateTimetableItem]);
+      updateTimetableItemDepartureTime(timetableItemId, newDeparture);
 
       // fetch conflicts
       refetchConflicts();

@@ -46,7 +46,8 @@ import {
   formatPacedTrainIdToOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   isTrainScheduleProjection,
-  isTrainScheduleId,
+  isOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
@@ -68,7 +69,7 @@ type ManchetteWithSpaceTimeChartProps = {
     allTrainsProjected: boolean;
   };
   handleTrainDrag?: (
-    draggedTrainId: TimetableItemId,
+    draggedTrainId: TrainId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => Promise<void>;
@@ -102,6 +103,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     draggedTrain: TrainSpaceTimeData;
     initialDepartureTime: Date;
   }>();
+
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
@@ -282,7 +284,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   });
 
-  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
   const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
     const { isPanning } = payload;
 
@@ -298,14 +299,28 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       dispatch(updateSelectedTrainId(draggedTrain.id));
 
       const timeDiff = payload.data.time - payload.initialData.time;
-      const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
 
-      // TODO Paced trains : handle paced train drag
-      if (isTrainScheduleId(draggedTrain.id)) {
-        await handleTrainDrag(draggedTrain.id, newDeparture, {
-          stopPanning: !isPanning,
-        });
+      let newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
+      let draggedTrainId = draggedTrain.id;
+
+      // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
+      if (isOccurrenceId(draggedTrain.id)) {
+        const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
+        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
+        const firstOccurrence = projectPathTrainResult.find(
+          ({ id }) => isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId
+        );
+        if (firstOccurrence && 'paced' in firstOccurrence) {
+          newDeparture = dayjs(newDeparture)
+            .add(occurrencesIndex * -firstOccurrence.paced.interval.ms, 'ms')
+            .toDate();
+          draggedTrainId = firstOccurrence.id;
+        }
       }
+
+      await handleTrainDrag(draggedTrainId, newDeparture, {
+        stopPanning: !isPanning,
+      });
 
       // stop dragging if necessary
       if (!isPanning) {
