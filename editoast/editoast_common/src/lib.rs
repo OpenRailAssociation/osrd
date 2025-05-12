@@ -8,8 +8,13 @@ pub mod units;
 pub use hash_rounded_float::hash_float;
 pub use hash_rounded_float::hash_float_slice;
 
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
 schemas! {
     geometry::schemas(),
+    Version,
 }
 
 pub fn setup_tracing_for_test() {
@@ -19,4 +24,10 @@ pub fn setup_tracing_for_test() {
         .pretty()
         .try_init()
         .ok();
+}
+
+#[derive(ToSchema, Serialize, Deserialize)]
+pub struct Version {
+    #[schema(required)] // Options are by default not required, but this one is
+    pub git_describe: Option<String>,
 }

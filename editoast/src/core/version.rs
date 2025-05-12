@@ -1,9 +1,9 @@
 use derivative::Derivative;
+use editoast_common::Version;
 use serde::Serialize;
 
 use super::AsCoreRequest;
 use super::Json;
-use crate::views::Version;
 
 /// A Core infra load request
 #[derive(Debug, Serialize, Derivative)]
