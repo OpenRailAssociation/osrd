@@ -683,10 +683,11 @@ const useManchetteWithSpaceTimeChart = ({
             if (enableSpacePan) {
               let newYOffset = initialOffset.y - diff.y;
               newYOffset = Math.max(newYOffset, 0);
-              if (manchette)
+              if (manchette) {
                 newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
+                manchette.scrollTop = newYOffset;
+              }
               newState.yOffset = newYOffset;
-              if (manchette) manchette.scrollTop = newYOffset;
             }
 
             return newState;

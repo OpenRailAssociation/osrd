@@ -195,7 +195,7 @@ export function getSpaceToPixel(
     );
     // Rare case where coefficient is 0:
     // (occurs when there is just a flat step, for instance)
-    if (!coefficient) return pixelOffset + (fromEnd ? pixelTo : pixelFrom);
+    if (coefficient === 0) return pixelOffset + (fromEnd ? pixelTo : pixelFrom);
 
     // Normal case: We simply interpolate
     return pixelOffset + pixelFrom + (position - from) / coefficient;

@@ -145,7 +145,7 @@ export const drawOccupationZone = (
     });
   }
 
-  // Draw trains:
+  // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
   ctx.strokeStyle = zone.color;
   ctx.lineWidth = 1;
   ctx.setLineDash([1, 4]);

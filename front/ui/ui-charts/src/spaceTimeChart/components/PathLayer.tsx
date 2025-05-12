@@ -129,7 +129,7 @@ export const PathLayer = ({
       for (let i = 0; i < points.length; i++) {
         const { position, time } = points[i];
 
-        if (!i) {
+        if (i === 0) {
           line.push({
             [timeAxis]: getTimePixel(time),
             [spaceAxis]: getSpacePixel(position),
@@ -373,8 +373,8 @@ export const PathLayer = ({
       });
 
       // Compute length of pathSegments
-      lines.forEach((points) => {
-        points.forEach(({ x, y }, i, a) => {
+      lines.forEach((line) => {
+        line.forEach(({ x, y }, i, a) => {
           if (i > 0) {
             const { x: prevX, y: prevY } = a[i - 1];
             totalLength += Math.sqrt(Math.pow(prevX - x, 2) + Math.pow(prevY - y, 2));
@@ -445,7 +445,7 @@ export const PathLayer = ({
       lines.forEach((points) => {
         ctx.beginPath();
         points.forEach(({ x, y }, i) => {
-          if (!i) {
+          if (i === 0) {
             ctx.moveTo(x, y);
           } else {
             ctx.lineTo(x, y);

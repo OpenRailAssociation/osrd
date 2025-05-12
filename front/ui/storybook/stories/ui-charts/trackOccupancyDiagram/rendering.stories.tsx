@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
 import { TrackOccupancyStandalone } from '@osrd-project/ui-charts';
-
 import type { Meta, StoryObj } from '@storybook/react';
 
 import OCCUPANCY_ZONES from './assets/occupancyZones';
-import { TRACKS } from '../manchetteWithSpaceTimeChart/assets/trackOccupancyData';
+import TRACKS from './assets/tracks';
 
 import './styles/track-occupancy.css';
 
@@ -18,7 +17,7 @@ const TrackOccupancyDiagramStory = ({
   trainId: number;
   autoHeight?: boolean;
 }) => {
-  const [selectedTrainId, setSelectedTrainId] = useState<string | undefined>(undefined);
+  const [selectedTrainId, setSelectedTrainId] = useState<string>();
 
   useEffect(() => {
     setSelectedTrainId(`${trainId}`);

@@ -32,7 +32,7 @@ export const drawTracks = (
   } = stcContext;
   const yStart = getSpacePixel(position);
   const yEnd = getSpacePixel(position, true);
-  const height = yEnd - yStart;
+  const flatStepHeight = yEnd - yStart;
   const timeStart = getTime(0);
   const timeEnd = getTime(width);
   const pixelsPerMinute = (1 / timeScale) * MINUTE;
@@ -47,7 +47,7 @@ export const drawTracks = (
     const x = getTimePixel(hours * HOUR);
     const w = getTimePixel((hours + 1) * HOUR) - x;
     ctx.fillStyle = hours % 2 ? HOUR_BACKGROUND_1 : HOUR_BACKGROUND_2;
-    ctx.fillRect(x, yStart, w, height);
+    ctx.fillRect(x, yStart, w, flatStepHeight);
     hours++;
   }
 
