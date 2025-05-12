@@ -25,6 +25,7 @@ pub mod work_schedules;
 #[cfg(test)]
 mod test_app;
 use editoast_authz::StorageDriver;
+use editoast_common::Version;
 #[cfg(test)]
 pub(crate) use test_app::test_app;
 
@@ -56,8 +57,6 @@ use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_models::db_connection_pool::ping_database;
-use serde::Deserialize;
-use serde::Serialize;
 use thiserror::Error;
 use tokio::time::timeout;
 use tower::Layer as _;
@@ -70,7 +69,6 @@ use tower_http::trace::TraceLayer;
 use tracing::info;
 use tracing::warn;
 use url::Url;
-use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::client::get_app_version;
@@ -118,7 +116,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    Version,
     editoast_common::schemas(),
     editoast_schemas::schemas(),
     models::schemas(),
@@ -415,12 +412,6 @@ pub async fn check_health(
         openfga_ping
     )?;
     Ok(())
-}
-
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct Version {
-    #[schema(required)] // Options are by default not required, but this one is
-    git_describe: Option<String>,
 }
 
 #[utoipa::path(
