@@ -103,7 +103,7 @@ export default function TrainSettings() {
               <span className="text-nowrap">{t('trainScheduleName')}</span>
             </>
           }
-          id="train-name"
+          id="timetable-item-name"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           value={name}
           isInvalid={isInvalidTrainScheduleName}
@@ -126,7 +126,7 @@ export default function TrainSettings() {
               <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
             </>
           }
-          id="train-start-time"
+          id="start-time"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
           value={startTime}
           isInvalid={!startTime}
@@ -164,7 +164,7 @@ export default function TrainSettings() {
               <small className="text-nowrap">{t('trainScheduleInitialSpeed')}</small>
             </>
           }
-          id="train-initial-speed"
+          id="initial-speed"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInitialSpeed(+e.target.value)}
           value={initialSpeed}
           min={0}

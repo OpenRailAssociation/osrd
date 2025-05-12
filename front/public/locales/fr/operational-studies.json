@@ -207,7 +207,6 @@
     "InvalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
     "addPacedTrain": "Ajouter une mission",
     "addTrainSchedule": "Ajouter un train",
-    "addTrainSchedules": "Ajouter un ou plusieurs trains",
     "addVia": "Ajouter ce point de passage",
     "addVias": "Ajout de points de passage",
     "allowances": {

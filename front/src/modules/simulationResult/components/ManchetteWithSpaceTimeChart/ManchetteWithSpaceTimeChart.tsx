@@ -300,7 +300,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const timeDiff = payload.data.time - payload.initialData.time;
       const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
 
-      // TODO Paced trains : handle mission drag
+      // TODO Paced trains : handle paced train drag
       if (isTrainScheduleId(draggedTrain.id)) {
         await handleTrainDrag(draggedTrain.id, newDeparture, {
           stopPanning: !isPanning,

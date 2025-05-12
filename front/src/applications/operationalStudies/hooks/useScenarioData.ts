@@ -17,7 +17,6 @@ import type {
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
-import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
@@ -40,7 +39,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const dispatch = useAppDispatch();
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const showPacedTrains = useSelector(getShowPacedTrains);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
 
@@ -57,13 +55,11 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         timetableId: scenario.timetable_id,
       })
     );
-    const pacedTrainsResult = showPacedTrains
-      ? dispatch(
-          osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate({
-            timetableId: scenario.timetable_id,
-          })
-        )
-      : null;
+    const pacedTrainsResult = dispatch(
+      osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate({
+        timetableId: scenario.timetable_id,
+      })
+    );
 
     const fetchTimetableItems = async () => {
       const rawTrainSchedules = await trainSchedulesResult.unwrap();
@@ -90,7 +86,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       trainSchedulesResult.unsubscribe();
       pacedTrainsResult?.unsubscribe();
     };
-  }, [scenario.timetable_id, showPacedTrains]);
+  }, [scenario.timetable_id]);
 
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
@@ -133,15 +129,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     );
 
   const timetableItemsWithDetails = useMemo(() => {
-    let filteredTimetableItemsSummaries = Array.from(simulatedTrainsById.values());
-    // Allow to hide or show paced trains in the timetable when toggling the paced train mode in the settings
-    if (!showPacedTrains) {
-      filteredTimetableItemsSummaries = filteredTimetableItemsSummaries.filter(
-        (timetableItem) => !isPacedTrainId(timetableItem.id)
-      );
-    }
+    const filteredTimetableItemsSummaries = Array.from(simulatedTrainsById.values());
     return sortBy(filteredTimetableItemsSummaries, 'startTime');
-  }, [simulatedTrainsById, showPacedTrains]);
+  }, [simulatedTrainsById]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),

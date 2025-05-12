@@ -1,12 +1,6 @@
 import { expect } from '@playwright/test';
 
-import type {
-  Infra,
-  LightRollingStock,
-  Project,
-  Scenario,
-  Study,
-} from 'common/api/osrdEditoastApi';
+import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import {
   ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -14,10 +8,7 @@ import {
   DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
   NEW_PACED_TRAIN_SETTINGS,
 } from './assets/constants/operational-studies-const';
-import {
-  dualModeRollingStockName,
-  electricRollingStockName,
-} from './assets/constants/project-const';
+import { dualModeRollingStockName } from './assets/constants/project-const';
 import {
   DUPLICATED_PACED_TRAIN_INDEX,
   TOTAL_PACED_TRAINS,
@@ -33,7 +24,7 @@ import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
-import { getInfra, getRollingStock } from './utils/api-utils';
+import { getInfra } from './utils/api-utils';
 import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
@@ -100,13 +91,11 @@ test.describe('Verify simulation configuration in operational studies for train 
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let rollingStock: LightRollingStock;
   let translations: ManageTrainScheduleTranslations &
     TimetableFilterTranslations &
     CommonTranslations;
 
   test.beforeAll('Fetch infrastructure and get translations', async () => {
-    rollingStock = await getRollingStock(electricRollingStockName);
     infra = await getInfra();
     translations = getTranslations({
       en: {
@@ -166,8 +155,6 @@ test.describe('Verify simulation configuration in operational studies for train 
   test('Verify default behaviors with paced train mode', async () => {
     await operationalStudiesPage.clickOnAddTrainButton();
 
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     // Verify that all configuration buttons and inputs are visible and have their proper default values
     await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
 
@@ -184,8 +171,6 @@ test.describe('Verify simulation configuration in operational studies for train 
   /** *************** Test 2 **************** */
   test('Add a paced train and verify its timetable details', async ({ page }) => {
     await operationalStudiesPage.clickOnAddTrainButton();
-
-    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Set the paced train inputs
     await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
@@ -247,8 +232,6 @@ test.describe('Verify simulation configuration in operational studies for train 
     // to trigger list of train initialization for this e2e test, which isn't needed locally
     await page.reload();
 
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: 0,
@@ -290,62 +273,5 @@ test.describe('Verify simulation configuration in operational studies for train 
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: 0,
     });
-  });
-
-  // TODO Paced train : Remove this test in https://github.com/OpenRailAssociation/osrd/issues/10791
-  /** *************** Test 4 **************** */
-  test('Pathfinding with rolling stock and composition code', async () => {
-    // Click the button to add a train schedule
-    await operationalStudiesPage.clickOnAddTrainButton();
-
-    // Set the train schedule name and number of trains
-    await operationalStudiesPage.setTrainScheduleName('TrainSchedule');
-    await operationalStudiesPage.setNumberOfTrains('7');
-
-    // Open the rolling stock modal
-
-    await rollingstockSelector.openRollingstockModal();
-    await expect(rollingstockSelector.rollingStockSelectorModal).toBeVisible();
-
-    // Test rolling stock search with normalization (spaces and capital letters)
-    await rollingstockSelector.searchRollingstock(' electric_Rs_E2e ');
-
-    // Select the rolling stock card based on the test ID
-    const rollingstockCard = rollingstockSelector.getRollingstockCardByTestID(
-      `rollingstock-${rollingStock.name}`
-    );
-
-    // Verify the rolling stock card is inactive initially
-    await expect(rollingstockCard).toHaveClass(/inactive/);
-
-    // Select the rolling stock and ensure it becomes active
-    await rollingstockCard.click();
-    await expect(rollingstockCard).not.toHaveClass(/inactive/);
-
-    // Confirm rolling stock selection by clicking the button on the card
-    await rollingstockCard.locator('button').click();
-
-    // Validate that the rolling stock's name and comfort class are displayed correctly
-    expect(await rollingstockSelector.getRollingStockMiniCardInfo().first().textContent()).toMatch(
-      rollingStock.name
-    );
-    expect(await rollingstockSelector.getRollingStockInfoComfort().textContent()).toMatch(
-      /ConfortSStandard/i
-    );
-
-    // Perform Pathfinding and verify the distance
-    await operationalStudiesPage.clickOnRouteTab();
-    await routeTab.performPathfindingByTrigram('MWS', 'NES');
-    await operationalStudiesPage.checkPathfindingDistance('33.950 km');
-
-    // Adding Train Schedule
-    await operationalStudiesPage.addTimetableItem();
-
-    // Verify the train has been added and the simulation results
-    await operationalStudiesPage.checkToastHasBeenLaunched(translations.trainAdded);
-    await operationalStudiesPage.returnSimulationResult();
-
-    // Confirm the number of trains added matches the expected number
-    await operationalStudiesPage.checkNumberOfTrains(7);
   });
 });

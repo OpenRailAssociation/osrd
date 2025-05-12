@@ -117,8 +117,6 @@ test.describe('Edit trains and missions', () => {
   });
 
   test('Edit a paced train', async () => {
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     await pacedTrainSection.editPacedTrain();
 
     await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
@@ -147,8 +145,6 @@ test.describe('Edit trains and missions', () => {
   });
 
   test('Turn paced train into train schedule', async () => {
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     await pacedTrainSection.editPacedTrain();
 
     await operationalStudiesPage.turnPacedTrainIntoTrainSchedule(translations);
@@ -162,8 +158,6 @@ test.describe('Edit trains and missions', () => {
   });
 
   test('Turn a train schedule into a paced train', async () => {
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     await scenarioTimetableSection.clickOnEditTrain(1);
 
     await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(translations);

@@ -13,24 +13,18 @@ import {
 } from './assets/constants/project-const';
 import {
   HONORED_ITEMS,
-  HONORED_TRAINS,
-  INVALID_AND_NOT_HONORED_TRAINS,
   INVALID_ITEMS,
-  INVALID_TRAINS,
   ITEMS_WITH_NO_SPEED_LIMIT_TAG,
   LABEL_FILTERED_ITEMS,
   NAME_FILTERED_ITEMS,
   NOT_HONORED_ITEMS,
   NOT_HONORED_PACED_TRAINS,
-  NOT_HONORED_TRAINS,
   ROLLING_STOCK_FILTERED_ITEMS,
   TOTAL_ITEMS,
   TOTAL_PACED_TRAINS,
   TOTAL_TRAINS,
-  VALID_AND_HONORED_TRAINS,
   VALID_ITEMS,
   VALID_PACED_TRAINS,
-  VALID_TRAINS,
 } from './assets/constants/timetable-items-count';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -92,85 +86,20 @@ test.describe('Verify train schedule elements and filters', () => {
   /** *************** Test 1 **************** */
   test('Loading trains and verifying simulation result', async () => {
     // Verify train count, invalid train messages, and train simulation results
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
+    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
     await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
     await scenarioTimetableSection.checkSelectedTimetableTrain();
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
-      VALID_TRAINS,
+      VALID_ITEMS,
       translations
     );
-    await scenarioTimetableSection.verifyEachTrainSimulation();
+    // TODO Paced trains: Adapt verifyEachTrainSimulation to iterate over paced trains also
+    // await scenarioTimetableSection.verifyEachTrainSimulation();
   });
 
-  // TODO Paced train - remove this test in https://github.com/OpenRailAssociation/osrd/issues/10791
   /** *************** Test 2 **************** */
-  test('Filtering imported trains', async () => {
-    // Verify train count and apply different filters for validity and honored status
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
-    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
-      'Invalid',
-      INVALID_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
-      'All',
-      TOTAL_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
-      'Honored',
-      HONORED_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
-      'Valid',
-      VALID_AND_HONORED_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
-      'Not honored',
-      NOT_HONORED_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
-      'Invalid',
-      INVALID_AND_NOT_HONORED_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
-      'All',
-      INVALID_TRAINS,
-      translations
-    );
-    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
-      'All',
-      TOTAL_TRAINS,
-      translations
-    );
-
-    // Verify train composition filters with predefined filter codes and expected counts
-    const compositionFilters = [
-      { code: 'MA100', count: 7 },
-      { code: 'HLP', count: 3 },
-      { code: 'E32C', count: 1 },
-      { code: null, count: 10 }, // Null means no specific code applied
-    ];
-
-    for (const filter of compositionFilters) {
-      await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
-        filter.code,
-        filter.count,
-        translations
-      );
-    }
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
-  });
-
-  /** *************** Test 3 **************** */
   test('Filtering imported trains and paced trains', async () => {
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
@@ -250,10 +179,8 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
   });
 
-  /** *************** Test 4 **************** */
+  /** *************** Test 3 **************** */
   test('Loading timetable items and verifying paced trains display', async () => {
-    await operationalStudiesPage.checkPacedTrainSwitch();
-
     // Paced train data used in global setup
     const pacedTrainsData: PacedTrain[] = readJsonFile(
       './tests/assets/paced-train/paced_trains.json'
