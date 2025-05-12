@@ -71,11 +71,11 @@ const SpaceTimeHorizontalZoomWrapper = ({
   }));
   const spaceScale = [
     {
-      from: 0,
-      to: 75000,
+      to: 75000000,
       coefficient: 300000,
     },
   ];
+
   return (
     <div
       className="space-time-horizontal-zoom-wrapper"

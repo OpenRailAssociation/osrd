@@ -12,13 +12,16 @@ import {
   type OccupancyZone,
   type Track,
   isInteractiveWaypoint,
+  type OccupancyZonePickingElement,
+  isPointPickingElement,
+  isSegmentPickingElement,
 } from '@osrd-project/ui-charts';
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
 import type { Meta } from '@storybook/react';
 
 import {
-  getOccupancyZonesFromPath,
+  getOccupancyZonesFromPathAtGivenWaypoint,
   OPERATIONAL_POINTS,
   PATHS,
 } from '../spaceTimeChart/helpers/paths';
@@ -36,7 +39,7 @@ const BASE_WAYPOINT_HEIGHT = 32;
  */
 const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { height: number }) => {
   // TODO: Restore trains selection from GOV
-  const [selectedTrain, _setSelectedTrain] = useState<undefined | string>(undefined);
+  const [selectedTrain, setSelectedTrain] = useState<string>();
   const [selectedWaypoint, setSelectedWaypoint] = useState<undefined | string>(
     OPERATIONAL_POINTS[2].id
   );
@@ -56,7 +59,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
       { id: '3', name: '2bis', line: 'line' },
     ];
     const occupancyZones: OccupancyZone[] = paths.flatMap((path, i) =>
-      getOccupancyZonesFromPath(path.points, operationalPoint.position, {
+      getOccupancyZonesFromPathAtGivenWaypoint(path.points, operationalPoint.position, {
         trainId: path.id,
         trackId: tracks[i % tracks.length].id, // (i.e. pick some random track)
         arrivalTrainName: 'foo',
@@ -131,9 +134,41 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
           )}
         />
         <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
-          <SpaceTimeChart className="inset-0 absolute h-full" {...spaceTimeChartProps}>
+          <SpaceTimeChart
+            className="inset-0 absolute h-full"
+            {...spaceTimeChartProps}
+            onClick={({ hoveredItem }) => {
+              // Handle clicking the occupancyZone items (on the TrackOccupancyCanvas layer):
+              if (
+                hoveredItem?.layer === 'overlay' &&
+                hoveredItem.element.type === 'occupancyZone'
+              ) {
+                const newId = (hoveredItem.element as OccupancyZonePickingElement).trainId;
+                setSelectedTrain(newId === selectedTrain ? undefined : newId);
+              }
+
+              // Handle clicking the path items (on the Path layers):
+              else if (
+                hoveredItem?.layer === 'paths' &&
+                (isPointPickingElement(hoveredItem.element) ||
+                  isSegmentPickingElement(hoveredItem.element))
+              ) {
+                const newId = hoveredItem.element.pathId;
+                setSelectedTrain(newId === selectedTrain ? undefined : newId);
+              }
+              // Handle clicking the stage:
+              else {
+                setSelectedTrain(undefined);
+              }
+            }}
+          >
             {paths.map((path) => (
-              <PathLayer key={path.id} path={path} color={path.color} />
+              <PathLayer
+                key={path.id}
+                path={path}
+                color={path.color}
+                level={selectedTrain === path.id ? 1 : 2}
+              />
             ))}
           </SpaceTimeChart>
         </div>

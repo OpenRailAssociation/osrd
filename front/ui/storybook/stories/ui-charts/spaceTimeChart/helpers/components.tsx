@@ -5,10 +5,10 @@ import {
   SpaceTimeChartContext,
   type DataPoint,
   type Point,
+  positionMmToKm,
 } from '@osrd-project/ui-charts';
-import { round } from 'lodash';
 
-import { KILOMETER, WHITE_75 } from './consts';
+import { WHITE_75 } from './consts';
 import { formatTimeLength } from './utils';
 
 /**
@@ -90,12 +90,12 @@ const DataLabel = ({
       {isDiff ? (
         <>
           <div>Time difference: {formatTimeLength(new Date(data.time))}</div>
-          <div>Distance to mark: {round(data.position / KILOMETER).toLocaleString()} km</div>
+          <div>Distance to mark: {positionMmToKm(data.position).toLocaleString()} km</div>
         </>
       ) : (
         <>
           <div>Time: {new Date(data.time).toLocaleTimeString()}</div>
-          <div>Distance: {round(data.position / KILOMETER).toLocaleString()} km</div>
+          <div>Distance: {positionMmToKm(data.position).toLocaleString()} km</div>
         </>
       )}
     </div>

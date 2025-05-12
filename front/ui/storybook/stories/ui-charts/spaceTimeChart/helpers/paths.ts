@@ -1,9 +1,9 @@
 import {
-  DataPoint,
-  OccupancyZone,
-  OperationalPoint,
-  PathData,
-  PathLevel,
+  type DataPoint,
+  type OccupancyZone,
+  type OperationalPoint,
+  type PathData,
+  type PathLevel,
 } from '@osrd-project/ui-charts';
 import { cloneDeep, inRange, keyBy } from 'lodash';
 
@@ -247,7 +247,7 @@ export const PATHS: PathDisplay[] = [
   ),
 ];
 
-export function getOccupancyZonesFromPath<T extends object>(
+export function getOccupancyZonesFromPathAtGivenWaypoint<T extends object>(
   points: DataPoint[],
   waypointPosition: number,
   additionalAttributes: T

@@ -22,21 +22,19 @@ import {
 } from '../helpers/drawElements/drawOccupancyZones';
 import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../types';
 
-interface BaseRenderingInstruction {
-  type: string;
-  offsetY: number;
-}
-interface OccupancyZoneRenderingInstruction extends BaseRenderingInstruction {
-  type: 'occupancyZone';
-  zone: OccupancyZone;
-  isSelected: boolean;
-}
-interface RemainingTrainsRenderingInstruction extends BaseRenderingInstruction {
-  type: 'remainingTrains';
-  amount: number;
-  time: number;
-}
-type RenderingInstruction = OccupancyZoneRenderingInstruction | RemainingTrainsRenderingInstruction;
+type RenderingInstruction =
+  | {
+      type: 'occupancyZone';
+      zone: OccupancyZone;
+      isSelected: boolean;
+      offsetY: number;
+    }
+  | {
+      type: 'remainingTrains';
+      amount: number;
+      time: number;
+      offsetY: number;
+    };
 
 const Y_OFFSET_INCREMENT = 4;
 const MAX_ZONES = 9;
@@ -54,7 +52,7 @@ const OccupancyZonesLayer = ({
   topPadding: number;
   selectedTrainId?: string;
 }) => {
-  const zonesToDraw = useMemo(() => {
+  const instructionsToDraw = useMemo(() => {
     const instructions: RenderingInstruction[] = [];
 
     if (!tracks || !occupancyZones || occupancyZones.length === 0) return instructions;
@@ -69,8 +67,7 @@ const OccupancyZonesLayer = ({
       );
 
       let primaryArrivalTime = 0;
-      let primaryDepartureTime = 0;
-      let lastDepartureTime = primaryDepartureTime;
+      let lastDepartureTime = 0;
       let yPosition = OCCUPANCY_ZONE_Y_START;
       let yOffset = Y_OFFSET_INCREMENT;
       let zoneCounter = 0;
@@ -93,7 +90,6 @@ const OccupancyZonesLayer = ({
           // reset to initial value if the zone is not overlapping
           yPosition = OCCUPANCY_ZONE_Y_START;
           primaryArrivalTime = arrivalTime;
-          primaryDepartureTime = departureTime;
           lastDepartureTime = departureTime;
           yOffset = Y_OFFSET_INCREMENT;
           zoneCounter = 1;
@@ -140,11 +136,14 @@ const OccupancyZonesLayer = ({
           );
 
           const remainingTrainsNb = nextIndex - zoneIndex;
+          const remainingZones = filteredOccupancyZones.slice(zoneIndex, nextIndex);
+          const minTime = Math.min(...remainingZones.map((z) => z.arrivalTime));
+          const maxTime = Math.max(...remainingZones.map((z) => z.departureTime));
 
           instructions.push({
             type: 'remainingTrains',
             amount: remainingTrainsNb,
-            time: (zone.arrivalTime + zone.departureTime) / 2,
+            time: (minTime + maxTime) / 2,
             offsetY: trackY,
           });
 
@@ -160,7 +159,7 @@ const OccupancyZonesLayer = ({
 
   const drawingFunction = useCallback<DrawingFunction>(
     (ctx, stcContext) => {
-      zonesToDraw.forEach((instruction) => {
+      instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
           case 'occupancyZone':
             drawOccupationZone(ctx, stcContext, {
@@ -181,15 +180,17 @@ const OccupancyZonesLayer = ({
         }
       });
     },
-    [position, zonesToDraw]
+    [position, instructionsToDraw]
   );
 
   const pickingFunction = useCallback<PickingDrawingFunction>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
-      zonesToDraw.forEach((instruction) => {
+      const flatStepOffsetY = getSpacePixel(position);
+
+      instructionsToDraw.forEach((instruction) => {
         if (instruction.type === 'occupancyZone') {
           const x = getTimePixel(instruction.zone.arrivalTime);
-          const y = instruction.offsetY + getSpacePixel(position);
+          const y = instruction.offsetY + flatStepOffsetY;
           const width = getTimePixel(instruction.zone.departureTime) - x;
           const height = OCCUPANCY_ZONE_HEIGHT;
           const margin = 6;
@@ -212,7 +213,7 @@ const OccupancyZonesLayer = ({
         }
       });
     },
-    [position, zonesToDraw]
+    [position, instructionsToDraw]
   );
 
   usePicking('overlay', pickingFunction);

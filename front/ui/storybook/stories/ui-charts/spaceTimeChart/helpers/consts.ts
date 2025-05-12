@@ -19,5 +19,5 @@ export const SECOND = 1000;
 export const MINUTE = 60 * SECOND;
 export const HOUR = 60 * MINUTE;
 
-// Same for distances in meters:
+// Same for distances in millimeters:
 export const KILOMETER = 1000000;

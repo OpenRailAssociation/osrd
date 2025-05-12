@@ -28,9 +28,11 @@ const DEFAULT_HEIGHT = 500;
 
 const MIN_ZOOM = 0;
 const MAX_ZOOM = 100;
+// The time zoom boundaries are expressed in milliseconds / pixel:
 const MIN_ZOOM_MS_PER_PX = 600000;
 const MAX_ZOOM_MS_PER_PX = 625;
 const DEFAULT_ZOOM_MS_PER_PX = 10000;
+// The space zoom boundaries are expressed in millimeters / pixel:
 const MIN_SPACE_ZOOM = 10 * KILOMETER;
 const MAX_SPACE_ZOOM = 0.01 * KILOMETER;
 const DEFAULT_SPACE_ZOOM = 0.3 * KILOMETER;
