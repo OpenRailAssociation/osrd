@@ -179,6 +179,7 @@ async fn refresh(
     let mut infra_refreshed = vec![];
 
     for mut infra in infras_list {
+        infra_caches.remove(&infra.id);
         let infra_cache =
             InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
         if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
