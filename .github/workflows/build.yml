@@ -892,6 +892,11 @@ jobs:
 
       - name: Build Playwright container
         run: |
+          # Install CTRF reporter before building the container
+          (
+          cd front && npm install --save-dev playwright-ctrf-json-reporter
+          )
+
           docker build --build-arg PLAYWRIGHT_VERSION=v$PLAYWRIGHT_VERSION \
             --build-arg FRONT_TESTS_IMAGE=${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
             -t osrd-playwright:latest \
@@ -936,6 +941,15 @@ jobs:
             -v "$PWD/front/test-results:/app/front/test-results" \
             osrd-playwright:latest npx playwright test $TEST_PROJECT
           exit $(docker wait playwright-test)
+
+      - name: Publish Playwright test summary results
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: "./front/test-results/playwright-github-report.json"
+          template-path: "./front/tests/reporter/custom-report.hbs"
+          custom-report: true
+
+        if: always()
 
       - uses: actions/upload-artifact@v4
         if: always()

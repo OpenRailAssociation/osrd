@@ -17,12 +17,29 @@ export default defineConfig({
     navigationTimeout: 30_000,
     actionTimeout: 15_000,
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
-    trace: 'on-first-retry',
-    video: 'on-first-retry',
+    trace: 'retain-on-failure',
+    video: 'retain-on-failure',
     locale: 'fr',
     timezoneId: 'Europe/Paris',
   },
-  reporter: process.env.CI ? 'github' : [['line'], ['html']],
+  reporter: [
+    [
+      'playwright-ctrf-json-reporter',
+      {
+        outputFile: 'playwright-github-report.json',
+        outputDir: 'test-results',
+        trace: true,
+        message: true,
+        annotations: true,
+        attachments: true,
+        browser: true,
+        testType: 'e2e',
+        appName: 'OSRD',
+      },
+    ],
+    ['line'],
+    ['html'],
+  ],
 
   projects: [
     { name: 'setup', testMatch: 'global-setup.ts', teardown: 'teardown' },

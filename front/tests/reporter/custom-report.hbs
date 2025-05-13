@@ -1,0 +1,72 @@
+# Test Results Summary
+
+## Overview
+
+| **Tests 📝** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Flaky 🍂** | **Duration ⏱️** |
+| --- | --- | --- | --- | --- | --- |
+| {{ctrf.summary.tests}} | {{ctrf.summary.passed}} | {{ctrf.summary.failed}} | {{ctrf.summary.skipped}} | {{countFlaky ctrf.tests}} | {{formatDuration ctrf.summary.start ctrf.summary.stop}} |
+
+## Execution Details
+{{#if ctrf.summary.failed}}
+<table>
+  <thead>
+    <tr>
+      <th>Failed Tests</th>
+      <th>Browser</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each ctrf.tests}}
+      {{#if (eq status "failed")}}
+      <tr>
+        <td>
+          <details>
+            <summary>{{getCtrfEmoji "failed"}} {{name}}</summary>
+            <pre><code>{{#if message}}{{formatMessagePreCode message true}}{{else}}No message available{{/if}}</code></pre>
+            <p><strong>Trace:</strong></p>
+            <pre><code>{{#if trace}}{{formatMessagePreCode trace true}}{{attachments}}{{else}}No trace available{{/if}}</code></pre>
+          </details>
+        </td>
+        <td>{{browser}}</td>
+      </tr>
+      {{/if}}
+    {{/each}}
+  </tbody>
+</table>
+{{else}}
+<p>No failed tests ✨</p>
+{{/if}}
+
+{{#if (anyFailedTests ctrf.tests)}}
+{{#if ctrf.extra.ai}}
+### ✨ AI Test Analysis
+
+{{ctrf.extra.ai}}
+{{/if}}
+<table>
+    <thead>
+        <tr>
+            <th>Failed Tests</th>
+            <th>AI Analysis ✨</th>
+        </tr>
+    </thead>
+    <tbody>
+{{#each ctrf.tests ~}}
+  {{~#if (eq status "failed") ~}}
+        <tr>
+            <td>{{getCtrfEmoji "failed"}} {{name}}</td>
+            <td>{{#if ai}}{{~{formatMessage ai}}}{{else}}No AI summary available{{/if}}</td>
+        </tr>
+  {{~/if}}
+{{~/each}}
+    </tbody>
+</table>
+{{else}}
+<p>No failed tests ✨</p>
+{{/if}}
+
+| **Test Name** | **Status** | **Flaky** | **Duration** |
+| --- | --- | --- | --- |
+{{#slice ctrf.tests 0 8000}}
+| {{name}} | {{getCtrfEmoji status}} | {{#if flaky}}{{getCtrfEmoji "flaky"}}{{/if}} | {{formatDurationMs duration}} |
+{{/slice}}

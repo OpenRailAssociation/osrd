@@ -191,7 +191,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.clickOnSimulationSettingsTab();
     await simulationSettingsTab.deactivateElectricalProfile();
     await scenarioTimetableSection.clickOnEditTrainSchedule();
-    await scenarioTimetableSection.getTrainArrivalTime('11:52');
+    await scenarioTimetableSection.getTrainArrivalTime('11:53');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
