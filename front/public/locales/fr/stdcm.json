@@ -36,7 +36,6 @@
   "debug": {
     "simulationSettings": "Paramètres de simulation"
   },
-  "departureDate": "Date de départ",
   "departureTime": "Horaire de départ",
   "destinationTime": "Horaire de destination",
   "find": "Trouver",
