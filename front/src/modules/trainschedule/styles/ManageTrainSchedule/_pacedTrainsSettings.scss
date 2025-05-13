@@ -1,0 +1,43 @@
+.paced-train-settings {
+  .time-settings {
+    display: flex;
+    margin: 15px 12px;
+
+    .cadence-icon {
+      transform: rotate(90deg);
+    }
+  }
+
+  .added-occurences {
+    margin: 15px 12px;
+
+    h2 {
+      margin-left: -12px;
+    }
+
+    .controls {
+      display: flex;
+
+      .add-button {
+        margin: 32px 16px;
+      }
+    }
+
+    .list {
+      li {
+        margin: 4px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .input-icon:first-child {
+          margin-right: 8px;
+        }
+
+        .input-icon:last-child {
+          margin-left: 8px;
+        }
+      }
+    }
+  }
+}

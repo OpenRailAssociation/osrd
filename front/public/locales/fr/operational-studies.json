@@ -317,8 +317,12 @@
     "origin": "Origine",
     "pacedTrainUpdated": "Mission modifiée",
     "pacedTrains": {
+      "add": "Ajouter",
+      "addExtraOccurrences": "Ajouter des occurrences hors cadence",
       "added": "Mission ajoutée",
       "defineService": "Définir une mission",
+      "departureDay": "Jour de départ",
+      "departureTime": "Heure de départ",
       "interval": "Cadence de la mission",
       "timeWindow": "Durée de la plage de répétition"
     },

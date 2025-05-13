@@ -6,6 +6,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { setFailure, setSuccess } from 'reducers/main';
+import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainResponseWithPacedTrainId,
@@ -22,19 +23,22 @@ import {
   formatTimetableItemPayload,
 } from './helpers/formatTimetableItemPayload';
 
-type AddTrainScheduleButtonProps = {
+type CreateTimetableItemButtonProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   isPacedTrainMode: boolean;
 };
 
-const AddTrainScheduleButton = ({
+/**
+ * Create train schedules and paced trains
+ */
+const CreateTimetableItemButton = ({
   infraState,
   setIsWorking,
   upsertTimetableItems,
   isPacedTrainMode,
-}: AddTrainScheduleButtonProps) => {
+}: CreateTimetableItemButtonProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
@@ -77,6 +81,9 @@ const AddTrainScheduleButton = ({
             text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
           })
         );
+        if (simulationConf.editingItemType !== 'trainSchedule') {
+          dispatch(clearAddedExceptionsList());
+        }
         upsertTimetableItems([formattedNewPacedTrain]);
       } else {
         const trainSchedulePayload = formatTimetableItemPayload(simulationConf, rollingStock!.name);
@@ -122,4 +129,4 @@ const AddTrainScheduleButton = ({
   );
 };
 
-export default AddTrainScheduleButton;
+export default CreateTimetableItemButton;

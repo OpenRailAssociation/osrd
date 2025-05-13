@@ -1,4 +1,5 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
+import { v4 as uuidV4 } from 'uuid';
 
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type {
@@ -33,6 +34,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   powerRestriction: [],
   timeWindow: new Duration({ minutes: 120 }),
   interval: new Duration({ minutes: 60 }),
+  addedExceptions: [],
   editingItemType: 'trainSchedule',
 };
 
@@ -109,6 +111,19 @@ export const operationalStudiesConfSlice = createSlice({
     resetUsingSpeedLimits(state: Draft<OperationalStudiesConfState>) {
       state.usingSpeedLimits = true;
     },
+    addAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<Date>) {
+      state.addedExceptions.push({
+        key: uuidV4(),
+        startTime: action.payload,
+      });
+    },
+    deleteAddedException(state: Draft<OperationalStudiesConfState>, action: PayloadAction<string>) {
+      const indexToDelete = state.addedExceptions.findIndex((e) => e.key === action.payload);
+      state.addedExceptions.splice(indexToDelete, 1);
+    },
+    clearAddedExceptionsList(state: Draft<OperationalStudiesConfState>) {
+      state.addedExceptions = [];
+    },
   },
 });
 
@@ -130,6 +145,9 @@ export const {
   upsertSeveralViasFromSuggestedOP,
   updateTimeWindow,
   updateInterval,
+  addAddedException,
+  deleteAddedException,
+  clearAddedExceptionsList,
   toggleEditingItemType,
   updateCategory,
 

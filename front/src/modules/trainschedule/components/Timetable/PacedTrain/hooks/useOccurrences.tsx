@@ -129,7 +129,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
           category: exception.rolling_stock_category
             ? exception.rolling_stock_category.value
             : pacedTrainCategory,
-          exceptionChangeGroups: omit(exception, ['key', 'disabled']),
+          exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index']),
           ...(isValid
             ? {
                 isValid: true,

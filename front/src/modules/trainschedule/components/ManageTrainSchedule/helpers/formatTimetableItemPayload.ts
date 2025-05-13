@@ -85,7 +85,9 @@ function isPacedTrainToEditData(
 }
 
 /**
- * @param osrdconf fields that were modified by user
+ * Used when creating and editing a paced train
+ * timetableItemToEditData given when creating, not editing
+ * @param osrdconf pace train fields that were modified by user
  */
 export function formatPacedTrainPayload(
   osrdconf: OperationalStudiesConfState,
@@ -95,13 +97,17 @@ export function formatPacedTrainPayload(
 ): PacedTrain {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
 
+  const exceptions = osrdconf.addedExceptions.map(({ key, startTime }) => ({
+    key,
+    start_time: { value: startTime.toISOString() },
+  }));
   let newPacedTrain: PacedTrain = {
     ...baseTrain,
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
     },
-    exceptions: [],
+    exceptions,
   };
 
   if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {

@@ -115,7 +115,13 @@
       }
 
       .input-icon {
-        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .paced-trains-container {
+        padding: 12px;
       }
     }
 

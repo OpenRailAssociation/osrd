@@ -317,8 +317,12 @@
     "origin": "Origin",
     "pacedTrainUpdated": "Service updated",
     "pacedTrains": {
+      "add": "Add",
+      "addExtraOccurrences": "Add extra occurrences",
       "added": "Service added",
       "defineService": "Define a service",
+      "departureDay": "Departure day",
+      "departureTime": "Departure time",
       "interval": "Cadence of the service",
       "timeWindow": "Duration of the repetition time range"
     },

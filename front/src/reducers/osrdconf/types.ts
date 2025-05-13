@@ -54,6 +54,10 @@ export type OperationalStudiesConfState = OsrdConfState & {
   powerRestriction: PowerRestriction[];
   timeWindow: Duration;
   interval: Duration;
+  addedExceptions: {
+    key: string;
+    startTime: Date;
+  }[];
   editingItemType: 'trainSchedule' | 'pacedTrain' | 'occurrence';
 };
 
