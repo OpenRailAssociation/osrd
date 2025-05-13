@@ -16,7 +16,7 @@ type SettingsPanelProps = {
 };
 
 const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
   const handleChange = (key: keyof Settings) => (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ ...settings, [key]: event.target.checked });

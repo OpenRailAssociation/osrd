@@ -16,7 +16,7 @@ const useWaypointMenu = (
 ) => {
   const { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId } =
     waypointsPanelData || {};
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies');
 
   const [activeWaypointId, setActiveWaypointId] = useState<string>();
 
@@ -49,10 +49,10 @@ const useWaypointMenu = (
 
   const menuItems: OSRDMenuItem[] = [
     {
-      title: t('waypointMenu.hide'),
+      title: t('simulationResults.waypointMenu.hide'),
       icon: <EyeClosed />,
       disabled: filteredWaypoints ? filteredWaypoints.length <= 2 : false,
-      disabledMessage: t('waypointsPanel.warning'),
+      disabledMessage: t('simulationResults.waypointsPanel.warning'),
       onClick: () => {
         closeMenu();
         setFilteredWaypoints?.((prevFilteredWaypoints) => {

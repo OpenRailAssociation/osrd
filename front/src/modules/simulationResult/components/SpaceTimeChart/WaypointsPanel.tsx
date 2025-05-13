@@ -129,8 +129,10 @@ const WaypointsPanel = ({
   return (
     <dialog ref={modalRef} className={cx('waypoints-panel')}>
       <div className="waypoints-panel-header">
-        <div className="name">{t('simulation:waypointsPanel.name')}</div>
-        <div className="secondary-code">{t('simulation:waypointsPanel.secondaryCode')}</div>
+        <div className="name">{t('operational-studies:simulationResults.waypointsPanel.name')}</div>
+        <div className="secondary-code">
+          {t('operational-studies:simulationResults.waypointsPanel.secondaryCode')}
+        </div>
       </div>
       <div
         className={cx('waypoints-panel-body', {
@@ -173,12 +175,14 @@ const WaypointsPanel = ({
           'wizz-effect': isNotEnoughSelectedWaypoints,
         })}
       >
-        <Button label={t('translation:common.cancel')} variant="Cancel" onClick={closeModal} />
-        <Button label={t('translation:common.validate')} variant="Primary" onClick={handleSubmit} />
+        <Button label={t('common.cancel')} variant="Cancel" onClick={closeModal} />
+        <Button label={t('common.validate')} variant="Primary" onClick={handleSubmit} />
         {selectedWaypoints.size < 2 && (
           <div className="warning-message">
             <Alert variant="fill" iconColor="#EAA72B" size="lg" />
-            <span className="text-center">{t('simulation:waypointsPanel.warning')}</span>
+            <span className="text-center">
+              {t('operational-studies:simulationResults.waypointsPanel.warning')}
+            </span>
           </div>
         )}
       </div>

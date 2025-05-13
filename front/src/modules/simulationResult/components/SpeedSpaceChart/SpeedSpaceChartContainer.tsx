@@ -39,7 +39,7 @@ const SpeedSpaceChartContainer = ({
   rollingStock,
   setHeightOfSpeedSpaceChartContainer,
 }: SpeedSpaceChartContainerProps) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(SPEEDSPACECHART_HEIGHT);
   const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] =

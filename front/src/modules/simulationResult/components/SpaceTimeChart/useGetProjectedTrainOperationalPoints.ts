@@ -27,7 +27,7 @@ const useGetProjectedTrainOperationalPoints = ({
   timetableId: number | undefined;
   timetableItemUsedForProjection?: TimetableItem;
 }) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies');
 
   const [operationalPoints, setOperationalPoints] = useState<OperationalPoint[]>([]);
   const [filteredOperationalPoints, setFilteredOperationalPoints] =

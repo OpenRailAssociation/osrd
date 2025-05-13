@@ -13,7 +13,7 @@ type ManchetteMenuButtonProps = {
 };
 
 const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonProps) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);

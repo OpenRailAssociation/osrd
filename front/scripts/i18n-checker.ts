@@ -107,10 +107,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:rollingStock.unspecified/,
 
   // Simulation
-  /simulation:departureTime/,
-  /simulation:electricalProfiles\..*/,
-  /simulation:powerRestriction\..*/,
-  /simulation:requestedPoint/,
+  /operational-studies:simulationResults.departureTime/,
+  /operational-studies:simulationResults.electricalProfiles\..*/,
+  /operational-studies:simulationResults.powerRestriction\..*/,
+  /operational-studies:simulationResults.requestedPoint/,
 
   // Stdcm help section
   /stdcm-help-section:*/,

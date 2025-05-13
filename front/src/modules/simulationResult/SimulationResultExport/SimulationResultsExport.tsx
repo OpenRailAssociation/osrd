@@ -41,7 +41,7 @@ const SimulationResultExport = ({
   rollingStock,
   mapCanvas,
 }: SimulationResultExportProps) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies');
 
   const simulationSheetData: SimulationSheetData = useMemo(
     () => ({
@@ -77,7 +77,7 @@ const SimulationResultExport = ({
       <Button
         onClick={exportTrainPDF}
         variant="Quiet"
-        label={t('simulationSheet')}
+        label={t('simulationResults.simulationSheet')}
         size="medium"
         leadingIcon={<File />}
       />

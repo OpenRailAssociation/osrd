@@ -11,7 +11,8 @@ import {
 } from './sampleData';
 import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
 
-const tMock = ((key: string) => key) as TFunction;
+const prefix = 'simulationResults.';
+const tMock = ((key: string) => key.slice(prefix.length)) as TFunction;
 
 describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints at the good position in a path with operational points', () => {

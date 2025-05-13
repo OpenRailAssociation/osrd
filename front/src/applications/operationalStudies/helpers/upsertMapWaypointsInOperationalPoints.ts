@@ -14,7 +14,7 @@ export const upsertMapWaypointsInOperationalPoints = (
   path: TrainSchedule['path'],
   pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
   operationalPoints: OperationalPoint[],
-  t: TFunction
+  t: TFunction<'operational-studies'>
 ): OperationalPoint[] => {
   let waypointCounter = 1;
 
@@ -50,7 +50,7 @@ export const upsertMapWaypointsInOperationalPoints = (
           id: step.id,
           extensions: {
             identifier: {
-              name: t('requestedPoint', { count: waypointCounter }),
+              name: t('simulationResults.requestedPoint', { count: waypointCounter }),
               uic: 0,
             },
           },
