@@ -16,5 +16,5 @@ export { default as usePaths } from './hooks/usePaths';
 
 export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint } from './types';
 
-export { positionMmToKm } from './utils';
+export { positionMmToKm, positionKmToMm } from './utils';
 export { timeScaleToZoomValue, isInteractiveWaypoint } from './utils/helpers';
