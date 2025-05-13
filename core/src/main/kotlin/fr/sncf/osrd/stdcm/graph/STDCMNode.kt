@@ -1,8 +1,8 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.PlannedTimingData
+import fr.sncf.osrd.stdcm.STDCMCosts
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.min
@@ -30,60 +30,38 @@ data class STDCMNode(
 ) : Comparable<STDCMNode> {
 
     /**
-     * Defines the estimated better path between 2 nodes, in the following priority:
-     * - lowest total run time, excluding stops
-     * - closest planned arrival time, taking the tolerance into account, using the current node's
-     * - planned timing data, then the last planned node's timing data
-     * - total run time, including stops
-     * - earliest departure time
-     * - highest number of reached targets
+     * Defines the estimated better path between 2 nodes, according to the cost defined in
+     * STDCMCosts
      *
      * If the result is negative, the current node has a better path, and should be explored first.
      * This method allows us to order the nodes in a priority queue, from the best path to the worst
      * path. We then explore them in that order.
      */
     override fun compareTo(other: STDCMNode): Int {
-        val runTimeEstimation = timeData.totalRunningTime + remainingTimeEstimation
-        val otherRunTimeEstimation = other.timeData.totalRunningTime + other.remainingTimeEstimation
-        // First, minimize the total run time:
-        // highest priority node takes the least time to complete the path
-        if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
-            return runTimeEstimation.compareTo(otherRunTimeEstimation)
+        val cost = computeTotalCost()
+        val otherCost = other.computeTotalCost()
+        if (cost != otherCost) {
+            return cost.compareTo(otherCost)
+        }
 
-        val plannedRelativeTimeDiff = getRelativeTimeDiff(timeData)
-        val otherPlannedRelativeTimeDiff = other.getRelativeTimeDiff(other.timeData)
-
-        // If equal, minimise the difference with the planned arrival times
-        return if (
-            plannedRelativeTimeDiff != null &&
-                otherPlannedRelativeTimeDiff != null &&
-                plannedRelativeTimeDiff != otherPlannedRelativeTimeDiff
-        )
-            (plannedRelativeTimeDiff).compareTo(otherPlannedRelativeTimeDiff)
-
-        // If equal, minimise the difference with the planned arrival times at the last planned node
-        else if (
-            previousPlannedNodeRelativeTimeDiff != null &&
-                other.previousPlannedNodeRelativeTimeDiff != null &&
-                previousPlannedNodeRelativeTimeDiff != other.previousPlannedNodeRelativeTimeDiff
-        )
-            previousPlannedNodeRelativeTimeDiff.compareTo(other.previousPlannedNodeRelativeTimeDiff)
-
-        // If equal, take the train which has the smallest time since its departure.
-        // Unlike the first check, this includes stop time.
-        else if (!areTimesEqual(timeData.timeSinceDeparture, other.timeData.timeSinceDeparture))
-            return timeData.timeSinceDeparture.compareTo(other.timeData.timeSinceDeparture)
-
-        // If equal, take the train which departs first
-        else if (timeData.earliestReachableTime != other.timeData.earliestReachableTime)
-            timeData.earliestReachableTime.compareTo(other.timeData.earliestReachableTime)
-
-        // In the end, prioritize the highest number of reached targets.
+        // When both nodes have equal cost, we prioritize the highest number of reached targets.
         // This doesn't define the priority between different paths,
         // it just minimizes the chance of evaluating redundant nodes
-        else
-            other.infraExplorer.getStepTracker().nStepsExcludingLookahead -
-                infraExplorer.getStepTracker().nStepsExcludingLookahead
+        return other.infraExplorer.getStepTracker().nStepsExcludingLookahead -
+            infraExplorer.getStepTracker().nStepsExcludingLookahead
+    }
+
+    /**
+     * Computes the cost for the given node, used to define which node represents a "better" path.
+     * We used to have a strict hierarchy with different criteria, but this lead to suboptimal
+     * solutions and more code complexity.
+     */
+    private fun computeTotalCost(): Double {
+        return STDCMCosts.computeCost(
+            timeData.totalRunningTime + remainingTimeEstimation,
+            getRelativeTimeDiff(timeData) ?: previousPlannedNodeRelativeTimeDiff ?: 0.0,
+            timeData.totalStopDuration
+        )
     }
 
     override fun toString(): String {
