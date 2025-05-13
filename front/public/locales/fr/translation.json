@@ -798,5 +798,29 @@
     "waitingLoader": "Veuillez patienter, chargement de la base de données matériel…"
   },
   "rollingStockEditor": "Éditeur de matériel roulant",
-  "stdcm": "Sillons de dernière minute"
+  "stdcm": "Sillons de dernière minute",
+  "timeStopTable": {
+    "arrivalTime": "arrivée demandée",
+    "calculatedArrivalTime": "arrivée calculée",
+    "calculatedDepartureTime": "départ calculé",
+    "calculatedDepartureTimeFull": "départ calculé",
+    "ch": "CH",
+    "dayCounter": "J+{{count}}",
+    "departureTime": "départ demandé",
+    "departureTimeFull": "départ demandé",
+    "diffMargins": "diff. marges (s)",
+    "diffMarginsFull": "différence entre les marges (s)",
+    "name": "CI",
+    "noPathLoaded": "Aucun chemin chargé",
+    "realMargin": "marge réelle (s)",
+    "receptionOnClosedSignal": "r. s. signal fermé",
+    "receptionOnClosedSignalFull": "reception sur signal fermé",
+    "shortSlipDistance": "faible glissement",
+    "stopTime": "temps d'arrêt (s)",
+    "theoreticalMargin": "marge théorique",
+    "theoreticalMarginPlaceholder": "% ou min/100km",
+    "theoreticalMarginSeconds": "marge théorique (s)",
+    "trackName": "voie",
+    "waypoint": "Via {{id}}"
+  }
 }

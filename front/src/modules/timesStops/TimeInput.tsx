@@ -9,7 +9,7 @@ import type { TimeExtraDays } from './types';
 type TimeInputProps = CellProps<TimeExtraDays | undefined, string>;
 
 const TimeInput = ({ focus, rowData, active, setRowData }: TimeInputProps) => {
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation();
   const ref = useRef<HTMLInputElement>(null);
   const [tempTimeValue, setTempTimeValue] = useState<TimeExtraDays | undefined>(rowData);
 
@@ -62,7 +62,7 @@ const TimeInput = ({ focus, rowData, active, setRowData }: TimeInputProps) => {
             'extra-text-firefox': navigator.userAgent.search('Firefox') !== -1,
           })}
         >
-          {t('dayCounter', { count: tempTimeValue.daySinceDeparture })}
+          {t('timeStopTable.dayCounter', { count: tempTimeValue.daySinceDeparture })}
         </span>
       </div>
     );

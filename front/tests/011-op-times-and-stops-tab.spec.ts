@@ -18,8 +18,12 @@ import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { CellData, FlatTranslations, StationData } from './utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+const enTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/translation.json'
+).timeStopTable;
+const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/fr/translation.json'
+).timeStopTable;
 
 test.describe('Times and Stops Tab Verification', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });

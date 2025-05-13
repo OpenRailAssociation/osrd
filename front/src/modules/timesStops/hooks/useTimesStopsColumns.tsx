@@ -37,7 +37,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
   tableType: TableType,
   allWaypoints: T[] = []
 ) => {
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
 
   const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;

@@ -7,8 +7,12 @@ import { normalizeStationData } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+const enTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/translation.json'
+).timeStopTable;
+const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/fr/translation.json'
+).timeStopTable;
 
 class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
   private readonly columnHeaders: Locator;

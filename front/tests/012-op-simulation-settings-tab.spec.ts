@@ -27,8 +27,12 @@ import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+const enTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/translation.json'
+).timeStopTable;
+const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/fr/translation.json'
+).timeStopTable;
 
 test.describe('Simulation Settings Tab Verification', () => {
   test.slow();
