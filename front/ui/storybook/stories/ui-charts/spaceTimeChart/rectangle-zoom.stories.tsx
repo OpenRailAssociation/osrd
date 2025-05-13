@@ -9,6 +9,7 @@ import {
   type OperationalPoint,
   DEFAULT_THEME,
   type SpaceScale,
+  computeRectZoomOffsets,
 } from '@osrd-project/ui-charts';
 import { Button, Slider } from '@osrd-project/ui-core';
 import type { Meta } from '@storybook/react-vite';
@@ -129,10 +130,16 @@ const RectangleZoomWrapper = ({
         const spaceZoomValue = spaceScaleToZoomValue(newSpaceScale);
 
         if (!swapAxes) {
-          const leftRectSide = Math.min(Number(prev.rect.timeStart), Number(prev.rect.timeEnd));
-          const topRectSide = Math.min(prev.rect.spaceStart, prev.rect.spaceEnd);
-          const newXOffset = (timeOrigin - leftRectSide) / newTimeScale;
-          const newYOffset = (spaceOrigin - topRectSide) / newSpaceScale;
+          const { xOffset: newXOffset, yOffset: newYOffset } = computeRectZoomOffsets({
+            rect: prev.rect,
+            timeOrigin,
+            spaceOrigin,
+            newTimeScale,
+            newSpaceScale,
+            swapAxes,
+            chartWidth: DEFAULT_WIDTH,
+            chartHeight: DEFAULT_HEIGHT,
+          });
 
           return {
             ...prev,
@@ -143,10 +150,16 @@ const RectangleZoomWrapper = ({
             ...overrideState,
           };
         } else {
-          const leftRectSide = Math.min(prev.rect.spaceStart, prev.rect.spaceEnd);
-          const topRectSide = Math.min(Number(prev.rect.timeStart), Number(prev.rect.timeEnd));
-          const newXOffset = (spaceOrigin - leftRectSide) / newSpaceScale;
-          const newYOffset = (timeOrigin - topRectSide) / newTimeScale;
+          const { xOffset: newXOffset, yOffset: newYOffset } = computeRectZoomOffsets({
+            rect: prev.rect,
+            timeOrigin,
+            spaceOrigin,
+            newTimeScale,
+            newSpaceScale,
+            swapAxes,
+            chartWidth: DEFAULT_WIDTH,
+            chartHeight: DEFAULT_HEIGHT,
+          });
 
           return {
             ...prev,

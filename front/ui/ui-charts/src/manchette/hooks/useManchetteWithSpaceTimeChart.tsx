@@ -7,7 +7,11 @@ import {
   type SpaceScale,
   type SpaceTimeChartProps,
 } from '../../spaceTimeChart';
-import { getSpaceToPixel, spaceScalesToBinaryTree } from '../../spaceTimeChart/utils/scales';
+import {
+  getSpaceToPixel,
+  sideOffset,
+  spaceScalesToBinaryTree,
+} from '../../spaceTimeChart/utils/scales';
 import type { ManchetteProps } from '../components/Manchette';
 import {
   MAX_ZOOM_Y,
@@ -178,13 +182,19 @@ const useManchetteWithSpaceTimeChart = ({
       overrideState?: Partial<State>;
     }) => {
       setState((prev) => {
-        if (prev.zoomMode || !prev.rect) {
+        if (prev.zoomMode || !prev.rect || !spaceTimeChartRef?.current) {
           return prev;
         }
         const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
         const timeZoomValue = timeScaleToZoomValue(newTimeScale);
-        const leftRectSide = Math.min(Number(prev.rect.timeStart), Number(prev.rect.timeEnd));
-        const newXOffset = (timeOrigin - leftRectSide) / newTimeScale;
+
+        const newXOffset = sideOffset(
+          timeOrigin,
+          newTimeScale,
+          prev.rect.timeStart,
+          prev.rect.timeEnd,
+          spaceTimeChartRef.current.clientWidth
+        );
 
         let newYZoom = yZoom;
         let newYOffset = yOffset;
@@ -204,8 +214,20 @@ const useManchetteWithSpaceTimeChart = ({
               maxZoomMillimeterPerPx,
               newSpaceScale
             );
-            const topRectSide = Math.min(prev.rect.spaceStart, prev.rect.spaceEnd);
-            newYOffset = Math.abs(spaceOrigin - topRectSide) / newSpaceScale;
+            if (newSpaceScale !== maxZoomMillimeterPerPx) {
+              const topRectSide = Math.min(prev.rect.spaceStart, prev.rect.spaceEnd);
+              newYOffset = Math.abs(spaceOrigin - topRectSide) / newSpaceScale;
+            } else {
+              newYOffset = Math.abs(
+                sideOffset(
+                  spaceOrigin,
+                  newSpaceScale,
+                  prev.rect.spaceStart,
+                  prev.rect.spaceEnd,
+                  height
+                )
+              );
+            }
           }
         }
 
@@ -220,7 +242,16 @@ const useManchetteWithSpaceTimeChart = ({
         };
       });
     },
-    [timeOrigin, spaceOrigin, minZoomMillimeterPerPx, maxZoomMillimeterPerPx, yOffset, yZoom]
+    [
+      timeOrigin,
+      spaceOrigin,
+      minZoomMillimeterPerPx,
+      maxZoomMillimeterPerPx,
+      yOffset,
+      yZoom,
+      height,
+      spaceTimeChartRef,
+    ]
   );
 
   useEffect(() => {
