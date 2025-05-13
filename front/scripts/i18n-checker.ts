@@ -67,6 +67,7 @@ const IGNORE_UNUSED: RegExp[] = [
   /operationalStudies\/scenario:timetable\.occurrenceChangeGroup\..*/,
   /operationalStudies\/scenario:train/,
   /operationalStudies\/scenario:trainCount/,
+  /operationalStudies\/scenario:timetable\.occurrenceChangeGroup\..*/,
 
   // Study
   /operational-studies:study\.date-*/,
