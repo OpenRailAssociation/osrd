@@ -27,7 +27,7 @@ const TimesStops = <T extends TimesStopsRow>({
   onChange,
   dataIsLoading,
 }: TimesStopsProps<T>) => {
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation();
 
   const columns = useTimesStopsColumns(tableType, rows);
 
@@ -42,7 +42,7 @@ const TimesStops = <T extends TimesStopsRow>({
   if (!rows) {
     return (
       <div className="d-flex justify-content-center align-items-center h-100">
-        <p className="pt-1 px-5">{t('noPathLoaded')}</p>
+        <p className="pt-1 px-5">{t('timeStopTable.noPathLoaded')}</p>
       </div>
     );
   }

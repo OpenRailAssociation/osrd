@@ -56,8 +56,12 @@ const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJ
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
 );
 
-const enTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+const enTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/translation.json'
+).timeStopTable;
+const frTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/fr/translation.json'
+).timeStopTable;
 
 const enScenarioTranslations: TimetableFilterTranslations = readJsonFile(
   'public/locales/en/operationalStudies/scenario.json'

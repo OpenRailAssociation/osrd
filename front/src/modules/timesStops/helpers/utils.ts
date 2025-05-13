@@ -38,7 +38,7 @@ const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
-  t: TFunction<'timesStops', undefined>,
+  t: TFunction<'translation', undefined>,
   startTime?: Date,
   tableType?: TableType
 ): TimesStopsInputRow[] => {
@@ -100,7 +100,7 @@ export const formatSuggestedViasToRowVias = (
       arrival: formattedArrival,
       departure: formattedDeparture,
       onStopSignal,
-      name: name || t('waypoint', { id: filteredOp.pathStepId }),
+      name: name || t('timeStopTable.waypoint', { id: filteredOp.pathStepId }),
       shortSlipDistance,
       stopFor: stopForSeconds !== undefined ? String(stopForSeconds) : undefined,
       theoreticalMargin,

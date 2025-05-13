@@ -9,14 +9,14 @@ type ReadOnlyTimeProps = CellProps<TimeExtraDays | undefined, string>;
 
 const ReadOnlyTime = ({ rowData }: ReadOnlyTimeProps) => {
   const { time, daySinceDeparture, dayDisplayed } = rowData || {};
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation();
 
   if (!time) {
     return null;
   }
   const fullString =
     daySinceDeparture !== undefined && dayDisplayed
-      ? `${time}${NO_BREAK_SPACE}${t('dayCounter', { count: daySinceDeparture })}`
+      ? `${time}${NO_BREAK_SPACE}${t('timeStopTable.dayCounter', { count: daySinceDeparture })}`
       : time;
   return <div className="read-only-time">{fullString}</div>;
 };

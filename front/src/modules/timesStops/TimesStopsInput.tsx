@@ -77,7 +77,7 @@ const TimesStopsInput = ({
   pathfindingState,
 }: TimesStopsInputProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation();
 
   const [rows, setRows] = useState<TimesStopsInputRow[]>([]);
   const { getTrackSectionsByIds, trackSectionsLoading } = useScenarioContext();

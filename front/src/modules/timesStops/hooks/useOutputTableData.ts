@@ -28,7 +28,7 @@ const useOutputTableData = (
   selectedTimetableItem?: TimetableItem,
   path?: PathfindingResultSuccess
 ): TimesStopsRow[] => {
-  const { t } = useTranslation('timesStops');
+  const { t } = useTranslation();
   const { getTrackSectionsByIds } = useScenarioContext();
 
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
@@ -86,7 +86,7 @@ const useOutputTableData = (
 
       return {
         pathStepId: pathStep.id,
-        name: t('waypoint', { id: pathStep.id }),
+        name: t('timeStopTable.waypoint', { id: pathStep.id }),
         ch: undefined,
 
         arrival,
