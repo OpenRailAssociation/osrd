@@ -258,10 +258,10 @@
             unicode-bidi: embed;
             direction: ltr;
           }
-        }
 
-        .start-time-exception {
-          font-style: italic;
+          &.start-time-exception {
+            font-style: italic;
+          }
         }
 
         .status-icon {

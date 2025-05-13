@@ -55,6 +55,7 @@ const buildOperationalStudiesConfSelectors = () => {
     getEditingItemType: makeOsrdConfSelector('editingItemType'),
     getTimeWindow: makeOsrdConfSelector('timeWindow'),
     getInterval: makeOsrdConfSelector('interval'),
+    getAddedExceptions: makeOsrdConfSelector('addedExceptions'),
   };
 };
 
@@ -88,6 +89,7 @@ export const {
   getEditingItemType,
   getTimeWindow,
   getInterval,
+  getAddedExceptions,
 } = selectors;
 
 export type OperationalStudiesConfSelectors = typeof selectors;

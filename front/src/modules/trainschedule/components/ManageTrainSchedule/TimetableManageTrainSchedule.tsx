@@ -94,7 +94,7 @@ const TimetableManageTrainSchedule = ({
                 {getEditLabel(timetableItemToEditData.timetableItemId)}
               </button>
               {editingItemType !== 'occurrence' && (
-                <div className="osrd-config-item-container">
+                <div className="osrd-config-item-container paced-trains-container">
                   <CheckboxRadioSNCF
                     type="checkbox"
                     label={t('pacedTrains.defineService')}
@@ -129,7 +129,7 @@ const TimetableManageTrainSchedule = ({
                 isPacedTrainMode={editingItemType === 'pacedTrain'}
               />
             )}
-            <div className="osrd-config-item-container">
+            <div className="osrd-config-item-container paced-trains-container">
               <CheckboxRadioSNCF
                 type="checkbox"
                 label={t('pacedTrains.defineService')}

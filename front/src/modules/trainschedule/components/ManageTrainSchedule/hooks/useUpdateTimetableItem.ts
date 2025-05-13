@@ -9,6 +9,7 @@ import {
   storeTrainSchedule,
 } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
 import { setSuccess } from 'reducers/main';
+import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getName,
   getStartTime,
@@ -107,6 +108,7 @@ const useUpdateTimetableItem = (
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
+    dispatch(clearAddedExceptionsList());
     dispatch(updateSelectedTrainId(trainIdToSelect));
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTimetableItemIdToEdit(undefined);

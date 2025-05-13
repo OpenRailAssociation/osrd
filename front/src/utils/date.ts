@@ -45,6 +45,11 @@ export const formatLocalDateTime = (date: Date) =>
  */
 export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-MM-DD');
 
+/**
+ * format Date into local time, suitable for an <input type="time">
+ */
+export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
+
 export function formatDay(dateString: string, locale: string = 'fr'): string {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');

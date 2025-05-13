@@ -62,6 +62,7 @@ describe('formatTimetableItemPayload', () => {
     timeWindow: Duration.parse('PT3H'),
     interval: Duration.parse('PT1H'),
     editingItemType: 'pacedTrain',
+    addedExceptions: [],
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
   const timetableItemToEditData: TimetableItemToEditData = {

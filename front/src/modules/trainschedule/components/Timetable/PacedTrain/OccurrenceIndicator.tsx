@@ -16,6 +16,9 @@ type OccurrenceIndicatorProps = {
 
 const TOOLTIP_BOTTOM_MARGIN = 24;
 
+/**
+ * The bullet that marks each item of the list of occurrences, with its tooltip.
+ */
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
   const dotRef = useRef<HTMLDivElement>(null);
@@ -59,6 +62,20 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     });
   }, [isHovering]);
 
+  const displayedChangeGroups =
+    occurrence.exceptionChangeGroups &&
+    Object.entries(occurrence.exceptionChangeGroups)
+      .filter(([_, isPresent]) => isPresent !== null)
+      .map(([changeGroup], i) => (
+        <span key={i} className="change-group">
+          {changeGroup !== 'rolling_stock_category'
+            ? t(`occurrenceChangeGroup.${changeGroup}`)
+            : t(
+                `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
+                { ns: 'translation', keyPrefix: '' }
+              )}
+        </span>
+      ));
   return (
     <div
       className="occurrence-indicator"
@@ -90,19 +107,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
                   : t('occurrenceType.addedOccurrence')}
             </span>
             <hr />
-            <div className="change-groups">
-              {occurrence.exceptionChangeGroups &&
-                Object.keys(occurrence.exceptionChangeGroups).map((changeGroup, i) => (
-                  <span key={i} className="change-group">
-                    {changeGroup !== 'rolling_stock_category'
-                      ? t(`occurrenceChangeGroup.${changeGroup}`)
-                      : t(
-                          `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value ?? 'noCategory'}`,
-                          { ns: 'translation', keyPrefix: '' }
-                        )}
-                  </span>
-                ))}
-            </div>
+            <div className="change-groups">{displayedChangeGroups}</div>
           </div>
         </div>
       )}
