@@ -2,7 +2,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -84,11 +84,10 @@ async fn edit(
     Extension(auth): AuthenticationExt,
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -98,6 +97,15 @@ async fn edit(
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_write(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let mut infra_cache =
         InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
     let operation_results = apply_edit(
@@ -140,11 +148,11 @@ pub async fn split_track_section(
     Extension(auth): AuthenticationExt,
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -160,6 +168,15 @@ pub async fn split_track_section(
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_write(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let mut infra_cache =
         InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
 

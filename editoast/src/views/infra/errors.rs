@@ -5,7 +5,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -81,11 +81,11 @@ async fn list_errors(
         object_id,
     }): Query<ErrorListQueryParams>,
 ) -> Result<Json<ErrorListResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -99,6 +99,14 @@ async fn list_errors(
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
 
     let (results, total_count) = infra
         .get_paginated_errors(conn, level, error_type, object_id, page, page_size)

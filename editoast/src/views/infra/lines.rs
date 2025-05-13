@@ -2,7 +2,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackSection;
@@ -46,11 +46,11 @@ async fn get_line_bbox(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -60,6 +60,14 @@ async fn get_line_bbox(
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
 
     let mut bbox = BoundingBox::default();
     let selection_settings =

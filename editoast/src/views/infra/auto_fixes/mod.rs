@@ -5,7 +5,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use thiserror::Error;
@@ -93,7 +93,7 @@ async fn list_auto_fixes(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<Operation>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -105,6 +105,14 @@ async fn list_auto_fixes(
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)
     let mut infra_cache_clone = InfraCache::get_or_load(conn, &infra_caches, &infra)

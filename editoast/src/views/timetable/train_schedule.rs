@@ -7,7 +7,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainSchedule;
@@ -158,7 +158,7 @@ async fn get(
     }): Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -194,7 +194,7 @@ async fn delete(
     Json(TrainScheduleIds { ids: train_ids }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -229,7 +229,7 @@ async fn put(
     Json(train_schedule_form): Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -280,7 +280,7 @@ async fn simulation(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -291,6 +291,14 @@ async fn simulation(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -351,7 +359,7 @@ async fn simulation_summary(
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SummaryResponse>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -365,6 +373,15 @@ async fn simulation_summary(
         infra_id,
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let train_schedules: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
@@ -418,7 +435,7 @@ async fn get_path(
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -433,6 +450,15 @@ async fn get_path(
         infra_id,
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     #[expect(deprecated)]
     let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
@@ -473,7 +499,7 @@ async fn project_path(
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -533,7 +559,7 @@ async fn occupancy_blocks(
     .await?;
 
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

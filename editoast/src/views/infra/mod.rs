@@ -16,7 +16,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::model;
 use editoast_osrdyne_client::OsrdyneClient;
@@ -29,6 +29,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::Authentication;
 use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use super::params::List;
@@ -151,9 +152,8 @@ async fn refresh(
     Query(query_params): Query<RefreshQueryParams>,
 ) -> Result<Json<RefreshResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
@@ -224,22 +224,28 @@ async fn list(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Query(pagination_params): Query<PaginationQueryParams<1000>>,
+    Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let settings = pagination_params.into_selection_settings();
+    let conn = &mut db_pool.get().await?;
 
-    let (infras, stats) = {
-        let conn = &mut db_pool.get().await?;
-        Infra::list_paginated(conn, settings).await?
+    let default_settings = pagination.into_selection_settings();
+    let settings = match auth.list_authorized_infra().await? {
+        authz::Authorization::Granted(infras) => default_settings
+            .filter(move || Infra::ID.eq_any(infras.iter().map(|infra| infra.0).collect())),
+        authz::Authorization::Bypassed => default_settings,
+        authz::Authorization::Denied { reason } => {
+            unreachable!("user is authenticated at this point: {reason}")
+        }
     };
+
+    let (infras, stats) = Infra::list_paginated(conn, settings).await?;
 
     let infra_states = fetch_all_infra_states(&infras, osrdyne_client.as_ref()).await?;
 
@@ -319,11 +325,11 @@ async fn get(
     Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<InfraWithState>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -333,6 +339,15 @@ async fn get(
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let state = fetch_infra_state(infra.id, osrdyne_client.as_ref()).await?;
     Ok(Json(InfraWithState { infra, state }))
 }
@@ -362,12 +377,14 @@ impl From<InfraCreateForm> for Changeset<Infra> {
     ),
 )]
 async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -376,6 +393,18 @@ async fn create(
 
     let infra: Changeset<Infra> = infra_form.into();
     let infra = infra.create(&mut db_pool.get().await?).await?;
+
+    // Assing OWNER to the user on the infra if authz is enabled
+    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
+    if let Authentication::Authenticated(authorizer) = auth {
+        regulator
+            .grant_infra_owner_unchecked(
+                &authz::User(authorizer.user_id()),
+                &authz::Infra(infra.id),
+            )
+            .await?;
+    }
+
     Ok((StatusCode::CREATED, Json(infra)))
 }
 
@@ -398,26 +427,49 @@ struct CloneQuery {
 )]
 async fn clone(
     Extension(auth): AuthenticationExt,
-    Path(params): Path<InfraIdParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    State(AppState {
+        db_pool, regulator, ..
+    }): State<AppState>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+    // check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     let conn = &mut db_pool.get().await?;
 
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
-        infra_id: params.infra_id,
-    })
-    .await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.clone()
+        .check_authorization(async |authorizer| {
+            authorizer
+                .authorize_infra_read(&authz::Infra(infra_id))
+                .await
+        })
+        .await?;
+
     let cloned_infra = infra.clone(conn, name).await?;
+
+    // Assing OWNER to the user on the infra if authz is enabled
+    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
+    if let Authentication::Authenticated(authorizer) = auth {
+        regulator
+            .grant_infra_owner_unchecked(
+                &authz::User(authorizer.user_id()),
+                &authz::Infra(cloned_infra.id),
+            )
+            .await?;
+    }
+
     Ok(Json(cloned_infra.id))
 }
 
@@ -444,13 +496,22 @@ async fn delete(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_delete(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
 
     if Infra::fast_delete_static(db_pool.get().await?, infra_id).await? {
         Ok(StatusCode::NO_CONTENT)
@@ -489,7 +550,7 @@ async fn put(
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -518,21 +579,27 @@ async fn put(
 async fn get_switch_types(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     let conn = &mut db_pool.get().await?;
 
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -567,25 +634,32 @@ async fn get_switch_types(
 )]
 async fn get_speed_limit_tags(
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
     State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
 ) -> Result<Json<HashSet<String>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     let conn = &mut db_pool.get().await?;
 
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
+
     let infra_tags = infra.get_speed_limit_tags(conn).await?;
     let union_tags: HashSet<String> = infra_tags
         .into_iter()
@@ -615,26 +689,32 @@ struct GetVoltagesQueryParams {
 )]
 async fn get_voltages(
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra.infra_id, || {
-        InfraApiError::NotFound {
-            infra_id: infra.infra_id,
-        }
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+        InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let voltages = infra
         .get_voltages(&mut db_pool.get().await?, include_rolling_stock_modes)
         .await?;
@@ -655,7 +735,7 @@ async fn get_all_voltages(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -672,6 +752,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
     infra.locked = locked;
     infra.save(&mut db_pool.get().await?).await?;
     Ok(())
@@ -689,18 +770,26 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
 )]
 async fn lock(
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    set_locked(infra.infra_id, true, db_pool).await?;
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_write(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    set_locked(infra_id, true, db_pool).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -716,18 +805,26 @@ async fn lock(
 )]
 async fn unlock(
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    set_locked(infra.infra_id, false, db_pool).await?;
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_write(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    set_locked(infra_id, false, db_pool).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -748,22 +845,30 @@ async fn load(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(path): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra_id = path.infra_id;
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let infra_request = InfraLoadRequest {
         infra: infra.id,
         expected_version: infra.version,

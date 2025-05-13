@@ -39,10 +39,7 @@ pub struct RunserverArgs {
     core: CoreArgs,
     /// If this option is set to false, any role and permission check will be bypassed. Even if no user is
     /// provided by the request headers of if the provided user doesn't have the required privileges.
-    // TODO: once the whole role system will be deployed, the default value of this option should
-    // be set to false. It's currently set to true in order to pass integration tests, which otherwise
-    // only receive 401 responses.
-    #[clap(long, env = "EDITOAST_ENABLE_AUTHORIZATION", default_value_t = false)]
+    #[clap(long, env = "EDITOAST_ENABLE_AUTHORIZATION", default_value_t = true)]
     enable_authorization: bool,
     /// If this option is set, logging for the STDCM will be enabled.
     /// When enabled, relevant logs will be captured to aid in debugging and monitoring.

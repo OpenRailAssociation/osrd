@@ -2,7 +2,7 @@ use axum::Extension;
 use axum::Json;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
@@ -75,7 +75,7 @@ async fn list_stdcm_logs(
     Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<StdcmLogListResponse>> {
     let authorized = auth
-        .check_roles([Role::Admin].into())
+        .check_roles([authz::Role::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -120,7 +120,7 @@ async fn stdcm_log_by_id_or_trace_id(
     Query(StdcmLogParams { id, trace_id }): Query<StdcmLogParams>,
 ) -> Result<Json<StdcmLog>> {
     let authorized = auth
-        .check_roles([Role::Admin].into())
+        .check_roles([authz::Role::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -156,8 +156,7 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use editoast_authz::Role;
-    use editoast_authz::subject;
+    use editoast_authz as authz;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -319,9 +318,17 @@ mod tests {
         }
     }
 
-    async fn execute_stdcm_request(app: &TestApp, user: Option<&subject::User>) -> String {
-        let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+    async fn execute_stdcm_request(app: &TestApp, user: Option<&authz::subject::User>) -> String {
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
+        // create an infra and add the provided user as infra owner
+        let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        if let Some(user) = user {
+            app.regulator()
+                .grant_infra_owner_unchecked(&authz::User(user.id), &authz::Infra(small_infra.id))
+                .await
+                .expect("Failed to grant infra owner");
+        }
+
         let rolling_stock =
             create_fast_rolling_stock(&mut app.db_pool().get_ok(), &Uuid::new_v4().to_string())
                 .await;
@@ -352,7 +359,10 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let trace_id = execute_stdcm_request(&app, Some(&user)).await;
         let request = app.get("/stdcm_logs").by_user(&user);
         let stdcm_logs_response: StdcmLogListResponse =
@@ -371,7 +381,10 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let trace_id = execute_stdcm_request(&app, Some(&user)).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
@@ -389,7 +402,10 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let _ = execute_stdcm_request(&app, Some(&user)).await;
         let request = app
             .get("/stdcm_log?trace_id=not_existing_trace_id")
@@ -406,7 +422,10 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let _ = execute_stdcm_request(&app, Some(&user)).await;
         let request = app.get("/stdcm_log?id=0").by_user(&user);
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -421,7 +440,10 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let _ = execute_stdcm_request(&app, Some(&user)).await;
         let request = app.get("/stdcm_log").by_user(&user);
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
@@ -438,9 +460,10 @@ mod tests {
             .build();
         let user = app
             .user("bob", "Bob")
-            .with_roles([Role::Stdcm]) // only available to admins
+            .with_roles([authz::Role::Stdcm]) // only available to admins
             .create();
         let trace_id = execute_stdcm_request(&app, Some(&user)).await;
+
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
             .by_user(&user);
@@ -471,7 +494,10 @@ mod tests {
             .enable_telemetry(false)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([authz::Role::Admin])
+            .create();
         let _ = execute_stdcm_request(&app, Some(&user)).await;
         let request = app.get("/stdcm_logs").by_user(&user);
         let stdcm_logs_response: StdcmLogListResponse =
