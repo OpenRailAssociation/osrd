@@ -5,6 +5,8 @@ export const getHeightWithoutLastWaypoint = (height: number) =>
 
 export const positionMmToKm = (position: number) => Math.round((position / 1000000) * 10) / 10;
 
+export const positionKmToMm = (position: number) => position * 1000000;
+
 export const msToS = (time: number) => time / 1000;
 
 export const calcTotalDistance = (ops: { position: number }[]) => {

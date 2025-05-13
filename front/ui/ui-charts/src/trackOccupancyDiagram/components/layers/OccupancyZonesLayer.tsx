@@ -136,14 +136,11 @@ const OccupancyZonesLayer = ({
           );
 
           const remainingTrainsNb = nextIndex - zoneIndex;
-          const remainingZones = filteredOccupancyZones.slice(zoneIndex, nextIndex);
-          const minTime = Math.min(...remainingZones.map((z) => z.arrivalTime));
-          const maxTime = Math.max(...remainingZones.map((z) => z.departureTime));
 
           instructions.push({
             type: 'remainingTrains',
             amount: remainingTrainsNb,
-            time: (minTime + maxTime) / 2,
+            time: (arrivalTime + departureTime) / 2,
             offsetY: trackY,
           });
 

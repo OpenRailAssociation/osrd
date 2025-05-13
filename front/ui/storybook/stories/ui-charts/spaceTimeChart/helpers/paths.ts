@@ -4,10 +4,9 @@ import {
   type OperationalPoint,
   type PathData,
   type PathLevel,
+  positionKmToMm,
 } from '@osrd-project/ui-charts';
 import { cloneDeep, inRange, keyBy } from 'lodash';
-
-import { KILOMETER } from './consts';
 
 const MIN = 60 * 1000;
 
@@ -71,37 +70,37 @@ export const OPERATIONAL_POINTS: OperationalPoint[] = [
   {
     id: 'city-a',
     label: 'Point A',
-    position: 0 * KILOMETER,
+    position: positionKmToMm(0),
     importanceLevel: 1,
   },
   {
     id: 'city-b',
     label: 'Point B',
-    position: 10 * KILOMETER,
+    position: positionKmToMm(10),
     importanceLevel: 2,
   },
   {
     id: 'city-c',
     label: 'Point C',
-    position: 60 * KILOMETER,
+    position: positionKmToMm(60),
     importanceLevel: 1,
   },
   {
     id: 'city-d',
     label: 'Point D',
-    position: 70 * KILOMETER,
+    position: positionKmToMm(70),
     importanceLevel: 2,
   },
   {
     id: 'city-e',
     label: 'Point E',
-    position: 90 * KILOMETER,
+    position: positionKmToMm(90),
     importanceLevel: 2,
   },
   {
     id: 'city-f',
     label: 'Point F',
-    position: 140 * KILOMETER,
+    position: positionKmToMm(140),
     importanceLevel: 1,
   },
 ];
@@ -146,7 +145,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     60 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     2,
     +START_DATE + 10 * MIN,
     {
@@ -163,7 +162,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     60 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     1,
     +START_DATE + 40 * MIN,
     {
@@ -182,7 +181,7 @@ export const PATHS: PathDisplay[] = [
     OPERATIONAL_POINTS,
     3 * MIN,
     30 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     5,
     +START_DATE,
     { color: '#FF362E' }
@@ -192,7 +191,7 @@ export const PATHS: PathDisplay[] = [
     REVERSED_POINTS,
     3 * MIN,
     35 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     4,
     +START_DATE,
     { color: '#FF8E3D' }
@@ -204,7 +203,7 @@ export const PATHS: PathDisplay[] = [
     EXTREME_POINTS,
     5 * MIN,
     50 * MIN,
-    (140 * KILOMETER) / (60 * MIN),
+    positionKmToMm(140) / (60 * MIN),
     3,
     +START_DATE,
     {
@@ -218,7 +217,7 @@ export const PATHS: PathDisplay[] = [
     REVERSED_EXTREME_POINTS,
     5 * MIN,
     45 * MIN,
-    (140 * KILOMETER) / (60 * MIN),
+    positionKmToMm(140) / (60 * MIN),
     3,
     +START_DATE,
     { color: '#66C0F1', fromEnd: 'out', toEnd: 'out' }
@@ -230,7 +229,7 @@ export const PATHS: PathDisplay[] = [
     BACK_AND_FORTH_POINTS,
     10 * MIN,
     30 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     2,
     +START_DATE + 15 * MIN,
     { color: '#286109', toEnd: 'out' }
@@ -240,7 +239,7 @@ export const PATHS: PathDisplay[] = [
     REVERSED_BACK_AND_FORTH_POINTS,
     12 * MIN,
     30 * MIN,
-    (80 * KILOMETER) / (60 * MIN),
+    positionKmToMm(80) / (60 * MIN),
     2,
     +START_DATE + 3 * MIN,
     { color: '#64cc2b', toEnd: 'out' }
