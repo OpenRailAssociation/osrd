@@ -13,7 +13,6 @@ import type {
   TrainScheduleResponseWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -55,7 +54,6 @@ const AddTrainScheduleButton = ({
 
     const timetableId = simulationConf.timetableID!;
     const baseTrainName = simulationConf.name;
-    const firstStartTime = simulationConf.startTime.toISOString();
 
     setIsWorking(true);
 
@@ -73,22 +71,19 @@ const AddTrainScheduleButton = ({
           id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
         };
 
-          dispatch(
-            setSuccess({
-              title: t('pacedTrains.added'),
-              text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
-            })
-          );
-          upsertTimetableItems([formattedNewPacedTrain]);
-        } else {
-          const trainSchedulePayload = formatTimetableItemPayload(
-            simulationConf,
-            rollingStock!.name
-          );
-          const newTrainSchedule = await postTrainSchedule({
-            id: timetableId,
-            body: [trainSchedulePayload],
-          }).unwrap();
+        dispatch(
+          setSuccess({
+            title: t('pacedTrains.added'),
+            text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
+          })
+        );
+        upsertTimetableItems([formattedNewPacedTrain]);
+      } else {
+        const trainSchedulePayload = formatTimetableItemPayload(simulationConf, rollingStock!.name);
+        const newTrainSchedule = await postTrainSchedule({
+          id: timetableId,
+          body: [trainSchedulePayload],
+        }).unwrap();
 
         // We can only add one train schedule at a time
         const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
@@ -96,65 +91,18 @@ const AddTrainScheduleButton = ({
           id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
         };
 
-          dispatch(
-            setSuccess({
-              title: t('trainAdded'),
-              text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
-            })
-          );
-          upsertTimetableItems([formattedNewTrainSchedule]);
-        }
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
-      } finally {
-        setIsWorking(false);
-      }
-      // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
-    } else {
-      const formattedStartTimeMs = isoDateToMs(firstStartTime);
-      const { trainCount, trainStep, trainDelta } = simulationConf;
-
-      const trainScheduleParams: TrainSchedule[] = [];
-      let actualTrainCount = 1;
-
-      for (let nb = 1; nb <= trainCount; nb += 1) {
-        const newStartTime = new Date(formattedStartTimeMs + 1000 * 60 * trainDelta * (nb - 1));
-        const trainName = trainNameWithNum(baseTrainName, actualTrainCount, trainCount);
-
-        const trainSchedule = formatTimetableItemPayload(simulationConf, rollingStock!.name);
-        trainScheduleParams.push({
-          ...trainSchedule,
-          train_name: trainName,
-          start_time: newStartTime.toISOString(),
-        });
-        actualTrainCount += trainStep;
-      }
-
-      try {
-        const newTrainSchedules = await postTrainSchedule({
-          id: timetableId,
-          body: trainScheduleParams,
-        }).unwrap();
-
-        const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId[] = newTrainSchedules.map(
-          (trainSchedule) => ({
-            ...trainSchedule,
-            id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
-          })
-        );
-
         dispatch(
           setSuccess({
             title: t('trainAdded'),
             text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
           })
         );
-        setIsWorking(false);
-        upsertTimetableItems(formattedNewTrainSchedule);
-      } catch (e) {
-        setIsWorking(false);
-        dispatch(setFailure(castErrorToFailure(e)));
+        upsertTimetableItems([formattedNewTrainSchedule]);
       }
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+    } finally {
+      setIsWorking(false);
     }
   };
 

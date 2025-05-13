@@ -53,14 +53,6 @@ export const formatLocalDateTime = (date: Date) =>
  */
 export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-MM-DD');
 
-/**
- * Transform a date format ISO 8601 to a milliseconds date (elapsed from January 1st 1970)
- */
-export const isoDateToMs = (isoDate: string) => {
-  const isoCurrentDate = new Date(isoDate);
-  return isoCurrentDate.getTime();
-};
-
 export function formatDay(dateString: string, locale: string = 'fr'): string {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');

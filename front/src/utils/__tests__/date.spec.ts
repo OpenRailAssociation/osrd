@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 
 import {
   parseLocalDateTime,
-  isoDateToMs,
   extractDateAndTime,
   isArrivalDateInSearchTimeWindow,
 } from 'utils/date';
@@ -30,14 +29,6 @@ describe('parseLocalDateTime', () => {
     const inputDate = '04-25 08:20:10';
     const isoDate = parseLocalDateTime(inputDate);
     expect(isoDate).toBeNull();
-  });
-});
-
-describe('isoDateToMs', () => {
-  it('should return the date in milliseconds', () => {
-    const isoDate = '2024-04-26T20:30:15+02:00';
-    const msDate = isoDateToMs(isoDate);
-    expect(msDate).toEqual(1714156215000);
   });
 });
 
