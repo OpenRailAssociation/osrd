@@ -11,19 +11,25 @@
     "ui"
   ],
   "extends": [
+    "eslint:recommended",
     "plugin:vitest/recommended",
-    "airbnb",
     "plugin:import/recommended",
     "plugin:import/typescript",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "prettier",
-    "plugin:@typescript-eslint/base"
+    "plugin:@typescript-eslint/base",
+    "plugin:jsx-a11y/recommended"
   ],
-  "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest"],
+  "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest", "jsx-a11y"],
   "parserOptions": {
     "ecmaVersion": "latest",
     "project": true
   },
   "rules": {
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "react-hooks/exhaustive-deps": "off",
     "import/order": [
       "error",
       {
@@ -121,6 +127,9 @@
     ]
   },
   "settings": {
+    "react": {
+      "version": "detect"
+    },
     "import/resolver": {
       "node": {
         "paths": ["src"],

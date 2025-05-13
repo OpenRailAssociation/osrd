@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './baseGeneratedApis';
-
 export const addTagTypes = [
   'authz',
   'documents',
@@ -357,7 +356,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.infraPathfindingInput,
           params: {
-            number: queryArg.number,
+            number: queryArg['number'],
           },
         }),
         providesTags: ['infra', 'pathfinding'],
