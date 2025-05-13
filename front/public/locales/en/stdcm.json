@@ -36,7 +36,6 @@
   "debug": {
     "simulationSettings": "Simulation settings"
   },
-  "departureDate": "Departure date",
   "departureTime": "Departure time",
   "destinationTime": "Destination time",
   "find": "Find",
