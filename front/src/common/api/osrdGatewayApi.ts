@@ -1,5 +1,4 @@
 import { baseGatewayApi as api } from './baseGeneratedApis';
-
 export const addTagTypes = ['authentication'] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
