@@ -5,8 +5,11 @@ import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
 
 /**
@@ -53,6 +56,7 @@ data class VisitedNodes(val minDelay: Double) {
         val timeData: TimeData,
         val maxMarginDuration: Double,
         val remainingTimeEstimation: Double = 0.0,
+        val explorer: InfraExplorer? = null, // nullable for tests
     ) {
         val nodeCost = timeData.totalRunningTime + remainingTimeEstimation
     }
@@ -148,11 +152,26 @@ data class VisitedNodes(val minDelay: Double) {
     private val visitedRangesPerLocation =
         mutableMapOf<Fingerprint, RangeMap<Double, ConditionallyVisitedRange>>()
 
+    // For any given block, keep track of the maximum number of steps that have been reached.
+    // Any future path that has less passed steps at this block will be discarded.
+    // The underlying assumption being, for a requested path "A -> B -> C":
+    // for any point X, if there exists a path A -> B -> X, we won't accept a solution going
+    // A -> X -> B -> C. It would likely involve loops around the X area.
+    // This also avoids exploring the same solutions several times with less passed steps.
+    private val minPassedStepsForBlock = mutableMapOf<BlockId, Int>()
+
     /** Returns true if the input has already been visited */
     fun isVisited(
         parameters: Parameters,
     ): Boolean {
-        val visitedRanges = visitedRangesPerLocation[parameters.fingerprint!!] ?: return false
+        if (
+            (minPassedStepsForBlock[parameters.explorer?.getCurrentBlock()] ?: 0) >
+                parameters.fingerprint!!.waypointIndex
+        ) {
+            // The block has already been seen with more passed steps
+            return true
+        }
+        val visitedRanges = visitedRangesPerLocation[parameters.fingerprint] ?: return false
         val timeData = parameters.timeData
 
         val visitingRange =
@@ -183,8 +202,13 @@ data class VisitedNodes(val minDelay: Double) {
     fun markAsVisited(
         parameters: Parameters,
     ) {
-        val visitedRanges =
-            visitedRangesPerLocation.getOrPut(parameters.fingerprint!!) { TreeRangeMap.create() }
+        val fingerprint = parameters.fingerprint!!
+        if (fingerprint.startOffset == 0.meters && parameters.explorer != null) {
+            // The condition avoids discarding the first half of the block containing a step
+            minPassedStepsForBlock[parameters.explorer.getCurrentBlock()] =
+                fingerprint.waypointIndex
+        }
+        val visitedRanges = visitedRangesPerLocation.getOrPut(fingerprint) { TreeRangeMap.create() }
 
         val timeData = parameters.timeData
         val startTime = timeData.earliestReachableTime

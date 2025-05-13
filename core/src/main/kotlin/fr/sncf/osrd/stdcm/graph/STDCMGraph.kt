@@ -102,6 +102,7 @@ class STDCMGraph(
                 node.timeData,
                 maxMarginDuration,
                 node.remainingTimeEstimation,
+                explorer = node.infraExplorer
             )
         if (node.locationOnEdge != null) {
             val explorer = node.infraExplorer.clone()
