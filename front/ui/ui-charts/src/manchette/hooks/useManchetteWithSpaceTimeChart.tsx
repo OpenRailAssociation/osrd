@@ -612,8 +612,10 @@ const useManchetteWithSpaceTimeChart = ({
         onZoom: ({
           delta,
           position,
+          event,
         }: Parameters<NonNullable<SpaceTimeChartProps['onZoom']>>[0]) => {
           if (isShiftPressed && !rect) {
+            event.preventDefault();
             handleXZoom(xZoom + delta, position.x);
           }
         },
