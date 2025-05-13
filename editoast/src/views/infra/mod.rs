@@ -438,11 +438,7 @@ async fn clone(
     ),
 )]
 async fn delete(
-    State(AppState {
-        db_pool,
-        infra_caches,
-        ..
-    }): State<AppState>,
+    State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -455,7 +451,6 @@ async fn delete(
     }
 
     if Infra::fast_delete_static(db_pool.get().await?, infra_id).await? {
-        infra_caches.remove(&infra_id);
         Ok(StatusCode::NO_CONTENT)
     } else {
         Ok(StatusCode::NOT_FOUND)
