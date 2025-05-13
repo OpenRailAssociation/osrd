@@ -90,16 +90,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
 };
 
 /**
- * Serializes a Date object to a string format 'DD/MM HH:mm:ss' without the year.
- * @param {Date} date - The Date object to be serialized.
- * @returns {string} The formatted date-time string without the year.
- */
-export function serializeDateTimeWithoutYear(date: Date): string {
-  const dayjsDate = dayjs(date);
-  return dayjsDate.format('DD/MM HH:mm:ss');
-}
-
-/**
  * Convert an ISO date into a string formatted as 'DD/MM/YYYY' and extract the numeric values for hours and minutes.
  * @param {string} arrivalTime - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
  * @returns {object} An object containing the parsed date and time.
