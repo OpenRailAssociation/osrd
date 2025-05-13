@@ -113,6 +113,17 @@
     "withoutWarranty": "Path simulation without guaranteed availability"
   },
   "scenario": "Scenario",
+  "scenarioExplorer": {
+    "infraLegend": "infra",
+    "noScenarioSelected": "Click here to select a scenario using an infrastructure and a dedicated timetable.",
+    "projectLegend": "project",
+    "projects": "Projects",
+    "scenarioExplorator": "Scenario browser",
+    "scenarioLegend": "scenario",
+    "scenarios": "Scenarios",
+    "studies": "Studies",
+    "studyLegend": "study"
+  },
   "simulation": {
     "additionalResults": "No results were found for your request; alternative options are being computed",
     "calculatingSimulation": "Calculation in progress...",

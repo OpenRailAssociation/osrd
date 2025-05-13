@@ -113,6 +113,17 @@
     "withoutWarranty": "Simulation de sillon sans garantie de disponibilité"
   },
   "scenario": "Scénario ",
+  "scenarioExplorer": {
+    "infraLegend": "infra",
+    "noScenarioSelected": "Cliquez ici pour sélectionner un scénario afin de déterminer une infrastructure et une grille horaire.",
+    "projectLegend": "projet",
+    "projects": "Projets",
+    "scenarioExplorator": "Navigateur de scénarios",
+    "scenarioLegend": "scénario",
+    "scenarios": "Scénarios",
+    "studies": "Études",
+    "studyLegend": "étude"
+  },
   "simulation": {
     "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
     "calculatingSimulation": "Calcul en cours...",
