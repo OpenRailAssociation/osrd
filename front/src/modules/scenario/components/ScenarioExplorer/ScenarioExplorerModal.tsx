@@ -31,7 +31,7 @@ const ScenarioExplorerModal = ({
   globalStudyId,
   globalScenarioId,
 }: ScenarioExplorerProps) => {
-  const { t } = useTranslation('common/scenarioExplorer');
+  const { t } = useTranslation('stdcm', { keyPrefix: 'scenarioExplorer' });
   const dispatch = useAppDispatch();
 
   const [projectID, setProjectID] = useState(globalProjectId);

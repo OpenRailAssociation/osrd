@@ -23,7 +23,7 @@ const ScenarioExplorer = ({
 }: ScenarioExplorerProps & {
   displayImgProject?: boolean;
 }) => {
-  const { t } = useTranslation('common/scenarioExplorer');
+  const { t } = useTranslation('stdcm', { keyPrefix: 'scenarioExplorer' });
   const { openModal } = useModal();
   const [imageUrl, setImageUrl] = useState<string>();
 
