@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import {
   parseLocalDateTime,
   isoDateToMs,
-  serializeDateTimeWithoutYear,
   extractDateAndTime,
   isArrivalDateInSearchTimeWindow,
 } from 'utils/date';
@@ -39,20 +38,6 @@ describe('isoDateToMs', () => {
     const isoDate = '2024-04-26T20:30:15+02:00';
     const msDate = isoDateToMs(isoDate);
     expect(msDate).toEqual(1714156215000);
-  });
-});
-
-describe('serializeDateTimeWithoutYear', () => {
-  it('should return the date without the year for a valid Date object', () => {
-    const inputDate = new Date('2024-07-18T03:16:30Z');
-    const result = serializeDateTimeWithoutYear(inputDate);
-    expect(result).toEqual('18/07 03:16:30');
-  });
-
-  it('should return an empty string for an invalid Date object', () => {
-    const inputDate = new Date(NaN);
-    const result = serializeDateTimeWithoutYear(inputDate);
-    expect(result).toEqual('Invalid Date');
   });
 });
 
