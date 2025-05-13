@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { clamp, inRange } from 'lodash';
 
 import {
@@ -283,4 +284,71 @@ export function getSpaceBreakpoints(from: number, to: number, tree: NormalizedSc
   }
 
   return res;
+}
+
+/**
+ * in most cases, after the rectangle zoom, the screen will be centered
+ * on the center of the rectangle the user drew.
+ * In case we reach max zoom, not to break this expectation we need a different offset calculation
+ */
+export function computeRectZoomOffsets({
+  rect,
+  timeOrigin,
+  spaceOrigin,
+  newTimeScale,
+  newSpaceScale,
+  swapAxes,
+  chartWidth,
+  chartHeight,
+}: {
+  rect: {
+    timeStart: Date;
+    timeEnd: Date;
+    spaceStart: number;
+    spaceEnd: number;
+  };
+  timeOrigin: number;
+  spaceOrigin: number;
+  newTimeScale: number;
+  newSpaceScale: number;
+  swapAxes: boolean;
+  chartWidth: number;
+  chartHeight: number;
+}) {
+  const chartTimeSizePx = !swapAxes ? chartWidth : chartHeight;
+  const chartSpaceSizePx = !swapAxes ? chartHeight : chartWidth;
+  const timeOffset = sideOffset(
+    timeOrigin,
+    newTimeScale,
+    rect.timeStart,
+    rect.timeEnd,
+    chartTimeSizePx
+  );
+  const spaceOffset = sideOffset(
+    spaceOrigin,
+    newSpaceScale,
+    rect.spaceStart,
+    rect.spaceEnd,
+    chartSpaceSizePx
+  );
+  return !swapAxes
+    ? { xOffset: timeOffset, yOffset: spaceOffset }
+    : { xOffset: spaceOffset, yOffset: timeOffset };
+}
+
+export function sideOffset(
+  origin: number,
+  newScale: number,
+  rectStart: number | Date,
+  rectEnd: number | Date,
+  chartSidePx: number
+) {
+  const rectCenter = (Number(rectStart) + Number(rectEnd)) / 2;
+  const newChartSize = chartSidePx * newScale;
+  // newChartBorder is the x or y origin after zoom
+  // it’s normally the same as rectStart (the left or top most part of the rectangle)
+  // but if we reach max zoom we can’t use rectStart as the chart displayed origin
+  // because it doesn’t garentees that the zoom rectangle stays exactly at the center of the chart after the zoom
+  const newChartBorder = rectCenter - newChartSize / 2;
+  return (origin - newChartBorder) / newScale;
 }
