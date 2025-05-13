@@ -23,9 +23,6 @@ const testTrainSettingsReducer = () => {
   const {
     updateConstraintDistribution,
     updateName,
-    updateTrainCount,
-    updateTrainDelta,
-    updateTrainStep,
     toggleUsingElectricalProfiles,
     updateLabels,
     updateInitialSpeed,
@@ -56,30 +53,6 @@ const testTrainSettingsReducer = () => {
 
     const state = getState();
     expect(state.name).toBe(newName);
-  });
-
-  it('should handle updateTrainCount', () => {
-    const newTrainCount = 5;
-    defaultStore.dispatch(updateTrainCount(newTrainCount));
-
-    const state = getState();
-    expect(state.trainCount).toBe(newTrainCount);
-  });
-
-  it('should handle updateTrainDelta', () => {
-    const newTrainDelta = 5;
-    defaultStore.dispatch(updateTrainDelta(newTrainDelta));
-
-    const state = getState();
-    expect(state.trainDelta).toBe(newTrainDelta);
-  });
-
-  it('should handle updateTrainStep', () => {
-    const newTrainStep = 5;
-    defaultStore.dispatch(updateTrainStep(newTrainStep));
-
-    const state = getState();
-    expect(state.trainStep).toBe(newTrainStep);
   });
 
   it('should handle toggleUsingElectricalProfiles', () => {

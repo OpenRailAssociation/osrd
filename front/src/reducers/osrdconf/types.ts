@@ -50,9 +50,6 @@ export type OperationalStudiesConfState = OsrdConfState & {
   usingElectricalProfiles: boolean;
   usingSpeedLimits: boolean;
   powerRestriction: PowerRestriction[];
-  trainCount: number;
-  trainStep: number;
-  trainDelta: number;
   timeWindow: Duration;
   interval: Duration;
   editingTrainIsPacedTrain: boolean;

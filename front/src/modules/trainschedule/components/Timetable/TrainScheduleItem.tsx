@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   TimetableItemId,
@@ -20,7 +19,6 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { Duration, addDurationToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
@@ -97,9 +95,6 @@ const TrainScheduleItem = ({
   const duplicateTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
     const trainName = `${train.name} (${t('timetable.copy')})`;
-    const trainDelta = 5;
-    const trainCount = 1;
-    const actualTrainCount = 1;
 
     const editoastTrainId = extractEditoastIdFromTrainScheduleId(train.id);
     const trainDetail = await getTrainSchedule({
@@ -112,11 +107,10 @@ const TrainScheduleItem = ({
 
     if (trainDetail) {
       const startTime = new Date(trainDetail.start_time);
-      const newStartTime = addDurationToDate(startTime, new Duration({ minutes: trainDelta }));
       const newTrain: TrainSchedule = {
         ...omit(trainDetail, ['id', 'timetable_id']),
-        start_time: newStartTime.toISOString(),
-        train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
+        start_time: startTime.toISOString(),
+        train_name: trainName,
       };
 
       try {

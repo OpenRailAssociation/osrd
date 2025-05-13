@@ -25,8 +25,6 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly returnSimulationResultButton: Locator;
 
-  private readonly trainCountInput: Locator;
-
   private readonly definePacedTrainCheckbox: Locator;
 
   private readonly definePacedTrainCheckboxLabel: Locator;
@@ -59,7 +57,6 @@ class OperationalStudiesPage extends CommonPage {
     this.timesAndStopsTab = page.getByTestId('tab-timesStops');
     this.startTimeField = page.locator('#start-time');
     this.returnSimulationResultButton = page.getByTestId('return-simulation-result');
-    this.trainCountInput = page.locator('#osrdconf-traincount');
     this.definePacedTrainCheckbox = page.locator('#define-paced-train');
     this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
     this.pacedTrainTimeWindow = page.locator('#paced-train-time-window');
@@ -142,11 +139,6 @@ class OperationalStudiesPage extends CommonPage {
   async checkPathfindingDistance(distance: string | RegExp) {
     await this.resultPathfindingDistance.waitFor();
     await expect(this.resultPathfindingDistance).toHaveText(distance);
-  }
-
-  async setNumberOfTrains(trainCount: string) {
-    await expect(this.trainCountInput).toBeVisible();
-    await this.trainCountInput.fill(trainCount);
   }
 
   async checkInputsAndButtons(translations: ManageTrainScheduleTranslations, date: string) {

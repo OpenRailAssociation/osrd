@@ -22,24 +22,6 @@ const trainSettingsReducer = {
   ) {
     state.category = action.payload;
   },
-  updateTrainCount(
-    state: Draft<OperationalStudiesConfState>,
-    action: PayloadAction<OperationalStudiesConfState['trainCount']>
-  ) {
-    state.trainCount = action.payload;
-  },
-  updateTrainDelta(
-    state: Draft<OperationalStudiesConfState>,
-    action: PayloadAction<OperationalStudiesConfState['trainDelta']>
-  ) {
-    state.trainDelta = action.payload;
-  },
-  updateTrainStep(
-    state: Draft<OperationalStudiesConfState>,
-    action: PayloadAction<OperationalStudiesConfState['trainStep']>
-  ) {
-    state.trainStep = action.payload;
-  },
   toggleUsingElectricalProfiles(state: Draft<OperationalStudiesConfState>) {
     state.usingElectricalProfiles = !state.usingElectricalProfiles;
   },
