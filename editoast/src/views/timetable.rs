@@ -664,14 +664,14 @@ fn build_conflict_core_request(
 
     // Build paced train requirements
     let mut it = paced_train_simulations.into_iter();
-    for train in paced_trains {
-        let occurrences = &train.num_occurrences();
+    for paced_train in paced_trains {
+        let occurrences = &paced_train.num_occurrences();
         let items: Vec<_> = it.by_ref().take(*occurrences).collect();
 
         if items.len() < *occurrences {
             panic!(
                 "At least one simulation is missing for paced train {}",
-                train.id
+                paced_train.id
             );
         }
 
@@ -682,14 +682,14 @@ fn build_conflict_core_request(
             };
 
             let key = TrainId::PacedTrainOccurrence {
-                paced_train_id: train.id,
+                paced_train_id: paced_train.id,
                 index: index as u64,
             }
             .to_string();
             trains_requirements.insert(
                 key,
                 TrainRequirements {
-                    start_time: train.start_time,
+                    start_time: paced_train.start_time,
                     spacing_requirements: final_output.spacing_requirements,
                     routing_requirements: final_output.routing_requirements,
                 },
