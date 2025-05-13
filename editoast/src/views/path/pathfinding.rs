@@ -41,6 +41,7 @@ use crate::views::AuthorizationError;
 use crate::views::get_app_version;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
+use editoast_authz as authz;
 use editoast_models::DbConnection;
 
 crate::routes! {
@@ -210,6 +211,14 @@ async fn post(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 

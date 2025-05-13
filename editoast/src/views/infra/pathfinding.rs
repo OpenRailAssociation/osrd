@@ -6,7 +6,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use derivative::Derivative;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
 use serde::Deserialize;
@@ -102,20 +102,19 @@ async fn pathfinding_view(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(infra): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(params): Query<QueryParam>,
     Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     // Parse and check input
-    let infra_id = infra.infra_id;
     let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {
         return Err(PathfindingViewErrors::InvalidNumberOfPaths {
@@ -131,6 +130,15 @@ async fn pathfinding_view(
         InfraApiError::NotFound { infra_id }
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let infra_cache =
         InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
 

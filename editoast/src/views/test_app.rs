@@ -334,6 +334,10 @@ impl TestApp {
         self.app_state.db_pool.clone()
     }
 
+    pub fn regulator(&self) -> Regulator {
+        self.app_state.regulator.clone()
+    }
+
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {
         self.app_state.speed_limit_tag_ids.clone()
     }

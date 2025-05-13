@@ -8,7 +8,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrain;
@@ -128,7 +128,7 @@ async fn get_by_id(
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -165,7 +165,7 @@ async fn update_paced_train(
     Json(paced_train_base): Json<PacedTrain>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -205,7 +205,7 @@ async fn delete(
     }): Json<PacedTrainIds>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -264,7 +264,7 @@ async fn simulation_summary(
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, PacedTrainSummaryResponse>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -276,6 +276,14 @@ async fn simulation_summary(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
         infra_id,
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -351,7 +359,7 @@ async fn get_path(
     }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -365,6 +373,15 @@ async fn get_path(
         infra_id,
     })
     .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     #[expect(deprecated)]
     let paced_train = models::PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
         PacedTrainError::NotFound { paced_train_id }
@@ -415,7 +432,7 @@ async fn simulation(
     }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -426,6 +443,14 @@ async fn simulation(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -486,7 +511,7 @@ async fn project_path(
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -551,7 +576,7 @@ async fn occupancy_blocks(
     .await?;
 
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

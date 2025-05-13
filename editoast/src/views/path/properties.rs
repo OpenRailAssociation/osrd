@@ -5,6 +5,7 @@
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
 //! - Then if the user requests the curves and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the curves.
 
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
@@ -31,7 +32,9 @@ use crate::core::path_properties::PropertyValuesF64;
 use crate::core::path_properties::PropertyZoneValues;
 use crate::core::pathfinding::TrackRange;
 use crate::error::Result;
+use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
+use editoast_authz as authz;
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
@@ -169,6 +172,7 @@ async fn post(
         core_client,
         ..
     }): State<AppState>,
+    Extension(auth): AuthenticationExt,
     Path(infra_id): Path<i64>,
     QsQuery(props): QsQuery<Props>,
     Json(path_properties_input): Json<PathPropertiesInput>,
@@ -176,6 +180,15 @@ async fn post(
     // Extract information from parameters
     let conn = &mut db_pool.get().await?;
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let query_props: Properties = props.into();
     let mut valkey_conn = valkey.get_connection().await?;
 

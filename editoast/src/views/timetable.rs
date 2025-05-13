@@ -20,7 +20,7 @@ use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
@@ -161,7 +161,7 @@ async fn get_train_schedules(
     Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -198,7 +198,7 @@ async fn post(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -228,7 +228,7 @@ async fn delete(
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -260,7 +260,7 @@ async fn post_train_schedule(
     Json(train_schedules): Json<Vec<TrainSchedule>>,
 ) -> Result<Json<Vec<TrainScheduleResponse>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -305,7 +305,7 @@ async fn post_paced_train(
     Json(paced_trains): Json<Vec<PacedTrain>>,
 ) -> Result<Json<Vec<PacedTrainResponse>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -356,7 +356,7 @@ async fn get_paced_trains(
     Query(pagination_params): Query<PaginationQueryParams<25>>,
 ) -> Result<Json<ListPacedTrainsResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
+        .check_roles([authz::Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -521,7 +521,7 @@ async fn conflicts(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -533,6 +533,14 @@ async fn conflicts(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut conn, infra_id, || TimetableError::InfraNotFound {
         infra_id,
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 

@@ -166,6 +166,7 @@ async fn user_authorizations(
     let conn = &mut db_pool.get().await?;
 
     if let Some(infra_ids) = body.get(&Resource::Infra) {
+        let mut infra_authz: Vec<ResourceGrant> = Vec::new();
         for infra_id in infra_ids {
             // check that the infra exists before to check the grants
             if Infra::exists(conn, *infra_id).await? {
@@ -174,14 +175,11 @@ async fn user_authorizations(
                     .await
                     .map_err(AuthzError::from)?;
                 if is_reader {
-                    result.insert(
-                        Resource::Infra,
-                        vec![ResourceGrant {
-                            resource_type: Resource::Infra,
-                            resource_id: *infra_id,
-                            grant: InfraGrant::Reader,
-                        }],
-                    );
+                    infra_authz.push(ResourceGrant {
+                        resource_type: Resource::Infra,
+                        resource_id: *infra_id,
+                        grant: InfraGrant::Reader,
+                    });
                 }
 
                 let is_writer = authorizer
@@ -189,14 +187,11 @@ async fn user_authorizations(
                     .await
                     .map_err(AuthzError::from)?;
                 if is_writer {
-                    result.insert(
-                        Resource::Infra,
-                        vec![ResourceGrant {
-                            resource_type: Resource::Infra,
-                            resource_id: *infra_id,
-                            grant: InfraGrant::Writer,
-                        }],
-                    );
+                    infra_authz.push(ResourceGrant {
+                        resource_type: Resource::Infra,
+                        resource_id: *infra_id,
+                        grant: InfraGrant::Writer,
+                    });
                 }
 
                 let is_owner = authorizer
@@ -204,17 +199,15 @@ async fn user_authorizations(
                     .await
                     .map_err(AuthzError::from)?;
                 if is_owner {
-                    result.insert(
-                        Resource::Infra,
-                        vec![ResourceGrant {
-                            resource_type: Resource::Infra,
-                            resource_id: *infra_id,
-                            grant: InfraGrant::Owner,
-                        }],
-                    );
+                    infra_authz.push(ResourceGrant {
+                        resource_type: Resource::Infra,
+                        resource_id: *infra_id,
+                        grant: InfraGrant::Owner,
+                    });
                 }
             }
         }
+        result.insert(Resource::Infra, infra_authz);
     }
 
     Ok(Json(result))
@@ -258,7 +251,7 @@ struct ResourceIdParam {
     ),
 )]
 async fn users_grants_for_resource_id(
-    Extension(authn): AuthenticationExt,
+    Extension(auth): AuthenticationExt,
     State(AppState { regulator, .. }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
@@ -266,19 +259,19 @@ async fn users_grants_for_resource_id(
 ) -> Result<Json<Vec<SubjectGrant>>> {
     // Validate pagination params
     let mut skip = (page - 1) * page_size;
-
-    // One must be able to interact with the resource in order to
-    // consult who has access to it.
-    authn
-        .authorizer()?
-        .authorize_infra_read(&authz::Infra(resource_id))
-        .await?
-        .allowed()?;
-
     let mut result: Vec<SubjectGrant> = Vec::new();
 
     match resource_type {
         Resource::Infra => {
+            // One must be able to interact with the resource in order to
+            // consult who has access to it.
+            auth.check_authorization(async |authorizer| {
+                authorizer
+                    .authorize_infra_read(&authz::Infra(resource_id))
+                    .await
+            })
+            .await?;
+
             // Work on infra owners
             if result.len() < page_size as usize {
                 let owners = regulator
@@ -355,7 +348,7 @@ async fn users_grants_for_resource_id(
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
 #[cfg_attr(test, derive(Debug, Deserialize))]
-enum InfraPrivilege {
+pub enum InfraPrivilege {
     CanRead,
     CanShareRead,
     CanWrite,

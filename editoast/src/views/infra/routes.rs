@@ -3,7 +3,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
@@ -70,11 +70,11 @@ async fn get_routes_from_waypoint(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -83,6 +83,14 @@ async fn get_routes_from_waypoint(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(conn, path.infra_id, || InfraApiError::NotFound {
         infra_id: path.infra_id,
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(path.infra_id))
+            .await
     })
     .await?;
 
@@ -155,11 +163,12 @@ async fn get_routes_track_ranges(
     Path(infra): Path<i64>,
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -169,6 +178,14 @@ async fn get_routes_track_ranges(
     #[expect(deprecated)]
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -218,11 +235,11 @@ async fn get_routes_nodes(
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
-    Path(params): Path<InfraIdParam>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -230,10 +247,16 @@ async fn get_routes_nodes(
     }
 
     #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, params.infra_id, || {
-        InfraApiError::NotFound {
-            infra_id: params.infra_id,
-        }
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 

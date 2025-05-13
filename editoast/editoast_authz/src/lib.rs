@@ -68,7 +68,7 @@ pub enum Authorization<T> {
     /// The initiator of the authorization is allowed to access the resource
     Granted(T),
     /// The initiator of the authorization is an admin and bypassed the authorization checks
-    Bypassed(T),
+    Bypassed,
     /// The initiator of the authorization is denied access to the resource
     Denied { reason: &'static str },
 }
@@ -78,27 +78,29 @@ pub enum Authorization<T> {
 pub struct Unauthorized {
     pub reason: &'static str,
 }
-
-impl<T> Authorization<T> {
-    pub fn allowed(self) -> Result<T, Unauthorized> {
+impl Authorization<()> {
+    pub fn allowed(self) -> Result<(), Unauthorized> {
         match self {
-            Authorization::Granted(value) | Authorization::Bypassed(value) => Ok(value),
+            Authorization::Granted(()) | Authorization::Bypassed => Ok(()),
             Authorization::Denied { reason } => Err(Unauthorized { reason }),
         }
     }
 
-    pub fn denied(&self) -> bool {
-        matches!(self, Self::Denied { .. })
-    }
-
     pub async fn allowed_then_try<U, E>(
         self,
-        f: impl AsyncFnOnce(T) -> Result<Authorization<U>, E>,
+        f: impl AsyncFnOnce() -> Result<Authorization<U>, E>,
     ) -> Result<Authorization<U>, E> {
         match self {
-            Authorization::Granted(t) | Authorization::Bypassed(t) => f(t).await,
+            Authorization::Granted(()) => f().await,
+            Authorization::Bypassed => f().await,
             Authorization::Denied { reason } => Ok(Authorization::Denied { reason }),
         }
+    }
+}
+
+impl<T> Authorization<T> {
+    pub fn denied(&self) -> bool {
+        matches!(self, Self::Denied { .. })
     }
 }
 

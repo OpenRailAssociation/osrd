@@ -12,7 +12,7 @@ use axum::Extension;
 use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -143,25 +143,32 @@ async fn delimited_area(
 ) -> Result<Json<DelimitedAreaResponse>> {
     // TODO in case of a missing exit, return an empty list of track ranges instead of returning all
     // the track ranges explored until the stopping condition ?
-    let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
     // Retrieve the infra
-
     let conn = &mut db_pool.get().await?;
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     let graph = Graph::load(&infra_cache);
 
     // Validate user input
-
     let (valid_entries, invalid_entries): (Vec<_>, Vec<_>) =
         entries
             .into_iter()

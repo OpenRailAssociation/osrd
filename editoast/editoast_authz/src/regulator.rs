@@ -425,13 +425,81 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.is_admin(user).await? {
-            return Ok(Authorization::Bypassed(()));
+            return Ok(Authorization::Bypassed);
         }
 
         // Calling openfga
         let check = self
             .openfga
             .check(model::Infra::can_read().check(user, infra))
+            .await?;
+        Ok(Authorization::from_privilege_check(check))
+    }
+
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
+    pub async fn authorize_infra_write(
+        &self,
+        user: &User,
+        infra: &Infra,
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra.0)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra.0));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
+        }
+
+        // Bypass if user is an admin
+        if self.is_admin(user).await? {
+            return Ok(Authorization::Bypassed);
+        }
+
+        // Calling openfga
+        let check = self
+            .openfga
+            .check(model::Infra::can_write().check(user, infra))
+            .await?;
+        Ok(Authorization::from_privilege_check(check))
+    }
+
+    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
+    pub async fn authorize_infra_delete(
+        &self,
+        user: &User,
+        infra: &Infra,
+    ) -> Result<Authorization<()>, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra.0)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra.0));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user.0).await? {
+            return Err(Error::UnknownSubject(user.0));
+        }
+
+        // Bypass if user is an admin
+        if self.is_admin(user).await? {
+            return Ok(Authorization::Bypassed);
+        }
+
+        // Calling openfga
+        let check = self
+            .openfga
+            .check(model::Infra::can_delete().check(user, infra))
             .await?;
         Ok(Authorization::from_privilege_check(check))
     }
@@ -459,7 +527,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed(()));
+            return Ok(Authorization::Bypassed);
         }
 
         // Calling openfga
@@ -493,7 +561,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed(()));
+            return Ok(Authorization::Bypassed);
         }
 
         // Calling openfga
@@ -527,7 +595,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         // Bypass if user is an admin
         if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed(()));
+            return Ok(Authorization::Bypassed);
         }
 
         // Calling openfga
@@ -635,6 +703,25 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(users)
     }
 
+    /// Get IDS of infras a subject can read
+    pub async fn list_authorized_infra(
+        &self,
+        user: &User,
+    ) -> Result<Authorization<Vec<Infra>>, Error<S::Error>> {
+        // Bypass if user is an admin
+        if self.is_admin(user).await? {
+            return Ok(Authorization::Bypassed);
+        }
+
+        let infra_list = self
+            .openfga
+            .list_objects(Infra::can_read().query_objects(user))
+            .await
+            .map_err(QueryError::parsing_ok)?;
+
+        Ok(Authorization::Granted(infra_list))
+    }
+
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn grant_infra_reader_unchecked(
         &self,
@@ -687,7 +774,7 @@ impl<S: StorageDriver> Regulator<S> {
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.authorize_infra_sharing_read(issuer, infra)
             .await?
-            .allowed_then_try(async |()| {
+            .allowed_then_try(async || {
                 self.grant_infra_reader_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
@@ -746,7 +833,7 @@ impl<S: StorageDriver> Regulator<S> {
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.authorize_infra_sharing_write(issuer, infra)
             .await?
-            .allowed_then_try(async |()| {
+            .allowed_then_try(async || {
                 self.grant_infra_writer_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
@@ -805,7 +892,7 @@ impl<S: StorageDriver> Regulator<S> {
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.authorize_infra_sharing_ownership(issuer, infra)
             .await?
-            .allowed_then_try(async |()| {
+            .allowed_then_try(async || {
                 self.grant_infra_owner_unchecked(user, infra).await?;
                 Ok(Authorization::Granted(()))
             })
@@ -819,10 +906,11 @@ impl<S: StorageDriver> Regulator<S> {
         user: &User,
         infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        if !self
-            .openfga
-            .check(Infra::owner().check(issuer, infra))
-            .await?
+        if !self.is_admin(issuer).await?
+            && !self
+                .openfga
+                .check(Infra::owner().check(issuer, infra))
+                .await?
         {
             return Ok(Authorization::Denied {
                 reason: "only owners can revoke grants",

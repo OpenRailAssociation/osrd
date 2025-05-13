@@ -6,7 +6,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::http::header;
 use axum::response::IntoResponse;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_schemas::infra::RailJson;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
@@ -21,6 +21,7 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
 use crate::models::prelude::*;
+use crate::views::Authentication;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
@@ -48,11 +49,11 @@ async fn get_railjson(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
@@ -60,6 +61,14 @@ async fn get_railjson(
     #[expect(deprecated)]
     let infra_meta = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
     })
     .await?;
 
@@ -162,6 +171,7 @@ async fn post_railjson(
     State(AppState {
         db_pool,
         infra_caches,
+        regulator,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -169,9 +179,8 @@ async fn post_railjson(
     Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
     let authorized = auth
-        .check_roles([Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
@@ -182,6 +191,17 @@ async fn post_railjson(
         .persist(railjson, &mut db_pool.get().await?)
         .await?;
     let infra_id = infra.id;
+
+    // Assing OWNER to the user on the infra if authz is enabled
+    // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on can_share_ownership
+    if let Authentication::Authenticated(authorizer) = auth {
+        regulator
+            .grant_infra_owner_unchecked(
+                &authz::User(authorizer.user_id()),
+                &authz::Infra(infra.id),
+            )
+            .await?;
+    }
 
     infra
         .bump_version(&mut db_pool.get().await?)

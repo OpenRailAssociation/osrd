@@ -4,7 +4,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use editoast_authz::Role;
+use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
@@ -72,22 +72,32 @@ async fn attached(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    let authorized = auth
-        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
+    // Check user roles
+    let has_role = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await?;
+    if !has_role {
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    // Check that infra exists
     let mut conn = db_pool.get().await?;
     // TODO: lock for share
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
             .await?;
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     // Check track existence
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
     if !infra_cache.track_sections().contains_key(&track_id) {
         return Err(AttachedError::TrackNotFound {
             track_id: track_id.clone(),

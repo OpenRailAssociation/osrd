@@ -24,6 +24,8 @@ pub mod work_schedules;
 
 #[cfg(test)]
 mod test_app;
+use editoast_authz::Authorization;
+use editoast_authz::Infra;
 use editoast_authz::StorageDriver;
 use editoast_common::Version;
 #[cfg(test)]
@@ -197,6 +199,38 @@ impl Authentication {
             Authentication::Authenticated(authorizer) => {
                 authorizer.check_roles(required_roles).await
             }
+        }
+    }
+
+    /// Function wrapper that allows you to check if the issuer of the request has the good privilege, grant, role....
+    /// If the request is unauthenticated, it will return an Unauthorized error, and for the SkipAuthorization.
+    /// The provided function will be called with the authorizer and its result will be checked by the allowed() method.
+    /// In case of error, a Forbidden error will be returned.
+    /// How to use it: `auth.check_authorization(async |authorizer| authorizer.authorize_infra_delete(infra_id).await).await?;`
+    async fn check_authorization<E: Into<AuthorizationError>>(
+        self,
+        f: impl AsyncFnOnce(Authorizer<PgAuthDriver>) -> Result<Authorization<()>, E>,
+    ) -> Result<(), AuthorizationError> {
+        match self {
+            Authentication::SkipAuthorization { .. } => Ok(()),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Authentication::Authenticated(authorizer) => f(authorizer)
+                .await
+                .map_err(Into::into)?
+                .allowed()
+                .map_err(|_| AuthorizationError::Forbidden),
+        }
+    }
+
+    /// Retuns the list of infra IDs that the issuer of the request is authorized to read.
+    /// If user has full access (in case of admin or skip authorization), it return a Bypassed with an empty list
+    async fn list_authorized_infra(&self) -> Result<Authorization<Vec<Infra>>, AuthorizerError> {
+        match self {
+            Authentication::SkipAuthorization { .. } => Ok(Authorization::Bypassed),
+            Authentication::Unauthenticated => Ok(Authorization::Denied {
+                reason: "user is not authenticated",
+            }),
+            Authentication::Authenticated(authorizer) => authorizer.list_authorized_infra().await,
         }
     }
 
