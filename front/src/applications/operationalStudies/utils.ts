@@ -165,7 +165,7 @@ export const preparePathPropertiesData = (
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: PathfindingResultSuccess,
   trainSchedulePath: TrainSchedule['path'],
-  t: TFunction
+  t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes!, length, 'gradient');
   const formattedCurves = transformBoundariesDataToPositionDataArray(curves!, length, 'radius');

@@ -23,7 +23,7 @@ const useSpeedSpaceChart = (
   simulation?: SimulationResponse,
   departureTime?: string
 ): SpeedSpaceChartData | null => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies');
   const infraId = useInfraID();
 
   const [formattedPathProperties, setFormattedPathProperties] = useState<PathPropertiesFormatted>();

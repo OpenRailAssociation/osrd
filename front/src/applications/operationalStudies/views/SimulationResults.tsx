@@ -52,7 +52,7 @@ const SimulationResults = ({
   conflicts = [],
   updateTrainDepartureTime,
 }: SimulationResultsProps) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
   const dispatch = useAppDispatch();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);

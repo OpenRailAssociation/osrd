@@ -8,16 +8,18 @@ type Props = {
 };
 
 export default function ScenarioLoaderMessage({ infraState }: Props) {
-  const { t } = useTranslation(['translation', 'simulation']);
+  const { t } = useTranslation('operational-studies');
 
   if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
-    return <h1 className="text-center">{t('simulation:errorMessages.errorLoadingInfra')}</h1>;
+    return (
+      <h1 className="text-center">{t('simulationResults.errorMessages.errorLoadingInfra')}</h1>
+    );
   }
 
   if (infraState !== 'CACHED') {
     return (
       <Loader
-        msg={t('simulation:infraLoading')}
+        msg={t('simulationResults.infraLoading')}
         className="scenario-loader"
         childClass="scenario-loader-msg"
       />

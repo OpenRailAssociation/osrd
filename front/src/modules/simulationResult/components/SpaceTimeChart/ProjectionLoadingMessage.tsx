@@ -7,7 +7,7 @@ type ProjectionLoadingMessage = {
 };
 
 const ProjectionLoadingMessage = ({ projectedTrainsNb, totalTrains }: ProjectionLoadingMessage) => {
-  const { t } = useTranslation('simulation');
+  const { t } = useTranslation('operational-studies');
 
   return (
     <div
@@ -18,7 +18,7 @@ const ProjectionLoadingMessage = ({ projectedTrainsNb, totalTrains }: Projection
         <Alert />
       </div>
       <span className="ml-2">
-        {t('projectionInProgress', {
+        {t('simulationResults.projectionInProgress', {
           count: projectedTrainsNb,
           total: totalTrains,
         })}
