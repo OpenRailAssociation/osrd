@@ -265,16 +265,53 @@
   }
 
   .scenario-manage-timetable-item {
+    position: relative;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--coolgray1);
     padding-left: 8px;
     animation: fadein 1s;
-    overflow: auto;
+
+    &.collapsed {
+      right: 0;
+      position: absolute;
+      width: 95vw;
+      height: 100%;
+      z-index: 10;
+    }
 
     .invalid-feedback {
       font-size: 0.7rem;
+    }
+
+    .scenario-manage-timetable-item-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      background-color: var(--coolgray1);
+      padding-left: 8px;
+      animation: fadein 1s;
+      overflow: auto;
+    }
+
+    .timetable-edit-collapse-button {
+      position: absolute;
+      left: -27px;
+      top: 50%;
+      padding-bottom: 3px;
+      height: 48px;
+      width: 28px;
+      color: var(--grey40);
+      background-color: var(--white100);
+      border-radius: 5px 0px 0px 5px;
+      box-shadow: 0 1px 0 0 var(--black10);
+      clip-path: inset(-1px 1px -1px -1px);
+
+      &:hover {
+        color: var(--grey80);
+        background-color: var(--grey20);
+      }
     }
   }
 }

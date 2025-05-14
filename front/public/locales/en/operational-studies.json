@@ -297,6 +297,7 @@
       "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
       "unableToRetrieveTags": "Impossible to get tags"
     },
+    "hideTrainSettings": "Hide",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Display all constraints",
@@ -364,6 +365,7 @@
     "returnToSimulationResults": "Go back to simulation results",
     "rollingstock": "Rolling stock",
     "saving": "Saving... please wait",
+    "showTrainSettings": "Show",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
       "addingSettings": "Adding settings",

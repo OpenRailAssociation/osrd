@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { compact, pick } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -47,6 +48,7 @@ import { formatKmValue } from 'utils/strings';
 import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
 
 const ManageTrainSchedule = () => {
+  const [showTrainSettings, setShowTrainSettings] = useState(true);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const {
@@ -235,7 +237,17 @@ const ManageTrainSchedule = () => {
   return (
     <>
       <div className="osrd-config-item-container mb-3">
-        <TrainSettings />
+        {showTrainSettings && <TrainSettings />}
+        <button
+          type="button"
+          className="toggle-train-settings"
+          onClick={() => setShowTrainSettings(!showTrainSettings)}
+        >
+          {showTrainSettings ? <ChevronUp /> : <ChevronDown />}
+          <span className="ml-2">
+            {showTrainSettings ? t('hideTrainSettings') : t('showTrainSettings')}
+          </span>
+        </button>
       </div>
 
       <Tabs

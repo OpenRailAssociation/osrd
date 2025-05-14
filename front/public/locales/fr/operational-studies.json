@@ -297,6 +297,7 @@
       "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
+    "hideTrainSettings": "Masquer",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Afficher toutes les contraintes",
@@ -364,6 +365,7 @@
     "returnToSimulationResults": "Retourner aux résultats de simulation",
     "rollingstock": "Matériel",
     "saving": "Enregistrement en cours... veuillez patienter",
+    "showTrainSettings": "Afficher",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
       "addingSettings": "Paramètres d'ajout",
