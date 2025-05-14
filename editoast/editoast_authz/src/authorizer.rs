@@ -8,6 +8,7 @@ use crate::Infra;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
+use crate::model::InfraPrivilege;
 use crate::model::User;
 use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
@@ -59,6 +60,15 @@ impl<S: StorageDriver> Authorizer<S> {
     #[tracing::instrument(skip_all, fields(user = %self.user, ?roles), ret(level = Level::DEBUG))]
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
         self.regulator.check_roles(&User(self.user_id), roles).await
+    }
+
+    pub async fn infra_privileges(
+        &self,
+        infra: &Infra,
+    ) -> Result<HashSet<InfraPrivilege>, Error<S::Error>> {
+        self.regulator
+            .infra_privileges(&User(self.user_id), infra)
+            .await
     }
 
     pub async fn check_infra_grant_reader(&self, infra: &Infra) -> Result<bool, Error<S::Error>> {
