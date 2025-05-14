@@ -6,6 +6,7 @@ use actix_web::{
         ServiceResponse,
     },
     error::ParseError,
+    guard::{self, Guard},
     http::{
         StatusCode,
         header::{self, HeaderMap},
@@ -82,6 +83,8 @@ pub struct Proxy {
     timeout: Option<Duration>,
     tracing_name: Option<String>,
     blocked_paths: RegexSet,
+    routing_exclude: Option<RegexSet>,
+    routing_only: Option<RegexSet>,
 }
 
 /// The set of characters that have to be percent encoded in the path.
@@ -128,6 +131,8 @@ impl Proxy {
         timeout: Option<Duration>,
         tracing_name: Option<String>,
         blocked_paths: Option<Vec<String>>,
+        routing_exclude: Option<Vec<String>>,
+        routing_only: Option<Vec<String>>,
     ) -> Self {
         let upstream_scheme = upstream.scheme_str().unwrap().to_owned();
         let upstream_authority = upstream
@@ -139,8 +144,14 @@ impl Proxy {
             upstream_path_prefix.push('/');
         }
 
-        let regex_set =
+        let blocked_paths =
             RegexSet::new(blocked_paths.unwrap_or_default()).expect("regexes should parse");
+
+        let routing_exclude =
+            routing_exclude.map(|patterns| RegexSet::new(patterns).expect("regexes should parse"));
+
+        let routing_only =
+            routing_only.map(|patterns| RegexSet::new(patterns).expect("regexes should parse"));
 
         Self {
             tracing_name,
@@ -156,7 +167,9 @@ impl Proxy {
             blocked_headers,
             request_modifier,
             timeout,
-            blocked_paths: regex_set,
+            blocked_paths,
+            routing_exclude,
+            routing_only,
         }
     }
 
@@ -187,6 +200,32 @@ impl Proxy {
     }
 }
 
+struct ProxyGuard {
+    routing_exclude: Option<RegexSet>,
+    routing_only: Option<RegexSet>,
+}
+
+impl From<&Proxy> for ProxyGuard {
+    fn from(proxy: &Proxy) -> Self {
+        Self {
+            routing_exclude: proxy.routing_exclude.clone(),
+            routing_only: proxy.routing_only.clone(),
+        }
+    }
+}
+
+impl Guard for ProxyGuard {
+    fn check(&self, ctx: &guard::GuardContext<'_>) -> bool {
+        let target = format!("{} {}", ctx.head().method.as_str(), ctx.head().uri.path());
+        match (&self.routing_exclude, &self.routing_only) {
+            (None, None) => true,
+            (Some(exclude), None) => !exclude.is_match(&target),
+            (None, Some(only)) => only.is_match(&target),
+            (Some(exclude), Some(only)) => only.is_match(&target) && !exclude.is_match(&target),
+        }
+    }
+}
+
 impl HttpServiceFactory for Proxy {
     fn register(self, config: &mut actix_web::dev::AppService) {
         let rdef = if config.is_root() {
@@ -195,7 +234,11 @@ impl HttpServiceFactory for Proxy {
             ResourceDef::prefix(&self.mount_path)
         };
 
-        config.register_service(rdef, None, self, None)
+        let guard = guard::fn_guard({
+            let proxy_guard: ProxyGuard = (&self).into();
+            move |ctx| proxy_guard.check(ctx)
+        });
+        config.register_service(rdef, Some(vec![Box::new(guard)]), self, None);
     }
 }
 
