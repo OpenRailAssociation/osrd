@@ -1,0 +1,126 @@
+{{- if .Values.services.osrdyne.enabled -}}
+
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.osrdyne.annotations | default dict) }}
+{{- $generatedLabels := include "osrd.labels.osrdyne" . | fromYaml }}
+{{- $mergedLabels := merge (.Values.labels | default dict) (.Values.services.osrdyne.labels | default dict) $generatedLabels }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne
+  labels:
+    {{- toYaml $mergedLabels | nindent 4 }}
+  annotations:
+    {{- toYaml $mergedAnnotations | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "osrd.selectorLabels.osrdyne" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml $mergedLabels | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "osrd.fullname" . }}-osrdyne-sa
+      {{- with (.Values.imagePullSecrets | default list) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "osrd.name" . }}-osrdyne
+          image: "{{ .Values.images.osrdyne }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.osrdyne.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /osrdyne.yml
+              subPath: osrdyne.yml
+            {{- with (.Values.services.osrdyne.volumeMounts | default list) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          {{- if not .Values.services.osrdyne.livenessProbe.disabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          {{- end }}
+
+          {{- if not .Values.services.osrdyne.readinessProbe.disabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          {{- end }}
+
+          env:
+            - name: OSRDYNE__AMQP_URI
+              {{- $amqp := .Values.endpoints.amqp.url }}
+              {{- if eq (kindOf $amqp) "map" }}
+              valueFrom:
+                {{- toYaml $amqp.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $amqp }}"
+              {{- end }}
+
+            - name: OSRDYNE__MANAGEMENT_URI
+              {{- $amqpManagement := .Values.endpoints.amqp.management }}
+              {{- if eq (kindOf $amqpManagement) "map" }}
+              valueFrom:
+                {{- toYaml $amqpManagement.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $amqpManagement }}"
+              {{- end }}
+       
+            {{- if (eq .Values.services.core.autoscaling.type "Keda") }}
+            - name: OSRDYNE__WORKER_DRIVER__AUTOSCALING__AMQP_HOST
+              {{- $amqpManagementWithVhost := .Values.endpoints.amqp.managementWithVhost }}
+              {{- if eq (kindOf $amqpManagementWithVhost) "map" }}
+              valueFrom:
+                {{- toYaml $amqpManagementWithVhost.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $amqpManagementWithVhost }}"
+              {{- end }}
+            {{- end }}
+
+            - name: RUST_LOG
+              value: info
+              
+            - name: OSRDYNE_PORT
+              value: "{{ .Values.services.osrdyne.service.port }}"
+
+            {{- with (.Values.services.osrdyne.env | default dict) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.services.osrdyne.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "osrd.fullname" . }}-osrdyne-config
+        {{- with (.Values.services.osrdyne.volumes | default list) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      nodeSelector:
+        {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.osrdyne.nodeSelector | default dict)) | nindent 8 }}
+
+      affinity:
+        {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.osrdyne.affinity | default dict)) | nindent 8 }}
+      
+      tolerations:
+        {{- with .Values.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.services.osrdyne.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

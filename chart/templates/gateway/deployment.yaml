@@ -1,0 +1,93 @@
+{{- if .Values.services.gateway.enabled -}}
+
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.gateway.annotations | default dict) }}
+{{- $generatedLabels := include "osrd.labels.gateway" . | fromYaml }}
+{{- $mergedLabels := merge (.Values.labels | default dict) (.Values.services.gateway.labels | default dict) $generatedLabels }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osrd.fullname" . }}-gateway
+  labels:
+    {{- toYaml $mergedLabels | nindent 4 }}
+  annotations:
+    {{- toYaml $mergedAnnotations | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osrd.selectorLabels.gateway" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml $mergedLabels | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
+    spec:
+      {{- with (.Values.imagePullSecrets | default list) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "osrd.name" . }}-gateway
+          image: "{{ .Values.images.gateway }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.gateway.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /srv/gateway.toml
+              subPath: gateway.toml
+
+            {{- with (.Values.services.gateway.volumeMounts | default list) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          
+          {{- if not .Values.services.gateway.livenessProbe.disabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          {{- end }}
+
+          {{- if not .Values.services.gateway.readinessProbe.disabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          {{- end }}
+
+          env:
+            {{- with .Values.services.gateway.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: GATEWAY_PORT
+              value: "{{ .Values.services.gateway.service.port }}"
+          resources:
+            {{- toYaml .Values.services.gateway.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "osrd.fullname" . }}-gateway-config
+
+        {{- with (.Values.services.gateway.volumes | default list) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+      nodeSelector:
+        {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.gateway.nodeSelector | default dict)) | nindent 8 }}
+
+      affinity:
+        {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.gateway.affinity | default dict)) | nindent 8 }}
+     
+      tolerations:
+        {{- with .Values.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.services.gateway.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

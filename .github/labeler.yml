@@ -30,3 +30,7 @@
   - any:
       - changed-files:
           - any-glob-to-any-file: "python/**"
+"area:chart":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "chart/**"

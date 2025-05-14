@@ -1,0 +1,63 @@
+{{- if .Values.services.gateway.ingress.enabled -}}
+{{- $fullName := include "osrd.fullname" . -}}
+{{- $svcPort := .Values.services.gateway.service.port -}}
+{{- $k8sVersion := .Capabilities.KubeVersion.GitVersion -}}
+
+{{- if and .Values.services.gateway.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.services.gateway.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.services.gateway.ingress.annotations "kubernetes.io/ingress.class" .Values.services.gateway.ingress.className}}
+  {{- end }}
+{{- end }}
+
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "osrd.labels.gateway" . | nindent 4 }}
+  {{- with .Values.services.gateway.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.services.gateway.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.services.gateway.ingress.className }}
+  {{- end }}
+
+  {{- if .Values.services.gateway.ingress.tls }}
+  tls:
+  - hosts:
+      {{- with .Values.services.gateway.ingress.domains }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    secretName: {{ .Values.services.gateway.ingress.secretName }}
+  {{- end }}
+
+  rules:
+    {{- range .Values.services.gateway.ingress.domains }}
+    - host: {{ . }}
+      http:
+        paths:
+          - path: /
+            {{- if semverCompare ">=1.18-0" $k8sVersion }}
+            pathType: Prefix
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $k8sVersion }}
+              service:
+                name: {{ $fullName }}-gateway
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $fullName }}-gateway
+              servicePort: {{ $svcPort }}
+              {{- end }}
+    {{- end }}
+{{- end }}

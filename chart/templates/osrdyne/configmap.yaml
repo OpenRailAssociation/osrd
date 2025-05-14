@@ -1,0 +1,80 @@
+{{- if .Values.services.osrdyne.enabled -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne-config
+data:
+  osrdyne.yml: |
+    {{- if .Values.services.osrdyne.config.pool_id }}
+    pool_id: "{{ .Values.services.osrdyne.config.pool_id }}"
+    {{- end }}
+    
+    {{- if .Values.services.osrdyne.config.default_message_ttl }}
+    default_message_ttl: "{{ .Values.services.osrdyne.config.default_message_ttl }}"
+    {{- end }}
+
+    {{- if .Values.services.osrdyne.config.max_length }}
+    max_length: {{ printf "%.0f" .Values.services.osrdyne.config.max_length }}
+    {{- end }}
+
+    {{- if .Values.services.osrdyne.config.max_length_bytes }}
+    max_length_bytes: {{ printf "%.0f" .Values.services.osrdyne.config.max_length_bytes }}
+    {{- end }}
+
+    api_address: "0.0.0.0:{{ .Values.services.osrdyne.service.targetPort }}"
+
+    worker_driver:
+      type: "KubernetesDriver"
+      container_image: "{{ .Values.images.core }}"
+      {{- if .Values.imagePullSecrets }}
+      image_pull_secrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      start_command: ["sh", "-c", "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar worker"]
+      deployment_prefix: "{{ include "osrd.fullname" . }}"
+      namespace: "{{ .Release.Namespace }}"
+
+      {{- with .Values.services.core.autoscaling }}
+      autoscaling:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      kube_deployment_options:
+        default_env:
+          {{- with .Values.services.core.env }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          - name: CORE_EDITOAST_URL
+            value: http://{{ include "osrd.fullname" . }}-editoast
+          - name: CORE_MONITOR_TYPE
+            value: "{{ .Values.services.core.config.telemetry }}"
+          - name: JAVA_TOOL_OPTIONS
+            value: {{ if eq .Values.services.core.config.telemetry "opentelemetry" -}}
+              "-javaagent:/app/opentelemetry-javaagent.jar"
+            {{- end -}}
+
+        {{- with .Values.services.core.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.services.core.labels }}
+        labels:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.services.core.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        node_selector:
+          {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.core.nodeSelector | default dict)) | nindent 10 }}
+        affinity:
+          {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.core.affinity | default dict)) | nindent 10 }}
+        tolerations:
+          {{- with .Values.tolerations | default dict }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.services.core.tolerations | default dict }}
+          {{- toYaml . | nindent 8 }}
+          {{- end }}
+{{- end }}

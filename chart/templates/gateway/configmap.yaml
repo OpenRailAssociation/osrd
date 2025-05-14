@@ -1,0 +1,88 @@
+{{- if .Values.services.gateway.enabled -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "osrd.fullname" . }}-gateway-config
+data:
+  gateway.toml: |
+    {{- $config := .Values.services.gateway.config }}
+    listen_addr = "0.0.0.0"
+    port = {{ .Values.services.gateway.service.targetPort }}
+    trusted_proxies = [{{ range $index, $proxy := $config.trusted_proxies }}{{ if $index }}, {{ end }}"{{ $proxy }}"{{ end }}]
+
+    [static_files]
+    root_folder = "/srv/front"
+    redirect_404_to_index = true
+
+    {{- if $config.tracing.enabled }}
+    [telemetry.tracing]
+    type = "{{ $config.tracing.type }}"
+    {{- range $key, $value := $config.tracing.config }}
+    "{{ $key }}" = "{{ $value }}"
+    {{- end }}
+    {{- end }}
+
+    [[targets]]
+    prefix = "/api/infra"
+    upstream = "http://{{ include "osrd.fullname" . }}-stateful-editoast/infra"
+    require_auth = true
+
+    [[targets]]
+    prefix = "/api"
+    upstream = "http://{{ include "osrd.fullname" . }}-editoast"
+    require_auth = true
+    blocked_headers = ["x-osrd-skip-authz"]
+
+    [[targets]]
+    prefix = "/images"
+    upstream = "http://{{ include "osrd.fullname" . }}-images"
+    require_auth = true
+
+    {{- if $config.auth }}
+    [auth]
+    {{- if $config.auth.default_provider }}
+    default_provider = "{{ $config.auth.default_provider }}"
+    {{- end }}
+
+    {{- range $provider := $config.auth.providers }}
+    [[auth.providers]]
+    type = "{{ $provider.type }}"
+    provider_id = "{{ $provider.provider_id }}"
+    {{- if eq $provider.type "Mocked" }}
+    username = "{{ $provider.username }}"
+    require_login = {{ $provider.require_login }}
+    {{- else if eq $provider.type "Bearer" }}
+    [auth.providers.tokens]
+    {{- range $key, $value := $provider.tokens }}
+    "{{ $key }}" = "{{ $value }}"
+    {{- end }}
+    {{- else if eq $provider.type "Oidc" }}
+    issuer_url = "{{ $provider.issuer_url }}"
+    post_login_url = "{{ $provider.post_login_url }}"
+    callback_url = "{{ $provider.callback_url }}"
+    client_id = "{{ $provider.client_id }}"
+    client_secret = "{{ $provider.client_secret }}"
+    {{- if $provider.username_whitelist }}
+    username_whitelist = [
+      {{- range $username := $provider.username_whitelist }}
+        "{{ $username }}",
+      {{- end }}
+    ]
+    {{- end }}
+    {{- if $provider.profile_scope_override }}
+    profile_scope_override = "{{ $provider.profile_scope_override }}"
+    {{- end }}
+    {{- if $provider.acr }}
+    acr = "{{ $provider.acr }}"
+    amr = [
+    {{- range $provider.amr }}
+    "{{ . }}",
+    {{- end }}
+    ]
+    {{- end }}
+    {{- end }}
+    {{- end }}
+
+    {{- end }}
+{{- end }}

@@ -1,0 +1,96 @@
+{{- if .Values.services.openfga.enabled -}}
+
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.openfga.annotations | default dict) }}
+{{- $generatedLabels := include "osrd.labels.openfga" . | fromYaml }}
+{{- $mergedLabels := merge (.Values.labels | default dict) (.Values.services.openfga.labels | default dict) $generatedLabels }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osrd.fullname" . }}-openfga
+  labels:
+    {{- toYaml $mergedLabels | nindent 4 }}
+  annotations:
+    {{- toYaml $mergedAnnotations | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.openfga.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osrd.selectorLabels.openfga" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml $mergedLabels | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
+    spec:
+      {{- with (.Values.imagePullSecrets | default list) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: openfga-migrate
+          image: "{{ .Values.images.openfga }}"
+          command: ["/openfga"]
+          args: ["migrate"]
+          env:
+            - name: OPENFGA_DATASTORE_ENGINE
+              value: "postgres"
+            - name: OPENFGA_DATASTORE_URI
+              {{- $postgresql := .Values.endpoints.postgresqlOpenFGA }}
+              {{- if eq (kindOf $postgresql) "map" }}
+              valueFrom:
+                {{- toYaml $postgresql.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $postgresql }}"
+              {{- end }}
+
+      containers:
+        - name: openfga
+          image: "{{ .Values.images.openfga }}"
+          command: ["/openfga"]
+          args: ["run"]
+          ports:
+            - name: openfga-port
+              containerPort: {{ .Values.services.openfga.service.targetPort }}
+          env:
+            - name: OPENFGA_DATASTORE_ENGINE
+              value: "postgres"
+            - name: OPENFGA_DATASTORE_URI
+              {{- $postgresql := .Values.endpoints.postgresqlOpenFGA }}
+              {{- if eq (kindOf $postgresql) "map" }}
+              valueFrom:
+                {{- toYaml $postgresql.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $postgresql }}"
+              {{- end }}
+            - name: OPENFGA_HTTP_ADDR
+              value: "0.0.0.0:{{ .Values.services.openfga.service.targetPort }}"
+            - name: OPENFGA_PLAYGROUND_ENABLED
+              value: "false"
+            {{- with .Values.services.openfga.env | default dict }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+              
+          {{- if not .Values.services.openfga.readinessProbe.disabled }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: openfga-port
+          {{- end }}
+
+      nodeSelector:
+        {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.openfga.nodeSelector | default dict)) | nindent 8 }}
+
+      affinity:
+        {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.openfga.affinity | default dict)) | nindent 8 }}
+
+      tolerations:
+        {{- with .Values.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.services.openfga.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

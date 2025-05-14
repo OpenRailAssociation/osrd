@@ -1,0 +1,65 @@
+{{- if .Values.services.images.enabled -}}
+
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.images.annotations | default dict) }}
+{{- $generatedLabels := include "osrd.labels.images" . | fromYaml }}
+{{- $mergedLabels := merge (.Values.labels | default dict) (.Values.services.images.labels | default dict) $generatedLabels }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osrd.fullname" . }}-images
+  labels:
+    {{- toYaml $mergedLabels | nindent 4 }}
+  annotations:
+    {{- toYaml $mergedAnnotations | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.images.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "osrd.selectorLabels.images" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml $mergedLabels | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
+    spec: 
+      {{- with (.Values.imagePullSecrets | default list) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "osrd.name" . }}-images
+          image: "{{ .Values.images.images }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.images.service.port }}
+              protocol: TCP
+
+          env:
+            {{- with (.Values.services.images.env | default list) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: NGINX_PORT
+              value: "{{ .Values.services.images.service.targetPort }}"
+
+          resources:
+            {{- toYaml .Values.services.images.resources | nindent 12 }}
+
+      nodeSelector:
+        {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.images.nodeSelector | default dict)) | nindent 8 }}
+
+      affinity:
+        {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.images.affinity | default dict)) | nindent 8 }}
+
+      tolerations:
+        {{- with .Values.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.services.images.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

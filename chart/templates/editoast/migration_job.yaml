@@ -1,0 +1,76 @@
+{{- if .Values.services.editoast.init.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "osrd.fullname" . }}-editoast-init
+  labels:
+    name: {{ include "osrd.fullname" . }}-editoast-init
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: {{ include "osrd.name" . }}-editoast-migrate
+          image: "{{ .Values.images.editoast }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["/init-vol/script.sh"]
+          env:
+            - name: EDITOAST_PORT
+              value: "{{ .Values.services.editoast.service.targetPort }}"
+
+            - name: OSRDYNE_API_URL
+              value: http://{{ include "osrd.fullname" . }}-osrdyne
+
+            - name: ROOT_URL
+              value: "{{ .Values.endpoints.public }}/api"
+
+            - name: OSRD_MQ_URL
+              {{- $amqp := .Values.endpoints.amqp.url }}
+              {{- if eq (kindOf $amqp) "map" }}
+              valueFrom:
+                {{- toYaml $amqp.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $amqp }}"
+              {{- end }}
+
+            - name: DATABASE_URL
+              {{- $postgresql := .Values.endpoints.postgresql }}
+              {{- if eq (kindOf $postgresql) "map" }}
+              valueFrom:
+                {{- toYaml $postgresql.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $postgresql }}"
+              {{- end }}
+
+            - name: VALKEY_URL
+              {{- $redis := .Values.endpoints.redis }}
+              {{- if eq (kindOf $redis) "map" }}
+              valueFrom:
+                {{- toYaml $redis.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $redis }}"
+              {{- end }}
+
+            {{- with .Values.services.editoast.env | default dict }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /init-vol/script.sh
+              subPath: script.sh
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "osrd.fullname" . }}-editoast-init
+  backoffLimit: 4
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.services.editoast.init.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "osrd.fullname" . }}-editoast-init
+data:
+  script.sh: |
+    #!/bin/sh
+    set -e
+    
+    {{- with .Values.services.editoast.init.extend }}
+    {{ . | nindent 4 }}
+    {{- end }}
+    diesel migration run
+{{- end }}
