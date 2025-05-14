@@ -40,27 +40,6 @@ paths:
           description: Successful granting
         '204':
           description: Successful revoking
-  /authz/grants/{resource_type}:
-    get:
-      tags:
-      - authz
-      parameters:
-      - name: resource_type
-        in: path
-        required: true
-        schema:
-          $ref: '#/components/schemas/ResourceType'
-      responses:
-        '200':
-          description: Get privileges for each grant associated to the resource type
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/InfraPrivilege'
   /authz/me:
     get:
       tags:
@@ -5441,7 +5420,6 @@ components:
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
       - $ref: '#/components/schemas/EditoastRailJsonErrorUnsupportedVersion'
-      - $ref: '#/components/schemas/EditoastResourceErrorUnknownResourceType'
       - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
@@ -6221,30 +6199,6 @@ components:
           type: string
           enum:
           - editoast:railjson:UnsupportedVersion
-    EditoastResourceErrorUnknownResourceType:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - resource_type
-          properties:
-            resource_type:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:authz:UnknownResourceType
     EditoastRollingStockErrorBasePowerClassEmpty:
       type: object
       required:

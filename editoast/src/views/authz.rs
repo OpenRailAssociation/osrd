@@ -40,7 +40,6 @@ crate::routes! {
         },
         "/grants" => update_grants,
         "/{resource_type}/{resource_id}" => subjects_with_grant_on_resource,
-        "/grants/{resource_type}"=> privileges_by_resource_type,
     },
 }
 
@@ -109,14 +108,6 @@ impl From<AuthorizerError> for AuthzError {
             err => AuthzError::Authorizer(err),
         }
     }
-}
-
-#[derive(Debug, thiserror::Error, EditoastError)]
-#[editoast_error(base_id = "authz")]
-enum ResourceError {
-    #[error("unknown resource type {resource_type}")]
-    #[editoast_error(status = 404)]
-    UnknownResourceType { resource_type: String },
 }
 
 #[derive(Serialize, ToSchema)]
@@ -381,53 +372,6 @@ async fn subjects_with_grant_on_resource(
         subjects: subjects_grant,
         stats,
     }))
-}
-
-#[utoipa::path(
-    get,
-    path = "",
-    tag = "authz",
-    params(ResourceTypeParam),
-    responses(
-        (status = 200, description = "Get privileges for each grant associated to the resource type", body = HashMap<InfraGrant, Vec<InfraPrivilege>>),
-    ),
-)]
-async fn privileges_by_resource_type(
-    Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
-) -> Result<Json<HashMap<InfraGrant, Vec<InfraPrivilege>>>> {
-    if resource_type != ResourceType::Infra {
-        return Err(ResourceError::UnknownResourceType {
-            resource_type: resource_type.to_string(),
-        })?;
-    }
-
-    let mut infra_privileges: HashMap<InfraGrant, Vec<InfraPrivilege>> = HashMap::new();
-    infra_privileges.insert(
-        InfraGrant::Owner,
-        vec![
-            InfraPrivilege::CanRead,
-            InfraPrivilege::CanShareRead,
-            InfraPrivilege::CanWrite,
-            InfraPrivilege::CanShareWrite,
-            InfraPrivilege::CanDelete,
-            InfraPrivilege::CanShareOwnership,
-        ],
-    );
-    infra_privileges.insert(
-        InfraGrant::Writer,
-        vec![
-            InfraPrivilege::CanRead,
-            InfraPrivilege::CanShareRead,
-            InfraPrivilege::CanWrite,
-            InfraPrivilege::CanShareWrite,
-        ],
-    );
-    infra_privileges.insert(
-        InfraGrant::Reader,
-        vec![InfraPrivilege::CanRead, InfraPrivilege::CanShareRead],
-    );
-
-    Ok(Json(infra_privileges))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -804,20 +748,6 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
         // Check that the new user has the good grant
         check_grant_on_resource(&app, &owner, infra.id, writer.id, None);
-    }
-
-    #[rstest]
-    async fn privileges_by_resource_type_test() {
-        let app = test_app!().enable_authorization(true).build();
-
-        let request = app.get(&format!("/authz/grants/{}", ResourceType::Infra));
-        let response: HashMap<InfraGrant, Vec<InfraPrivilege>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        // Checks
-        assert_eq!(response.get(&InfraGrant::Reader).unwrap().len(), 2);
-        assert_eq!(response.get(&InfraGrant::Writer).unwrap().len(), 4);
-        assert_eq!(response.get(&InfraGrant::Owner).unwrap().len(), 6);
     }
 
     #[rstest]
