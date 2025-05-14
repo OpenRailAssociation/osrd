@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { createStringSelectOptions } from 'utils/uiCoreHelpers';
+import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
@@ -60,7 +60,7 @@ export default function SpeedLimitByTagSelector({
               dispatchUpdateSpeedLimitByTag(null);
             }
           }}
-          {...createStringSelectOptions(speedLimitsTagsList)}
+          {...createStandardSelectOptions(speedLimitsTagsList)}
           narrow={narrow}
         />
       </div>
