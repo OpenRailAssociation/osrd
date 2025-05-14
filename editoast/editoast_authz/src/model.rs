@@ -19,8 +19,7 @@ pub struct Group(pub i64);
 #[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone)]
 pub struct Infra(pub i64);
 
-#[derive(Debug, Display, PartialEq, Eq, Hash, Serialize, ToSchema)]
-#[cfg_attr(test, derive(Deserialize))]
+#[derive(Debug, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
