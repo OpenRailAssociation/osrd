@@ -88,14 +88,13 @@ test.describe('Verify train schedule elements and filters', () => {
     // Verify train count, invalid train messages, and train simulation results
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
     await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
-    await scenarioTimetableSection.checkSelectedTimetableTrain();
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
       VALID_ITEMS,
       translations
     );
-    // TODO Paced trains: Adapt verifyEachTrainSimulation to iterate over paced trains also
-    // await scenarioTimetableSection.verifyEachTrainSimulation();
+    await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
+    await scenarioTimetableSection.verifyEachTrainSimulation(VALID_PACED_TRAINS);
   });
 
   /** *************** Test 2 **************** */

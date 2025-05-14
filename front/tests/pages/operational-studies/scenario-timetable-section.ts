@@ -125,6 +125,16 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     return trainSelector.getByTestId('scenario-timetable-train-button');
   }
 
+  // Get the button locator of a paced train element.
+  static getPacedTrainButton(pacedTrainSelector: Locator): Locator {
+    return pacedTrainSelector.getByTestId('paced-train');
+  }
+
+  // Get the locator of occurrences.
+  static getOccurrences(pacedTrain: Locator): Locator {
+    return pacedTrain.getByTestId('occurrence-item');
+  }
+
   // Verify that the message "The timetable contains invalid trains" is visible
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
     const translations = getTranslations({
@@ -133,12 +143,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     });
     const invalidTrainsMessageText = await this.invalidTrainsMessage.innerText();
     expect(invalidTrainsMessageText).toEqual(translations.timetable.invalidTrains);
-  }
-
-  // Verify that the train is selected by default
-  async checkSelectedTimetableTrain(): Promise<void> {
-    await this.page.waitForSelector('.selected');
-    await expect(this.selectedTimetableTrain).toBeVisible();
   }
 
   async checkTimetableFilterVisibilityLabelDefaultValue(
@@ -328,14 +332,37 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableFilterButtonClose.click();
   }
 
-  // Iterate over each train element and verify the visibility of simulation results
-  async verifyEachTrainSimulation(): Promise<void> {
-    const trainCount = await this.timetableTrains.count();
+  // Iterate over each paced train occurrences and verify the visibility of simulation results
+  async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
+    for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
+      const pacedTrain = this.timetableTrains.nth(pacedTrainIndex);
+      const pacedTrainButton = ScenarioTimetableSection.getPacedTrainButton(pacedTrain);
 
-    for (let currentTrainIndex = 0; currentTrainIndex < trainCount; currentTrainIndex += 1) {
+      await pacedTrainButton.click(); // opens the paced train to display its occurrences
+
+      const occurrences = ScenarioTimetableSection.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
+
+      const count = await occurrences.count();
+      for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
+        const occurrenceButton = occurrences.nth(occurrenceIndex);
+        await occurrenceButton.click({ force: true });
+        await this.verifySimulationResultsVisibility();
+      }
+    }
+  }
+
+  // Iterate over each train element and verify the visibility of simulation results
+  async verifyEachTrainSimulation(pacedTrainCount: number): Promise<void> {
+    const trainCount = await this.timetableTrains.count();
+    for (
+      let currentTrainIndex = pacedTrainCount;
+      currentTrainIndex < trainCount;
+      currentTrainIndex += 1
+    ) {
       const trainButton = ScenarioTimetableSection.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
+      await trainButton.waitFor();
       await trainButton.click();
       await this.projectTrain();
       await this.verifySimulationResultsVisibility();
