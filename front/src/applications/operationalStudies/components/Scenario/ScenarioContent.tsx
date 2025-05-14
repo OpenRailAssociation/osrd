@@ -55,6 +55,7 @@ const ScenarioContent = ({
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
+  const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
   const [isMacro, setIsMacro] = useState(false);
   const {
@@ -135,12 +136,15 @@ const ScenarioContent = ({
       if (!isMacroMode && collapsedTimetable) {
         setCollapsedTimetable(false);
       }
+      if (!isMacroMode && collapsedTimetableEdit) {
+        setCollapsedTimetableEdit(false);
+      }
       if (!isMacro && isMacroMode) {
         setNGEIsLoading(true);
         refreshNge();
       }
     },
-    [isMacro, setIsMacro, collapsedTimetable]
+    [isMacro, setIsMacro, collapsedTimetable, collapsedTimetableEdit]
   );
 
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
@@ -180,6 +184,8 @@ const ScenarioContent = ({
             timetableItemToEditData={timetableItemToEditData}
             setTimetableItemToEditData={setTimetableItemToEditData}
             scenario={scenario}
+            setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
+            collapsedTimetableEdit={collapsedTimetableEdit}
           />
         )}
         <div

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,7 @@ import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } 
 import type { EditorEntity } from './typesEditorEntity';
 
 const Editor = () => {
+  const [showPanelContainer, setShowPanelContainer] = useState(true);
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -419,24 +421,42 @@ const Editor = () => {
                 : actions;
             })}
           </div>
-          <div className="panel-container">
-            {!userCanEditInfra && (
-              <div className="infra-editor-warning-banner bg-yellow">
-                {t('Editor.infra-errors.infra-readonly')}
-              </div>
-            )}
-            {isLocked && userCanEditInfra && (
-              <div className="infra-editor-warning-banner bg-yellow">
-                {t('Editor.infra-errors.infra-locked')}
-              </div>
-            )}
-            {toolAndState.tool.leftPanelComponent && (
-              <div className="panel-box">
-                <toolAndState.tool.leftPanelComponent />
-              </div>
-            )}
-          </div>
+          {showPanelContainer && (
+            <div className="panel-container">
+              <button
+                type="button"
+                className="panel-container-collapse-button"
+                onClick={() => setShowPanelContainer(false)}
+              >
+                <ChevronLeft />
+              </button>
+              {!userCanEditInfra && (
+                <div className="infra-editor-warning-banner bg-yellow">
+                  {t('Editor.infra-errors.infra-readonly')}
+                </div>
+              )}
+              {isLocked && userCanEditInfra && (
+                <div className="infra-editor-warning-banner bg-yellow">
+                  {t('Editor.infra-errors.infra-locked')}
+                </div>
+              )}
+              {toolAndState.tool.leftPanelComponent && (
+                <div className="panel-box">
+                  <toolAndState.tool.leftPanelComponent />
+                </div>
+              )}
+            </div>
+          )}
           <div className="map-wrapper">
+            {!showPanelContainer && (
+              <button
+                type="button"
+                className="panel-container-collapse-button"
+                onClick={() => setShowPanelContainer(true)}
+              >
+                <ChevronRight />
+              </button>
+            )}
             <div className="map">
               <Map
                 {...{
