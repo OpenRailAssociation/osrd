@@ -12,6 +12,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use editoast_authz as authz;
+use editoast_authz::InfraPrivilege;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
@@ -320,20 +321,6 @@ async fn subjects_with_grant_on_resource(
         subjects: subjects_grant,
         stats,
     }))
-}
-
-#[derive(Display, Serialize, ToSchema)]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
-#[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
-#[cfg_attr(test, derive(Debug, Deserialize))]
-pub enum InfraPrivilege {
-    CanRead,
-    CanShareRead,
-    CanWrite,
-    CanShareWrite,
-    CanDelete,
-    CanShareOwnership,
 }
 
 #[utoipa::path(

@@ -9,6 +9,7 @@ pub use regulator::StorageDriver;
 
 pub use model::Group;
 pub use model::Infra;
+pub use model::InfraPrivilege;
 pub use model::Role;
 pub use model::User;
 
