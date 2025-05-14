@@ -9,10 +9,10 @@ type SelectFixedOption =
 // Utility to create standardized options for <Select> components.
 // `getOptionLabel`: Displays the option or a placeholder if empty.
 // `getOptionValue`: Uses the option itself as the value.
-export const createStringSelectOptions = (opts: string[]) => ({
+export const createStandardSelectOptions = <T>(opts: T[]) => ({
   options: opts,
-  getOptionLabel: (option: string) => option,
-  getOptionValue: (option: string) => option,
+  getOptionLabel: (option: T) => option,
+  getOptionValue: (option: T) => option,
 });
 
 // Utility function for handling fixed label-value object arrays

@@ -10,7 +10,7 @@ import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatDateString } from 'utils/date';
 import { Duration } from 'utils/duration';
-import { createStringSelectOptions } from 'utils/uiCoreHelpers';
+import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ArrivalTimeTypes, ScheduleConstraint } from '../../types';
 
@@ -95,7 +95,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
               onArrivalTypeChange(e as ArrivalTimeTypes);
             }
           }}
-          {...createStringSelectOptions(
+          {...createStandardSelectOptions(
             isOrigin
               ? ['preciseTime', 'respectDestinationSchedule']
               : ['preciseTime', 'asSoonAsPossible']
