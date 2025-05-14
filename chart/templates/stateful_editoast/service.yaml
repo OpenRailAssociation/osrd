@@ -1,0 +1,19 @@
+{{- if .Values.services.statefulEditoast.enabled -}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osrd.fullname" . }}-stateful-editoast
+  labels:
+    {{- include "osrd.labels.statefulEditoast" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.statefulEditoast.service.type }}
+  ports:
+    - port: {{ .Values.services.statefulEditoast.service.port }}
+      targetPort: {{ .Values.services.statefulEditoast.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "osrd.selectorLabels.statefulEditoast" . | nindent 4 }}
+
+{{- end }}

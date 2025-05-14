@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne-role
+  namespace: {{ .Release.Namespace }}
+rules:
+# Manage deployments
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "create", "update", "delete", "list"]
+# Manage autoscaling
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "create", "update", "delete", "list"]
+# Manage keda scaled objects
+- apiGroups: ["keda.sh"]
+  resources: ["scaledobjects"]
+  verbs: ["get", "create", "update", "delete", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne-rolebinding
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "osrd.fullname" . }}-osrdyne-sa
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "osrd.fullname" . }}-osrdyne-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne-sa
+  labels:
+    app.kubernetes.io/name: {{ include "osrd.name" . }}
+    helm.sh/chart: {{ include "osrd.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}

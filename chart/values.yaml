@@ -1,0 +1,217 @@
+# Helm overrides
+nameOverride: ""
+fullnameOverride: ""
+
+# Common parameters. Will be applied everywhere can be
+# overriden within the "services" section.
+annotations: {}
+labels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Endpoints used by the application.
+# The variables can be either a string or directly an object that would be used
+# in the env variable that uses it (merged directly).
+endpoints:
+  public: https://my-osrd-instance.org
+  amqp:
+    url: "amqp://osrd:password@rabbitmq:5672/%2f"
+    management: "http://osrd:password@rabbitmq:15672"
+    managementWithVhost: "http://osrd:password@rabbitmq:15672/%2f"
+  postgresql: "postgres://osrd:password@postgres:5432/osrd"
+  postgresqlOpenFGA: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
+  redis: redis://username:pwd@redis:6379/0
+
+# Container images related settings
+imagePullSecrets: []
+pullPolicy: IfNotPresent
+images:
+  editoast: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:dev
+  gateway: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:dev-front
+  core: ghcr.io/openrailassociation/osrd-edge/osrd-core:dev
+  osrdyne: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:dev
+  images: ghcr.io/openrailassociation/osrd-edge/osrd-images:v1.0.2
+  openfga: openfga/openfga:v1.8.6
+
+# Services direct settings and overides
+services:
+  openfga:
+    enabled: false
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 8080
+    readinessProbe:
+      disabled: false
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 3
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+
+  osrdyne:
+    enabled: true
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    livenessProbe:
+      disabled: false
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 3
+    readinessProbe:
+      disabled: false
+    config:
+      pool_id: "core"
+      api_address: "0.0.0.0:80"
+      default_message_ttl:
+      max_length:
+      max_length_bytes:
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+
+  images:
+    replicaCount: 1
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+
+  core:
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+    config:
+      telemetry: null
+    autoscaling:
+      type: NoScaling
+
+  gateway:
+    enabled: true
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    ingress:
+      enabled: false
+      className: ""
+      domains:
+        - osrd.local
+      secretName: osrd-gateway-tls
+      annotations: {}
+      tls: []
+    config:
+      auth:
+        providers:
+          - type: "Mocked"
+            provider_id: "mocked"
+            username: "osrd-admin"
+            require_login: false
+      tracing:
+        enabled: false
+        type: ""
+        config: {}
+      trusted_proxies:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
+    livenessProbe:
+      disabled: false
+    readinessProbe:
+      disabled: false
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+    volumes: []
+    volumeMounts: []
+
+  editoast:
+    enabled: true
+    replicaCount: 2
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    livenessProbe:
+      disabled: false
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 3
+    readinessProbe:
+      disabled: false
+      initialDelaySeconds: 05
+      periodSeconds: 10
+      timeoutSeconds: 3
+    hpa:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 80
+      annotations: {}
+      labels: {}
+    annotations: {}
+    init:
+      enabled: true
+      extend: ""
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []
+
+  statefulEditoast:
+    enabled: true
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 80
+      targetPort: 80
+    livenessProbe:
+      disabled: false
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 3
+    readinessProbe:
+      disabled: false
+      initialDelaySeconds: 05
+      periodSeconds: 10
+      timeoutSeconds: 3
+    annotations: {}
+    labels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    resources: {}
+    env: []

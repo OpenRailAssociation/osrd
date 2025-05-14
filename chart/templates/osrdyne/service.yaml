@@ -1,0 +1,17 @@
+{{- if .Values.services.osrdyne.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osrd.fullname" . }}-osrdyne
+  labels:
+    {{- include "osrd.labels.osrdyne" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.osrdyne.service.type }}
+  ports:
+    - port: {{ .Values.services.osrdyne.service.port }}
+      targetPort: {{ .Values.services.osrdyne.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "osrd.selectorLabels.osrdyne" . | nindent 4 }}
+{{- end }}

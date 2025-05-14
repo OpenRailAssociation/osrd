@@ -1,0 +1,128 @@
+{{- if .Values.services.statefulEditoast.enabled -}}
+
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.statefulEditoast.annotations | default dict) }}
+{{- $generatedLabels := include "osrd.labels.statefulEditoast" . | fromYaml }}
+{{- $mergedLabels := merge (.Values.labels | default dict) (.Values.services.statefulEditoast.labels | default dict) $generatedLabels }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "osrd.fullname" . }}-stateful-editoast
+  labels:
+    {{- toYaml $mergedLabels | nindent 4 }}
+  annotations:
+    {{- toYaml $mergedAnnotations | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "osrd.selectorLabels.statefulEditoast" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml $mergedLabels | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "osrd.name" . }}-stateful-editoast
+          image: "{{ .Values.images.editoast }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.statefulEditoast.service.port }}
+              protocol: TCP
+
+          {{- if not .Values.services.statefulEditoast.livenessProbe.disabled }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - "-c"
+                - 'ps ax | grep -q "editoast" && /usr/local/bin/editoast healthcheck'
+            initialDelaySeconds: {{ .Values.services.statefulEditoast.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.services.statefulEditoast.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.services.statefulEditoast.livenessProbe.timeoutSeconds }}
+          {{- end }}
+
+          {{- if not .Values.services.statefulEditoast.readinessProbe.disabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.services.statefulEditoast.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.services.statefulEditoast.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.services.statefulEditoast.readinessProbe.timeoutSeconds }}
+          {{- end }}
+
+          env:
+            - name: EDITOAST_PORT
+              value: "{{ .Values.services.statefulEditoast.service.targetPort }}"
+
+            - name: OSRDYNE_API_URL
+              value: http://{{ include "osrd.fullname" . }}-osrdyne
+
+            - name: ROOT_URL
+              value: "{{ .Values.endpoints.public }}/api"
+
+            - name: OSRD_MQ_URL
+              {{- $amqp := .Values.endpoints.amqp.url }}
+              {{- if eq (kindOf $amqp) "map" }}
+              valueFrom:
+                {{- toYaml $amqp.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $amqp }}"
+              {{- end }}
+
+            - name: DATABASE_URL
+              {{- $postgresql := .Values.endpoints.postgresql }}
+              {{- if eq (kindOf $postgresql) "map" }}
+              valueFrom:
+                {{- toYaml $postgresql.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $postgresql }}"
+              {{- end }}
+
+            - name: VALKEY_URL
+              {{- $redis := .Values.endpoints.redis }}
+              {{- if eq (kindOf $redis) "map" }}
+              valueFrom:
+                {{- toYaml $redis.valueFrom | nindent 16 }}
+              {{- else }}
+              value: "{{ $redis }}"
+              {{- end }}
+
+            - name: EDITOAST_OPENFGA_URL
+              value: "http://{{ include "osrd.fullname" . }}-openfga:{{ .Values.services.openfga.service.port }}"
+
+            {{- with .Values.services.editoast.env | default dict }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+            {{- with .Values.services.statefulEditoast.env | default dict }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.services.statefulEditoast.resources | nindent 12 }}
+
+      nodeSelector:
+        {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.gateway.nodeSelector | default dict)) | nindent 8 }}
+
+      affinity:
+        {{- toYaml (merge (.Values.affinity | default dict) (.Values.services.gateway.affinity | default dict)) | nindent 8 }}
+
+      tolerations:
+        {{- with .Values.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.services.statefulEditoast.tolerations | default dict }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

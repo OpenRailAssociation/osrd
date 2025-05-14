@@ -1,0 +1,35 @@
+name: Publish Helm Chart to GHCR
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set Name and Version
+        run: |
+          CHART_NAME="osrd"
+          CHART_VERSION="${{ github.event.release.tag_name }}"
+          echo "CHART_NAME=$CHART_NAME" >> $GITHUB_ENV
+          echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+          sed -i "s/NAME_REPLACE_ME/$CHART_NAME/" ./chart/Chart.yaml
+          sed -i "s/VERSION_REPLACE_ME/$CHART_VERSION/" ./chart/Chart.yaml
+
+      - name: Lint Helm Chart
+        run: helm lint ./chart
+
+      - name: Save and Push Helm Chart to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+          helm package ./chart
+          echo "Pushing to oci://ghcr.io/openrailassociation/${CHART_NAME}:${CHART_VERSION}"
+          helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://ghcr.io/openrailassociation/osrd-charts

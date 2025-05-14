@@ -1,0 +1,19 @@
+{{- if .Values.services.openfga.enabled -}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "osrd.fullname" . }}-openfga
+  labels:
+    {{- include "osrd.labels.openfga" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.openfga.service.type }}
+  ports:
+    - port: {{ .Values.services.openfga.service.port }}
+      targetPort: {{ .Values.services.openfga.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "osrd.selectorLabels.openfga" . | nindent 4 }}
+
+{{- end }}
