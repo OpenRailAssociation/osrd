@@ -42,7 +42,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const { openModal } = useModal();
 
-  const { pathProperties, setPathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =
+  const { pathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =
     useManageTrainScheduleContext();
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
@@ -83,7 +83,6 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   };
 
   const resetPathfinding = () => {
-    setPathProperties(undefined);
     notifyRestrictionResetWarning();
     launchPathfinding([null, null]);
   };
