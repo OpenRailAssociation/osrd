@@ -52,15 +52,7 @@ export default function useCalendar({
     return cx('day-wrapper', classNames);
   };
 
-  const isDateSelectable = (date: Date) => {
-    // Check if the date is within the selectable interval
-    if (!isWithinInterval(date, selectableSlot)) return false;
-
-    // Check if the date is in the currently displayed month
-    if (date.getMonth() !== displayedMonth) return false;
-
-    return true;
-  };
+  const isDateSelectable = (date: Date) => isWithinInterval(date, selectableSlot);
 
   return {
     days: allDays,
