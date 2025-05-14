@@ -2920,6 +2920,65 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
+  /similar_schedules:
+    post:
+      tags:
+      - similar_schedules
+      - stdcm
+      - sncf
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - rolling_stock
+              - waypoints
+              properties:
+                rolling_stock:
+                  type: object
+                  required:
+                  - name
+                  properties:
+                    name:
+                      type: string
+                    speed_limit_tag:
+                      type: string
+                      nullable: true
+                waypoints:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SimilarScheduleWaypoint'
+        required: true
+      responses:
+        '200':
+          description: A combination of reference train schedules identifiers similar to the provided schedule
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - similar_schedules
+                properties:
+                  similar_schedules:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - schedule_id
+                      - start_time
+                      - begin
+                      - end
+                      properties:
+                        begin:
+                          $ref: '#/components/schemas/SimilarScheduleWaypointResponse'
+                        end:
+                          $ref: '#/components/schemas/SimilarScheduleWaypointResponse'
+                        schedule_id:
+                          type: string
+                        start_time:
+                          type: string
+                          format: date-time
   /sprites/signaling_systems:
     get:
       tags:
@@ -11298,6 +11357,31 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
+    SimilarScheduleWaypoint:
+      type: object
+      required:
+      - ci
+      - ch
+      - stop
+      properties:
+        ch:
+          type: string
+        ci:
+          type: integer
+          format: int64
+        stop:
+          type: boolean
+    SimilarScheduleWaypointResponse:
+      type: object
+      required:
+      - ci
+      - ch
+      properties:
+        ch:
+          type: string
+        ci:
+          type: integer
+          format: int64
     SimulationResponse:
       oneOf:
       - type: object
