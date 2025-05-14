@@ -16,7 +16,10 @@ import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import getStepLocation from './helpers/getStepLocation';
 
-const matchPathStepAndOp = (step: PathItemLocation, op: SuggestedOP) => {
+export const matchPathStepAndOp = (
+  step: PathItemLocation,
+  op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
+) => {
   if ('operational_point' in step) {
     return step.operational_point === op.opId;
   }
