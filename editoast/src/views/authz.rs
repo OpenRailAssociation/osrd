@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::error::Result;
 use crate::models;
@@ -32,8 +33,11 @@ use super::pagination::PaginationStats;
 
 crate::routes! {
     "/authz" => {
-        "/me" => whoami,
-        "/me/grants" => user_authorizations,
+        "/me" => {
+            whoami,
+            "/privileges" => user_privileges,
+            "/grants" => user_authorizations,
+        },
         "/grants" => update_grants,
         "/{resource_type}/{resource_id}" => subjects_with_grant_on_resource,
         "/grants/{resource_type}"=> privileges_by_resource_type,
@@ -59,7 +63,7 @@ enum SubjectType {
     Group,
 }
 
-#[derive(Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(test, derive(Debug))]
@@ -142,6 +146,62 @@ async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiRespons
     }))
 }
 
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq, Eq))]
+struct ResourcePrivileges {
+    resource_id: i64,
+    privileges: HashSet<InfraPrivilege>,
+}
+
+#[utoipa::path(
+    post,
+    path = "",
+    tag = "authz",
+    request_body(
+        content = inline(HashMap<ResourceType, Vec<i64>>),
+        description = "The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted.",
+    ),
+    responses((
+        status = 200,
+        description = "The privileges of the user sending the request over each requested resource.",
+        body = inline(HashMap<ResourceType, Vec<ResourcePrivileges>>)
+    )),
+)]
+async fn user_privileges(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
+) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
+    let authorizer = auth.authorizer()?;
+
+    let resources = body
+        .into_iter()
+        .flat_map(|(rtype, ids)| std::iter::repeat(rtype).zip(ids.into_iter()));
+
+    let mut result = HashMap::<_, Vec<_>>::new();
+    for (resource_type, resource_id) in resources {
+        match resource_type {
+            ResourceType::Infra => {
+                // check that the infra exists before to check the grants
+                if Infra::exists(&mut db_pool.get().await?, resource_id).await? {
+                    result
+                        .entry(ResourceType::Infra)
+                        .or_default()
+                        .push(ResourcePrivileges {
+                            resource_id,
+                            privileges: authorizer
+                                .infra_privileges(&authz::Infra(resource_id))
+                                .await
+                                .map_err(AuthzError::from)?,
+                        });
+                }
+            }
+        }
+    }
+
+    Ok(Json(result))
+}
+
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
 struct UserResourceGrant {
@@ -154,13 +214,13 @@ struct UserResourceGrant {
     path = "",
     tag = "authz",
     request_body(
-        content = inline(HashMap<Resource, Vec<i64>>),
+        content = inline(HashMap<ResourceType, Vec<i64>>),
         description = "HashMap of resource type with a list of resource id to get the grants for. If a resource doesn't exist, it will be omitted.",
     ),
     responses((
         status = 200,
         description = "Get grants info of the current user for the given resources in body",
-        body = inline(HashMap<Resource, Vec<UserResourceGrant>>)
+        body = inline(HashMap<ResourceType, Vec<UserResourceGrant>>)
     )),
 )]
 async fn user_authorizations(
@@ -475,8 +535,11 @@ async fn update_grants(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     use axum::http::StatusCode;
 
+    use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::test_app;
 
     use super::*;
@@ -487,6 +550,132 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn me_privileges() {
+        let app = test_app!().enable_authorization(true).build();
+        let Infra { id: infra1, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra2, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra3, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra4, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra {
+            id: infra_unused, ..
+        } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let toto = app
+            .user("toto", "Toto")
+            .with_infra_grant(infra1, InfraGrant::Owner)
+            .with_infra_grant(infra2, InfraGrant::Writer)
+            .with_infra_grant(infra3, InfraGrant::Reader)
+            .create();
+
+        let mut privileges = app
+            .fetch(
+                app.post("/authz/me/privileges")
+                    .by_user(&toto)
+                    .json(&json!({
+                       "infra": [infra1, infra2, infra3, infra4]
+                    })),
+            )
+            .assert_status(StatusCode::OK)
+            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .remove(&ResourceType::Infra)
+            .unwrap()
+            .into_iter()
+            .map(
+                |ResourcePrivileges {
+                     resource_id,
+                     privileges,
+                 }| (resource_id, privileges),
+            )
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            privileges.remove(&infra1).unwrap(),
+            HashSet::from([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+                InfraPrivilege::CanDelete,
+                InfraPrivilege::CanShareOwnership,
+            ])
+        );
+        assert_eq!(
+            privileges.remove(&infra2).unwrap(),
+            HashSet::from([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+            ])
+        );
+        assert_eq!(
+            privileges.remove(&infra3).unwrap(),
+            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+        );
+        assert_eq!(privileges.remove(&infra4).unwrap(), HashSet::from([]));
+        assert!(!privileges.contains_key(&infra_unused));
+    }
+
+    // TODO: merge with the previous test once test deadlocks are fixed
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn me_privileges_bis() {
+        let app = test_app!().enable_authorization(true).build();
+        let Infra { id: infra1, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra2, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra3, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra { id: infra4, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let Infra {
+            id: infra_unused, ..
+        } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let tata = app
+            .user("tata", "Tata")
+            .with_infra_grant(infra1, InfraGrant::Reader)
+            .with_infra_grant(infra3, InfraGrant::Reader)
+            .with_infra_grant(infra4, InfraGrant::Owner)
+            .create();
+
+        let mut privileges = app
+            .fetch(
+                app.post("/authz/me/privileges")
+                    .by_user(&tata)
+                    .json(&json!({
+                       "infra": [infra1, infra2, infra3, infra4]
+                    })),
+            )
+            .assert_status(StatusCode::OK)
+            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .remove(&ResourceType::Infra)
+            .unwrap()
+            .into_iter()
+            .map(
+                |ResourcePrivileges {
+                     resource_id,
+                     privileges,
+                 }| (resource_id, privileges),
+            )
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            privileges.remove(&infra1).unwrap(),
+            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead])
+        );
+        assert_eq!(privileges.remove(&infra2).unwrap(), HashSet::from([]));
+        assert_eq!(
+            privileges.remove(&infra3).unwrap(),
+            HashSet::from([InfraPrivilege::CanRead, InfraPrivilege::CanShareRead,])
+        );
+        assert_eq!(
+            privileges.remove(&infra4).unwrap(),
+            HashSet::from([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+                InfraPrivilege::CanDelete,
+                InfraPrivilege::CanShareOwnership
+            ])
+        );
+        assert!(!privileges.contains_key(&infra_unused));
+    }
 
     #[rstest]
     async fn user_authorizations_test() {

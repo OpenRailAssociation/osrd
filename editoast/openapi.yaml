@@ -122,6 +122,45 @@ paths:
                       id:
                         type: integer
                         format: int64
+  /authz/me/privileges:
+    post:
+      tags:
+      - authz
+      requestBody:
+        description: The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '200':
+          description: The privileges of the user sending the request over each requested resource.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - resource_id
+                    - privileges
+                    properties:
+                      privileges:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/InfraPrivilege'
+                        uniqueItems: true
+                      resource_id:
+                        type: integer
+                        format: int64
   /authz/{resource_type}/{resource_id}:
     get:
       tags:

@@ -53,6 +53,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/me/grants`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
+      postAuthzMePrivileges: build.mutation<
+        PostAuthzMePrivilegesApiResponse,
+        PostAuthzMePrivilegesApiArg
+      >({
+        query: (queryArg) => ({ url: `/authz/me/privileges`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1268,6 +1275,19 @@ export type PostAuthzMeGrantsApiResponse =
   };
 export type PostAuthzMeGrantsApiArg = {
   /** HashMap of resource type with a list of resource id to get the grants for. If a resource doesn't exist, it will be omitted. */
+  body: {
+    [key: string]: number[];
+  };
+};
+export type PostAuthzMePrivilegesApiResponse =
+  /** status 200 The privileges of the user sending the request over each requested resource. */ {
+    [key: string]: {
+      privileges: InfraPrivilege[];
+      resource_id: number;
+    }[];
+  };
+export type PostAuthzMePrivilegesApiArg = {
+  /** The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted. */
   body: {
     [key: string]: number[];
   };
