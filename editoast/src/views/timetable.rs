@@ -1,5 +1,6 @@
 pub mod occupancy_blocks;
 pub mod paced_train;
+pub mod similar_schedules;
 pub mod simulation;
 pub mod stdcm;
 pub mod train_schedule;
@@ -82,6 +83,7 @@ crate::routes! {
     },
     &paced_train,
     &train_schedule,
+    &similar_schedules,
 }
 
 editoast_common::schemas! {
@@ -91,6 +93,7 @@ editoast_common::schemas! {
     paced_train::schemas(),
     train_schedule::schemas(),
     simulation::schemas(),
+    similar_schedules::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]

@@ -19,11 +19,13 @@ export const addTagTypes = [
   'scenarios',
   'rolling_stock_livery',
   'search',
+  'similar_schedules',
+  'stdcm',
+  'sncf',
   'sprites',
   'stdcm_search_environment',
   'stdcm_log',
   'temporary_speed_limits',
-  'stdcm',
   'work_schedules',
 ] as const;
 const injectedRtkApi = api
@@ -863,6 +865,13 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ['search'],
+      }),
+      postSimilarSchedules: build.mutation<
+        PostSimilarSchedulesApiResponse,
+        PostSimilarSchedulesApiArg
+      >({
+        query: (queryArg) => ({ url: `/similar_schedules`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['similar_schedules', 'stdcm', 'sncf'],
       }),
       getSpritesSignalingSystems: build.query<
         GetSpritesSignalingSystemsApiResponse,
@@ -1919,6 +1928,24 @@ export type PostSearchApiArg = {
   page?: number;
   pageSize?: number | null;
   searchPayload: SearchPayload;
+};
+export type PostSimilarSchedulesApiResponse =
+  /** status 200 A combination of reference train schedules identifiers similar to the provided schedule */ {
+    similar_schedules: {
+      begin: SimilarScheduleWaypointResponse;
+      end: SimilarScheduleWaypointResponse;
+      schedule_id: string;
+      start_time: string;
+    }[];
+  };
+export type PostSimilarSchedulesApiArg = {
+  body: {
+    rolling_stock: {
+      name: string;
+      speed_limit_tag?: string | null;
+    };
+    waypoints: SimilarScheduleWaypoint[];
+  };
 };
 export type GetSpritesSignalingSystemsApiResponse =
   /** status 200 List of supported signaling systems */ string[];
@@ -3898,6 +3925,15 @@ export type SearchPayload = {
   /** The object kind to query - run `editoast search list` to get all possible values */
   object: string;
   query: SearchQuery;
+};
+export type SimilarScheduleWaypointResponse = {
+  ch: string;
+  ci: number;
+};
+export type SimilarScheduleWaypoint = {
+  ch: string;
+  ci: number;
+  stop: boolean;
 };
 export type StdcmSearchEnvironment = {
   electrical_profile_set_id?: number;
