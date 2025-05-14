@@ -138,14 +138,9 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
       }
     } else {
       updatedOPs = updatedOPs.map((op) => {
-        if (
-          matchPathStepAndOp(step, op) &&
-          op.kp === step.kp &&
-          step.positionOnPath === op.positionOnPath
-        ) {
+        if (step.id === op.pathStepId) {
           return {
             ...op,
-            pathStepId: step.id,
             stopFor,
             arrival,
             receptionSignal,
