@@ -100,6 +100,10 @@ pub struct ProxyTarget {
     pub tracing_name: Option<String>,
     /// Block paths on this target
     pub blocked_paths: Option<Vec<String>>,
+    /// Path must not match the following set of regexes
+    pub routing_exclude: Option<Vec<String>>,
+    /// Paths must match the following set of regexes
+    pub routing_only: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]
