@@ -24,15 +24,50 @@ data:
     {{- end }}
 
     [[targets]]
-    prefix = "/api/infra"
-    upstream = "http://{{ include "osrd.fullname" . }}-stateful-editoast/infra"
+    prefix = "/api"
+    upstream = "http://{{ include "osrd.fullname" . }}-stateful-editoast"
     require_auth = true
+    blocked_headers = ["x-osrd-skip-authz"]
+    {{- if .Values.services.statefulEditoast.enabled }}
+    routing_only = [
+      "^DELETE /infra/\\d+(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/attached/[^/]+(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/auto_fixes(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/delimited_area(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/routes/track_ranges(?:\\?|$|/$)",
+      "^GET /infra/\\d+/lines/\\d+/bbox(?:\\?|$|/$)",
+      "^GET /infra/\\d+/switch_types(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/pathfinding(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/routes/nodes(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/split_track_section(?:\\?|$|/$)",
+      "^POST /api/infra/railjson(?:\\?|$|/$)",
+      "^POST /api/infra/refresh(?:\\?|$|/$)",
+    ]
+    {{- end }}
 
     [[targets]]
     prefix = "/api"
     upstream = "http://{{ include "osrd.fullname" . }}-editoast"
     require_auth = true
     blocked_headers = ["x-osrd-skip-authz"]
+    {{- if .Values.services.statefulEditoast.enabled }}
+    routing_exclude = [
+      "^DELETE /infra/\\d+(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/attached/[^/]+(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/auto_fixes(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/delimited_area(?:\\?|$|/$)",
+      "^GET /api/infra/\\d+/routes/track_ranges(?:\\?|$|/$)",
+      "^GET /infra/\\d+/lines/\\d+/bbox(?:\\?|$|/$)",
+      "^GET /infra/\\d+/switch_types(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/pathfinding(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/routes/nodes(?:\\?|$|/$)",
+      "^POST /api/infra/\\d+/split_track_section(?:\\?|$|/$)",
+      "^POST /api/infra/railjson(?:\\?|$|/$)",
+      "^POST /api/infra/refresh(?:\\?|$|/$)",
+    ]
+    {{- end }}
 
     [[targets]]
     prefix = "/images"
