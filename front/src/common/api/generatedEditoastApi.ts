@@ -38,13 +38,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/grants`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
-      getAuthzGrantsByResourceType: build.query<
-        GetAuthzGrantsByResourceTypeApiResponse,
-        GetAuthzGrantsByResourceTypeApiArg
-      >({
-        query: (queryArg) => ({ url: `/authz/grants/${queryArg.resourceType}` }),
-        providesTags: ['authz'],
-      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
@@ -1253,13 +1246,6 @@ export type PostAuthzGrantsApiArg = {
         revoke: RevokeBody[];
       };
 };
-export type GetAuthzGrantsByResourceTypeApiResponse =
-  /** status 200 Get privileges for each grant associated to the resource type */ {
-    [key: string]: InfraPrivilege[];
-  };
-export type GetAuthzGrantsByResourceTypeApiArg = {
-  resourceType: ResourceType;
-};
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
   name: string;
@@ -2275,6 +2261,7 @@ export type RevokeBody = {
   resource_type: ResourceType;
   subject_id: number;
 };
+export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type InfraPrivilege =
   | 'can_read'
   | 'can_share_read'
@@ -2282,7 +2269,6 @@ export type InfraPrivilege =
   | 'can_share_write'
   | 'can_delete'
   | 'can_share_ownership';
-export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type PaginationStats = {
   /** The total number of items */
   count: number;
