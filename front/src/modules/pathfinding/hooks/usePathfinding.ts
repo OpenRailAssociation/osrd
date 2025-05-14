@@ -46,10 +46,8 @@ const initialPathfindingState = {
 
 const usePathfinding = ({
   rollingStockId: currentRollingStockId,
-  setPathProperties,
 }: {
   rollingStockId: number | undefined;
-  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
 }) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
@@ -59,6 +57,7 @@ const usePathfinding = ({
   const { infra, reloadCount, setIsInfraError } = useInfraStatus({ infraId });
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
+  const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
   const [getRollingStockById] =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useLazyQuery();
@@ -329,6 +328,7 @@ const usePathfinding = ({
   return {
     launchPathfinding,
     pathfindingState,
+    pathProperties,
     infraInfo: {
       infra,
       reloadCount,

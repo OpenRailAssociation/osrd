@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode, useState } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -20,7 +20,6 @@ import type { ManageTrainSchedulePathProperties } from '../types';
 
 type ManageTrainScheduleContextType = {
   pathProperties?: ManageTrainSchedulePathProperties;
-  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
   voltageRanges: RangedValue[];
   launchPathfinding: (
     steps: (PathStep | null)[],
@@ -42,11 +41,8 @@ export const ManageTrainScheduleContextProvider = ({
 }: ManageTrainScheduleContextProviderProps) => {
   const pathSteps = useSelector(getPathSteps);
 
-  const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
-
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
-  const { launchPathfinding, pathfindingState, infraInfo } = usePathfinding({
-    setPathProperties,
+  const { launchPathfinding, pathfindingState, infraInfo, pathProperties } = usePathfinding({
     rollingStockId,
   });
 
@@ -63,7 +59,6 @@ export const ManageTrainScheduleContextProvider = ({
   const providedContext = useMemo(
     () => ({
       pathProperties,
-      setPathProperties,
       voltageRanges,
       launchPathfinding,
       pathfindingState,
@@ -72,7 +67,6 @@ export const ManageTrainScheduleContextProvider = ({
     }),
     [
       pathProperties,
-      setPathProperties,
       voltageRanges,
       launchPathfinding,
       pathfindingState,
