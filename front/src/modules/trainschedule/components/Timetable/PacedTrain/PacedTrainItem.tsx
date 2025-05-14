@@ -276,7 +276,7 @@ const PacedTrainItem = ({
             </span>
           </div>
           <div className="duration-time">
-            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration.ms)}</span>
+            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration)}</span>
           </div>
         </div>
       )}

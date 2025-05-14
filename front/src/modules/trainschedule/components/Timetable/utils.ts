@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 
+import type { Duration } from 'utils/duration';
+
 import specialCodeDictionary from './consts';
 import type { TimetableItemWithDetails } from './types';
 
@@ -37,4 +39,5 @@ export const roundAndFormatToNearestMinute = (d: Date) =>
     .add(d.getSeconds() >= 30 ? 1 : 0, 'minute')
     .format('HH:mm');
 
-export const formatTrainDuration = (ms: number) => dayjs.duration(ms).format('HH[h]mm');
+export const formatTrainDuration = (duration: Duration) =>
+  dayjs.duration(duration.ms).format('HH[h]mm');
