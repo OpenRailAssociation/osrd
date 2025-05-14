@@ -99,7 +99,13 @@ const useStdcm = ({
       path: response.status === 'conflicts' ? response.pathfinding_result : response.path,
     } as StdcmResponse;
 
-    const pathProperties = await fetchPathProperties(formattedResponse.path, infraId, dispatch);
+    const pathSteps = payload.body.steps.map((step) => ({ ...step.location, id: nextId() }));
+    const pathProperties = await fetchPathProperties(
+      formattedResponse.path,
+      pathSteps,
+      infraId,
+      dispatch
+    );
 
     // If the response is successful compute the chart data, otherwise only include conflicts.
     let outputs;
@@ -109,7 +115,7 @@ const useStdcm = ({
         timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
+        path: pathSteps,
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',

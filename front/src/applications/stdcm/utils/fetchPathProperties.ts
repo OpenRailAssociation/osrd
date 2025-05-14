@@ -8,6 +8,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 /**
@@ -15,6 +16,7 @@ import type { AppDispatch } from 'store';
  */
 const fetchPathProperties = async (
   path: PathfindingResultSuccess,
+  pathSteps: PathStep[],
   infraId: number,
   dispatch: AppDispatch
 ): Promise<StdcmPathProperties> => {
@@ -65,6 +67,7 @@ const fetchPathProperties = async (
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operationalPointsWithMetadata,
+      pathSteps,
       result.geometry,
       path.length
     );

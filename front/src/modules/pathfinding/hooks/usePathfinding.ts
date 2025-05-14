@@ -163,6 +163,7 @@ const usePathfinding = ({
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operational_points,
+      pathStepsInput,
       geometry,
       pathResult.length
     );

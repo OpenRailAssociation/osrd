@@ -16,29 +16,6 @@ import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import getStepLocation from './helpers/getStepLocation';
 
-export const formatSuggestedOperationalPoints = (
-  operationalPoints: Array<
-    NonNullable<Required<PathProperties['operational_points']>>[number] & {
-      metadata?: NonNullable<SuggestedOP['metadata']>;
-    }
-  >,
-  geometry: GeoJsonLineString,
-  pathLength: number
-): SuggestedOP[] =>
-  operationalPoints.map((op) => ({
-    opId: op.id,
-    name: op.extensions?.identifier?.name,
-    uic: op.extensions?.identifier?.uic,
-    ch: op.extensions?.sncf?.ch,
-    kp: op.part.extensions?.sncf?.kp,
-    trigram: op.extensions?.sncf?.trigram,
-    offsetOnTrack: op.part.position,
-    track: op.part.track,
-    positionOnPath: op.position,
-    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position),
-    metadata: op?.metadata,
-  }));
-
 export const matchPathStepAndOp = (
   step: PathItemLocation,
   op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
@@ -53,6 +30,43 @@ export const matchPathStepAndOp = (
     return step.trigram === op.trigram && step.secondary_code === op.ch;
   }
   return step.track === op.track && step.offset === op.offsetOnTrack;
+};
+
+const populatePathStepIdInSuggestedOPs = (
+  suggestedOPs: SuggestedOP[],
+  pathSteps: PathStep[]
+): SuggestedOP[] =>
+  suggestedOPs.map((op) => ({
+    ...op,
+    pathStepId: pathSteps.find(
+      (pathStep) => matchPathStepAndOp(pathStep, op) // TODO: && op.kp === pathStep.kp && step.positionOnPath === op.positionOnPath
+    )?.id,
+  }));
+
+export const formatSuggestedOperationalPoints = (
+  operationalPoints: Array<
+    NonNullable<Required<PathProperties['operational_points']>>[number] & {
+      metadata?: NonNullable<SuggestedOP['metadata']>;
+    }
+  >,
+  pathSteps: PathStep[],
+  geometry: GeoJsonLineString,
+  pathLength: number
+): SuggestedOP[] => {
+  const suggestedOPs = operationalPoints.map((op) => ({
+    opId: op.id,
+    name: op.extensions?.identifier?.name,
+    uic: op.extensions?.identifier?.uic,
+    ch: op.extensions?.sncf?.ch,
+    kp: op.part.extensions?.sncf?.kp,
+    trigram: op.extensions?.sncf?.trigram,
+    offsetOnTrack: op.part.position,
+    track: op.part.track,
+    positionOnPath: op.position,
+    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position),
+    metadata: op?.metadata,
+  }));
+  return populatePathStepIdInSuggestedOPs(suggestedOPs, pathSteps);
 };
 
 export const getPathfindingQuery = ({
