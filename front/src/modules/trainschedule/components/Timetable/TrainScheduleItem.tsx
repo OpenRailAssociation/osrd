@@ -256,7 +256,7 @@ const TrainScheduleItem = ({
               </span>
             </div>
             <div className="duration-time">
-              <span data-testid="train-duration">{formatTrainDuration(train.duration!.ms)}</span>
+              <span data-testid="train-duration">{formatTrainDuration(train.duration!)}</span>
             </div>
           </div>
         )}

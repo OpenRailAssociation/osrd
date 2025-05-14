@@ -191,9 +191,7 @@ const OccurrenceItem = ({
           </div>
           {occurrence.duration && (
             <div className="duration-time">
-              <span data-testid="train-duration">
-                {formatTrainDuration(occurrence.duration.ms)}
-              </span>
+              <span data-testid="train-duration">{formatTrainDuration(occurrence.duration)}</span>
             </div>
           )}
         </div>
