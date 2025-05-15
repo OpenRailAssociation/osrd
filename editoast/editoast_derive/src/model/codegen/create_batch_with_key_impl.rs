@@ -15,6 +15,7 @@ pub(crate) struct CreateBatchWithKeyImpl {
     pub(super) field_count: usize,
     pub(super) identifier: Identifier,
     pub(super) columns: Vec<syn::Ident>,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for CreateBatchWithKeyImpl {
@@ -29,6 +30,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
             field_count,
             identifier,
             columns,
+            error,
         } = self;
         let ty = identifier.get_type();
         let span_name = format!("model:create_batch_with_key<{model}>");
@@ -47,20 +49,22 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
                     .map_ok(|row| {
                         let model = <#model as Model>::from_row(row);
                         (model.get_id(), model)
                     })
                     .try_collect::<Vec<_>>()
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::CreateBatchWithKey<#ty> for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create_batch_with_key<
                     I: std::iter::IntoIterator<Item = #changeset> + Send,
@@ -68,7 +72,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
                 >(
                     conn: &mut editoast_models::DbConnection,
                     values: I,
-                ) -> std::result::Result<C, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<C, Self::Error> {
                     use crate::models::Identifiable;
                     use crate::models::Model;
                     use std::ops::DerefMut;

@@ -16,6 +16,7 @@ pub(crate) struct UpdateBatchImpl {
     pub(super) identifier: Identifier,
     pub(super) primary_key_column: syn::Ident,
     pub(super) columns: Vec<syn::Ident>,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for UpdateBatchImpl {
@@ -30,6 +31,7 @@ impl ToTokens for UpdateBatchImpl {
             changeset,
             primary_key_column,
             columns,
+            error,
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
@@ -60,11 +62,11 @@ impl ToTokens for UpdateBatchImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
                     .map_ok(<#model as Model>::from_row)
                     .try_collect::<Vec<_>>()
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
@@ -79,19 +81,21 @@ impl ToTokens for UpdateBatchImpl {
                 .returning((#(dsl::#columns,)*))
                 .load_stream::<#row>(conn.write().await.deref_mut())
                 .await
-                .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
                 .map_ok(|row| {
                     let model = <#model as Model>::from_row(row);
                     (model.get_id(), model)
                 })
                 .try_collect::<Vec<_>>()
                 .await
-                .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
         });
 
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::UpdateBatchUnchecked<#model, #ty> for #changeset {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_ids))]
                 async fn update_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send,
@@ -100,7 +104,7 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C, <#model as crate::models::Model>::Error> {
+                ) -> crate::error::Result<C, Self::Error> {
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
@@ -121,7 +125,7 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C, <#model as crate::models::Model>::Error> {
+                ) -> crate::error::Result<C, Self::Error> {
                     use crate::models::Identifiable;
                     use crate::models::Model;
                     use #table_mod::dsl;

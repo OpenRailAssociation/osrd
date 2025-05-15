@@ -12,6 +12,7 @@ pub(crate) struct CreateBatchImpl {
     pub(super) changeset: syn::Ident,
     pub(super) field_count: usize,
     pub(super) columns: Vec<syn::Ident>,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for CreateBatchImpl {
@@ -25,6 +26,7 @@ impl ToTokens for CreateBatchImpl {
             changeset,
             field_count,
             columns,
+            error,
         } = self;
         let span_name = format!("model:create_batch<{model}>");
 
@@ -42,17 +44,19 @@ impl ToTokens for CreateBatchImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
                     .map_ok(<#model as Model>::from_row)
                     .try_collect::<Vec<_>>()
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::CreateBatch for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create_batch<
                     I: std::iter::IntoIterator<Item = #changeset> + Send,
@@ -60,7 +64,7 @@ impl ToTokens for CreateBatchImpl {
                 >(
                     conn: &mut editoast_models::DbConnection,
                     values: I,
-                ) -> std::result::Result<C, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<C, Self::Error> {
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;

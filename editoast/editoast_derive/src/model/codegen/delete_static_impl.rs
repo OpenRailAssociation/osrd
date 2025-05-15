@@ -8,6 +8,7 @@ pub(crate) struct DeleteStaticImpl {
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
     pub(super) identifier: Identifier,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for DeleteStaticImpl {
@@ -17,6 +18,7 @@ impl ToTokens for DeleteStaticImpl {
             table_name,
             table_mod,
             identifier,
+            error,
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
@@ -27,11 +29,13 @@ impl ToTokens for DeleteStaticImpl {
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::DeleteStatic<#ty> for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn delete_static(
                     conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> std::result::Result<bool, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<bool, Self::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
@@ -41,7 +45,7 @@ impl ToTokens for DeleteStaticImpl {
                         .execute(conn.write().await.deref_mut())
                         .await
                         .map(|n| n == 1)
-                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
+                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

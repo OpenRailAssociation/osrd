@@ -6,7 +6,6 @@ use editoast_models::DbConnection;
 use crate::models::PreferredId;
 
 use super::Model;
-use super::ModelError;
 
 /// A couple ([Model] mutable reference, a [Model] changeset instance)
 ///
@@ -44,7 +43,10 @@ impl<M: Model> Patch<'_, M> {
     ///
     /// If this method is not implemented for your model for whatever reason, just
     /// use [Save::save].
-    pub async fn apply<K>(self, conn: &mut DbConnection) -> Result<(), M::Error>
+    pub async fn apply<K>(
+        self,
+        conn: &mut DbConnection,
+    ) -> Result<(), <<M as Model>::Changeset as Update<K, M>>::Error>
     where
         for<'b> K: Send + Clone + 'b,
         M: Model + PreferredId<K> + Send,
@@ -54,7 +56,9 @@ impl<M: Model> Patch<'_, M> {
         let updated: M = self
             .changeset
             .update_or_fail(conn, id, || {
-                M::Error::from(editoast_models::model::Error::from(NotFound))
+                <<M as Model>::Changeset as Update<K, M>>::Error::from(
+                    editoast_models::model::Error::from(NotFound),
+                )
             })
             .await?;
         *self.model = updated;
@@ -74,13 +78,15 @@ where
     K: Send,
     M: Model,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Updates the row #`id` with the changeset values and returns the updated model
-    async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<M>, M::Error>;
+    async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<M>, Self::Error>;
 
     /// Just like [Update::update] but returns `Err(fail())` if the row was not found
     async fn update_or_fail<E, F>(self, conn: &mut DbConnection, id: K, fail: F) -> Result<M, E>
     where
-        E: From<M::Error>,
+        E: From<Self::Error>,
         F: FnOnce() -> E + Send,
     {
         match self.update(conn, id).await {
@@ -96,6 +102,8 @@ where
 /// This trait is automatically implemented for all models that implement
 /// [Update].
 pub trait Save<K: Send>: Model {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Persists the model instance to the database
     ///
     /// # Example
@@ -115,12 +123,14 @@ where
     M: Model + PreferredId<K> + Clone + Send,
     <M as Model>::Changeset: Update<K, M> + Send,
 {
-    async fn save(&mut self, conn: &mut DbConnection) -> Result<(), M::Error> {
+    type Error = <<M as Model>::Changeset as Update<K, M>>::Error;
+
+    async fn save(&mut self, conn: &mut DbConnection) -> Result<(), Self::Error> {
         let id = self.get_id();
         let changeset = <M as Model>::Changeset::from(self.clone()); // FIXME: I don't like that clone, maybe a ChangesetOwned/Changeset pair would work?
         *self = changeset
             .update_or_fail(conn, id, || {
-                M::Error::from(editoast_models::model::Error::from(NotFound))
+                Self::Error::from(editoast_models::model::Error::from(NotFound))
             })
             .await?;
         Ok(())
@@ -139,6 +149,8 @@ where
     M: Model,
     K: Send + Clone,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Updates a batch of rows in the database given an iterator of keys
     ///
     /// Returns a collection of the updated rows. That collection can contain
@@ -153,7 +165,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C, M::Error>;
+    ) -> Result<C, Self::Error>;
 
     /// Just like [UpdateBatchUnchecked::update_batch_unchecked] but the returned models are paired with their key
     ///
@@ -169,7 +181,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C, M::Error>;
+    ) -> Result<C, Self::Error>;
 }
 
 /// Describes how a [Model] can be updated in the database given a batch of its changesets
@@ -206,7 +218,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>), M::Error>
+    ) -> Result<(C, std::collections::HashSet<K>), Self::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -243,7 +255,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>), M::Error>
+    ) -> Result<(C, std::collections::HashSet<K>), Self::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -291,7 +303,7 @@ where
             + std::iter::Extend<M>
             + std::iter::FromIterator<M>
             + std::iter::IntoIterator<Item = M>,
-        E: From<M::Error>,
+        E: From<Self::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch::<_, C>(conn, ids).await?;
@@ -324,7 +336,7 @@ where
             + std::iter::Extend<(K, M)>
             + std::iter::FromIterator<(K, M)>
             + std::iter::IntoIterator<Item = (K, M)>,
-        E: From<M::Error>,
+        E: From<Self::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch_with_key::<_, C>(conn, ids).await?;

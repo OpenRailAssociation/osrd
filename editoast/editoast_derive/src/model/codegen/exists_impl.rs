@@ -8,6 +8,7 @@ pub(crate) struct ExistsImpl {
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
     pub(super) identifier: Identifier,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for ExistsImpl {
@@ -17,6 +18,7 @@ impl ToTokens for ExistsImpl {
             table_name,
             table_mod,
             identifier,
+            error,
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
@@ -27,11 +29,13 @@ impl ToTokens for ExistsImpl {
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::Exists<#ty> for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn exists(
                     conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> std::result::Result<bool, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<bool, Self::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
@@ -40,7 +44,7 @@ impl ToTokens for ExistsImpl {
                     diesel::select(diesel::dsl::exists(dsl::#table_name.#(filter(#eqs)).*))
                         .get_result(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
+                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

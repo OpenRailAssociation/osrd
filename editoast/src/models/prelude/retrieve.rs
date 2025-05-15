@@ -18,6 +18,8 @@ where
     K: Send,
     Self: Send,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     #[deprecated = "use Retrieve::retrieve_real instead"]
     async fn retrieve(conn: &mut DbConnection, id: K) -> Result<Option<Self>> {
         match Self::retrieve_real(conn.clone(), id).await {
@@ -74,6 +76,8 @@ where
     K: Send,
     Self: Send,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Returns whether the row #`id` exists in the database
     async fn exists(conn: &mut DbConnection, id: K) -> Result<bool, Self::Error>;
 
@@ -103,6 +107,8 @@ where
     K: Send + Debug,
     Self: Send,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
     /// Returns a collection of the retrieved rows. That collection can contain

@@ -48,7 +48,7 @@ async fn check_exists<T>(
 ) -> Result<(), Box<dyn Error + Send + Sync>>
 where
     T: Exists<i64>,
-    <T as Model>::Error: Sync + 'static,
+    <T as Exists<i64>>::Error: Sync + 'static,
 {
     if !T::exists(conn, object_id).await? {
         let err_msg = format!("❌ {readable_name} not found, id: {object_id}");

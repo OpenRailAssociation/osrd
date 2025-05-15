@@ -8,6 +8,7 @@ pub(crate) struct CreateImpl {
     pub(super) changeset: syn::Ident,
     pub(super) empty_changeset: bool,
     pub(super) columns: Vec<syn::Ident>,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for CreateImpl {
@@ -19,6 +20,7 @@ impl ToTokens for CreateImpl {
             changeset,
             empty_changeset,
             columns,
+            error,
         } = self;
         let span_name = format!("model:create<{model}>");
 
@@ -32,11 +34,13 @@ impl ToTokens for CreateImpl {
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::Create<#model> for #changeset {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
                     conn: &mut editoast_models::DbConnection,
-                ) -> std::result::Result<#model, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<#model, Self::Error> {
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
@@ -46,7 +50,7 @@ impl ToTokens for CreateImpl {
                         .get_result::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
-                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
+                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });
