@@ -68,7 +68,7 @@ test.describe('Validate the Scenario creation workflow', () => {
 
     // Navigate to the specific scenario page
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-    await scenarioPage.openScenarioByTestId(scenario.name);
+    await scenarioPage.openScenarioByName(scenario.name);
 
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(scenario.infra_id);
@@ -98,6 +98,14 @@ test.describe('Validate the Scenario creation workflow', () => {
       `${scenarioData.tags.join('')}update-tag`
     );
 
+    // Reopen the updated scenario and validate the updated data
+    await scenarioPage.openScenarioByName(updatedScenarioName);
+    await scenarioPage.validateScenarioData({
+      name: updatedScenarioName,
+      description: `${scenario.description} (updated)`,
+      infraName: infrastructureName,
+    });
+
     // Delete the scenario
     await deleteScenario(project.id, study.id, updatedScenarioName);
   });
@@ -109,10 +117,10 @@ test.describe('Validate the Scenario creation workflow', () => {
 
     // Navigate to the specific scenario page
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-    await scenarioPage.openScenarioByTestId(scenario.name);
+    await scenarioPage.openScenarioByName(scenario.name);
 
     // Initiate the deletion of the scenario
-    await scenarioPage.clickOnUpdateScenario();
+    await scenarioPage.openScenarioEditForm();
     await scenarioPage.deleteScenario();
 
     // Navigate back to the study page

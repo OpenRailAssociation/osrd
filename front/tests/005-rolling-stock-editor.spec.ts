@@ -43,14 +43,14 @@ test.describe('Rollingstock editor page tests', () => {
       ]);
 
       // Navigate to the rolling stock editor page
-      await rollingStockEditorPage.navigateToPage();
+      await rollingStockEditorPage.navigateToRollingStockPage();
     }
   );
 
   /** *************** Test 1 **************** */
   test('Create a new rolling stock', async ({ page }) => {
     // Start the rolling stock creation process
-    await rollingStockEditorPage.clickOnNewRollingstockButton();
+    await rollingStockEditorPage.openNewRollingStockForm();
 
     // Fill in the rolling stock details with a unique name
     for (const input of rollingstockDetails.inputs) {
@@ -70,7 +70,7 @@ test.describe('Rollingstock editor page tests', () => {
     await rollingStockEditorPage.uncheckCategoryCheckbox('FAST_FREIGHT_TRAIN');
 
     // Submit and handle potential warnings
-    await rollingStockEditorPage.clickOnSubmitRollingstockButton();
+    await rollingStockEditorPage.submitRollingstock();
     await expect(rollingStockEditorPage.toastContainer).toBeVisible();
 
     // Fill in speed effort curves for Not Specified and C1 categories
@@ -91,7 +91,7 @@ test.describe('Rollingstock editor page tests', () => {
     await rollingStockEditorPage.fillAdditionalDetails(rollingstockDetails.additionalDetails);
 
     // Submit and confirm rolling stock creation
-    await rollingStockEditorPage.submitRollingStock();
+    await rollingStockEditorPage.confirmRollingStockCreation();
     expect(
       rollingStockEditorPage.page.getByTestId(`rollingstock-${uniqueRollingStockName}`)
     ).toBeDefined();
@@ -106,7 +106,7 @@ test.describe('Rollingstock editor page tests', () => {
     }
 
     // Verify speed effort curves
-    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
+    await rollingStockEditorPage.openSpeedEffortCurves();
     await rollingStockEditorPage.verifySpeedEffortCurves(
       rollingstockDetails.speedEffortData,
       false,
@@ -138,7 +138,7 @@ test.describe('Rollingstock editor page tests', () => {
     await rollingStockEditorPage.uncheckCategoryCheckbox('FREIGHT_TRAIN');
 
     // Modify and verify speed effort curves
-    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
+    await rollingStockEditorPage.openSpeedEffortCurves();
     await rollingStockEditorPage.deleteElectricalProfile('25000V');
     await rollingStockEditorPage.fillSpeedEffortData(
       rollingstockDetails.speedEffortDataUpdated,
@@ -148,7 +148,7 @@ test.describe('Rollingstock editor page tests', () => {
     );
 
     // Submit and verify modification
-    await rollingStockEditorPage.submitRollingStock();
+    await rollingStockEditorPage.confirmRollingStockCreation();
     await rollingStockEditorPage.searchRollingStock(uniqueUpdatedRollingStockName);
     await rollingStockEditorPage.verifyRollingStockDetailsTable(
       rollingstockDetails.updatedExpectedValues
@@ -163,7 +163,7 @@ test.describe('Rollingstock editor page tests', () => {
     await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
     await rollingStockEditorPage.duplicateRollingStock();
     await fillAndCheckInputById(page, 'name', uniqueDeletedRollingStockName);
-    await rollingStockEditorPage.submitRollingStock();
+    await rollingStockEditorPage.confirmRollingStockCreation();
 
     // Delete the duplicated rolling stock
     await rollingStockEditorPage.deleteRollingStock(uniqueDeletedRollingStockName);

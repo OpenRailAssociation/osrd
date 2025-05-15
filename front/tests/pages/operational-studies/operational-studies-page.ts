@@ -79,15 +79,15 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
-  async selectRouteTab() {
+  async openRouteTab() {
     await this.routeTab.click();
   }
 
-  async selectTimesAndStopsTab() {
+  async openTimesAndStopsTab() {
     await this.timesAndStopsTab.click();
   }
 
-  async selectSimulationSettingsTab() {
+  async openSimulationSettingsTab() {
     await this.simulationSettingsTab.click();
   }
 
