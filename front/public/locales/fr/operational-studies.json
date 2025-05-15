@@ -34,8 +34,8 @@
     "selectStation": "Sélectionner cette station",
     "startTime": "DÉBUT",
     "status": {
-      "invalidTrainSchedules": "Les circulations à importer ne sont pas au bon format.",
       "invalidTrainSchedules_one": "La circulation à importer n'est pas au bon format.",
+      "invalidTrainSchedules_other": "Les circulations à importer ne sont pas au bon format.",
       "successfulImport": "Tous les items ont été importés.",
       "successfulImport_one": "L' item a été importé."
     },

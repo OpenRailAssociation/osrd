@@ -34,8 +34,8 @@
     "selectStation": "Select this station",
     "startTime": "START",
     "status": {
-      "invalidTrainSchedules": "Invalid train schedules.",
       "invalidTrainSchedules_one": "Invalid train schedule.",
+      "invalidTrainSchedules_other": "Invalid train schedules.",
       "successfulImport": "All items are imported.",
       "successfulImport_one": "An item is imported."
     },

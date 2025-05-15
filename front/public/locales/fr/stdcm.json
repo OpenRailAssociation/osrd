@@ -138,10 +138,10 @@
       "formatCreationDate": "{{day}}/{{month}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "et joignez ce document à votre demande GESICO.",
       "notFound": "Aucun passage n'a été trouvé pour cette configuration",
-      "remainingTrackConflicts": "{{count}} autres conflits avec d'autres sillons",
       "remainingTrackConflicts_one": "un autre conflit avec un autre sillon",
-      "remainingWorkConflicts": "{{count}} autres travaux en conflit",
+      "remainingTrackConflicts_other": "{{count}} autres conflits avec d'autres sillons",
       "remainingWorkConflicts_one": "un autre conflit avec des travaux",
+      "remainingWorkConflicts_other": "{{count}} autres travaux en conflit",
       "retainThisSimulation": "Retenir cette simulation",
       "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
       "simulationName": {

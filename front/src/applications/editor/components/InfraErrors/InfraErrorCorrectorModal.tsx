@@ -34,7 +34,7 @@ const InfraErrorCorrectorModal = () => {
       );
     }
     if (infraAutoFixes?.length === 0) {
-      return <p>{t('Editor.infra-errors.corrector-modal.total-fixes_zero')}</p>;
+      return <p>{t('Editor.infra-errors.corrector-modal.no-fixes-found')}</p>;
     }
     const creationCount = infraAutoFixes.filter(
       (operation) => operation.operation_type === OPERATION_TYPE.CREATE
