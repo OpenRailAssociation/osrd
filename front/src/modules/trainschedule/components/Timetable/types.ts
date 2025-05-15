@@ -97,6 +97,7 @@ export type Occurrence = {
    * An added exception can only be deleted, not disabled.
    */
   disabled?: boolean;
+  category?: TrainCategory | null;
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;

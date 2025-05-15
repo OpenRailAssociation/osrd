@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useMemo, type MutableRefObject 
 
 import { useTranslation } from 'react-i18next';
 
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import type { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Loader } from 'common/Loaders';
@@ -14,7 +14,7 @@ import { RollingStockCard } from '../RollingStockCard';
 type RollingStockModal = {
   rollingStockId: number | undefined;
   ref2scroll: MutableRefObject<HTMLDivElement | null>;
-  onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
+  onSelectRollingStock: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;
 };
 
 function RollingStockModal({

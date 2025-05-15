@@ -22,3 +22,56 @@
     max-width: 640px;
   }
 }
+
+.alert-box {
+  width: fit-content;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 0 12px;
+  border: 1px solid;
+  margin-bottom: 16px;
+
+  &--warning {
+    border-color: var(--warning30);
+    background-color: var(--warning5);
+
+    .alert-box__icon--warning {
+      color: var(--warning30);
+      margin-right: 12px;
+      width: 24px;
+      height: 24px;
+    }
+
+    .alert-box__text--warning {
+      font-family: 'IBM Plex Sans';
+      color: var(--warning60);
+      font-size: 16px;
+      font-weight: 400;
+    }
+  }
+}
+
+$train-category-colors: (
+  high-speed: 'red',
+  intercity: 'violet',
+  regional: 'orange',
+  night: 'purple',
+  commuter: 'blue',
+  freight: 'green',
+  fast-freight: 'mint',
+  tram-train: 'cyan',
+  touristic: 'brown',
+  work: 'yellow',
+  none: 'grey',
+);
+
+@each $category, $color in $train-category-colors {
+  .train-category-text-#{$category} {
+    color: var(--#{$color}50);
+  }
+
+  .train-category-bg-#{$category} {
+    background-color: var(--#{$color}50);
+  }
+}

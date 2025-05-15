@@ -2,9 +2,14 @@ import { useCallback, useRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { BiLockAlt } from 'react-icons/bi';
+import { useSelector } from 'react-redux';
 
 import icon from 'assets/pictures/components/train.svg';
-import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type {
+  Comfort,
+  LightRollingStockWithLiveries,
+  RollingStockWithLiveries,
+} from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import {
@@ -12,6 +17,9 @@ import {
   RollingStockInfo,
 } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
+import { updateCategory } from 'reducers/osrdconf/operationalStudiesConf';
+import { getCategory } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { useAppDispatch } from 'store';
 
 type RollingStockProps = {
   rollingStockId: number | undefined;
@@ -30,16 +38,21 @@ const RollingStockSelector = ({
   image,
   onSelectRollingStock,
 }: RollingStockProps) => {
+  const dispatch = useAppDispatch();
+  const currentCategory = useSelector(getCategory);
   const { openModal, closeModal } = useModal();
 
   const ref2scroll = useRef<HTMLDivElement>(null);
-
   const selectRollingStock = useCallback(
-    (newRollingStockId: number, comfort: Comfort) => {
-      onSelectRollingStock(newRollingStockId, comfort);
+    (newRollingStock: LightRollingStockWithLiveries, comfort: Comfort) => {
+      if (!currentCategory && newRollingStock.primary_category) {
+        dispatch(updateCategory(newRollingStock.primary_category));
+      }
+
+      onSelectRollingStock(newRollingStock.id, comfort);
       closeModal();
     },
-    [onSelectRollingStock]
+    [onSelectRollingStock, currentCategory]
   );
 
   const { t } = useTranslation();

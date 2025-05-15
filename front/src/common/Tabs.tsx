@@ -1,6 +1,15 @@
 import { useState } from 'react';
 
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import AlertBox from 'common/AlertBox';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import {
+  getCategory,
+  getOperationalStudiesRollingStockID,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 type TabComponentProps = {
   label: string;
@@ -30,6 +39,17 @@ const Tab = ({ label, content }: TabComponentProps) => (
 
 const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: TabsProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const { t } = useTranslation();
+  const currentCategory = useSelector(getCategory);
+  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const { rollingStock } = useStoreDataForRollingStockSelector({
+    rollingStockId,
+  });
+  const showWarning =
+    rollingStock &&
+    currentCategory &&
+    currentCategory !== rollingStock.primary_category &&
+    !rollingStock.other_categories.includes(currentCategory);
 
   const handleTabClick = (index: number) => {
     setActiveTabIndex(index);
@@ -37,6 +57,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: Ta
 
   return (
     <div className={cx('tabs-container', { 'full-width': fullWidth, 'full-height': fullHeight })}>
+      {showWarning && <AlertBox message={t('rollingStock.categoryMismatch')} />}
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div

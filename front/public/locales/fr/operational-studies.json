@@ -178,7 +178,7 @@
       "stopsCount_other": "{{count}} arrêts",
       "toggleFilters": "Afficher ou masquer les filtres",
       "trainAdded": "Train ajouté",
-      "trainCategories": "Train categories",
+      "trainCategories": "Catégorie de train",
       "trainDeleted": "Le train {{name}} a bien été supprimé.",
       "trainSchedule": "Train unique",
       "trainType": "Missions, trains",

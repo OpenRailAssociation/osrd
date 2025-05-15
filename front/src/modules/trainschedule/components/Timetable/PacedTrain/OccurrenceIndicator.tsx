@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getExceptionType } from 'utils/trainId';
 
+import { TRAIN_CATEGORY_CLASS } from '../consts';
 import type { Occurrence } from '../types';
 
 type OccurrenceIndicatorProps = {
@@ -17,7 +18,6 @@ const TOOLTIP_BOTTOM_MARGIN = 24;
 
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
-  const exceptionType = getExceptionType(occurrence);
   const dotRef = useRef<HTMLDivElement>(null);
   const changeGroupsRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +27,8 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     left: number;
     bottom?: number;
   } | null>(null);
+
+  const exceptionType = getExceptionType(occurrence);
 
   useLayoutEffect(() => {
     if (!dotRef.current || !isHovering) return;
@@ -105,10 +107,14 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
         </div>
       )}
       <span
-        className={cx('icon', {
-          exception: !isEmpty(occurrence.exceptionChangeGroups),
-          disabled: occurrence.disabled,
-        })}
+        className={cx(
+          'icon',
+          `train-category-bg-${TRAIN_CATEGORY_CLASS[occurrence.category ?? 'None']}`,
+          {
+            exception: !isEmpty(occurrence.exceptionChangeGroups),
+            disabled: occurrence.disabled,
+          }
+        )}
       />
     </div>
   );

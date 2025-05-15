@@ -35,6 +35,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
     isValid,
     invalidReason,
     exceptions,
+    category: pacedTrainCategory,
   } = pacedTrain;
 
   const occurrencesState = useMemo<OccurrencesState>(() => {
@@ -58,6 +59,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
         startTime: occurrenceStartTime,
         stopsCount,
         disabled: correspondingException?.disabled,
+        category: correspondingException?.rolling_stock_category?.value ?? pacedTrainCategory,
         occurrenceIndex: i,
         exceptionChangeGroups: correspondingException
           ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
