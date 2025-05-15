@@ -1,9 +1,15 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { getTranslations } from '../../utils';
+import readJsonFile from '../../utils/file-utils';
+import type { StdcmTranslations } from '../../utils/types';
 import HomePage from '../home-page';
 
+const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
+const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+
 class STDCMPage extends HomePage {
-  readonly consistCard: Locator;
+  private readonly consistCard: Locator;
 
   readonly originCard: Locator;
 
@@ -123,15 +129,21 @@ class STDCMPage extends HomePage {
   }
 
   // Launch the simulation and check if simulation-related elements are visible
-  async launchSimulation(): Promise<void> {
+  private async launchSimulation(): Promise<void> {
     await this.launchSimulationButton.waitFor();
     await expect(this.launchSimulationButton).toBeEnabled();
     await this.launchSimulationButton.click({ force: true });
   }
 
   async verifyValidSimulationLaunch(): Promise<void> {
+    const translations = getTranslations({
+      en: enTranslations,
+      fr: frTranslations,
+    });
     await this.launchSimulation();
-    await this.simulationStatus.waitFor();
+    expect(await this.simulationStatus.textContent()).toEqual(
+      translations.simulation.results.status.completed
+    );
   }
 
   async verifyInvalidSimulationLaunch(): Promise<void> {
