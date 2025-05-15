@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
 import { X, ChevronDown } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -14,6 +14,13 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { t } = useTranslation('common');
   const [activeBoards, setActiveBoards] = useState<string[]>([]);
+  const [isTruncated, setIsTruncated] = useState({
+    scenarioName: false,
+    username: false,
+  });
+
+  const scenarioNameRef = useRef<HTMLSpanElement>(null);
+  const usernameRef = useRef<HTMLButtonElement>(null);
 
   const boards = ['Traits', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
 
@@ -25,6 +32,24 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
       return [...prevBoards, selectedBoard];
     });
   };
+
+  useEffect(() => {
+    const checkTruncation = () => {
+      setIsTruncated((prev) => ({
+        scenarioName: scenarioNameRef.current
+          ? scenarioNameRef.current.scrollWidth > scenarioNameRef.current.clientWidth
+          : prev.scenarioName,
+        username: usernameRef.current
+          ? usernameRef.current.scrollWidth > usernameRef.current.clientWidth
+          : prev.username,
+      }));
+    };
+    checkTruncation();
+    window.addEventListener('resize', checkTruncation);
+    return () => {
+      window.removeEventListener('resize', checkTruncation);
+    };
+  }, []);
 
   return (
     <header className="scenario-header">
@@ -39,7 +64,12 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
         <span className="close-label">{t('close')}</span>
 
         <div className="scenario-name-container">
-          <span className="scenario-name-label">{scenarioName}</span>
+          <span
+            ref={scenarioNameRef}
+            className={cx('scenario-name-label', { 'is-truncated': isTruncated.scenarioName })}
+          >
+            {scenarioName}
+          </span>
 
           <div className="chevron-container">
             <button className="chevron-btn" type="button">
@@ -81,7 +111,11 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
       <div className="user-info">
         <div className="spacer" />
 
-        <button className="user-name" type="button">
+        <button
+          ref={usernameRef}
+          className={cx('user-name', { 'is-truncated': isTruncated.username })}
+          type="button"
+        >
           {username}
         </button>
       </div>

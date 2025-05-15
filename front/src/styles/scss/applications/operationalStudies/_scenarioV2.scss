@@ -15,12 +15,12 @@
   }
 
   .inactive-area {
-    width: 8px;
+    min-width: 8px;
     pointer-events: none;
   }
 
   .spacer {
-    width: 32px;
+    min-width: 32px;
   }
 
   .scenario-info {
@@ -47,7 +47,7 @@
 
         & ~ .close-label {
           text-transform: capitalize;
-          opacity: 1;
+          display: block;
           color: var(--warning60);
         }
       }
@@ -64,7 +64,7 @@
     .close-label {
       position: absolute;
       text-transform: capitalize;
-      opacity: 0;
+      display: none;
     }
 
     .scenario-name-container {
@@ -184,6 +184,34 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       min-width: 0;
+    }
+  }
+
+  &:has(.scenario-name-label.is-truncated:hover) {
+    .scenario-info {
+      flex: 2;
+    }
+
+    .board-bar {
+      display: none;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+  }
+
+  &:has(.user-name.is-truncated:hover) {
+    .scenario-info {
+      flex: 1;
+    }
+
+    .board-bar {
+      display: none;
+    }
+
+    .user-info {
+      flex: 2;
     }
   }
 }
