@@ -122,7 +122,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   // Get the button locator of a train element.
-  static getTrainButton(trainSelector: Locator): Locator {
+  private static getTrainButton(trainSelector: Locator): Locator {
     return trainSelector.getByTestId('scenario-timetable-train-button');
   }
 
@@ -189,23 +189,23 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   // Click the train validity filter button based on the provided translation
-  async clickValidityTrainFilterButton(filterTranslation: string): Promise<void> {
+  private async selectTrainValidityFilter(filterTranslation: string): Promise<void> {
     await this.timetableValidityFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Click the train honored filter button based on the provided translation
-  async clickHonoredTrainFilterButton(filterTranslation: string): Promise<void> {
+  // Click the train punctuality filter button based on the provided translation
+  private async selectTrainPunctualityFilter(filterTranslation: string): Promise<void> {
     await this.timetablePunctualityFilterSelect.selectOption({ label: filterTranslation });
   }
 
   // Click the train type filter button based on the provided translation
-  async clickTrainTypeFilterButton(filterTranslation: string): Promise<void> {
+  private async selectTrainTypeFilter(filterTranslation: string): Promise<void> {
     await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
   }
 
   // Verify that the imported train number is correct
   async verifyTrainCount(trainCount: number): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
     await expect(this.timetableTrains).toHaveCount(trainCount);
   }
 
@@ -253,7 +253,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableFilterButtonClose.click();
   }
 
-  // Filter trains validity and verify their count
   async filterValidityAndVerifyTrainCount(
     validityFilter: 'Valid' | 'Invalid' | 'All',
     expectedTrainCount: number,
@@ -267,12 +266,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       All: translations.timetable.showAllTrains,
     };
 
-    await this.clickValidityTrainFilterButton(validityFilters[validityFilter]);
+    await this.selectTrainValidityFilter(validityFilters[validityFilter]);
     await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
   }
 
-  // Filter the honored trains and verify their count
   async filterHonoredAndVerifyTrainCount(
     honoredFilter: 'Honored' | 'Not honored' | 'All',
     expectedTrainCount: number,
@@ -286,12 +284,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       All: translations.timetable.showAllTrains,
     };
 
-    await this.clickHonoredTrainFilterButton(honoredFilters[honoredFilter]);
+    await this.selectTrainPunctualityFilter(honoredFilters[honoredFilter]);
     await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
   }
 
-  // Filter the train type and verify their count
   async filterTrainTypeAndVerifyTrainCount(
     trainTypeFilter: 'Service' | 'Unique train' | 'All',
     expectedTrainCount: number
@@ -308,7 +305,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       All: translations.timetable.showAllTrains,
     };
 
-    await this.clickTrainTypeFilterButton(trainTypeFilters[trainTypeFilter]);
+    await this.selectTrainTypeFilter(trainTypeFilters[trainTypeFilter]);
     await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
   }
@@ -370,18 +367,18 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   }
 
-  async clickOnEditTrain(index: number = 0) {
+  async editTrain(index: number = 0) {
     await this.timetableTrains.nth(index).click();
     await this.editItemButton.nth(index).click();
   }
 
-  async projectTrain() {
+  private async projectTrain() {
     await this.selectedTimetableTrain.hover();
     await this.projectItemButton.waitFor();
     await this.projectItemButton.click();
   }
 
-  async clickOnEditTrainSchedule() {
+  async editTrainSchedule() {
     await this.editTrainScheduleButton.click();
     await this.closeToastNotification();
   }
@@ -393,13 +390,13 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
   }
 
-  async clickOnScenarioCollapseButton() {
+  async collapseScenarioSideMenu() {
     await expect(this.scenarioCollapseButton).toBeVisible();
     await this.scenarioCollapseButton.click();
     await expect(this.scenarioSideMenu).toBeHidden();
   }
 
-  async clickOnTimetableCollapseButton() {
+  async expandScenarioSideMenu() {
     await expect(this.timetableCollapseButton).toBeVisible();
     await this.timetableCollapseButton.click();
     await expect(this.scenarioSideMenu).toBeVisible();

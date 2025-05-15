@@ -45,7 +45,7 @@ class SimulationResultPage extends STDCMPage {
 
   private readonly feedbackButton: Locator;
 
-  readonly simulationItem: Locator;
+  private readonly simulationItem: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -72,7 +72,7 @@ class SimulationResultPage extends STDCMPage {
     return this.page.getByTestId('total-length-trip-duration').nth(simulationIndex);
   }
 
-  getSimulationNameLocator(simulationIndex: number): Locator {
+  private getSimulationNameLocator(simulationIndex: number): Locator {
     return this.page.getByTestId('simulation-name').nth(simulationIndex);
   }
 
@@ -212,11 +212,6 @@ class SimulationResultPage extends STDCMPage {
     await expect(this.feedbackTitle).toBeVisible();
     await expect(this.feedbackDescription).toBeVisible();
     await expect(this.feedbackButton).toBeVisible();
-  }
-
-  async clickFeedbackButton() {
-    await expect(this.feedbackButton).toBeEnabled();
-    await this.feedbackButton.click();
   }
 
   async verifyMailRedirection(

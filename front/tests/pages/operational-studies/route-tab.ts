@@ -82,37 +82,37 @@ class RouteTab {
   }
 
   // Get the name locator of a waypoint suggestion.
-  static getWaypointSuggestionNameLocator(waypointSuggestion: Locator): Locator {
+  private static getWaypointSuggestionNameLocator(waypointSuggestion: Locator): Locator {
     return waypointSuggestion.locator('.suggested-via-name');
   }
 
   // Get the CH locator of a waypoint suggestion.
-  static getWaypointSuggestionChLocator(waypointSuggestion: Locator): Locator {
+  private static getWaypointSuggestionChLocator(waypointSuggestion: Locator): Locator {
     return waypointSuggestion.locator('.suggested-via-ch');
   }
 
   // Get the UIC locator of a waypoint suggestion.
-  static getWaypointSuggestionUicLocator(waypointSuggestion: Locator): Locator {
+  private static getWaypointSuggestionUicLocator(waypointSuggestion: Locator): Locator {
     return waypointSuggestion.locator('.suggested-via-uic');
   }
 
   // Get the distance locator of a waypoint suggestion.
-  static getWaypointSuggestionDistanceLocator(waypointSuggestion: Locator): Locator {
+  private static getWaypointSuggestionDistanceLocator(waypointSuggestion: Locator): Locator {
     return waypointSuggestion.getByTestId('suggested-via-distance');
   }
 
   // Get the name locator of a dropped waypoint.
-  static getWaypointDroppedNameLocator(droppedWaypoint: Locator): Locator {
+  private static getWaypointDroppedNameLocator(droppedWaypoint: Locator): Locator {
     return droppedWaypoint.getByTestId('via-dropped-name');
   }
 
   // Get the CH locator of a dropped waypoint.
-  static getWaypointDroppedChLocator(droppedWaypoint: Locator): Locator {
+  private static getWaypointDroppedChLocator(droppedWaypoint: Locator): Locator {
     return droppedWaypoint.getByTestId('via-dropped-ch');
   }
 
   // Get the UIC locator of a dropped waypoint.
-  static getWaypointDroppedUicLocator(droppedWaypoint: Locator): Locator {
+  private static getWaypointDroppedUicLocator(droppedWaypoint: Locator): Locator {
     return droppedWaypoint.getByTestId('via-dropped-uic');
   }
 
@@ -146,13 +146,11 @@ class RouteTab {
     return this.page.locator('#map-container').getByText(markerName, { exact: true });
   }
 
-  // Click on the button to submit the search by trigram.
-  async clickSearchByTrigramSubmitButton() {
+  private async submitSearchByTrigram() {
     await this.searchByTrigramSubmit.click();
   }
 
-  // Click the button to delete the itinerary.
-  async clickDeleteItineraryButton() {
+  async deleteItinerary() {
     await this.deleteItineraryButton.click();
   }
 
@@ -176,29 +174,41 @@ class RouteTab {
   }
 
   // Perform pathfinding by entering origin, destination, and optionally via trigrams.
-  async performPathfindingByTrigram(
-    originTrigram: string,
-    destinationTrigram: string,
-    viaTrigram?: string
-  ) {
+  async performPathfindingByTrigram({
+    originTrigram,
+    destinationTrigram,
+    viaTrigram,
+  }: {
+    originTrigram: string;
+    destinationTrigram: string;
+    viaTrigram?: string;
+  }): Promise<void> {
     await this.searchByTrigramButton.click();
     await expect(this.searchByTrigramContainer).toBeVisible();
 
     const inputTrigramText = viaTrigram
       ? `${originTrigram} ${viaTrigram} ${destinationTrigram}`
       : `${originTrigram} ${destinationTrigram}`;
+
     await this.searchByTrigramInput.fill(inputTrigramText);
 
-    await expect(this.getOriginLocatorByTrigram(originTrigram)).toBeVisible();
-    await expect(this.getDestinationLocatorByTrigram(destinationTrigram)).toBeVisible();
+    const originLocator = this.getOriginLocatorByTrigram(originTrigram);
+    const destinationLocator = this.getDestinationLocatorByTrigram(destinationTrigram);
+
+    await expect(originLocator).toBeVisible();
+    await expect(destinationLocator).toBeVisible();
+
     if (viaTrigram) {
-      await expect(this.getViaLocatorByTrigram(viaTrigram)).toBeVisible();
+      const viaLocator = this.getViaLocatorByTrigram(viaTrigram);
+      await expect(viaLocator).toBeVisible();
     }
-    const expectedOriginTrigram = await this.getOriginLocatorByTrigram(originTrigram).innerText();
-    const expectedDestinationTrigram =
-      await this.getDestinationLocatorByTrigram(destinationTrigram).innerText();
-    await this.clickSearchByTrigramSubmitButton();
+
+    const expectedOriginTrigram = await originLocator.innerText();
+    const expectedDestinationTrigram = await destinationLocator.innerText();
+
+    await this.submitSearchByTrigram();
     await this.pathfindingLoader.waitFor({ state: 'hidden' });
+
     await expect(this.searchByTrigramContainer).not.toBeVisible();
     await expect(this.resultPathfindingDone).toBeVisible();
 
@@ -206,13 +216,12 @@ class RouteTab {
     expect(await this.destinationInfo.innerText()).toEqual(expectedDestinationTrigram);
   }
 
-  // Click the button to reverse the itinerary.
-  async clickOnReverseItinerary() {
+  async reverseItinerary() {
     await this.reverseItineraryButton.click();
   }
 
   // Click the buttons to delete origin, destination, and via waypoints and verifies missing parameters message.
-  async clickOnDeleteOPButtons() {
+  async deleteOperationPoints() {
     // Ensure all buttons are rendered and visible before proceeding
     await Promise.all([
       this.viaDeleteButton.waitFor(),
@@ -238,7 +247,7 @@ class RouteTab {
   }
 
   // Click the add buttons for the specified via names.
-  async clickOnViaAddButtons(...viaNames: string[]) {
+  private async addVias(...viaNames: string[]) {
     for (const viaName of viaNames) {
       await this.getAddButtonLocatorByViaName(viaName).click();
       await expect(this.getDeleteButtonLocatorByViaName(viaName)).toBeVisible();
@@ -253,7 +262,7 @@ class RouteTab {
   }
 
   // Validate the waypoint suggestions by checking the name, CH, UIC, and distance.
-  static async validateWaypointSuggestions(
+  private static async validateWaypointSuggestions(
     waypointSuggestion: Locator,
     expectedName: string,
     expectedCh: string,
@@ -313,7 +322,7 @@ class RouteTab {
       waypointSuggestionCount += 1;
     }
 
-    await this.clickOnViaAddButtons(...waypointToAddNames);
+    await this.addVias(...waypointToAddNames);
     await this.closeViaModalButton.click();
 
     let droppedWaypointCount = 0;

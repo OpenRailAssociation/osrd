@@ -58,7 +58,6 @@ class DestinationSection extends STDCMPage {
     await hourLocator.click();
   }
 
-  // Verify default destination input fields are empty
   async verifyDefaultDestinationFields() {
     const emptyFields = [this.destinationCiField, this.destinationChField];
     for (const field of emptyFields) await expect(field).toHaveValue('');
@@ -66,11 +65,10 @@ class DestinationSection extends STDCMPage {
   }
 
   // Verify the destination suggestions when searching for south
-  async verifyDestinationSouthSuggestions() {
+  private async verifyDestinationSouthSuggestions() {
     await this.verifySuggestions(CI_SUGGESTIONS.south);
   }
 
-  // Fill and verify destination details
   async fillAndVerifyDestinationDetails() {
     const {
       input,
@@ -124,7 +122,6 @@ class DestinationSection extends STDCMPage {
     await expect(this.warningBox).not.toBeVisible();
   }
 
-  // Fill destination section
   async fillDestinationDetailsLight() {
     const { input, chValue, arrivalType } = LIGHT_DESTINATION_DETAILS;
     await this.dynamicDestinationCi.fill(input);

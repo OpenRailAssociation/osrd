@@ -43,7 +43,6 @@ class OriginSection extends STDCMPage {
     });
   }
 
-  // Verify default origin input fields are empty
   async verifyDefaultOriginFields() {
     const { arrivalDate, arrivalTime, tolerance } = DEFAULT_DETAILS;
     const emptyFields = [this.originCiField, this.originChField];
@@ -55,11 +54,10 @@ class OriginSection extends STDCMPage {
   }
 
   // Verify the origin suggestions when searching for north
-  async verifyOriginNorthSuggestions() {
+  private async verifyOriginNorthSuggestions() {
     await this.verifySuggestions(CI_SUGGESTIONS.north);
   }
 
-  // Fill and verify origin details with suggestions
   async fillAndVerifyOriginDetails() {
     const {
       input,
@@ -94,7 +92,6 @@ class OriginSection extends STDCMPage {
     await expect(this.toleranceOriginArrival).not.toBeVisible();
   }
 
-  // Fill origin section
   async fillOriginDetailsLight(
     arrivalTimeOverride?: string,
     arrivalTypeOverride: string = '',

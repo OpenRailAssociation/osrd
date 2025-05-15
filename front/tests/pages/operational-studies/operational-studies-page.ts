@@ -74,28 +74,20 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   // Click on the button to add a scenario train.
-  async clickOnAddTrainButton() {
+  async openTimetableItemForm() {
     await this.addScenarioTrainButton.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
-  // Open Route Tab
-  async clickOnRouteTab() {
+  async selectRouteTab() {
     await this.routeTab.click();
   }
 
-  // Open Rolling Stock Tab
-  async clickOnRollingStockTab() {
-    await this.rollingStockTab.click();
-  }
-
-  // Open Times And Stops Tab
-  async clickOnTimesAndStopsTab() {
+  async selectTimesAndStopsTab() {
     await this.timesAndStopsTab.click();
   }
 
-  // Open Simulation Settings Tab
-  async clickOnSimulationSettingsTab() {
+  async selectSimulationSettingsTab() {
     await this.simulationSettingsTab.click();
   }
 
@@ -111,7 +103,6 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.routeTab).not.toHaveClass(/warning/);
   }
 
-  // Set the train start time
   async setTrainStartTime(departureTime: string) {
     const currentDate = new Date().toISOString().split('T')[0];
     const startTime = `${currentDate}T${departureTime}`;
@@ -122,7 +113,7 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   // startTime is already in format ISO 8601
-  async setFormattedStartTime(startTime: string) {
+  private async setFormattedStartTime(startTime: string) {
     await this.startTimeField.fill(startTime);
     await expect(this.startTimeField).toHaveValue(startTime);
   }

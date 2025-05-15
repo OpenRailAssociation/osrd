@@ -34,7 +34,6 @@ class HomePage extends CommonPage {
     this.OSRDLanguage = page.getByTestId('language-info');
   }
 
-  // Navigate to the Home page
   async goToHomePage(): Promise<void> {
     await this.page.goto('/');
     await this.removeViteOverlay();
@@ -72,7 +71,6 @@ class HomePage extends CommonPage {
     return stdcmPage;
   }
 
-  // Get OSRD selected language
   async getOSRDLanguage(): Promise<string> {
     await this.dropDown.click();
     const selectedLanguage = await this.OSRDLanguage.innerText();
