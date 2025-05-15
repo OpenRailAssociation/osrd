@@ -113,6 +113,11 @@ test.describe('Verify stdcm simulation page', () => {
     }
     // Launch simulation and verify output data matches expected results
     await stdcmPage.verifyValidSimulationLaunch();
+    await simulationResultPage.verifySimulationDetails({
+      simulationIndex: 0,
+      simulationLengthAndDuration: '51 km — 54min',
+      validSimulationNumber: 1,
+    });
     await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
   });
 

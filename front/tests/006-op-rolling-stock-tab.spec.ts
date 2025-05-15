@@ -50,12 +50,12 @@ test.describe('Rolling stock Tab Verification', () => {
     );
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
+    await operationalStudiesPage.openTimetableItemForm();
   });
 
   /** *************** Test 1 **************** */
   test('Select a rolling stock for operational study', async () => {
-    // Add a train and verify the presence of warnings
-    await operationalStudiesPage.clickOnAddTrainButton();
+    // Verify the presence of warnings
     await operationalStudiesPage.verifyTabWarningPresence();
 
     // Open the Rolling Stock Selector and search for the dual-mode rolling stock
@@ -63,38 +63,35 @@ test.describe('Rolling stock Tab Verification', () => {
     await rollingStockSelector.searchRollingstock(dualModeRollingStockName);
 
     // Locate the rolling stock card and verify its inactive state
-    const rollingstockCard = rollingStockSelector.getRollingstockCardByTestID(
-      `rollingstock-${dualModeRollingStockName}`
-    );
-    await expect(rollingstockCard).toHaveClass(/inactive/);
+
+    await rollingStockSelector.verifyRollingStockIsInactive(dualModeRollingStockName);
 
     // Click on the rolling stock card to activate it
-    await rollingstockCard.click();
-    await expect(rollingstockCard).not.toHaveClass(/inactive/);
+    await rollingStockSelector.selectRollingStockCard({ name: dualModeRollingStockName });
 
     // Select the comfort option (AIR_CONDITIONING) and confirm the selection
     const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
-    await rollingStockSelector.comfortACButton.click();
-    await rollingstockCard.locator('button').click();
+    await rollingStockSelector.selectRollingStockCard({
+      name: dualModeRollingStockName,
+      selectComfort: true,
+      confirmSelection: true,
+    });
 
     // Verify that the correct comfort type is displayed after selection
-    const selectedComfortACText = await rollingStockSelector.selectedComfortType.innerText();
-    expect(selectedComfortACText).toMatch(new RegExp(comfortACRadioText, 'i'));
+
+    await rollingStockSelector.verifySelectedComfortMatches(comfortACRadioText);
   });
 
   /** *************** Test 2 **************** */
   test('Modify a rolling stock for operational study', async () => {
-    // Add a train and select the electric rolling stock
-    await operationalStudiesPage.clickOnAddTrainButton();
+    // Select the electric rolling stock
     await rollingStockSelector.openEmptyRollingStockSelector();
     await rollingStockSelector.searchRollingstock(electricRollingStockName);
-    const fastRollingstockCard = rollingStockSelector.getRollingstockCardByTestID(
-      `rollingstock-${rollingStock.name}`
-    );
-
-    // Select the rolling stock and confirm the selection
-    await fastRollingstockCard.click();
-    await fastRollingstockCard.locator('button').click();
+    await rollingStockSelector.selectRollingStockCard({
+      name: rollingStock.name,
+      selectComfort: false,
+      confirmSelection: true,
+    });
     expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
       electricRollingStockName
     );
@@ -105,11 +102,11 @@ test.describe('Rolling stock Tab Verification', () => {
     await rollingStockSelector.setElectricRollingStockFilter();
 
     // Select the dual-mode rolling stock and confirm the selection
-    const dualModeRollingstockCard = rollingStockSelector.getRollingstockCardByTestID(
-      `rollingstock-${dualModeRollingStockName}`
-    );
-    await dualModeRollingstockCard.click();
-    await dualModeRollingstockCard.locator('button').click();
+    await rollingStockSelector.selectRollingStockCard({
+      name: dualModeRollingStockName,
+      selectComfort: false,
+      confirmSelection: true,
+    });
 
     // Verify that the correct dual-mode rolling stock is displayed
     expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(

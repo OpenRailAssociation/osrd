@@ -153,7 +153,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
   /** *************** Test 1 **************** */
   test('Verify default behaviors with paced train mode', async () => {
-    await operationalStudiesPage.clickOnAddTrainButton();
+    await operationalStudiesPage.openTimetableItemForm();
 
     // Verify that all configuration buttons and inputs are visible and have their proper default values
     await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
@@ -170,7 +170,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
   /** *************** Test 2 **************** */
   test('Add a paced train and verify its timetable details', async ({ page }) => {
-    await operationalStudiesPage.clickOnAddTrainButton();
+    await operationalStudiesPage.openTimetableItemForm();
 
     // Set the paced train inputs
     await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
@@ -179,12 +179,15 @@ test.describe('Verify simulation configuration in operational studies for train 
     await rollingstockSelector.selectRollingStock(dualModeRollingStockName);
 
     // Select an itinerary
-    await operationalStudiesPage.clickOnRouteTab();
-    await routeTab.performPathfindingByTrigram('WS', 'NES');
+    await operationalStudiesPage.openRouteTab();
+    await routeTab.performPathfindingByTrigram({
+      originTrigram: 'WS',
+      destinationTrigram: 'NES',
+    });
     await operationalStudiesPage.checkPathfindingDistance('46.000 km');
 
     // Verify initial row count and fill table with input data
-    await operationalStudiesPage.clickOnTimesAndStopsTab();
+    await operationalStudiesPage.openTimesAndStopsTab();
     await scrollContainer(page, '.time-stops-datasheet .dsg-container');
 
     await timesAndStopsTab.verifyActiveRowsCount(2);
@@ -214,9 +217,9 @@ test.describe('Verify simulation configuration in operational studies for train 
     });
 
     // Click on occurrence to check its simulation results
-    await pacedTrainSection.clickOnOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
+    await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
 
-    await scenarioTimetableSection.clickOnScenarioCollapseButton();
+    await scenarioTimetableSection.collapseScenarioSideMenu();
 
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
       'SpeedSpaceChart-InitialInputs.png'

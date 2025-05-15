@@ -100,17 +100,20 @@ test.describe('Times and Stops Tab Verification', () => {
       await waitForInfraStateToBeCached(infra.id);
 
       // Setup train configuration and schedule
-      await operationalStudiesPage.clickOnAddTrainButton();
+      await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.setTrainStartTime('11:22:40');
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
       await operationalStudiesPage.setTrainScheduleName('Train-name-e2e-test');
 
       // Perform route pathfinding
-      await operationalStudiesPage.clickOnRouteTab();
-      await routeTab.performPathfindingByTrigram('WS', 'NES');
+      await operationalStudiesPage.openRouteTab();
+      await routeTab.performPathfindingByTrigram({
+        originTrigram: 'WS',
+        destinationTrigram: 'NES',
+      });
 
       // Navigate to the Times and Stops tab and scroll to the data sheet
-      await operationalStudiesPage.clickOnTimesAndStopsTab();
+      await operationalStudiesPage.openTimesAndStopsTab();
       await scrollContainer(page, '.time-stops-datasheet .dsg-container');
     }
   );
@@ -152,11 +155,11 @@ test.describe('Times and Stops Tab Verification', () => {
 
     // Verify changes to the input table and additional rows
     await timesAndStopsTab.verifyActiveRowsCount(4);
-    await timesAndStopsTab.verifyDeleteButtons(2);
+    await timesAndStopsTab.verifyClearButtons(2);
     await timesAndStopsTab.verifyInputTableData(inputExpectedData);
 
     // Validate waypoints after switching to the Route tab
-    await operationalStudiesPage.clickOnRouteTab();
+    await operationalStudiesPage.openRouteTab();
     for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
       const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
       await RouteTab.validateAddedWaypoint(
@@ -203,15 +206,15 @@ test.describe('Times and Stops Tab Verification', () => {
       );
     }
 
-    // Delete a row and verify changes
-    await timesAndStopsTab.verifyDeleteButtons(2);
-    await timesAndStopsTab.deleteButtons.nth(0).click();
+    // Clear a row and verify changes
+    await timesAndStopsTab.verifyClearButtons(2);
+    await timesAndStopsTab.clearRow(0);
     await timesAndStopsTab.verifyActiveRowsCount(4); // No reduction in rows after deletion
-    await timesAndStopsTab.verifyDeleteButtons(1);
+    await timesAndStopsTab.verifyClearButtons(1);
     await timesAndStopsTab.verifyInputTableData(updatedCellData);
 
     // Verify waypoints after switching to the Route tab
-    await operationalStudiesPage.clickOnRouteTab();
+    await operationalStudiesPage.openRouteTab();
     for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
       const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
       await RouteTab.validateAddedWaypoint(

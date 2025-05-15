@@ -68,6 +68,12 @@ test.describe('Edit trains and missions', () => {
     CommonTranslations;
 
   test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
+    [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
+      new PacedTrainSection(page),
+      new ScenarioTimetableSection(page),
+      new OperationalStudiesPage(page),
+    ];
+
     project = await getProject(trainScheduleProjectName);
     study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
@@ -106,10 +112,6 @@ test.describe('Edit trains and missions', () => {
     );
     await waitForInfraStateToBeCached(infra.id);
     await page.waitForLoadState('networkidle');
-
-    pacedTrainSection = new PacedTrainSection(page);
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-    operationalStudiesPage = new OperationalStudiesPage(page);
   });
 
   test.afterEach('Delete the created scenario', async () => {
@@ -158,7 +160,7 @@ test.describe('Edit trains and missions', () => {
   });
 
   test('Turn a train schedule into a paced train', async () => {
-    await scenarioTimetableSection.clickOnEditTrain(1);
+    await scenarioTimetableSection.editTrain(1);
 
     await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(translations);
 

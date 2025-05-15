@@ -46,12 +46,12 @@ test.describe('Route Tab Verification', () => {
       await waitForInfraStateToBeCached(infra.id);
 
       // Click on add train button and verify tab warnings
-      await operationalStudiesPage.clickOnAddTrainButton();
+      await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.verifyTabWarningPresence();
 
       // Select electric rolling stock and navigate to the Route Tab
       await rollingstockSelector.selectRollingStock(electricRollingStockName);
-      await operationalStudiesPage.clickOnRouteTab();
+      await operationalStudiesPage.openRouteTab();
     }
   );
 
@@ -61,7 +61,11 @@ test.describe('Route Tab Verification', () => {
     await routeTab.verifyNoSelectedRoute();
 
     // Perform pathfinding by station trigrams and verify map markers in Chromium
-    await routeTab.performPathfindingByTrigram('WS', 'NES', 'MES');
+    await routeTab.performPathfindingByTrigram({
+      originTrigram: 'WS',
+      destinationTrigram: 'NES',
+      viaTrigram: 'MES',
+    });
     if (browserName === 'chromium') {
       const expectedMapMarkersValues = ['West_station', 'North_East_station', 'Mid_East_station'];
       await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
@@ -74,7 +78,10 @@ test.describe('Route Tab Verification', () => {
   /** *************** Test 2 **************** */
   test('Adding waypoints to a route for operational study', async ({ browserName }) => {
     // Perform pathfinding by station trigrams
-    await routeTab.performPathfindingByTrigram('WS', 'NES');
+    await routeTab.performPathfindingByTrigram({
+      originTrigram: 'WS',
+      destinationTrigram: 'NES',
+    });
 
     // Define waypoints and add them to the route
     const expectedViaValues = [
@@ -103,31 +110,39 @@ test.describe('Route Tab Verification', () => {
     browserName,
   }) => {
     // Perform pathfinding by station trigrams and verify map markers in Chromium
-    await routeTab.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    await routeTab.performPathfindingByTrigram({
+      originTrigram: 'WS',
+      destinationTrigram: 'SES',
+      viaTrigram: 'MWS',
+    });
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
     if (browserName === 'chromium') {
       await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Reverse the itinerary and verify the map markers
-    await routeTab.clickOnReverseItinerary();
+    await routeTab.reverseItinerary();
     if (browserName === 'chromium') {
       const reversedMapMarkersValues = [...expectedMapMarkersValues].reverse();
       await routeTab.verifyMapMarkers(...reversedMapMarkersValues);
     }
 
     // Delete operational points and verify no selected route
-    await routeTab.clickOnDeleteOPButtons();
+    await routeTab.deleteOperationPoints();
     await routeTab.verifyNoSelectedRoute();
 
     // Perform pathfinding again and verify map markers in Chromium
-    await routeTab.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    await routeTab.performPathfindingByTrigram({
+      originTrigram: 'WS',
+      destinationTrigram: 'SES',
+      viaTrigram: 'MWS',
+    });
     if (browserName === 'chromium') {
       await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Delete the itinerary and verify no selected route
-    await routeTab.clickDeleteItineraryButton();
+    await routeTab.deleteItinerary();
     await routeTab.verifyNoSelectedRoute();
   });
 });
