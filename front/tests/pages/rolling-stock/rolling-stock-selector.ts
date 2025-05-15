@@ -10,8 +10,6 @@ class RollingStockSelector extends CommonPage {
 
   readonly rollingStockSelectorModal: Locator;
 
-  private readonly resultsFound: Locator;
-
   private readonly rollingStockModalSearch: Locator;
 
   private readonly rollingStockMiniCards: Locator;
@@ -48,7 +46,6 @@ class RollingStockSelector extends CommonPage {
     this.rollingStockSelectorModal = page.locator('.modal-dialog');
     this.rollingStockList = page.locator('.rollingstock-editor-list .rollingstock-title');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
-    this.resultsFound = page.locator('.modal-dialog').locator('small').first();
     this.rollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
     this.rollingStockMiniCards = page.locator('.rollingstock-selector-minicard');
     this.electricRollingStockFilter = page.locator('label[for="elec"]');
@@ -73,47 +70,61 @@ class RollingStockSelector extends CommonPage {
     await this.rollingStockSelectorButton.click();
   }
 
-  async isAnyRollingstockFound() {
-    const resultFound = (await this.resultsFound.textContent())!;
-    expect(Number(resultFound.slice(0, 1)) >= 1).toBeTruthy();
-  }
-
   async searchRollingstock(rollingstockName: string) {
     await this.rollingStockModalSearch.fill(rollingstockName);
   }
 
-  getRollingstockCardByTestID(rollingstockTestID: string) {
-    return this.rollingStockSelectorModal.getByTestId(rollingstockTestID);
+  getRollingstockCardByName(rollingstockName: string) {
+    return this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingstockName}`);
+  }
+
+  async selectRollingStockCard({
+    name,
+    selectComfort = false,
+    confirmSelection = false,
+  }: {
+    name: string;
+    selectComfort?: boolean;
+    confirmSelection?: boolean;
+  }): Promise<void> {
+    const rollingstockCard = this.getRollingstockCardByName(name);
+
+    await rollingstockCard.click();
+    await expect(rollingstockCard).not.toHaveClass(/inactive/);
+    if (selectComfort) await this.comfortACButton.click();
+    if (confirmSelection) await rollingstockCard.getByTestId('select-rolling-stock-button').click();
+  }
+
+  async verifyRollingStockIsInactive(rollingstockName: string): Promise<void> {
+    const rollingstockCard = this.getRollingstockCardByName(rollingstockName);
+    await expect(rollingstockCard).toHaveClass(/inactive/);
+  }
+
+  async verifySelectedComfortMatches(expectedComfort: string): Promise<void> {
+    const selectedComfort = await this.selectedComfortType.innerText();
+    expect(selectedComfort).toMatch(new RegExp(expectedComfort, 'i'));
   }
 
   getRollingStockMiniCardInfo() {
-    return this.rollingStockMiniCards.locator('.rollingstock-info-end');
+    return this.rollingStockMiniCards.getByTestId('selected-rolling-stock-info');
   }
 
   getRollingStockInfoComfort() {
-    return this.rollingStockMiniCards.locator('.rollingstock-info-comfort');
+    return this.rollingStockMiniCards.getByTestId('rollingstock-info-comfort');
   }
 
-  async closeRollingstockModal() {
-    await this.rollingStockSelectorModal.locator('.close').click();
-  }
-
-  // Select Combustion engine RS filter
   async setThermalRollingStockFilter() {
     await this.thermalRollingStockFilter.click();
   }
 
-  // Select Electric RS filter
   async setElectricRollingStockFilter() {
     await this.electricRollingStockFilter.click();
   }
 
-  // Get the number of RS from the search result text
   async getRollingStockSearchNumber(): Promise<number> {
     return extractNumberFromString(await this.rollingStockSearchResult.innerText());
   }
 
-  // Click to open the empty rolling stock selector.
   async openEmptyRollingStockSelector() {
     await this.emptyRollingStockSelector.click();
   }
@@ -122,9 +133,11 @@ class RollingStockSelector extends CommonPage {
   async selectRollingStock(rollingStockName: string) {
     await this.openEmptyRollingStockSelector();
     await this.searchRollingstock(rollingStockName);
-    const rollingstockCard = this.getRollingstockCardByTestID(`rollingstock-${rollingStockName}`);
-    await rollingstockCard.click();
-    await rollingstockCard.locator('button').click();
+    await this.selectRollingStockCard({
+      name: rollingStockName,
+      selectComfort: false,
+      confirmSelection: true,
+    });
     expect(await this.selectedRollingStockName.first().innerText()).toEqual(rollingStockName);
   }
 }

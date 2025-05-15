@@ -80,6 +80,7 @@ const RollingStockCardButtons = ({
         />
       )}
       <button
+        data-testid="select-rolling-stock-button"
         type="button"
         className="ml-2 btn btn-primary btn-sm"
         onClick={() => onSelectRollingStock(id, comfort as Comfort)}
