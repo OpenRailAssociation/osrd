@@ -23,6 +23,7 @@ import {
   retainSimulation,
   selectSimulation,
   addStdcmSimulations,
+  updateLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -169,6 +170,11 @@ describe('stdcmConfReducers', () => {
       store.dispatch(updateTowedRollingStockID(11));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.towedRollingStockID).toEqual(11);
+    });
+    it('should handle loadingGauge', () => {
+      store.dispatch(updateLoadingGauge('GB'));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.loadingGauge).toEqual('GB');
     });
   });
 
