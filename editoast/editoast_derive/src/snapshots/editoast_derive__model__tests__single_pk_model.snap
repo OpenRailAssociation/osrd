@@ -19,7 +19,6 @@ impl crate::models::Model for Timetable {
     type Row = TimetableRow;
     type Changeset = TimetableChangeset;
     type Table = editoast_models::tables::timetable::table;
-    type Error = editoast_models::model::Error;
 }
 paste::paste! {
     impl Timetable { pub const [< id : snake : upper >] : crate ::models::ModelField <
@@ -90,6 +89,7 @@ impl From<Timetable> for TimetableChangeset {
 impl TimetableChangeset {}
 #[automatically_derived]
 impl crate::models::Exists<(i64)> for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:exists<Timetable>",
         skip_all,
@@ -100,7 +100,7 @@ impl crate::models::Exists<(i64)> for Timetable {
     async fn exists(
         conn: &mut editoast_models::DbConnection,
         id: (i64),
-    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -109,13 +109,12 @@ impl crate::models::Exists<(i64)> for Timetable {
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(i64)> for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve<Timetable>",
         skip_all,
@@ -125,10 +124,7 @@ impl crate::models::Retrieve<(i64)> for Timetable {
     async fn retrieve_real(
         conn: editoast_models::DbConnection,
         id: (i64),
-    ) -> std::result::Result<
-        Option<Timetable>,
-        <Timetable as crate::models::Model>::Error,
-    > {
+    ) -> std::result::Result<Option<Timetable>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::timetable::dsl;
@@ -141,13 +137,12 @@ impl crate::models::Retrieve<(i64)> for Timetable {
             .await
             .map(Timetable::from)
             .optional()
-            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(i64)> for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_static<Timetable>",
         skip_all,
@@ -158,7 +153,7 @@ impl crate::models::DeleteStatic<(i64)> for Timetable {
     async fn delete_static(
         conn: &mut editoast_models::DbConnection,
         id: (i64),
-    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -168,18 +163,17 @@ impl crate::models::DeleteStatic<(i64)> for Timetable {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Create<Timetable> for TimetableChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     async fn create(
         self,
         conn: &mut editoast_models::DbConnection,
-    ) -> std::result::Result<Timetable, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<Timetable, Self::Error> {
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::timetable::dsl;
         use std::ops::DerefMut;
@@ -189,13 +183,12 @@ impl crate::models::Create<Timetable> for TimetableChangeset {
             .get_result::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
-            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Delete for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete<Timetable>",
         skip_all,
@@ -206,7 +199,7 @@ impl crate::models::Delete for Timetable {
     async fn delete(
         &self,
         conn: &mut editoast_models::DbConnection,
-    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::timetable::dsl;
@@ -216,9 +209,7 @@ impl crate::models::Delete for Timetable {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
@@ -315,6 +306,7 @@ impl crate::models::prelude::Count for Timetable {
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Timetable>",
         skip_all,
@@ -327,7 +319,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::timetable::dsl;
         use diesel::prelude::*;
@@ -352,13 +344,13 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Timetable as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -379,7 +371,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::timetable::dsl;
@@ -405,7 +397,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -414,7 +406,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -426,6 +418,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(i64)> for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Timetable>",
         skip_all,
@@ -436,7 +429,7 @@ impl crate::models::DeleteBatch<(i64)> for Timetable {
     async fn delete_batch<I: std::iter::IntoIterator<Item = (i64)> + Send>(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<usize, <Timetable as crate::models::Model>::Error> {
+    ) -> std::result::Result<usize, Self::Error> {
         use editoast_models::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -458,7 +451,7 @@ impl crate::models::DeleteBatch<(i64)> for Timetable {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };

@@ -12,6 +12,7 @@ pub(crate) struct DeleteBatchImpl {
     pub(super) table_mod: syn::Path,
     pub(super) chunk_size_limit: usize,
     pub(super) identifier: Identifier,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for DeleteBatchImpl {
@@ -22,6 +23,7 @@ impl ToTokens for DeleteBatchImpl {
             table_mod,
             chunk_size_limit,
             identifier,
+            error,
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
@@ -43,18 +45,20 @@ impl ToTokens for DeleteBatchImpl {
                 query
                     .execute(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::DeleteBatch<#ty> for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send>(
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> std::result::Result<usize, <#model as crate::models::Model>::Error> {
+                ) -> std::result::Result<usize, Self::Error> {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;

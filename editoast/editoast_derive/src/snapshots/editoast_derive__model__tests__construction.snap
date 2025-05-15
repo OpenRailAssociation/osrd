@@ -25,7 +25,6 @@ impl crate::models::Model for Document {
     type Row = DocumentRow;
     type Changeset = DocumentChangeset;
     type Table = editoast_models::tables::osrd_infra_document::table;
-    type Error = editoast_models::model::Error;
 }
 paste::paste! {
     impl Document { pub const [< id_ : snake : upper >] : crate ::models::ModelField <
@@ -236,6 +235,7 @@ impl<'a> crate::models::Patch<'a, Document> {
 }
 #[automatically_derived]
 impl crate::models::Exists<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
         skip_all,
@@ -246,7 +246,7 @@ impl crate::models::Exists<(String)> for Document {
     async fn exists(
         conn: &mut editoast_models::DbConnection,
         content_type: (String),
-    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -260,13 +260,12 @@ impl crate::models::Exists<(String)> for Document {
             )
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Exists<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
         skip_all,
@@ -277,7 +276,7 @@ impl crate::models::Exists<(i64)> for Document {
     async fn exists(
         conn: &mut editoast_models::DbConnection,
         id_: (i64),
-    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -288,13 +287,12 @@ impl crate::models::Exists<(i64)> for Document {
             )
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
         skip_all,
@@ -304,10 +302,7 @@ impl crate::models::Retrieve<(String)> for Document {
     async fn retrieve_real(
         conn: editoast_models::DbConnection,
         content_type: (String),
-    ) -> std::result::Result<
-        Option<Document>,
-        <Document as crate::models::Model>::Error,
-    > {
+    ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -321,13 +316,12 @@ impl crate::models::Retrieve<(String)> for Document {
             .await
             .map(Document::from)
             .optional()
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
         skip_all,
@@ -337,10 +331,7 @@ impl crate::models::Retrieve<(i64)> for Document {
     async fn retrieve_real(
         conn: editoast_models::DbConnection,
         id_: (i64),
-    ) -> std::result::Result<
-        Option<Document>,
-        <Document as crate::models::Model>::Error,
-    > {
+    ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -353,13 +344,12 @@ impl crate::models::Retrieve<(i64)> for Document {
             .await
             .map(Document::from)
             .optional()
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Update<(String), Document> for DocumentChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
         skip_all,
@@ -370,10 +360,7 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
         self,
         conn: &mut editoast_models::DbConnection,
         content_type: (String),
-    ) -> std::result::Result<
-        Option<Document>,
-        <Document as crate::models::Model>::Error,
-    > {
+    ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -389,13 +376,12 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Update<(i64), Document> for DocumentChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
         skip_all,
@@ -406,10 +392,7 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
         self,
         conn: &mut editoast_models::DbConnection,
         id_: (i64),
-    ) -> std::result::Result<
-        Option<Document>,
-        <Document as crate::models::Model>::Error,
-    > {
+    ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -422,13 +405,12 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
         skip_all,
@@ -439,7 +421,7 @@ impl crate::models::DeleteStatic<(String)> for Document {
     async fn delete_static(
         conn: &mut editoast_models::DbConnection,
         content_type: (String),
-    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -452,13 +434,12 @@ impl crate::models::DeleteStatic<(String)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
         skip_all,
@@ -469,7 +450,7 @@ impl crate::models::DeleteStatic<(i64)> for Document {
     async fn delete_static(
         conn: &mut editoast_models::DbConnection,
         id_: (i64),
-    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -479,18 +460,17 @@ impl crate::models::DeleteStatic<(i64)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Create<Document> for DocumentChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(name = "model:create<Document>", skip_all, err)]
     async fn create(
         self,
         conn: &mut editoast_models::DbConnection,
-    ) -> std::result::Result<Document, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<Document, Self::Error> {
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
@@ -500,13 +480,12 @@ impl crate::models::Create<Document> for DocumentChangeset {
             .get_result::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Delete for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete<Document>",
         skip_all,
@@ -517,7 +496,7 @@ impl crate::models::Delete for Document {
     async fn delete(
         &self,
         conn: &mut editoast_models::DbConnection,
-    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -527,9 +506,7 @@ impl crate::models::Delete for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| <Document as crate::models::Model>::Error::from(
-                editoast_models::model::Error::from(e),
-            ))
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
@@ -626,6 +603,7 @@ impl crate::models::prelude::Count for Document {
 }
 #[automatically_derived]
 impl crate::models::CreateBatch for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(name = "model:create_batch<Document>", skip_all, err)]
     async fn create_batch<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -633,7 +611,7 @@ impl crate::models::CreateBatch for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         values: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
@@ -654,13 +632,13 @@ impl crate::models::CreateBatch for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -672,6 +650,7 @@ impl crate::models::CreateBatch for Document {
 }
 #[automatically_derived]
 impl crate::models::CreateBatchWithKey<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -679,7 +658,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         values: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
@@ -701,7 +680,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -710,7 +689,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -722,6 +701,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::CreateBatchWithKey<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -729,7 +709,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         values: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
@@ -751,7 +731,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -760,7 +740,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -772,6 +752,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
@@ -784,7 +765,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -809,13 +790,13 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -836,7 +817,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -862,7 +843,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -871,7 +852,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -883,6 +864,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
@@ -895,7 +877,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -920,13 +902,13 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -947,7 +929,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     >(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -973,7 +955,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -982,7 +964,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -994,6 +976,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
 }
 #[automatically_derived]
 impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
         skip_all,
@@ -1007,7 +990,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -1037,13 +1020,13 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -1065,7 +1048,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -1096,7 +1079,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -1105,7 +1088,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -1117,6 +1100,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
 }
 #[automatically_derived]
 impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
         skip_all,
@@ -1130,7 +1114,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -1160,13 +1144,13 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -1188,7 +1172,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
+    ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -1219,7 +1203,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                         .map_ok(|row| {
@@ -1228,7 +1212,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -1240,6 +1224,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(String)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
         skip_all,
@@ -1250,7 +1235,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
     async fn delete_batch<I: std::iter::IntoIterator<Item = (String)> + Send>(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<usize, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<usize, Self::Error> {
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1273,7 +1258,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };
@@ -1286,6 +1271,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(i64)> for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
         skip_all,
@@ -1296,7 +1282,7 @@ impl crate::models::DeleteBatch<(i64)> for Document {
     async fn delete_batch<I: std::iter::IntoIterator<Item = (i64)> + Send>(
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> std::result::Result<usize, <Document as crate::models::Model>::Error> {
+    ) -> std::result::Result<usize, Self::Error> {
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1319,7 +1305,7 @@ impl crate::models::DeleteBatch<(i64)> for Document {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                        .map_err(|e| Self::Error::from(
                             editoast_models::model::Error::from(e),
                         ))?
                 };

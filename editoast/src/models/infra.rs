@@ -17,6 +17,7 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use editoast_models::model;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
@@ -105,7 +106,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), ModelError<Self>> {
+    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), model::Error> {
         self.version += 1;
         self.modified = Utc::now();
         self.save(conn).await
@@ -114,7 +115,7 @@ impl Infra {
     pub async fn bump_generated_version(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), ModelError<Self>> {
+    ) -> Result<(), model::Error> {
         self.generated_version = Some(self.version);
         self.save(conn).await
     }

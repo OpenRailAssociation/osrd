@@ -138,7 +138,6 @@ impl ModelConfig {
             model: self.model.clone(),
             row: self.row.name.clone(),
             changeset: self.changeset.ident(),
-            error: self.error.clone(),
             table: self.table.clone(),
         }
     }
@@ -268,6 +267,7 @@ impl ModelConfig {
                     row: self.row.name.clone(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.ops.read)
             })
@@ -283,6 +283,7 @@ impl ModelConfig {
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
                     identifier: identifier.clone(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.has_read())
             })
@@ -301,6 +302,7 @@ impl ModelConfig {
                     changeset: self.changeset.ident(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.ops.update)
             })
@@ -316,6 +318,7 @@ impl ModelConfig {
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
                     identifier: identifier.clone(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.ops.delete)
             })
@@ -330,6 +333,7 @@ impl ModelConfig {
             changeset: self.changeset.ident(),
             empty_changeset: self.changeset_fields().next().is_none(),
             columns: self.columns().cloned().collect(),
+            error: self.error.clone(),
         }
         .tokens_if(self.impl_plan.ops.create)
     }
@@ -339,6 +343,7 @@ impl ModelConfig {
             model: self.model.clone(),
             table_mod: self.table.clone(),
             primary_key: self.get_primary_field_ident(),
+            error: self.error.clone(),
         }
         .tokens_if(self.impl_plan.ops.delete)
     }
@@ -371,6 +376,7 @@ impl ModelConfig {
             changeset: self.changeset.ident(),
             field_count: self.changeset_fields().count(),
             columns: self.columns().cloned().collect(),
+            error: self.error.clone(),
         }
         .tokens_if(self.impl_plan.batch_ops.create)
     }
@@ -389,6 +395,7 @@ impl ModelConfig {
                     identifier: identifier.clone(),
                     field_count: self.changeset_fields().count(),
                     columns: self.columns().cloned().collect(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.batch_ops.create)
             })
@@ -407,6 +414,7 @@ impl ModelConfig {
                     row: self.row.name.clone(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.batch_ops.read)
             })
@@ -427,6 +435,7 @@ impl ModelConfig {
                     identifier: identifier.clone(),
                     primary_key_column: self.get_primary_field_column(),
                     columns: self.columns().cloned().collect(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.batch_ops.update)
             })
@@ -443,6 +452,7 @@ impl ModelConfig {
                     table_mod: self.table.clone(),
                     chunk_size_limit: self.batch_chunk_size_limit,
                     identifier: identifier.clone(),
+                    error: self.error.clone(),
                 }
                 .tokens_if(self.impl_plan.batch_ops.delete)
             })

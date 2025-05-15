@@ -13,12 +13,14 @@ use super::Model;
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 pub trait Create<M: Model>: Sized {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Creates a new row in the database with the values of the changeset and
     /// returns the created model instance
-    async fn create(self, conn: &mut DbConnection) -> Result<M, M::Error>;
+    async fn create(self, conn: &mut DbConnection) -> Result<M, Self::Error>;
 
     /// Just like [Create::create] but discards the error if any and returns `Err(fail())` instead
-    async fn create_or_fail<E: From<M::Error>, F: FnOnce() -> E + Send>(
+    async fn create_or_fail<E: From<Self::Error>, F: FnOnce() -> E + Send>(
         self,
         conn: &mut DbConnection,
         fail: F,
@@ -35,6 +37,8 @@ pub trait Create<M: Model>: Sized {
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 pub trait CreateBatch: Model {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Creates a batch of rows in the database given an iterator of changesets
     ///
     /// Returns a collection of the created rows.
@@ -68,6 +72,8 @@ pub trait CreateBatchWithKey<K>: Model
 where
     K: Send + Clone,
 {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Just like [CreateBatch::create_batch] but the returned models are paired with their key
     async fn create_batch_with_key<
         I: IntoIterator<Item = Self::Changeset> + Send,
