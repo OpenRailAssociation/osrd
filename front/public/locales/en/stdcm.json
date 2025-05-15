@@ -138,10 +138,10 @@
       "formatCreationDate": "{{month}}/{{day}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "and attach this document to your GESICO request.",
       "notFound": "No path was found for this configuration",
-      "remainingTrackConflicts": "{{count}} other conflicts with other train paths",
       "remainingTrackConflicts_one": "one other conflict with another train path",
-      "remainingWorkConflicts": "{{count}} other works in conflict",
+      "remainingTrackConflicts_other": "{{count}} other conflicts with other train paths",
       "remainingWorkConflicts_one": "one other work in conflict",
+      "remainingWorkConflicts_other": "{{count}} other works in conflict",
       "retainThisSimulation": "Retain this simulation",
       "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
       "simulationName": {

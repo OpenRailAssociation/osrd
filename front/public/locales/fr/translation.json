@@ -13,10 +13,10 @@
         "create-actions": "{{creation_count}} créations d’objets",
         "delete-actions": "{{deletion_count}} suppressions d’objets",
         "loading-loader": "Calcul des corrections possibles",
+        "no-fixes-found": "Aucune correction trouvée",
         "saving-loader": "Corrections en cours d'application sur l’infrastructure",
         "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
         "title": "Correcteur automatique d’anomalies",
-        "total-fixes_zero": "Aucune correction trouvée",
         "update-actions": "{{update_count}} modifications d’objets existants"
       },
       "error-level": {
@@ -108,14 +108,14 @@
       "list": {
         "filter-type": "Type d'anomalie",
         "goto-error": "Sélectionner et viualiser sur la carte",
-        "total-all": "{{count}} erreurs et avertissements trouvés",
         "total-all_one": "Une erreur ou un avertissement trouvé",
+        "total-all_other": "{{count}} erreurs et avertissements trouvés",
         "total-all_zero": "Aucune erreur ni avertissement trouvé",
-        "total-errors": "{{count}} erreurs trouvées",
         "total-errors_one": "Une erreur trouvée",
+        "total-errors_other": "{{count}} erreurs trouvées",
         "total-errors_zero": "Aucune erreur trouvée",
-        "total-warnings": "{{count}} avertissements trouvés",
         "total-warnings_one": "Un avertissement trouvés",
+        "total-warnings_other": "{{count}} avertissements trouvés",
         "total-warnings_zero": "Aucun avertissement trouvé"
       },
       "modal": {
@@ -252,11 +252,11 @@
         "alternative-routes": "Créer un itinéraire similaire",
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
         "create-route": "Création d'un nouvel itinéraire",
-        "crossed-detectors": "{{count}} détecteurs",
         "crossed-detectors_one": "Un détecteur",
+        "crossed-detectors_other": "{{count}} détecteurs",
         "crossed-detectors_zero": "Aucun détecteur rencontré",
-        "crossed-track-ranges": "{{count}} sections",
         "crossed-track-ranges_one": "Une section",
+        "crossed-track-ranges_other": "{{count}} sections",
         "crossed-track-ranges_zero": "Aucune section",
         "delete-route": "Supprimer l'itinéraire",
         "delete-route-success": "L'itinéraire a été supprimé avec succès.",
@@ -281,8 +281,8 @@
         "locked-release-detectors": "Une fois cette propriété activée et sauvegardée, celle-ci ne peut plus être désactivée",
         "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
         "preview-candidate": "Sélectionner",
-        "routes": "{{count}} itinéraires compatibles trouvés",
         "routes_one": "Un itinéraire compatible trouvé",
+        "routes_other": "{{count}} itinéraires compatibles trouvés",
         "routes_zero": "Aucun itinéraire compatible trouvé",
         "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
         "search-routes": "Rechercher des itinéraires compatibles",
@@ -559,7 +559,7 @@
     "noInfraSelected": "Aucune infrastructure sélectionnée",
     "yes": "Oui"
   },
-  "infrastructure": "Infrastructure {{name}}",
+  "infrastructure": "Infrastructure",
   "interval-editor": {
     "add": "Ajouter",
     "begin": "Début",
