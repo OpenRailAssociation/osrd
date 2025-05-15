@@ -96,63 +96,52 @@ class RollingstockEditorPage extends CommonPage {
     this.deleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
   }
 
-  // Navigate to the Rolling Stock Editor Page
-  async navigateToPage() {
+  async navigateToRollingStockPage() {
     await this.page.goto('/rolling-stock-editor/');
     // Wait for the page to reach the network idle state
     await this.page.waitForLoadState('networkidle');
     await this.removeViteOverlay();
   }
 
-  // Click the New Rolling Stock Button
-  async clickOnNewRollingstockButton() {
+  async openNewRollingStockForm() {
     await this.newRollingstockButton.click();
   }
 
-  // Search for a rolling stock
   async searchRollingStock(rollingStockName: string) {
     await this.rollingStockSearchInput.fill(rollingStockName);
   }
 
-  // Clear the search for a rolling stock
   async clearSearchRollingStock() {
     await this.rollingStockSearchInput.clear();
   }
 
-  // Select a rolling stock from the list
   async selectRollingStock(rollingStockName: string) {
     const rollingStockCard = this.page.getByTestId(`rollingstock-${rollingStockName}`);
     await rollingStockCard.click();
   }
 
-  // Edit a rolling stock
   async editRollingStock(rollingStockName: string) {
     await this.selectRollingStock(rollingStockName);
     await this.editRollingStockButton.click();
   }
 
-  // Click the Submit Rolling Stock Button
-  async clickOnSubmitRollingstockButton() {
+  async submitRollingstock() {
     await this.submitRollingstockButton.click();
   }
 
-  // Click the Rolling Stock Details Button
-  async clickOnRollingstockDetailsButton() {
+  private async openRollingStockDetails() {
     await this.rollingstockDetailsButton.click();
   }
 
-  // Click the Speed Effort Curves Button
-  async clickOnSpeedEffortCurvesButton() {
+  async openSpeedEffortCurves() {
     await this.speedEffortCurvesButton.click();
   }
 
-  // Get Velocity cell by row number
-  getVelocityCellByRow(row: number) {
+  private getVelocityCellByRow(row: number) {
     return this.rollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').nth(1);
   }
 
-  // Get Velocity cell value by row number
-  async getVelocityCellByRowValue(row: number) {
+  private async getVelocityCellByRowValue(row: number) {
     return this.rollingStockSpreadsheet
       .locator('.dsg-row')
       .nth(row)
@@ -162,15 +151,14 @@ class RollingstockEditorPage extends CommonPage {
       .inputValue();
   }
 
-  // Get Effort cell by row number
-  getEffortCellByRow(row: number) {
+  private getEffortCellByRow(row: number) {
     return this.rollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').last();
   }
 
   // Get Effort cell value by row number
   // Note: This method assumes there are at least three cells per row.
   // If the structure changes, update the .nth() index accordingly.
-  async getEffortCellByRowValue(row: number) {
+  private async getEffortCellByRowValue(row: number) {
     return this.rollingStockSpreadsheet
       .locator('.dsg-row')
       .nth(row)
@@ -181,7 +169,7 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Set spreadsheet cell value
-  async setSpreadsheetCell(value: string, cell: Locator) {
+  private async setSpreadsheetCell(value: string, cell: Locator) {
     await cell.dblclick();
     await this.page.keyboard.press('Backspace');
     await Promise.all(
@@ -191,17 +179,6 @@ class RollingstockEditorPage extends CommonPage {
     );
   }
 
-  // Set spreadsheet row value
-  async setSpreadsheetRow(data: { row: number; velocity: string; effort: string }[]) {
-    for (const { row, effort, velocity } of data) {
-      const velocityCell = this.getVelocityCellByRow(row);
-      const effortCell = this.getEffortCellByRow(row);
-      await this.setSpreadsheetCell(velocity, velocityCell);
-      await this.setSpreadsheetCell(effort, effortCell);
-    }
-  }
-
-  // Select gauge value
   async selectLoadingGauge(value: string) {
     await this.loadingGauge.selectOption(value);
     expect(await this.loadingGauge.inputValue()).toBe(value);
@@ -231,7 +208,6 @@ class RollingstockEditorPage extends CommonPage {
     await expect(checkbox).not.toBeChecked();
   }
 
-  // Fill speed effort curves with or without power restriction
   async fillSpeedEffortCurves(
     speedEffortData: { velocity: string; effort: string }[],
     isPowerRestrictionSpecified: boolean,
@@ -239,7 +215,7 @@ class RollingstockEditorPage extends CommonPage {
     electricalProfilesValue: string
   ) {
     if (!isPowerRestrictionSpecified) {
-      await this.clickOnSpeedEffortCurvesButton();
+      await this.openSpeedEffortCurves();
       await this.tractionModeSelector.getByRole('button').click();
       await this.tractionModeSelector
         .getByRole('button', { name: electricalProfilesValue, exact: true })
@@ -286,7 +262,6 @@ class RollingstockEditorPage extends CommonPage {
     }
   }
 
-  // Verify speed effort curves
   async verifySpeedEffortCurves(
     expectedData: { velocity: string; effort: string }[],
     isPowerRestrictionSpecified: boolean,
@@ -317,12 +292,11 @@ class RollingstockEditorPage extends CommonPage {
     ).toBeHidden();
   }
 
-  // Fill additional details
   async fillAdditionalDetails(details: {
     electricalPowerStartupTime: number;
     raisePantographTime: number;
   }) {
-    await this.clickOnRollingstockDetailsButton();
+    await this.openRollingStockDetails();
     await fillAndCheckInputById(
       this.page,
       'electricalPowerStartupTime',
@@ -332,24 +306,21 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Submit and confirm rolling stock creation
-  async submitRollingStock() {
-    await this.clickOnSubmitRollingstockButton();
+  async confirmRollingStockCreation() {
+    await this.submitRollingstock();
     await this.confirmModalButtonYes.click();
   }
 
-  // Duplicate rolling stock creation
   async duplicateRollingStock() {
     await this.duplicateRollingStockButton.click();
   }
 
-  // Delete a rolling stock
   async deleteRollingStock(rollingStockName: string) {
     await this.selectRollingStock(rollingStockName);
     await this.deleteRollingStockButton.click();
     await this.confirmModalButtonYes.click();
   }
 
-  // Verify rolling stock details table
   async verifyRollingStockDetailsTable(
     expectedValues: { id: string; value: string | string[]; isTranslated?: boolean }[]
   ) {

@@ -82,7 +82,7 @@ class LinkedTrainSection extends STDCMPage {
   }
 
   // Get anterior or posterior searched linked train details
-  async getLinkedTrainDetails(isAnterior: boolean = false) {
+  private async getLinkedTrainDetails(isAnterior: boolean = false) {
     const trainResultInfosButton = isAnterior
       ? this.posteriorLinkedTrainResultInfosButton
       : this.anteriorLinkedTrainResultInfosButton;

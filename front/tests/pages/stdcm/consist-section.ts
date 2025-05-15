@@ -29,7 +29,6 @@ class ConsistSection {
     this.tractionEngineField = page.locator('#tractionEngine');
   }
 
-  // Verify default consist input fields are empty
   async verifyDefaultConsistFields() {
     const emptyFields = [
       this.tractionEngineField,
@@ -42,7 +41,6 @@ class ConsistSection {
     await expect(this.speedLimitTagField).toHaveValue(DEFAULT_DETAILS.speedLimitTag);
   }
 
-  // Fill fields with test values in the consist section
   async fillAndVerifyConsistDetails(
     consistFields: ConsistFields,
     tractionEngineTonnage: string,

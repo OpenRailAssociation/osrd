@@ -25,7 +25,6 @@ class SimulationSettingsTab {
     await expect(this.electricalProfilesSwitch).toBeChecked();
   }
 
-  // Deactivate electrical profiles switch
   async deactivateElectricalProfile() {
     await this.electricalProfilesSwitch.setChecked(false, { force: true });
     await expect(this.electricalProfilesSwitch).not.toBeChecked();

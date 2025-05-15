@@ -63,7 +63,7 @@ class ScenarioPage extends CommonPage {
 
   // Update a scenario based on the provided details.
   async updateScenario(details: ScenarioDetails) {
-    await this.clickOnUpdateScenario();
+    await this.openScenarioEditForm();
     await this.fillScenarioDetails(details);
     await this.scenarioConfirmUpdateButton.click();
     await this.page.waitForURL('**/scenarios/*');
@@ -117,35 +117,30 @@ class ScenarioPage extends CommonPage {
     }
   }
 
-  // Retrieve a scenario by its name.
   getScenarioByName(name: string) {
     return this.page.locator(`text=${name}`);
   }
 
-  // Retrieve scenario tags by ID.
   getScenarioTags(id: string) {
     return this.page.getByTestId(`scenario-card-${id}`).locator('.scenario-card-tags');
   }
 
-  // Open a Scenario by its test ID (The Test ID is the same as the Name).
-  async openScenarioByTestId(scenarioTestId: string) {
-    await this.page.getByTestId(scenarioTestId).first().hover({ trial: true });
-    await this.page.getByTestId(scenarioTestId).getByTestId('openScenario').click();
+  async openScenarioByName(scenarioName: string) {
+    await this.page.getByTestId(scenarioName).first().hover({ trial: true });
+    await this.page.getByTestId(scenarioName).getByTestId('openScenario').click();
   }
 
   // Set the scenario electric profile by name.
-  async setScenarioElectricProfileByName(electricProfileName: string) {
+  private async setScenarioElectricProfileByName(electricProfileName: string) {
     await this.scenarioElectricProfileSelect.click();
     await this.page.locator('#select-toggle').getByText(electricProfileName).click();
   }
 
-  // Click on the update scenario button.
-  async clickOnUpdateScenario() {
+  async openScenarioEditForm() {
     await this.scenarioDescription.hover();
     await this.scenarioUpdateButton.click();
   }
 
-  // Delete a scenario.
   async deleteScenario() {
     await this.scenarioConfirmDeleteButton.click();
     await expect(this.scenarioConfirmDeleteButton).not.toBeVisible();

@@ -30,8 +30,6 @@ class PacedTrainSection extends CommonPage {
 
   private readonly testedOccurrenceArrivalTime: Locator;
 
-  readonly timesStopsDataSheet: Locator;
-
   private readonly occurrencesCount: Locator;
 
   private readonly manageTrainSchedulePage: Locator;
@@ -52,14 +50,13 @@ class PacedTrainSection extends CommonPage {
     this.testedOccurrenceName = this.testedPacedTrain.locator('.occurrence-item-name');
     this.testedOccurrenceStartTime = this.testedPacedTrain.locator('.departure-time');
     this.testedOccurrenceArrivalTime = this.testedPacedTrain.locator('.arrival-time');
-    this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
   }
 
   // Only the zone with the role button opens the occurrence list
-  async getPacedTrainToClickableZone(index: number) {
+  private async getPacedTrainToClickableZone(index: number) {
     return this.pacedTrainItem.nth(index).getByTestId('paced-train-main-info');
   }
 
@@ -126,14 +123,14 @@ class PacedTrainSection extends CommonPage {
     await this.testedPacedTrainToggleIcon.click();
   }
 
-  async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
+  private async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
     const pacedTrainOccurrencesCount = this.occurrencesCount.nth(index);
     await expect(pacedTrainOccurrencesCount).toBeVisible();
     const occurrencesCount = await pacedTrainOccurrencesCount.textContent();
     expect(+occurrencesCount!).toEqual(expectedOccurrencesCount);
   }
 
-  async verifyOccurrenceName(
+  private async verifyOccurrenceName(
     occurrenceIndex: number,
     expectedName: string,
     duplicate?: { copyTranslation?: string }
@@ -146,17 +143,17 @@ class PacedTrainSection extends CommonPage {
     await expect(occurrenceNameLocator).toHaveText(expectedName);
   }
 
-  async verifyOccurrenceStartTime(occurrenceIndex: number, expectedStartTime: string) {
+  private async verifyOccurrenceStartTime(occurrenceIndex: number, expectedStartTime: string) {
     const occurrenceStartTimeLocator = this.testedOccurrenceStartTime.nth(occurrenceIndex);
     await expect(occurrenceStartTimeLocator).toHaveText(expectedStartTime);
   }
 
-  async verifyOccurrenceArrivalTime(occurrenceIndex: number, expectedArrivalTime: string) {
+  private async verifyOccurrenceArrivalTime(occurrenceIndex: number, expectedArrivalTime: string) {
     const occurrenceArrivalTimeLocator = this.testedOccurrenceArrivalTime.nth(occurrenceIndex);
     await expect(occurrenceArrivalTimeLocator).toHaveText(expectedArrivalTime);
   }
 
-  async getActionButtonsLocators(
+  private async getActionButtonsLocators(
     itemIndex: number,
     itemType: 'paced-train' | 'occurrence'
   ): Promise<Record<string, Locator>> {
@@ -178,7 +175,7 @@ class PacedTrainSection extends CommonPage {
     };
   }
 
-  async verifyItemsVisibility(
+  private async verifyItemsVisibility(
     itemIndex: number,
     itemType: 'paced-train' | 'occurrence'
   ): Promise<void> {
@@ -194,7 +191,7 @@ class PacedTrainSection extends CommonPage {
     );
   }
 
-  async verifyOccurrenceDetails(
+  private async verifyOccurrenceDetails(
     occurrenceData: OccurrenceDetails,
     occurrenceIndex: number,
     duplicate?: {
@@ -215,7 +212,7 @@ class PacedTrainSection extends CommonPage {
     await this.verifyItemsVisibility(occurrenceIndex, 'occurrence');
   }
 
-  async clickOnOccurrence({
+  async selectOccurrence({
     pacedTrainIndex,
     occurrenceIndex,
   }: {
@@ -276,7 +273,7 @@ class PacedTrainSection extends CommonPage {
     await expect(timetableItemToDelete).not.toHaveText(name); // the item at this index should not be the same
   }
 
-  async verifyPacedTrainHasBeenDeleted(
+  private async verifyPacedTrainHasBeenDeleted(
     deletedPacedTrainName: string,
     translations: TimetableFilterTranslations
   ) {

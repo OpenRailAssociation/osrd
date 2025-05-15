@@ -69,7 +69,6 @@ class ViaSection extends STDCMPage {
     return this.getViaCard(viaNumber).locator('.status-message');
   }
 
-  // Add a via card, verify fields, and delete it
   async addAndDeletedDefaultVia() {
     await this.addViaButton.click();
     await this.page.waitForTimeout(EXPLICIT_UI_STABILITY_TIMEOUT); // Wait for the animation to complete

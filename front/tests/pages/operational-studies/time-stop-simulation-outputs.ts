@@ -1,7 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import ScenarioTimetableSection from './scenario-timetable-section';
-import { LOAD_PAGE_TIMEOUT } from '../../assets/constants/timeout-const';
+import OpSimulationResultPage from './simulation-results-page';
 import { getTranslations } from '../../utils';
 import { normalizeStationData } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
@@ -14,7 +13,7 @@ const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
-class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
+class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
   private readonly columnHeaders: Locator;
 
   private readonly tableRows: Locator;
@@ -28,14 +27,14 @@ class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
   }
 
   // Retrieve the cell value based on the locator type
-  static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
+  private static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
     return isInput
       ? (await cell.locator('input').getAttribute('value'))?.trim() || ''
       : (await cell.textContent())?.trim() || '';
   }
 
   // Extract the column index for each header name
-  async getHeaderIndexMap(): Promise<Record<string, number>> {
+  private async getHeaderIndexMap(): Promise<Record<string, number>> {
     const headers = await this.columnHeaders.allTextContents();
     const headerMap: Record<string, number> = {};
     headers.forEach((header, index) => {
@@ -150,12 +149,6 @@ class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
     const normalizedActualData = normalizeStationData(actualTableData);
     const normalizedExpectedData = normalizeStationData(expectedTableData);
     expect(normalizedActualData).toEqual(normalizedExpectedData);
-  }
-
-  // Wait for the Times and Stops simulation data sheet to be fully loaded
-  async verifyTimesStopsDataSheetVisibility(): Promise<void> {
-    await this.timesStopsDataSheet.waitFor({ timeout: LOAD_PAGE_TIMEOUT });
-    await this.timesStopsDataSheet.scrollIntoViewIfNeeded();
   }
 }
 

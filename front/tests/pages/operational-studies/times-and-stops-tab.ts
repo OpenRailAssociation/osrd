@@ -13,7 +13,7 @@ const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
 ).timeStopTable;
 
 class TimesAndStopsTab {
-  readonly page: Page;
+  private readonly page: Page;
 
   readonly columnHeaders: Locator;
 
@@ -21,7 +21,7 @@ class TimesAndStopsTab {
 
   private readonly tableRows: Locator;
 
-  readonly deleteButtons: Locator;
+  private readonly clearButtons: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -30,7 +30,7 @@ class TimesAndStopsTab {
       '[class^="dsg-cell dsg-cell-header"] .dsg-cell-header-container'
     );
     this.tableRows = page.locator('.dsg-row');
-    this.deleteButtons = page.getByTestId('remove-via-button');
+    this.clearButtons = page.getByTestId('remove-via-button');
   }
 
   // Verify the count of rows with 'activeRow' class
@@ -101,12 +101,12 @@ class TimesAndStopsTab {
     }
   }
 
-  // Verify delete buttons visibility and count
-  async verifyDeleteButtons(expectedCount: number) {
-    await expect(this.deleteButtons).toHaveCount(expectedCount);
-    const deleteButtonsArray = this.deleteButtons;
+  // Verify clear buttons visibility and count
+  async verifyClearButtons(expectedCount: number) {
+    await expect(this.clearButtons).toHaveCount(expectedCount);
+    const clearButtonsArray = this.clearButtons;
     for (let buttonIndex = 0; buttonIndex < expectedCount; buttonIndex += 1) {
-      await expect(deleteButtonsArray.nth(buttonIndex)).toBeVisible();
+      await expect(clearButtonsArray.nth(buttonIndex)).toBeVisible();
     }
   }
 
@@ -126,6 +126,10 @@ class TimesAndStopsTab {
 
     // Compare actual output to expected data
     expect(actualTableData).toEqual(expectedTableData);
+  }
+
+  async clearRow(rowIndex: number) {
+    await this.clearButtons.nth(rowIndex).click();
   }
 }
 
