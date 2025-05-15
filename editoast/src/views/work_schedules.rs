@@ -27,7 +27,6 @@ use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackRange;
-use itertools::Either;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -65,7 +64,7 @@ struct WorkScheduleGroupIdParam {
     id: i64,
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "work_schedule")]
 enum WorkScheduleError {
     #[error("Name '{name}' already used")]
@@ -76,13 +75,8 @@ enum WorkScheduleError {
     WorkScheduleGroupNotFound { id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(Either<work_schedules::Error, work_schedules::WsGroupError>),
-}
-
-impl From<work_schedules::Error> for WorkScheduleError {
-    fn from(e: work_schedules::Error) -> Self {
-        WorkScheduleError::Database(Either::Left(e))
-    }
+    #[from(editoast_models::model::Error)]
+    Database(work_schedules::WsGroupError),
 }
 
 impl From<work_schedules::WsGroupError> for WorkScheduleError {
@@ -91,7 +85,7 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
             work_schedules::WsGroupError::NameAlreadyUsed { name } => {
                 WorkScheduleError::NameAlreadyUsed { name }
             }
-            e => WorkScheduleError::Database(Either::Right(e)),
+            e => WorkScheduleError::Database(e),
         }
     }
 }
@@ -202,9 +196,8 @@ async fn create(
             work_schedule.into_work_schedule_changeset(work_schedule_group.work_schedule_group_id)
         })
         .collect::<Vec<_>>();
-    let _work_schedules: Vec<_> = WorkSchedule::create_batch(conn, work_schedules_changesets)
-        .await
-        .map_err(WorkScheduleError::from)?;
+    let _work_schedules: Vec<_> =
+        WorkSchedule::create_batch(conn, work_schedules_changesets).await?;
 
     Ok(Json(WorkScheduleCreateResponse {
         work_schedule_group_id: work_schedule_group.work_schedule_group_id,
@@ -456,9 +449,7 @@ async fn put_in_group(
                 .map(|work_schedule| work_schedule.into_work_schedule_changeset(group_id))
                 .collect::<Vec<_>>();
             let work_schedules =
-                WorkSchedule::create_batch(&mut conn.clone(), work_schedules_changesets)
-                    .await
-                    .map_err(WorkScheduleError::from)?;
+                WorkSchedule::create_batch(&mut conn.clone(), work_schedules_changesets).await?;
 
             Ok(Json(work_schedules))
         })
