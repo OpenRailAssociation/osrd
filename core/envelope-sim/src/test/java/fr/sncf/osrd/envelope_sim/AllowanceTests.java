@@ -604,7 +604,7 @@ public class AllowanceTests {
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double start = 0;
         for (var part : maxEffortEnvelope) {
-            if (part.hasAttr(EnvelopeProfile.BRAKING) && !part.hasAttr(StopMeta.class)) {
+            if (part.hasAttr(EnvelopeProfile.BRAKING)) {
                 start = (part.getBeginPos() + part.getEndPos()) / 2;
                 break;
             }
