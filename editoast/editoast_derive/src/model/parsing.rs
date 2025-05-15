@@ -9,11 +9,15 @@ use super::FieldTransformation;
 use super::Fields;
 use super::ModelConfig;
 use super::ModelField;
+use super::args::DetailedErrorArgs;
+use super::args::ErrorArgs;
 use super::args::GeneratedTypeArgs;
 use super::args::ImplPlan;
 use super::args::ModelArgs;
 use super::args::ModelFieldArgs;
+use super::args::RwErrorArgs;
 use super::config::Changeset;
+use super::config::Errors;
 use super::config::Row;
 use super::crud::Crud;
 use super::identifier::Identifier;
@@ -220,9 +224,10 @@ impl ModelConfig {
             fields,
             row,
             changeset,
-            error: options
+            errors: options
                 .error
-                .unwrap_or(syn::parse_quote! { editoast_models::model::Error }),
+                .map(Errors::from_args)
+                .unwrap_or_else(|| Ok(Errors::default()))?,
             identifiers: typed_identifiers,
             preferred_identifier: preferred_typed_identifier,
             primary_identifier: primary_typed_identifier,
@@ -289,6 +294,62 @@ impl FieldTransformation {
             _ => Err(Error::custom(
                 "Model: remote, json, geo, to_string, to_enum and uom_unit attributes are mutually exclusive",
             )),
+        }
+    }
+}
+
+impl Errors {
+    fn from_args(args: ErrorArgs) -> darling::Result<Self> {
+        match args {
+            ErrorArgs::Single(path) => Ok(Self {
+                create: path.clone(),
+                retrieve: path.clone(),
+                update: path.clone(),
+                delete: path,
+            }),
+            ErrorArgs::Rw(RwErrorArgs { read, write, .. }) => {
+                let Errors {
+                    retrieve, create, ..
+                } = Errors::default();
+                let read = read.unwrap_or(retrieve);
+                let write = write.unwrap_or(create);
+                Ok(Self {
+                    retrieve: read,
+                    create: write.clone(),
+                    update: write.clone(),
+                    delete: write,
+                })
+            }
+            ErrorArgs::Detailed(DetailedErrorArgs {
+                create,
+                retrieve,
+                update,
+                delete,
+            }) => {
+                let Errors {
+                    create: default_create,
+                    retrieve: default_retrieve,
+                    update: default_update,
+                    delete: default_delete,
+                } = Errors::default();
+                Ok(Self {
+                    retrieve: retrieve.unwrap_or(default_retrieve),
+                    create: create.unwrap_or(default_create),
+                    update: update.unwrap_or(default_update),
+                    delete: delete.unwrap_or(default_delete),
+                })
+            }
+        }
+    }
+}
+
+impl Default for Errors {
+    fn default() -> Self {
+        Self {
+            create: syn::parse_quote! { editoast_models::model::Error },
+            retrieve: syn::parse_quote! { editoast_models::model::Error },
+            update: syn::parse_quote! { editoast_models::model::Error },
+            delete: syn::parse_quote! { editoast_models::model::Error },
         }
     }
 }
