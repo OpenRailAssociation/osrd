@@ -283,6 +283,9 @@ export type StdcmTranslations = {
       simulationName: {
         withoutOutputs: string;
       };
+      status: {
+        completed: string;
+      };
     };
   };
   stdcmErrors: {
