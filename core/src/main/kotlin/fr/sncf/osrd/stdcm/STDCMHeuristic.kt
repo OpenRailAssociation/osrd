@@ -100,11 +100,10 @@ class STDCMHeuristicBuilder(
     private val maxRunningTime: Double,
     private val rollingStock: PhysicsRollingStock,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager =
-        TemporarySpeedLimitManager()
+        TemporarySpeedLimitManager(),
+    private val mrspBuilder: CachedBlockMRSPBuilder,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
-    private val mrspBuilder =
-        CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock, temporarySpeedLimitManager)
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     @WithSpan(value = "Initializing STDCM heuristic", kind = SpanKind.SERVER)
