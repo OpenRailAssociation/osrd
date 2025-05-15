@@ -4,14 +4,14 @@ use axum::extract::Path;
 use axum::extract::State;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
 
-use crate::AppState;
 use crate::error::Result;
-use crate::infra_cache::InfraCache;
-use crate::infra_cache::ObjectCache;
 use crate::models::Infra;
+use crate::models::TrackSectionModel;
 use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -43,11 +43,7 @@ enum LinesErrors {
 )]
 async fn get_line_bbox(
     Path((infra_id, line_code)): Path<(i64, i64)>,
-    State(AppState {
-        infra_caches,
-        db_pool,
-        ..
-    }): State<AppState>,
+    State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
     let authorized = auth
@@ -64,19 +60,22 @@ async fn get_line_bbox(
     #[expect(deprecated)]
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
-    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+
     let mut bbox = BoundingBox::default();
-    let mut tracksections = infra_cache
-        .track_sections()
-        .values()
-        .map(ObjectCache::unwrap_track_section)
-        .filter(|track| track.line_code == Some(line_code))
+    let selection_settings =
+        SelectionSettings::new().filter(move || TrackSectionModel::INFRA_ID.eq(infra.id));
+    let tracksections_model = TrackSectionModel::list(conn, selection_settings).await?;
+    let mut tracksections = tracksections_model
+        .into_iter()
+        .map(TrackSection::from)
+        .filter(|track| track.extensions.sncf.as_ref().expect("track section extension 'sncf' is required for /infra/{id}/lines/{line_code}/bbox").line_code == line_code)
         .peekable();
+
     if tracksections.peek().is_none() {
         return Err(LinesErrors::LineNotFound { line_code }.into());
     }
     tracksections.for_each(|track| {
-        bbox.union(&track.bbox_geo);
+        bbox.union(&track.geo_bbox());
     });
 
     Ok(Json(bbox))
