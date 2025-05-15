@@ -12,8 +12,9 @@ use strum::FromRepr;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Model)]
-#[model(table = editoast_models::tables::work_schedule_group, error = WsGroupError)]
+#[model(table = editoast_models::tables::work_schedule_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]
+#[model(error(create = WsGroupError, update = WsGroupError))]
 pub struct WorkScheduleGroup {
     pub id: i64,
     pub creation_date: DateTime<Utc>,
