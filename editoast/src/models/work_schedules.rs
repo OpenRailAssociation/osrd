@@ -54,7 +54,7 @@ pub enum WorkScheduleType {
 }
 
 #[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema)]
-#[model(table = editoast_models::tables::work_schedule, error = Error)]
+#[model(table = editoast_models::tables::work_schedule)]
 #[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {
     pub id: i64,
@@ -67,10 +67,6 @@ pub struct WorkSchedule {
     pub work_schedule_type: WorkScheduleType,
     pub work_schedule_group_id: i64,
 }
-
-#[derive(Debug, thiserror::Error)]
-#[error(transparent)]
-pub struct Error(#[from] model::Error);
 
 impl WorkSchedule {
     pub fn as_core_work_schedule(
