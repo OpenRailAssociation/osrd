@@ -16,7 +16,8 @@
         "saving-loader": "Applying fixes to infrastructure",
         "text": "The following actions will be applied to correct some of the infrastructure's errors:",
         "title": "Automatic error corrector",
-        "total-fixes_zero": "No fixes found.",
+        "total-fixes_one": "",
+        "total-fixes_other": "",
         "update-actions": "{{update_count}} existing object updates"
       },
       "error-level": {
@@ -100,23 +101,21 @@
       "label": {
         "title-with-filter_one": "{{count}} issues on {{total}}",
         "title-with-filter_other": "{{count}} issues on {{total}}",
-        "title-with-filter_zero": "zero issues on {{total}}",
         "title_one": "{{count}} issue",
-        "title_other": "{{count}} issues",
-        "title_zero": "No issue"
+        "title_other": "{{count}} issues"
       },
       "list": {
         "filter-type": "Error type",
         "goto-error": "Select and locate on the map",
         "total-all": "{{count}} errors and warnings found",
         "total-all_one": "One error or warning found",
-        "total-all_zero": "No errors and warnings found",
+        "total-all_other": "",
         "total-errors": "{{count}} errors found",
         "total-errors_one": "One error found",
-        "total-errors_zero": "No errors found",
+        "total-errors_other": "",
         "total-warnings": "{{count}} warnings found",
         "total-warnings_one": "One warning found",
-        "total-warnings_zero": "No warnings found"
+        "total-warnings_other": ""
       },
       "modal": {
         "title": "Infrastructure {{id}} error list"
@@ -224,8 +223,8 @@
         },
         "linked-routes": "Linked routes",
         "no-linked-route": "No linked routes",
-        "routes-ending-at": "Ending at...",
-        "routes-starting-from": "Starting from..."
+        "routes-ending-at": "Ending at…",
+        "routes-starting-from": "Starting from…"
       },
       "range-edition": {
         "edit-track-range-end": "Edit arrival point",
@@ -254,10 +253,10 @@
         "create-route": "Create a new route",
         "crossed-detectors": "{{count}} detectors",
         "crossed-detectors_one": "One detector",
-        "crossed-detectors_zero": "No crossed detectors",
+        "crossed-detectors_other": "",
         "crossed-track-ranges": "{{count}} track ranges",
         "crossed-track-ranges_one": "Train block",
-        "crossed-track-ranges_zero": "No block",
+        "crossed-track-ranges_other": "",
         "delete-route": "Delete the route",
         "delete-route-success": "The route has been successfully deleted.",
         "directions": {
@@ -283,7 +282,7 @@
         "preview-candidate": "Select",
         "routes": "{{count}} compatible routes found",
         "routes_one": "One compatible route found",
-        "routes_zero": "No compatible route found",
+        "routes_other": "",
         "save-new-route": "Save the new route",
         "save-route": "Save the route",
         "save-route-success": "The route was successfully saved.",
@@ -324,7 +323,6 @@
         "linked-to-line_other": "linked to track sections",
         "linked-to-n-lines_one": "related with one TS",
         "linked-to-n-lines_other": "related to {{count}} TS",
-        "linked-to-n-lines_zero": "related with no TS",
         "no-selection": "No item selected",
         "of-type": "of type",
         "selection": "{{count}} item selected",
@@ -555,7 +553,6 @@
     "infraName": "Infrastructure name",
     "infrasFound_one": "{{count}} infrastructure found",
     "infrasFound_other": "{{count}} infrastructures found",
-    "infrasFound_zero": "No infrastructure found",
     "locked": "Locked",
     "no": "No",
     "noInfraSelected": "No selected infrastructure",
@@ -575,7 +572,7 @@
   "jsonUpload": {
     "badJSON": "The JSON file is malformed",
     "emptyFile": "The file is empty",
-    "notJSONFormat": "The file is not in JSON format ",
+    "notJSONFormat": "The file is not in JSON format",
     "uploadError": "Error occurred while upload the file"
   },
   "map": "Map viewer",
@@ -604,7 +601,6 @@
     "placeholder-signal": "Signal name",
     "results-count_one": "1 result",
     "results-count_other": "{{ count }} results",
-    "results-count_zero": "No results",
     "signal": "Signal",
     "signal-settings": {
       "Nf": "Not crossable",
@@ -781,7 +777,6 @@
     "raisePantographTime": "Pantograph lift time",
     "resultFound_one": "1 result found",
     "resultFound_other": "{{count}} results found",
-    "resultFound_zero": "No results found",
     "rollingResistance": "Resistance to movement",
     "rollingResistanceA": "Solid friction (a)",
     "rollingResistanceB": "Viscosity friction (b)",
@@ -800,7 +795,7 @@
     "thermal": "Combustion engine",
     "tractionModes": "Traction modes",
     "unspecified": "Unspecified",
-    "waitingLoader": "Please wait, rolling stock database loading..."
+    "waitingLoader": "Please wait, rolling stock database loading…"
   },
   "rollingStockEditor": "Rolling stock editor",
   "stdcm": "Short term path request",
