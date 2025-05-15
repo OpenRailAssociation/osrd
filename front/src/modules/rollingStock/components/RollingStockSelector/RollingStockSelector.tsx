@@ -91,7 +91,10 @@ const RollingStockSelector = ({
                   </div>
                 </div>
                 <div className="rollingstock-minicard-end">
-                  <span className="rollingstock-info-comfort text-uppercase small">
+                  <span
+                    data-testid="rollingstock-info-comfort"
+                    className="rollingstock-info-comfort text-uppercase small"
+                  >
                     <span className="text-uppercase font-weight-bold">
                       {t('rollingStock.comfort')}
                     </span>
