@@ -11,6 +11,7 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
+use editoast_models::model;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -32,7 +33,6 @@ use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Tags;
 use crate::models::Update;
-use crate::models::project;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 
@@ -72,7 +72,7 @@ pub enum ProjectError {
     #[error(transparent)]
     #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(project::Error),
+    Database(model::Error),
 }
 
 /// Creation form for a project
@@ -258,12 +258,14 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let project =
-        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
-    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
+    let mut conn = db_pool.get().await?;
+    let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
+        ProjectError::NotFound { project_id }
+    })
+    .await?;
+    Ok(Json(
+        ProjectWithStudyCount::try_fetch(&mut conn, project).await?,
+    ))
 }
 
 /// Delete a project
@@ -294,15 +296,11 @@ async fn delete(
         .await?
         .transaction(|mut conn| {
             async move {
-                #[expect(deprecated)]
-                let project = Project::retrieve_or_fail(&mut conn, project_id, || {
+                let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
-                project
-                    .delete_and_prune_document(&mut conn)
-                    .await
-                    .map_err(ProjectError::from)?;
+                project.delete_and_prune_document(&mut conn).await?;
                 Ok::<_, ProjectError>(())
             }
             .scope_boxed()

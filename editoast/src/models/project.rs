@@ -24,7 +24,6 @@ editoast_common::schemas! {
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::project)]
 #[model(gen(ops = crud, list))]
-#[model(error = Error)]
 pub struct Project {
     pub id: i64,
     pub name: String,
@@ -40,17 +39,8 @@ pub struct Project {
     pub image: Option<i64>,
 }
 
-#[derive(Debug, thiserror::Error, derive_more::From)]
-pub enum Error {
-    #[error(transparent)]
-    #[from(forward)]
-    Database(model::Error),
-    #[error(transparent)]
-    Legacy(#[from] InternalError),
-}
-
 #[tracing::instrument(skip(conn), ret, err)]
-async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), Error> {
+async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), model::Error> {
     let res = conn
         .transaction(|mut conn| {
             async move {
@@ -79,13 +69,16 @@ async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), Err
         {
             Ok(())
         }
-        Err(e) => Err(self::Error::from(e)),
+        Err(e) => Err(e),
     }
 }
 
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<(), Error> {
+    pub async fn update_last_modified(
+        &mut self,
+        conn: &mut DbConnection,
+    ) -> Result<(), model::Error> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
@@ -107,7 +100,7 @@ impl Project {
         &mut self,
         conn: &mut DbConnection,
         new_doc_id: Option<i64>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), model::Error> {
         conn.transaction(|mut conn| {
             async move {
                 let old_doc_id = self.image;
@@ -118,7 +111,7 @@ impl Project {
                         try_delete_document(&conn, old_doc_id).await?;
                     }
                 }
-                Ok::<_, Error>(())
+                Ok::<_, model::Error>(())
             }
             .scope_boxed()
         })
@@ -128,7 +121,10 @@ impl Project {
 
     /// Deletes a project and prunes the image if it is not used by another project
     #[tracing::instrument(skip(conn), ret, err)]
-    pub async fn delete_and_prune_document(self, conn: &mut DbConnection) -> Result<(), Error> {
+    pub async fn delete_and_prune_document(
+        self,
+        conn: &mut DbConnection,
+    ) -> Result<(), model::Error> {
         conn.transaction(|mut conn| {
             async move {
                 if !self.delete(&mut conn).await? {
@@ -164,8 +160,7 @@ impl Project {
     {
         conn.transaction(|mut conn| {
             async move {
-                #[expect(deprecated)]
-                let mut project = Self::retrieve_or_fail(&mut conn, project_id, || {
+                let mut project = Self::retrieve_real_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
@@ -176,11 +171,7 @@ impl Project {
                     .patch()
                     .last_modification(Utc::now().naive_utc())
                     .apply(&mut conn)
-                    .await
-                    .map_err(|err| match err {
-                        Error::Database(e) => e.into(),
-                        Error::Legacy(e) => e,
-                    })?;
+                    .await?;
 
                 res.map(|t| (t, project)).map_err(Into::into)
             }

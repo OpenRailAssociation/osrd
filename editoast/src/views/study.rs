@@ -29,7 +29,6 @@ use crate::models::Project;
 use crate::models::Study;
 use crate::models::Tags;
 use crate::models::prelude::*;
-use crate::models::project;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
@@ -425,8 +424,7 @@ async fn list(
     match Project::exists(&mut db_pool.get().await?, project_id).await {
         Ok(true) => (),
         Ok(false) => return Err(ProjectError::NotFound { project_id }.into()),
-        Err(project::Error::Legacy(err)) => return Err(err),
-        Err(project::Error::Database(err)) => return Err(err.into()),
+        Err(err) => return Err(err.into()),
     }
 
     let settings = pagination_params
