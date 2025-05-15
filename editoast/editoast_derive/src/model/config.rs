@@ -18,7 +18,7 @@ pub(crate) struct ModelConfig {
     pub(crate) fields: Fields,
     pub(crate) row: Row,
     pub(crate) changeset: Changeset,
-    pub(crate) error: syn::Path,
+    pub(crate) errors: Errors,
     pub(crate) identifiers: BTreeSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier,  // preferred_identifier ∈ identifiers
     pub(crate) primary_identifier: Identifier,    // primary_identifier ∈ identifiers
@@ -60,6 +60,14 @@ pub(crate) enum FieldTransformation {
     ToString,
     ToEnum(syn::Type),
     UomUnit(syn::Path),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub(crate) struct Errors {
+    pub(crate) create: syn::Path,
+    pub(crate) retrieve: syn::Path,
+    pub(crate) update: syn::Path,
+    pub(crate) delete: syn::Path,
 }
 
 #[derive(Debug, PartialEq)]
