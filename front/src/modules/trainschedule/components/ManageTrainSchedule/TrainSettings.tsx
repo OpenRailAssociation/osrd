@@ -34,8 +34,10 @@ import { useDebounce } from 'utils/helpers';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
-export default function TrainSettings() {
+const TrainSettings = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t: tRollingStock } = useTranslation();
+  const dispatch = useAppDispatch();
   const categoryOptions = useCategoryOptions();
 
   const labels = useSelector(getLabels);
@@ -47,30 +49,20 @@ export default function TrainSettings() {
   const [name, setName] = useState<string>(nameFromStore);
   const [startTime, setStartTime] = useState(formatLocalDateTime(startTimeFromStore));
   const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
-  const [trainCategory, setTrainCategory] = useState<CategoryOption | null>(
-    categoryFromStore
-      ? {
-          id: categoryFromStore,
-          label: t(`categoriesOptions.${categoryFromStore}`),
-        }
-      : null
-  );
-  const dispatch = useAppDispatch();
+  const [trainCategory, setTrainCategory] = useState<CategoryOption>();
 
   const debouncedName = useDebounce(name, 500);
   const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);
   const debouncedStartTime = useDebounce(startTime, 500);
 
   const removeTag = (idx: number) => {
-    const newTags = Array.from(labels);
+    const newTags = [...labels];
     newTags.splice(idx, 1);
     dispatch(updateLabels(newTags));
   };
 
   const addTag = (tag: string) => {
-    const newTags = Array.from(labels);
-    newTags.push(tag);
-    dispatch(updateLabels(newTags));
+    dispatch(updateLabels([...labels, tag]));
   };
 
   useEffect(() => {
@@ -90,6 +82,15 @@ export default function TrainSettings() {
     dispatch(updateInitialSpeed(debouncedInitialSpeed));
   }, [debouncedInitialSpeed]);
 
+  useEffect(() => {
+    if (categoryFromStore) {
+      setTrainCategory({
+        id: categoryFromStore,
+        label: tRollingStock(`rollingStock.categoriesOptions.${categoryFromStore}`),
+      });
+    }
+  }, [categoryFromStore, tRollingStock]);
+
   const isInvalidTrainScheduleName = isInvalidName(name);
 
   return (
@@ -107,9 +108,7 @@ export default function TrainSettings() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           value={name}
           isInvalid={isInvalidTrainScheduleName}
-          errorMsg={
-            !name ? `${t('errorMessages.requiredField')}` : `${t('errorMessages.nameLengthLimit')}`
-          }
+          errorMsg={!name ? t('errorMessages.requiredField') : t('errorMessages.nameLengthLimit')}
           noMargin
           inputProps={{
             maxLength: SMALL_INPUT_MAX_LENGTH,
@@ -134,7 +133,7 @@ export default function TrainSettings() {
           noMargin
         />
       </div>
-      <div className="col-xl-2 col-lg-3 pr-xl-2">
+      <div className="col-xl-3 col-lg-3 pr-xl-2">
         <SelectSNCF
           id="category-selector"
           name="category-selector"
@@ -144,14 +143,8 @@ export default function TrainSettings() {
               <small className="text-nowrap">{t('category')}</small>
             </>
           }
-          onChange={(option) => {
-            if (option) {
-              setTrainCategory(option);
-            } else {
-              setTrainCategory(null);
-            }
-          }}
-          value={trainCategory ?? undefined}
+          onChange={setTrainCategory}
+          value={trainCategory ?? { label: tRollingStock('rollingStock.categoriesOptions.choose') }}
           options={categoryOptions}
         />
       </div>
@@ -175,7 +168,7 @@ export default function TrainSettings() {
           errorMsg={t('errorMessages.invalidInitialSpeed')}
         />
       </div>
-      <div className="col-xl-3 col-lg-12 mt-xl-0 mt-lg-3">
+      <div className="col-xl-2 col-lg-12 mt-xl-0 mt-lg-3">
         <ChipsSNCF
           addTag={addTag}
           tags={labels}
@@ -191,4 +184,6 @@ export default function TrainSettings() {
       </div>
     </div>
   );
-}
+};
+
+export default TrainSettings;

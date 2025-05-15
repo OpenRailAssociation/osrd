@@ -1,5 +1,19 @@
-/* eslint-disable import/prefer-default-export */
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
 
 export const specialCodeDictionary: { [key: string]: string } = {
   '': 'NO CODE',
+};
+
+export const TRAIN_CATEGORY_CLASS: Record<TrainCategory | 'None', string> = {
+  HIGH_SPEED_TRAIN: 'high-speed',
+  INTERCITY_TRAIN: 'intercity',
+  REGIONAL_TRAIN: 'regional',
+  NIGHT_TRAIN: 'night',
+  COMMUTER_TRAIN: 'commuter',
+  FREIGHT_TRAIN: 'freight',
+  FAST_FREIGHT_TRAIN: 'fast-freight',
+  TRAM_TRAIN: 'tram-train',
+  TOURISTIC_TRAIN: 'touristic',
+  WORK_TRAIN: 'work',
+  None: 'none',
 };

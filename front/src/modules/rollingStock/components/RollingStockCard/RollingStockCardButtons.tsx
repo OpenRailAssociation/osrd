@@ -3,20 +3,20 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import type { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { getRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 type RollingStockCardButtonsProps = {
-  id: number;
+  rollingStock: LightRollingStockWithLiveries;
   curvesComfortList: Comfort[];
-  onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
+  onSelectRollingStock: (rollingStockId: LightRollingStockWithLiveries, comfort: Comfort) => void;
 };
 
 const RollingStockCardButtons = ({
-  id,
+  rollingStock,
   curvesComfortList,
   onSelectRollingStock,
 }: RollingStockCardButtonsProps) => {
@@ -83,7 +83,7 @@ const RollingStockCardButtons = ({
         data-testid="select-rolling-stock-button"
         type="button"
         className="ml-2 btn btn-primary btn-sm"
-        onClick={() => onSelectRollingStock(id, comfort as Comfort)}
+        onClick={() => onSelectRollingStock(rollingStock, comfort as Comfort)}
       >
         {t('rollingStock.selectRollingStock')}
       </button>

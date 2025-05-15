@@ -26,6 +26,7 @@ import {
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
+import { TRAIN_CATEGORY_CLASS } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
@@ -179,7 +180,12 @@ const TrainScheduleItem = ({
                 />
               </div>
               <div title={train.name} className="checkbox-label">
-                <div className="train-info">
+                <div
+                  className={cx(
+                    'train-info',
+                    `train-category-text-${TRAIN_CATEGORY_CLASS[train.category ?? 'None']}`
+                  )}
+                >
                   {projectionPathIsUsed && (
                     <div className="train-projected">
                       <Manchette iconColor="var(--white100)" />

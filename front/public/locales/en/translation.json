@@ -702,6 +702,7 @@
       "WORK_TRAIN": "Work Train",
       "choose": "Choose a category"
     },
+    "categoryMismatch": "The combination of the rolling stock and the category is unusual",
     "chooseRollingStock": "Select a rolling stock to display informations",
     "comfort": "Comfort",
     "comfortAcceleration": "Comfort acceleration",
