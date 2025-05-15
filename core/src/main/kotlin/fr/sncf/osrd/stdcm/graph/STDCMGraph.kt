@@ -13,6 +13,7 @@ import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
@@ -46,12 +47,14 @@ class STDCMGraph(
         DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
     val allowanceManager: EngineeringAllowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
+    val mrspBuilder =
+        CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock, temporarySpeedLimitManager)
 
     // min 30s between two edges, determined empirically
     // TODO: this value *should* reflect twice the min delay between two trains,
     // but it seems we need it to be as small as the smallest amount of time
     // a train can occupy a block. There's an issue somewhere.
-    private val visitedNodes = VisitedNodes(30.0)
+    private val visitedNodes = VisitedNodes(30.0, fullInfra, mrspBuilder)
 
     // A* heuristic
     val remainingTimeEstimator: STDCMAStarHeuristic
@@ -70,6 +73,7 @@ class STDCMGraph(
                     maxRunTime,
                     rollingStock,
                     temporarySpeedLimitManager,
+                    mrspBuilder,
                 )
                 .build()
         bestPossibleTime = remainingTimeEstimator.bestTravelTime
@@ -96,7 +100,7 @@ class STDCMGraph(
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
         val res = ArrayList<STDCMEdge>()
         val maxMarginDuration = estimateMaxMarginDuration(node)
-        val visitedNodesParameters =
+        var visitedNodesParameters =
             VisitedNodes.Parameters(
                 null,
                 node.timeData,
@@ -126,6 +130,7 @@ class STDCMGraph(
                         node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
                         0.meters
                     )
+                visitedNodesParameters = visitedNodesParameters.copy(explorer = newPath)
                 if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
                 visitedNodes.markAsVisited(visitedNodesParameters)
                 res.addAll(

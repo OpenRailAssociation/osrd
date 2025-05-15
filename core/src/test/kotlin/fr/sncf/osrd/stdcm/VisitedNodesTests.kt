@@ -4,6 +4,8 @@ import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.graph.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -284,5 +286,73 @@ class VisitedNodesTests {
             )
         visitedNodes.markAsVisited(params1)
         assertEquals(increaseRemainingTime, visitedNodes.isVisited(params2))
+    }
+
+    @Test
+    fun testVisitedAtDetector() {
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e"),
+            )
+        val visitedNodes =
+            VisitedNodes(0.0, infra.fullInfra(), CachedBlockMRSPBuilder(infra, infra, null))
+
+        // d -> e
+        val lastExplorer = infraExplorerFromBlock(infra, infra, blocks.last())
+
+        // a -> b, lookahead: b -> c -> d
+        var explorerWithLookahead = infraExplorerFromBlock(infra, infra, blocks.first())
+        for (i in 0 ..< 2) explorerWithLookahead =
+            explorerWithLookahead.cloneAndExtendLookahead().first()
+
+        val timeData =
+            TimeData(
+                earliestReachableTime = 0.0,
+                maxDepartureDelayingWithoutConflict = 100.0,
+                timeOfNextConflictAtLocation = 100.0,
+                totalRunningTime = 0.0,
+                departureTime = 0.0,
+                stopTimeData = listOf(),
+                maxFirstDepartureDelaying = 100.0,
+            )
+        val visitingParams =
+            VisitedNodes.Parameters(
+                fingerprint = fingerprint,
+                timeData = timeData,
+                explorer = lastExplorer,
+                maxMarginDuration = 100.0,
+            )
+
+        val testParams = visitingParams.copy(explorer = explorerWithLookahead)
+
+        visitedNodes.markAsVisited(visitingParams)
+
+        // Identical parameters
+        assertTrue { visitedNodes.isVisited(testParams) }
+
+        // Arrival time is shifted later, the window isn't fully covered
+        assertFalse {
+            visitedNodes.isVisited(
+                testParams.copy(timeData = timeData.copy(earliestReachableTime = 50.0))
+            )
+        }
+
+        // Arrival time is shifted later, but the travel time is also longer.
+        // This doesn't actually open any better solution, it's considered visited.
+        assertTrue {
+            visitedNodes.isVisited(
+                testParams.copy(
+                    timeData =
+                        timeData.copy(
+                            earliestReachableTime = 50.0,
+                            totalRunningTime = 50.0,
+                        )
+                )
+            )
+        }
     }
 }
