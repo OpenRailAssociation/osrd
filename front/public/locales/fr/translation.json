@@ -16,7 +16,9 @@
         "saving-loader": "Corrections en cours d'application sur l’infrastructure",
         "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
         "title": "Correcteur automatique d’anomalies",
-        "total-fixes_zero": "Aucune correction trouvée",
+        "total-fixes_many": "",
+        "total-fixes_one": "",
+        "total-fixes_other": "",
         "update-actions": "{{update_count}} modifications d’objets existants"
       },
       "error-level": {
@@ -59,7 +61,7 @@
           "name": "Itinéraire manquant"
         },
         "node_endpoints_not_unique": {
-          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »",
+          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} ».",
           "name": "Extrémité de voie de nœud non unique"
         },
         "object_out_of_path": {
@@ -98,25 +100,28 @@
       "infra-locked": "Attention, vous ne pourrez pas sauvegarder de modification.",
       "infra-readonly": "Attention, vous êtes en lecture seule sur cette infra",
       "label": {
+        "title-with-filter_many": "",
         "title-with-filter_one": "{{count}} anomalie sur {{total}}",
         "title-with-filter_other": "{{count}} anomalies sur {{total}}",
-        "title-with-filter_zero": "aucune anomalie sur {{total}}",
+        "title_many": "",
         "title_one": "{{count}} anomalie",
-        "title_other": "{{count}} anomalies",
-        "title_zero": "Aucune anomalie"
+        "title_other": "{{count}} anomalies"
       },
       "list": {
         "filter-type": "Type d'anomalie",
         "goto-error": "Sélectionner et viualiser sur la carte",
         "total-all": "{{count}} erreurs et avertissements trouvés",
+        "total-all_many": "",
         "total-all_one": "Une erreur ou un avertissement trouvé",
-        "total-all_zero": "Aucune erreur ni avertissement trouvé",
+        "total-all_other": "",
         "total-errors": "{{count}} erreurs trouvées",
+        "total-errors_many": "",
         "total-errors_one": "Une erreur trouvée",
-        "total-errors_zero": "Aucune erreur trouvée",
+        "total-errors_other": "",
         "total-warnings": "{{count}} avertissements trouvés",
+        "total-warnings_many": "",
         "total-warnings_one": "Un avertissement trouvés",
-        "total-warnings_zero": "Aucun avertissement trouvé"
+        "total-warnings_other": ""
       },
       "modal": {
         "title": "Anomalies de l'infrastructure {{id}}"
@@ -145,9 +150,11 @@
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
+      "layer-selected-items_many": "",
       "layer-selected-items_one": "Un élément sélectionné",
       "layer-selected-items_other": "{{count}} éléments sélectionnés",
       "noSpeedLimitByTag": "Aucun code de composition",
+      "selection-warning_many": "",
       "selection-warning_one": "Un élément a été désélectionné.",
       "selection-warning_other": "{{count}} éléments ont été désélectionnés."
     },
@@ -224,8 +231,8 @@
         },
         "linked-routes": "Itinéraires liés",
         "no-linked-route": "Aucun itinéraire lié",
-        "routes-ending-at": "Arrivant à...",
-        "routes-starting-from": "Partant de..."
+        "routes-ending-at": "Arrivant à…",
+        "routes-starting-from": "Partant de…"
       },
       "range-edition": {
         "edit-track-range-end": "Modifier le point d'arrivée",
@@ -233,6 +240,7 @@
         "empty-linked-track-section": "Cliquez sur une section de voie pour l'associer",
         "linked-track-sections": "Sections de voie associées",
         "only-show-n": "Ne montrer que les {{count}} premières sections de voie",
+        "show-more-ranges_many": "",
         "show-more-ranges_one": "Voir une section de voie de plus",
         "show-more-ranges_other": "Voir {{count}} sections de voie de plus"
       },
@@ -244,7 +252,7 @@
           "pick-entry_point-cancel": "Annuler la sélection du point de départ",
           "pick-entry_point-update": "Modifier le point de départ sélectionné",
           "pick-exit_point": "Outil de sélection du point d'arrivée",
-          "pick-exit_point-cancel": "Annuler la sélection du point d'arrivée",
+          "pick-exit_point-cancel": "Annuler la sélection du point d'arrivée.",
           "pick-exit_point-update": "Modifier le point d'arrivée sélectionné",
           "reset-route": "Réinitialiser l'itinéraire",
           "save-route": "Sauvegarder l'itinéraire"
@@ -253,11 +261,13 @@
         "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
         "create-route": "Création d'un nouvel itinéraire",
         "crossed-detectors": "{{count}} détecteurs",
+        "crossed-detectors_many": "",
         "crossed-detectors_one": "Un détecteur",
-        "crossed-detectors_zero": "Aucun détecteur rencontré",
+        "crossed-detectors_other": "",
         "crossed-track-ranges": "{{count}} sections",
+        "crossed-track-ranges_many": "",
         "crossed-track-ranges_one": "Une section",
-        "crossed-track-ranges_zero": "Aucune section",
+        "crossed-track-ranges_other": "",
         "delete-route": "Supprimer l'itinéraire",
         "delete-route-success": "L'itinéraire a été supprimé avec succès.",
         "directions": {
@@ -268,7 +278,7 @@
         "end": "Arrivée",
         "endpoint": "Extrémité :",
         "from": "de",
-        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire.",
+        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire",
         "help": {
           "actions-on-edit-route": "Vous pouvez supprimer l'itinéraire, le modifier, ou en créer un nouveau.",
           "select-endpoints": "L'itinéraire doit avoir un point de départ et un point d'arrivée.",
@@ -279,16 +289,17 @@
         "include-release-detectors": "Transit rigide",
         "label": "Outil \"Itinéraire\"",
         "locked-release-detectors": "Une fois cette propriété activée et sauvegardée, celle-ci ne peut plus être désactivée",
-        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
+        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte",
         "preview-candidate": "Sélectionner",
         "routes": "{{count}} itinéraires compatibles trouvés",
+        "routes_many": "",
         "routes_one": "Un itinéraire compatible trouvé",
-        "routes_zero": "Aucun itinéraire compatible trouvé",
+        "routes_other": "",
         "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
         "search-routes": "Rechercher des itinéraires compatibles",
         "search-routes-alt": "Rechercher des itinéraires alternatifs",
         "start": "Départ",
-        "start_direction": "Direction au départ",
+        "start_direction": "Direction au départ :",
         "swap-endpoints": "Échanger les extrémités",
         "to": "à",
         "untitled-track": "Ligne sans nom"
@@ -318,11 +329,12 @@
         },
         "item": "Élément",
         "label": "Outil \"Sélection\"",
+        "linked-to-line_many": "",
         "linked-to-line_one": "associé à la section de voie",
         "linked-to-line_other": "associé aux sections de voie",
+        "linked-to-n-lines_many": "",
         "linked-to-n-lines_one": "relatif à une section de voie",
         "linked-to-n-lines_other": "relatif à {{count}} sections de voie",
-        "linked-to-n-lines_zero": "relatif à aucune section de voie",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
@@ -430,6 +442,7 @@
         "no-linked-electrification": "Aucune électrification renseignée",
         "no-linked-speed-section": "Aucune vitesse limite renseignée",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
+        "show-more-ranges_many": "",
         "show-more-ranges_one": "Voir un résultat de plus",
         "show-more-ranges_other": "Voir {{count}} résultats de plus"
       },
@@ -492,7 +505,7 @@
       "reset-north": "Réinitialiser la caméra"
     },
     "navigation": {
-      "goBack": "Retour à  la page précédente",
+      "goBack": "Retour à la page précédente",
       "goHome": "Retour à la page d'accueil"
     },
     "next": "Suivant",
@@ -551,9 +564,9 @@
     "infraDeleted": "L'infrastructure {{name}} a bien été supprimée.",
     "infraManagement": "Gestion des infrastructures",
     "infraName": "Nom de l'infrastructure",
+    "infrasFound_many": "",
     "infrasFound_one": "{{count}} infrastructure trouvée",
     "infrasFound_other": "{{count}} infrastructures trouvées",
-    "infrasFound_zero": "Aucune infrastructure trouvée",
     "locked": "Verrouillée",
     "no": "Non",
     "noInfraSelected": "Aucune infrastructure sélectionnée",
@@ -600,9 +613,9 @@
     "placeholder-line": "Nom ou numéro de ligne",
     "placeholder-name": "Nom, appelation, libellé, code CI",
     "placeholder-signal": "Nom du signal",
+    "results-count_many": "",
     "results-count_one": "1 résultat",
     "results-count_other": "{{ count }} résultats",
-    "results-count_zero": "Aucun résultat",
     "signal": "Signal",
     "signal-settings": {
       "Nf": "Non franchissable",
@@ -679,7 +692,7 @@
     "addNewRollingStock": "Nouveau matériel roulant",
     "addNewTractionMode": "Ajouter un nouveau mode de traction",
     "basePowerClass": "Classe de puissance",
-    "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
+    "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant ?",
     "categoriesOptions": {
       "COMMUTER_TRAIN": "Train suburbain",
       "FAST_FREIGHT_TRAIN": "Train de fret rapide",
@@ -693,7 +706,7 @@
       "WORK_TRAIN": "Train de travaux",
       "choose": "Choisissez une catégorie"
     },
-    "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
+    "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations",
     "comfort": "Confort",
     "comfortAcceleration": "Accélération « confort »",
     "comfortLevels": "Niveaux de confort",
@@ -703,7 +716,7 @@
       "STANDARD": "Standard"
     },
     "confirmAddRollingStock": "Êtes-vous sûr de vouloir ajouter ce matériel roulant ?",
-    "confirmUpdateRollingStock": "Confirmer la mise à jour du matériel roulant?",
+    "confirmUpdateRollingStock": "Confirmer la mise à jour du matériel roulant ?",
     "constGamma": "Décélération horaire",
     "curves": {
       "all": "Toutes les courbes",
@@ -724,10 +737,10 @@
       "invalidConversion": "Conversion invalide",
       "minMaxRangeError": "La valeur doit être comprise entre {{min}} et {{max}}",
       "minRangeError": "La valeur doit être supérieure ou égale à {{min}}",
-      "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée",
+      "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée.",
       "missingInformation": "Informations manquantes",
       "ressourcesNotFound": "Ressources introuvables",
-      "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants:",
+      "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants :",
       "unableToRetrieveRollingStock": "Récupération matériel impossible",
       "unableToRetrieveRollingStockMessage": "Une erreur est survenue"
     },
@@ -743,17 +756,18 @@
       "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées. Une vitesse ne peut pas excéder 600km/h et un effort ne peut pas excéder 1000kN.",
       "invalidForm": "Formulaire incomplet",
       "missingEffortCurves": "Veuillez renseigner une courbe effort-vitesse",
-      "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut: {{invalidFields}}.",
-      "missingInformationAutomaticallyFilled_other": "Les champs suivants ont été initialisés par défaut: {{invalidFields}}.",
+      "missingInformationAutomaticallyFilled_many": "",
+      "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut : {{invalidFields}}.",
+      "missingInformationAutomaticallyFilled_other": "Les champs suivants ont été initialisés par défaut : {{invalidFields}}.",
       "missingName": "Veuillez renseigner un nom",
       "missingPrimaryCategory": "Veuillez renseigner une catégorie principale",
-      "rollingStockAdded": "Le matériel roulant a été ajouté.",
-      "rollingStockDeleted": "Le matériel roulant a été supprimé.",
+      "rollingStockAdded": "Le matériel roulant a été ajouté",
+      "rollingStockDeleted": "Le matériel roulant a été supprimé",
       "rollingStockDuplicateName": "Un matériel roulant du même nom existe déjà.",
-      "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté.",
-      "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé.",
-      "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour.",
-      "rollingStockUpdated": "Le matériel roulant a été mis à jour.",
+      "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté",
+      "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé",
+      "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour",
+      "rollingStockUpdated": "Le matériel roulant a été mis à jour",
       "success": "Opération réussie"
     },
     "metadata": {
@@ -768,6 +782,7 @@
       "type": "Type",
       "unit": "Unité"
     },
+    "missingPowerClass_many": "",
     "missingPowerClass_one": "Classe de puissance manquante",
     "missingPowerClass_other": "Classes de puissance manquantes",
     "notLocked": "Non verrouillé",
@@ -777,9 +792,9 @@
     "primaryCategory": "Catégorie principale",
     "project": "Projet {{projectName}} :",
     "raisePantographTime": "Temps de lever panto",
+    "resultFound_many": "",
     "resultFound_one": "1 résultat trouvé",
     "resultFound_other": "{{count}} résultats trouvés",
-    "resultFound_zero": "Aucun résultat",
     "rollingResistance": "Résistance à l’avancement",
     "rollingResistanceA": "Frottements solides (a)",
     "rollingResistanceB": "Frottements visqueux (b)",
