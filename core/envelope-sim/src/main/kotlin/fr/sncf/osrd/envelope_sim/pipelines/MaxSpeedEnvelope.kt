@@ -10,7 +10,6 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.StopMeta
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
@@ -44,7 +43,6 @@ object MaxSpeedEnvelope {
         val offset: Double,
         val isETCS: Boolean,
         val rjsReceptionSignal: RJSReceptionSignal,
-        val index: Int, // Index in the stop list
     )
 
     fun increase(prevPos: Double, prevSpeed: Double, nextPos: Double, nextSpeed: Double): Boolean {
@@ -158,7 +156,6 @@ object MaxSpeedEnvelope {
             if (stop.isETCS) continue // Already handled
             val partBuilder = EnvelopePartBuilder()
             partBuilder.setAttr(EnvelopeProfile.BRAKING)
-            partBuilder.setAttr(StopMeta(stop.index))
             val overlayBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
@@ -230,7 +227,7 @@ object MaxSpeedEnvelope {
                     offset = envelope.endPos
                 else throw OSRDError.newEnvelopeError(i, offset, envelope.endPos)
             }
-            res.add(SimStop(offset, isETCS, isClosedSignal, i))
+            res.add(SimStop(offset, isETCS, isClosedSignal))
         }
         return res
     }
