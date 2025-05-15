@@ -11,6 +11,7 @@ import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.infra_exploration.*
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Distance
@@ -74,6 +75,7 @@ class STDCMHeuristicTests {
                     steps,
                     Double.POSITIVE_INFINITY,
                     STANDARD_TRAIN,
+                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                 )
                 .build()
 
@@ -151,6 +153,7 @@ class STDCMHeuristicTests {
                     steps,
                     Double.POSITIVE_INFINITY,
                     STANDARD_TRAIN,
+                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                 )
                 .build()
 

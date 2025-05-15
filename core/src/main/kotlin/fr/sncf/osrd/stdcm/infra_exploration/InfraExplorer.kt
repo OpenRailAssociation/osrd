@@ -101,6 +101,13 @@ interface InfraExplorer {
     fun getStepTracker(): StepTracker
 }
 
+/** Returns the current block and the lookahead blocks */
+fun InfraExplorer.getRemainingBlocks(): List<BlockId> {
+    val res = mutableListOf(getCurrentBlock())
+    res.addAll(getLookahead())
+    return res
+}
+
 /** Used to identify an edge */
 interface EdgeIdentifier {
     override fun equals(other: Any?): Boolean

@@ -4,10 +4,16 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import com.google.common.collect.TreeRangeSet
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.utils.getBlockEntry
+import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
@@ -38,7 +44,11 @@ import kotlin.math.min
  * Otherwise, we may consider that a range is visited despite being better according to the new
  * criteria.
  */
-data class VisitedNodes(val minDelay: Double) {
+data class VisitedNodes(
+    val minDelay: Double,
+    val infra: FullInfra? = null,
+    val mrspBuilder: CachedBlockMRSPBuilder? = null
+) {
 
     /** Data class representing a space location. Must be usable as map key. */
     data class Fingerprint(
@@ -160,6 +170,14 @@ data class VisitedNodes(val minDelay: Double) {
     // This also avoids exploring the same solutions several times with less passed steps.
     private val minPassedStepsForBlock = mutableMapOf<BlockId, Int>()
 
+    // For each detector, time ranges where it has been "reached" by a simulation,
+    // i.e. an edge ends there with these given time ranges. Ignores the lookahead.
+    // First key is the number of visited steps.
+    // Note: nodes are located at the *start* of blocks, so it's handled by accessing
+    // the start of the "current" block.
+    private val visitedAtDetector =
+        mutableMapOf<Int, MutableMap<DirDetectorId, RangeMap<Double, ConditionallyVisitedRange>>>()
+
     /** Returns true if the input has already been visited */
     fun isVisited(
         parameters: Parameters,
@@ -170,6 +188,42 @@ data class VisitedNodes(val minDelay: Double) {
         ) {
             // The block has already been seen with more passed steps
             return true
+        }
+
+        // Check if this node has a chance of opening new time ranges
+        // at the very end of the lookahead section.
+        if (parameters.explorer != null && infra != null) {
+            val lastLookaheadBlock = parameters.explorer.getLookahead().lastOrNull()
+            val minTravelTime =
+                parameters.explorer.getRemainingBlocks().sumOf {
+                    mrspBuilder!!.getBlockTime(it, null)
+                }
+            // We only check after adding the fastest travel time, and then add some extra margin at
+            // the end (in case engineering allowances are impossible there).
+            // TODO: we should compare possible "engineering allowances" in `isMapVisited`,
+            // with a large max allowance value here.
+            // The current margin (travel time / 2) is a heuristic. Lowerng it has a very large
+            // impact on the performance gain, but may block valid solutions when engineering
+            // allowances are impossible.
+            val newTimeData =
+                parameters.timeData
+                    .withAddedTime(minTravelTime, null, null)
+                    .copy(
+                        maxDepartureDelayingWithoutConflict =
+                            parameters.timeData.maxDepartureDelayingWithoutConflict +
+                                (minTravelTime / 2),
+                    )
+            if (lastLookaheadBlock != null) {
+                val exitDet = infra.blockInfra.getBlockExit(infra.rawInfra, lastLookaheadBlock)
+                val mapAtStepIndex = visitedAtDetector[parameters.fingerprint!!.waypointIndex]
+                val mapAtDetector = mapAtStepIndex?.get(exitDet)
+                if (
+                    mapAtDetector != null &&
+                        isMapVisited(mapAtDetector, parameters.copy(timeData = newTimeData))
+                ) {
+                    return true
+                }
+            }
         }
         val visitedRanges = visitedRangesPerLocation[parameters.fingerprint] ?: return false
         return isMapVisited(visitedRanges, parameters)
@@ -212,6 +266,33 @@ data class VisitedNodes(val minDelay: Double) {
             timeData.totalStopDuration,
             parameters.nodeCost,
         )
+
+        // Mark the visited time range at the start of the current block
+        if (parameters.explorer != null && infra != null && fingerprint.startOffset == 0.meters) {
+            val block = parameters.explorer.getCurrentBlock()
+            val mapAtStepIndex =
+                visitedAtDetector.getOrPut(parameters.fingerprint!!.waypointIndex) {
+                    mutableMapOf()
+                }
+            val visitedRangesAtStartOfBlock =
+                mapAtStepIndex.getOrPut(
+                    infra.blockInfra.getBlockEntry(
+                        infra.rawInfra,
+                        block,
+                    )
+                ) {
+                    TreeRangeMap.create()
+                }
+            markAsVisited(
+                visitedRangesAtStartOfBlock,
+                startTime,
+                endRangeDepartureTimeChange,
+                endRangeExtraStopTime,
+                endRangeExtraTravelTime,
+                timeData.totalStopDuration,
+                parameters.nodeCost,
+            )
+        }
     }
 
     /**
