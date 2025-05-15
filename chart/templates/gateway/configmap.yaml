@@ -30,7 +30,6 @@ data:
     blocked_headers = ["x-osrd-skip-authz"]
     {{- if .Values.services.statefulEditoast.enabled }}
     routing_only = [
-      "^DELETE /infra/\\d+(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/attached/[^/]+(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/auto_fixes(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/delimited_area(?:\\?|$|/$)",
@@ -52,7 +51,6 @@ data:
     blocked_headers = ["x-osrd-skip-authz"]
     {{- if .Values.services.statefulEditoast.enabled }}
     routing_exclude = [
-      "^DELETE /infra/\\d+(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/attached/[^/]+(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/auto_fixes(?:\\?|$|/$)",
       "^GET /api/infra/\\d+/delimited_area(?:\\?|$|/$)",
