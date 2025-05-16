@@ -5,7 +5,7 @@ COPY docker/exec-as.c .
 RUN gcc -std=c99 -static -o /exec-as exec-as.c
 
 
-FROM node:23
+FROM node:24
 
 # Install dependencies
 RUN apt-get update -yqq && \
