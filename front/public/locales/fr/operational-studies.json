@@ -14,7 +14,7 @@
       "errorNoDate": "Vous devez renseigner une date.",
       "errorNoFrom": "Vous devez renseigner une origine.",
       "errorNoTo": "Vous devez renseigner une destination.",
-      "errorSameFromTo": "L'origine et la destination doivent être différentes."
+      "errorSameFromTo": "L'origine et la destination doivent être différentes"
     },
     "failure": "Opération échouée",
     "from": "Origine",
@@ -22,12 +22,10 @@
     "inputPlaceholder": "Nom, trigramme",
     "itemsFound_one": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(main.trainCount, {'count': {{trainsFound}}}) trouvé",
     "itemsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(main.trainCount, {'count': {{trainsFound}}}) trouvés",
-    "itemsFound_zero": "Aucun items trouvés",
     "launchImport": "Démarrer l'importation",
     "noResults": "Aucun résultat",
     "pacedTrainCount_one": "1 mission",
     "pacedTrainCount_other": "{{count}} missions",
-    "pacedTrainCount_zero": "",
     "pacedTrainsFound_one": "1 mission trouvée",
     "pacedTrainsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) trouvées",
     "searchTimetable": "Rechercher la grille horaire",
@@ -36,14 +34,13 @@
     "status": {
       "invalidTrainSchedules_one": "La circulation à importer n'est pas au bon format.",
       "invalidTrainSchedules_other": "Les circulations à importer ne sont pas au bon format.",
-      "successfulImport": "Tous les items ont été importés.",
-      "successfulImport_one": "L' item a été importé."
+      "successfulImport_one": "L'item a été importé.",
+      "successfulImport_other": "Tous les items ont été importés."
     },
     "success": "Opération réussie",
     "to": "Destination",
     "trainCount_one": "1 train",
     "trainCount_other": "{{count}} trains",
-    "trainCount_zero": "",
     "warningMessages": {
       "warning": "Attention",
       "warningFilteredStepImport": "Certaines étapes invalides ont dû être supprimées pour permettre l'importation pour les trains : {{trainNumbers}}"
@@ -55,7 +52,6 @@
     "and": "et",
     "conflictsCount_one": "1 conflit",
     "conflictsCount_other": "{{count}} conflits",
-    "conflictsCount_zero": "Aucun conflit",
     "description": {
       "electricalProfileWithId": "Profils électriques : ID{{id}}",
       "electricalProfileWithName": "Profils électriques : {{name}} | ID{{id}}"
@@ -95,13 +91,11 @@
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }) et $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
     "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",
-    "pacedTrainCountSelected_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",
     "pacedTrainCount_one": "1/{{totalCount}} mission",
     "pacedTrainCount_other": "{{count}}/{{totalCount}} missions",
     "pacedTrainCount_zero": "0/{{totalCount}} mission",
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
-    "pacedTrain_zero": "",
     "scenarioCancel": "Annuler",
     "scenarioCreateButton": "Créer le scénario",
     "scenarioCreationTitle": "Créer un scénario",
@@ -197,13 +191,11 @@
     "toggleTimetable": "Basculer l'affichage de la grille horaire",
     "trainCountSelected_one": "1/{{totalCount}} train sélectionné",
     "trainCountSelected_other": "{{count}}/{{totalCount}} trains sélectionnés",
-    "trainCountSelected_zero": "$t(main.train, { 'count': {{totalCount}} })",
     "trainCount_one": "1/{{totalCount}} train",
     "trainCount_other": "{{count}}/{{totalCount}} trains",
     "trainCount_zero": "0/{{totalCount}} train",
     "train_one": "1 train",
-    "train_other": "{{count}} trains",
-    "train_zero": ""
+    "train_other": "{{count}} trains"
   },
   "manageTrainSchedule": {
     "InvalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
@@ -227,7 +219,7 @@
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
-      "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute",
+      "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute.",
       "noDepartureTime": "Veuillez renseigner une heure de départ",
       "noDestination": "La destination n'est pas définie",
       "noName": "Veuillez choisir un nom pour le train",
@@ -342,7 +334,7 @@
       "missingPowerRestriction": "- Restriction de puissance manquante entre {{begin}}m et {{end}}m.",
       "modeNotHandled": "- Aucune restriction de puissance ne devrait être renseignée entre {{begin}}m and {{end}}m comme le matériel roulant ne supporte pas l'électrification {{electrification}}.",
       "pathfindingChange": "Changement de chemin",
-      "powerRestrictionInvalidCombination": "- Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m.",
+      "powerRestrictionInvalidCombination": "- Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m",
       "powerRestrictionsReset": "Les restrictions de puissance ont été réinitialisées."
     }
   },
@@ -360,7 +352,6 @@
     "confirm-delete_other": "Voulez-vous réellement supprimer les {{ count }} projets ?",
     "count_one": "1 projet",
     "count_other": "{{count}} projets",
-    "count_zero": "Aucun projet",
     "create": "Créer un projet",
     "error": {
       "unableToCreateProjectTitle": "Echec de la création du projet",
@@ -409,7 +400,6 @@
     "confirm-delete_other": "Voulez-vous supprimer les {{ count }} scénarios ?",
     "count_one": "1 scénario",
     "count_other": "{{count}} scénarios",
-    "count_zero": "Aucun scénario",
     "create": "Créer un scénario",
     "selected_one": "{{count}} scénario sélectionné",
     "selected_other": "{{count}} scénarios sélectionnés",
@@ -453,7 +443,7 @@
       "speedLimitTags": "Codes de composition",
       "speedLimits": "Limites de vitesse",
       "steps": "Points remarquables",
-      "temporarySpeedLimits": "Limites temporaires de vit.",
+      "temporarySpeedLimits": "Limites temporaires de vit",
       "tractionStatus": "Statut de la traction"
     },
     "timeSpaceChartSettings": {
@@ -480,7 +470,6 @@
     "confirm-delete_other": "Voulez-vous supprimer les {{ count }} études ?",
     "count_one": "1 étude",
     "count_other": "{{count}} études",
-    "count_zero": "Aucune étude",
     "create": "Créer une étude",
     "date-creation": "Création",
     "date-expected-end": "Fin estimée",

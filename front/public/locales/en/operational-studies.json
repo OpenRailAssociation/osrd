@@ -34,9 +34,8 @@
     "status": {
       "invalidTrainSchedules_one": "Invalid train schedule.",
       "invalidTrainSchedules_other": "Invalid train schedules.",
-      "successfulImport": "All items are imported.",
       "successfulImport_one": "An item is imported.",
-      "successfulImport_other": ""
+      "successfulImport_other": "All items are imported."
     },
     "success": "Operation successful",
     "to": "Destination",

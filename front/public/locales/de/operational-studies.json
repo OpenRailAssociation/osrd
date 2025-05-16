@@ -26,12 +26,10 @@
     "selectStation": "Betriebsstelle auswählen",
     "startTime": "START",
     "status": {
-      "invalidTrainSchedules": "Ungültige Zugfahrpläne.",
       "invalidTrainSchedules_one": "Ungültiger Zugfahrplan.",
-      "invalidTrainSchedules_other": "",
-      "successfulImport": "Alle Züge wurden importiert.",
+      "invalidTrainSchedules_other": "Ungültige Zugfahrpläne.",
       "successfulImport_one": "Ein Zug wurde importiert.",
-      "successfulImport_other": ""
+      "successfulImport_other": "Alle Züge wurden importiert."
     },
     "success": "Operation erfolgreich",
     "to": "Ziel",
@@ -280,7 +278,7 @@
     "viewItineraryOnMap": "Reiseweg auf Karte sehen",
     "warningMessages": {
       "inconsistent_one": "Das untenstehende Intervall ist widersprüchlich. Es werden hierfür die Standard-Geschwindigkeitskurven eingesetzt.",
-      "inconsistent_other": "",
+      "inconsistent_other": "Die unten aufgeführten Intervalle ist widersprüchlich. Es werden hierfür die Standard-Geschwindigkeitskurven eingesetzt.",
       "missingPowerRestriction": "- Fehlende Leistungsbeschränkung zwischen {{begin}}m und {{end}}m.",
       "modeNotHandled": "- Es sollte zwischen {{begin}}m und {{end}}m keine Leistungsbeschränkung gegeben werden, da der Bahnstrommodus {{electrification}} nicht verwendet wird.",
       "pathfindingChange": "Wegefindung geändert",
