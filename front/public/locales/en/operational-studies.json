@@ -22,12 +22,10 @@
     "inputPlaceholder": "Name, trigram",
     "itemsFound_one": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(main.trainCount, {'count': {{trainsFound}}}) found",
     "itemsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(main.trainCount, {'count': {{trainsFound}}}) found",
-    "itemsFound_zero": "No items found",
     "launchImport": "Start import",
     "noResults": "No results",
     "pacedTrainCount_one": "1 service",
     "pacedTrainCount_other": "{{count}} services",
-    "pacedTrainCount_zero": "",
     "pacedTrainsFound_one": "1 service found",
     "pacedTrainsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) found",
     "searchTimetable": "Search timetable",
@@ -37,13 +35,13 @@
       "invalidTrainSchedules_one": "Invalid train schedule.",
       "invalidTrainSchedules_other": "Invalid train schedules.",
       "successfulImport": "All items are imported.",
-      "successfulImport_one": "An item is imported."
+      "successfulImport_one": "An item is imported.",
+      "successfulImport_other": ""
     },
     "success": "Operation successful",
     "to": "Destination",
     "trainCount_one": "1 train",
     "trainCount_other": "{{count}} trains",
-    "trainCount_zero": "",
     "warningMessages": {
       "warning": "Warning",
       "warningFilteredStepImport": "Some invalid steps had to be removed to allow import for trains: {{trainNumbers}}"
@@ -55,7 +53,6 @@
     "and": "and",
     "conflictsCount_one": "1 conflict",
     "conflictsCount_other": "{{count}} conflicts",
-    "conflictsCount_zero": "No conflict",
     "description": {
       "electricalProfileWithId": "Electrical profiles : ID{{id}}",
       "electricalProfileWithName": "Electrical profiles : {{name}} | ID{{id}}"
@@ -95,13 +92,11 @@
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }) and $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) selected",
     "pacedTrainCountSelected_one": "1/{{totalCount}} service selected",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",
-    "pacedTrainCountSelected_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",
     "pacedTrainCount_one": "1/{{totalCount}} service",
     "pacedTrainCount_other": "{{count}}/{{totalCount}} services",
     "pacedTrainCount_zero": "0/{{totalCount}} service",
     "pacedTrain_one": "1 service",
     "pacedTrain_other": "{{count}} services",
-    "pacedTrain_zero": "0 service",
     "scenarioCancel": "Cancel",
     "scenarioCreateButton": "Create a scenario",
     "scenarioCreationTitle": "Create a scenario",
@@ -197,13 +192,11 @@
     "toggleTimetable": "Toggle the timetable",
     "trainCountSelected_one": "1/{{totalCount}} train selected",
     "trainCountSelected_other": "{{count}}/{{totalCount}} trains selected",
-    "trainCountSelected_zero": "$t(main.train, { 'count': {{totalCount}} })",
     "trainCount_one": "1/{{totalCount}} train",
     "trainCount_other": "{{count}}/{{totalCount}} trains",
     "trainCount_zero": "0/{{totalCount}} train",
     "train_one": "1 train",
-    "train_other": "{{count}} trains",
-    "train_zero": "0 train"
+    "train_other": "{{count}} trains"
   },
   "manageTrainSchedule": {
     "InvalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
@@ -308,7 +301,7 @@
     "removeVia": "Remove this waypoint",
     "returnToSimulationResults": "Go back to simulation results",
     "rollingstock": "Rolling stock",
-    "saving": "Saving... please wait",
+    "saving": "Saving… please wait",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
       "addingSettings": "Adding settings",
@@ -348,7 +341,7 @@
   },
   "operational-studies-management": {
     "delete": "Delete",
-    "filter-placeholder": "Search...",
+    "filter-placeholder": "Search…",
     "open": "Open",
     "sort-by-latest": "Latest",
     "sort-by-name": "Sort by name",
@@ -360,7 +353,6 @@
     "confirm-delete_other": "Do you really want to delete the {{ count }} projects?",
     "count_one": "1 project",
     "count_other": "{{count}} projects",
-    "count_zero": "No project",
     "create": "Create a project",
     "error": {
       "unableToCreateProjectTitle": "Failure to update the project",
@@ -409,7 +401,6 @@
     "confirm-delete_other": "Do you really want to delete the {{count}} scenarios?",
     "count_one": "1 scenario",
     "count_other": "{{count}} scenarios",
-    "count_zero": "No scenario",
     "create": "Create a scenario",
     "selected_one": "{{count}} selected scenario",
     "selected_other": "{{count}} selected scenarios",
@@ -436,7 +427,7 @@
       "waypointsVisibility": "show/hide OP"
     },
     "powerRestriction": {
-      "incompatible": "Incompatible power restriction ",
+      "incompatible": "Incompatible power restriction",
       "used": "used"
     },
     "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
@@ -480,7 +471,6 @@
     "confirm-delete_other": "Do you really want to delete the {{count}} studies?",
     "count_one": "1 study",
     "count_other": "{{count}} studies",
-    "count_zero": "No study",
     "create": "Create a study",
     "date-creation": "Creation",
     "date-expected-end": "Expected end",
