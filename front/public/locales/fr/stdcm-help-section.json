@@ -151,7 +151,7 @@
               "type": "list"
             }
           ],
-          "title": "Tonnage, longueur, vitesse max."
+          "title": "Tonnage, longueur, vitesse max"
         },
         {
           "content": [
@@ -290,7 +290,7 @@
             },
             {
               "type": "text",
-              "value": "Renseignez la date et l’heure de départ via la souris ou le clavier, puis indiquez la tolérance​ avant et après votre heure de départ (en minutes)."
+              "value": "Renseignez la date et l’heure de départ via la souris ou le clavier, puis indiquez la tolérance avant et après votre heure de départ (en minutes)."
             },
             {
               "type": "text",
