@@ -18,7 +18,7 @@
         "title": "Fin"
       },
       "track": {
-        "description": "Identifiant de la section de voie.",
+        "description": "Identifiant de la section de voie",
         "title": "Voie"
       }
     },
@@ -139,7 +139,7 @@
         "title": "Fin"
       },
       "track": {
-        "description": "Identifiant de la section de voie.",
+        "description": "Identifiant de la section de voie",
         "title": "Voie"
       }
     },
