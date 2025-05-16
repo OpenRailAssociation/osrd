@@ -93,8 +93,10 @@ const ComboBox = <T,>({
   };
 
   const closeSuggestions = () => {
-    setInputValue(value ? getSuggestionLabel(value) : '');
-    removeFocus();
+    if (isInputFocused) {
+      setInputValue(value ? getSuggestionLabel(value) : '');
+      removeFocus();
+    }
   };
 
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
