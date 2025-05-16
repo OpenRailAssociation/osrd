@@ -7,7 +7,7 @@
   "503": "Erreurs serveur",
   "504": "Le serveur n'a pas répondu.",
   "core": {
-    "assert_error": "Assertion échouée à {{file_location}}: {{assert_message}}",
+    "assert_error": "Assertion échouée à {{file_location}} : {{assert_message}}",
     "missing_last_stdcm_stop": "Les requêtes STDCM ne finissant pas par un arrêt ne sont pas actuellement supportées"
   },
   "default": "Une erreur est survenue.",
@@ -46,7 +46,7 @@
       "MissingErrorObject": "Impossible de trouver l'objet de l'erreur"
     },
     "cache_operation": {
-      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: un doublon existe déjà",
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}} : un doublon existe déjà",
       "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
     },
     "core": {
@@ -55,11 +55,11 @@
       }
     },
     "coreclient": {
-      "BrokenPipe": "Core: connexion interrompue. Nouvelle tentative.",
-      "CannotExtractResponseBody": "Core: Impossible d'extraire le corps de la réponse : {{msg}}",
-      "CoreResponseFormatError": "Core: impossible d'analyser la réponse '{{msg}}'",
-      "MqClientError": "Core: erreur du client MQ",
-      "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu"
+      "BrokenPipe": "Core : connexion interrompue. Nouvelle tentative.",
+      "CannotExtractResponseBody": "Core : Impossible d'extraire le corps de la réponse : {{msg}}",
+      "CoreResponseFormatError": "Core : impossible d'analyser la réponse '{{msg}}'",
+      "MqClientError": "Core : erreur du client MQ",
+      "UnparsableErrorOutput": "Core : a renvoyé une erreur dans un format inconnu"
     },
     "delimited_area": {
       "InvalidLocations": "Certaines localisations sont invalides"
@@ -228,7 +228,7 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "ParseError": "Impossible de parser train_id: '{{train_id}}'"
+      "ParseError": "Impossible de parser train_id : '{{train_id}}'"
     },
     "towedrollingstocks": {
       "Database": "Erreur interne",
