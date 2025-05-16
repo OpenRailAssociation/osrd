@@ -22,7 +22,7 @@ const ScenarioV2 = () => {
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
-      <ScenarioHeader scenarioName={scenario.name} />
+      <ScenarioHeader scenario={scenario} infra={infra} />
     </ScenarioContextProvider>
   );
 };

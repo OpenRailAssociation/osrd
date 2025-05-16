@@ -1,217 +1,256 @@
-.scenario-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 32px;
-  box-shadow:
-    0px 1px 2px rgba(0, 0, 0, 0.16),
-    0px 2px 2px -1px rgba(255, 171, 88, 0.27);
-  background-color: var(--ambientB10);
+.scenario-header-container {
   margin-bottom: 8px;
-  min-width: 780px;
 
-  button:focus {
-    outline: none;
-  }
-
-  .inactive-area {
-    min-width: 8px;
-    pointer-events: none;
-  }
-
-  .spacer {
-    min-width: 32px;
-  }
-
-  .scenario-info {
+  .scenario-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    font-size: 0.875rem;
-    line-height: 20px;
-    letter-spacing: 0px;
-    position: relative;
-    height: 100%;
-    flex: 1;
-    overflow: hidden;
+    height: 32px;
+    box-shadow:
+      0px 1px 2px rgba(0, 0, 0, 0.16),
+      0px 2px 2px -1px rgba(255, 171, 88, 0.27);
+    background-color: var(--ambientB10);
+    min-width: 780px;
 
-    .close-btn {
-      padding: 8px 0px 8px 8px;
-      color: var(--black25);
+    button:focus {
+      outline: none;
+    }
 
-      &:hover {
-        color: var(--black100);
+    .inactive-area {
+      min-width: 8px;
+      pointer-events: none;
+    }
 
-        & ~ .scenario-name-container {
-          opacity: 0;
+    .spacer {
+      min-width: 32px;
+    }
+
+    .scenario-info {
+      display: flex;
+      align-items: center;
+      font-size: 0.875rem;
+      line-height: 20px;
+      letter-spacing: 0px;
+      position: relative;
+      height: 100%;
+      flex: 1;
+      overflow: hidden;
+
+      .close-btn {
+        padding: 8px 0px 8px 8px;
+        color: var(--black25);
+
+        &:hover {
+          color: var(--black100);
+
+          & ~ .scenario-name-container {
+            opacity: 0;
+          }
+
+          & ~ .close-label {
+            display: block;
+            color: var(--warning60);
+          }
+        }
+      }
+
+      .close-label,
+      .scenario-name-container {
+        transition: opacity 0.3s ease-in-out;
+        left: 32px;
+        font-size: 0.875rem;
+        text-align: left;
+      }
+
+      .close-label {
+        position: absolute;
+        text-transform: capitalize;
+        display: none;
+      }
+
+      .scenario-name-container {
+        display: flex;
+        align-items: center;
+        opacity: 1;
+        height: 100%;
+        color: var(--grey50);
+        min-width: 0;
+
+        .scenario-name-label {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          min-width: 0;
         }
 
-        & ~ .close-label {
-          text-transform: capitalize;
-          display: block;
-          color: var(--warning60);
+        .chevron-container {
+          display: flex;
+          align-items: center;
+          height: 100%;
+
+          .chevron-btn {
+            padding: 4px;
+            color: var(--black25);
+          }
+        }
+
+        &:hover {
+          cursor: pointer;
+          .scenario-name-label {
+            // validate the following color used when hovering over the scenario name
+            color: var(--black100);
+          }
+
+          .chevron-btn {
+            color: var(--black100);
+          }
+        }
+      }
+
+      .chevron-btn {
+        padding: 4px;
+        color: var(--black25);
+      }
+    }
+
+    .board-bar {
+      display: flex;
+      align-items: center;
+      height: 100%;
+
+      .board-btns {
+        display: flex;
+        align-items: center;
+        height: 100%;
+
+        .board-btn {
+          padding: 1px 8px 3px 8px;
+          font-size: 0.75rem;
+          line-height: 16px;
+          border-radius: 4px;
+
+          // START HANDLE BOARD STATE
+
+          // On state
+          &.on {
+            color: var(--grey80);
+            background-color: var(--ambientB5);
+  
+            &:hover {
+              color: var(--black100);
+              background-color: var(--white100);
+            }
+  
+            &:active {
+              color: var(--grey20);
+              background-color: var(--ambientB15);
+            }
+          }
+  
+          // Off state
+          &:not(.on)  {
+            color: var(--grey30);
+            background-color: var(--ambientB15);
+  
+            &:hover {
+              color: var(--grey30);
+              background-color: var(--white100);
+            }
+  
+            &:active {
+              color: var(--grey50);
+              background-color: var(--ambientB5);
+            }
+          }
+          // END HANDLE BOARD STATE
         }
       }
     }
 
-    .close-label,
-    .scenario-name-container {
-      transition: opacity 0.3s ease-in-out;
-      left: 32px;
-      font-size: 0.875rem;
-      text-align: left;
-    }
-
-    .close-label {
-      position: absolute;
-      text-transform: capitalize;
-      display: none;
-    }
-
-    .scenario-name-container {
+    .user-info {
       display: flex;
       align-items: center;
-      opacity: 1;
       height: 100%;
-      color: var(--grey50);
-      min-width: 0;
+      overflow: hidden;
+      flex: 1;
+      margin-right: 8px;
+      justify-content: end;
 
-      .scenario-name-label {
+      .user-name {
+        color: var(--grey30);
+        font-size: 0.875rem;
+        text-align: right;
+        line-height: 20px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         min-width: 0;
       }
+    }
 
-      .chevron-container {
-        display: flex;
-        align-items: center;
-        height: 100%;
-
-        .chevron-btn {
-          padding: 4px;
-          color: var(--black25);
-        }
+    // START HANDLE SCENARIO NAME AND USER NAME HOVER WHEN TRUNCATED
+    &:has(.scenario-name-label.is-truncated:hover) {
+      .scenario-info {
+        flex: 2;
       }
 
-      &:hover {
-        cursor: pointer;
-        .scenario-name-label {
-          // validate the following color used when hovering over the scenario name
-          color: var(--black100);
-        }
+      .board-bar {
+        display: none;
+      }
 
-        .chevron-btn {
-          color: var(--black100);
-        }
+      .user-info {
+        flex: 1;
       }
     }
 
-    .chevron-btn {
-      padding: 4px;
-      color: var(--black25);
+    &:has(.user-name.is-truncated:hover) {
+      .scenario-info {
+        flex: 1;
+      }
+
+      .board-bar {
+        display: none;
+      }
+
+      .user-info {
+        flex: 2;
+      }
     }
+    // END HANDLE SCENARIO NAME AND USER NAME HOVER WHEN TRUNCATED
   }
 
-  .board-bar {
+  .scenario-details {
     display: flex;
-    align-items: center;
-    height: 100%;
+    flex-direction: column;
+    background-color: var(--ambientB10);
+    color: var(--grey80);
+    box-shadow:
+      inset 0 1px 2px rgba(255, 255, 255, 1),
+      0 1px 2px rgba(0, 0, 0, 0.16),
+      0 2px 2px -1px rgba(255, 171, 88, 0.27);
+    padding: 30px 32px;
+    width: 100%;
+    overflow-wrap: break-word;
 
-    .board-btns {
+    .scenario-description {
+      display: inline;
+      max-width: 480px;
+      margin-bottom: 28px;
+    }
+
+    .scenario-details-infra-name {
       display: flex;
-      align-items: center;
-      height: 100%;
+      flex-direction: row;
+      margin-bottom: 4px;
+    }
 
-      .board-btn {
-        padding: 1px 8px 3px 8px;
-        font-size: 0.75rem;
-        line-height: 16px;
-        border-radius: 4px;
+    .edit-scenario-container {
+      margin-top: 28px;
+      color: var(--primary60);
 
-        // START HANDLE BOARD STATE
-
-        // On state
-        &.on {
-          color: var(--grey80);
-          background-color: var(--ambientB5);
-
-          &:hover {
-            color: var(--black100);
-            background-color: var(--white100);
-          }
-
-          &:active {
-            color: var(--grey20);
-            background-color: var(--ambientB15);
-          }
-        }
-
-        // Off state
-        &:not(.on)  {
-          color: var(--grey30);
-          background-color: var(--ambientB15);
-
-          &:hover {
-            color: var(--grey30);
-            background-color: var(--white100);
-          }
-
-          &:active {
-            color: var(--grey50);
-            background-color: var(--ambientB5);
-          }
-        }
-        // END HANDLE BOARD STATE
+      button:focus {
+        outline: none;
       }
-    }
-  }
-
-  .user-info {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    margin-right: 8px;
-    overflow: hidden;
-    flex: 1;
-    justify-content: end;
-
-    .user-name {
-      color: var(--grey30);
-      font-size: 0.875rem;
-      text-align: right;
-      line-height: 20px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      min-width: 0;
-    }
-  }
-
-  &:has(.scenario-name-label.is-truncated:hover) {
-    .scenario-info {
-      flex: 2;
-    }
-
-    .board-bar {
-      display: none;
-    }
-
-    .user-info {
-      flex: 1;
-    }
-  }
-
-  &:has(.user-name.is-truncated:hover) {
-    .scenario-info {
-      flex: 1;
-    }
-
-    .board-bar {
-      display: none;
-    }
-
-    .user-info {
-      flex: 2;
     }
   }
 }
