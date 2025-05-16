@@ -1,4 +1,4 @@
-name: PR Checks
+name: Chart build and push
 
 on:
   pull_request:
@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - dev
+      - staging
     paths:
       - 'chart/**'
 
@@ -29,6 +30,8 @@ jobs:
             CHART_VERSION="0.0.1-${{ github.event.pull_request.number }}-${GITHUB_SHA}"
           elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             CHART_VERSION="0.0.1-dev-${GITHUB_SHA}"
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            CHART_VERSION="0.0.1-staging-${GITHUB_SHA}"
           fi
 
           echo "CHART_NAME=$CHART_NAME" >> $GITHUB_ENV
