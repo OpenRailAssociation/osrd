@@ -149,8 +149,10 @@ const StdcmOperationalPoint = ({
   };
 
   const resetSuggestions = () => {
-    setSearchResults([]);
-    setSearchTerm('');
+    if (searchTerm !== '' && !location) {
+      setSearchResults([]);
+      setSearchTerm('');
+    }
   };
 
   useEffect(() => {
