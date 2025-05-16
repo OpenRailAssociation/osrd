@@ -25,7 +25,7 @@
           inherit system;
         };
 
-        fixedNode = pkgs.nodejs_23;
+        fixedNode = pkgs.nodejs_24;
         fixedNodePackages = pkgs.nodePackages.override {
           nodejs = fixedNode;
         };
