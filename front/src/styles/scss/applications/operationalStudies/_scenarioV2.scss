@@ -1,6 +1,5 @@
 .scenario-header-container {
   margin-bottom: 8px;
-  min-width: 780px;
 
   .scenario-header {
     display: flex;
@@ -108,8 +107,9 @@
 
     .board-bar {
       display: flex;
-      align-items: center;
-      height: 100%;
+      flex-direction: row;
+      margin-bottom: 4px;
+    }
 
       .board-btns {
         display: flex;
