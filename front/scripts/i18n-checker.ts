@@ -59,15 +59,15 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:.*.select/,
 
   // Project
-  /operationalStudies\/scenario:Routing/,
-  /operationalStudies\/scenario:Spacing/,
-  /operationalStudies\/scenario:pacedTrain/,
-  /operationalStudies\/scenario:pacedTrainCount/,
-  /operationalStudies\/scenario:timetable\.invalid\..*/,
-  /operationalStudies\/scenario:timetable\.occurrenceChangeGroup\..*/,
-  /operationalStudies\/scenario:train/,
-  /operationalStudies\/scenario:trainCount/,
-  /operationalStudies\/scenario:timetable\.occurrenceChangeGroup\..*/,
+  /operational-studies:main\.Routing/,
+  /operational-studies:main\.Spacing/,
+  /operational-studies:main\.pacedTrain/,
+  /operational-studies:main\.pacedTrainCount/,
+  /operational-studies:main\.timetable\.invalid\..*/,
+  /operational-studies:main\.timetable\.occurrenceChangeGroup\..*/,
+  /operational-studies:main\.train/,
+  /operational-studies:main\.trainCount/,
+  /operational-studies:main\.timetable\.occurrenceChangeGroup\..*/,
 
   // Study
   /operational-studies:study\.date-*/,
