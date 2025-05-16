@@ -112,6 +112,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
+            .category(train_schedule_base.category.map(TrainCategory))
     }
 }
 
