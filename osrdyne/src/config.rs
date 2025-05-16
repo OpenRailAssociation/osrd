@@ -18,7 +18,7 @@ use url::Url;
 pub enum WorkerDriverConfig {
     Noop,
     DockerDriver(DockerDriverOptions),
-    KubernetesDriver(KubernetesDriverOptions),
+    KubernetesDriver(Box<KubernetesDriverOptions>),
     ProcessComposeDriver(PCDriverOptions),
 }
 

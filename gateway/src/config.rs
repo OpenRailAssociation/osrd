@@ -204,9 +204,10 @@ impl Default for ProxyConfig {
     }
 }
 
-pub fn load() -> Result<ProxyConfig, figment::Error> {
+pub fn load() -> Result<ProxyConfig, Box<figment::Error>> {
     Figment::from(Serialized::defaults(ProxyConfig::default()))
         .merge(Toml::file("gateway.toml"))
         .merge(Env::prefixed("GATEWAY__").split("__"))
         .extract()
+        .map_err(Box::new)
 }
