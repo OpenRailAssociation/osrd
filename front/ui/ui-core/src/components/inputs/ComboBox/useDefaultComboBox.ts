@@ -50,7 +50,7 @@ const useDefaultComboBox = <T>(suggestions: T[], getSuggestionLabel: (suggestion
     setQuery('');
   };
 
-  return { suggestions: filteredSuggestions, onChange, resetSuggestions };
+  return { suggestions: filteredSuggestions, onChange, resetSuggestions, onBlur: resetSuggestions };
 };
 
 export default useDefaultComboBox;

@@ -23,6 +23,7 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
   numberOfSuggestionsToShow?: number;
   getSuggestionLabel: (option: T) => string;
   onSelectSuggestion: (option: T | undefined) => void;
+  onBlur?: () => void;
   resetSuggestions: () => void;
 };
 
@@ -41,6 +42,7 @@ const ComboBox = <T,>({
   getSuggestionLabel,
   onChange,
   onSelectSuggestion,
+  onBlur,
   resetSuggestions,
   ...inputProps
 }: ComboBoxProps<T>) => {
@@ -62,7 +64,7 @@ const ComboBox = <T,>({
     setTimeout(() => {
       inputRef.current?.blur();
     }, 0);
-    resetSuggestions();
+    onBlur?.();
   };
 
   /* eslint-disable react-hooks/exhaustive-deps */
