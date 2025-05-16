@@ -11,6 +11,14 @@
     color: var(--info60);
   }
 
+  .infra-loaded {
+    width: 8px;
+    height: 8px;
+    background-color: var(--success30);
+    border-radius: 50%;
+    margin-block: 5px 3px;
+  }
+
   .infra-loader:first-child {
     animation: dot-flashing 0.5s infinite linear alternate;
     animation-delay: 0s;
