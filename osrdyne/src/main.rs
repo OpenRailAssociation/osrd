@@ -146,7 +146,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 info!("Using Kubernetes driver");
                 Box::new(
                     KubernetesDriver::new(
-                        opts,
+                        *opts,
                         config.amqp_uri.clone(),
                         config.max_msg_size,
                         config.pool_id.clone(),
