@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { useDebouncedFunc } from 'utils/helpers';
 import { normalized } from 'utils/strings';
 
 type StdcmOperationalPointProps = {
@@ -17,26 +17,14 @@ type StdcmOperationalPointProps = {
   onItineraryChange: () => void;
 };
 
-type CIOption = StdcmPathStep['location'] & { label: string };
+type CIOption = StdcmPathStep['location'] & { label: string; chOptions: CHOption[] };
 type CHOption = { label: string; id: string; coordinates: [number, number] };
 
 function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
 }
 
-const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selectedCI: CIOption) =>
-  searchResults
-    .filter((op) => op.name === selectedCI.name)
-    .reduce((acc, op) => {
-      const newObject = {
-        label: formatChCode(op.ch),
-        id: op.ch,
-        coordinates: op.geographic.coordinates as [number, number],
-      };
-      const isDuplicate = acc.some((option) => option.label === newObject.label);
-      if (!isDuplicate) acc.push(newObject);
-      return acc;
-    }, [] as CHOption[]);
+const getOpLabel = (op: { trigram: string; name: string }) => [op.trigram, op.name].join(' ');
 
 const StdcmOperationalPoint = ({
   location,
@@ -47,30 +35,68 @@ const StdcmOperationalPoint = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    searchResults,
-    setSearchResults,
-    searchOperationalPointsByTrigram,
-  } = useSearchOperationalPoint({
-    initialSearchTerm: location?.name,
-    initialChCodeFilter: location?.secondary_code,
+  const [searchTerm, setSearchTerm] = useState('');
+  const [ciSuggestions, setCiSuggestions] = useState<CIOption[]>([]);
+  const [selectedCi, setSelectedCi] = useState<CIOption>();
+
+  const { searchOperationalPoints } = useSearchOperationalPoint({
     isStdcm: true,
   });
 
-  const [chSuggestions, setChSuggestions] = useState<CHOption[]>([]);
+  const searchCi = async (searchQuery: string) => {
+    const searchResults = await searchOperationalPoints(searchQuery);
 
-  const selectedCi = useMemo(
-    () =>
-      location
-        ? {
-            ...location,
-            label: [location.trigram, location.name].join(' '),
-          }
-        : undefined,
-    [location]
-  );
+    const chByCi = new Map<string, CHOption[]>();
+    const cis = new Map<string, Omit<CIOption, 'chOptions'>>();
+
+    for (const op of searchResults) {
+      const opName = normalized(op.name);
+      if (
+        (opName.startsWith(normalized(searchTerm)) ||
+          opName.includes(normalized(searchTerm)) ||
+          op.trigram === searchTerm.toUpperCase()) &&
+        // TODO: Replace this temporary implementation with a permanent solution
+        !opName.startsWith('overtake')
+      ) {
+        const opLabel = getOpLabel(op);
+        cis.set(opLabel, {
+          label: getOpLabel(op),
+          trigram: op.trigram,
+          uic: op.uic,
+          secondary_code: op.ch,
+          name: op.name,
+          coordinates: op.geographic.coordinates as [number, number],
+        });
+
+        const chOption: CHOption = {
+          label: formatChCode(op.ch),
+          id: op.ch,
+          coordinates: op.geographic.coordinates as [number, number],
+        };
+        if (chByCi.get(opLabel)) {
+          chByCi.get(opLabel)!.push(chOption);
+        } else {
+          chByCi.set(opLabel, [chOption]);
+        }
+      }
+    }
+
+    const newCiSuggestions: CIOption[] = [];
+    for (const opLabel of [...cis.keys()]) {
+      newCiSuggestions.push({
+        ...cis.get(opLabel)!,
+        chOptions: chByCi.get(opLabel)!,
+      });
+    }
+
+    return newCiSuggestions;
+  };
+
+  useDebouncedFunc(searchTerm, 150, async (searchQuery) => {
+    if (!searchQuery) return;
+    const locations = await searchCi(searchQuery);
+    setCiSuggestions(locations);
+  });
 
   const selectedCh = useMemo(
     () =>
@@ -84,46 +110,9 @@ const StdcmOperationalPoint = ({
     [location]
   );
 
-  const ciSuggestions: CIOption[] = useMemo(
-    () =>
-      // Temporary filter added to show a more restrictive list of suggestions inside the stdcm app.
-      searchResults
-        .filter(
-          (op) =>
-            (normalized(op.name).startsWith(normalized(searchTerm)) ||
-              normalized(op.name).includes(normalized(searchTerm)) ||
-              op.trigram === searchTerm.toUpperCase()) &&
-            // TODO: Replace this temporary implementation with a permanent solution
-            !normalized(op.name).startsWith(normalized('OVERTAKE'))
-        )
-        .reduce<CIOption[]>((acc, p) => {
-          const newObject = {
-            label: [p.trigram, p.name].join(' '),
-            trigram: p.trigram,
-            uic: p.uic,
-            secondary_code: p.ch,
-            name: p.name,
-            coordinates: p.geographic.coordinates as [number, number],
-          };
-          const isDuplicate = acc.some((pr) => pr.label === newObject.label);
-          if (!isDuplicate) acc.push(newObject);
-          return acc;
-        }, []),
-    [searchResults]
-  );
-
-  const handleCiSelect = async (selectedSuggestion?: CIOption) => {
+  const handleCiSelect = (selectedSuggestion?: CIOption) => {
     dispatch(updateStdcmPathStep({ id: pathStepId, updates: { location: selectedSuggestion } }));
     onItineraryChange();
-    if (selectedSuggestion) {
-      const operationalPointParts = await searchOperationalPointsByTrigram(
-        selectedSuggestion.trigram
-      );
-      const newChSuggestions = extractChCodes(operationalPointParts, selectedSuggestion);
-      setChSuggestions(newChSuggestions);
-    } else {
-      setChSuggestions([]);
-    }
   };
 
   const handleChSelect = (selectedChCode?: CHOption) => {
@@ -144,38 +133,32 @@ const StdcmOperationalPoint = ({
     }
   };
 
-  const handleCiInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+  const onBlur = async () => {
+    if (searchTerm !== '' && !selectedCi) {
+      setCiSuggestions([]);
+      setSearchTerm('');
+    }
   };
 
   const resetSuggestions = () => {
-    if (searchTerm !== '' && !location) {
-      setSearchResults([]);
-      setSearchTerm('');
-    }
+    setSelectedCi(undefined);
+    setCiSuggestions([]);
+    setSearchTerm('');
   };
 
   useEffect(() => {
-    if (location) {
-      setSearchTerm(location.name);
-      // Clear the list of CH suggestions if the location has changed to avoid showing outated suggestions
-      if (!chSuggestions.some((suggestion) => suggestion.label === location.secondary_code)) {
-        setChSuggestions([]);
-      }
-    } else {
-      setSearchTerm('');
-      setChSuggestions([]);
-    }
-  }, [location]);
+    const initializeInputs = async () => {
+      if (location) {
+        const newCiSuggestions = await searchCi(location.name);
+        setCiSuggestions(newCiSuggestions);
 
-  useEffect(() => {
-    // If we start a new query with inputs (ch suggestions will be empty at load),
-    // fetch the ch list again for the corresponding CI
-    if (chSuggestions.length === 0 && selectedCi && searchResults.length > 0) {
-      const updatedChSuggestions = extractChCodes(searchResults, selectedCi);
-      setChSuggestions(updatedChSuggestions);
-    }
-  }, [searchResults, selectedCi, chSuggestions]);
+        const newSelectedCi = newCiSuggestions.find((ciOption) => ciOption.name === location.name);
+        setSelectedCi(newSelectedCi);
+      }
+    };
+
+    initializeInputs();
+  }, [location]);
 
   return (
     <div className="location-line">
@@ -186,9 +169,12 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ci')}
           value={selectedCi}
           suggestions={ciSuggestions}
-          onChange={handleCiInputChange}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchTerm(e.target.value);
+          }}
           getSuggestionLabel={(option: CIOption) => option.label}
           onSelectSuggestion={handleCiSelect}
+          onBlur={onBlur}
           resetSuggestions={resetSuggestions}
           disabled={disabled}
           autoComplete="off"
@@ -202,7 +188,7 @@ const StdcmOperationalPoint = ({
           data-testid="operational-point-ch"
           value={selectedCh}
           onChange={handleChSelect}
-          options={chSuggestions}
+          options={selectedCi?.chOptions || []}
           getOptionLabel={(option: { id: string; label: string }) => option.label}
           getOptionValue={(option: { id: string; label: string }) => option.id}
           disabled={disabled}
