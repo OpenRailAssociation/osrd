@@ -284,7 +284,6 @@
         "routes_one": "Un itinéraire compatible trouvé",
         "routes_other": "{{count}} itinéraires compatibles trouvés",
         "routes_zero": "Aucun itinéraire compatible trouvé",
-        "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
         "search-routes": "Rechercher des itinéraires compatibles",
         "search-routes-alt": "Rechercher des itinéraires alternatifs",
         "start": "Départ",
