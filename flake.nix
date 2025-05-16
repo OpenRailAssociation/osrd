@@ -62,9 +62,6 @@
               taplo
               uv
 
-              # API
-              ruff-lsp
-
               # Core
               gradle
               jdk17
