@@ -49,14 +49,14 @@ export default function Home() {
             <div className="col-12 col-md-10 col-lg-8 col-xl-6">
               <div className="row">
                 <div
-                  className="col-6 col-sm-4 "
+                  className="col-6 col-sm-4 mb-2"
                   {...(!infraEditorAllowed && { 'aria-disabled': true })}
                 >
                   <CardSNCF img={editorImg} title={t('editor')} link="/editor" />
                 </div>
 
                 <div
-                  className="col-6 col-sm-4 "
+                  className="col-6 col-sm-4 mb-2"
                   {...(!rollingStockEditorAllowed && { 'aria-disabled': true })}
                 >
                   <CardSNCF
@@ -66,7 +66,10 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="col-6 col-sm-4 " {...(!mapAllowed && { 'aria-disabled': true })}>
+                <div
+                  className="col-6 col-sm-4 mb-2"
+                  {...(!mapAllowed && { 'aria-disabled': true })}
+                >
                   <CardSNCF img={mapImg} title={t('map')} link="/map" />
                 </div>
               </div>
