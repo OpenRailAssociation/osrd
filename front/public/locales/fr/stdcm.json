@@ -5,7 +5,7 @@
   },
   "arriveAt": "Arriver à {{ time }}",
   "consist": {
-    "compositionCode": "code de composition",
+    "compositionCode": "Code de composition",
     "consist": "Convoi",
     "errors": {
       "maxSpeed": {
