@@ -1,6 +1,5 @@
-import nextId from 'react-id-generator';
-
 import type { CichDictValue, Step } from 'applications/operationalStudies/types';
+import { useId } from 'react';
 import { time2sec } from 'utils/timeManipulation';
 
 export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''); // Remove the '.0' if it's at the end of the time string
@@ -73,7 +72,7 @@ export const buildSteps = (
       }
 
       return {
-        id: nextId(),
+        id: useId(),
         uic,
         chCode,
         name: ocpRef,

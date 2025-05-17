@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 
 import { point } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
 import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
-import nextId from 'react-id-generator';
 import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -86,7 +85,7 @@ const AddPathStepPopup = ({
 
       const { properties } = featureInfoClick.feature;
       setNewPathStep({
-        id: nextId(),
+        id: useId(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
         track: properties.id,
         offset: Math.round(offset),
@@ -133,7 +132,7 @@ const AddPathStepPopup = ({
       });
 
       setClickedOp({
-        id: nextId(),
+        id: useId(),
         secondary_code: operationalPoint.extensions!.sncf!.ch,
         uic: operationalPoint.extensions!.identifier!.uic,
         tracks: trackPartCoordinates,

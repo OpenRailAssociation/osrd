@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
 import {
@@ -109,7 +108,7 @@ const useStdcm = ({
         timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
+        path: payload.body.steps.map((step) => ({ ...step.location, id: useId() })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',

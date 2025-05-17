@@ -1,6 +1,5 @@
-import { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type LegacyRef, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
-import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';
 
 export const DROPDOWN_STYLE_TYPES = {
@@ -28,7 +27,7 @@ const DropdownSNCF = ({
   const itemNode = items.map((item) => (
     <li
       className="dropdown-item"
-      key={`item-${nextId()}`}
+      key={`item-${useId()}`}
       // Make it better some day :-/
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
       role="button"

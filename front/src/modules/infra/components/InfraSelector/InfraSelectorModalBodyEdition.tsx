@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
-import nextId from 'react-id-generator';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -109,7 +108,7 @@ const InfraSelectorModalBodyEdition = ({
           {infrasList.map((infra) => (
             <InfraSelectorEditionItem
               infra={infra}
-              key={nextId()}
+              key={useId()}
               isFocused={isFocused}
               setIsFocused={setIsFocused}
             />

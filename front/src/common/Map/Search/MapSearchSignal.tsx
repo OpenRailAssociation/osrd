@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -209,7 +208,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         <SignalCard
           signalSearchResult={result}
           onResultClick={onResultClick}
-          key={`${nextId()}-${result.line_name}`}
+          key={`${useId()}-${result.line_name}`}
         />
       ))}
     </div>
@@ -256,7 +255,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="line" className="overflow-hidden">
             {searchLineState &&
               autocompleteLineNames.map((lineName) => (
-                <option value={lineName} key={`${nextId()}-${lineName}`}>
+                <option value={lineName} key={`${useId()}-${lineName}`}>
                   {lineName}
                 </option>
               ))}
@@ -284,7 +283,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="signal">
             {searchState &&
               searchResults.map((result) => (
-                <option value={result.label} key={`${nextId()}-${result.line_name}`}>
+                <option value={result.label} key={`${useId()}-${result.line_name}`}>
                   {result.label}
                 </option>
               ))}

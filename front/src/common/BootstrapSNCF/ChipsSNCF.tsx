@@ -1,6 +1,4 @@
-import { useState } from 'react';
-
-import nextId from 'react-id-generator';
+import { useId, useState } from 'react';
 
 enum colorClasses {
   primary = 'bg-primary',
@@ -36,7 +34,7 @@ export default function ChipsSNCF({
   const chip = (label: string, idx: number) => {
     const chipColor = colorClasses[color as keyof typeof colorClasses];
     return (
-      <div role="list" key={nextId()}>
+      <div role="list" key={useId()}>
         <div className="chips-group" role="listitem">
           <span
             data-testid="scenario-details-tag"
@@ -66,7 +64,7 @@ export default function ChipsSNCF({
     }
   };
 
-  const chipsID = `chipsSNCF${nextId()}`;
+  const chipsID = `chipsSNCF${useId()}`;
   return (
     <div className="chips-container">
       {title && (

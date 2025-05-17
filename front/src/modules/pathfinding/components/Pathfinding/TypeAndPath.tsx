@@ -1,10 +1,9 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { Alert, TriangleRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
@@ -163,7 +162,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
         .map(({ uic, ch }) => ({
           uic,
           secondary_code: ch,
-          id: nextId(),
+          id: useId(),
         }));
 
       setDisplayTypeAndPath(false);

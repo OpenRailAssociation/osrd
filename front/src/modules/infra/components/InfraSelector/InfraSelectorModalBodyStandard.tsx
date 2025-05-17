@@ -1,9 +1,8 @@
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useId, useMemo } from 'react';
 
 import { Lock, Search } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import type { ResourceType } from 'common/api/mock/mockEditoastApi';
@@ -103,7 +102,7 @@ const InfraSelectorModalBodyStandard = ({
                 unlocked: !infra.locked,
                 active: infra.id === infraID,
               })}
-              key={nextId()}
+              key={useId()}
             >
               <button
                 className="infraslist-item-choice-main"

@@ -1,5 +1,4 @@
 import { sortBy } from 'lodash';
-import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
@@ -10,6 +9,7 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
+import { useId } from 'react';
 
 /**
  * Cut the correct range for a given position and add the new ranges to the
@@ -80,7 +80,7 @@ const createPathStep = (
   );
 
   return {
-    id: nextId(),
+    id: useId(),
     positionOnPath,
     coordinates,
     ...trackOffset,
@@ -128,7 +128,7 @@ export const createCutAtPathStep = (
     cutAtPosition
   );
   return {
-    id: nextId(),
+    id: useId(),
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
     isFromPowerRestriction: true,

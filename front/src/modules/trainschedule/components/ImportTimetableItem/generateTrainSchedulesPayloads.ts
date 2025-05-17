@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
-import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import { useId } from 'react';
 import { Duration } from 'utils/duration';
 
 export function generateTrainSchedulesPayloads(
@@ -22,7 +22,7 @@ export function generateTrainSchedulesPayloads(
 
     const { path, schedule } = train.steps.reduce(
       (acc, step, index) => {
-        const stepId = nextId();
+        const stepId = useId();
 
         // Conditionally skip invalid UIC or CH code steps
         if (checkChAndUIC && !step.uic) {
