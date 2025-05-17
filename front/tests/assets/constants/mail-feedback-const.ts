@@ -5,7 +5,8 @@ import type { StdcmTranslations } from '../../utils/types';
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
-const trainName = 'ELECTRIC_RS_E2E';
+const tractionEngineName = 'ELECTRIC_RS_E2E';
+const towedRollingStockName = '-';
 const compositionCode = 'HLP';
 const tonnage = '950 t';
 const length = '567 m';
@@ -27,7 +28,8 @@ const getMailFeedbackData = () => {
 
 ${translations.mailFeedback.simulationDetails}:
 
-${translations.consist.tractionEngine}: ${trainName}
+${translations.consist.tractionEngine}: ${tractionEngineName}
+${translations.consist.towedRollingStock}: ${towedRollingStockName}
 ${translations.consist.compositionCode}: ${compositionCode}
 ${translations.consist.tonnage}: ${tonnage}
 ${translations.consist.length}: ${length}

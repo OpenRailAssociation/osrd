@@ -260,6 +260,7 @@ export type OccurrenceDetails = {
 export type StdcmTranslations = {
   consist: {
     tractionEngine: string;
+    towedRollingStock: string;
     compositionCode: string;
     tonnage: string;
     length: string;
