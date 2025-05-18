@@ -17,6 +17,7 @@
       background-color: var(--coolgray1);
       padding: 8px;
       border-radius: 4px;
+      word-break: break-all;
 
       &.licenses {
         flex-grow: 1;
