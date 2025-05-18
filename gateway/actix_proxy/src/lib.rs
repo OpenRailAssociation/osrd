@@ -511,8 +511,28 @@ impl InnerProxyService {
             }
         }
 
-        Ok(response.streaming(back_response))
+        // only attempt to stream the body for responses which can have one
+        if response_is_bodyless(req.method(), back_response.status().as_u16()) {
+            Ok(response.finish())
+        } else {
+            Ok(response.streaming(back_response))
+        }
     }
+}
+
+fn response_is_bodyless(req_method: &actix_web::http::Method, resp_status_code: u16) -> bool {
+    // Any response to a HEAD request and any response with a 1xx (Informational),
+    // 204 (No Content), or 304 (Not Modified) status code is always terminated
+    // by the first empty line after the header fields, regardless of the header
+    // fields present in the message, and thus cannot contain a message body or
+    // trailer section.
+    // https://httpwg.org/specs/rfc9112.html#message.body.length
+
+    if req_method == actix_web::http::Method::HEAD {
+        return true;
+    }
+
+    matches!(resp_status_code, 100..200 | 204 | 304)
 }
 
 impl ProxyService {
