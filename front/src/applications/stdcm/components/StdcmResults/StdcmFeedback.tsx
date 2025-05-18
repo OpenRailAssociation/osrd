@@ -1,17 +1,14 @@
 import { Comment } from '@osrd-project/ui-icons';
+import useStdcmForm from 'applications/stdcm/hooks/useStdcmForm';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-
-import { getSelectedSimulation } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 const StdcmFeedback = () => {
   const { t } = useTranslation('stdcm');
   const { stdcmName, stdcmFeedbackMail } = useDeploymentSettings() ?? { stdcmName: 'STDCM' };
-  const selectedSimulation = useSelector(getSelectedSimulation);
 
-  const { inputs } = selectedSimulation;
-  const { departureTime, pathSteps, consist } = inputs;
+  const { consist, pathSteps, departureTime } = useStdcmForm();
+
   if (
     !consist ||
     !consist.tractionEngine ||
@@ -19,7 +16,7 @@ const StdcmFeedback = () => {
     consist.totalMass == null ||
     consist.maxSpeed == null
   )
-    return null;
+  return null;
 
   const { tractionEngine, speedLimitByTag, totalLength, totalMass, maxSpeed } = consist;
 
