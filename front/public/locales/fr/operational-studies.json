@@ -153,8 +153,8 @@
       "noSpeedLimitTagsShort": "Aucun",
       "noTrain": "Aucun train",
       "occurrenceChangeGroup": {
+        "consist": "Convoi",
         "constraintDistribution": "Marge de régularité",
-        "convoy": "Convoi",
         "departureTime": "Heure de départ",
         "electricalProfiles": "Profils électriques",
         "initialVelocity": "Vitesse initiale",

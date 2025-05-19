@@ -56,69 +56,69 @@ const SimulationReportSheetScenario = ({
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
         </View>
 
-        <View style={styles.convoyAndRoute.convoyAndRoute}>
-          <View style={styles.convoyAndRoute.convoy}>
-            <Text style={styles.convoyAndRoute.convoyTitle}> {t('reportSheet.convoy')}</Text>
-            <View style={styles.convoyAndRoute.convoyInfo}>
-              <View style={styles.convoyAndRoute.convoyInfoBox1}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+        <View style={styles.consistAndRoute.consistAndRoute}>
+          <View style={styles.consistAndRoute.consist}>
+            <Text style={styles.consistAndRoute.consistTitle}> {t('reportSheet.consist')}</Text>
+            <View style={styles.consistAndRoute.consistInfo}>
+              <View style={styles.consistAndRoute.consistInfoBox1}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.speedLimitByTag')}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                <Text style={styles.consistAndRoute.consistInfoData}>{speedLimitByTag || '-'}</Text>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.towedMaterial')}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                <Text style={styles.consistAndRoute.consistInfoData}>-</Text>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.maxSpeed')}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>
+                <Text style={styles.consistAndRoute.consistInfoData}>
                   {`${Math.floor(rollingStock.max_speed * 3.6)} km/h`}
                 </Text>
               </View>
-              <View style={styles.convoyAndRoute.convoyInfoBox2}>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+              <View style={styles.consistAndRoute.consistInfoBox2}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.maxWeight')}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>
+                <Text style={styles.consistAndRoute.consistInfoData}>
                   {`${Math.floor(rollingStock.mass / 1000)} t`}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.referenceEngine')}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>
+                <Text style={styles.consistAndRoute.consistInfoData}>
                   {rollingStock.metadata?.reference || '-'}
                 </Text>
-                <Text style={styles.convoyAndRoute.convoyInfoTitles}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.maxLength')}
                 </Text>
                 <Text
-                  style={styles.convoyAndRoute.convoyInfoData}
+                  style={styles.consistAndRoute.consistInfoData}
                 >{`${rollingStock.length} m`}</Text>
               </View>
             </View>
           </View>
-          <View style={styles.convoyAndRoute.route}>
-            <Text style={styles.convoyAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
-            <View style={styles.convoyAndRoute.stopTableContainer}>
-              <Table style={styles.convoyAndRoute.stopTable}>
-                <TH style={styles.convoyAndRoute.stopTableTH}>
-                  <View style={styles.convoyAndRoute.stopTableIndexWidth}>
+          <View style={styles.consistAndRoute.route}>
+            <Text style={styles.consistAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
+            <View style={styles.consistAndRoute.stopTableContainer}>
+              <Table style={styles.consistAndRoute.stopTable}>
+                <TH style={styles.consistAndRoute.stopTableTH}>
+                  <View style={styles.consistAndRoute.stopTableIndexWidth}>
                     <TD aria-label="line-count" />
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableOpWidth}>
+                  <View style={styles.consistAndRoute.stopTableOpWidth}>
                     <TD>{t('reportSheet.operationalPoint')}</TD>
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableChWidth}>
+                  <View style={styles.consistAndRoute.stopTableChWidth}>
                     <TD>{t('reportSheet.code')}</TD>
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableEndWidth}>
+                  <View style={styles.consistAndRoute.stopTableEndWidth}>
                     <TD>{t('reportSheet.endStop')}</TD>
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableStartWidth}>
+                  <View style={styles.consistAndRoute.stopTableStartWidth}>
                     <TD>{t('reportSheet.startStop')}</TD>
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableStopTypeWidth} />
+                  <View style={styles.consistAndRoute.stopTableStopTypeWidth} />
                 </TH>
                 {operationalPointsList.map((step, index) => {
                   const isFirstStep = index === 0;
@@ -128,27 +128,27 @@ const SimulationReportSheetScenario = ({
                   if (shouldRenderRow) {
                     renderedIndex += 1;
                     return (
-                      <TR key={index} style={styles.convoyAndRoute.stopTableTbody}>
-                        <View style={styles.convoyAndRoute.stopTableIndexWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableIndexColumn}>
+                      <TR key={index} style={styles.consistAndRoute.stopTableTbody}>
+                        <View style={styles.consistAndRoute.stopTableIndexWidth}>
+                          <TD style={styles.consistAndRoute.stopTableIndexColumn}>
                             {renderedIndex}
                           </TD>
                         </View>
-                        <View style={styles.convoyAndRoute.stopTableOpWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableOpColumn}>
+                        <View style={styles.consistAndRoute.stopTableOpWidth}>
+                          <TD style={styles.consistAndRoute.stopTableOpColumn}>
                             {step.name || t('reportSheet.unknown')}
                           </TD>
                         </View>
-                        <View style={styles.convoyAndRoute.stopTableChWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableChColumn}>{step.ch}</TD>
+                        <View style={styles.consistAndRoute.stopTableChWidth}>
+                          <TD style={styles.consistAndRoute.stopTableChColumn}>{step.ch}</TD>
                         </View>
-                        <View style={styles.convoyAndRoute.stopTableEndWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableStartColumn}>
+                        <View style={styles.consistAndRoute.stopTableEndWidth}>
+                          <TD style={styles.consistAndRoute.stopTableStartColumn}>
                             {isLastStep ? dateToHHMMSS(step.time, { withoutSeconds: true }) : ''}
                           </TD>
                         </View>
-                        <View style={styles.convoyAndRoute.stopTableStartWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableStartColumn}>
+                        <View style={styles.consistAndRoute.stopTableStartWidth}>
+                          <TD style={styles.consistAndRoute.stopTableStartColumn}>
                             {isFirstStep ? dateToHHMMSS(step.time, { withoutSeconds: true }) : ''}
                           </TD>
                         </View>
