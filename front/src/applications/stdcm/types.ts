@@ -10,7 +10,11 @@ import type {
   TowedRollingStock,
   PathProperties,
 } from 'common/api/osrdEditoastApi';
-import type { SpeedSpaceChartData, TrainSpaceTimeData } from 'modules/simulationResult/types';
+import type {
+  PathOperationalPoint,
+  SpeedSpaceChartData,
+  TrainSpaceTimeData,
+} from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -44,10 +48,8 @@ export type StdcmConflictsResponse = Extract<
 
 export type StdcmResponse = StdcmConflictsResponse | StdcmSuccessResponse;
 
-export type OperationalPoint = NonNullable<PathProperties['operational_points']>[number];
-
 export type StdcmPathProperties = {
-  manchetteOperationalPoints?: OperationalPoint[];
+  manchetteOperationalPoints?: PathOperationalPoint[];
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
   zones: NonNullable<PathProperties['zones']>;

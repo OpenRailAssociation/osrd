@@ -2,20 +2,37 @@
 import type { TFunction } from 'i18next';
 
 import type { PathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';
-
-import type { OperationalPoint } from '../types';
+import type {
+  PathOperationalPoint,
+  EditoastPathOperationalPoint,
+} from 'modules/simulationResult/types';
 
 const HIGHEST_PRIORITY_WEIGHT = 100;
 
 /**
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
-export const upsertMapWaypointsInOperationalPoints = (
+export function upsertMapWaypointsInOperationalPoints(
+  type: 'PathOperationalPoint',
   path: TrainSchedule['path'],
   pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
-  operationalPoints: OperationalPoint[],
+  operationalPoints: PathOperationalPoint[],
   t: TFunction<'operational-studies'>
-): OperationalPoint[] => {
+): PathOperationalPoint[];
+export function upsertMapWaypointsInOperationalPoints(
+  type: 'EditoastPathOperationalPoint',
+  path: TrainSchedule['path'],
+  pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
+  operationalPoints: EditoastPathOperationalPoint[],
+  t: TFunction<'operational-studies'>
+): EditoastPathOperationalPoint[];
+export function upsertMapWaypointsInOperationalPoints(
+  type: 'PathOperationalPoint' | 'EditoastPathOperationalPoint',
+  path: TrainSchedule['path'],
+  pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
+  operationalPoints: (PathOperationalPoint | EditoastPathOperationalPoint)[],
+  t: TFunction<'operational-studies'>
+): (PathOperationalPoint | EditoastPathOperationalPoint)[] {
   let waypointCounter = 1;
 
   return path.reduce(
@@ -46,8 +63,7 @@ export const upsertMapWaypointsInOperationalPoints = (
           (op) => op.position >= positionOnPath
         );
 
-        const formattedStep: OperationalPoint = {
-          id: step.id,
+        const baseFormattedStep = {
           extensions: {
             identifier: {
               name: t('simulationResults.requestedPoint', { count: waypointCounter }),
@@ -58,6 +74,17 @@ export const upsertMapWaypointsInOperationalPoints = (
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
         };
+        const formattedStep =
+          type === 'PathOperationalPoint'
+            ? {
+                ...baseFormattedStep,
+                waypointId: step.id,
+                opId: null,
+              }
+            : {
+                ...baseFormattedStep,
+                id: step.id,
+              };
 
         waypointCounter += 1;
 
@@ -74,4 +101,4 @@ export const upsertMapWaypointsInOperationalPoints = (
     },
     [...operationalPoints]
   );
-};
+}

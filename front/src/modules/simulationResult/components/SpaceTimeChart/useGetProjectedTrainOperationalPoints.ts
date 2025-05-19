@@ -4,13 +4,9 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
-import type { OperationalPoint } from 'applications/operationalStudies/types';
-import {
-  osrdEditoastApi,
-  type PathfindingResult,
-  type PathProperties,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
+import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -29,9 +25,9 @@ const useGetProjectedTrainOperationalPoints = ({
 }) => {
   const { t } = useTranslation('operational-studies');
 
-  const [operationalPoints, setOperationalPoints] = useState<OperationalPoint[]>([]);
+  const [operationalPoints, setOperationalPoints] = useState<PathOperationalPoint[]>([]);
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
-    useState<OperationalPoint[]>(operationalPoints);
+    useState<PathOperationalPoint[]>(operationalPoints);
 
   const [getTrainSchedulePath] = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useLazyQuery();
   const [getPacedTrainPath] = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useLazyQuery();
@@ -68,16 +64,20 @@ const useGetProjectedTrainOperationalPoints = ({
           },
         }).unwrap();
 
-        const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+        let operationalPointsWithUniqueIds: PathOperationalPoint[] =
+          operational_points?.map((op, i) => ({
+            ...omit(op, 'id'),
+            waypointId: `${op.id}-${op.position}-${i}`,
+            opId: op.id,
+          })) || [];
+
+        operationalPointsWithUniqueIds = upsertMapWaypointsInOperationalPoints(
+          'PathOperationalPoint',
           timetableItemUsedForProjection.path,
           path.path_item_positions,
-          operational_points!,
+          operationalPointsWithUniqueIds,
           t
         );
-        let operationalPointsWithUniqueIds = operationalPointsWithAllWaypoints.map((op, i) => ({
-          ...op,
-          id: `${op.id}-${op.position}-${i}`,
-        }));
 
         setOperationalPoints(operationalPointsWithUniqueIds);
 
@@ -89,9 +89,9 @@ const useGetProjectedTrainOperationalPoints = ({
           `${timetableId}-${JSON.stringify(simplifiedPath)}`
         );
         if (stringifiedSavedWaypoints) {
-          operationalPointsWithUniqueIds = JSON.parse(stringifiedSavedWaypoints) as NonNullable<
-            PathProperties['operational_points']
-          >;
+          operationalPointsWithUniqueIds = JSON.parse(
+            stringifiedSavedWaypoints
+          ) as PathOperationalPoint[];
         } else {
           // If the manchette hasn't been saved, we want to display by default only
           // the waypoints with CH BV/00/'' and the path steps (origin, destination, vias)

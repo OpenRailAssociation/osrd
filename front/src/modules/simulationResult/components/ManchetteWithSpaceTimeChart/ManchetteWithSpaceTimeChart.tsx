@@ -25,7 +25,6 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 import { compact } from 'lodash';
 
-import type { OperationalPoint } from 'applications/operationalStudies/types';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import cutSpaceTimeRect from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
@@ -33,6 +32,7 @@ import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,
   LayerRangeData,
+  PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
@@ -58,7 +58,7 @@ import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
 type ManchetteWithSpaceTimeChartProps = {
-  operationalPoints: OperationalPoint[];
+  operationalPoints: PathOperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
   waypointsPanelData?: WaypointsPanelData;
@@ -222,7 +222,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
     return rawWaypoints.map((waypoint) => ({
-      id: waypoint.id,
+      id: waypoint.waypointId,
       position: waypoint.position,
       name: waypoint.extensions?.identifier?.name,
       secondaryCode: waypoint.extensions?.sncf?.ch,

@@ -182,6 +182,7 @@ export const preparePathPropertiesData = (
   const voltageRanges = getPathVoltages(electrifications!, length);
 
   const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    'EditoastPathOperationalPoint',
     trainSchedulePath,
     path_item_positions,
     operational_points!,

@@ -79,6 +79,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 9246000, 26500000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+      'EditoastPathOperationalPoint',
       pathSteps,
       pathItemPositions,
       OPERATIONAL_POINTS,
@@ -170,6 +171,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 4198000, 4402000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+      'EditoastPathOperationalPoint',
       pathSteps,
       pathItemPositions,
       getOperationalPoints([
@@ -264,6 +266,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 1748000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+      'EditoastPathOperationalPoint',
       pathSteps,
       pathItemPositions,
       [],
@@ -325,6 +328,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathItemPositions = [0, 12050000, 26500000];
 
     const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+      'EditoastPathOperationalPoint',
       pathSteps,
       pathItemPositions,
       OPERATIONAL_POINTS,

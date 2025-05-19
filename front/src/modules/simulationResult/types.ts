@@ -3,7 +3,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 
 import type {
-  OperationalPoint,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
@@ -17,6 +16,19 @@ import type {
 import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
+
+// This alias refers to an operational point, in the context of a given path, from Edistoast:
+export type EditoastPathOperationalPoint = NonNullable<
+  PathProperties['operational_points']
+>[number];
+
+// This type refers to an operational point, modified to carry its own unique ID (waypointId), and
+// optionally an actual opId, which can be repeated along a path when a train crosses multiple time
+// the same operational point:
+export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id'> & {
+  waypointId: string;
+  opId: string | null;
+};
 
 // Space Time Chart
 /**
@@ -57,8 +69,8 @@ export type ProjectionData = {
 
 export type WaypointsPanelData = {
   timetableId: number | undefined;
-  filteredWaypoints: OperationalPoint[];
-  setFilteredWaypoints: Dispatch<SetStateAction<OperationalPoint[]>>;
+  filteredWaypoints: PathOperationalPoint[];
+  setFilteredWaypoints: Dispatch<SetStateAction<PathOperationalPoint[]>>;
   projectionPath: TrainSchedule['path'];
 };
 

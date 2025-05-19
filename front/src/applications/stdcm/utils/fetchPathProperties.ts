@@ -1,3 +1,5 @@
+import { omit } from 'lodash';
+
 import { getEntities } from 'applications/editor/data/api';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { StdcmPathProperties } from 'applications/stdcm/types';
@@ -7,6 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
+import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { AppDispatch } from 'store';
 
@@ -58,10 +61,13 @@ const fetchPathProperties = async (
       return { ...op, metadata };
     });
 
-    const operationalPointsWithUniqueIds = result.operational_points.map((op, index) => ({
-      ...op,
-      id: `${op.id}-${op.position}-${index}`,
-    }));
+    const operationalPointsWithUniqueIds: PathOperationalPoint[] = result.operational_points.map(
+      (op, index) => ({
+        ...omit(op, 'id'),
+        waypointId: `${op.id}-${op.position}-${index}`,
+        opId: op.id,
+      })
+    );
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operationalPointsWithMetadata,
