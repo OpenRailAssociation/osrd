@@ -491,7 +491,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           >
             {paths.map((path) => (
               <PathLayer
-                key={path.id}
+                key={`${path.id}-${path.points[0]?.position}`}
                 path={path}
                 {...getPathStyle(hoveredItem, path, !!draggingState, selectedTrainId)}
               />
