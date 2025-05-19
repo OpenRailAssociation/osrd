@@ -6,15 +6,14 @@ import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { OperationalPoint } from 'applications/operationalStudies/types';
-import type { WaypointsPanelData } from 'modules/simulationResult/types';
+import type { PathOperationalPoint, WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mmToKm } from 'utils/physics';
 
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
   setWaypointsPanelIsOpen: (open: boolean) => void;
-  waypoints: OperationalPoint[];
+  waypoints: PathOperationalPoint[];
   waypointsPanelData: WaypointsPanelData;
 };
 
@@ -46,9 +45,9 @@ const WaypointsPanel = ({
 
   const openModal = () => {
     modalRef.current?.showModal();
-    const filteredWaypointsIds = filteredWaypoints.map((waypoint) => waypoint.id);
+    const filteredWaypointsIds = new Set(filteredWaypoints.map((waypoint) => waypoint.waypointId));
     const filteredWaypointsIndexes = waypoints
-      .map((waypoint, index) => (filteredWaypointsIds.includes(waypoint.id) ? index : -1))
+      .map((waypoint, index) => (filteredWaypointsIds.has(waypoint.waypointId) ? index : -1))
       .filter((index) => index !== -1);
 
     setSelectedWaypoints(new Set(filteredWaypointsIndexes));
@@ -148,7 +147,7 @@ const WaypointsPanel = ({
           />
         </div>
         {waypoints.map((waypoint, index) => (
-          <div className="waypoint-item" key={`${waypoint.id}-${index}`}>
+          <div className="waypoint-item" key={waypoint.waypointId}>
             <Checkbox
               small
               checked={selectedWaypoints.has(index)}

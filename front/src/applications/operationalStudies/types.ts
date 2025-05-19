@@ -10,6 +10,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
+import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
@@ -69,11 +70,9 @@ export type CichDictValue = {
   chCode?: string;
 };
 
-export type OperationalPoint = NonNullable<PathProperties['operational_points']>[number];
-
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
-  manchetteOperationalPoints?: OperationalPoint[];
+  manchetteOperationalPoints?: PathOperationalPoint[];
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
@@ -133,7 +132,7 @@ export type PathPropertiesFormatted = {
   electrifications: ElectrificationRange[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
-  operationalPoints: OperationalPoint[];
+  operationalPoints: NonNullable<PathProperties['operational_points']>;
   geometry: NonNullable<PathProperties['geometry']>;
   voltages: RangedValue[];
 };

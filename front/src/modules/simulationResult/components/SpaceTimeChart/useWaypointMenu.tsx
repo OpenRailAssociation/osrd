@@ -57,7 +57,7 @@ const useWaypointMenu = (
         closeMenu();
         setFilteredWaypoints?.((prevFilteredWaypoints) => {
           const newFilteredWaypoints = prevFilteredWaypoints.filter(
-            (waypoint) => waypoint.id !== activeWaypointId
+            (waypoint) => waypoint.waypointId !== activeWaypointId
           );
 
           // We need to remove the id because it can change for waypoints added by map click
