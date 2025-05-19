@@ -57,3 +57,39 @@ impl DirectionalTrackRange {
         }
     }
 }
+
+#[cfg(feature = "testing")]
+impl std::str::FromStr for DirectionalTrackRange {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let Some((name, offsets)) = s.split_once('+') else {
+            return Err(String::from(
+                "track range must contain at least a '+' and be of the form \"A+12-25\"",
+            ));
+        };
+        let track = Identifier::from(name);
+        let Some((begin, end)) = offsets.split_once('-') else {
+            return Err(String::from(
+                "track range must contain '-' to separate the offsets and be of the form \"A+12-25\"",
+            ));
+        };
+        let Ok(begin) = begin.parse() else {
+            return Err(format!("{begin} in track range should be an integer"));
+        };
+        let Ok(end) = end.parse() else {
+            return Err(format!("{end} in track range should be an integer"));
+        };
+        let (begin, end, direction) = if begin < end {
+            (begin, end, Direction::StartToStop)
+        } else {
+            (end, begin, Direction::StopToStart)
+        };
+        Ok(Self {
+            track,
+            begin,
+            end,
+            direction,
+        })
+    }
+}
