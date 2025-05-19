@@ -1,8 +1,9 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 import { X, ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
@@ -19,6 +20,7 @@ type ScenarioHeaderProps = {
 const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const { t } = useTranslation(['translation', 'common', 'operational-studies']);
   const [activeBoards, setActiveBoards] = useState<string[]>([]);
@@ -58,6 +60,10 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
     setAreScenarioDetailsVisible((prev) => !prev);
   };
 
+  const closeScenario = () => {
+    navigate(`/operational-studies/projects/${scenario.project.id}/studies/${scenario.study.id}`);
+  };
+
   useEffect(() => {
     const checkTruncation = () => {
       setIsTruncated((prev) => ({
@@ -81,7 +87,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
       <div className="scenario-header">
         {/* scenario info */}
         <div className="scenario-info">
-          <button className="close-btn" type="button">
+          <button className="close-btn" type="button" onClick={closeScenario}>
             <X />
           </button>
 
