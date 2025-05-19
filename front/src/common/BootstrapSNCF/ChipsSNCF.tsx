@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import nextId from 'react-id-generator';
 
@@ -66,7 +66,7 @@ export default function ChipsSNCF({
     }
   };
 
-  const chipsID = `chipsSNCF${nextId()}`;
+  const chipsID = `chipsSNCF${useId()}`;
   return (
     <div className="chips-container">
       {title && (
