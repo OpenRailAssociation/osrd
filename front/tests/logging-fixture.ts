@@ -18,7 +18,10 @@ const testWithLogging = baseTest.extend<{ page: Page }>({
 
     // Handle uncaught exceptions
     page.on('pageerror', (exception) => {
-      throw new Error(`Test failed due to uncaught exception: "${exception}"`);
+      logger.error('🚨Uncaught page error:', exception);
+      throw new Error(
+        `Test failed due to uncaught exception:\n${exception.message}\n${exception.stack}`
+      );
     });
 
     // Run the actual test
