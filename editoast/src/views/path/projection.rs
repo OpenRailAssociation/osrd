@@ -289,6 +289,7 @@ pub enum TrackLocationFromPath {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use editoast_schemas::infra::DirectionalTrackRange;
     use rstest::rstest;
     use std::iter::DoubleEndedIterator;
 
@@ -296,35 +297,36 @@ mod tests {
     #[should_panic]
     fn projection_invalid_creation() {
         let path = vec![
-            TrackRange::new("A", 50, 100, Direction::StartToStop),
-            TrackRange::new(
+            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new(
                 "A", // Same track section
-                20,
-                200,
+                20.,
+                200.,
                 Direction::StopToStart,
-            ),
+            )
+            .into(),
         ];
 
         PathProjection::new(&path);
     }
 
     #[rstest]
-    #[case("A", 50, Some(0))]
-    #[case("A", 80, Some(30))]
-    #[case("A", 20, None)]
-    #[case("A", 101, None)]
-    #[case("B", 100, Some(150))]
-    #[case("B", 19, None)]
-    #[case("B", 220, None)]
-    #[case("C", 100, Some(330))]
-    #[case("C", 300, Some(530))]
-    #[case("C", 301, None)]
-    #[case("C", 3000, None)]
+    #[case("A", 50_000, Some(0))]
+    #[case("A", 80_000, Some(30_000))]
+    #[case("A", 20_000, None)]
+    #[case("A", 101_000, None)]
+    #[case("B", 100_000, Some(150_000))]
+    #[case("B", 19_000, None)]
+    #[case("B", 22_0000, None)]
+    #[case("C", 100_000, Some(330_000))]
+    #[case("C", 300_000, Some(530_000))]
+    #[case("C", 301_000, None)]
+    #[case("C", 3_000_000, None)]
     fn projection_odd(#[case] track: &str, #[case] offset: u64, #[case] expected: Option<u64>) {
         let path = vec![
-            TrackRange::new("A", 50, 100, Direction::StartToStop),
-            TrackRange::new("B", 20, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
+            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 20., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
         ];
 
         let projection = PathProjection::new(&path);
@@ -342,10 +344,10 @@ mod tests {
     }
 
     #[rstest]
-    #[case(50, "A", 100, "B", 220)]
-    #[case(250, "B", 20, "C", 300)]
-    #[case(550, "C", 0, "D", 50)]
-    #[case(650, "D", 150, "E", 100)]
+    #[case(50_000, "A", 100_000, "B", 220_000)]
+    #[case(250_000, "B", 20_000, "C", 300_000)]
+    #[case(550_000, "C", 0, "D", 50_000)]
+    #[case(650_000, "D", 150_000, "E", 100_000)]
     fn projection_boundaries(
         #[case] position: u64,
         #[case] track_a: &str,
@@ -354,11 +356,11 @@ mod tests {
         #[case] offset_b: u64,
     ) {
         let path = vec![
-            TrackRange::new("A", 50, 100, Direction::StartToStop),
-            TrackRange::new("B", 20, 220, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StopToStart),
-            TrackRange::new("D", 50, 150, Direction::StartToStop),
-            TrackRange::new("E", 100, 200, Direction::StartToStop),
+            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 20., 220., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("D", 50., 150., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("E", 100., 200., Direction::StartToStop).into(),
         ];
         let projection = PathProjection::new(&path);
 
@@ -379,24 +381,24 @@ mod tests {
     #[test]
     #[should_panic]
     fn projection_get_invalid_location() {
-        let path = vec![TrackRange::new("A", 50, 100, Direction::StartToStop)];
+        let path = vec![DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into()];
 
         let projection = PathProjection::new(&path);
 
-        projection.get_location(51);
+        projection.get_location(51_000);
     }
 
     #[rstest]
-    #[case("A", 50, 0)]
-    #[case("B", 80, 170)]
-    #[case("C", 20, 250)]
-    #[case("D", 101, 779)]
+    #[case("A", 50_000, 0)]
+    #[case("B", 80_000, 170_000)]
+    #[case("C", 20_000, 250_000)]
+    #[case("D", 101_000, 779_000)]
     fn projection_even(#[case] track: &str, #[case] offset: u64, #[case] expected: u64) {
         let path = vec![
-            TrackRange::new("A", 50, 100, Direction::StartToStop),
-            TrackRange::new("B", 20, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 80, 350, Direction::StopToStart),
+            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 20., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 80., 350., Direction::StopToStart).into(),
         ];
 
         let projection = PathProjection::new(&path);
@@ -456,27 +458,51 @@ mod tests {
     // One track on the path
     #[case::one_path_different_track(&["A+0-100"], &["B+0-100"], &[])]
     #[case::one_path_no_overlap(&["A+0-100"], &["A+100-200"], &[])]
-    #[case::one_path_one_simple_intersection(&["A+120-140"], &["A+100-200"], &[(20, 40)])]
-    #[case::one_path_one_simple_intersection_reverse_on_track_ranges(&["A+140-120"], &["A+100-200"], &[(20, 40)])]
-    #[case::two_path_merged(&["A+180-200", "B+100-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::two_path_not_merged(&["A+180-220", "B+80-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::two_path_merged_with_extra_bounds(&["A+180-220", "B+80-120"], &["A+100-200", "B+100-200"], &[(80, 120)])]
-    #[case::three_path_with_hole(&["A+150-200", "C+100-150"], &["A+100-200", "B+100-200", "C+100-200"], &[(50, 100), (200, 250)])]
+    #[case::one_path_one_simple_intersection(
+        &["A+120-140"],
+        &["A+100-200"],
+        &[(20_000, 40_000)]
+    )]
+    #[case::one_path_one_simple_intersection_reverse_on_track_ranges(
+        &["A+140-120"],
+        &["A+100-200"],
+        &[(20_000, 40_000)]
+    )]
+    #[case::two_path_merged(
+        &["A+180-200", "B+100-120"],
+        &["A+100-200", "B+100-200"],
+        &[(80_000, 120_000)]
+    )]
+    #[case::two_path_not_merged(
+        &["A+180-220", "B+80-120"],
+        &["A+100-200", "B+100-200"],
+        &[(80_000, 120_000)]
+    )]
+    #[case::two_path_merged_with_extra_bounds(
+        &["A+180-220", "B+80-120"],
+        &["A+100-200", "B+100-200"],
+        &[(80_000, 120_000)]
+    )]
+    #[case::three_path_with_hole(
+        &["A+150-200", "C+100-150"],
+        &["A+100-200", "B+100-200", "C+100-200"],
+        &[(50_000, 100_000), (200_000, 250_000)]
+    )]
     // Complex paths with complex track ranges
     #[case::complex_path_one_intersection(
         &["A+50-100", "B+200-0", "C+0-300", "D+250-120"],
         &["A+0-100", "B+200-0", "C+0-300", "D+250-0", "E+0-100"],
-        &[(50, 730)]
+        &[(50_000, 730_000)]
     )]
     #[case::complex_path_two_intersections(
         &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &["X+0-100", "B+0-200", "C+200-150", "E+30-100", "Z+0-100"],
-        &[(100, 350), (350, 420)]
+        &[(100_000, 350_000), (350_000, 420_000)]
     )]
     #[case::complex_path_three_intersections(
         &["A+50-100", "B+200-0", "C+0-300", "D+250-0", "E+100-25"],
         &["A+0-100", "B+0-200", "X+0-100", "C+200-150", "Z+0-100", "E+30-100"],
-        &[(50, 300), (400, 450), (550, 620)]
+        &[(50_000, 300_000), (400_000, 450_000), (550_000,620_000)]
     )]
     fn get_intersections(
         #[case] path: &[&str],
@@ -488,7 +514,9 @@ mod tests {
         // and the offsets will be subtracted from the total length
         #[values(false, true)] toggle_track_ranges: bool,
     ) {
-        let path = path.iter().map(|s| s.parse().unwrap());
+        let path = path
+            .iter()
+            .map(|s| s.parse::<DirectionalTrackRange>().unwrap().into());
         let path = if toggle_path {
             invert_track_ranges(path)
         } else {
@@ -496,7 +524,9 @@ mod tests {
         };
         let projection = PathProjection::new(&path);
 
-        let track_ranges = track_ranges.iter().map(|s| s.parse().unwrap());
+        let track_ranges = track_ranges
+            .iter()
+            .map(|s| s.parse::<DirectionalTrackRange>().unwrap().into());
         let track_ranges = if toggle_track_ranges {
             invert_track_ranges(track_ranges)
         } else {

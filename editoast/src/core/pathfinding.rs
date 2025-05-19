@@ -183,59 +183,7 @@ impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
     }
 }
 
-#[cfg(test)]
-impl std::str::FromStr for TrackRange {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let Some((name, offsets)) = s.split_once('+') else {
-            return Err(String::from(
-                "track range must contain at least a '+' and be of the form \"A+12-25\"",
-            ));
-        };
-        let track_section = Identifier::from(name);
-        let Some((begin, end)) = offsets.split_once('-') else {
-            return Err(String::from(
-                "track range must contain '-' to separate the offsets and be of the form \"A+12-25\"",
-            ));
-        };
-        let Ok(begin) = begin.parse() else {
-            return Err(format!("{begin} in track range should be an integer"));
-        };
-        let Ok(end) = end.parse() else {
-            return Err(format!("{end} in track range should be an integer"));
-        };
-        let (begin, end, direction) = if begin < end {
-            (begin, end, Direction::StartToStop)
-        } else {
-            (end, begin, Direction::StopToStart)
-        };
-        Ok(TrackRange {
-            track_section,
-            begin,
-            end,
-            direction,
-        })
-    }
-}
-
 impl TrackRange {
-    #[cfg(test)]
-    /// Creates a new `TrackRange`.
-    pub fn new<T: AsRef<str>>(
-        track_section: T,
-        begin: u64,
-        end: u64,
-        direction: Direction,
-    ) -> Self {
-        Self {
-            track_section: track_section.as_ref().into(),
-            begin,
-            end,
-            direction,
-        }
-    }
-
     /// Returns the starting offset of the range (depending on the direction).
     pub fn start(&self) -> u64 {
         if self.direction == Direction::StartToStop {

@@ -495,6 +495,7 @@ pub async fn extract_train_details(
 mod tests {
     use super::*;
     use editoast_schemas::infra::Direction;
+    use editoast_schemas::infra::DirectionalTrackRange;
     use rstest::rstest;
 
     #[rstest]
@@ -514,22 +515,22 @@ mod tests {
 
     #[rstest]
     fn test_compute_space_time_curves_case_1() {
-        let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 600, 730, 1000];
+        let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 600, 730, 1_000_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 50, 70, 90];
         let path = vec![
-            TrackRange::new("A", 0, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 120, 250, Direction::StopToStart),
+            DirectionalTrackRange::new("A", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 120., 250., Direction::StopToStart).into(),
         ];
         let path_projection = PathProjection::new(&path);
 
         let train_path = vec![
-            TrackRange::new("A", 0, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 0, 250, Direction::StopToStart),
-            TrackRange::new("E", 0, 150, Direction::StartToStop),
+            DirectionalTrackRange::new("A", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 0., 250., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("E", 0., 150., Direction::StartToStop).into(),
         ];
 
         let project_path_input = TrainSimulationDetails {
@@ -545,26 +546,29 @@ mod tests {
         assert_eq!(space_time_curves.clone().len(), 1);
         let curve = &space_time_curves[0];
         assert_eq!(curve.times.len(), curve.positions.len());
-        assert_eq!(curve.positions, vec![0, 100, 200, 300, 400, 600, 730]);
+        assert_eq!(
+            curve.positions,
+            vec![0, 100, 200, 300, 400, 600, 730, 730_000]
+        );
     }
 
     #[rstest]
     fn test_compute_space_time_curves_case_2() {
-        let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 730];
+        let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 730_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 70];
         let path = vec![
-            TrackRange::new("A", 0, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 120, 250, Direction::StopToStart),
+            DirectionalTrackRange::new("A", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 120., 250., Direction::StopToStart).into(),
         ];
         let path_projection = PathProjection::new(&path);
 
         let train_path = vec![
-            TrackRange::new("A", 0, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StopToStart),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 120, 250, Direction::StopToStart),
+            DirectionalTrackRange::new("A", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 120., 250., Direction::StopToStart).into(),
         ];
 
         let project_path_input = TrainSimulationDetails {
@@ -585,23 +589,26 @@ mod tests {
 
     #[rstest]
     fn test_compute_space_time_curves_case_3() {
-        let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 450, 500, 600, 720];
+        let positions: Vec<u64> = vec![
+            0, 100_000, 200_000, 300_000, 400_000, 450_000, 500_000, 600_000, 720_000,
+        ];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 50, 60, 70, 80];
+
         let train_path = vec![
-            TrackRange::new("A", 50, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StartToStop),
-            TrackRange::new("X", 0, 100, Direction::StartToStop),
-            TrackRange::new("C", 0, 200, Direction::StopToStart),
-            TrackRange::new("Z", 0, 100, Direction::StartToStop),
-            TrackRange::new("E", 30, 100, Direction::StartToStop),
+            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("X", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("C", 0., 200., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("Z", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("E", 30., 100., Direction::StartToStop).into(),
         ];
 
         let path = vec![
-            TrackRange::new("A", 0, 100, Direction::StartToStop),
-            TrackRange::new("B", 0, 200, Direction::StartToStop),
-            TrackRange::new("C", 0, 300, Direction::StartToStop),
-            TrackRange::new("D", 0, 250, Direction::StopToStart),
-            TrackRange::new("E", 25, 100, Direction::StopToStart),
+            DirectionalTrackRange::new("A", 0., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("B", 0., 200., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("C", 0., 300., Direction::StartToStop).into(),
+            DirectionalTrackRange::new("D", 0., 250., Direction::StopToStart).into(),
+            DirectionalTrackRange::new("E", 25., 100., Direction::StopToStart).into(),
         ];
         let path_projection = PathProjection::new(&path);
 
@@ -617,15 +624,18 @@ mod tests {
         let space_time_curves = compute_space_time_curves(&project_path_input, &path_projection);
         assert_eq!(space_time_curves.clone().len(), 3);
         let curve = &space_time_curves[0];
-        assert_eq!(curve.positions, vec![50, 150, 250, 300]);
+        assert_eq!(curve.positions, vec![50_000, 150_000, 250_000, 300_000]);
         assert_eq!(curve.times, vec![0, 10, 20, 25]);
 
         let curve = &space_time_curves[1];
-        assert_eq!(curve.positions, vec![500, 450, 400, 350, 300]);
+        assert_eq!(
+            curve.positions,
+            vec![500_000, 450_000, 400_000, 350_000, 300_000]
+        );
         assert_eq!(curve.times, vec![35, 40, 50, 60, 65]);
 
         let curve = &space_time_curves[2];
-        assert_eq!(curve.positions, vec![920, 850]);
+        assert_eq!(curve.positions, vec![920_000, 850_000]);
         assert_eq!(curve.times, vec![74, 80]);
     }
 }

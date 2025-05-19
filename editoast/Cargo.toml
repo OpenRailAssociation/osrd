@@ -232,7 +232,7 @@ axum = { version = "0.8.4", default-features = false, features = [
 editoast_authz = { workspace = true }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
-editoast_schemas = { workspace = true, features = ["fixtures"] }
+editoast_schemas = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.2.0"

@@ -5,7 +5,7 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-fixtures = []
+testing = []
 
 [dependencies]
 chrono.workspace = true
