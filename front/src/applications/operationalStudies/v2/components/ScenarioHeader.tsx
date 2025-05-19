@@ -11,11 +11,6 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
-import type { InfraWithState, ScenarioResponse } from 'common/api/generatedEditoastApi';
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 type ScenarioHeaderProps = {
   scenario: ScenarioResponse;
