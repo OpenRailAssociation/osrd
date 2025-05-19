@@ -132,7 +132,7 @@ deadpool = { version = "0.12.2", features = [
   "rt_tokio_1",
   "unmanaged",
 ] }
-deadpool-redis = { version = "0.20.0", features = [
+deadpool-redis = { version = "0.21.0", features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
