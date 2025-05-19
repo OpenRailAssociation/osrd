@@ -153,8 +153,8 @@
       "noSpeedLimitTagsShort": "None",
       "noTrain": "No train",
       "occurrenceChangeGroup": {
+        "consist": "Consist",
         "constraintDistribution": "Recovery margin",
-        "convoy": "Convoy",
         "departureTime": "Departure time",
         "electricalProfiles": "Electrical profiles",
         "initialVelocity": "Initial velocity",

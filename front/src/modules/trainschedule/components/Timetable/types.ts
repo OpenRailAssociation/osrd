@@ -109,7 +109,7 @@ export type Occurrence = {
 
 export type ExceptionChangeGroup =
   | 'pathAndSchedule'
-  | 'convoy'
+  | 'consist'
   | 'name'
   | 'speedLimitByTag'
   | 'labels'
