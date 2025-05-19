@@ -127,6 +127,11 @@ class OperationalStudiesPage extends CommonPage {
     await this.returnSimulationResultButton.click();
   }
 
+  private async editTrain() {
+    await this.editTrainButton.click();
+    await expect(this.returnSimulationResultButton).not.toBeVisible();
+  }
+
   async checkPathfindingDistance(distance: string | RegExp) {
     await this.resultPathfindingDistance.waitFor();
     await expect(this.resultPathfindingDistance).toHaveText(distance);
@@ -164,7 +169,7 @@ class OperationalStudiesPage extends CommonPage {
     if (expectedButtonText) {
       await expect(this.editTrainButton).toHaveText(expectedButtonText);
     }
-    await this.editTrainButton.click();
+    await this.editTrain();
   }
 
   async turnTrainScheduleIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
@@ -176,7 +181,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTrainButton).toHaveText(translations.turnTrainScheduleIntoPacedTrain);
 
-    await this.editTrainButton.click();
+    await this.editTrain();
   }
 
   async turnPacedTrainIntoTrainSchedule(translations: ManageTrainScheduleTranslations) {
@@ -188,7 +193,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTrainButton).toHaveText(translations.turnPacedTrainIntoTrainSchedule);
 
-    await this.editTrainButton.click();
+    await this.editTrain();
   }
 
   async checkTabs() {
