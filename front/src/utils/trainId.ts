@@ -148,6 +148,21 @@ export const formatPacedTrainIdToIndexedOccurrenceId = (
 };
 
 /**
+ * Given a paced train id with a PacedTrainId format (used across the front),
+ * returns the exception id with an ExceptionId format (used across the front).
+ */
+export const formatPacedTrainIdToExceptionId = (
+  pacedTrainId: PacedTrainId,
+  exceptionId: string
+): AddedExceptionId => {
+  const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+  return formatEditoastIdToExceptionId({
+    pacedTrainId: editoastTrainId,
+    exceptionId,
+  });
+};
+
+/**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * extract its paced train id with a PacedTrainId format (used across the front).
  */
