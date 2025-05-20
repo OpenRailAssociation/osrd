@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathfindingState } from 'modules/pathfinding/types';
-import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import {
   updatePathSteps,
@@ -47,7 +46,7 @@ const createClearViaButton = ({
     pathStepsAndSuggestedOPs &&
     rowIndex > 0 &&
     rowIndex < pathStepsAndSuggestedOPs.length - 1 &&
-    isVia(pathSteps || [], rowData, { withKP: true }) &&
+    pathSteps.some((step) => step.id === rowData.pathStepId) &&
     (!isNil(rowData.stopFor) ||
       rowData.theoreticalMargin !== undefined ||
       rowData.arrival !== undefined ||
@@ -82,13 +81,8 @@ const TimesStopsInput = ({
   const { getTrackSectionsByIds, trackSectionsLoading } = useScenarioContext();
 
   const clearPathStep = (rowData: TimesStopsInputRow) => {
-    const index = pathSteps.findIndex(
-      (step) =>
-        matchPathStepAndOp(step.location, rowData) && step.positionOnPath === rowData.positionOnPath
-    );
-
-    const updatedPathSteps = pathSteps.map((step, i) => {
-      if (i === index) {
+    const updatedPathSteps = pathSteps.map((step) => {
+      if (step.id === rowData.pathStepId) {
         return {
           ...step,
           stopFor: undefined,
