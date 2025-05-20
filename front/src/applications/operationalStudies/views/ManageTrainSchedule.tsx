@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { compact } from 'lodash';
+import { compact, pick } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -152,18 +152,13 @@ const ManageTrainSchedule = () => {
         <div className="floating-itinerary">
           <Itinerary rollingStockId={rollingStockId} />
         </div>
-        {pathProperties && (
-          <Map
-            pathProperties={{
-              length: pathProperties.length,
-              geometry: pathProperties.geometry,
-            }}
-            simulationPathSteps={markersInformation}
-            pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
-          >
-            <IncompatibleConstraints pathProperties={pathProperties} />
-          </Map>
-        )}
+        <Map
+          pathProperties={pathProperties ? pick(pathProperties, ['length', 'geometry']) : undefined}
+          simulationPathSteps={markersInformation}
+          pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
+        >
+          <IncompatibleConstraints pathProperties={pathProperties} />
+        </Map>
       </div>
     ),
   };
