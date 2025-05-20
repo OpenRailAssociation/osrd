@@ -124,6 +124,7 @@ const useOutputTableData = (
         if (matchingPathStep) {
           return {
             ...matchingPathStep,
+            pathStepId: matchingPathStep.pathStepId,
             opId: op.id,
             name: op.extensions?.identifier?.name,
             ch: op.extensions?.sncf?.ch,
