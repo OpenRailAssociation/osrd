@@ -665,10 +665,10 @@ fn build_conflict_core_request(
     // Build paced train requirements
     let mut it = paced_train_simulations.into_iter();
     for paced_train in paced_trains {
-        let occurrences = &paced_train.num_occurrences();
-        let simulations: Vec<_> = it.by_ref().take(*occurrences).collect();
+        let occurrences_count = &paced_train.num_occurrences();
+        let simulations: Vec<_> = it.by_ref().take(*occurrences_count).collect();
 
-        if simulations.len() < *occurrences {
+        if simulations.len() < *occurrences_count {
             panic!(
                 "At least one simulation is missing for paced train {}",
                 paced_train.id
