@@ -46,7 +46,7 @@ class StudyPage extends CommonPage {
 
   private readonly studyBudgetInput: Locator;
 
-  private readonly studyDeleteConfirmButton: Locator;
+  private readonly studyDeleteButton: Locator;
 
   private readonly createStudyButton: Locator;
 
@@ -61,6 +61,8 @@ class StudyPage extends CommonPage {
   private readonly deleteScenarioButton: Locator;
 
   private readonly confirmDeleteScenarioButton: Locator;
+
+  private readonly studyConfirmDeleteButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -87,7 +89,7 @@ class StudyPage extends CommonPage {
     this.studyBusinessCodeInput = page.locator('#studyInputBusinessCode');
     this.studyBudgetInput = page.locator('#studyInputBudget');
     this.studyUpdateConfirmButton = page.locator('#modal-content').getByTestId('update-study');
-    this.studyDeleteConfirmButton = page.locator('#modal-content').getByTestId('delete-study');
+    this.studyDeleteButton = page.locator('#modal-content').getByTestId('delete-study');
     this.createStudyButton = page.getByTestId('create-study');
     this.studyEditionModal = page.getByTestId('study-edition-modal');
     this.startDate = page.locator(
@@ -99,6 +101,9 @@ class StudyPage extends CommonPage {
     this.realEndDate = page.locator(
       '.study-details-dates-date.real-end .study-details-dates-date-value'
     );
+    this.studyConfirmDeleteButton = page
+      .locator('#modal-content')
+      .getByTestId('confirm-delete-button');
     this.deleteScenarioButton = page.getByTestId('delete-scenario-button');
     this.confirmDeleteScenarioButton = page.getByTestId('confirm-delete-button');
   }
@@ -221,8 +226,11 @@ class StudyPage extends CommonPage {
   async deleteStudy(name: string) {
     await this.openStudyByTestId(name);
     await this.studyUpdateButton.click();
-    await this.studyDeleteConfirmButton.click();
-    await expect(this.studyDeleteConfirmButton).not.toBeVisible();
+    await this.studyDeleteButton.click();
+    await expect(this.studyDeleteButton).not.toBeVisible();
+    await expect(this.studyConfirmDeleteButton).toBeVisible();
+    await this.studyConfirmDeleteButton.click();
+    await expect(this.studyConfirmDeleteButton).not.toBeVisible();
     await expect(this.getStudyByName(name)).not.toBeVisible();
   }
 

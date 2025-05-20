@@ -21,7 +21,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -39,6 +39,7 @@ import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import cleanLocalStorageByProject from '../helpers/cleanLocalStorageByProject';
 import checkProjectFields from '../utils';
+import DeleteItemsModal from './DeleteItemsModal';
 
 const emptyProject: ProjectCreateForm = {
   budget: null,
@@ -68,6 +69,7 @@ export default function AddOrEditProjectModal({
   projectStudies,
 }: AddOrEditProjectModalProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const { openModal } = useModal();
   const { closeModal, isOpen } = useContext(ModalContext);
   const [currentProject, setCurrentProject] = useState<ProjectForm>(project || emptyProject);
   const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
@@ -439,7 +441,15 @@ export default function AddOrEditProjectModal({
               data-testid="delete-project"
               className="btn btn-outline-danger mr-auto"
               type="button"
-              onClick={removeProject}
+              onClick={() =>
+                openModal(
+                  <DeleteItemsModal
+                    handleDeleteItems={removeProject}
+                    translationKey={t('project.confirm-delete', { count: 1 })}
+                  />,
+                  'sm'
+                )
+              }
             >
               <span className="mr-2">
                 <Trash />

@@ -16,7 +16,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -25,6 +25,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
+import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -63,6 +64,7 @@ const emptyScenario: ScenarioForm = {
 
 const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScenarioModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const { openModal } = useModal();
   const { closeModal, isOpen } = useContext(ModalContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -372,7 +374,15 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
               data-testid="delete-scenario"
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
-              onClick={removeScenario}
+              onClick={() =>
+                openModal(
+                  <DeleteItemsModal
+                    handleDeleteItems={removeScenario}
+                    translationKey={t('scenario.confirm-delete', { count: 1 })}
+                  />,
+                  'sm'
+                )
+              }
             >
               <span className="mr-2">
                 <Trash />

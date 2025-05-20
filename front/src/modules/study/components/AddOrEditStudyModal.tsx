@@ -13,7 +13,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { ScenarioWithDetails, StudyCreateForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -21,6 +21,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
+import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -60,6 +61,7 @@ const emptyStudy: StudyForm = {
 
 const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const { openModal } = useModal();
   const { closeModal, isOpen } = useContext(ModalContext);
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -466,7 +468,15 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               data-testid="delete-study"
               className="btn btn-outline-danger mr-auto"
               type="button"
-              onClick={deleteStudy}
+              onClick={() =>
+                openModal(
+                  <DeleteItemsModal
+                    handleDeleteItems={deleteStudy}
+                    translationKey={t('study.confirm-delete', { count: 1 })}
+                  />,
+                  'sm'
+                )
+              }
             >
               <span className="mr-2">
                 <Trash />
