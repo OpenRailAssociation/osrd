@@ -658,16 +658,16 @@ fn build_conflict_core_request(
     let mut it = paced_train_simulations.into_iter();
     for paced_train in paced_trains {
         let occurrences = &paced_train.num_occurrences();
-        let items: Vec<_> = it.by_ref().take(*occurrences).collect();
+        let simulations: Vec<_> = it.by_ref().take(*occurrences).collect();
 
-        if items.len() < *occurrences {
+        if simulations.len() < *occurrences {
             panic!(
                 "At least one simulation is missing for paced train {}",
                 paced_train.id
             );
         }
 
-        for (index, (sim, _)) in items.into_iter().enumerate() {
+        for (index, (sim, _)) in simulations.into_iter().enumerate() {
             let final_output = match sim {
                 simulation::Response::Success { final_output, .. } => final_output,
                 _ => continue,
