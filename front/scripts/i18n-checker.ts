@@ -9,11 +9,7 @@ import * as ts from 'typescript';
 
 const LANGUAGES = ['en', 'fr'];
 
-const IGNORE_MISSING: RegExp[] = [
-  /translation:unspecified/,
-  /stdcm-help-section:asu/,
-  /stdcm-help-section:sections/,
-];
+const IGNORE_MISSING: RegExp[] = [/stdcm-help-section:asu/, /stdcm-help-section:sections/];
 
 const IGNORE_UNUSED: RegExp[] = [
   /errors:.*/, // Errors are generated and used dynamicly
@@ -80,7 +76,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:rollingStock.messages\..*/,
   /translation:rollingStock.metadata\..*/,
   /translation:rollingStock.raisePantographTime/,
-  /translation:rollingStock.unspecified/,
 
   // Simulation
   /operational-studies:simulationResults.departureTime/,
