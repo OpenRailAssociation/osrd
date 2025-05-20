@@ -39,12 +39,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:mapKey.directCurrent/,
   /translation:mapSettings.layers\..*/,
 
-  // Import train schedule
-  /operational-studies:importTrains.and/,
-  /operational-studies:importTrains.errorMessages.errorEmptyFile/,
-  /operational-studies:importTrains.pacedTrainCount/,
-  /operational-studies:importTrains.trainCount/,
-
   // Manage train schedule
   /operational-studies:manageTrainSchedule.errorMessages\..*/,
   /operational-studies:manageTrainSchedule.incompatibleConstraints\..*/,
