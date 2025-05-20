@@ -9,7 +9,10 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
-import fr.sncf.osrd.envelope_sim.*
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.*
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import java.util.*
@@ -573,17 +576,22 @@ private fun getIndexOfLastPointBeneathOverlay(
     speeds: List<Double>,
     overlay: Envelope
 ): Int {
-    var lastIndex = positions.size - 1
-    while (
-        lastIndex >= 0 &&
-            speeds[lastIndex] >
-                overlay
-                    .get(overlay.findRightDir(positions[lastIndex], -1.0))
-                    .interpolateSpeed(positions[lastIndex])
-    ) {
-        lastIndex--
+    if (positions.first() > overlay.endPos || positions.last() < overlay.beginPos) {
+        return -1
     }
-    return lastIndex
+    for (index in positions.size - 1 downTo 0) {
+        if (positions[index] > overlay.endPos) continue // ignore positions after overlay
+        if (positions[index] < overlay.beginPos) break // stop if reached positions before overlay
+        if (
+            speeds[index] <=
+                overlay
+                    .get(overlay.findRightDir(positions[index], -1.0))
+                    .interpolateSpeed(positions[index])
+        ) {
+            return index
+        }
+    }
+    return -1
 }
 
 private data class BecParams(val dBec: Double, val vBec: Double, val speed: Double) {
