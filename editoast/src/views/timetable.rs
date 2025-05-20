@@ -657,10 +657,11 @@ fn build_conflict_core_request(
     // Build paced train requirements
     let mut it = paced_train_simulations.into_iter();
     for paced_train in paced_trains {
-        let occurrences_count = &paced_train.num_occurrences();
-        let simulations: Vec<_> = it.by_ref().take(*occurrences_count).collect();
+        let occurrences = paced_train.iter_occurrences().collect_vec();
+        let occurrences_count = occurrences.len();
+        let simulations: Vec<_> = it.by_ref().take(occurrences_count).collect();
 
-        if simulations.len() < *occurrences_count {
+        if simulations.len() < occurrences_count {
             panic!(
                 "At least one simulation is missing for paced train {}",
                 paced_train.id
@@ -681,7 +682,7 @@ fn build_conflict_core_request(
             trains_requirements.insert(
                 key,
                 TrainRequirements {
-                    start_time: paced_train.start_time,
+                    start_time: occurrences[index].start_time,
                     spacing_requirements: final_output.spacing_requirements,
                     routing_requirements: final_output.routing_requirements,
                 },
@@ -702,15 +703,26 @@ fn build_conflict_core_request(
 mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
+    use chrono::NaiveDate;
     use editoast_schemas::paced_train::ExceptionType;
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::Margins;
+    use models::PacedTrain;
+    use models::TrainSchedule;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use super::*;
+    use crate::core::pathfinding::PathfindingResultSuccess;
+    use crate::core::simulation::CompleteReportTrain;
+    use crate::core::simulation::ElectricalProfiles;
+    use crate::core::simulation::ReportTrain;
+    use crate::core::simulation::RoutingRequirement;
+    use crate::core::simulation::RoutingZoneRequirement;
+    use crate::core::simulation::SpacingRequirement;
+    use crate::core::simulation::SpeedLimitProperties;
     use crate::error::InternalError;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
@@ -924,5 +936,153 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")
+    }
+
+    // Build one train schedule and one paced train with 2 occurrences
+    // then check that the function 'build_conflict_core_request'
+    // produce something coherent
+    #[test]
+    fn build_coherent_conflict_core_request() {
+        // Given
+        let infra = Infra::default();
+        let simple_id = 13;
+        let simple_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
+            .unwrap()
+            .and_hms_opt(8, 0, 0)
+            .unwrap()
+            .and_utc();
+        let train_schedule = TrainSchedule {
+            id: simple_id,
+            train_name: "simple".to_string(),
+            start_time: simple_start_time,
+            ..Default::default()
+        };
+        let trains = vec![train_schedule.clone()];
+        let spacing_requirement = SpacingRequirement {
+            zone: "ZONE_1".to_string(),
+            begin_time: 0,
+            end_time: 7,
+        };
+        let routing_requirement = RoutingRequirement {
+            route: "ZONE_2".to_string(),
+            begin_time: 12,
+            zones: vec![RoutingZoneRequirement {
+                zone: "ZONE_3".to_string(),
+                entry_detector: "D_1".to_string(),
+                exit_detector: "D_2".to_string(),
+                switches: {
+                    let mut map = HashMap::new();
+                    map.insert("S_1".to_string(), "S_2".to_string());
+                    map
+                },
+                end_time: 15,
+            }],
+        };
+        let train_simulations = vec![(
+            simulation::Response::Success {
+                base: ReportTrain::default(),
+                provisional: ReportTrain::default(),
+                final_output: CompleteReportTrain {
+                    spacing_requirements: vec![spacing_requirement.clone()],
+                    routing_requirements: vec![routing_requirement.clone()],
+                    ..Default::default()
+                },
+                mrsp: SpeedLimitProperties::default(),
+                electrical_profiles: ElectricalProfiles::default(),
+            },
+            PathfindingResult::Success(PathfindingResultSuccess::default()),
+        )];
+        let paced_id = 42;
+        let paced_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
+            .unwrap()
+            .and_hms_opt(9, 0, 0)
+            .unwrap()
+            .and_utc();
+        let paced_interval = chrono::Duration::try_hours(1).unwrap();
+        let paced_train = PacedTrain {
+            id: paced_id,
+            train_name: "paced".to_string(),
+            start_time: paced_start_time,
+            time_window: chrono::Duration::try_hours(2).unwrap(),
+            interval: paced_interval,
+            ..Default::default()
+        };
+        let paced_trains = vec![paced_train.clone()];
+        let paced_train_simulations = std::iter::repeat_n(
+            (
+                simulation::Response::Success {
+                    base: ReportTrain::default(),
+                    provisional: ReportTrain::default(),
+                    final_output: CompleteReportTrain {
+                        spacing_requirements: vec![spacing_requirement.clone()],
+                        routing_requirements: vec![routing_requirement.clone()],
+                        ..Default::default()
+                    },
+                    mrsp: SpeedLimitProperties::default(),
+                    electrical_profiles: ElectricalProfiles::default(),
+                },
+                PathfindingResult::Success(PathfindingResultSuccess::default()),
+            ),
+            2,
+        )
+        .collect();
+
+        // When
+        let conflict_core_request = build_conflict_core_request(
+            infra,
+            &trains,
+            train_simulations,
+            &paced_trains,
+            paced_train_simulations,
+        );
+
+        // Then (assert the train schedule)
+        assert_eq!(conflict_core_request.trains_requirements.len(), 3);
+        let simple_requirements = conflict_core_request
+            .trains_requirements
+            .get(&format!("{simple_id}"))
+            .unwrap();
+        assert_eq!(simple_requirements.start_time, simple_start_time);
+        assert_eq!(
+            simple_requirements.spacing_requirements,
+            vec![spacing_requirement.clone()]
+        );
+        assert_eq!(
+            simple_requirements.routing_requirements,
+            vec![routing_requirement.clone()]
+        );
+
+        // Then (assert the paced train, first occurrence)
+        let paced_0_requirements = conflict_core_request
+            .trains_requirements
+            .get(&format!("{paced_id}#0"))
+            .unwrap();
+        assert_eq!(paced_0_requirements.start_time, paced_start_time);
+        assert_eq!(
+            paced_0_requirements.spacing_requirements,
+            vec![spacing_requirement.clone()]
+        );
+        assert_eq!(
+            paced_0_requirements.routing_requirements,
+            vec![routing_requirement.clone()]
+        );
+
+        // Then (assert the paced train, second occurrence)
+        let paced_1_requirements = conflict_core_request
+            .trains_requirements
+            .get(&format!("{paced_id}#1"))
+            .unwrap();
+        assert_eq!(
+            paced_1_requirements.start_time,
+            paced_start_time + paced_interval
+        );
+        assert_eq!(
+            paced_1_requirements.spacing_requirements,
+            vec![spacing_requirement]
+        );
+        assert_eq!(
+            paced_1_requirements.routing_requirements,
+            vec![routing_requirement]
+        );
     }
 }

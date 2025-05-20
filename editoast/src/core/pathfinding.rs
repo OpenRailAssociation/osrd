@@ -105,7 +105,7 @@ pub enum PathfindingCoreResult {
 }
 
 /// A successful pathfinding result. This is also used for STDCM response.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 pub struct PathfindingResultSuccess {
     #[schema(inline)]
     /// Path description as block ids
