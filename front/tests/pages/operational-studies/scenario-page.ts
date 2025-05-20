@@ -8,7 +8,7 @@ class ScenarioPage extends CommonPage {
 
   private readonly scenarioUpdateButton: Locator;
 
-  private readonly scenarioConfirmDeleteButton: Locator;
+  private readonly scenarioDeleteButton: Locator;
 
   private readonly scenarioConfirmUpdateButton: Locator;
 
@@ -42,12 +42,14 @@ class ScenarioPage extends CommonPage {
 
   private readonly trainList: Locator;
 
+  private readonly scenarioConfirmDeleteButton: Locator;
+
   constructor(readonly page: Page) {
     super(page);
 
     this.scenarioUpdateButton = page.getByTestId('edit-scenario');
     this.scenarioEditionModal = page.getByTestId('scenario-edition-modal');
-    this.scenarioConfirmDeleteButton = this.scenarioEditionModal.getByTestId('delete-scenario');
+    this.scenarioDeleteButton = this.scenarioEditionModal.getByTestId('delete-scenario');
     this.addScenarioButton = page.getByTestId('add-scenario-button');
     this.scenarioNameInput = page.locator('#scenarioInputName');
     this.scenarioDescriptionInput = page.locator('#scenarioDescription');
@@ -64,6 +66,9 @@ class ScenarioPage extends CommonPage {
     this.conflictsList = page.getByTestId('conflicts-list');
     this.trainsButton = page.getByTestId('trains-button');
     this.trainList = page.getByTestId('scenario-left-column');
+    this.scenarioConfirmDeleteButton = page
+      .locator('#modal-content')
+      .getByTestId('confirm-delete-button');
   }
 
   // Create a scenario based on the provided details.
@@ -184,6 +189,9 @@ class ScenarioPage extends CommonPage {
   }
 
   async deleteScenario() {
+    await this.scenarioDeleteButton.click();
+    await expect(this.scenarioDeleteButton).not.toBeVisible();
+    await expect(this.scenarioConfirmDeleteButton).toBeVisible();
     await this.scenarioConfirmDeleteButton.click();
     await expect(this.scenarioConfirmDeleteButton).not.toBeVisible();
     await this.page.waitForURL('**/studies/*');

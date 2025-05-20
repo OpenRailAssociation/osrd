@@ -9,7 +9,7 @@ export default function DeleteItemsModal({
   handleDeleteItems: () => void;
   translationKey: string;
 }) {
-  const { t } = useTranslation(['translation', 'operationalStudies/home']);
+  const { t } = useTranslation('translation');
   const { closeModal } = useModal();
   return (
     <>

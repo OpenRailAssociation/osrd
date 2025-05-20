@@ -33,9 +33,11 @@ class ProjectPage extends HomePage {
 
   private readonly updateConfirmButton: Locator;
 
-  private readonly deleteConfirmButton: Locator;
+  private readonly projectDeleteButton: Locator;
 
   private readonly createProjectButton: Locator;
+
+  private readonly projectConfirmDeleteButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -54,7 +56,10 @@ class ProjectPage extends HomePage {
     this.projectFunderInput = page.locator('#projectInputFunders');
     this.projectBudgetInput = page.locator('#projectInputBudget');
     this.updateConfirmButton = page.locator('#modal-content').getByTestId('update-project');
-    this.deleteConfirmButton = page.locator('#modal-content').getByTestId('delete-project');
+    this.projectDeleteButton = page.locator('#modal-content').getByTestId('delete-project');
+    this.projectConfirmDeleteButton = page
+      .locator('#modal-content')
+      .getByTestId('confirm-delete-button');
   }
 
   // Create a project based on the provided details.
@@ -127,9 +132,12 @@ class ProjectPage extends HomePage {
   // Delete a project by its name.
   async deleteProject(name: string) {
     await this.updateProjectButton.click();
-    await expect(this.deleteConfirmButton).toBeVisible();
-    await this.deleteConfirmButton.click();
-    await expect(this.deleteConfirmButton).not.toBeVisible();
+    await expect(this.projectDeleteButton).toBeVisible();
+    await this.projectDeleteButton.click();
+    await expect(this.projectDeleteButton).not.toBeVisible();
+    await expect(this.projectConfirmDeleteButton).toBeVisible();
+    await this.projectConfirmDeleteButton.click();
+    await expect(this.projectConfirmDeleteButton).not.toBeVisible();
     await expect(this.getProjectByName(name)).not.toBeVisible();
   }
 }
