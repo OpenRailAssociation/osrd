@@ -40,11 +40,11 @@ const useProjectedConflicts = (
   }, [conflicts]);
 
   const conflictZones = useMemo(() => {
-    if (!projectedZones) {
+    if (!projectedZones || !path) {
       return [];
     }
 
-    const boundaries = [0, ...projectedZones.boundaries, path!.length];
+    const boundaries = [0, ...projectedZones.boundaries, path.length];
     return projectedZones.values.flatMap((zone, index) => {
       const req = conflictReqsByZone.get(zone);
       if (!req) {
@@ -60,7 +60,7 @@ const useProjectedConflicts = (
         },
       ];
     });
-  }, [conflictReqsByZone, projectedZones]);
+  }, [conflictReqsByZone, projectedZones, path]);
 
   return conflictZones;
 };
