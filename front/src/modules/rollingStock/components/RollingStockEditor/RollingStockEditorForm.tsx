@@ -63,6 +63,7 @@ const RollingStockEditorForm = ({
 }: RollingStockParametersProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const { t: rollingStockT } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
   const [patchRollingStock] =
@@ -171,7 +172,7 @@ const RollingStockEditorForm = ({
     }
 
     const { invalidFields, validRollingStockForm, invalidEffortCurves } =
-      checkRollingStockFormValidity(data, effortCurves, t);
+      checkRollingStockFormValidity(data, effortCurves, rollingStockT);
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(

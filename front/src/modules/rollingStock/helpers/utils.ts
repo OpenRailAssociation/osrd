@@ -223,7 +223,7 @@ export const isInvalidCurve = (curve: EffortCurve) =>
 export const checkRollingStockFormValidity = (
   rollingStockForm: RollingStockParametersValues,
   effortCurves: EffortCurveForms | null,
-  t: TFunction
+  t: TFunction<'translation', 'rollingStock'>
 ): {
   invalidFields: string[];
   validRollingStockForm: RollingStockParametersValidValues;
@@ -262,7 +262,7 @@ export const checkRollingStockFormValidity = (
 
           invalidEffortCurves = [
             ...invalidEffortCurves,
-            `${formattedComfort} > ${t(mode)} > ${formattedElecProfile} > ${formattedResCode}`,
+            `${formattedComfort} > ${t(mode, { defaultValue: mode })} > ${formattedElecProfile} > ${formattedResCode}`,
           ];
         }
       }
@@ -281,7 +281,7 @@ export const checkRollingStockFormValidity = (
 
 const formatCurveCondition = (
   conditionValue: string | null,
-  t: TFunction,
+  t: TFunction<'translation', 'rollingStock'>,
   translationCategory?: string
 ): string => {
   if (conditionValue === null) return t('unspecified');
@@ -385,7 +385,11 @@ export const orderElectricalProfils = (
   return electricalProfilesList;
 };
 
-export const translateItemsList = <T>(t: TFunction, itemsList: T[], translationKey?: string) =>
+export const translateItemsList = <T>(
+  t: TFunction<'translation', 'rollingStock'>,
+  itemsList: T[],
+  translationKey?: string
+) =>
   itemsList.map((item) => ({
     id: item,
     label: !isNull(item) ? t(getTranslationKey(translationKey, String(item))) : t('unspecified'),
