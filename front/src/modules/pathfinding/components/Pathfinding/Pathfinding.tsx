@@ -114,7 +114,9 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
               <span className="lead">
                 <Spinner />
               </span>
-              <span className="flex-grow-1">{t('pathfindingInProgress')}</span>
+              <span data-testid="pathfinding-in-progress" className="flex-grow-1">
+                {t('pathfindingInProgress')}
+              </span>
             </div>
           )}
         </>
