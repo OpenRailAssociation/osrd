@@ -56,6 +56,8 @@ class RouteTab {
 
   private readonly pathfindingLoader: Locator;
 
+  private readonly pathfindingInProgressMessage: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.noOriginChosen = page.getByTestId('no-origin-chosen-text');
@@ -79,6 +81,7 @@ class RouteTab {
     this.closeViaModalButton = page.getByLabel('Close');
     this.missingParamMessage = page.getByTestId('missing-params-info');
     this.pathfindingLoader = page.locator('.dots-loader');
+    this.pathfindingInProgressMessage = page.getByTestId('pathfinding-in-progress');
   }
 
   // Get the name locator of a waypoint suggestion.
@@ -231,7 +234,9 @@ class RouteTab {
 
     await this.viaDeleteButton.click();
     await this.originDeleteButton.click();
+    await this.pathfindingInProgressMessage.waitFor({ state: 'hidden' });
     await this.destinationDeleteButton.click();
+    await this.pathfindingInProgressMessage.waitFor({ state: 'hidden' });
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
