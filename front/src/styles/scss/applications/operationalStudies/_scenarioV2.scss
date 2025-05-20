@@ -96,20 +96,16 @@
 
         &:hover {
           cursor: pointer;
-          .scenario-name-label {
-            // validate the following color used when hovering over the scenario name
-            color: var(--black100);
-          }
-
-          .chevron-btn {
+          .scenario-name-label, .chevron-btn{
             color: var(--black100);
           }
         }
-      }
 
-      .chevron-btn {
-        padding: 4px;
-        color: var(--black25);
+        &:active {
+          .scenario-name-label, .chevron-btn{
+            color: var(--grey70);
+          }
+        }
       }
     }
 
