@@ -177,7 +177,9 @@ const RollingStockEditorForm = ({
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(
         t('rollingStock.messages.missingInformationAutomaticallyFilled', {
-          invalidFields: invalidFields.map((field) => t(field).toLowerCase()).join(', '),
+          invalidFields: invalidFields
+            .map((field) => rollingStockT(field).toLowerCase())
+            .join(', '),
           count: invalidFields.length,
         })
       );

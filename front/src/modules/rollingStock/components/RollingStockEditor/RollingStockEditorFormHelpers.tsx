@@ -46,7 +46,7 @@ const RollingStockEditorMetadataFormColumn = ({
   rollingStockValues,
   setRollingStockValues,
 }: RollingStockMetadataFormProps & { propertiesList: SchemaProperty[] }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   return (
     <>
       {propertiesList.map((property, index) => {
@@ -128,7 +128,7 @@ const RollingStockEditorParameterFormColumn = ({
 }: RollingStockEditorParameterFormProps & {
   propertiesList: SchemaProperty[];
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   // The mass is sets by default to its min for a new rolling stock, so it should always be defined on first render
   const [lastNonZeroMass, setLastNonZeroMass] = useState(rollingStockValues.mass!);
 
@@ -248,7 +248,7 @@ const RollingStockEditorParameterFormColumn = ({
                   currentParam.value < currentParam.min ||
                   currentParam.value > currentParam.max
                 }
-                errorMsg={t('rollingStock.errorMessages.minMaxRangeError', {
+                errorMsg={t('errorMessages.minMaxRangeError', {
                   min: currentParam.min?.toString().replace('.', ','),
                   max: floor(currentParam.max, 6).toString().replace('.', ','),
                 })}
@@ -279,11 +279,11 @@ const RollingStockEditorParameterFormColumn = ({
             }
             errorMsg={
               property.max
-                ? t('rollingStock.errorMessages.minMaxRangeError', {
+                ? t('errorMessages.minMaxRangeError', {
                     min: property.min?.toString().replace('.', ','),
                     max: property.max?.toString().replace('.', ','),
                   })
-                : t('rollingStock.errorMessages.minRangeError', {
+                : t('errorMessages.minRangeError', {
                     min: property.min?.toString().replace('.', ','),
                   })
             }
@@ -321,7 +321,7 @@ export const RollingStockEditorParameterForm = ({
 }: RollingStockEditorParameterFormProps & {
   effortCurves: EffortCurveForms | null;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   const refListOfProperties = Object.keys(RollingStockEditorParameter);
 
   const {
@@ -348,8 +348,8 @@ export const RollingStockEditorParameterForm = ({
       </div>
       <div className="d-flex flex-column justify-content-between col-xl-4 pb-3">
         <div className="d-flex flex-xl-column mb-2 mt-3 mt-xl-0">
-          <span className="ml-xl-2 text-gray-dark">{t('rollingStock.rollingResistance')}</span>
-          <span className="ml-4 text-muted">{t('rollingStock.rollingResistanceFormula')}</span>
+          <span className="ml-xl-2 text-gray-dark">{t('rollingResistance')}</span>
+          <span className="ml-4 text-muted">{t('rollingResistanceFormula')}</span>
         </div>
         <RollingStockEditorParameterFormColumn
           rollingStockValues={rollingStockValues}
@@ -372,7 +372,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
   rsSignalingSystemsList,
   setRollingStockValues,
 }: RollingStockEditorOnboardSystemEquipmentFormProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
 
   const rollingStockSchemasProperties = useCompleteRollingStockSchemasProperties();
 
@@ -411,7 +411,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
     <div className="d-lg-flex rollingstock-editor-input-container px-1 pb-3">
       <div className="d-flex justify-content-space-around mr-2">
         <label className="signaling-systems-label col-xl-3" htmlFor="supportedSignalingSystems">
-          {t('rollingStock.supportedSignalingSystems')}
+          {t('supportedSignalingSystems')}
         </label>
         <div className="d-flex flex-wrap col-xl-9 ">{signalingSystemCheckboxes}</div>
       </div>
@@ -425,7 +425,7 @@ export const RollingStockEditorCategoryForm = ({
   rollingStockValues,
   setRollingStockValues,
 }: RollingStockEditorParameterFormProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
 
   const categoryOptions = useCategoryOptions();
 
@@ -462,14 +462,14 @@ export const RollingStockEditorCategoryForm = ({
           id="primary-category-selector"
           data-testid="primary-category-selector"
           name="primary-category-selector"
-          label={t('rollingStock.primaryCategory')}
+          label={t('primaryCategory')}
           value={
             rollingStockValues.primaryCategory
               ? {
                   id: rollingStockValues.primaryCategory,
                   label: t(rollingStockValues.primaryCategory),
                 }
-              : { label: t('rollingStock.categoriesOptions.choose') }
+              : { label: t('categoriesOptions.choose') }
           }
           options={categoryOptions}
           onChange={handlePrimaryCategoryChange}
@@ -479,7 +479,7 @@ export const RollingStockEditorCategoryForm = ({
       {/* Other Categories Selection */}
       <div className="col">
         <label className="form-label" htmlFor="rs_category_checkboxes">
-          {t('rollingStock.otherCategories')}
+          {t('otherCategories')}
         </label>
         <div className="d-flex flex-wrap" id="rs_category_checkboxes">
           {Object.values(TrainCategoryDict).map((category) => (
@@ -489,7 +489,7 @@ export const RollingStockEditorCategoryForm = ({
                 id={`category-checkbox-${category}`}
                 data-testid={`category-checkbox-${category}`}
                 name={`category-checkbox-${category}`}
-                label={t(`rollingStock.categoriesOptions.${category}`)}
+                label={t(`categoriesOptions.${category}`)}
                 checked={rollingStockValues.categories.has(category)}
                 onChange={handleOtherCategoryChange(category)}
                 disabled={rollingStockValues.primaryCategory === category}
