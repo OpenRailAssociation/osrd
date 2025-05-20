@@ -20,7 +20,7 @@ import {
   isInteractiveWaypoint,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
-import { KebabHorizontal, Iterations, ZoomIn } from '@osrd-project/ui-icons';
+import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { compact } from 'lodash';
@@ -467,7 +467,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               className="menu-button"
               onClick={() => setShowSettingsPanel(true)}
             >
-              <KebabHorizontal />
+              <Sliders />
             </button>
           </div>
           {showSettingsPanel && (
