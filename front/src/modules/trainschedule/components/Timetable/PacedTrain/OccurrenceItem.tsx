@@ -208,13 +208,6 @@ const OccurrenceItem = ({
         <KebabHorizontal />
       </button>
       {occurrenceMenu}
-
-      {nextOccurrence && isNextAfterMidnight && (
-        <ConsecutiveDayDateDisplay
-          departureTime={startTime}
-          nextDepartureTime={nextOccurrence?.startTime}
-        />
-      )}
     </div>
   );
 };
