@@ -13,6 +13,7 @@ import {
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToExceptionId,
   extractExceptionIdFromOccurrenceId,
+  formatPacedTrainIdToExceptionId,
 } from '../trainId';
 
 describe('formatEditoastIdToTrainScheduleId', () => {
@@ -103,6 +104,21 @@ describe('formatPacedTrainIdToIndexedOccurrenceId', () => {
   it('should throw if pacedTrainId is invalid', () => {
     const pacedTrainId = 'invalid_paced_123' as PacedTrainId;
     expect(() => formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, 0)).toThrow(
+      'The paced train id should start with "paced_"'
+    );
+  });
+});
+
+describe('formatPacedTrainIdToExceptionId', () => {
+  it('should return the exceptionId', () => {
+    const pacedTrainId = 'paced_123' as PacedTrainId;
+    const result = formatPacedTrainIdToExceptionId(pacedTrainId, '1234-ab45-2355');
+    expect(result).toBe('exception_123_1234-ab45-2355');
+  });
+
+  it('should throw if pacedTrainId is invalid', () => {
+    const pacedTrainId = 'invalid_paced_123' as PacedTrainId;
+    expect(() => formatPacedTrainIdToExceptionId(pacedTrainId, '1234-ab45-2355')).toThrow(
       'The paced train id should start with "paced_"'
     );
   });

@@ -72,6 +72,9 @@ const PacedTrainItem = ({
         train_name: {
           value: 'coucou',
         },
+        start_time: {
+          value: '2025-04-16T12:00:00.000Z',
+        },
         path_and_schedule: {
           // Paris Est - MeuseTGV - Strasbourg
           path: [
