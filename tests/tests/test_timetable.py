@@ -166,6 +166,68 @@ def test_conflicts(
     )
 
 
+@pytest.mark.parametrize(
+    ["paced_train_interval", "expected_conflict_types"],
+    [
+        ("PT15M", set()),  # Every half-hour, no conflict between each occurrences
+        (
+            "PT1M",
+            {"Spacing"},
+        ),  # Every minute, all occurrences will fight for space
+    ],
+)
+def test_paced_train_conflicts(
+    small_infra: Infra,
+    timetable_id: int,
+    fast_rolling_stock: int,
+    paced_train_interval: str,
+    expected_conflict_types: set[str],
+):
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    paced_train_payload = {
+        "comfort": "STANDARD",
+        "constraint_distribution": "STANDARD",
+        "initial_speed": 0,
+        "labels": [],
+        "options": {"use_electrical_profiles": False},
+        "path": [
+            {"id": "start", "track": "TC1", "offset": 185000},
+            {"id": "end", "track": "TD0", "offset": 24820000},
+        ],
+        "power_restrictions": [],
+        "rolling_stock_name": "fast_rolling_stock",
+        "schedule": [
+            {
+                "at": "start",
+            },
+            {
+                "at": "end",
+            },
+        ],
+        "speed_limit_tag": "MA100",
+        "start_time": "2024-05-22T08:00:00.000Z",
+        "train_name": "paced train",
+        "paced": {"time_window": "PT1H", "interval": paced_train_interval},
+        "exceptions": [],
+    }
+
+    paced_train_response = requests.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/paced_trains",
+        json=[paced_train_payload],
+    )
+    paced_train_response.raise_for_status()
+
+    conflicts_response = requests.get(
+        f"{EDITOAST_URL}timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}"
+    )
+    conflicts_response.raise_for_status()
+
+    actual_conflicts = {
+        conflict["conflict_type"] for conflict in conflicts_response.json()
+    }
+    assert actual_conflicts == expected_conflict_types
+
+
 def test_scheduled_points_with_incompatible_margins(
     small_infra: Infra,
     timetable_id: int,
