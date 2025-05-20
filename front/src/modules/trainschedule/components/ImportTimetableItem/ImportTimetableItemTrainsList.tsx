@@ -163,30 +163,16 @@ const ImportTimetableItemTrainsList = ({
   }
 
   const computedItemImportLabel = () => {
-    if (
-      !trainSchedulesJsonData.length &&
-      !trainsList.length &&
-      (!!pacedTrainsJsonData.length || !!pacedTrainXmlData)
-    ) {
-      return t('pacedTrainsFound', {
-        count: pacedTrainsJsonData.length || pacedTrainXmlData.length,
-        pacedTrainsFound: pacedTrainsJsonData.length || pacedTrainXmlData.length,
-      });
-    }
+    const trainScheduleCount = trainsList.length || trainSchedulesJsonData.length;
+    const pacedTrainCount = pacedTrainsJsonData.length || pacedTrainXmlData.length;
 
-    return t('itemsFound', {
-      count:
-        trainsList.length ||
-        [...trainSchedulesJsonData, ...pacedTrainsJsonData, ...trainsXmlData, ...pacedTrainXmlData]
-          .length,
-      pacedTrainsFound: pacedTrainsJsonData.length || pacedTrainXmlData.length,
-      trainsFound: trainsList.length || trainSchedulesJsonData.length || trainsXmlData.length,
-      and:
-        (!!trainSchedulesJsonData.length && !!pacedTrainsJsonData.length) ||
-        (!!trainsXmlData.length && !!pacedTrainXmlData)
-          ? t('and')
-          : '',
-    });
+    if (trainScheduleCount > 0 && pacedTrainCount > 0) {
+      return t('trainSchedulesAndPacedTrainsFound', { trainScheduleCount, pacedTrainCount });
+    }
+    if (trainScheduleCount > 0) {
+      return t('trainSchedulesFound', { count: trainScheduleCount });
+    }
+    return t('pacedTrainsFound', { count: pacedTrainCount });
   };
 
   return trainsList.length > 0 ||

@@ -1,6 +1,5 @@
 {
   "importTrains": {
-    "and": "et",
     "cancel": "Annuler",
     "date": "DATE",
     "datetime": "Date & horaires",
@@ -20,16 +19,10 @@
     "from": "Origine",
     "importTimetable": "Importer une grille horaire",
     "inputPlaceholder": "Nom, trigramme",
-    "itemsFound_one": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(main.trainCount, {'count': {{trainsFound}}}) trouvé",
-    "itemsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(main.trainCount, {'count': {{trainsFound}}}) trouvés",
-    "itemsFound_zero": "Aucun items trouvés",
     "launchImport": "Démarrer l'importation",
     "noResults": "Aucun résultat",
-    "pacedTrainCount_one": "1 mission",
-    "pacedTrainCount_other": "{{count}} missions",
-    "pacedTrainCount_zero": "",
     "pacedTrainsFound_one": "1 mission trouvée",
-    "pacedTrainsFound_other": "$t(main.pacedTrainCount, {'count': {{pacedTrainsFound}}}) trouvées",
+    "pacedTrainsFound_other": "{{count}} missions trouvées",
     "searchTimetable": "Rechercher la grille horaire",
     "selectStation": "Sélectionner cette station",
     "startTime": "DÉBUT",
@@ -41,9 +34,9 @@
     },
     "success": "Opération réussie",
     "to": "Destination",
-    "trainCount_one": "1 train",
-    "trainCount_other": "{{count}} trains",
-    "trainCount_zero": "",
+    "trainSchedulesAndPacedTrainsFound": "$t(main.pacedTrain, {'count': {{pacedTrainCount}}}) et $t(main.train, {'count': {{trainScheduleCount}}}) trouvés",
+    "trainSchedulesFound_one": "1 train trouvé",
+    "trainSchedulesFound_other": "{{count}} trains trouvés",
     "warningMessages": {
       "warning": "Attention",
       "warningFilteredStepImport": "Certaines étapes invalides ont dû être supprimées pour permettre l'importation pour les trains : {{trainNumbers}}"
