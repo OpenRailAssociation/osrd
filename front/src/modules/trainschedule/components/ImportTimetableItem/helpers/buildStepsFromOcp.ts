@@ -1,5 +1,3 @@
-import nextId from 'react-id-generator';
-
 import type { CichDictValue, Step } from 'applications/operationalStudies/types';
 import { time2sec } from 'utils/timeManipulation';
 
@@ -69,14 +67,13 @@ export const buildSteps = (
       }
 
       return {
-        id: nextId(),
         uic,
         chCode,
         name: ocpRef,
         arrivalTime: formattedArrivalTime,
         departureTime: formattedDepartureTime,
         duration: stopFor,
-      } as Step;
+      };
     })
-    .filter((step): step is Step => step !== null);
+    .filter((step) => step !== null);
 };
