@@ -1,13 +1,15 @@
 import { describe, it, expect } from 'vitest';
 
-import type { CichDictValue, ImportedTrainSchedule } from 'applications/operationalStudies/types';
+import type { CichDictValue } from 'applications/operationalStudies/types';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import { buildSteps } from '../buildStepsFromOcp';
-import { findMostFrequentScheduleInPacedTrain } from '../findMostFrequentXmlSchedule';
+import findMostFrequentScheduleInPacedTrain from '../findMostFrequentXmlSchedule';
 
 describe('buildSteps', () => {
   const parser = new DOMParser();
   const cichDict: Record<string, CichDictValue> = {
+    STATION0: { ciCode: 1, chCode: 'A0' },
     STATION1: { ciCode: 12345, chCode: 'A1' },
     STATION2: { ciCode: 23456, chCode: 'B2' },
   };
@@ -15,6 +17,9 @@ describe('buildSteps', () => {
   it('increments the day offset when the arrival time is before the previous departure', () => {
     const xmlSteps = `
         <root>
+          <ocpTT ocpRef="STATION0" ocpType="stop">
+            <times departure="00:00" />
+          </ocpTT>
           <ocpTT ocpRef="STATION1" ocpType="stop">
             <times arrival="23:00" departure="23:05" />
           </ocpTT>
@@ -28,16 +33,19 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const steps = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const { schedule } = buildSteps(ocpTTElements, cichDict, '2025-01-01');
 
-    expect(steps).toHaveLength(2);
-    expect(steps[0].arrivalTime).toBe('2025-01-01 23:00');
-    expect(steps[0].departureTime).toBe('2025-01-01 23:05');
-    expect(steps[1].arrivalTime).toBe('2025-01-02 00:15');
-    expect(steps[1].departureTime).toBe('2025-01-02 00:20');
+    expect(schedule).toHaveLength(2);
+    expect(schedule[0].arrival).toBe('PT23H');
+    expect(schedule[0].stop_for).toBe('PT300S');
+    expect(schedule[1].arrival).toBe('P1DT15M');
+    expect(schedule[1].stop_for).toBe('PT300S');
   });
   it('does not increment the day offset when the arrival time is after the previous departure', () => {
     const xmlSteps = `  <root>
+    <ocpTT ocpRef="STATION0" ocpType="stop">
+      <times departure="00:00" />
+    </ocpTT>
     <ocpTT ocpRef="STATION1" ocpType="stop">
       <times arrival="00:05" departure="00:10" />
     </ocpTT>
@@ -50,45 +58,46 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const steps = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const { schedule } = buildSteps(ocpTTElements, cichDict, '2025-01-01');
 
-    expect(steps).toHaveLength(2);
-    expect(steps[0].arrivalTime).toBe('2025-01-01 00:05');
-    expect(steps[0].departureTime).toBe('2025-01-01 00:10');
-    expect(steps[1].arrivalTime).toBe('2025-01-01 00:15');
-    expect(steps[1].departureTime).toBe('2025-01-01 00:20');
+    expect(schedule).toHaveLength(2);
+    expect(schedule[0].arrival).toBe('PT5M');
+    expect(schedule[0].stop_for).toBe('PT300S');
+    expect(schedule[1].arrival).toBe('PT15M');
+    expect(schedule[1].stop_for).toBe('PT300S');
   });
 });
 
-function buildSchedule(id: string, timeOffsetSeconds: number = 0): ImportedTrainSchedule {
+function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule {
   const baseDate = new Date('2025-01-01T08:00:00');
 
   return {
-    trainNumber: id,
-    rollingStock: '27000US',
-    departureTime: baseDate.toISOString(),
-    arrivalTime: new Date(baseDate.getTime() + 600000).toISOString(),
-    departure: '',
-    steps: [
+    train_name: id,
+    rolling_stock_name: '27000US',
+    start_time: baseDate.toISOString(),
+    constraint_distribution: 'STANDARD',
+    path: [
       {
-        name: 'A',
+        id: 'step1',
         uic: 1,
         trigram: 'TR1',
-        latitude: 0,
-        longitude: 0,
-        arrivalTime: new Date(baseDate.getTime() + timeOffsetSeconds * 1000).toISOString(),
-        departureTime: new Date(baseDate.getTime() + (timeOffsetSeconds + 60) * 1000).toISOString(),
       },
       {
-        name: 'B',
+        id: 'step2',
         uic: 2,
         trigram: 'TR2',
-        latitude: 0,
-        longitude: 0,
-        arrivalTime: new Date(baseDate.getTime() + (timeOffsetSeconds + 300) * 1000).toISOString(),
-        departureTime: new Date(
-          baseDate.getTime() + (timeOffsetSeconds + 360) * 1000
-        ).toISOString(),
+      },
+    ],
+    schedule: [
+      {
+        at: 'step1',
+        arrival: `PT${timeOffsetSeconds}S`,
+        stop_for: 'PT60S',
+      },
+      {
+        at: 'step2',
+        arrival: `PT${timeOffsetSeconds + 300}S`,
+        stop_for: 'PT60S',
       },
     ],
   };
@@ -102,7 +111,7 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
 
     const result = findMostFrequentScheduleInPacedTrain([s1, s2, s3]);
 
-    expect(result.mostFrequent?.trainNumber).toBe('s1');
+    expect(result.mostFrequent?.train_name).toBe('s1');
     expect(result.highestCount).toBe(2);
   });
 
@@ -119,14 +128,14 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
     // s3 has same times but different uic and trigram — should not match
     const s3 = {
       ...buildSchedule('s3'),
-      steps: [
+      path: [
         {
-          ...buildSchedule('s3').steps[0],
+          ...buildSchedule('s3').path[0],
           uic: 99,
           trigram: 'XXX',
         },
         {
-          ...buildSchedule('s3').steps[1],
+          ...buildSchedule('s3').path[1],
           uic: 88,
           trigram: 'YYY',
         },
@@ -135,7 +144,7 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
 
     const result = findMostFrequentScheduleInPacedTrain([s1, s2, s3]);
 
-    expect(result.mostFrequent?.trainNumber).toBe('s1');
+    expect(result.mostFrequent?.train_name).toBe('s1');
     expect(result.highestCount).toBe(2);
   });
 });

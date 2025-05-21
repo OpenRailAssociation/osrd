@@ -12,6 +12,7 @@ import type {
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
+import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard from 'common/StationCard';
@@ -22,12 +23,8 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
-import {
-  generateTrainSchedulesPayloads,
-  generatePacedTrainPayloads,
-} from './generateTrainSchedulesPayloads';
 import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
-import { findMostFrequentScheduleInPacedTrain } from './helpers/findMostFrequentXmlSchedule';
+import findMostFrequentScheduleInPacedTrain from './helpers/findMostFrequentXmlSchedule';
 import {
   handleFileReadingError,
   processJsonFile,
@@ -200,7 +197,7 @@ const ImportTimetableItemConfig = ({
     return { ciCode: Number(ciCode), chCode };
   };
 
-  const mapTrainNames = (trainSchedules: ImportedTrainSchedule[], trains: Element[]) => {
+  const mapTrainNames = (trainSchedules: TrainSchedule[], trains: Element[]): TrainSchedule[] => {
     const trainPartToTrainMap: Record<string, string> = {};
 
     trains.forEach((train) => {
@@ -212,19 +209,19 @@ const ImportTimetableItemConfig = ({
     });
 
     const updatedTrainSchedules = trainSchedules.map((schedule) => {
-      const mappedTrainNumber = trainPartToTrainMap[schedule.trainNumber] || schedule.trainNumber;
+      const mappedTrainNumber = trainPartToTrainMap[schedule.train_name] || schedule.train_name;
 
       return {
         ...schedule,
-        trainNumber: mappedTrainNumber,
+        train_name: mappedTrainNumber,
       };
     });
 
     return updatedTrainSchedules;
   };
 
-  const parseXML = async (xmlDoc: Document): Promise<ImportedTrainSchedule[]> => {
-    const trainSchedules: ImportedTrainSchedule[] = [];
+  const parseXML = async (xmlDoc: Document): Promise<TrainSchedule[]> => {
+    const trainSchedules: TrainSchedule[] = [];
 
     // Initialize localCichDict
     const localCichDict: Record<string, CichDictValue> = {};
@@ -245,10 +242,10 @@ const ImportTimetableItemConfig = ({
       });
     });
 
-    const pacedTrains: Record<string, ImportedTrainSchedule[]> = {};
+    const pacedTrains: Record<string, TrainSchedule[]> = {};
     const trainGroups = Array.from(xmlDoc.getElementsByTagName('trainGroup'));
 
-    const trainSchedulesByTrainPartId: Record<string, ImportedTrainSchedule> = {};
+    const trainSchedulesByTrainPartId: Record<string, TrainSchedule> = {};
     const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
     const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
     const startDate = period ? period.getAttribute('startDate') : null;
@@ -271,22 +268,16 @@ const ImportTimetableItemConfig = ({
 
       const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
 
-      const lastOcpTT = ocpSteps[ocpSteps.length - 1];
-      const lastDepartureTime =
-        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('departure') ||
-        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('arrival');
-      const lastDepartureTimeformatted = lastDepartureTime && cleanTimeFormat(lastDepartureTime);
-
       // Build steps using the fully populated localCichDict
-      const adaptedSteps = buildSteps(ocpSteps, localCichDict, startDate);
+      const { path, schedule } = buildSteps(ocpSteps, localCichDict, startDate);
 
-      const trainSchedule: ImportedTrainSchedule = {
-        trainNumber,
-        rollingStock: rollingStockXml, // RollingStocks in xml files rarely have the correct format
-        departureTime: `${startDate} ${firstDepartureTimeformatted}`,
-        arrivalTime: `${startDate} ${lastDepartureTimeformatted}`,
-        departure: '', // Default for testing
-        steps: adaptedSteps,
+      const trainSchedule: TrainSchedule = {
+        train_name: trainNumber,
+        rolling_stock_name: rollingStockXml || '', // RollingStocks in xml files rarely have the correct format
+        start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
+        constraint_distribution: 'MARECO',
+        path,
+        schedule,
       };
       trainSchedulesByTrainPartId[trainPartId] = trainSchedule;
       trainSchedules.push(trainSchedule);
@@ -318,7 +309,7 @@ const ImportTimetableItemConfig = ({
 
     const pacedTrainMostFrequentSchedules: Record<
       string,
-      { schedule: ImportedTrainSchedule | null; count: number }
+      { schedule: TrainSchedule | null; count: number }
     > = {};
 
     Object.entries(pacedTrains).forEach(([pacedTrainId, schedules]) => {
@@ -329,9 +320,9 @@ const ImportTimetableItemConfig = ({
       };
     });
 
-    const getMostFrequentInterval = (schedules: ImportedTrainSchedule[]): Duration => {
+    const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration => {
       const departureTimes = schedules
-        .map((s) => new Date(s.departureTime))
+        .map((s) => new Date(s.start_time))
         .sort((a, b) => a.getTime() - b.getTime());
 
       const intervalsCount = new Map<number, number>();
@@ -370,18 +361,18 @@ const ImportTimetableItemConfig = ({
 
     const buildPacedTrain = (
       pacedTrainId: string,
-      pacedTrainSchedules: ImportedTrainSchedule[]
-    ): ImportedPacedTrainSchedule | null => {
+      pacedTrainSchedules: TrainSchedule[]
+    ): PacedTrain | null => {
       if (pacedTrainSchedules.length < 2) {
         console.warn('Not enough schedules to build a paced train');
         return null;
       }
 
       const sortedSchedules = pacedTrainSchedules.sort(
-        (a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime()
+        (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
       );
 
-      const departureDates = sortedSchedules.map((s) => new Date(s.departureTime));
+      const departureDates = sortedSchedules.map((s) => new Date(s.start_time));
       const intervalDuration = getMostFrequentInterval(pacedTrainSchedules);
 
       const totalDuration = Duration.subtractDate(
@@ -391,15 +382,16 @@ const ImportTimetableItemConfig = ({
 
       return {
         ...sortedSchedules[0],
-        trainNumber: pacedTrainId,
+        train_name: pacedTrainId,
         paced: {
           interval: intervalDuration.toISOString(),
           time_window: totalDuration.toISOString(),
         },
+        exceptions: [],
       };
     };
 
-    const importedPacedTrains: ImportedPacedTrainSchedule[] = Object.entries(pacedTrains)
+    const importedPacedTrains: PacedTrain[] = Object.entries(pacedTrains)
       .map(([pacedTrainId, pacedTrainSchedules]) =>
         buildPacedTrain(pacedTrainId, pacedTrainSchedules)
       )
@@ -410,17 +402,14 @@ const ImportTimetableItemConfig = ({
     const trainSchedulesInPacedTrain = new Set(
       Object.values(pacedTrains)
         .flat()
-        .map((schedule) => schedule.trainNumber)
+        .map((schedule) => schedule.train_name)
     );
 
     const singleTrainSchedules = trainSchedules.filter(
-      (schedule) => !trainSchedulesInPacedTrain.has(schedule.trainNumber)
+      (schedule) => !trainSchedulesInPacedTrain.has(schedule.train_name)
     );
 
-    setTrainsJsonData({
-      train_schedules: generateTrainSchedulesPayloads(singleTrainSchedules),
-      paced_trains: generatePacedTrainPayloads(importedPacedTrains),
-    });
+    setTrainsJsonData({ train_schedules: singleTrainSchedules, paced_trains: importedPacedTrains });
 
     return updatedTrainSchedules;
   };
