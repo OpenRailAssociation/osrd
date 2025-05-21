@@ -1677,7 +1677,7 @@ export type PostPacedTrainProjectPathApiArg = {
 };
 export type PostPacedTrainSimulationSummaryApiResponse =
   /** status 200 Associate each paced train id with its simulation summaries */ {
-    [key: string]: SimulationSummaryResult;
+    [key: string]: PacedTrainSimulationSummaryResult;
   };
 export type PostPacedTrainSimulationSummaryApiArg = {
   body: {
@@ -3340,6 +3340,13 @@ export type SimulationSummaryResult =
   | (PathfindingInputError & {
       status: 'pathfinding_input_error';
     });
+export type PacedTrainSimulationSummaryResult = {
+  /** The key is the `exception_key` */
+  exceptions: {
+    [key: string]: SimulationSummaryResult;
+  };
+  paced_train: SimulationSummaryResult;
+};
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';

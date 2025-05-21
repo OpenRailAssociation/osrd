@@ -61,6 +61,7 @@ editoast_common::schemas! {
     PacedTrain,
     OccupancyBlockForm,
     OccupancyBlocks,
+    PacedTrainSummaryResponse,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -226,6 +227,17 @@ struct SimulationBatchForm {
     ids: HashSet<i64>,
 }
 
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
+#[schema(as = PacedTrainSimulationSummaryResult)]
+struct PacedTrainSummaryResponse {
+    #[schema(value_type = SimulationSummaryResult)]
+    pub paced_train: SummaryResponse,
+    #[schema(value_type = HashMap<String, SimulationSummaryResult>)]
+    /// The key is the `exception_key`
+    pub exceptions: HashMap<String, SummaryResponse>,
+}
+
 /// Associate each paced train id with its simulation summaries response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
@@ -233,7 +245,7 @@ struct SimulationBatchForm {
     tag = "paced_train",
     request_body = inline(SimulationBatchForm),
     responses(
-        (status = 200, description = "Associate each paced train id with its simulation summaries", body = HashMap<i64, SimulationSummaryResult>),
+        (status = 200, description = "Associate each paced train id with its simulation summaries", body = HashMap<i64, PacedTrainSimulationSummaryResult>),
     ),
 )]
 async fn simulation_summary(
@@ -249,7 +261,7 @@ async fn simulation_summary(
         electrical_profile_set_id,
         ids: paced_train_ids,
     }): Json<SimulationBatchForm>,
-) -> Result<Json<HashMap<i64, SummaryResponse>>> {
+) -> Result<Json<HashMap<i64, PacedTrainSummaryResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -293,7 +305,15 @@ async fn simulation_summary(
     let simulation_summaries = paced_trains
         .into_iter()
         .zip(simulations)
-        .map(|(paced_train, (sim, _))| (paced_train.id, SummaryResponse::from(sim)))
+        .map(|(paced_train, (sim, _))| {
+            (
+                paced_train.id,
+                PacedTrainSummaryResponse {
+                    paced_train: SummaryResponse::from(sim),
+                    exceptions: HashMap::new(), // TODO retreive paced train exceptions simulations
+                },
+            )
+        })
         .collect();
 
     Ok(Json(simulation_summaries))
@@ -592,6 +612,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::PacedTrainResponse;
+    use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::simulation::SummaryResponse;
 
     #[rstest]
@@ -797,18 +818,22 @@ mod tests {
             "infra_id": infra_id,
             "ids": vec![paced_train_id],
         }));
-        let response: HashMap<i64, SummaryResponse> =
+
+        let response: HashMap<i64, PacedTrainSummaryResponse> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
         assert_eq!(
             *response.get(&paced_train_id).unwrap(),
-            SummaryResponse::Success {
-                length: 0,
-                time: 0,
-                energy_consumption: 0.0,
-                path_item_times_final: vec![0, 1000, 2000, 3000],
-                path_item_times_provisional: vec![0, 1000, 2000, 3000],
-                path_item_times_base: vec![0, 1000, 2000, 3000]
+            PacedTrainSummaryResponse {
+                paced_train: SummaryResponse::Success {
+                    length: 0,
+                    time: 0,
+                    energy_consumption: 0.0,
+                    path_item_times_final: vec![0, 1000, 2000, 3000],
+                    path_item_times_provisional: vec![0, 1000, 2000, 3000],
+                    path_item_times_base: vec![0, 1000, 2000, 3000]
+                },
+                exceptions: HashMap::new()
             }
         );
     }

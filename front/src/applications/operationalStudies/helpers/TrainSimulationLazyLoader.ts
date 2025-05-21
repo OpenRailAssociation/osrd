@@ -138,7 +138,8 @@ export default class TrainSimulationLazyLoader {
     }
     for (const [rawId, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
       const id = formatEditoastIdToPacedTrainId(Number(rawId));
-      rawSummaries.set(id, rawSummary);
+      // TODO exceptions : adapt this to handle exceptions summaries
+      rawSummaries.set(id, rawSummary.paced_train);
     }
 
     this.options.onProgress(rawSummaries);

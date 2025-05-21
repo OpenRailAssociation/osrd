@@ -1785,7 +1785,7 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/SimulationSummaryResult'
+                  $ref: '#/components/schemas/PacedTrainSimulationSummaryResult'
   /paced_train/{id}:
     get:
       tags:
@@ -9107,6 +9107,19 @@ components:
           timetable_id:
             type: integer
             format: int64
+    PacedTrainSimulationSummaryResult:
+      type: object
+      required:
+      - paced_train
+      - exceptions
+      properties:
+        exceptions:
+          type: object
+          description: The key is the `exception_key`
+          additionalProperties:
+            $ref: '#/components/schemas/SimulationSummaryResult'
+        paced_train:
+          $ref: '#/components/schemas/SimulationSummaryResult'
     PaginationStats:
       type: object
       description: |-
