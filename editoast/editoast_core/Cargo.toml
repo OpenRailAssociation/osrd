@@ -33,6 +33,7 @@ uuid.workspace = true
 
 [dev-dependencies]
 async-std.workspace = true
+editoast_schemas = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 
