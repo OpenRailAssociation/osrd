@@ -7,7 +7,6 @@ import HomeEditor from 'applications/editor/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import Project from 'applications/operationalStudies/views/Project';
 import Scenario from 'applications/operationalStudies/views/Scenario';
-import ScenarioV2 from 'applications/operationalStudies/views/ScenarioV2';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
@@ -104,10 +103,6 @@ const router = createBrowserRouter([
       {
         path: 'projects/:projectId/studies/:studyId/scenarios/:scenarioId',
         element: <Scenario />,
-      },
-      {
-        path: 'projects/:projectId/studies/:studyId/scenarios/v2/:scenarioId',
-        element: <ScenarioV2 />,
       },
     ],
   },

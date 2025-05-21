@@ -128,10 +128,7 @@
   .scenario-sidemenu {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    background-color: var(--black5);
     padding: 14px 24px 0 24px;
-    box-shadow: inset -1px 0 var(--black5);
 
     :first-child:hover .update-scenario {
       display: flex;

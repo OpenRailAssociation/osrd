@@ -16,14 +16,16 @@ import ImportTimetableItem from 'applications/operationalStudies/views/ImportTim
 import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
+import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
+import useFilterTimetableItems from 'modules/trainschedule/components/Timetable/useFilterTimetableItems';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -31,17 +33,21 @@ import MacroEditorState from '../MacroEditor/MacroEditorState';
 import MicroMacroSwitch from '../MicroMacroSwitch';
 import NGE from '../NGE';
 
-type ScenarioDescriptionProps = {
+type ScenarioContentProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
   infraMetadata: { isInfraLoaded: boolean; reloadCount: number };
+  isTimetableDisplay?: boolean;
+  isConflictsListDisplay?: boolean;
 };
 
 const ScenarioContent = ({
   scenario,
   infra,
-  infraMetadata: { isInfraLoaded, reloadCount },
-}: ScenarioDescriptionProps) => {
+  infraMetadata: { isInfraLoaded },
+  isTimetableDisplay,
+  isConflictsListDisplay,
+}: ScenarioContentProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
@@ -115,6 +121,7 @@ const ScenarioContent = ({
     },
     [removeTimetableItems, refreshNge, isMacro]
   );
+  const { filteredTimetableItems } = useFilterTimetableItems(timetableItemsWithDetails);
 
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
@@ -152,17 +159,22 @@ const ScenarioContent = ({
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
-  function handleConflictClick(conflict: ConflictWithTrainNames): void {
-    // Scroll to the timetable item or highlight it when a conflict is clicked
-    // For now, just select the first involved train if present
-    if (conflict.trainIds && conflict.trainIds.length > 0) {
-      setItemIdToEdit(conflict.trainIds[0]);
-      setCollapsedTimetable(false);
+  const handleConflictClick = (conflict: Conflict) => {
+    if (conflict.train_schedule_ids.length > 0) {
+      // TODO Paced train : Adapt this to handle paced trains in conflict issue
+      const formattedFirstTrainId = formatEditoastIdToTrainScheduleId(
+        conflict.train_schedule_ids[0]
+      );
+      dispatch(updateSelectedTrainId(formattedFirstTrainId));
     }
-  }
+  };
   return (
     <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-      <div data-testid="scenario-side-menu" className="left-column">
+      <div
+        data-testid="scenario-side-menu"
+        className="left-column"
+        style={{ display: isTimetableDisplay ? 'block' : 'none' }}
+      >
         <div className="scenario-sidemenu">
           <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
 
@@ -182,7 +194,6 @@ const ScenarioContent = ({
               <Timetable
                 setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                 infraState={infra.state}
-                conflicts={conflicts}
                 upsertTimetableItems={upsertTimetableItemsWithNge}
                 removeTimetableItems={removeTimetableItemsWithNge}
                 setItemIdToEdit={setItemIdToEdit}
@@ -256,15 +267,12 @@ const ScenarioContent = ({
         </div>
       </div>
       {/* TODO : add right column */}
-      <div
-        // style={{ display: displayConflictsList ? 'block' : 'none' }}
-        className="right-column"
-      >
+      <div style={{ display: isConflictsListDisplay ? 'block' : 'none' }} className="right-column">
         {conflicts && (
           <ConflictsList
             conflicts={conflicts}
-            timetableItems={[]}
-            onConflictClick={handleConflictClick}
+            timetableItems={filteredTimetableItems}
+            onConflictClick={() => handleConflictClick}
           />
         )}
       </div>

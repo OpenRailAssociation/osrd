@@ -48,7 +48,7 @@
           }
 
           & ~ .close-label {
-            opacity: 1;
+            display: block;
             color: var(--warning60);
           }
         }
@@ -65,7 +65,7 @@
       .close-label {
         position: absolute;
         text-transform: capitalize;
-        opacity: 0;
+        display:none;
       }
 
       .scenario-name-container {
@@ -246,4 +246,3 @@
       }
     }
   }
-}
