@@ -62,6 +62,7 @@ editoast_common::schemas! {
     OccupancyBlockForm,
     OccupancyBlocks,
     PacedTrainSummaryResponse,
+    ExceptionQueryParam,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -319,11 +320,17 @@ async fn simulation_summary(
     Ok(Json(simulation_summaries))
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+struct ExceptionQueryParam {
+    exception_key: Option<String>,
+}
+
 /// Get a path from a paced train given an infrastructure id and a paced train id
 #[utoipa::path(
     get, path = "",
     tag = "paced_train,pathfinding",
-    params(PacedTrainIdParam, InfraIdQueryParam),
+    params(PacedTrainIdParam, InfraIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
         (status = 404, description = "Infrastructure or Train schedule not found")
@@ -339,6 +346,9 @@ async fn get_path(
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
+    Query(ExceptionQueryParam {
+        exception_key: _exception_key,
+    }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
@@ -382,7 +392,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule",
-    params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
+    params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = SimulationResponse),
     ),
@@ -400,6 +410,9 @@ async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
+    Query(ExceptionQueryParam {
+        exception_key: _exception_key,
+    }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())

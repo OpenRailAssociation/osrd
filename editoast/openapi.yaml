@@ -1870,6 +1870,12 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
+          nullable: true
       responses:
         '200':
           description: The path
@@ -1903,6 +1909,12 @@ paths:
         schema:
           type: integer
           format: int64
+          nullable: true
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
           nullable: true
       responses:
         '200':
@@ -7621,6 +7633,12 @@ components:
           format: double
           description: 'T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero'
       additionalProperties: false
+    ExceptionQueryParam:
+      type: object
+      properties:
+        exception_key:
+          type: string
+          nullable: true
     GeoJson:
       oneOf:
       - $ref: '#/components/schemas/GeoJsonPoint'

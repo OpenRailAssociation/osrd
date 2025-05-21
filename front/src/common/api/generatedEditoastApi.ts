@@ -544,6 +544,7 @@ const injectedRtkApi = api
           url: `/paced_train/${queryArg.id}/path`,
           params: {
             infra_id: queryArg.infraId,
+            exception_key: queryArg.exceptionKey,
           },
         }),
         providesTags: ['paced_train', 'pathfinding'],
@@ -557,6 +558,7 @@ const injectedRtkApi = api
           params: {
             infra_id: queryArg.infraId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
+            exception_key: queryArg.exceptionKey,
           },
         }),
         providesTags: ['train_schedule'],
@@ -1708,6 +1710,7 @@ export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ Pathfi
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
   infraId: number;
+  exceptionKey?: string | null;
 };
 export type GetPacedTrainByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;
@@ -1715,6 +1718,7 @@ export type GetPacedTrainByIdSimulationApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number | null;
+  exceptionKey?: string | null;
 };
 export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
   results: ProjectWithStudies[];
