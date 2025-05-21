@@ -15,6 +15,15 @@ const computeChartData = (
   pathProperties: StdcmPathProperties
 ): SpeedSpaceChartData => {
   const { simulation, path: pathfindingResult, departure_time: departureTime } = stdcmResponse;
+
+  /**
+   * TODO:
+   * Investigate the following fishy code:
+   * - pathProperties is of type **StdcmPathProperties**
+   * - preparePathPropertiesData requires a second argument of type **PathProperties**
+   * - TypeScript is fine with that, because all keys in PathProperties are optional
+   * - StdcmPathProperties and PathProperties have two keys in common (so this code might be on purpose)
+   */
   const formattedPathProperties = preparePathPropertiesData(
     simulation.electrical_profiles,
     pathProperties,
