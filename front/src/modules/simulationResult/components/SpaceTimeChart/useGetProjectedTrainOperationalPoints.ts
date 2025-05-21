@@ -14,6 +14,8 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
+import { getWaypointsLocalStorageKey } from './helpers/utils';
+
 const useGetProjectedTrainOperationalPoints = ({
   infraId,
   timetableId,
@@ -81,12 +83,8 @@ const useGetProjectedTrainOperationalPoints = ({
 
         setOperationalPoints(operationalPointsWithUniqueIds);
 
-        // Check if there are saved manchettes in localStorage for the current timetable and path
-        const simplifiedPath = timetableItemUsedForProjection.path.map((waypoint) =>
-          omit(waypoint, ['id', 'deleted'])
-        );
         const stringifiedSavedWaypoints = localStorage.getItem(
-          `${timetableId}-${JSON.stringify(simplifiedPath)}`
+          getWaypointsLocalStorageKey(timetableId, timetableItemUsedForProjection.path)
         );
         if (stringifiedSavedWaypoints) {
           operationalPointsWithUniqueIds = JSON.parse(

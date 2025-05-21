@@ -27,7 +27,7 @@ import { compact } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
-import cutSpaceTimeRect from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
+import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,

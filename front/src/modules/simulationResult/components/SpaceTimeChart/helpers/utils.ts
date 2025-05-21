@@ -1,6 +1,10 @@
+import { omit } from 'lodash';
+
+import type { TimetableItem } from 'reducers/osrdconf/types';
+
 import type { LayerRangeData } from '../../../types';
 
-const cutSpaceTimeRect = (
+export const cutSpaceTimeRect = (
   range: LayerRangeData,
   minSpace: number,
   maxSpace: number
@@ -31,4 +35,12 @@ const cutSpaceTimeRect = (
   };
 };
 
-export default cutSpaceTimeRect;
+export const getWaypointsLocalStorageKey = (
+  timetableId: number | undefined,
+  projectionPath: TimetableItem['path'] | undefined
+) => {
+  // We need to remove the id because it can change for waypoints added by map click
+  const simplifiedPath = projectionPath?.map((waypoint) => omit(waypoint, ['id', 'deleted']));
+
+  return `PathOperationalPoints-${timetableId}-${JSON.stringify(simplifiedPath)}`;
+};
