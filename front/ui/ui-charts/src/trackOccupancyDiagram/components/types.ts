@@ -2,22 +2,22 @@ import { type TICKS_PATTERN } from './consts';
 
 export type Track = {
   id: string;
-  name: string;
-  line: string;
+  name?: string;
+  line?: string;
 };
 
 export type OccupancyZone = {
   trainId: string;
   trackId: string;
-  arrivalTrainName: string;
-  departureTrainName: string;
-  arrivalDirection?: 'up' | 'down';
-  departureDirection?: 'up' | 'down';
-  color: string;
+  color?: string;
+  originName: string;
+  destinationName: string;
   originStation?: string;
   destinationStation?: string;
-  arrivalTime: number;
-  departureTime: number;
+  startTime: number;
+  endTime: number;
+  startDirection?: 'up' | 'down';
+  endDirection?: 'up' | 'down';
 };
 
 export type OccupancyZonePickingElement = { type: 'occupancyZone'; trainId: string };
