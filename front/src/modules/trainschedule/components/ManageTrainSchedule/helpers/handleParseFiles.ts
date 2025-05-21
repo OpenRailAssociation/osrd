@@ -3,10 +3,7 @@ import type { Dispatch } from 'redux';
 
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
 import type { NetzgrafikDto } from 'applications/operationalStudies/components/NGE/types';
-import type {
-  ImportedTrainSchedule,
-  TimetableJsonPayload,
-} from 'applications/operationalStudies/types';
+import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import { type TrainSchedule } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
@@ -132,23 +129,4 @@ export const processJsonFile = (
 
   // file has been parsed successfully
   return true;
-};
-
-export const processXmlFile = async (
-  fileContent: string,
-  parseXML: (xmlDoc: Document) => Promise<ImportedTrainSchedule[]>,
-  updateTrainSchedules: (schedules: ImportedTrainSchedule[]) => void
-) => {
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
-  const parserError = xmlDoc.getElementsByTagName('parsererror');
-
-  if (parserError.length > 0) {
-    throw new Error('Invalid XML');
-  }
-
-  const importedTrainSchedules = await parseXML(xmlDoc);
-  if (importedTrainSchedules && importedTrainSchedules.length > 0) {
-    updateTrainSchedules(importedTrainSchedules);
-  }
 };
