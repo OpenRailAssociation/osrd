@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type {
-  CichDictValue,
-  ImportedTrainSchedule,
-  Step,
-} from 'applications/operationalStudies/types';
+import type { CichDictValue, ImportedTrainSchedule } from 'applications/operationalStudies/types';
 
 import { buildSteps } from '../buildStepsFromOcp';
 import { findMostFrequentScheduleInPacedTrain } from '../findMostFrequentXmlSchedule';
@@ -32,7 +28,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const steps: Step[] = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const steps = buildSteps(ocpTTElements, cichDict, '2025-01-01');
 
     expect(steps).toHaveLength(2);
     expect(steps[0].arrivalTime).toBe('2025-01-01 23:00');
@@ -54,7 +50,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const steps: Step[] = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const steps = buildSteps(ocpTTElements, cichDict, '2025-01-01');
 
     expect(steps).toHaveLength(2);
     expect(steps[0].arrivalTime).toBe('2025-01-01 00:05');

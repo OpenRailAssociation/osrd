@@ -17,7 +17,7 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
-export interface Step {
+export interface ImportedStep {
   uic: number;
   chCode?: string;
   yard?: string;
@@ -36,7 +36,7 @@ export type ImportedTrainSchedule = {
   departureTime: string;
   arrivalTime: string;
   departure: string;
-  steps: Step[];
+  steps: ImportedStep[];
   transilienName?: string;
 };
 
