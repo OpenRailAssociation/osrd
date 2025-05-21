@@ -113,9 +113,11 @@ impl CoreClient {
 /// A struct implementing this trait represents a Core request payload
 ///
 /// For example:
-/// The example is marked `ignore` because `await` requires
-/// an async runtime (e.g., Tokio) and proper async context to execute.
-/// ```ignore
+/// ```
+/// # use editoast_core::AsCoreRequest;
+/// # use editoast_core::Json;
+/// # use serde::Serialize;
+/// # use serde::Deserialize;
 /// #[derive(Serialize, Default)]
 /// struct TestReq {
 ///     foo: String,
@@ -124,16 +126,24 @@ impl CoreClient {
 ///
 /// #[derive(Deserialize)]
 /// struct Response {
-///     message: String
+///     message: String,
 /// }
 ///
-/// impl AsCoreRequest<Response> for TestReq {
-///    const METHOD: reqwest::Method = reqwest::Method::POST;
-///    const URL_PATH: &'static str = "test01";
+/// impl AsCoreRequest<Json<Response>> for TestReq {
+///     const METHOD: reqwest::Method = reqwest::Method::POST;
+///     const URL_PATH: &'static str = "/some/path";
+///     fn infra_id(&self) -> std::option::Option<i64> { Some(42) }
 /// }
 ///
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), editoast_core::Error> {
+/// # let mut core_mock = editoast_core::mocking::MockingClient::default();
+/// # core_mock.stub("/some/path").method(reqwest::Method::POST).response(reqwest::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
+/// # let core_client = core_mock.into();
 /// // Builds the payload, executes the request at POST /test01 and deserializes its response
-/// let response: Response = TestReq::default().fetch(&coreclient).await.unwrap();
+/// let response = TestReq::default().fetch(&core_client).await?;
+/// # Ok(())
+/// # }
 /// ```
 pub trait AsCoreRequest<R>
 where
