@@ -27,7 +27,6 @@ import { findMostFrequentScheduleInPacedTrain } from './helpers/findMostFrequent
 import {
   handleFileReadingError,
   processJsonFile,
-  processXmlFile,
 } from '../ManageTrainSchedule/helpers/handleParseFiles';
 
 export type ImportedPacedTrainSchedule = ImportedTrainSchedule & {
@@ -425,6 +424,21 @@ const ImportTimetableItemConfig = ({
     return updatedTrainSchedules;
   };
 
+  const processXmlFile = async (fileContent: string) => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
+    const parserError = xmlDoc.getElementsByTagName('parsererror');
+
+    if (parserError.length > 0) {
+      throw new Error('Invalid XML');
+    }
+
+    const importedTrainSchedules = await parseXML(xmlDoc);
+    if (importedTrainSchedules && importedTrainSchedules.length > 0) {
+      updateTrainSchedules(importedTrainSchedules);
+    }
+  };
+
   const importFile = async (file: File) => {
     closeModal();
     setTrainsList([]);
@@ -452,7 +466,7 @@ const ImportTimetableItemConfig = ({
 
     // try to parse the file as an XML file
     try {
-      await processXmlFile(fileContent, parseXML, updateTrainSchedules);
+      await processXmlFile(fileContent);
     } catch {
       // the file is not supported or is an invalid XML file
       dispatch(
