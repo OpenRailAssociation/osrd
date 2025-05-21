@@ -1381,6 +1381,7 @@ dependencies = [
  "deadpool",
  "derivative",
  "editoast_common",
+ "editoast_core",
  "editoast_schemas",
  "futures-util",
  "hostname",
