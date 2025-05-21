@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { EyeClosed } from '@osrd-project/ui-icons';
-import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import AnchoredMenu from 'common/AnchoredMenu';
@@ -9,6 +8,8 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+
+import { getWaypointsLocalStorageKey } from './helpers/utils';
 
 const useWaypointMenu = (
   activeWaypointRef: React.RefObject<HTMLDivElement>,
@@ -60,15 +61,10 @@ const useWaypointMenu = (
             (waypoint) => waypoint.waypointId !== activeWaypointId
           );
 
-          // We need to remove the id because it can change for waypoints added by map click
-          const simplifiedPath = projectionPath?.map((waypoint) =>
-            omit(waypoint, ['id', 'deleted'])
-          );
-
           // TODO : when switching to the manchette back-end manager, remove all logic using
           // cleanScenarioLocalStorage from projet/study/scenario components (single/multi select)
           localStorage.setItem(
-            `${timetableId}-${JSON.stringify(simplifiedPath)}`,
+            getWaypointsLocalStorageKey(timetableId, projectionPath),
             JSON.stringify(newFilteredWaypoints)
           );
           return newFilteredWaypoints;

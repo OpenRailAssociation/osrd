@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import cutSpaceTimeRect from '../utils';
+import { cutSpaceTimeRect } from '../utils';
 
 describe('interpolateRange', () => {
   it('should return null if the interpolated range ends before the cut space', () => {

@@ -3,12 +3,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Checkbox } from '@osrd-project/ui-core';
 import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { PathOperationalPoint, WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mmToKm } from 'utils/physics';
+
+import { getWaypointsLocalStorageKey } from './helpers/utils';
 
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
@@ -68,13 +69,10 @@ const WaypointsPanel = ({
     const newFilteredWaypoints = waypoints.filter((_, i) => selectedWaypoints.has(i));
     setFilteredWaypoints(newFilteredWaypoints);
 
-    // We need to removed the id because it can change for waypoints added by map click
-    const simplifiedPath = projectionPath.map((waypoint) => omit(waypoint, ['id', 'deleted']));
-
     // TODO : when switching to the manchette back-end manager, remove all logic using
     // cleanScenarioLocalStorage from projet/study/scenario components (single/multi select)
     localStorage.setItem(
-      `${timetableId}-${JSON.stringify(simplifiedPath)}`,
+      getWaypointsLocalStorageKey(timetableId, projectionPath),
       JSON.stringify(newFilteredWaypoints)
     );
 

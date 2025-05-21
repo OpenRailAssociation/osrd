@@ -97,6 +97,7 @@ export function upsertMapWaypointsInOperationalPoints(
 
         return operationalPointsWithAllWaypoints;
       }
+
       return operationalPointsWithAllWaypoints;
     },
     [...operationalPoints]
