@@ -46,7 +46,7 @@ export const drawOccupancyZonesTexts = ({
   ctx.font = '400 10px IBM Plex Mono';
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
   ctx.font = '400 12px IBM Plex Mono';
-  const nameTextLength = ctx.measureText(zone.arrivalTrainName).width;
+  const nameTextLength = ctx.measureText(zone.trainName).width;
 
   const { xOriginTrainName, yOriginTrainName } = isBelowBreakpoint('medium')
     ? {
@@ -101,7 +101,7 @@ export const drawOccupancyZonesTexts = ({
 
   drawText({
     ctx,
-    text: zone.arrivalTrainName,
+    text: zone.trainName,
     x: xOriginTrainName,
     y: yOriginTrainName,
     color: GREY_50,
@@ -115,7 +115,7 @@ export const drawOccupancyZonesTexts = ({
   // arrival minutes & departure minutes
   drawText({
     ctx,
-    text: new Date(zone.arrivalTime)
+    text: new Date(zone.startTime)
       .getMinutes()
       .toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
     x: isThroughTrain ? arrivalTimePixel - X_THROUGHTRAIN_OFFSET : arrivalTimePixel,
@@ -130,7 +130,7 @@ export const drawOccupancyZonesTexts = ({
   if (!isThroughTrain)
     drawText({
       ctx,
-      text: new Date(zone.departureTime)
+      text: new Date(zone.endTime)
         .getMinutes()
         .toLocaleString('fr-FR', { minimumIntegerDigits: 2 }),
       x: departureTimePixel,

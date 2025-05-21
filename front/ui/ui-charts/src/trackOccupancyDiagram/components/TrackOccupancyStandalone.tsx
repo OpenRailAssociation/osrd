@@ -26,7 +26,7 @@ const TrackOccupancyStandalone = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
   const defaultTimeOrigin = useMemo(() => {
-    const minTime = Math.min(...(occupancyZones.map((zone) => zone.arrivalTime) || Date.now()));
+    const minTime = Math.min(...(occupancyZones.map((zone) => zone.startTime) || Date.now()));
     // Take first round hour before minTime:
     return Math.floor(minTime / HOUR) * HOUR;
   }, [occupancyZones]);
