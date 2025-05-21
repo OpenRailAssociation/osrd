@@ -5,7 +5,7 @@ import type {
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
-export const GRAOU_URL = 'https://graou.info';
+const GRAOU_URL = 'https://graou.info';
 
 export const getGraouTrainSchedules = async (config: TrainScheduleImportConfig) => {
   const params = new URLSearchParams({
