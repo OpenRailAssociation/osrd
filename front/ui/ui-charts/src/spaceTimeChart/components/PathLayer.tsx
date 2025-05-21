@@ -108,8 +108,8 @@ export const PathLayer = ({
   /**
    * This function returns the list of points to join to draw the path. As it can be discontinuous,
    * it is returned as a Point[][]. For now, the only case for discontinuous paths is when the path
-   * stops on a flat step (in which case, we assume the path will be drawn differently in the flat
-   * step layer).
+   * stops on or crosses a flat step (in which case, we assume the path will be drawn differently
+   * in the flat step layer).
    *
    * It will be both used to render the visible path, and the segments on the picking layer.
    */
@@ -167,6 +167,7 @@ export const PathLayer = ({
             [timeAxis]: getTimePixel(time),
             [spaceAxis]: getSpacePixel(position),
           } as Point;
+
           if (position === prevPosition && flatSteps.has(position)) {
             lines.push(currentLine);
             currentLine = [newPoint];
@@ -527,6 +528,11 @@ export const PathLayer = ({
             };
             const index = registerPickingElement(pickingElement);
             const lineColor = hexToRgb(indexToColor(index));
+
+            // Skip segments linking two points on the same time value (these are flat steps, and paths shouldn't be
+            // actionable on these steps):
+            if (previousPoint[stcContext.timeAxis] === point[stcContext.timeAxis]) return;
+
             drawAliasedLine(
               imageData,
               previousPoint,
