@@ -57,7 +57,7 @@ const OccupancyZonesLayer = ({
 
     if (!tracks || !occupancyZones || occupancyZones.length === 0) return instructions;
 
-    const sortedOccupancyZones = occupancyZones.sort((a, b) => a.arrivalTime - b.arrivalTime);
+    const sortedOccupancyZones = occupancyZones.sort((a, b) => a.startTime - b.startTime);
 
     tracks.forEach((track, index) => {
       const trackY = topPadding + CANVAS_PADDING + index * TRACK_HEIGHT_CONTAINER;
@@ -66,8 +66,8 @@ const OccupancyZonesLayer = ({
         (zone) => zone.trackId === track.id
       );
 
-      let primaryArrivalTime = 0;
-      let lastDepartureTime = 0;
+      let primaryStartTime = 0;
+      let lastEndTime = 0;
       let yPosition = OCCUPANCY_ZONE_Y_START;
       let yOffset = Y_OFFSET_INCREMENT;
       let zoneCounter = 0;
@@ -75,7 +75,7 @@ const OccupancyZonesLayer = ({
 
       while (zoneIndex < filteredOccupancyZones.length) {
         const zone = filteredOccupancyZones[zoneIndex];
-        const { arrivalTime, departureTime } = zone;
+        const { startTime, endTime } = zone;
 
         // * if the zone is not overlapping with any previous one, draw it in the center of the track
         // * and reset the primary values
@@ -86,11 +86,11 @@ const OccupancyZonesLayer = ({
         // * if the zone is overlapping with the previous one and the counter is higher than the max zones
         // * draw the remaining trains box
         // *
-        if (arrivalTime > lastDepartureTime) {
+        if (startTime > lastEndTime) {
           // reset to initial value if the zone is not overlapping
           yPosition = OCCUPANCY_ZONE_Y_START;
-          primaryArrivalTime = arrivalTime;
-          lastDepartureTime = departureTime;
+          primaryStartTime = startTime;
+          lastEndTime = endTime;
           yOffset = Y_OFFSET_INCREMENT;
           zoneCounter = 1;
 
@@ -106,7 +106,7 @@ const OccupancyZonesLayer = ({
 
         // if so and it's an even index, move it to the bottom, if it's an odd index, move it to the top
         else if (zoneCounter < MAX_ZONES) {
-          if (arrivalTime >= primaryArrivalTime) {
+          if (startTime >= primaryStartTime) {
             if (zoneCounter % 2 === 0) {
               yPosition -= yOffset;
             } else {
@@ -115,7 +115,7 @@ const OccupancyZonesLayer = ({
           }
 
           // update the last departure time if the current zone is longer
-          if (departureTime >= lastDepartureTime) lastDepartureTime = departureTime;
+          if (endTime >= lastEndTime) lastEndTime = endTime;
 
           instructions.push({
             type: 'occupancyZone',
@@ -132,7 +132,7 @@ const OccupancyZonesLayer = ({
         // else, if there are too much trains:
         else {
           const nextIndex = filteredOccupancyZones.findIndex(
-            (filteredZone, i) => i > zoneIndex && filteredZone.arrivalTime >= lastDepartureTime
+            (filteredZone, i) => i > zoneIndex && filteredZone.startTime >= lastEndTime
           );
 
           const remainingTrainsNb = nextIndex - zoneIndex;
@@ -140,7 +140,7 @@ const OccupancyZonesLayer = ({
           instructions.push({
             type: 'remainingTrains',
             amount: remainingTrainsNb,
-            time: (arrivalTime + departureTime) / 2,
+            time: (startTime + endTime) / 2,
             offsetY: trackY,
           });
 
@@ -186,9 +186,9 @@ const OccupancyZonesLayer = ({
 
       instructionsToDraw.forEach((instruction) => {
         if (instruction.type === 'occupancyZone') {
-          const x = getTimePixel(instruction.zone.arrivalTime);
+          const x = getTimePixel(instruction.zone.startTime);
           const y = instruction.offsetY + flatStepOffsetY;
-          const width = getTimePixel(instruction.zone.departureTime) - x;
+          const width = getTimePixel(instruction.zone.endTime) - x;
           const height = OCCUPANCY_ZONE_HEIGHT;
           const margin = 6;
 

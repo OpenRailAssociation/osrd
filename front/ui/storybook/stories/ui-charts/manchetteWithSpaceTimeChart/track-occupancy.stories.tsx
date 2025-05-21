@@ -62,8 +62,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
       getOccupancyZonesFromPathAtGivenWaypoint(path.points, operationalPoint.position, {
         trainId: path.id,
         trackId: tracks[i % tracks.length].id, // (i.e. pick some random track)
-        arrivalTrainName: 'foo',
-        departureTrainName: 'bar',
+        trainName: 'foobar',
         color: path.color,
       })
     );

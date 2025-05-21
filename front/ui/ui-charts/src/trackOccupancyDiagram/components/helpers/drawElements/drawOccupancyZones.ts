@@ -1,4 +1,5 @@
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
+import { PATH_COLOR_DEFAULT } from '../../../../manchette/consts';
 import { getCrispLineCoordinate, type SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../consts';
 import type { OccupancyZone } from '../../types';
@@ -98,9 +99,10 @@ export const drawOccupationZone = (
     isSelected?: boolean;
   }
 ) => {
-  const isThroughTrain = zone.arrivalTime === zone.departureTime;
+  const color = zone.color || PATH_COLOR_DEFAULT;
+  const isThroughTrain = zone.startTime === zone.endTime;
 
-  ctx.fillStyle = zone.color;
+  ctx.fillStyle = color;
   ctx.strokeStyle = WHITE_100;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
@@ -110,8 +112,8 @@ export const drawOccupationZone = (
   const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
   const y = yStart + yOffset;
   const yEnd = getSpacePixel(position, true);
-  const arrivalTimePixel = getTimePixel(zone.arrivalTime);
-  const departureTimePixel = getTimePixel(zone.departureTime);
+  const arrivalTimePixel = getTimePixel(zone.startTime);
+  const departureTimePixel = getTimePixel(zone.endTime);
 
   if (isSelected) {
     const extraWidth = isThroughTrain ? X_TROUGHTRAIN_BACKGROUND_PADDING : X_BACKGROUND_PADDING;
@@ -134,7 +136,7 @@ export const drawOccupationZone = (
     ctx.fill();
   }
 
-  ctx.fillStyle = zone.color;
+  ctx.fillStyle = color;
   if (isThroughTrain) {
     drawThroughTrain(ctx, arrivalTimePixel, y);
   } else {
@@ -146,19 +148,19 @@ export const drawOccupationZone = (
   }
 
   // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
-  ctx.strokeStyle = zone.color;
+  ctx.strokeStyle = color;
   ctx.lineWidth = 1;
   ctx.setLineDash([1, 4]);
-  if (zone.arrivalDirection) {
+  if (zone.startDirection) {
     ctx.beginPath();
     ctx.moveTo(arrivalTimePixel, y);
-    ctx.lineTo(arrivalTimePixel, zone.arrivalDirection === 'up' ? yStart : yEnd);
+    ctx.lineTo(arrivalTimePixel, zone.startDirection === 'up' ? yStart : yEnd);
     ctx.stroke();
   }
-  if (zone.departureDirection) {
+  if (zone.endDirection) {
     ctx.beginPath();
     ctx.moveTo(departureTimePixel, y);
-    ctx.lineTo(departureTimePixel, zone.departureDirection === 'up' ? yStart : yEnd);
+    ctx.lineTo(departureTimePixel, zone.endDirection === 'up' ? yStart : yEnd);
     ctx.stroke();
   }
   ctx.setLineDash([]);

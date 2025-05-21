@@ -251,10 +251,7 @@ export function getOccupancyZonesFromPathAtGivenWaypoint<T extends object>(
   waypointPosition: number,
   additionalAttributes: T
 ) {
-  const res: (Pick<
-    OccupancyZone,
-    'arrivalDirection' | 'departureDirection' | 'arrivalTime' | 'departureTime'
-  > &
+  const res: (Pick<OccupancyZone, 'startDirection' | 'endDirection' | 'startTime' | 'endTime'> &
     T)[] = [];
 
   points.forEach(({ position, time }, i, a) => {
@@ -266,14 +263,14 @@ export function getOccupancyZonesFromPathAtGivenWaypoint<T extends object>(
     // First case: Segment on waypoint
     if (position === waypointPosition && prevPosition === waypointPosition) {
       res.push({
-        arrivalDirection: !beforePrev
+        startDirection: !beforePrev
           ? undefined
           : beforePrev.position < prevPosition
             ? 'up'
             : 'down',
-        arrivalTime: prevTime,
-        departureDirection: !next ? undefined : next.position < position ? 'up' : 'down',
-        departureTime: time,
+        startTime: prevTime,
+        endDirection: !next ? undefined : next.position < position ? 'up' : 'down',
+        endTime: time,
         ...cloneDeep(additionalAttributes),
       });
     }
@@ -281,10 +278,10 @@ export function getOccupancyZonesFromPathAtGivenWaypoint<T extends object>(
     // Second case: Single point exactly on waypoint
     else if (position === waypointPosition && (!next || next.position !== waypointPosition)) {
       res.push({
-        arrivalDirection: prevPosition < waypointPosition ? 'up' : 'down',
-        arrivalTime: time,
-        departureDirection: !next ? undefined : next.position < position ? 'up' : 'down',
-        departureTime: time,
+        startDirection: prevPosition < waypointPosition ? 'up' : 'down',
+        startTime: time,
+        endDirection: !next ? undefined : next.position < position ? 'up' : 'down',
+        endTime: time,
         ...cloneDeep(additionalAttributes),
       });
     }
@@ -299,10 +296,10 @@ export function getOccupancyZonesFromPathAtGivenWaypoint<T extends object>(
         prevTime +
         ((waypointPosition - prevPosition) / (position - prevPosition)) * (time - prevTime);
       res.push({
-        arrivalDirection: prevPosition < waypointPosition ? 'up' : 'down',
-        arrivalTime: crossTime,
-        departureDirection: position < waypointPosition ? 'up' : 'down',
-        departureTime: crossTime,
+        startDirection: prevPosition < waypointPosition ? 'up' : 'down',
+        startTime: crossTime,
+        endDirection: position < waypointPosition ? 'up' : 'down',
+        endTime: crossTime,
         ...cloneDeep(additionalAttributes),
       });
     }
