@@ -154,23 +154,9 @@ const ScenarioContent = ({
   const handleNGELoad = () => setNGEIsLoading(false);
 
   return (
-    <main className="mastcontainer mastcontainer-no-mastnav scenario">
-      <div className="row no-gutters h-100">
-        <div
-          data-testid="scenario-side-menu"
-          className={cx(
-            'h-100',
-            collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'
-          )}
-        >
+    <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+      <div data-testid="scenario-side-menu" className="left-column">
           <div className="scenario-sidemenu">
-            <ScenarioDescription
-              scenario={scenario}
-              infra={infra}
-              infraReloadCount={reloadCount}
-              collapseTimetable={() => setCollapsedTimetable(true)}
-            />
-
             <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
 
             {infra && (
@@ -201,13 +187,7 @@ const ScenarioContent = ({
             )}
           </div>
         </div>
-
-        <div
-          className={cx(
-            'h-100',
-            collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'
-          )}
-        >
+      <div className="center-column">
           {collapsedTimetable && (
             <button
               data-testid="timetable-collapse-button"
@@ -268,7 +248,11 @@ const ScenarioContent = ({
             )}
           </div>
         </div>
-      </div>
+      {/* TODO : add right column */}
+      <div
+        // style={{ display: displayConflictsList ? 'block' : 'none' }}
+        className="right-column"
+      />
     </main>
   );
 };
