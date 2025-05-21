@@ -101,17 +101,14 @@ export const postApiRequest = async <T, U>(
  * @param url - The API endpoint URL.
  * @returns {Promise<Response>} - The API response.
  */
-export const deleteApiRequest = async (urlExtend: string): Promise<Response> => {
-  // TODO: Reuse playwright apiContext when issue #11184 is resolved
-  const fullUrl = `${BASE_URL}${urlExtend}`;
-
-  return fetch(fullUrl, {
-    method: 'DELETE',
-    headers: {
-      Accept: '*/*',
-      'Content-Type': 'application/json',
-    },
-  });
+export const deleteApiRequest = async (
+  url: string,
+  errorMessage?: string
+): Promise<APIResponse> => {
+  const apiContext = await getApiContext();
+  const response = await apiContext.delete(url);
+  handleErrorResponse(response, errorMessage);
+  return response;
 };
 
 /**
