@@ -1,4 +1,4 @@
-import type { CichDictValue, Step } from 'applications/operationalStudies/types';
+import type { CichDictValue, ImportedStep } from 'applications/operationalStudies/types';
 import { time2sec } from 'utils/timeManipulation';
 
 export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''); // Remove the '.0' if it's at the end of the time string
@@ -7,13 +7,13 @@ export const buildSteps = (
   ocpTTs: Element[],
   cichDict: Record<string, CichDictValue>,
   startDate: string
-): Step[] => {
+): ImportedStep[] => {
   let dayOffset = 0;
 
   let previousDepartureSeconds: number | null = null;
 
   return ocpTTs
-    .map((ocpTT): Step | null => {
+    .map((ocpTT): ImportedStep | null => {
       const ocpRef = ocpTT.getAttribute('ocpRef');
       const times = ocpTT.getElementsByTagName('times')[0];
       const isLastOcp = ocpTT === ocpTTs.at(-1);
