@@ -50,12 +50,14 @@
     width: 100%;
     position: sticky;
   }
-
   .space-time-h-slider-container {
     position: absolute;
-    right: 24px;
-    bottom: -21px;
+    height: 28px;
+    right: 0;
+    bottom: 6px;
     z-index: 10;
+    padding: 12px 11px;
+    background-color: var(--white100);
   }
 }
 

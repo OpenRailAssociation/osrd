@@ -518,6 +518,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       <Slider
         containerClassName="space-time-h-slider-container"
         className="space-time-h-slider"
+        width={122}
         value={xZoom}
         onChange={(e) => {
           handleXZoom(Number(e.target.value));
