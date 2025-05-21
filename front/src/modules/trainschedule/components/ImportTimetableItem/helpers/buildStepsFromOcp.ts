@@ -1,4 +1,8 @@
-import type { CichDictValue, ImportedStep } from 'applications/operationalStudies/types';
+import { v4 as uuidV4 } from 'uuid';
+
+import type { CichDictValue } from 'applications/operationalStudies/types';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import { Duration } from 'utils/duration';
 import { time2sec } from 'utils/timeManipulation';
 
 export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''); // Remove the '.0' if it's at the end of the time string
@@ -7,13 +11,13 @@ export const buildSteps = (
   ocpTTs: Element[],
   cichDict: Record<string, CichDictValue>,
   startDate: string
-): ImportedStep[] => {
+): Required<Pick<TrainSchedule, 'path' | 'schedule'>> => {
   let dayOffset = 0;
 
   let previousDepartureSeconds: number | null = null;
 
-  return ocpTTs
-    .map((ocpTT): ImportedStep | null => {
+  const steps = ocpTTs
+    .map((ocpTT) => {
       const ocpRef = ocpTT.getAttribute('ocpRef');
       const times = ocpTT.getElementsByTagName('times')[0];
       const isLastOcp = ocpTT === ocpTTs.at(-1);
@@ -47,8 +51,6 @@ export const buildSteps = (
       const uic = Number(`
         87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
       const { chCode } = operationalPoint;
-      const formattedArrivalTime = `${formattedDate} ${arrivalTime}`;
-      const formattedDepartureTime = `${formattedDate} ${departureTime}`;
 
       let stopFor: number | undefined;
 
@@ -70,10 +72,39 @@ export const buildSteps = (
         uic,
         chCode,
         name: ocpRef,
-        arrivalTime: formattedArrivalTime,
-        departureTime: formattedDepartureTime,
-        duration: stopFor,
+        arrivalDate,
+        departureDate,
+        stopFor,
       };
     })
     .filter((step) => step !== null);
+
+  const path: TrainSchedule['path'] = [];
+  const schedule: TrainSchedule['schedule'] = [];
+  const departureTime = steps[0].departureDate;
+  for (const step of steps) {
+    const id = uuidV4();
+    if (!Number.isNaN(step.uic)) {
+      path.push({
+        id,
+        uic: step.uic,
+        secondary_code: step.chCode,
+      });
+    } else {
+      path.push({
+        id,
+        trigram: step.name,
+        secondary_code: step.chCode,
+      });
+    }
+    if (path.length > 1) {
+      schedule.push({
+        at: id,
+        arrival: Duration.subtractDate(step.arrivalDate, departureTime).toISOString(),
+        stop_for: `PT${step.stopFor}S`,
+      });
+    }
+  }
+
+  return { path, schedule };
 };

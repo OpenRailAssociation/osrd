@@ -1,28 +1,17 @@
-import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
-import { Duration } from 'utils/duration';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-export function getRelativeStepsTimeAndNames(trainSchedule: ImportedTrainSchedule): string {
-  const departureTime = new Date(trainSchedule.departureTime);
-
-  const stepsWithRelativeTimesAndNames = trainSchedule.steps.map((step) => {
-    const arrival = new Date(step.arrivalTime);
-    const departure = new Date(step.departureTime);
-    return {
-      name: step.uic || step.trigram,
-      relativeArrivalSeconds: Math.round(
-        Duration.subtractDate(arrival, departureTime).total('second')
-      ),
-      relativeDepartureSeconds: Math.round(
-        Duration.subtractDate(departure, departureTime).total('second')
-      ),
-    };
-  });
+function getRelativeStepsTimeAndNames(trainSchedule: TrainSchedule): string {
+  const stepsWithRelativeTimesAndNames = trainSchedule.schedule!.map((step) => ({
+    ...trainSchedule.path.find((pathStep) => pathStep.id === step.at),
+    arrival: step.arrival,
+    stop_for: step.stop_for,
+  }));
 
   return JSON.stringify(stepsWithRelativeTimesAndNames);
 }
 
-export function findMostFrequentScheduleInPacedTrain(schedules: ImportedTrainSchedule[]) {
-  const scheduleOccurrences = new Map<string, { count: number; schedule: ImportedTrainSchedule }>();
+export default function findMostFrequentScheduleInPacedTrain(schedules: TrainSchedule[]) {
+  const scheduleOccurrences = new Map<string, { count: number; schedule: TrainSchedule }>();
 
   schedules.forEach((schedule) => {
     const relativeSteps = getRelativeStepsTimeAndNames(schedule);
@@ -34,7 +23,7 @@ export function findMostFrequentScheduleInPacedTrain(schedules: ImportedTrainSch
     }
   });
 
-  let mostFrequent: ImportedTrainSchedule | null = null;
+  let mostFrequent: TrainSchedule | null = null;
   let highestCount = 0;
 
   for (const { count, schedule } of scheduleOccurrences.values()) {
