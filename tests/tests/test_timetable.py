@@ -111,11 +111,11 @@ def test_conflicts_with_paced_trains(
     ["reception_signal", "expected_conflict_types"],
     [
         ("OPEN", {"Spacing", "Routing"}),
-        ("STOP", {"Spacing"}),
-        ("SHORT_SLIP_STOP", {"Spacing"}),
+        ("STOP", set()),
+        ("SHORT_SLIP_STOP", set()),
     ],
 )
-def test_conflicts(
+def test_conflicts_with_reception_on_closed_signal(
     small_infra: Infra,
     timetable_id: int,
     fast_rolling_stock: int,
@@ -160,16 +160,7 @@ def test_conflicts(
         f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
         json=stopping_train_schedule_payload,
     )
-
-    stopping_paced_train_payload = stopping_train_schedule_payload[0]
-    stopping_paced_train_payload["start_time"] = "2024-05-22T08:05:00.000Z"
-    stopping_paced_train_payload["paced"] = {"time_window": "PT2H", "interval": "PT15M"}
-
-    stopping_paced_train_response = requests.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
-        json=[stopping_paced_train_payload],
-    )
-    stopping_paced_train_response.raise_for_status()
+    stopping_train_schedule_response.raise_for_status()
 
     train_schedule_payload = [
         {
