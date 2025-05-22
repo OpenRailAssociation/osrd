@@ -459,7 +459,12 @@ const useManchetteWithSpaceTimeChart = ({
       });
     });
 
-    return sortBy(allScales, (scale) => scale.to + ('size' in scale ? Number.EPSILON : 0));
+    return sortBy(
+      allScales.filter((scale) =>
+        'coefficient' in scale ? scale.coefficient > 0 : isFinite(scale.size)
+      ),
+      (scale) => scale.to + ('size' in scale ? Number.EPSILON : 0)
+    );
   }, [
     waypoints,
     height,
