@@ -28,6 +28,7 @@ use editoast_authz::Authorization;
 use editoast_authz::Infra;
 use editoast_authz::StorageDriver;
 use editoast_common::Version;
+use fga::client::Limits;
 #[cfg(test)]
 pub(crate) use test_app::test_app;
 
@@ -146,6 +147,9 @@ editoast_common::schemas! {
 /// Represents the bundle of information about the issuer of a request
 /// that can be extracted form recognized headers.
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
+// TODO wrap the OpenFGA client contained of the `Authenticated` variant in an Arc
+//      and remove the clippy ignore.
 pub enum Authentication {
     /// The issuer of the request did not provide any authentication information.
     Unauthenticated,
@@ -487,6 +491,8 @@ pub struct OsrdyneConfig {
 pub struct OpenfgaConfig {
     pub url: Url,
     pub store: String,
+    pub max_checks_per_batch_check: u32,
+    pub max_tuples_per_write: u64,
 }
 
 #[derive(Clone)]
@@ -713,6 +719,10 @@ impl OpenfgaConfig {
         Ok(fga::client::ConnectionSettings::new(
             address.to_owned(),
             port,
+            Limits {
+                max_checks_per_batch_check: self.max_checks_per_batch_check,
+                max_tuples_per_write: self.max_tuples_per_write,
+            },
         ))
     }
 }

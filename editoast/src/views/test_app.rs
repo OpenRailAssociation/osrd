@@ -24,6 +24,7 @@ use editoast_common::tracing::TracingConfig;
 use editoast_common::tracing::create_tracing_subscriber;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
+use fga::client::Limits;
 use futures::executor::block_on;
 use opentelemetry_sdk::error::OTelSdkResult;
 use opentelemetry_sdk::trace::SpanData;
@@ -40,6 +41,8 @@ use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
+use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
+use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
 use super::CoreConfig;
 use super::OpenfgaConfig;
@@ -178,6 +181,8 @@ impl TestAppBuilder {
             openfga_config: OpenfgaConfig {
                 url: Url::parse("http://localhost:8091").unwrap(),
                 store: self.test_name.clone(),
+                max_checks_per_batch_check: DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK,
+                max_tuples_per_write: DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE,
             },
         };
 
@@ -245,7 +250,8 @@ impl TestAppBuilder {
         };
         let mut openfga = block_on(fga::Client::try_new_store(
             store_name,
-            fga::client::ConnectionSettings::new("localhost".to_owned(), 8091).reset_store(),
+            fga::client::ConnectionSettings::new("localhost".to_owned(), 8091, Limits::default())
+                .reset_store(),
         ))
         .expect("OpenFGA should be setup properly for testing");
         if let Some(model) = self.authorization_model {

@@ -69,7 +69,6 @@ pub(super) struct CheckError {
 }
 
 impl Client {
-    // TODO: make the maximum number of checks configurable in the client
     #[tracing::instrument(skip(self, checks), ret(level = "debug"), err)]
     pub(super) async fn post_stores_batch_check(
         &self,
@@ -79,8 +78,9 @@ impl Client {
         consistency: Option<Consistency>,
     ) -> Result<HashMap<String, BatchCheckSingleResult>, RequestFailure> {
         assert!(
-            checks.len() <= 50,
-            "OpenFGA doesn't support more than 50 batched checks by default"
+            checks.len() as u32 <= self.settings.limits.max_checks_per_batch_check,
+            "OpenFGA client's checks limit per batch setting is set to {}",
+            self.settings.limits.max_checks_per_batch_check
         );
 
         #[derive(serde::Serialize)]
