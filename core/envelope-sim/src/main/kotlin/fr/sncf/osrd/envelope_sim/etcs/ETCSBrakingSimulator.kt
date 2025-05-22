@@ -1,11 +1,18 @@
 package fr.sncf.osrd.envelope_sim.etcs
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope.EnvelopeCursor
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
+import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
+import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 /**
@@ -36,15 +43,30 @@ interface ETCSBrakingSimulator {
 
     /** Compute the ETCS braking curves for each LoA, ordered by LoA offset. */
     fun computeSlowdownBrakingCurves(
-        mrsp: Envelope,
+        envelope: Envelope,
         limitsOfAuthority: Collection<LimitOfAuthority>
     ): LOABrakingCurves
 
     /** Compute the ETCS braking curves for each EoA, ordered by EoA offset. */
     fun computeStopBrakingCurves(
-        mrsp: Envelope,
+        envelope: Envelope,
         endsOfAuthority: Collection<EndOfAuthority>
     ): EOABrakingCurves
+
+    /**
+     * Compute the ETCS LoAs, only for the slowdowns which are inside an ETCS portion of the path
+     * present in the envelope.
+     */
+    fun computeLoaLocations(mrsp: Envelope): List<LimitOfAuthority>
+
+    /**
+     * Compute the ETCS EoAs, only for the stops which are inside an ETCS portion of the path
+     * present in the envelope.
+     */
+    fun computeEoaLocations(
+        envelope: Envelope,
+        stops: Collection<MaxSpeedEnvelope.SimStop>
+    ): List<EndOfAuthority>
 }
 
 typealias BrakingCurves = EnumMap<BrakingType, BrakingCurve?>
@@ -141,24 +163,100 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
     }
 
     override fun computeSlowdownBrakingCurves(
-        mrsp: Envelope,
+        envelope: Envelope,
         limitsOfAuthority: Collection<LimitOfAuthority>
     ): LOABrakingCurves {
         val res: LOABrakingCurves = TreeMap()
         for (limitOfAuthority in limitsOfAuthority) {
-            res[limitOfAuthority] = computeBrakingCurvesAtLOA(limitOfAuthority, context, mrsp, 0.0)
+            res[limitOfAuthority] =
+                computeBrakingCurvesAtLOA(limitOfAuthority, context, envelope, 0.0)
         }
         return res
     }
 
     override fun computeStopBrakingCurves(
-        mrsp: Envelope,
+        envelope: Envelope,
         endsOfAuthority: Collection<EndOfAuthority>
     ): EOABrakingCurves {
         val res: EOABrakingCurves = TreeMap()
         for (endOfAuthority in endsOfAuthority) {
-            res[endOfAuthority] = computeBrakingCurvesAtEOA(endOfAuthority, context, mrsp, 0.0)
+            res[endOfAuthority] = computeBrakingCurvesAtEOA(endOfAuthority, context, envelope, 0.0)
         }
         return res
+    }
+
+    override fun computeLoaLocations(mrsp: Envelope): List<LimitOfAuthority> {
+        val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
+        val cursor = EnvelopeCursor.backward(mrsp)
+        val limitsOfAuthority = mutableListOf<LimitOfAuthority>()
+        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            val offset = Offset<TravelledPath>(cursor.position.meters)
+            if (etcsRanges.contains(offset.distance)) {
+                limitsOfAuthority.add(
+                    LimitOfAuthority(
+                        offset,
+                        cursor.speed,
+                    )
+                )
+            }
+            cursor.nextPart()
+        }
+        return limitsOfAuthority
+    }
+
+    override fun computeEoaLocations(
+        envelope: Envelope,
+        stops: Collection<MaxSpeedEnvelope.SimStop>
+    ): List<EndOfAuthority> {
+        val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
+        val orderedStops = stops.sortedBy { it.offset }
+        val endsOfAuthority = mutableListOf<EndOfAuthority>()
+        for (stop in orderedStops) {
+            var stopOffset = stop.offset
+            if (stopOffset.distance == Distance.ZERO) continue
+            val isBeginPos =
+                TrainPhysicsIntegrator.arePositionsEqual(
+                    stopOffset.distance.meters,
+                    envelope.beginPos
+                )
+            val isEndPos =
+                TrainPhysicsIntegrator.arePositionsEqual(
+                    stopOffset.distance.meters,
+                    envelope.endPos
+                )
+            val isOutOfBounds =
+                stopOffset.distance.meters < envelope.beginPos ||
+                    stopOffset.distance.meters > envelope.endPos
+            if (isBeginPos) {
+                // Offset is equal to begin position to within an epsilon.
+                continue
+            } else if (isEndPos) {
+                // Offset is equal to end position to within an epsilon.
+                stopOffset = Offset(envelope.endPos.meters)
+            } else if (isOutOfBounds) {
+                // Stop location is out of bounds of the envelope: throw exception.
+                throw OSRDError.envelopeStopOutOfBoundsError(
+                    stopOffset.distance.meters,
+                    envelope.endPos
+                )
+            }
+            if (etcsRanges.contains(stopOffset.distance)) {
+                endsOfAuthority.add(
+                    EndOfAuthority(
+                        offsetEOA = stopOffset,
+                        // On a closed signal, we follow the indication speed curve with an SVL at
+                        // the next danger point to protect
+                        // On an open signal, we follow the permitted speed curve with no SVL
+                        offsetSVL =
+                            if (stop.rjsReceptionSignal.isStopOnClosedSignal)
+                                this.context.etcsContext.getDangerPoint(stopOffset)
+                            else null,
+                        usedCurveType =
+                            if (stop.rjsReceptionSignal.isStopOnClosedSignal) IND else PS
+                    )
+                )
+            }
+        }
+        return endsOfAuthority
     }
 }

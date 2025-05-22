@@ -19,7 +19,7 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-reporting')
-    implementation project(":kt-osrd-sim-infra")
+    api project(":kt-osrd-sim-infra")
     api project(":osrd-railjson")
     api project(":kt-osrd-utils")
     implementation libs.guava

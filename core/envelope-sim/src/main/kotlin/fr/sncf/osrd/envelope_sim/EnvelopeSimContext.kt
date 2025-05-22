@@ -28,7 +28,15 @@ constructor(
          * *after* the end of the path (or right at the end).
          */
         val dangerPointOffsets: List<Offset<TravelledPath>>,
-    )
+    ) {
+        /**
+         * Returns the SVL location: next buffer stop or switch, whichever is closest. If there is
+         * any.
+         */
+        fun getDangerPoint(stop: Offset<TravelledPath>): Offset<TravelledPath>? {
+            return dangerPointOffsets.firstOrNull { it.distance.meters >= stop.distance.meters }
+        }
+    }
 
     fun updateCurves(
         tractiveEffortCurveMap: RangeMap<Double, Array<PhysicsRollingStock.TractiveEffortPoint>>
