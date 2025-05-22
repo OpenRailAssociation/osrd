@@ -50,13 +50,13 @@ if [ "$DB_EXISTS" = 't' ]; then
   echo "Checking database availability..."
 
   # if editoast is running, shut it down.
-  if [ "$(docker ps -q -f name=$OSRD_EDITOAST)" ]; then
+  if [ "$(docker ps -q -f name=^${OSRD_EDITOAST}$)" ]; then
     echo "Stopping $OSRD_EDITOAST..."
     docker stop "$OSRD_EDITOAST"
   fi
 
   # if openfga is running, shut it down.
-  if [ "$(docker ps -q -f name=$OSRD_OPENFGA)" ]; then
+  if [ "$(docker ps -q -f name=^$OSRD_OPENFGA$)" ]; then
     echo "Stopping $OSRD_OPENFGA..."
     docker stop "$OSRD_OPENFGA"
   fi
