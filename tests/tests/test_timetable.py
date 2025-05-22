@@ -16,6 +16,97 @@ def test_get_timetable(
     assert "results" in json
 
 
+# A train schedule leaves on a top-branch of a 'Y' at 08:00.
+# A paced train (every 15 minutes for 2 hours) leave on the other top-branch of a 'Y' after the train schedule at:
+# 1. one second after the train schedule, expecting a spacing and a routing conflict
+# 2. ten minutes after the train schedule, expecting no conflict
+# 3. fifteen minutes and one second before, expecting the train schedule to arrive after the second occurrence with a spacing and a routing conflict
+@pytest.mark.parametrize(
+    ["paced_start_time", "expected_conflict_types"],
+    [
+        ("2024-05-22T08:00:01.000Z", {"Spacing", "Routing"}),
+        ("2024-05-22T08:10:00.000Z", set()),
+        ("2024-05-22T07:44:59.000Z", {"Spacing", "Routing"}),
+    ],
+)
+def test_conflicts_with_paced_trains(
+    small_infra: Infra,
+    timetable_id: int,
+    fast_rolling_stock: int,
+    paced_start_time: str,
+    expected_conflict_types: set[str],
+):
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    stopping_train_schedule_payload = [
+        {
+            "comfort": "STANDARD",
+            "constraint_distribution": "STANDARD",
+            "initial_speed": 0,
+            "labels": [],
+            "options": {"use_electrical_profiles": False},
+            "path": [
+                {"id": "start", "track": "TC0", "offset": 185000},
+                {"id": "stop", "track": "TC0", "offset": 685000},
+                {"id": "end", "track": "TD0", "offset": 24820000},
+            ],
+            "power_restrictions": [],
+            "rolling_stock_name": "fast_rolling_stock",
+            "schedule": [
+                {
+                    "at": "start",
+                },
+                {
+                    "at": "end",
+                },
+            ],
+            "speed_limit_tag": "MA100",
+            "start_time": "2024-05-22T08:00:00.000Z",
+            "train_name": "with_stop",
+        }
+    ]
+
+    stopping_train_schedule_response = requests.post(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        json=stopping_train_schedule_payload,
+    )
+    stopping_train_schedule_response.raise_for_status()
+
+    stopping_paced_train_payload = stopping_train_schedule_payload[0]
+    stopping_paced_train_payload["start_time"] = paced_start_time
+    stopping_paced_train_payload["paced"] = {"time_window": "PT2H", "interval": "PT15M"}
+    stopping_paced_train_payload["path"] = [
+        {"id": "start", "track": "TC1", "offset": 185000},
+        {"id": "end", "track": "TD0", "offset": 24820000},
+    ]
+
+    stopping_paced_train_response = requests.post(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
+        json=[stopping_paced_train_payload],
+    )
+    stopping_paced_train_response.raise_for_status()
+
+    conflicts_response = requests.get(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}"
+    )
+    conflicts_response.raise_for_status()
+    actual_conflicts = {
+        conflict["conflict_type"] for conflict in conflicts_response.json()
+    }
+    assert actual_conflicts == expected_conflict_types
+
+
+# Two train schedules are defined, one leaving at 08:00 and the second one
+# leaving a second after. Each train is on a different top-branch of a 'Y'
+# configuration and both train goes to the bottom branch of the 'Y'. The first
+# train is exposed to a signal before the node. The parametrization of this test
+# expose the three following scenarios:
+# 1. The signal is opened, the first train will not stop, and therefore reserve
+#    the block ahead of it. The second train will have both a spacing conflict (the
+#    block in front is reserved) and in routing (the node position is oriented
+#    for the first train).
+# 2/3. The signal is a stop (or a short slip stop), the first train has a
+#      reception on closed signal and does not reserve the block ahead,
+#      therefore, the second train has not spacing or routing conflict.
 @pytest.mark.parametrize(
     ["reception_signal", "expected_conflict_types"],
     [
