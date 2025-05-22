@@ -1,7 +1,7 @@
 worker_driver:
   type: "DockerDriver"
-  network: "osrd_pr_test"
-  container_prefix: "osrd"
+  network: "osrd_pr_tests"
+  container_prefix: "osrd-pr-tests"
   container_command:
     ["sh", "-c", "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar worker"]
   default_env:

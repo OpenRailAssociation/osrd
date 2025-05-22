@@ -14,7 +14,7 @@ volumes:
 
 networks:
   pr-tests:
-    name: osrd_pr_test
+    name: osrd_pr_tests
 
 services:
   postgres:
