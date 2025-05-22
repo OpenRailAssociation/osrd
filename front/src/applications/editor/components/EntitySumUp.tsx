@@ -185,6 +185,7 @@ function getSumUpContent(
       } else {
         text = switchEntity.properties.id;
       }
+      subtexts.push(t(`Editor.tools.switch-edition.${switchEntity.properties.switch_type}`));
       if (trackNames.length) {
         subtexts.push(
           <>
