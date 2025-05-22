@@ -4,6 +4,15 @@
 # following the link below :
 # https://osrd.fr/en/docs/guides/contribute/code-review/#script-for-testing-a-pr
 
+# Note that this script aims at working locally (linux at least) for those cases (manual tests would be nice):
+# * the stack alone launched with a database backup
+# * the stack alone launched without a database backup
+# To compare behaviours:
+# * the stack aside an existing "single-worker" stack: `./osrd-compose sw up -d --build`
+# * the stack aside an existing regular stack: `docker compose up -d --build`
+# Of course:
+# * the regular stack and "single-worker" stack should still work alone
+
 
 set -e
 
