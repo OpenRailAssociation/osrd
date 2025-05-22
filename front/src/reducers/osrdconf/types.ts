@@ -53,7 +53,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
   powerRestriction: PowerRestriction[];
   timeWindow: Duration;
   interval: Duration;
-  editingTrainIsPacedTrain: boolean;
+  editingItemType: 'trainSchedule' | 'pacedTrain' | 'occurrence';
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {

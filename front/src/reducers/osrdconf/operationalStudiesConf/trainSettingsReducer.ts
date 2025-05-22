@@ -61,8 +61,8 @@ const trainSettingsReducer = {
   ) {
     state.interval = action.payload;
   },
-  toggleEditingTrainIsPacedTrain(state: Draft<OperationalStudiesConfState>) {
-    state.editingTrainIsPacedTrain = !state.editingTrainIsPacedTrain;
+  toggleEditingItemType(state: Draft<OperationalStudiesConfState>) {
+    state.editingItemType = state.editingItemType === 'pacedTrain' ? 'trainSchedule' : 'pacedTrain';
   },
 };
 

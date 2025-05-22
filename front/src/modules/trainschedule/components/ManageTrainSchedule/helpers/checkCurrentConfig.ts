@@ -20,7 +20,7 @@ const checkCurrentConfig = (
     startTime,
     interval,
     timeWindow,
-    editingTrainIsPacedTrain,
+    editingItemType,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {
@@ -89,7 +89,7 @@ const checkCurrentConfig = (
   }
 
   // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
-  if (editingTrainIsPacedTrain) {
+  if (editingItemType === 'pacedTrain') {
     if (interval.total('minute') < 1) {
       error = true;
       dispatch(

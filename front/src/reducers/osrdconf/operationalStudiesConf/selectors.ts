@@ -52,7 +52,7 @@ const buildOperationalStudiesConfSelectors = () => {
     getUsingElectricalProfiles: makeOsrdConfSelector('usingElectricalProfiles'),
     getPowerRestrictions: makeOsrdConfSelector('powerRestriction'),
 
-    getEditingTrainIsPacedTrain: makeOsrdConfSelector('editingTrainIsPacedTrain'),
+    getEditingItemType: makeOsrdConfSelector('editingItemType'),
     getTimeWindow: makeOsrdConfSelector('timeWindow'),
     getInterval: makeOsrdConfSelector('interval'),
   };
@@ -85,7 +85,7 @@ export const {
   getPowerRestrictions,
   getCategory,
 
-  getEditingTrainIsPacedTrain,
+  getEditingItemType,
   getTimeWindow,
   getInterval,
 } = selectors;
