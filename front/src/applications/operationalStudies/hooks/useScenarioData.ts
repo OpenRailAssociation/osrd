@@ -198,6 +198,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     });
 
     removeSimulatedTimetableItems(_timetableItemsToRemove);
+    removeProjectedTimetableItems(_timetableItemsToRemove);
   }, []);
 
   /** Update only departure time of a timetable item */
