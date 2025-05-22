@@ -13,10 +13,10 @@ import java.util.List;
  */
 public class EnvelopeConcat implements EnvelopeInterpolate {
 
-    private final List<LocatedEnvelope> envelopes;
+    private final List<LocatedEnvelopeInterpolate> envelopes;
     private final double endPos;
 
-    private EnvelopeConcat(List<LocatedEnvelope> envelopes, double endPos) {
+    private EnvelopeConcat(List<LocatedEnvelopeInterpolate> envelopes, double endPos) {
         this.envelopes = envelopes;
         this.endPos = endPos;
     }
@@ -31,19 +31,20 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
 
     /** Creates an instance from a list of located envelopes.
      * Avoids redundant initialization when elements are appended to one envelope list. */
-    public static EnvelopeConcat fromLocated(List<LocatedEnvelope> envelopes) {
+    public static EnvelopeConcat fromLocated(List<LocatedEnvelopeInterpolate> envelopes) {
         var lastEnvelope = envelopes.get(envelopes.size() - 1);
         var endPos = lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos();
         return new EnvelopeConcat(envelopes, endPos);
     }
 
     /** Place all envelopes in a record containing the offset on which they start */
-    private static List<LocatedEnvelope> initLocatedEnvelopes(List<? extends EnvelopeInterpolate> envelopes) {
+    private static List<LocatedEnvelopeInterpolate> initLocatedEnvelopes(
+            List<? extends EnvelopeInterpolate> envelopes) {
         double currentOffset = 0.0;
         double currentTime = 0.0;
-        var res = new ArrayList<LocatedEnvelope>();
+        var res = new ArrayList<LocatedEnvelopeInterpolate>();
         for (var envelope : envelopes) {
-            res.add(new LocatedEnvelope(envelope, currentOffset, currentTime));
+            res.add(new LocatedEnvelopeInterpolate(envelope, currentOffset, currentTime));
             currentOffset += envelope.getEndPos();
             currentTime += envelope.getTotalTime();
         }
@@ -103,18 +104,16 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     @Override
     public List<EnvelopePoint> iteratePoints() {
         return envelopes.stream()
-                .flatMap(locatedEnvelope -> locatedEnvelope.envelope.iteratePoints().stream()
+                .flatMap(envelope -> envelope.envelope.iteratePoints().stream()
                         .map(p -> new EnvelopePoint(
-                                p.time() + locatedEnvelope.startTime,
-                                p.speed(),
-                                p.position() + locatedEnvelope.startOffset)))
+                                p.time() + envelope.startTime, p.speed(), p.position() + envelope.startOffset)))
                 .toList();
     }
 
     /**
      * Returns the envelope at the given position.
      */
-    private LocatedEnvelope findEnvelopeLeftAt(double position) {
+    private LocatedEnvelopeInterpolate findEnvelopeLeftAt(double position) {
         var index = findEnvelopeIndexAt(position, true);
         return index == -1 ? null : envelopes.get(index);
     }
@@ -122,7 +121,7 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     /**
      * Returns the envelope at the given position.
      */
-    private LocatedEnvelope findEnvelopeRightAt(double position) {
+    private LocatedEnvelopeInterpolate findEnvelopeRightAt(double position) {
         var index = findEnvelopeIndexAt(position, false);
         return index == -1 ? null : envelopes.get(index);
     }
@@ -183,5 +182,5 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
         return maxSpeed;
     }
 
-    public record LocatedEnvelope(EnvelopeInterpolate envelope, double startOffset, double startTime) {}
+    public record LocatedEnvelopeInterpolate(EnvelopeInterpolate envelope, double startOffset, double startTime) {}
 }
