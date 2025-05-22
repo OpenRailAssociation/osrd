@@ -107,7 +107,7 @@
 
       .board-btn {
         padding: 1px 8px 3px 8px;
-        font-size: 0.750rem;
+        font-size: 0.75rem;
         line-height: 16px;
         border-radius: 4px;
 
@@ -156,20 +156,21 @@
   }
 
   .user-info {
+    display: flex;
+    align-items: center;
+    height: 100%;
     margin-right: 8px;
+
+    .spacer {
+      width: 32px;
+      height: 100%;
+    }
+
     .user-name {
       color: var(--grey30);
       font-size: 0.875rem;
-      font-weight: 400;
-      letter-spacing: 0px;
       text-align: right;
       line-height: 20px;
-      margin-right: 8px;
-    }
-
-    .help-icon {
-      padding: 8px;
-      color: var(--grey30);
     }
   }
 }

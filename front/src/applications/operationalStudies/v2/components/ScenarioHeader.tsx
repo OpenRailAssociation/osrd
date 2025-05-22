@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react';
 
-import { X, ChevronDown, Question } from '@osrd-project/ui-icons';
+import { X, ChevronDown } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -74,11 +74,10 @@ const ScenarioHeader = ({ scenarioName }: ScenarioHeaderProps) => {
 
       {/* user informations */}
       <div className="user-info">
-        <span className="user-name" title={username}>
+        <div className="spacer" />
+
+        <button className="user-name" type="button">
           {username}
-        </span>
-        <button className="help-icon" type="button">
-          <Question />
         </button>
       </div>
     </header>
