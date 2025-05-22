@@ -30,11 +30,6 @@ constructor(
         val dangerPointOffsets: List<Offset<TravelledPath>>,
     )
 
-    /** Creates a context suitable to run simulations on envelopes */
-    init {
-        checkNotNull(tractiveEffortCurveMap)
-    }
-
     fun updateCurves(
         tractiveEffortCurveMap: RangeMap<Double, Array<PhysicsRollingStock.TractiveEffortPoint>>
     ): EnvelopeSimContext {
