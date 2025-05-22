@@ -6,7 +6,7 @@ import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.conflicts.SpacingRequirements
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
-import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelope
+import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -27,7 +27,7 @@ import java.lang.ref.SoftReference
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
-    private val envelopes: AppendOnlyLinkedList<LocatedEnvelope>,
+    private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
     private var stopTimeData: List<StopTimeData> = listOf(),
@@ -84,7 +84,7 @@ data class InfraExplorerWithEnvelopeImpl(
             prevEndTime = lastEnvelope.startTime + lastEnvelope.envelope.totalTime
             prevEndOffset = lastEnvelope.startOffset + lastEnvelope.envelope.endPos
         }
-        envelopes.add(LocatedEnvelope(envelope, prevEndOffset, prevEndTime))
+        envelopes.add(LocatedEnvelopeInterpolate(envelope, prevEndOffset, prevEndTime))
         envelopeCache = null
         spacingRequirementsCache = null
         return this
@@ -94,7 +94,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return copy(
             envelopes =
                 appendOnlyLinkedListOf(
-                    LocatedEnvelope(envelope, 0.0, 0.0),
+                    LocatedEnvelopeInterpolate(envelope, 0.0, 0.0),
                 ),
             spacingRequirementAutomaton =
                 SpacingRequirementAutomaton(
