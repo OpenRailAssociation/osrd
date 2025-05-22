@@ -59,7 +59,7 @@ const useUpdateTimetableItem = (
     setIsWorking(true);
 
     let trainIdToSelect: TrainId | undefined;
-    if (simulationConf.editingTrainIsPacedTrain) {
+    if (simulationConf.editingItemType === 'pacedTrain') {
       const updatedItem = await storePacedTrain(
         timetableItemIdToEdit,
         formatPacedTrainPayload(simulationConf, rollingStock!.name),

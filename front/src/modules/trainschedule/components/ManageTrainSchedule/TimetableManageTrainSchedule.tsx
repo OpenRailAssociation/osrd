@@ -8,8 +8,8 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import DotsLoader from 'common/DotsLoader';
-import { toggleEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf';
-import { getEditingTrainIsPacedTrain } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { toggleEditingItemType } from 'reducers/osrdconf/operationalStudiesConf';
+import { getEditingItemType } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -40,7 +40,7 @@ const TimetableManageTrainSchedule = ({
 }: TimetableManageTrainScheduleProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
-  const editingTrainIsPacedTrain = useSelector(getEditingTrainIsPacedTrain);
+  const editingItemType = useSelector(getEditingItemType);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [isWorking, setIsWorking] = useState(false);
@@ -61,10 +61,10 @@ const TimetableManageTrainSchedule = ({
   );
 
   const getEditLabel = (_itemIdToEdit: TimetableItemId) => {
-    if (isTrainScheduleId(_itemIdToEdit) && !editingTrainIsPacedTrain) {
+    if (isTrainScheduleId(_itemIdToEdit) && editingItemType === 'trainSchedule') {
       return t('updateTrainSchedule');
     }
-    if (isPacedTrainId(_itemIdToEdit) && editingTrainIsPacedTrain) {
+    if (isPacedTrainId(_itemIdToEdit) && editingItemType === 'pacedTrain') {
       return t('updatePacedTrain');
     }
     return isTrainScheduleId(_itemIdToEdit)
@@ -95,10 +95,10 @@ const TimetableManageTrainSchedule = ({
                 id="define-paced-train"
                 name="define-paced-train"
                 containerClassName="mb-0"
-                checked={editingTrainIsPacedTrain}
-                onChange={() => dispatch(toggleEditingTrainIsPacedTrain())}
+                checked={editingItemType === 'pacedTrain'}
+                onChange={() => dispatch(toggleEditingItemType())}
               />
-              {editingTrainIsPacedTrain && <PacedTrainSettings />}
+              {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
             </div>
           </>
         )}
@@ -119,7 +119,7 @@ const TimetableManageTrainSchedule = ({
                 infraState={infraState}
                 setIsWorking={setIsWorking}
                 upsertTimetableItems={upsertTimetableItems}
-                isPacedTrainMode={editingTrainIsPacedTrain}
+                isPacedTrainMode={editingItemType === 'pacedTrain'}
               />
             )}
             <div className="osrd-config-item-container">
@@ -129,10 +129,10 @@ const TimetableManageTrainSchedule = ({
                 id="define-paced-train"
                 name="define-paced-train"
                 containerClassName="mb-0"
-                checked={editingTrainIsPacedTrain}
-                onChange={() => dispatch(toggleEditingTrainIsPacedTrain())}
+                checked={editingItemType === 'pacedTrain'}
+                onChange={() => dispatch(toggleEditingItemType())}
               />
-              {editingTrainIsPacedTrain && <PacedTrainSettings />}
+              {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
             </div>
           </>
         )}

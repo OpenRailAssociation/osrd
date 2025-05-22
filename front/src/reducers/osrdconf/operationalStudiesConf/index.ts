@@ -33,7 +33,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   powerRestriction: [],
   timeWindow: new Duration({ minutes: 120 }),
   interval: new Duration({ minutes: 60 }),
-  editingTrainIsPacedTrain: false,
+  editingItemType: 'trainSchedule',
 };
 
 export const operationalStudiesConfSlice = createSlice({
@@ -78,11 +78,11 @@ export const operationalStudiesConfSlice = createSlice({
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
       if (isPacedTrainWithDetails(action.payload)) {
-        state.editingTrainIsPacedTrain = true;
+        state.editingItemType = 'pacedTrain';
         state.timeWindow = action.payload.paced.timeWindow;
         state.interval = action.payload.paced.interval;
       } else {
-        state.editingTrainIsPacedTrain = false;
+        state.editingItemType = 'trainSchedule';
         state.timeWindow = new Duration({ minutes: 120 });
         state.interval = new Duration({ minutes: 60 });
       }
@@ -127,7 +127,7 @@ export const {
   upsertSeveralViasFromSuggestedOP,
   updateTimeWindow,
   updateInterval,
-  toggleEditingTrainIsPacedTrain,
+  toggleEditingItemType,
   updateCategory,
 
   // itinerary reducer
