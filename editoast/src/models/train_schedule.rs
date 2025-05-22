@@ -13,7 +13,8 @@ use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 use crate::models::prelude::*;
 
-#[derive(Debug, Default, Clone, Model)]
+#[derive(Debug, Clone, Model)]
+#[cfg_attr(test, derive(Default))]
 #[model(table = editoast_models::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 #[model(row(derive(diesel::QueryableByName)))]

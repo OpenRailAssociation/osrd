@@ -19,8 +19,8 @@ use super::Tags;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 
-#[derive(Debug, Default, Clone, Model)]
-#[cfg_attr(test, derive(PartialEq))]
+#[derive(Debug, Clone, Model)]
+#[cfg_attr(test, derive(Default, PartialEq))]
 #[model(table = editoast_models::tables::paced_train)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 pub struct PacedTrain {
