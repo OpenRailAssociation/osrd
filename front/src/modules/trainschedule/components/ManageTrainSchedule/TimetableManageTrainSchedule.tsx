@@ -64,8 +64,8 @@ const TimetableManageTrainSchedule = ({
     if (isTrainScheduleId(_itemIdToEdit) && editingItemType === 'trainSchedule') {
       return t('updateTrainSchedule');
     }
-    if (isPacedTrainId(_itemIdToEdit) && editingItemType === 'pacedTrain') {
-      return t('updatePacedTrain');
+    if (isPacedTrainId(_itemIdToEdit) && editingItemType !== 'trainSchedule') {
+      return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
     return isTrainScheduleId(_itemIdToEdit)
       ? t('turnTrainScheduleIntoPacedTrain')
@@ -88,18 +88,20 @@ const TimetableManageTrainSchedule = ({
               </span>
               {getEditLabel(itemIdToEdit)}
             </button>
-            <div className="osrd-config-item-container">
-              <CheckboxRadioSNCF
-                type="checkbox"
-                label={t('pacedTrains.defineService')}
-                id="define-paced-train"
-                name="define-paced-train"
-                containerClassName="mb-0"
-                checked={editingItemType === 'pacedTrain'}
-                onChange={() => dispatch(toggleEditingItemType())}
-              />
-              {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
-            </div>
+            {editingItemType !== 'occurrence' && (
+              <div className="osrd-config-item-container">
+                <CheckboxRadioSNCF
+                  type="checkbox"
+                  label={t('pacedTrains.defineService')}
+                  id="define-paced-train"
+                  name="define-paced-train"
+                  containerClassName="mb-0"
+                  checked={editingItemType === 'pacedTrain'}
+                  onChange={() => dispatch(toggleEditingItemType())}
+                />
+                {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
+              </div>
+            )}
           </>
         )}
 

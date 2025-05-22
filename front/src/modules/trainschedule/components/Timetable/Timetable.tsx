@@ -12,7 +12,7 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem, OccurrenceId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -126,11 +126,14 @@ const Timetable = ({
     });
   }, [currentDepartureDates]);
 
-  const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
-    dispatch(selectTrainToEdit(itemToEdit));
-    setItemIdToEdit(itemToEdit.id);
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
-  }, []);
+  const selectTimetableItemToEdit = useCallback(
+    (itemToEdit: TimetableItemWithDetails, occurrenceId?: OccurrenceId) => {
+      dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
+      setItemIdToEdit(itemToEdit.id);
+      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+    },
+    []
+  );
 
   return (
     <div className="scenario-timetable">

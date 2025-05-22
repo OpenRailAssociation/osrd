@@ -13,7 +13,7 @@ import {
   findExceptionWithOccurrenceId,
   formatPacedTrainWithOccurenceDetails,
 } from 'modules/trainschedule/helpers/pacedTrain';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getExceptionType, isException } from 'utils/trainId';
 
@@ -44,7 +44,7 @@ type OccurrenceItemProps = {
   nextOccurrence?: Occurrence;
   selectOccurrence: (occurrence: TrainId) => void;
   currentPacedTrain: PacedTrainWithDetails;
-  // selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
+  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails, occurrenceId?: OccurrenceId) => void;
 };
 
 const OccurrenceItem = ({
@@ -53,7 +53,7 @@ const OccurrenceItem = ({
   nextOccurrence,
   selectOccurrence,
   currentPacedTrain,
-  // selectPacedTrainToEdit,
+  selectPacedTrainToEdit,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
@@ -104,8 +104,7 @@ const OccurrenceItem = ({
       };
     }
 
-    // TODO exceptions : uncomment this on the update occurrence PR
-    // selectPacedTrainToEdit(updatedPacedtrain);
+    selectPacedTrainToEdit(updatedPacedtrain, occurrence.id);
   };
 
   // TODO exceptions : add action to menu buttons

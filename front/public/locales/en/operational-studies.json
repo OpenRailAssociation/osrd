@@ -365,6 +365,7 @@
     "turnPacedTrainIntoTrainSchedule": "Turn this service into a train schedule",
     "turnTrainScheduleIntoPacedTrain": "Turn this train schedule into a service",
     "unavailableDistance": "Unavailable distance",
+    "updateOccurrence": "Edit this occurrence",
     "updatePacedTrain": "Edit this service",
     "updateTrainSchedule": "Edit this train",
     "usingElectricalProfiles": "Use electrical profiles",

@@ -46,7 +46,10 @@ export const operationalStudiesConfSlice = createSlice({
     ...itineraryReducer,
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
-      action: PayloadAction<TrainScheduleWithDetails | PacedTrainWithDetails>
+      action: PayloadAction<{
+        item: TrainScheduleWithDetails | PacedTrainWithDetails;
+        isOccurrence?: boolean;
+      }>
     ) {
       const {
         rollingStock,
@@ -60,10 +63,10 @@ export const operationalStudiesConfSlice = createSlice({
         path,
         constraint_distribution,
         category,
-      } = action.payload;
+      } = action.payload.item;
 
       state.rollingStockID = rollingStock?.id;
-      state.pathSteps = path.map((_, index) => computeBasePathStep(action.payload, index));
+      state.pathSteps = path.map((_, index) => computeBasePathStep(action.payload.item, index));
       state.startTime = startTime;
 
       state.name = name;
@@ -77,10 +80,10 @@ export const operationalStudiesConfSlice = createSlice({
       state.powerRestriction = power_restrictions || [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
-      if (isPacedTrainWithDetails(action.payload)) {
-        state.editingItemType = 'pacedTrain';
-        state.timeWindow = action.payload.paced.timeWindow;
-        state.interval = action.payload.paced.interval;
+      if (isPacedTrainWithDetails(action.payload.item)) {
+        state.editingItemType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
+        state.timeWindow = action.payload.item.paced.timeWindow;
+        state.interval = action.payload.item.paced.interval;
       } else {
         state.editingItemType = 'trainSchedule';
         state.timeWindow = new Duration({ minutes: 120 });

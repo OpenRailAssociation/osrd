@@ -63,7 +63,9 @@ describe('simulationConfReducer', () => {
       };
 
       const store = createStore();
-      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit(trainSchedule));
+      store.dispatch(
+        operationalStudiesConfSlice.actions.selectTrainToEdit({ item: trainSchedule })
+      );
 
       const state = store.getState()[operationalStudiesConfSlice.name];
       expect(state).toEqual({
@@ -128,7 +130,7 @@ describe('simulationConfReducer', () => {
       };
 
       const store = createStore();
-      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit(pacedTrain));
+      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit({ item: pacedTrain }));
 
       const state = store.getState()[operationalStudiesConfSlice.name];
       expect(state).toEqual({
