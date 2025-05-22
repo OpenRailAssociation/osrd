@@ -8,9 +8,7 @@ RUN gcc -std=c99 -static -o /exec-as exec-as.c
 FROM node:24-alpine
 
 # Install dependencies
-RUN apt-get update -yqq && \
-    apt-get install -yqq --no-install-recommends xdg-utils && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache xdg-utils
 
 COPY --from=exec_as_builder /exec-as /
 
