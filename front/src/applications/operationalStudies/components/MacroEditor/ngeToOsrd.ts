@@ -381,6 +381,7 @@ const handleUpdateTimetableItem = async ({
     start_time: startDate.toISOString(),
     schedule,
     paced: undefined,
+    exceptions: undefined,
   };
 
   let updatedTimetableItem: TimetableItem;
