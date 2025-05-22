@@ -390,6 +390,8 @@
           "pick-track-cancel": "Annuler la sélection d'une voie",
           "save-switch": "Sauvegarder l'aiguillage"
         },
+        "crossing": "Traversée oblique",
+        "double_slip_switch": "Traversée jonction double",
         "duplicate-errors": "La voie {{track}} est déjà utilisée par le port {{port}}",
         "endpoint": "Extrémité :",
         "help": {
@@ -397,8 +399,13 @@
           "select-track": "Sélectionnez une voie sur la carte"
         },
         "label": "Outil \"Aiguillage\"",
+        "link": "Lien",
         "no-track-picked-yet": "Aucune voie n'a encore été sélectionnée",
+        "point_switch": "Branchement 2 voies",
+        "single_slip_switch": "Traversée jonction simple",
         "switch-type": "Type d'aiguillage",
+        "switch_type_w_port_count_one": "{{type}} ({{count}} port)",
+        "switch_type_w_port_count_other": "{{type}} ({{count}} ports)",
         "untitled-track": "Voie sans nom"
       },
       "track-edition": {

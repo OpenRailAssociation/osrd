@@ -1,6 +1,7 @@
 import { useContext, useMemo } from 'react';
 
 import { first, keyBy } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
@@ -18,6 +19,7 @@ import { useInfraID } from 'common/osrdContext';
 
 // TODO : Rename all switch by tracknode when back renaming PR merged
 const useSwitch = () => {
+  const { t, i18n } = useTranslation();
   const { state, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -34,9 +36,12 @@ const useSwitch = () => {
     () =>
       switchTypes.map((type) => ({
         value: type.id,
-        label: `${type.id} (${type.ports.length} port${type.ports.length > 1 ? 's' : ''})`,
+        label: t('Editor.tools.switch-edition.switch_type_w_port_count_other', {
+          count: type.ports.length,
+          type: t(`Editor.tools.switch-edition.${type.id}`),
+        }),
       })),
-    [switchTypes]
+    [switchTypes, i18n.language]
   );
   const switchTypeOptionsDict = useMemo(
     () => keyBy(switchTypeOptions, 'value'),

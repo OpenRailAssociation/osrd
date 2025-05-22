@@ -392,6 +392,8 @@
           "pick-track-cancel": "Undo track selection",
           "save-switch": "Save the switch"
         },
+        "crossing": "Crossing",
+        "double_slip_switch": "Double slip switch",
         "duplicate-errors": "The track {{track}} is already used by the port {{port}}",
         "endpoint": "Endpoint:",
         "help": {
@@ -399,8 +401,13 @@
           "select-track": "Select a track on the map"
         },
         "label": "Switch tool",
+        "link": "Link",
         "no-track-picked-yet": "No track selected yet",
+        "point_switch": "Point switch",
+        "single_slip_switch": "Single slip switch",
         "switch-type": "Switch type",
+        "switch_type_w_port_count_one": "{{type}} ({{count}} port)",
+        "switch_type_w_port_count_other": "{{type}} ({{count}} ports)",
         "untitled-track": "Untitled track"
       },
       "track-edition": {
