@@ -1,6 +1,6 @@
 worker_driver:
   type: "DockerDriver"
-  worker_image: "ghcr.io/openrailassociation/osrd-edge/osrd-core:dev"
+  worker_image: "ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-core:${TAG-dev}"
   network: "osrd_default"
   container_prefix: "osrd"
   container_command: ["sh", "-c", "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar worker"]

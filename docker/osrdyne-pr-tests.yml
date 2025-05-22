@@ -1,5 +1,6 @@
 worker_driver:
   type: "DockerDriver"
+  worker_image: "ghcr.io/openrailassociation/osrd-edge/osrd-core:${PR_NB}"
   network: "osrd_pr_tests"
   container_prefix: "osrd-pr-tests"
   container_command:
