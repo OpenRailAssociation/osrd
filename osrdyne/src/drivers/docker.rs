@@ -234,6 +234,18 @@ impl WorkerDriver for DockerDriver {
             let workers = containers
                 .iter()
                 .filter_map(|container| {
+                    println!("PEBtrace: {:?} / {}", container, self.options.network.as_str());
+                    if !container
+                        .network_settings
+                        .as_ref()
+                        .is_some_and(|network_settings| {
+                            network_settings.networks.as_ref().is_some_and(|networks| {
+                                networks.contains_key(self.options.network.as_str())
+                            })
+                        })
+                    {
+                        return None;
+                    }
                     container.labels.as_ref().and_then(|labels| {
                         if labels.get(LABEL_MANAGED_BY) == Some(&MANAGED_BY_VALUE.to_string()) {
                             let mut metadata = HashMap::new();
