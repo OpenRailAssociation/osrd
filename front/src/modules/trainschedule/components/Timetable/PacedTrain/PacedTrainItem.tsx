@@ -20,6 +20,7 @@ import type {
   TimetableItemId,
   TimetableItem,
   TrainId,
+  OccurrenceId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -41,7 +42,7 @@ type PacedTrainItemProps = {
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
   selectedTrainId?: TrainId;
-  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
+  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails, occurrenceId?: OccurrenceId) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
 };
@@ -304,7 +305,7 @@ const PacedTrainItem = ({
               nextOccurrence={occurrences[index + 1]}
               selectOccurrence={selectOccurrence}
               currentPacedTrain={pacedTrain}
-              // selectPacedTrainToEdit={selectPacedTrainToEdit}
+              selectPacedTrainToEdit={selectPacedTrainToEdit}
             />
           ))}
         </div>

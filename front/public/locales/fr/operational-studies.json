@@ -365,6 +365,7 @@
     "turnPacedTrainIntoTrainSchedule": "Transformer cette mission en train",
     "turnTrainScheduleIntoPacedTrain": "Transformer ce train en mission",
     "unavailableDistance": "Distance indisponible",
+    "updateOccurrence": "Modifier cette occurrence",
     "updatePacedTrain": "Modifier la mission",
     "updateTrainSchedule": "Modifier le train",
     "usingElectricalProfiles": "Utiliser les profils électriques",
