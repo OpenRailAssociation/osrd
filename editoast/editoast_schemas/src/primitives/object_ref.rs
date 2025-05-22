@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -9,14 +9,14 @@ editoast_common::schemas! {
     ObjectRef,
 }
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
-#[derivative(Default)]
+#[derive(Deserialize, Educe, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
+#[educe(Default)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {
     #[serde(rename = "type")]
-    #[derivative(Default(value = "ObjectType::TrackSection"))]
+    #[educe(Default = ObjectType::TrackSection)]
     pub obj_type: ObjectType,
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     pub obj_id: String,
 }
 

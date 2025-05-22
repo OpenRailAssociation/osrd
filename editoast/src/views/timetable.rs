@@ -26,7 +26,6 @@ use core_client::conflict_detection::ConflictDetectionRequest;
 use core_client::conflict_detection::ConflictRequirement;
 use core_client::conflict_detection::ConflictType;
 use core_client::conflict_detection::TrainRequirements;
-use derivative::Derivative;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
@@ -114,7 +113,7 @@ enum TimetableError {
 }
 
 /// Creation result for a Timetable
-#[derive(Debug, Default, Serialize, Deserialize, Derivative, ToSchema)]
+#[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 struct TimetableResult {
     pub timetable_id: i64,

@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -11,13 +11,13 @@ editoast_common::schemas! {
     TrackEndpoint,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
-#[derivative(Default)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
+#[educe(Default)]
 #[serde(deny_unknown_fields)]
 pub struct TrackEndpoint {
-    #[derivative(Default(value = "Endpoint::Begin"))]
+    #[educe(Default = Endpoint::Begin)]
     pub endpoint: Endpoint,
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
 }

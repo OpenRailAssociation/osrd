@@ -1,20 +1,20 @@
-use derivative::Derivative;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
+use educe::Educe;
 use std::collections::HashMap;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::Switch;
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
+#[derive(Debug, Clone, Educe)]
+#[educe(Hash, PartialEq)]
 pub struct SwitchCache {
     pub obj_id: String,
     pub switch_type: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub ports: HashMap<String, TrackEndpoint>,
 }
 

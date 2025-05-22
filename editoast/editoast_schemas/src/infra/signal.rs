@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -17,19 +17,19 @@ editoast_common::schemas! {
     Signal,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct Signal {
     #[schema(inline)]
     pub id: Identifier,
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
     pub position: f64,
-    #[derivative(Default(value = "Direction::StartToStop"))]
+    #[educe(Default = Direction::StartToStop)]
     pub direction: Direction,
-    #[derivative(Default(value = "400."))]
+    #[educe(Default = 400.)]
     pub sight_distance: f64,
     #[serde(default)]
     #[schema(inline)]

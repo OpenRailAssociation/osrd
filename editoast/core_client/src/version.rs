@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use editoast_common::Version;
 use serde::Serialize;
 
@@ -6,8 +5,7 @@ use super::AsCoreRequest;
 use super::Json;
 
 /// A Core infra load request
-#[derive(Debug, Serialize, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, Serialize, Default)]
 pub struct CoreVersionRequest {}
 
 impl AsCoreRequest<Json<Version>> for CoreVersionRequest {

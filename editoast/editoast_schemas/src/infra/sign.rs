@@ -1,6 +1,6 @@
 use crate::primitives::Identifier;
 use crate::primitives::NonBlankString;
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -12,16 +12,16 @@ editoast_common::schemas! {
     Sign,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-#[derivative(Default)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[educe(Default)]
 #[serde(deny_unknown_fields)]
 pub struct Sign {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
     pub position: f64,
     pub side: Side,
-    #[derivative(Default(value = r#"Direction::StartToStop"#))]
+    #[educe(Default = Direction::StartToStop)]
     pub direction: Direction,
     #[serde(rename = "type")]
     #[schema(inline)]

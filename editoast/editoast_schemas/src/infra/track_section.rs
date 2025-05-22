@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use geojson::Geometry;
 use geojson::Value::LineString;
 use serde::Deserialize;
@@ -21,19 +21,19 @@ editoast_common::schemas! {
     Curve,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct TrackSection {
     #[schema(inline)]
     pub id: Identifier,
-    #[derivative(Default(value = "100."))]
+    #[educe(Default = 100.)]
     pub length: f64,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
     #[serde(default)]
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
-    #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    #[educe(Default = Geometry::new(LineString(vec![])))]
     #[schema(value_type = GeoJsonLineString)]
     pub geo: Geometry,
     #[serde(default)]

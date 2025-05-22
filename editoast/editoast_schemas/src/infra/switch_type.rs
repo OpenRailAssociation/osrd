@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -21,9 +20,8 @@ editoast_common::schemas! {
     SwitchPortConnection,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
 #[schema(example = json!(
     {
         "id": "Point",
@@ -54,9 +52,8 @@ impl OSRDIdentified for SwitchType {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
 pub struct SwitchPortConnection {
     #[schema(inline)]
     pub src: Identifier,

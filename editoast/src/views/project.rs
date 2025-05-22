@@ -5,7 +5,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use chrono::Utc;
-use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -76,8 +75,7 @@ pub enum ProjectError {
 }
 
 /// Creation form for a project
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Default, ToSchema)]
 struct ProjectCreateForm {
     #[schema(max_length = 128)]
     pub name: String,

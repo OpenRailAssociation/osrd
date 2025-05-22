@@ -1,5 +1,5 @@
 use crate::primitives::NonBlankString;
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -15,9 +15,8 @@ editoast_common::schemas! {
     OperationalPointPart,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
 pub struct OperationalPoint {
     #[schema(inline)]
     pub id: Identifier,
@@ -29,11 +28,11 @@ pub struct OperationalPoint {
     pub weight: Option<u8>,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default, PartialEq)]
+#[educe(Default, PartialEq)]
 pub struct OperationalPointPart {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
     pub position: f64,

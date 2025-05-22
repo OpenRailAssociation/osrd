@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::primitives::NonBlankString;
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -10,13 +10,13 @@ editoast_common::schemas! {
     Margins,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Derivative, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Educe, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct Margins {
     #[schema(inline)]
     pub boundaries: Vec<NonBlankString>,
-    #[derivative(Default(value = "vec![MarginValue::default()]"))]
+    #[educe(Default = vec![MarginValue::default()])]
     /// The values of the margins. Must contains one more element than the boundaries
     /// Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
     #[schema(value_type = Vec<String>, example = json!(["5%", "2min/100km"]))]
@@ -44,12 +44,12 @@ impl<'de> Deserialize<'de> for Margins {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Derivative, ToSchema)]
-#[derivative(Hash, Default)]
+#[derive(Debug, Copy, Clone, PartialEq, Educe, ToSchema)]
+#[educe(Hash, Default)]
 pub enum MarginValue {
-    #[derivative(Default)]
-    Percentage(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
-    MinPer100Km(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
+    #[educe(Default)]
+    Percentage(#[educe(Hash(method(editoast_common::hash_float::<3,_>)))] f64),
+    MinPer100Km(#[educe(Hash(method(editoast_common::hash_float::<3,_>)))] f64),
 }
 
 impl<'de> Deserialize<'de> for MarginValue {

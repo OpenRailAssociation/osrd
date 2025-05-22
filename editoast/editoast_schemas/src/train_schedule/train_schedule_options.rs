@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -7,14 +7,14 @@ editoast_common::schemas! {
     TrainScheduleOptions,
 }
 
-#[derive(Debug, Derivative, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
+#[derive(Debug, Educe, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct TrainScheduleOptions {
-    #[derivative(Default(value = "true"))]
+    #[educe(Default = true)]
     #[serde(default = "default_use_electrical_profiles")]
     use_electrical_profiles: bool,
-    #[derivative(Default(value = "true"))]
+    #[educe(Default = true)]
     #[serde(default = "default_use_speed_limits_for_simulation")]
     use_speed_limits_for_simulation: bool,
 }

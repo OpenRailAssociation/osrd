@@ -11,9 +11,9 @@ mocking_client = []
 approx.workspace = true
 chrono.workspace = true
 deadpool.workspace = true
-derivative.workspace = true
 editoast_common = { workspace = true }
 editoast_schemas = { workspace = true }
+educe.workspace = true
 futures-util.workspace = true
 hostname.workspace = true
 http = "1.3.1"

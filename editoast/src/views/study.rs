@@ -6,7 +6,6 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use chrono::NaiveDate;
 use chrono::Utc;
-use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -89,8 +88,7 @@ impl StudyResponse {
 }
 
 /// This structure is used by the post endpoint to create a study
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Default, ToSchema)]
 struct StudyCreateForm {
     pub name: String,
     pub description: Option<String>,
@@ -275,8 +273,7 @@ async fn get(
 }
 
 /// This structure is used by the patch endpoint to patch a study
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Default, ToSchema)]
 struct StudyPatchForm {
     pub name: Option<String>,
     #[serde(default, with = "double_option")]

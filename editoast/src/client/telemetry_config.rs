@@ -1,18 +1,18 @@
 use clap::Args;
 use clap::ValueEnum;
-use derivative::Derivative;
+use educe::Educe;
 use url::Url;
 
-#[derive(Args, Debug, Derivative, Clone)]
-#[derivative(Default)]
+#[derive(Args, Debug, Educe, Clone)]
+#[educe(Default)]
 pub struct TelemetryConfig {
-    #[derivative(Default(value = "TelemetryKind::None"))]
+    #[educe(Default = TelemetryKind::None)]
     #[clap(long, env, default_value_t)]
     pub telemetry_kind: TelemetryKind,
-    #[derivative(Default(value = r#""osrd-editoast".into()"#))]
+    #[educe(Default = "osrd-editoast".into())]
     #[clap(long, env, default_value = "osrd-editoast")]
     pub service_name: String,
-    #[derivative(Default(value = r#"Url::parse("http://localhost:4317").unwrap()"#))]
+    #[educe(Default = Url::parse("http://localhost:4317").unwrap())]
     #[arg(long, env, default_value = "http://localhost:4317")]
     pub telemetry_endpoint: Url,
 }
@@ -26,7 +26,7 @@ impl From<TelemetryConfig> for editoast_common::tracing::Telemetry {
     }
 }
 
-#[derive(Default, ValueEnum, Debug, Derivative, Clone, strum::Display)]
+#[derive(Default, ValueEnum, Debug, Clone, strum::Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum TelemetryKind {
     #[default]
