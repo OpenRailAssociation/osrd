@@ -481,10 +481,10 @@ fun buildProvisionalEnvelope(
     return margin.apply(maxEffortEnvelope, context)
 }
 
-fun getSimStops(schedule: List<SimulationScheduleItem>): List<MaxSpeedEnvelope.SimStopInfo> {
+fun getSimStops(schedule: List<SimulationScheduleItem>): List<MaxSpeedEnvelope.SimStop> {
     return schedule
         .filter { it.stopFor != null }
-        .map { MaxSpeedEnvelope.SimStopInfo(it.pathOffset.distance.meters, it.receptionSignal) }
+        .map { MaxSpeedEnvelope.SimStop(it.pathOffset, it.receptionSignal) }
 }
 
 // TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase

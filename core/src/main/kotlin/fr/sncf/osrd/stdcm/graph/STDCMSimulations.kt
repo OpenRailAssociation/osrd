@@ -19,6 +19,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
@@ -26,7 +27,6 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import java.lang.ref.SoftReference
 
 /** This class contains all the methods used to simulate the train behavior. */
@@ -94,16 +94,15 @@ class STDCMSimulations {
         if (stopPosition != null && stopPosition == start) return makeSinglePointEnvelope(0.0)
         val blockLength = infraExplorer.getCurrentBlockLength()
         if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
-        var stops = emptyList<MaxSpeedEnvelope.SimStopInfo>()
+        var stops = emptyList<MaxSpeedEnvelope.SimStop>()
         var simLength = blockLength.distance - start.distance
         if (stopPosition != null) {
-            val stopOffset = (stopPosition - start).meters
+            val stopOffset = Offset<TravelledPath>(stopPosition - start)
             // We presently consider all stdcm stops to be performed on closed signal by default
             // This presently only affects ETCS computations, which are not yet supported in stdcm
             // either
-            stops =
-                listOf(MaxSpeedEnvelope.SimStopInfo(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
-            simLength = Distance.min(simLength, stopOffset.meters)
+            stops = listOf(MaxSpeedEnvelope.SimStop(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
+            simLength = Distance.min(simLength, stopOffset.distance)
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
         val envelopePath = EnvelopeTrainPath.from(rawInfra, path)

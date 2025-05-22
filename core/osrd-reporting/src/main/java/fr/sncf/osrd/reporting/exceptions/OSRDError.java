@@ -270,16 +270,14 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * Creates a new OSRDError for an envelope error with an index, stop position, and path length.
+     * Creates a new OSRDError for an envelope stop out of bounds, with the stop position and path length.
      *
-     * @param index the envelope stop index associated with the error
      * @param stopPosition the stop position associated with the error
      * @param pathLength the path length associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newEnvelopeError(int index, double stopPosition, double pathLength) {
-        var error = new OSRDError(ErrorType.EnvelopeStopIndexOutOfBounds);
-        error.context.put("index", index);
+    public static OSRDError envelopeStopOutOfBoundsError(double stopPosition, double pathLength) {
+        var error = new OSRDError(ErrorType.EnvelopeStopOutOfBounds);
         error.context.put("stop_position", stopPosition);
         error.context.put("path_length", pathLength);
         return error;

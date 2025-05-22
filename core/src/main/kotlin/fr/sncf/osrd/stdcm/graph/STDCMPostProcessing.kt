@@ -14,7 +14,6 @@ import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
@@ -23,6 +22,7 @@ import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -131,11 +131,11 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             )
         val stopInfos =
             stops
-                .map { MaxSpeedEnvelope.SimStopInfo(it.position, it.receptionSignal) }
+                .map { MaxSpeedEnvelope.SimStop(Offset(it.position.meters), it.receptionSignal) }
                 .toMutableList()
         if (stopAtEnd)
             stopInfos.add(
-                MaxSpeedEnvelope.SimStopInfo(physicsPath.length, RJSReceptionSignal.SHORT_SLIP_STOP)
+                MaxSpeedEnvelope.SimStop(Offset(physicsPath.length.meters), SHORT_SLIP_STOP)
             )
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopInfos, mrsp)
         return MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)

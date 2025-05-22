@@ -115,7 +115,7 @@ public enum ErrorType {
             "missing_signal_on_route_transition",
             "The path uses a route that ends on a detector without signal",
             ErrorCause.USER),
-    EnvelopeStopIndexOutOfBounds("envelope_error", "Stop at index %d is out of bounds", ErrorCause.USER),
+    EnvelopeStopOutOfBounds("envelope_error", "Stop at position %d is out of bounds", ErrorCause.USER),
     EnvelopePartsNotContiguous(
             "envelope_error", "invalid envelope, envelope parts are not contiguous", ErrorCause.INTERNAL),
     SignalingError("signaling_error", "Unknown signaling system: $sigSystem", ErrorCause.USER),
