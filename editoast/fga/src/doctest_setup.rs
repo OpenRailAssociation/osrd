@@ -1,4 +1,5 @@
 use fga::model::Relation as _;
+use fga::client::Limits;
 
 #[derive(Debug, PartialEq, Eq, fga::Type, fga::User, derive_more::FromStr)]
 struct Person(String);
@@ -23,5 +24,5 @@ fga::relations! {
 }
 
 fn settings() -> fga::client::ConnectionSettings {
-    fga::client::ConnectionSettings::new("localhost".to_string(), 8091).reset_store()
+    fga::client::ConnectionSettings::new("localhost".to_string(), 8091, Limits::default()).reset_store()
 }

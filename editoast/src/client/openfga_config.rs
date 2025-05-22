@@ -4,6 +4,8 @@ use crate::models::PgAuthDriver;
 use crate::views;
 use clap::Args;
 use editoast_models::DbConnectionPoolV2;
+use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
+use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 use url::Url;
 
 #[derive(Args, Debug)]
@@ -12,6 +14,10 @@ pub struct OpenfgaConfig {
     pub(super) openfga_url: Url,
     #[clap(long, env = "EDITOAST_OPENFGA_STORE", default_value_t = String::from("osrd-editoast"))]
     pub(super) openfga_store: String,
+    #[clap(long, env = "OPENFGA_MAX_CHECKS_PER_BATCH_CHECK", default_value_t = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK)]
+    pub(super) openfga_max_checks_per_batch_check: u32,
+    #[clap(long, env = "OPENFGA_MAX_TUPLES_PER_WRITE", default_value_t = DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE)]
+    pub(super) openfga_max_tuples_per_write: u64,
 }
 
 impl From<OpenfgaConfig> for views::OpenfgaConfig {
@@ -19,11 +25,15 @@ impl From<OpenfgaConfig> for views::OpenfgaConfig {
         OpenfgaConfig {
             openfga_url,
             openfga_store,
+            openfga_max_checks_per_batch_check,
+            openfga_max_tuples_per_write,
         }: OpenfgaConfig,
     ) -> Self {
         views::OpenfgaConfig {
             url: openfga_url,
             store: openfga_store,
+            max_checks_per_batch_check: openfga_max_checks_per_batch_check,
+            max_tuples_per_write: openfga_max_tuples_per_write,
         }
     }
 }

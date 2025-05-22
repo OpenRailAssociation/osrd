@@ -38,7 +38,8 @@ use crate::model::Type;
 use crate::model::User;
 use crate::model::Wildcard;
 
-const OPENFGA_WRITES_MAX_TUPLES: usize = 100;
+pub const DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK: u32 = 50;
+pub const DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE: u64 = 100;
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -52,6 +53,7 @@ pub struct Client {
 pub struct ConnectionSettings {
     address: String,
     port: u16,
+    limits: Limits,
 
     /// Whether to reset the store on initialization
     ///
@@ -62,11 +64,29 @@ pub struct ConnectionSettings {
     reset_store: bool,
 }
 
+/// Limits to the payloads sent to the authentication server. For more information about these limits,
+/// check [OpenFGA official documentation](https://openfga.dev/docs/getting-started/setup-openfga/configuration).
+#[derive(Debug, Clone)]
+pub struct Limits {
+    pub max_checks_per_batch_check: u32,
+    pub max_tuples_per_write: u64,
+}
+
+impl Default for Limits {
+    fn default() -> Self {
+        Limits {
+            max_checks_per_batch_check: DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK,
+            max_tuples_per_write: DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE,
+        }
+    }
+}
+
 impl ConnectionSettings {
-    pub fn new(address: String, port: u16) -> Self {
+    pub fn new(address: String, port: u16, limits: Limits) -> Self {
         Self {
             address,
             port,
+            limits,
             reset_store: false,
         }
     }
@@ -74,6 +94,10 @@ impl ConnectionSettings {
     pub fn reset_store(mut self) -> Self {
         self.reset_store = true;
         self
+    }
+
+    pub fn limit(&self) -> &Limits {
+        &self.limits
     }
 }
 
@@ -273,9 +297,10 @@ impl Client {
         Ok(model_id)
     }
 
-    /// Writes up to 100 tuples in OpenFGA
+    /// Writes up to `n` tuples in OpenFGA, with `n` the maximum number of tuple writes
+    /// configured in the [ConnectionSettings::limits]'s [Limits::max_tuples_per_write].
     ///
-    /// If the tuple slice is more than 100 elements, an error will be returned.
+    /// If the tuple slice is more than `n` elements, an error will be returned.
     /// If you want them to be chunked into several requests, or if your tuples cannot
     /// be monomorphized into a single type, use [Client::prepare_writes] instead.
     ///
@@ -285,9 +310,9 @@ impl Client {
         &self,
         tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
-        if tuples.len() > OPENFGA_WRITES_MAX_TUPLES {
+        if tuples.len() > self.settings.limits.max_tuples_per_write as usize {
             return Err(Either::Right(TooManyTuples {
-                max: OPENFGA_WRITES_MAX_TUPLES,
+                max: self.settings.limits.max_tuples_per_write as usize,
                 provided_count: tuples.len(),
             }));
         }
@@ -303,11 +328,14 @@ impl Client {
 
     /// Prepares multiple write requests to OpenFGA
     ///
-    /// OpenFGA Writes API do not accept more than 100 tuples per request.
+    /// OpenFGA Writes API has a maximum number of tuples it accepts per request
+    /// (default value: [DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE]).
+    ///
     /// The [PreparedWrites] type returned by this function accepts any number
     /// of tuples through [PreparedWrites::push] and will chunk them into
-    /// requests of 100 tuples each. The requests are sent concurrently when
-    /// [PreparedWrites::execute] is called.
+    /// requests of `n` tuples each, with `n` the maximum number of tuple reads
+    /// configured in the [ConnectionSettings::limits]'s [Limits::max_checks_per_batch_check].
+    /// The requests are sent concurrently when [PreparedWrites::execute] is called.
     ///
     /// Beware that the tuples injected into [PreparedWrites] cannot be accessed
     /// after a [PreparedWrites::push]. So any form of post-processing is impossible.
@@ -322,9 +350,10 @@ impl Client {
         }
     }
 
-    /// Deletes up to 100 tuples in OpenFGA
+    /// Deletes up to `n` tuples in OpenFGA, with `n` the maximum number of tuple writes
+    /// configured in the [ConnectionSettings::limits]'s [Limits::max_tuples_per_write].
     ///
-    /// If the tuple slice is more than 100 elements, an error will be returned.
+    /// If the tuple slice is more than `n` elements, an error will be returned.
     /// If you want them to be chunked into several requests, or if your tuples cannot
     /// be monomorphized into a single type, use [Client::prepare_deletes] instead.
     ///
@@ -334,9 +363,9 @@ impl Client {
         &self,
         tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
-        if tuples.len() > OPENFGA_WRITES_MAX_TUPLES {
+        if tuples.len() > self.settings.limits.max_tuples_per_write as usize {
             return Err(Either::Right(TooManyTuples {
-                max: OPENFGA_WRITES_MAX_TUPLES,
+                max: self.settings.limits.max_tuples_per_write as usize,
                 provided_count: tuples.len(),
             }));
         }
@@ -352,11 +381,13 @@ impl Client {
 
     /// Prepares multiple delete requests to OpenFGA
     ///
-    /// OpenFGA Writes API do not accept more than 100 tuples per request.
+    /// OpenFGA Writes API has a maximum number of tuples it accepts per request
+    /// (default value: [DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE]).
     /// The [PreparedDeletes] type returned by this function accepts any number
     /// of tuples through [PreparedDeletes::push] and will chunk them into
-    /// requests of 100 tuples each. The requests are sent concurrently when
-    /// [PreparedDeletes::execute] is called.
+    /// requests of `n` tuples each, with `n` the tuples limit configured in
+    /// [ConnectionSettings::limits]'s [Limits::max_tuples_per_write].
+    /// The requests are sent concurrently when [PreparedDeletes::execute] is called.
     ///
     /// Beware that the tuples injected into [PreparedDeletes] cannot be accessed
     /// after a [PreparedDeletes::push]. So any form of post-processing is impossible.
@@ -445,10 +476,10 @@ impl Client {
 
     /// Prepares multiple check requests to OpenFGA
     ///
-    /// OpenFGA Check API do not accept more than 50 checks per request.
-    /// The [PreparedChecks] type returned by this function accepts any number
+    /// OpenFGA Check API do not accept more than a configurable maximum number of
+    /// checks per request. The [PreparedChecks] type returned by this function accepts any number
     /// of checks through [PreparedChecks::push] and will chunk them into
-    /// requests of 50 checks each. The requests are sent concurrently when
+    /// requests of `max_tuple_reads` checks each. The requests are sent concurrently when
     /// [PreparedChecks::execute] is called.
     ///
     /// Beware that the checks injected into [PreparedChecks] cannot be accessed
@@ -641,7 +672,9 @@ impl PreparedChecks<'_> {
         self
     }
 
-    /// Concurrently send batch-checks requests to OpenFGA in 50-check chunks
+    /// Concurrently send batch-checks requests to OpenFGA in chunks of `n` elements,
+    /// with `n` the maximum number of tuple reads configured in the
+    /// [ConnectionSettings::limits]'s [Limits::max_checks_per_batch_check].
     pub async fn execute(self) -> Result<Vec<bool>, RequestFailure> {
         let count = self.checks.len();
 
@@ -662,16 +695,18 @@ impl PreparedChecks<'_> {
             .unzip();
 
         // Prepare the requests
-        let futs = check_items.chunks(50).map(|checks| {
-            self.client
-                .post_stores_batch_check(
-                    &self.client.store.id,
-                    checks,
-                    self.client.authorization_model_id.as_deref(),
-                    None,
-                )
-                .in_current_span()
-        });
+        let futs = check_items
+            .chunks(self.client.settings.limits.max_checks_per_batch_check as usize)
+            .map(|checks| {
+                self.client
+                    .post_stores_batch_check(
+                        &self.client.store.id,
+                        checks,
+                        self.client.authorization_model_id.as_deref(),
+                        None,
+                    )
+                    .in_current_span()
+            });
 
         // Send the requests concurrently and combine all check results
         let check_results = futures::future::try_join_all(futs)
@@ -756,7 +791,9 @@ impl PreparedWrites<'_> {
         self
     }
 
-    /// Concurrently sends write requests to OpenFGA in 100-tuple chunks
+    /// Concurrently sends write requests to OpenFGA in chunks of `n` elements,
+    /// with `n` the maximum number of tuple reads configured in the [ConnectionSettings::limits]'s
+    /// [Limits::max_tuples_per_write].
     ///
     /// /!\ WARNING /!\ No transactional state is set up, so should any request fail,
     /// the tuples written by other successful requests will remain in OpenFGA.
@@ -765,7 +802,7 @@ impl PreparedWrites<'_> {
     pub async fn execute(self) -> Result<(), RequestFailure> {
         let futs = self
             .writes
-            .chunks(100)
+            .chunks(self.client.settings.limits.max_tuples_per_write as usize)
             .map(|chunk| {
                 self.client
                     .post_stores_write(
@@ -800,7 +837,9 @@ impl PreparedDeletes<'_> {
         self
     }
 
-    /// Concurrently sends delete requests to OpenFGA in 100-tuple chunks
+    /// Concurrently sends delete requests to OpenFGA in chunks of `n` elements,
+    /// with `n` the maximum number of tuple writes configured in the [ConnectionSettings::limits]'s
+    /// [Limits::max_tuples_per_write].
     ///
     /// /!\ WARNING /!\ No transactional state is set up, so should any request fail,
     /// the tuples deleted by other successful requests will remain deleted in OpenFGA.
@@ -809,7 +848,7 @@ impl PreparedDeletes<'_> {
     pub async fn execute(self) -> Result<(), RequestFailure> {
         let futs = self
             .deletes
-            .chunks(100)
+            .chunks(self.client.settings.limits.max_tuples_per_write as usize)
             .map(|chunk| {
                 self.client
                     .post_stores_write(
@@ -1003,7 +1042,11 @@ impl Continuation {
 
 #[cfg(test)]
 mod tests {
+    use reqwest::StatusCode;
+
     use crate::client::Client;
+    use crate::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
+    use crate::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
     use crate::client::InitializationError;
     use crate::client::Request as _;
     use crate::compile_model;
@@ -1147,6 +1190,88 @@ mod tests {
             assert!(bob);
             assert!(!alice);
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check_tuple_read_limit_success() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+        let number_of_checks = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK * 2;
+        let mut checks = client.prepare_checks();
+        for _ in 1..=number_of_checks {
+            checks.push(&Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")));
+        }
+        let results = checks.execute().await.unwrap();
+        assert_eq!(results, vec![false; number_of_checks as usize]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check_tuple_read_limit_fail() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+        client.settings.limits.max_checks_per_batch_check =
+            DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK + 1;
+        let number_of_checks = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK * 2;
+        let mut checks = client.prepare_checks();
+        for _ in 1..=number_of_checks {
+            checks.push(&Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")));
+        }
+        let results = checks.execute().await;
+        assert!(results.is_err_and(|err| err.0.status().unwrap() == StatusCode::BAD_REQUEST));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check_tuple_write_limit_success() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+        let mut writes = client.prepare_writes();
+        let mut infras: Vec<Infra> = vec![];
+        let mut users: Vec<User> = vec![];
+        for i in 1..=2 * DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE {
+            infras.push(Infra(format!("{i}")));
+            users.push(User(format!("{i}")));
+        }
+        let tuples = infras
+            .iter()
+            .zip(users.iter())
+            .map(|(infra, user)| Infra::reader().tuple(user, infra))
+            .collect::<Vec<_>>();
+        for tuple in tuples {
+            writes.push(&tuple);
+        }
+        writes.execute().await.unwrap();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check_tuple_write_limit_fail() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.settings.limits.max_tuples_per_write = DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE + 1;
+        client.update_authorization_model(&model).await.unwrap();
+        let mut writes = client.prepare_writes();
+        let mut infras: Vec<Infra> = vec![];
+        let mut users: Vec<User> = vec![];
+        for i in 1..=2 * DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE {
+            infras.push(Infra(format!("{i}")));
+            users.push(User(format!("{i}")));
+        }
+        let tuples = infras
+            .iter()
+            .zip(users.iter())
+            .map(|(infra, user)| Infra::reader().tuple(user, infra))
+            .collect::<Vec<_>>();
+        for tuple in tuples {
+            writes.push(&tuple);
+        }
+        let response = writes.execute().await;
+        assert!(response.is_err_and(|err| err.0.status().unwrap() == StatusCode::BAD_REQUEST));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

@@ -482,15 +482,39 @@ macro_rules! fga {
 #[cfg(test)]
 /// The [client::ConnectionSettings] to use for unit and doc tests
 ///
-/// Configurable through the `OPENFGA_HOST` and `OPENFGA_PORT` environment variables.
-/// Defaults to `localhost` and `8091` (as used by OSRD).
+/// Configurable through the `OPENFGA_HOST`, `OPENFGA_PORT`, `OPENFGA_MAX_CHECKS_PER_BATCH_CHECK` and
+/// `OPENFGA_MAX_TUPLES_PER_WRITE` environment variables.
+/// Defaults to `localhost`, `8091` and OpenFGA default settings.
 fn connection_settings() -> client::ConnectionSettings {
+    use client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
+    use client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
+    use client::Limits;
+
     let address = std::env::var("OPENFGA_HOST").unwrap_or_else(|_| "localhost".to_string());
     let port = std::env::var("OPENFGA_PORT")
         .unwrap_or_else(|_| "8091".to_string())
         .parse()
         .expect("invalid port");
-    client::ConnectionSettings::new(address, port).reset_store()
+    let max_checks_per_batch_check = std::env::var("OPENFGA_MAX_CHECKS_PER_BATCH_CHECK")
+        .map(|tuple_reads| tuple_reads.parse::<u32>().expect("invalid max tuple reads"))
+        .unwrap_or(DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK);
+    let max_tuples_per_write = std::env::var("OPENFGA_MAX_TUPLES_PER_WRITE")
+        .map(|tuple_writes| {
+            tuple_writes
+                .parse::<u64>()
+                .expect("invalid max tuple reads")
+        })
+        .unwrap_or(DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE);
+
+    client::ConnectionSettings::new(
+        address,
+        port,
+        Limits {
+            max_checks_per_batch_check,
+            max_tuples_per_write,
+        },
+    )
+    .reset_store()
 }
 
 #[cfg(test)]
