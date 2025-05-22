@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -10,15 +10,15 @@ editoast_common::schemas! {
     ApplicableDirectionsTrackRange,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct ApplicableDirectionsTrackRange {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
     pub begin: f64,
-    #[derivative(Default(value = "100."))]
+    #[educe(Default = 100.)]
     pub end: f64,
     pub applicable_directions: ApplicableDirections,
 }

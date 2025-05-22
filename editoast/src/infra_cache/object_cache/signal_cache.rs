@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
@@ -6,24 +5,25 @@ use diesel_json::Json as DieselJson;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
+use educe::Educe;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::LogicalSignal;
 use editoast_schemas::infra::Signal;
 
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
+#[derive(QueryableByName, Debug, Clone, Educe)]
+#[educe(Hash, PartialEq)]
 pub struct SignalCache {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     #[diesel(sql_type = Text)]
     pub track: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     #[diesel(sql_type = Double)]
     pub position: f64,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     #[diesel(sql_type = Jsonb)]
     pub logical_signals: DieselJson<Vec<LogicalSignal>>,
 }

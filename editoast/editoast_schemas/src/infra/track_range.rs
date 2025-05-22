@@ -1,5 +1,5 @@
 use crate::primitives::Identifier;
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -8,15 +8,15 @@ editoast_common::schemas! {
     TrackRange,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct TrackRange {
     #[schema(value_type=String, example="01234567-89ab-cdef-0123-456789abcdef")]
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     pub track: Identifier,
     pub begin: f64,
-    #[derivative(Default(value = "100."))]
+    #[educe(Default = 100.)]
     pub end: f64,
 }
 

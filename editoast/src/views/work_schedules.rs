@@ -20,7 +20,6 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
-use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -89,7 +88,7 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
     }
 }
 
-#[derive(Serialize, Derivative, ToSchema)]
+#[derive(Serialize, ToSchema)]
 struct WorkScheduleItemForm {
     pub start_date_time: DateTime<Utc>,
     pub end_date_time: DateTime<Utc>,

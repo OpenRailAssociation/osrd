@@ -1,22 +1,20 @@
 use clap::Args;
-use derivative::Derivative;
+use educe::Educe;
 use url::Url;
 
 use crate::views;
 
-#[derive(Args, Debug, Derivative, Clone)]
-#[derivative(Default)]
+#[derive(Args, Debug, Educe, Clone)]
+#[educe(Default)]
 pub struct PostgresConfig {
-    #[derivative(Default(
-        value = "Url::parse(\"postgres://osrd:password@localhost:5432/osrd\").unwrap()"
-    ))]
+    #[educe(Default = Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap())]
     #[arg(
         long,
         env,
         default_value_t = Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap()
     )]
     pub database_url: Url,
-    #[derivative(Default(value = "32"))]
+    #[educe(Default = 32)]
     #[arg(long, env, default_value_t = 32)]
     pub pool_size: usize,
 }

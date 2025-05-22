@@ -9,9 +9,9 @@ testing = []
 
 [dependencies]
 chrono.workspace = true
-derivative.workspace = true
 editoast_common.workspace = true
 editoast_derive.workspace = true
+educe.workspace = true
 enum-map.workspace = true
 geojson.workspace = true
 iso8601 = "0.6.3"

@@ -10,7 +10,7 @@
 //!
 //! ```ignore
 //! use editoast_model::units::*;
-//! #[derive(Debug, Serialize, Derivative)]
+//! #[derive(Debug, Serialize)]
 //! struct Train {
 //!     // This means that serde with read and write the velocity in meters per second
 //!     #[serde(with="meter_per_second")]

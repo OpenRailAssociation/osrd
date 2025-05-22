@@ -1,4 +1,4 @@
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -22,12 +22,12 @@ editoast_common::schemas! {
 }
 
 /// An infrastructure description in the RailJson format
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, ToSchema)]
-#[derivative(Default)]
+#[derive(Deserialize, Educe, Serialize, Clone, Debug, ToSchema)]
+#[educe(Default)]
 #[serde(deny_unknown_fields)]
 pub struct RailJson {
     /// The version of the RailJSON format. Defaults to the current version.
-    #[derivative(Default(value = r#"RAILJSON_VERSION.to_string()"#))]
+    #[educe(Default = RAILJSON_VERSION.to_string())]
     pub version: String,
     /// Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest.
     pub operational_points: Vec<OperationalPoint>,

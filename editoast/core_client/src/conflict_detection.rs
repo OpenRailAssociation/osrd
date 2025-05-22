@@ -1,6 +1,5 @@
 use chrono::DateTime;
 use chrono::Utc;
-use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -18,7 +17,7 @@ editoast_common::schemas! {
     ConflictRequirement,
 }
 
-#[derive(Debug, Derivative, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct ConflictDetectionRequest {
     pub infra: i64,
     /// Infrastructure expected version

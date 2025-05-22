@@ -7,7 +7,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use chrono::Utc;
-use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -75,8 +74,7 @@ pub struct ScenarioIdParam {
 }
 
 /// This structure is used by the post endpoint to create a scenario
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Default, ToSchema)]
 struct ScenarioCreateForm {
     pub name: String,
     #[serde(default)]
@@ -288,8 +286,7 @@ async fn delete(
 }
 
 /// This structure is used by the patch endpoint to patch a scenario
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Default, ToSchema)]
 struct ScenarioPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,

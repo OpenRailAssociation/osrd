@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use derivative::Derivative;
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
@@ -21,6 +20,7 @@ use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::ReceptionSignal;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -40,44 +40,44 @@ editoast_common::schemas! {
     ReportTrain,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
+#[educe(Hash)]
 pub struct PhysicsConsist {
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
     /// Length of the rolling stock
-    #[derivative(Hash(hash_with = "units::millimeter::hash"))]
+    #[educe(Hash(method(units::millimeter::hash)))]
     #[serde(with = "units::millimeter::u64")]
     #[schema(value_type = u64)]
     pub length: Length,
     /// Maximum speed of the rolling stock
-    #[derivative(Hash(hash_with = "units::meter_per_second::hash"))]
+    #[educe(Hash(method(units::meter_per_second::hash)))]
     #[serde(with = "units::meter_per_second")]
     #[schema(value_type = f64)]
     pub max_speed: Velocity,
-    #[derivative(Hash(hash_with = "units::millisecond::hash"))]
+    #[educe(Hash(method(units::millisecond::hash)))]
     #[serde(with = "units::millisecond::u64")]
     #[schema(value_type = u64)]
     pub startup_time: Time,
-    #[derivative(Hash(hash_with = "units::meter_per_second_squared::hash"))]
+    #[educe(Hash(method(units::meter_per_second_squared::hash)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub startup_acceleration: Acceleration,
-    #[derivative(Hash(hash_with = "units::meter_per_second_squared::hash"))]
+    #[educe(Hash(method(units::meter_per_second_squared::hash)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub comfort_acceleration: Acceleration,
     /// The constant gamma braking coefficient used when NOT circulating
     /// under ETCS/ERTMS signaling system
-    #[derivative(Hash(hash_with = "units::meter_per_second_squared::hash"))]
+    #[educe(Hash(method(units::meter_per_second_squared::hash)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
+    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
     pub inertia_coefficient: f64,
     /// Mass of the rolling stock
-    #[derivative(Hash(hash_with = "units::kilogram::hash"))]
+    #[educe(Hash(method(units::kilogram::hash)))]
     #[serde(with = "units::kilogram::u64")]
     #[schema(value_type = u64)]
     pub mass: Mass,
@@ -87,13 +87,13 @@ pub struct PhysicsConsist {
     pub power_restrictions: BTreeMap<String, String>,
     /// The time the train takes before actually using electrical power.
     /// Is null if the train is not electric or the value not specified.
-    #[derivative(Hash(hash_with = "units::millisecond::option::hash"))]
+    #[educe(Hash(method(units::millisecond::option::hash)))]
     #[serde(default, with = "units::millisecond::u64::option")]
     #[schema(value_type = Option<u64>)]
     pub electrical_power_startup_time: Option<Time>,
     /// The time it takes to raise this train's pantograph.
     /// Is null if the train is not electric or the value not specified.
-    #[derivative(Hash(hash_with = "units::millisecond::option::hash"))]
+    #[educe(Hash(method(units::millisecond::option::hash)))]
     #[serde(default, with = "units::millisecond::u64::option")]
     #[schema(value_type = Option<u64>)]
     pub raise_pantograph_time: Option<Time>,
@@ -456,15 +456,15 @@ pub struct SimulationPowerRestrictionRange {
     handled: bool,
 }
 
-#[derive(Debug, Serialize, Derivative)]
-#[derivative(Hash)]
+#[derive(Debug, Serialize, Educe)]
+#[educe(Hash)]
 pub struct Request {
     pub infra: i64,
     pub expected_version: i64,
     pub path: SimulationPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
-    #[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))]
+    #[educe(Hash(method(editoast_common::hash_float::<3,_>)))]
     pub initial_speed: f64,
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,

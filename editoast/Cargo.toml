@@ -40,7 +40,6 @@ deadpool = { version = "0.12.2", features = [
   "rt_tokio_1",
   "unmanaged",
 ] }
-derivative = "2.2.0"
 derive_more = { version = "2.0.1", features = [
   "debug",
   "display",
@@ -65,6 +64,7 @@ editoast_models = { path = "./editoast_models" }
 editoast_osrdyne_client = { path = "./editoast_osrdyne_client" }
 editoast_schemas = { path = "./editoast_schemas" }
 editoast_search = { path = "./editoast_search" }
+educe = "0.6.0"
 enum-map = "2.7.3"
 fga = { path = "./fga" }
 futures = { version = "0.3.31" }
@@ -143,7 +143,6 @@ deadpool-redis = { version = "0.21.1", features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
-derivative.workspace = true
 derive_more.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
@@ -155,6 +154,7 @@ editoast_models.workspace = true
 editoast_osrdyne_client.workspace = true
 editoast_schemas.workspace = true
 editoast_search = { workspace = true }
+educe.workspace = true
 enum-map.workspace = true
 enumset = "1.1.6"
 fga.workspace = true

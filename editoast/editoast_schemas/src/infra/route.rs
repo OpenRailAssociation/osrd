@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::primitives::Identifier;
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -19,14 +19,14 @@ editoast_common::schemas! {
     Waypoint,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct Route {
     #[schema(inline)]
     pub id: Identifier,
     pub entry_point: Waypoint,
-    #[derivative(Default(value = "Direction::StartToStop"))]
+    #[educe(Default = Direction::StartToStop)]
     pub entry_point_direction: Direction,
     pub exit_point: Waypoint,
     #[schema(inline)]

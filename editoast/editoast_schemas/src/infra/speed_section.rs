@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use derivative::Derivative;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -17,16 +17,16 @@ editoast_common::schemas! {
     SpeedSection,
 }
 
-#[derive(Debug, Derivative, Clone, Serialize, PartialEq, Copy, ToSchema)]
+#[derive(Debug, Clone, Serialize, PartialEq, Copy, ToSchema)]
 pub struct Speed(pub f64);
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-#[derivative(Default)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[educe(Default)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedSection {
     #[schema(inline)]
     pub id: Identifier,
-    #[derivative(Default(value = "Some(Speed(80.))"))]
+    #[educe(Default = Some(Speed(80.)))]
     #[schema(inline)]
     pub speed_limit: Option<Speed>,
     #[schema(inline)]

@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -19,9 +18,8 @@ editoast_common::schemas! {
 /// In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
 ///
 /// For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
 pub struct NeutralSection {
     #[schema(inline)]
     pub id: Identifier,

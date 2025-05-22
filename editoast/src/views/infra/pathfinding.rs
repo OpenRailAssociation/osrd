@@ -5,9 +5,9 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use derivative::Derivative;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
+use educe::Educe;
 use pathfinding::prelude::yen;
 use serde::Deserialize;
 use serde::Serialize;
@@ -159,17 +159,17 @@ async fn pathfinding_view(
     Ok(Json(compute_path(&input, &infra_cache, &graph, number)))
 }
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Educe)]
+#[educe(Hash, Eq, PartialEq)]
 struct PathfindingStep {
     track: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     position: f64,
     direction: Direction,
     switch_direction: Option<(Identifier, Identifier)>,
     found: bool,
     starting_step: bool,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     previous: Option<Box<PathfindingStep>>,
     total_length: u64,
 }

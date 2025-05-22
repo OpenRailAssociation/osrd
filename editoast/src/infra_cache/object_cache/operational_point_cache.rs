@@ -1,8 +1,8 @@
-use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -11,11 +11,11 @@ use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::OperationalPoint;
 use editoast_schemas::infra::OperationalPointPart;
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
+#[derive(Debug, Clone, Educe)]
+#[educe(Hash, PartialEq)]
 pub struct OperationalPointCache {
     pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub parts: Vec<OperationalPointPartCache>,
 }
 
@@ -54,11 +54,11 @@ impl Cache for OperationalPointCache {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Educe, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default, PartialEq)]
+#[educe(Default, PartialEq)]
 pub struct OperationalPointPartCache {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[educe(Default = "InvalidRef".into())]
     pub track: Identifier,
     pub position: f64,
 }

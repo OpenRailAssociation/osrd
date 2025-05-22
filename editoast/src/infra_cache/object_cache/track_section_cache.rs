@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use editoast_schemas::infra::Curve;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Slope;
@@ -6,25 +5,26 @@ use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
+use educe::Educe;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq, Default)]
+#[derive(Debug, Clone, Educe)]
+#[educe(Hash, PartialEq, Default)]
 pub struct TrackSectionCache {
     pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub line_code: Option<i32>,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub length: f64,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub slopes: Vec<Slope>,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub curves: Vec<Curve>,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[educe(Hash(ignore), PartialEq(ignore))]
     pub bbox_geo: BoundingBox,
 }
 

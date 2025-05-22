@@ -10,7 +10,6 @@ use std::ops::DerefMut;
 
 use chrono::DateTime;
 use chrono::Utc;
-use derivative::Derivative;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::delete;
@@ -18,6 +17,7 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -55,10 +55,10 @@ editoast_common::schemas! {
 #[cfg(test)]
 pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
-#[derive(Debug, Clone, Derivative, Serialize, Deserialize, Model, utoipa::ToSchema)]
+#[derive(Debug, Clone, Educe, Serialize, Deserialize, Model, utoipa::ToSchema)]
 #[model(table = editoast_models::tables::infra)]
 #[model(gen(ops = crud, batch_ops = r, list))]
-#[derivative(Default)]
+#[educe(Default)]
 pub struct Infra {
     pub id: i64,
     pub name: String,
@@ -70,7 +70,7 @@ pub struct Infra {
     pub generated_version: Option<i64>,
     pub locked: bool,
     pub created: DateTime<Utc>,
-    #[derivative(Default(value = "Utc::now()"))]
+    #[educe(Default = Utc::now())]
     pub modified: DateTime<Utc>,
 }
 

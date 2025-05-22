@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use editoast_derive::Model;
 
 use super::Document;
@@ -19,9 +18,8 @@ use serde::Deserialize;
 ///
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 ///
-#[derive(Debug, Clone, Derivative, Model)]
+#[derive(Debug, Clone, Default, Model)]
 #[cfg_attr(test, derive(Deserialize))]
-#[derivative(Default)]
 #[model(table = editoast_models::tables::rolling_stock_livery)]
 #[model(gen(ops = crd, list))]
 pub struct RollingStockLivery {

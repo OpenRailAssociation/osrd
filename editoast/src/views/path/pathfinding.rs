@@ -15,13 +15,13 @@ use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
-use derivative::Derivative;
 use editoast_authz as authz;
 use editoast_authz::Role;
 use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
+use educe::Educe;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use serde::Deserialize;
@@ -163,12 +163,12 @@ impl From<PathfindingCoreResult> for PathfindingResult {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Derivative)]
-#[derivative(Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Educe)]
+#[educe(Default)]
 #[serde(tag = "failed_status", rename_all = "snake_case")]
 pub enum PathfindingFailure {
     PathfindingInputError(PathfindingInputError),
-    #[derivative(Default)]
+    #[educe(Default)]
     PathfindingNotFound(PathfindingNotFound),
     InternalError {
         core_error: InternalError,

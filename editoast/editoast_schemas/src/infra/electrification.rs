@@ -1,5 +1,4 @@
 use crate::primitives::NonBlankString;
-use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -14,9 +13,8 @@ editoast_common::schemas! {
     Electrification,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
 pub struct Electrification {
     #[schema(inline)]
     pub id: Identifier,
