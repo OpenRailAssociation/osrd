@@ -70,6 +70,52 @@
     "loadingMacroEditor": "Chargement de l'éditeur macroscopique…",
     "macroEditor": {
       "intervalXmin": "Intervalle {{minutes}}min",
+      "trainCategory": {
+        "COMMUTER_TRAIN": {
+          "name": "Train suburbain",
+          "shortName": "PU"
+        },
+        "FAST_FREIGHT_TRAIN": {
+          "name": "Train de fret rapide",
+          "shortName": "ME"
+        },
+        "FREIGHT_TRAIN": {
+          "name": "Train de fret",
+          "shortName": "MA"
+        },
+        "HIGH_SPEED_TRAIN": {
+          "name": "Train à grande vitesse",
+          "shortName": "GV"
+        },
+        "INTERCITY_TRAIN": {
+          "name": "Train interurbain",
+          "shortName": "IV"
+        },
+        "NIGHT_TRAIN": {
+          "name": "Train de nuit",
+          "shortName": "NT"
+        },
+        "NO_CATEGORY": {
+          "name": "Pas de catégorie",
+          "shortName": "NC"
+        },
+        "REGIONAL_TRAIN": {
+          "name": "Train régional",
+          "shortName": "MR"
+        },
+        "TOURISTIC_TRAIN": {
+          "name": "Train touristique",
+          "shortName": "TO"
+        },
+        "TRAM_TRAIN": {
+          "name": "Tram-train",
+          "shortName": "TT"
+        },
+        "WORK_TRAIN": {
+          "name": "Train de travaux",
+          "shortName": "TX"
+        }
+      },
       "uniqueTrainSchedule": "Train unique"
     },
     "macroscopic": "MACRO",

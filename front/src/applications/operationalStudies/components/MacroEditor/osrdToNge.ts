@@ -11,16 +11,18 @@ import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
-  DEFAULT_TRAINRUN_CATEGORY,
   TRAINRUN_LABEL_GROUP,
   DEFAULT_TIME_LOCK,
   DEFAULT_TRAINRUN_TIME_CATEGORIES,
+  OSRD_TRAINRUN_CATEGORY_MAPPING,
 } from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
 import {
   deleteMacroNodeByDbId,
   getDefaultTrainrunFrequencies,
+  getNetzgrafikColors,
   getSavedMacroNodes,
+  getTrainrunCategoryId,
   getTrainrunFrequencyFromTimetableItem,
   getTrainrunTimeCategoryFromFrequency,
 } from './utils';
@@ -32,6 +34,7 @@ import {
   type NetzgrafikDto,
   PortAlignment,
   type LabelDto,
+  type TrainrunCategory,
 } from '../NGE/types';
 
 /**
@@ -55,7 +58,7 @@ const getNgeTrainrunFrequencies = (
           order: 0, // temporary order
           frequency: intervalInMinutes,
           offset: 0,
-          name: t('main.macroEditor.intervalXmin', { minutes: intervalInMinutes }),
+          name: t('macroEditor.intervalXmin', { minutes: intervalInMinutes }),
           shortName: `${intervalInMinutes}`,
           linePatternRef: '60',
         };
@@ -177,6 +180,13 @@ const castNodeToNge = (
   ),
 });
 
+export const getTrainrunCategories = (t: TFunction<'operational-studies'>): TrainrunCategory[] =>
+  Array.from(OSRD_TRAINRUN_CATEGORY_MAPPING.entries()).map(([key, category]) => ({
+    ...category,
+    name: t(`macroEditor.trainCategory.${key}.name`),
+    shortName: t(`macroEditor.trainCategory.${key}.shortName`),
+  }));
+
 /**
  * Load & index the data of the timetableItem for the given scenario.
  */
@@ -249,6 +259,9 @@ export const loadAndIndexNge = async (
   // Initialize TrainrunFrequencies
   state.trainrunFrequencies = getNgeTrainrunFrequencies(state, t);
 
+  // Initialize TrainrunCategories
+  state.trainrunCategories = getTrainrunCategories(t);
+
   // Now that we have all nodes, we apply a layout
   applyLayout(state);
 };
@@ -265,7 +278,7 @@ const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
       return {
         id: index + 1,
         name: timetableItem.train_name,
-        categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
+        categoryId: getTrainrunCategoryId(timetableItem.category),
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
         labelIds: (timetableItem.labels || []).map((l) =>
@@ -456,8 +469,8 @@ export const getNgeDto = (state: MacroEditorState): NetzgrafikDto => {
     trainruns: getNgeTrainruns(state, labels),
     resources: [state.ngeResource],
     metadata: {
-      netzgrafikColors: [],
-      trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
+      netzgrafikColors: getNetzgrafikColors(),
+      trainrunCategories: state.trainrunCategories,
       trainrunFrequencies: state.trainrunFrequencies,
       trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
     },

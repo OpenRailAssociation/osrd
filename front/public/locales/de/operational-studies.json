@@ -66,6 +66,52 @@
     "lessDetails": "Weniger Details",
     "macroEditor": {
       "intervalXmin": "Intervall {{minutes}}min",
+      "trainCategory": {
+        "COMMUTER_TRAIN": {
+          "name": "S-Bahn",
+          "shortName": "VS"
+        },
+        "FAST_FREIGHT_TRAIN": {
+          "name": "Güterexpresszug",
+          "shortName": "GEX"
+        },
+        "FREIGHT_TRAIN": {
+          "name": "Güterzug",
+          "shortName": "G"
+        },
+        "HIGH_SPEED_TRAIN": {
+          "name": "Hochgeschwindigkeitszug",
+          "shortName": "HG"
+        },
+        "INTERCITY_TRAIN": {
+          "name": "Intercity Zug",
+          "shortName": "IC"
+        },
+        "NIGHT_TRAIN": {
+          "name": "Nachtzug",
+          "shortName": "N"
+        },
+        "NO_CATEGORY": {
+          "name": "Keine Kategorie",
+          "shortName": "NC"
+        },
+        "REGIONAL_TRAIN": {
+          "name": "Regional Zug",
+          "shortName": "SPNV"
+        },
+        "TOURISTIC_TRAIN": {
+          "name": "Touristenzug",
+          "shortName": "TO"
+        },
+        "TRAM_TRAIN": {
+          "name": "Tram-train",
+          "shortName": "TT"
+        },
+        "WORK_TRAIN": {
+          "name": "Bauzug",
+          "shortName": "B"
+        }
+      },
       "uniqueTrainSchedule": "Einzelner Zug"
     },
     "macroscopic": "MAKRO",

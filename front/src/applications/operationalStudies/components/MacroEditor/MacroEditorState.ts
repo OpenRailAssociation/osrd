@@ -7,7 +7,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 
-import type { TrainrunFrequency } from '../NGE/types';
+import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
@@ -49,6 +49,11 @@ export default class MacroEditorState {
   trainrunFrequencies: TrainrunFrequency[];
 
   /**
+   * Available trainrun categories with i18n labels.
+   */
+  trainrunCategories: TrainrunCategory[];
+
+  /**
    * Storing labels for nodes
    */
   nodeLabels: Set<string>;
@@ -81,6 +86,7 @@ export default class MacroEditorState {
     this.scenario = scenario;
     this.timetableItems = timetableItems;
     this.trainrunFrequencies = [];
+    this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: this.timetableItems.length };
     this.timetableItemIdByNgeId = new Map<number, TimetableItemId>();
   }

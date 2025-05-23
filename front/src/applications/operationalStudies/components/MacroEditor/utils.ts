@@ -6,6 +6,7 @@ import {
   type MacroNodeResponse,
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
+  type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -19,6 +20,9 @@ import {
   UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
   TRAIN_SCHEDULE_FREQUENCY_ID,
   DEFAULT_TRAINRUN_FREQUENCIES,
+  NETZGRAFIK_COLOR_PALETTE,
+  CATEGORY_COLOR_VARIANTS,
+  OSRD_TRAINRUN_CATEGORY_MAPPING,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
@@ -186,8 +190,8 @@ export const getDefaultTrainrunFrequencies = (
     ...freq,
     name:
       freq.id === TRAIN_SCHEDULE_FREQUENCY_ID
-        ? t('main.macroEditor.uniqueTrainSchedule')
-        : t('main.macroEditor.intervalXmin', { minutes: freq.frequency }),
+        ? t('macroEditor.uniqueTrainSchedule')
+        : t('macroEditor.intervalXmin', { minutes: freq.frequency }),
   }));
 
 /**
@@ -238,3 +242,30 @@ export const getTrainrunFrequencyFromTimetableItem = (
   }
   return trainrunFrequency;
 };
+
+export const getNetzgrafikColors = () =>
+  Object.entries(NETZGRAFIK_COLOR_PALETTE).map(([colorRef, baseColor], index) => ({
+    id: index,
+    colorRef,
+    color: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+    colorFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
+    colorMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
+    colorRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+    colorDarkMode: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+    colorDarkModeFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
+    colorDarkModeMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
+    colorDarkModeRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+  }));
+
+export const getTrainCategoryFromId = (id: number): TrainCategory | null => {
+  for (const key of OSRD_TRAINRUN_CATEGORY_MAPPING.keys()) {
+    if (OSRD_TRAINRUN_CATEGORY_MAPPING.get(key)!.id === id) {
+      return key !== 'NO_CATEGORY' ? key : null;
+    }
+  }
+  throw new Error(`Unknown train category id: ${id}`);
+};
+
+// If the categoryKey is null or undefined, we return the ID for 'NO_CATEGORY'
+export const getTrainrunCategoryId = (categoryKey?: TrainCategory | null) =>
+  OSRD_TRAINRUN_CATEGORY_MAPPING.get(categoryKey || 'NO_CATEGORY')!.id;

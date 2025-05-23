@@ -1,4 +1,4 @@
-import type { PacedTrain } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, TrainCategory } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import type {
@@ -159,3 +159,90 @@ export const DEFAULT_PACED_TRAIN_PAYLOAD: Pick<
 };
 
 export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });
+
+const TRAIN_CATEGORY_TO_NGE: {
+  trainCategory: TrainCategory | 'NO_CATEGORY';
+  colorRef: string;
+}[] = [
+  { trainCategory: 'HIGH_SPEED_TRAIN', colorRef: 'HST' },
+  { trainCategory: 'INTERCITY_TRAIN', colorRef: 'IC' },
+  { trainCategory: 'REGIONAL_TRAIN', colorRef: 'RE' },
+  { trainCategory: 'COMMUTER_TRAIN', colorRef: 'S' },
+  { trainCategory: 'FREIGHT_TRAIN', colorRef: 'F' },
+  { trainCategory: 'FAST_FREIGHT_TRAIN', colorRef: 'FF' },
+  { trainCategory: 'TRAM_TRAIN', colorRef: 'TT' },
+  { trainCategory: 'WORK_TRAIN', colorRef: 'W' },
+  { trainCategory: 'NIGHT_TRAIN', colorRef: 'NT' },
+  { trainCategory: 'TOURISTIC_TRAIN', colorRef: 'TO' },
+  { trainCategory: 'NO_CATEGORY', colorRef: 'NC' },
+];
+
+export const OSRD_TRAINRUN_CATEGORY_MAPPING = new Map<
+  TrainCategory | 'NO_CATEGORY',
+  TrainrunCategory
+>();
+
+TRAIN_CATEGORY_TO_NGE.forEach(({ trainCategory, colorRef }, index) => {
+  OSRD_TRAINRUN_CATEGORY_MAPPING.set(trainCategory, {
+    id: index + 1,
+    order: index + 1,
+    name: trainCategory,
+    shortName: '',
+    fachCategory: 'HaltezeitUncategorized',
+    colorRef,
+    minimalTurnaroundTime: 0,
+    nodeHeadwayStop: 0,
+    nodeHeadwayNonStop: 0,
+    sectionHeadway: 0,
+  });
+});
+
+export const NETZGRAFIK_COLOR_PALETTE = {
+  HST: 'red',
+  IC: 'purple',
+  RE: 'orange',
+  S: 'blue',
+  F: 'green',
+  FF: 'mint',
+  TT: 'black',
+  W: 'yellow',
+  NT: 'pink',
+  TO: 'brown',
+  NC: 'grey',
+} as const;
+
+export const CATEGORY_COLOR_VARIANTS = {
+  red10: '#fae7e6',
+  red50: '#e5221a',
+  red70: '#a62924',
+  purple10: '#fae6f6',
+  purple50: '#b2539e',
+  purple70: '#732963',
+  orange10: '#ffe7d6',
+  orange50: '#c75300',
+  orange70: '#943e00',
+  blue10: '#e0ecff',
+  blue50: '#506ae3',
+  blue70: '#314297',
+  green10: '#e4eddf',
+  green50: '#54823b',
+  green70: '#2c4f19',
+  mint10: '#daf7ee',
+  mint50: '#13857b',
+  mint70: '#085953',
+  black10: '#D9D9D9',
+  black50: '#808080',
+  black70: '#1A1A1A',
+  yellow10: '#fff2cc',
+  yellow50: '#996e00',
+  yellow70: '#705400',
+  pink10: '#ffe8f2',
+  pink50: '#e02271',
+  pink70: '#9a2053',
+  brown10: '#eee7d9',
+  brown50: '#8a714b',
+  brown70: '#6b532e',
+  grey10: '#ebebea',
+  grey50: '#797671',
+  grey70: '#494641',
+} as const;
