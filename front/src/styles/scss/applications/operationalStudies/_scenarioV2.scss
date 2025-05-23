@@ -83,15 +83,9 @@
           min-width: 0;
         }
 
-        .chevron-container {
-          display: flex;
-          align-items: center;
-          height: 100%;
-
-          .chevron-btn {
-            padding: 4px;
-            color: var(--black25);
-          }
+        .chevron-btn {
+          padding: 4px;
+          color: var(--black25);
         }
 
         &:hover {
@@ -185,7 +179,7 @@
     }
 
     // START HANDLE SCENARIO NAME AND USER NAME HOVER WHEN TRUNCATED
-    &:has(.scenario-name-label.is-truncated:hover) {
+    &:has(.scenario-name-container:hover .scenario-name-label.is-truncated) {
       .scenario-info {
         flex: 2;
       }
