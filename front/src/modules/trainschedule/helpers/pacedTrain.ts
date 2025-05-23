@@ -6,7 +6,7 @@ import {
   isIndexedOccurrenceId,
 } from 'utils/trainId';
 
-import type { OccurrenceException, PacedTrainWithDetails } from '../components/Timetable/types';
+import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../components/Timetable/types';
 
 export const getOccurrencesNb = ({ timeWindow, interval }: PacedTrainWithDetails['paced']) => {
   if (interval.ms === 0) {
@@ -33,7 +33,7 @@ export const findExceptionWithOccurrenceId = (
 
 export const formatPacedTrainWithOccurenceDetails = (
   pacedTrain: PacedTrainWithDetails,
-  exceptions: OccurrenceException
+  exceptions: ExceptionChangeGroups
 ) => {
   const updatedPacedTrain: PacedTrainWithDetails & { rollingStockName?: string } = pacedTrain;
   if (exceptions.train_name) {

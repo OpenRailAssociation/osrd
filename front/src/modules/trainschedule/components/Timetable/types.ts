@@ -85,7 +85,7 @@ export type TimetableFilters = {
   setTrainCategoryFilter: (categoryOption: TrainCategoryFilter) => void;
 };
 
-export type OccurrenceException = Omit<
+export type ExceptionChangeGroups = Omit<
   PacedTrainException,
   'key' | 'occurrence_index' | 'disabled'
 >;
@@ -102,7 +102,7 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exceptions?: OccurrenceException;
+  exceptions?: ExceptionChangeGroups;
 } & (
   | {
       isValid: true;
@@ -114,4 +114,4 @@ export type Occurrence = {
   | { isValid: false; invalidReason?: InvalidReason }
 );
 
-export type ExceptionChangeGroupName = keyof OccurrenceException;
+export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
