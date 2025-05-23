@@ -1,4 +1,5 @@
 # --- CI - CODEOWNERS - Dependabot - Template ---
+/.gitattributes                                          @openrailassociation/OSRD-DevOps
 /.github                                                 @openrailassociation/OSRD-DevOps
 /.github/CODEOWNERS                                      @openrailassociation/OSRD-Admins
 /*.md                                                    @openrailassociation/OSRD-Admins
