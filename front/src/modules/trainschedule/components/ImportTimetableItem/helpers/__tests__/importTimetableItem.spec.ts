@@ -5,6 +5,7 @@ import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import { buildSteps } from '../buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from '../findMostFrequentXmlSchedule';
+import { getMostFrequentInterval } from '../parseXML';
 
 describe('buildSteps', () => {
   const parser = new DOMParser();
@@ -70,11 +71,12 @@ describe('buildSteps', () => {
 
 function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule {
   const baseDate = new Date('2025-01-01T08:00:00');
+  const departureDate = new Date(baseDate.getTime() + timeOffsetSeconds * 1000);
 
   return {
     train_name: id,
     rolling_stock_name: '27000US',
-    start_time: baseDate.toISOString(),
+    start_time: departureDate.toISOString(),
     constraint_distribution: 'STANDARD',
     path: [
       {
@@ -107,7 +109,9 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
   it('returns the most frequently occurring schedule', () => {
     const s1 = buildSchedule('s1');
     const s2 = buildSchedule('s2');
-    const s3 = buildSchedule('s3', 10); // different timing
+    const s3 = {
+      ...buildSchedule('s3', 600), // different timing
+    };
 
     const result = findMostFrequentScheduleInPacedTrain([s1, s2, s3]);
 
@@ -146,5 +150,53 @@ describe('findMostFrequentScheduleInPacedTrain', () => {
 
     expect(result.mostFrequent?.train_name).toBe('s1');
     expect(result.highestCount).toBe(2);
+  });
+});
+
+describe('getMostFrequentInterval', () => {
+  it('returns 60 min when 60 and 120 are equally frequent', () => {
+    const schedules: TrainSchedule[] = [
+      buildSchedule('s1', 0),
+      buildSchedule('s2', 3600),
+      buildSchedule('s3', 10800),
+      buildSchedule('s4', 14400),
+      buildSchedule('s5', 21600),
+    ];
+
+    const result = getMostFrequentInterval(schedules);
+    expect(result.total('minute')).toBe(60);
+  });
+
+  it('returns 120 if it’s the only frequent candidate', () => {
+    const schedules = [
+      buildSchedule('s1', 0),
+      buildSchedule('s2', 7200),
+      buildSchedule('s3', 14400),
+    ];
+    const result = getMostFrequentInterval(schedules);
+    expect(result.total('minute')).toBe(120);
+  });
+
+  it('returns the greatest interval if no preferred match', () => {
+    const schedules = [
+      buildSchedule('s1', 0),
+      buildSchedule('s2', 300),
+      buildSchedule('s3', 600),
+      buildSchedule('s4', 900),
+      buildSchedule('s5', 2100),
+    ];
+    const result = getMostFrequentInterval(schedules);
+    expect(result.total('minute')).toBe(5);
+  });
+
+  it('returns 30 if it is the most frequent', () => {
+    const schedules = [
+      buildSchedule('s1', 0),
+      buildSchedule('s2', 1800),
+      buildSchedule('s3', 3600),
+      buildSchedule('s4', 7200),
+    ];
+    const result = getMostFrequentInterval(schedules);
+    expect(result.total('minute')).toBe(30);
   });
 });
