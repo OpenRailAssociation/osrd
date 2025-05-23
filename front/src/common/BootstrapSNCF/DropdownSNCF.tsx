@@ -1,6 +1,5 @@
 import { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
 
-import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';
 
 export const DROPDOWN_STYLE_TYPES = {
@@ -10,7 +9,7 @@ export const DROPDOWN_STYLE_TYPES = {
 
 type DropdownSNCFProps = {
   titleContent: ReactNode;
-  items?: ReactNode[];
+  items?: { node: ReactNode; key: string }[];
   type?: string;
   className?: string;
   noArrow?: boolean;
@@ -25,17 +24,17 @@ const DropdownSNCF = ({
 }: DropdownSNCFProps) => {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const targetRef = useRef<HTMLDivElement>(null);
-  const itemNode = items.map((item) => (
+  const itemNode = items.map(({ node, key }) => (
     <li
       className="dropdown-item"
-      key={`item-${nextId()}`}
+      key={key}
       // Make it better some day :-/
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
       role="button"
       tabIndex={0}
       onClick={() => setIsDropdownShown(false)}
     >
-      {item}
+      {node}
     </li>
   ));
 

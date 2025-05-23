@@ -116,57 +116,80 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
             type={DROPDOWN_STYLE_TYPES.transparent}
             items={[
               // Button to open modal displaying release version
-              <button
-                type="button"
-                className="btn-link text-reset"
-                onClick={() => openModal(<ReleaseInformations />, 'lg')}
-                key="release"
-              >
-                <span className="mr-2">
-                  <Info />
-                </span>
-                {t('nav-bar.about')}
-              </button>,
-              <button
-                type="button"
-                className="btn-link text-reset"
-                onClick={() => openModal(<HelpModalSNCF />, 'lg')}
-                key="help"
-              >
-                <span className="mr-2">
-                  <Report />
-                </span>
-                {t('nav-bar.help')}
-              </button>,
-              <button
-                type="button"
-                className="btn-link text-reset"
-                onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
-                key="release"
-              >
-                <span className="mr-2">
-                  {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
-                </span>
-                <span data-testid="language-info">{t(`nav-bar.language.${i18n.language}`)} </span>
-              </button>,
-              <button
-                data-testid="user-settings-btn"
-                type="button"
-                className="user-settings-btn btn-link text-reset"
-                onClick={() => openModal(<UserSettings />)}
-                key="release"
-              >
-                <span className="mr-2">
-                  <Gear variant="fill" />
-                </span>
-                {t('nav-bar.userSettings')}
-              </button>,
-              <button type="button" className="btn-link text-reset" onClick={logout} key="logout">
-                <span className="mr-2">
-                  <SignOut />
-                </span>
-                {t('nav-bar.disconnect')}
-              </button>,
+              {
+                node: (
+                  <button
+                    type="button"
+                    className="btn-link text-reset"
+                    onClick={() => openModal(<ReleaseInformations />, 'lg')}
+                  >
+                    <span className="mr-2">
+                      <Info />
+                    </span>
+                    {t('nav-bar.about')}
+                  </button>
+                ),
+                key: 'about',
+              },
+              {
+                node: (
+                  <button
+                    type="button"
+                    className="btn-link text-reset"
+                    onClick={() => openModal(<HelpModalSNCF />, 'lg')}
+                  >
+                    <span className="mr-2">
+                      <Report />
+                    </span>
+                    {t('nav-bar.help')}
+                  </button>
+                ),
+                key: 'help',
+              },
+              {
+                node: (
+                  <button
+                    type="button"
+                    className="btn-link text-reset"
+                    onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
+                  >
+                    <span className="mr-2">
+                      {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
+                    </span>
+                    <span data-testid="language-info">
+                      {t(`nav-bar.language.${i18n.language}`)}{' '}
+                    </span>
+                  </button>
+                ),
+                key: 'language',
+              },
+              {
+                node: (
+                  <button
+                    data-testid="user-settings-btn"
+                    type="button"
+                    className="user-settings-btn btn-link text-reset"
+                    onClick={() => openModal(<UserSettings />)}
+                  >
+                    <span className="mr-2">
+                      <Gear variant="fill" />
+                    </span>
+                    {t('nav-bar.userSettings')}
+                  </button>
+                ),
+                key: 'user-settings',
+              },
+              {
+                node: (
+                  <button type="button" className="btn-link text-reset" onClick={logout}>
+                    <span className="mr-2">
+                      <SignOut />
+                    </span>
+                    {t('nav-bar.disconnect')}
+                  </button>
+                ),
+                key: 'sign-out',
+              },
             ]}
           />
           {impersonatedUser && (
