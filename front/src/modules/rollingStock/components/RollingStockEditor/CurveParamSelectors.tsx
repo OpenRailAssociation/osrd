@@ -85,6 +85,7 @@ const CurveParamSelectors = ({
   setHoveredItem,
 }: RollingStockEditorCurvesProps) => {
   const { t } = useTranslation();
+  const { t: rollingStockT } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   const { openModal } = useModal();
 
   const { data: availableModes } = osrdEditoastApi.endpoints.getInfraVoltages.useQuery();
@@ -108,7 +109,7 @@ const CurveParamSelectors = ({
   const comfortOptions = useMemo(() => {
     const { comfortLevels: alreadySelectedComforts } = rollingstockParams;
     return COMFORTS.filter((comfort) => !alreadySelectedComforts.includes(comfort)).map(
-      (comfort) => ({ id: comfort, label: t(`comfortTypes.${comfort}`) })
+      (comfort) => ({ id: comfort, label: t(`rollingStock.comfortTypes.${comfort}`) })
     );
   }, [rollingstockParams.comfortLevels]);
 
@@ -118,7 +119,7 @@ const CurveParamSelectors = ({
       .filter((mode) => !alreadySelectedModes.includes(mode))
       .map((tractionMode) => ({
         id: tractionMode,
-        label: t(tractionMode),
+        label: rollingStockT(tractionMode, { defaultValue: tractionMode }),
       }));
   }, [availableModes, rollingstockParams.tractionModes]);
 
@@ -230,7 +231,7 @@ const CurveParamSelectors = ({
     if (value === null) return;
     openModal(
       <RollingStockEditorFormModal
-        mainText={t(`delete.${title}`)}
+        mainText={t(`rollingStock.delete.${title}`)}
         request={() =>
           title === 'tractionMode' ? removeTractionMode(value) : removeAnotherRsParam(title, value)
         }
@@ -253,7 +254,11 @@ const CurveParamSelectors = ({
       <div className="selector-container">
         <Selector
           title={t('rollingStock.comfortLevels')}
-          displayedItems={translateItemsList(t, rollingstockParams.comfortLevels, 'comfortTypes')}
+          displayedItems={translateItemsList(
+            rollingStockT,
+            rollingstockParams.comfortLevels,
+            'comfortTypes'
+          )}
           selectedItem={selectedComfortLvl}
           permanentItems={[STANDARD_COMFORT_LEVEL]}
           onItemSelected={(item: Comfort) => {
@@ -273,7 +278,7 @@ const CurveParamSelectors = ({
       <div className="selector-container">
         <Selector
           title={t('rollingStock.tractionModes')}
-          displayedItems={translateItemsList(t, rollingstockParams.tractionModes)}
+          displayedItems={translateItemsList(rollingStockT, rollingstockParams.tractionModes)}
           selectedItem={selectedTractionMode || undefined}
           onItemSelected={(item: string | null) => {
             selectedParamsSetter('tractionMode', item);
@@ -295,7 +300,10 @@ const CurveParamSelectors = ({
           <div className="selector-container">
             <Selector
               title={t('rollingStock.electricalProfiles')}
-              displayedItems={translateItemsList(t, rollingstockParams.electricalProfiles)}
+              displayedItems={translateItemsList(
+                rollingStockT,
+                rollingstockParams.electricalProfiles
+              )}
               selectedItem={selectedElectricalProfile}
               onItemSelected={(item: string | null) => {
                 selectedParamsSetter('electricalProfile', item);
@@ -314,7 +322,10 @@ const CurveParamSelectors = ({
           <div className="selector-container">
             <Selector
               title={t('rollingStock.powerRestrictions')}
-              displayedItems={translateItemsList(t, rollingstockParams.powerRestrictions)}
+              displayedItems={translateItemsList(
+                rollingStockT,
+                rollingstockParams.powerRestrictions
+              )}
               selectedItem={selectedPowerRestriction}
               onItemSelected={(item: string | null) => {
                 selectedParamsSetter('powerRestriction', item);
