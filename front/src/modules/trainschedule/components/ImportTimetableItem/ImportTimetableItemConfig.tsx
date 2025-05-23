@@ -22,6 +22,10 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
+import {
+  generateTrainSchedulesPayloads,
+  generatePacedTrainPayloads,
+} from './generateTrainSchedulesPayloads';
 import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
 import { findMostFrequentScheduleInPacedTrain } from './helpers/findMostFrequentXmlSchedule';
 import {
@@ -39,16 +43,12 @@ interface ImportTimetableItemConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
-  setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
-  setPacedTrainsXmlData: (pacedTrainsXmlData: ImportedPacedTrainSchedule[]) => void;
 }
 
 const ImportTimetableItemConfig = ({
   setTrainsList,
   setIsLoading,
   setTrainsJsonData,
-  setTrainsXmlData,
-  setPacedTrainsXmlData,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -151,7 +151,6 @@ const ImportTimetableItemConfig = ({
     setTrainsList([]);
     setIsLoading(true);
     setTrainsJsonData({ train_schedules: [], paced_trains: [] });
-    setTrainsXmlData([]);
 
     const result = await getGraouTrainSchedules(config);
     const importedTrainSchedules = validateImportedTrainSchedules(result!);
@@ -406,8 +405,6 @@ const ImportTimetableItemConfig = ({
       )
       .filter((pacedTrain) => pacedTrain !== null);
 
-    setPacedTrainsXmlData(importedPacedTrains);
-
     const trains = Array.from(xmlDoc.getElementsByTagName('train'));
     const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
     const trainSchedulesInPacedTrain = new Set(
@@ -419,7 +416,11 @@ const ImportTimetableItemConfig = ({
     const singleTrainSchedules = trainSchedules.filter(
       (schedule) => !trainSchedulesInPacedTrain.has(schedule.trainNumber)
     );
-    setTrainsXmlData(singleTrainSchedules);
+
+    setTrainsJsonData({
+      train_schedules: generateTrainSchedulesPayloads(singleTrainSchedules),
+      paced_trains: generatePacedTrainPayloads(importedPacedTrains),
+    });
 
     return updatedTrainSchedules;
   };
@@ -433,10 +434,7 @@ const ImportTimetableItemConfig = ({
       throw new Error('Invalid XML');
     }
 
-    const importedTrainSchedules = await parseXML(xmlDoc);
-    if (importedTrainSchedules && importedTrainSchedules.length > 0) {
-      updateTrainSchedules(importedTrainSchedules);
-    }
+    await parseXML(xmlDoc);
   };
 
   const importFile = async (file: File) => {
