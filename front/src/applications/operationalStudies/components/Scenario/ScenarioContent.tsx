@@ -22,7 +22,11 @@ import { Loader } from 'common/Loaders';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemId,
+  TimetableItem,
+  TimetableItemToEditData,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -49,7 +53,7 @@ const ScenarioContent = ({
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
-  const [itemIdToEdit, setItemIdToEdit] = useState<TimetableItemId>();
+  const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
   const [isMacro, setIsMacro] = useState(false);
   const {
     timetableItemsWithDetails,
@@ -180,8 +184,8 @@ const ScenarioContent = ({
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     upsertTimetableItems={upsertTimetableItemsWithNge}
                     removeTimetableItems={removeTimetableItemsWithNge}
-                    itemIdToEdit={itemIdToEdit}
-                    setItemIdToEdit={setItemIdToEdit}
+                    timetableItemToEditData={timetableItemToEditData}
+                    setTimetableItemToEditData={setTimetableItemToEditData}
                     infraState={infra.state}
                   />
                 )}
@@ -191,8 +195,8 @@ const ScenarioContent = ({
                   conflicts={conflicts}
                   upsertTimetableItems={upsertTimetableItemsWithNge}
                   removeTimetableItems={removeTimetableItemsWithNge}
-                  setItemIdToEdit={setItemIdToEdit}
-                  itemIdToEdit={itemIdToEdit}
+                  setTimetableItemToEditData={setTimetableItemToEditData}
+                  timetableItemToEditData={timetableItemToEditData}
                   timetableItems={timetableItems}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                 />
