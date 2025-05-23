@@ -2,8 +2,11 @@ name: Publish Helm Chart to GHCR
 
 on:
   release:
-    types:
-      - created
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        required: true
 
 jobs:
   release:
@@ -18,7 +21,11 @@ jobs:
       - name: Set Name and Version
         run: |
           CHART_NAME="osrd"
-          CHART_VERSION="${{ github.event.release.tag_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CHART_VERSION="${{ github.event.inputs.tag_name }}"
+          else
+            CHART_VERSION="${{ github.event.release.tag_name }}"
+          fi
           echo "CHART_NAME=$CHART_NAME" >> $GITHUB_ENV
           echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
           sed -i "s/NAME_REPLACE_ME/$CHART_NAME/" ./chart/Chart.yaml
