@@ -3,28 +3,26 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import type { Grant, PrivilegesByGrant, ResourceType } from 'common/api/mock/mockEditoastApi';
 import { GRANTS_LABEL } from 'common/authorization/consts';
 import { capitalizeFirstLetter } from 'utils/strings';
 
+import type { Grant, Privilege, ResourceType } from '../types';
 import GrantsManagerSubjects from './GrantsManagerSubjects';
 
 type GrantsManagerProps = {
   resourceId: number;
   resourceType: ResourceType;
-  userGrant: Grant;
-  privilegesByGrant?: PrivilegesByGrant;
+  userGrant?: Grant;
+  userPrivileges?: Set<Privilege>;
+  onChangeSuccess?: (subjectId: number, grant?: Grant) => void | Promise<void>;
 };
 
 const GrantsManager = ({
   resourceId,
   resourceType,
   userGrant,
-  privilegesByGrant = {
-    READER: [],
-    WRITER: [],
-    OWNER: [],
-  },
+  userPrivileges = new Set(),
+  onChangeSuccess,
 }: GrantsManagerProps) => {
   const { t } = useTranslation();
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
@@ -40,9 +38,8 @@ const GrantsManager = ({
       <div className="grant-manager-header">
         <span className="user-grant">
           {t('authorization.yourGrant', {
-            // TODO: remove the fallback when the backend is ready, we won't have access to resources without grant
             grant: capitalizeFirstLetter(
-              t(`authorization.grants.${GRANTS_LABEL[userGrant] || 'none'}`)
+              t(`authorization.grants.${GRANTS_LABEL[userGrant || 'NONE']}`)
             ),
           })}
         </span>
@@ -69,8 +66,8 @@ const GrantsManager = ({
         <GrantsManagerSubjects
           resourceId={resourceId}
           resourceType={resourceType}
-          userGrant={userGrant}
-          privilegesByGrant={privilegesByGrant}
+          userPrivileges={userPrivileges}
+          onChangeSuccess={onChangeSuccess}
         />
       )}
     </div>

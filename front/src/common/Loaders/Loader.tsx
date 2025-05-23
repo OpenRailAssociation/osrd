@@ -32,6 +32,31 @@ export const Spinner = ({ displayDelay, ...props }: SpinnerProps) => {
   );
 };
 
+export const ThreeDots = ({ displayDelay, ...props }: SpinnerProps) => {
+  const [display, setDisplay] = useState(false);
+  const timeoutRef = useRef<null | number>(null);
+
+  useEffect(() => {
+    if (displayDelay) {
+      setDisplay(false);
+      timeoutRef.current = window.setTimeout(() => setDisplay(true), displayDelay);
+    } else setDisplay(true);
+
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, [displayDelay, timeoutRef]);
+
+  if (!display) return null;
+  return (
+    <div {...props} className={cx('infra-loading-state', props.className)} role="status">
+      <span className="infra-loader">•</span>
+      <span className="infra-loader">•</span>
+      <span className="infra-loader">•</span>
+    </div>
+  );
+};
+
 export const LoaderFill = ({ className, ...props }: SpinnerProps) => (
   <Spinner {...props} className={cx(`loader-fill inset-0`, className)} />
 );

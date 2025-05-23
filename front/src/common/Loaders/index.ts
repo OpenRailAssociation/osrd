@@ -1,1 +1,1 @@
-export { Loader, LoaderFill, LoaderState, Spinner } from './Loader';
+export { Loader, LoaderFill, LoaderState, ThreeDots, Spinner } from './Loader';

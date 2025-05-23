@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 
 import type { Role } from 'common/api/osrdEditoastApi';
 
-import useUserRoleCheck from '../hooks/useUserRoleCheck';
+import useCheckUserRole from '../hooks/useCheckUserRole';
 
 type ProtectedRouteProps = {
   allowedRoles: Role[];
@@ -10,7 +10,7 @@ type ProtectedRouteProps = {
 };
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
-  const isRoleAllowed = useUserRoleCheck(allowedRoles);
+  const isRoleAllowed = useCheckUserRole(allowedRoles);
 
   if (!isRoleAllowed) {
     return <Navigate to="/403" />;

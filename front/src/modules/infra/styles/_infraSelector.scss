@@ -279,6 +279,9 @@
       &:active {
         background-color: var(--coolgray3);
       }
+      &:disabled {
+        opacity: 0.5;
+      }
       &.waiting {
         width: 128px;
       }

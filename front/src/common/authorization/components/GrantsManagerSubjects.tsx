@@ -1,44 +1,39 @@
 import { useState } from 'react';
 
-import { ComboBox, Select } from '@osrd-project/ui-core';
-import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { Grant, PrivilegesByGrant, ResourceType } from 'common/api/mock/mockEditoastApi';
 import generateGrantSelectProps from 'common/authorization/utils/generateGrantSelectProps';
-import useSearchUsers, { type UserWithPendingGrant } from 'common/useSearchUsers';
+import { LoaderFill } from 'common/Loaders';
 
-import useSubjectsResourceGrants from '../hooks/useSubjectsResourceGrants';
+import useAuthz from '../hooks/useAuthz';
+import useResourceListSubjects from '../hooks/useResourceListUser';
+import type { Grant, Privilege, ResourceType } from '../types';
+import GrantManagerAddSubjectForm from './GrantManagerAddSubjectForm';
+import GrantsManagerSubject from './GrantsManagerSubject';
 
 type GrantsManagerSubjectsProps = {
   resourceId: number;
   resourceType: ResourceType;
-  userGrant: Grant;
-  privilegesByGrant: PrivilegesByGrant;
+  userPrivileges?: Set<Privilege>;
+  onChangeSuccess?: (subjectId: number, grant?: Grant) => void | Promise<void>;
 };
 
 const GrantsManagerSubjects = ({
   resourceId,
   resourceType,
-  userGrant,
-  privilegesByGrant,
+  userPrivileges = new Set(),
+  onChangeSuccess,
 }: GrantsManagerSubjectsProps) => {
   const { t } = useTranslation();
+  const { userId, updateGrant } = useAuthz();
   const [displayUserSearchSection, setDisplayUserSearchSection] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserWithPendingGrant[number]>();
 
-  const { usersGrants, updateUserGrant } = useSubjectsResourceGrants({
-    resourceId,
-    resourceType,
-  });
-
-  const { searchedUsers, setSearchTerm, resetSuggestions } = useSearchUsers();
+  const { loading, subjects, refetch } = useResourceListSubjects(resourceType, resourceId);
 
   const generateSelectProps = (selectedUserGrant?: Grant) =>
     generateGrantSelectProps({
-      privilegesByGrant,
       subjectGrant: selectedUserGrant,
-      connectedUserGrant: userGrant,
+      userPrivileges,
       t,
     });
 
@@ -53,77 +48,33 @@ const GrantsManagerSubjects = ({
           {!displayUserSearchSection ? t('authorization.addGrantToUser') : t('common.cancel')}
         </button>
         {displayUserSearchSection && (
-          <>
-            <div className="subject-search-section">
-              <span className="subject-search-combobox">
-                <ComboBox
-                  id="add-user-combobox"
-                  value={selectedUser}
-                  suggestions={searchedUsers}
-                  getSuggestionLabel={(option) => option.name}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onSelectSuggestion={(suggestion) => setSelectedUser(suggestion)}
-                  resetSuggestions={() => {}}
-                  autoComplete="off"
-                  narrow
-                />
-              </span>
-              <span className="subject-select">
-                <Select
-                  id="add-user-grant-selector"
-                  getOptionLabel={(option) => option.label}
-                  getOptionValue={(option) => option.value || ''}
-                  onChange={(option) => {
-                    setSelectedUser((prev) =>
-                      prev && option?.value
-                        ? {
-                            ...prev,
-                            grant: option?.value,
-                          }
-                        : undefined
-                    );
-                  }}
-                  {...generateSelectProps(selectedUser?.grant)}
-                  narrow
-                />
-              </span>
-            </div>
-            <button
-              type="button"
-              className="subject-search-add-button"
-              onClick={() => {
-                if (selectedUser) {
-                  updateUserGrant(selectedUser.id, selectedUser.grant);
-                  resetSuggestions();
-                  setSelectedUser(undefined);
-                }
-                setDisplayUserSearchSection(false);
-              }}
-            >
-              {t('common.add')}
-            </button>
-          </>
+          <GrantManagerAddSubjectForm
+            grants={generateSelectProps().options}
+            onSubmit={async (user, grant) => {
+              await updateGrant(resourceType, resourceId, user.id, grant);
+              setDisplayUserSearchSection(false);
+              // update the list of subjects
+              await refetch();
+            }}
+          />
         )}
       </div>
 
       <div className="subject-list">
-        {usersGrants?.map(({ id, name, grant }, index) => (
-          <div className="subject-card" key={id}>
-            <span className={cx('subject-name', { bold: index === 0 })}>{name}</span>
-            <span className="subject-select">
-              <Select
-                id={`${id}-${name}`}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.value || ''}
-                onChange={(option) => {
-                  if (option?.value) updateUserGrant(id, option.value);
-                }}
-                {...generateSelectProps(grant)}
-                narrow
-              />
-            </span>
-          </div>
+        {subjects?.map(({ grant, ...subject }) => (
+          <GrantsManagerSubject
+            key={`${subject.id}-${grant}`}
+            subject={subject}
+            subjectGrant={grant}
+            userId={userId}
+            userPrivileges={userPrivileges}
+            onChange={async (value?: Grant) => {
+              await updateGrant(resourceType, resourceId, subject.id, value);
+              onChangeSuccess?.(subject.id, value);
+            }}
+          />
         ))}
+        {loading && <LoaderFill />}
       </div>
     </>
   );

@@ -20,7 +20,7 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
-import useCheckPrivileges from 'common/authorization/hooks/useCheckPrivileges';
+import useCheckUserPrivileges from 'common/authorization/hooks/useCheckUserPrivileges';
 import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
@@ -124,7 +124,7 @@ const Editor = () => {
   const protectedActionHook = useProtectedAction({
     resourceType: 'infra',
     resourceId: infraID,
-    requiredPrivileges: ['can_write'],
+    privileges: ['can_write'],
   });
 
   const protectedAction = useCallback(
@@ -132,10 +132,10 @@ const Editor = () => {
     [protectedActionHook]
   );
 
-  const userCanEditInfra = useCheckPrivileges({
+  const userCanEditInfra = useCheckUserPrivileges({
     resourceType: 'infra',
     resourceId: infraID,
-    requiredPrivileges: ['can_write'],
+    privileges: ['can_write'],
   });
 
   const context = useMemo<EditorContextType<CommonToolState>>(

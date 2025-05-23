@@ -3,20 +3,19 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDebounce } from 'utils/helpers';
 
 import type { SearchResultItemUser } from './api/generatedEditoastApi';
-import type { Grant, SubjectType } from './api/mock/mockEditoastApi';
 import { osrdEditoastApi } from './api/osrdEditoastApi';
 import { SUBJECT_TYPES } from './authorization/consts';
+import type { SubjectType } from './authorization/types';
 
-export type UserWithPendingGrant = {
+export type User = {
   id: number;
   type: SubjectType;
   name: string;
-  grant?: Grant;
-}[];
+};
 
 export default function useSearchUsers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchedUsers, setSearchedUsers] = useState<UserWithPendingGrant>([]);
+  const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 150);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();

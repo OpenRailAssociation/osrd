@@ -7,6 +7,7 @@ export interface UserState {
   isLogged: boolean;
   impersonatedUser?: SearchResultItemUser;
   loginError?: ApiError;
+  userId: number;
   username: string;
   userPreferences: { safeWord: string };
   userRoles: Role[];
@@ -19,6 +20,7 @@ export const userInitialState: UserState = {
   loginError: undefined,
   username: '',
   userPreferences: { safeWord: '' },
+  userId: -1,
   userRoles: [],
   account: {},
 };
@@ -44,11 +46,21 @@ export const userSlice = createSlice({
     logoutSuccess() {
       return userInitialState;
     },
-    setUserRoles(state, action: PayloadAction<Role[] | undefined>) {
-      state.userRoles = action.payload || [];
-    },
     setImpersonatedUser(state, action: PayloadAction<SearchResultItemUser | undefined>) {
       state.impersonatedUser = action.payload;
+    },
+    updateAuthzUser(
+      state,
+      action: PayloadAction<{ userRoles: Role[]; userId: number } | undefined>
+    ) {
+      if (action.payload) {
+        const { userRoles, userId } = action.payload;
+        state.userRoles = userRoles;
+        state.userId = userId;
+      } else {
+        state.userRoles = [];
+        state.userId = -1;
+      }
     },
     updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
       state.userPreferences = action.payload;
@@ -60,9 +72,9 @@ export const {
   loginSuccess,
   loginError,
   logoutSuccess,
-  setUserRoles,
   setImpersonatedUser,
   updateUserPreferences,
+  updateAuthzUser,
 } = userSlice.actions;
 
 export default userSlice.reducer;

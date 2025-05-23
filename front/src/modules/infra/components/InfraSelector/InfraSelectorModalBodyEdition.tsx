@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
 
@@ -27,6 +29,14 @@ const InfraSelectorModalBodyEdition = ({
   const { t } = useTranslation();
   const [postInfraRailjson] = osrdEditoastApi.endpoints.postInfraRailjson.useMutation();
   const [postInfra] = osrdEditoastApi.endpoints.postInfra.useMutation();
+
+  // Get the user privileges for infras
+  const { getUserPrivileges } = useAuthz();
+  const userPrivilegesByInfraId = useAsyncMemo(async () => {
+    const data = await getUserPrivileges({ infra: infrasList.map((infra) => infra.id) });
+    return data.infra || {};
+    // redraw is in the deps to force the reload of the privileges when the user changes his own grant
+  }, [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]);
 
   const validateFile = async (fileToValidate: File) => {
     if (fileToValidate.type !== 'application/json') {
@@ -111,6 +121,11 @@ const InfraSelectorModalBodyEdition = ({
               key={infra.id}
               isFocused={isFocused}
               setIsFocused={setIsFocused}
+              userPrivileges={
+                userPrivilegesByInfraId.type === 'ready'
+                  ? userPrivilegesByInfraId.data[infra.id]
+                  : undefined
+              }
             />
           ))}
         </div>
