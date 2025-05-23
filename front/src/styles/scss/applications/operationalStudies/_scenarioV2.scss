@@ -127,28 +127,28 @@
           &.on {
             color: var(--grey80);
             background-color: var(--ambientB5);
-  
+
             &:hover {
               color: var(--black100);
               background-color: var(--white100);
             }
-  
+
             &:active {
               color: var(--grey20);
               background-color: var(--ambientB15);
             }
           }
-  
+
           // Off state
-          &:not(.on)  {
+          &:not(.on) {
             color: var(--grey30);
             background-color: var(--ambientB15);
-  
+
             &:hover {
               color: var(--grey30);
               background-color: var(--white100);
             }
-  
+
             &:active {
               color: var(--grey50);
               background-color: var(--ambientB5);

@@ -22,7 +22,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
   const { openModal } = useModal();
   const navigate = useNavigate();
 
-  const { t } = useTranslation(['translation', 'common', 'operational-studies']);
+  const { t } = useTranslation('operational-studies');
   const [activeBoards, setActiveBoards] = useState<string[]>([]);
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
@@ -162,7 +162,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
           <span className="scenario-description"> {scenario.description} </span>
 
           <div className="scenario-details-infra-name">
-            {t('operational-studies:main.infrastructure')} :&nbsp;
+            {t('main.infrastructure')} :&nbsp;
             {infra && <InfraLoadingState infra={infra} />}
             &nbsp;
             <span className="scenario-infra-name">{scenario.infra_name}</span>&nbsp;| ID
@@ -173,16 +173,16 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
             {scenario.electrical_profile_set_id ? (
               <span>
                 {electricalProfileSet?.name
-                  ? t('operational-studies:main.description.electricalProfileWithName', {
+                  ? t('main.description.electricalProfileWithName', {
                       name: electricalProfileSet.name,
                       id: scenario.electrical_profile_set_id,
                     })
-                  : t('operational-studies:main.description.electricalProfileWithId', {
+                  : t('main.description.electricalProfileWithId', {
                       id: scenario.electrical_profile_set_id,
                     })}
               </span>
             ) : (
-              t('operational-studies:main.noElectricalProfileSet')
+              t('main.noElectricalProfileSet')
             )}
           </div>
 
@@ -190,7 +190,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
             <button
               className="edit-scenario"
               type="button"
-              aria-label={t('operational-studies:main.editScenario')}
+              aria-label={t('main.editScenario')}
               onClick={() =>
                 openModal(
                   <AddAndEditScenarioModal editionMode scenario={scenario} />,
@@ -198,7 +198,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
                   'no-close-modal'
                 )
               }
-              title={t('operational-studies:main.editScenario')}
+              title={t('main.editScenario')}
             >
               {t('translation:common.edit')}
             </button>
