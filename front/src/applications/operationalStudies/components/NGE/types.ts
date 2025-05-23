@@ -92,6 +92,9 @@ export type TrainrunSectionDto = {
 };
 
 export type TrainrunCategory = {
+  /**
+   * Unique identifier for the category.
+   */
   id: number;
   order: number;
   name: string;
@@ -99,6 +102,10 @@ export type TrainrunCategory = {
   shortName: string;
   fachCategory: string;
   colorRef: string;
+
+  /**
+   * Minimum time required for a trainrun to start its backward journey after completing its forward journey. Not used in OSRD.
+   */
   minimalTurnaroundTime: number;
   nodeHeadwayStop: number;
   nodeHeadwayNonStop: number;
