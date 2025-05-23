@@ -121,16 +121,18 @@ export const PathLayer = ({
       flatSteps,
       timeAxis,
       spaceAxis,
+      width,
+      height,
     }: SpaceTimeChartContextType): Point[][] => {
       const lines: Point[][] = [];
-      let line: Point[] = [];
+      let currentLine: Point[] = [];
       const { points } = path;
 
       for (let i = 0; i < points.length; i++) {
         const { position, time } = points[i];
 
         if (i === 0) {
-          line.push({
+          currentLine.push({
             [timeAxis]: getTimePixel(time),
             [spaceAxis]: getSpacePixel(position),
           } as Point);
@@ -154,7 +156,7 @@ export const PathLayer = ({
               prevTime +
               ((breakPosition - prevPosition) / (position - prevPosition)) * (time - prevTime);
 
-            line.push({
+            currentLine.push({
               [timeAxis]: getTimePixel(breakTime),
               [spaceAxis]: getSpacePixel(breakPosition, readSpacePixelFromEnd),
             } as Point);
@@ -166,16 +168,35 @@ export const PathLayer = ({
             [spaceAxis]: getSpacePixel(position),
           } as Point;
           if (position === prevPosition && flatSteps.has(position)) {
-            lines.push(line);
-            line = [newPoint];
+            lines.push(currentLine);
+            currentLine = [newPoint];
+          } else if (time === prevTime) {
+            lines.push(currentLine);
+            currentLine = [newPoint];
           } else {
-            line.push(newPoint);
+            currentLine.push(newPoint);
           }
         }
       }
 
-      lines.push(line);
-      return lines;
+      lines.push(currentLine);
+
+      // Only keep segments that intersect with the current visible time frame:
+      const visibleLines: Point[][] = [];
+
+      const minPixel = 0;
+      const maxPixel = timeAxis === 'x' ? width : height;
+      lines.forEach((line) => {
+        const lastPointBeforeMinIndex = line.findLastIndex((p) => p[timeAxis] < minPixel);
+        const firstPointAfterMaxIndex = line.findIndex((p) => p[timeAxis] > maxPixel);
+        const visibleLine = line.slice(
+          lastPointBeforeMinIndex === -1 ? 0 : lastPointBeforeMinIndex,
+          (firstPointAfterMaxIndex === -1 ? line.length : firstPointAfterMaxIndex) + 1
+        );
+        if (visibleLine.length) visibleLines.push(visibleLine);
+      });
+
+      return visibleLines;
     },
     [path]
   );
@@ -189,6 +210,8 @@ export const PathLayer = ({
       timeAxis,
       spaceAxis,
       operationalPoints,
+      width,
+      height,
     }: SpaceTimeChartContextType): Point[] => {
       const res: Point[] = [];
       const stopPositions = new Set(operationalPoints.map((p) => p.position));
@@ -199,9 +222,14 @@ export const PathLayer = ({
             [spaceAxis]: getSpacePixel(position),
           } as Point);
       });
-      return res;
+
+      // Only keep visible points:
+      const radius = STYLES[level].width + pickingTolerance;
+      return res.filter(
+        (p) => inRange(p.x, -radius, width + radius) && inRange(p.y, -radius, height + radius)
+      );
     },
-    [path]
+    [level, path.points, pickingTolerance]
   );
 
   /**
