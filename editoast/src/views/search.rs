@@ -569,6 +569,8 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
 ///
 // **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
 pub(super) struct SearchResultItemSignal {
+    #[search(sql = "sig.obj_id")]
+    obj_id: String,
     #[search(sql = "sig.infra_id")]
     infra_id: i64,
     #[search(sql = "sig.data->'extensions'->'sncf'->>'label'")]
