@@ -1,7 +1,5 @@
 import { useId, useState } from 'react';
 
-import nextId from 'react-id-generator';
-
 enum colorClasses {
   primary = 'bg-primary',
   secondary = 'bg-secondary',
@@ -17,18 +15,24 @@ enum colorClasses {
 }
 
 type Props = {
-  addTag: (tag: string) => void;
   tags?: string[];
-  title?: JSX.Element | string;
+  addTag: (tag: string) => void;
   removeTag: (tagIdx: number) => void;
+  title?: JSX.Element | string;
   color?: string;
 };
 
+/**
+ * ChipsSNCF is a chip input component for an array of unique string tags (e.g., for trains, studies, scenarios, projects).
+ *
+ * The tags array is not directly mutated, only through provided addTag and removeTag callbacks.
+ * addTag is only called if the inputted tag is not already present in the tags array.
+ */
 export default function ChipsSNCF({
-  addTag,
   tags = [],
-  title,
+  addTag,
   removeTag,
+  title,
   color = 'primary',
 }: Props) {
   const [chipInputValue, setChipInputValue] = useState('');
@@ -36,7 +40,7 @@ export default function ChipsSNCF({
   const chip = (label: string, idx: number) => {
     const chipColor = colorClasses[color as keyof typeof colorClasses];
     return (
-      <div role="list" key={nextId()}>
+      <div role="list" key={label}>
         <div className="chips-group" role="listitem">
           <span
             data-testid="scenario-details-tag"
@@ -61,7 +65,7 @@ export default function ChipsSNCF({
     e: React.KeyboardEvent<HTMLInputElement> & { target: HTMLInputElement }
   ) => {
     if (e.key === 'Enter' && e.target) {
-      addTag(e.target.value);
+      if (!tags.includes(e.target.value)) addTag(e.target.value);
       setChipInputValue('');
     }
   };

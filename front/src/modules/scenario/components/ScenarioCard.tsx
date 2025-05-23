@@ -3,7 +3,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { RiFolderChartLine } from 'react-icons/ri';
-import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import infraLogo from 'assets/pictures/components/tracks.svg';
@@ -72,7 +71,7 @@ export default function ScenarioCard({
           scenario.tags.map((tag) => (
             <div
               className="scenario-card-tags-tag"
-              key={nextId()}
+              key={tag}
               role="button"
               tabIndex={0}
               onClick={() => setFilterChips(tag)}

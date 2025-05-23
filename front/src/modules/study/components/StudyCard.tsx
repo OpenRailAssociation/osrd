@@ -1,7 +1,6 @@
 import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import studyLogo from 'assets/pictures/views/study.svg';
@@ -99,7 +98,7 @@ export default function StudyCard({
           study.tags.map((tag) => (
             <div
               className="study-card-tags-tag"
-              key={nextId()}
+              key={tag}
               role="button"
               tabIndex={0}
               onClick={() => setFilterChips(tag)}

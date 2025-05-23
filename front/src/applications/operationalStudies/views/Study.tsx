@@ -331,7 +331,7 @@ const Study = () => {
               <div className="study-details-footer">
                 <div className="study-details-tags">
                   {study.tags?.map((tag) => (
-                    <div className="study-details-tags-tag" key={nextId()}>
+                    <div className="study-details-tags-tag" key={`${tag}`}>
                       {tag}
                     </div>
                   ))}

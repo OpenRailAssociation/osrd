@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -90,7 +89,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           .map((tag) => (
             <div
               className="project-card-tags-tag"
-              key={nextId()}
+              key={tag}
               role="button"
               tabIndex={0}
               onClick={() => setFilterChips(tag)}
