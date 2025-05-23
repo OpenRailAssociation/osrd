@@ -146,15 +146,15 @@
       "noSpeedLimitTagsShort": "Aucun",
       "noTrain": "Aucun train",
       "occurrenceChangeGroup": {
-        "consist": "Convoi",
-        "constraintDistribution": "Marge de régularité",
-        "departureTime": "Heure de départ",
-        "electricalProfiles": "Profils électriques",
-        "initialVelocity": "Vitesse initiale",
+        "constraint_distribution": "Marge de régularité",
+        "initial_speed": "Vitesse initiale",
         "labels": "Labels",
-        "name": "Nom",
-        "pathAndSchedule": "Desserte et horaires",
-        "speedLimitByTag": "Code de composition"
+        "options": "Profils électriques",
+        "path_and_schedule": "Desserte et horaires",
+        "rolling_stock": "Convoi",
+        "speed_limit_tag": "Code de composition",
+        "start_time": "Heure de départ",
+        "train_name": "Nom"
       },
       "occurrenceType": {
         "addedOccurrence": "Exception ajoutée",

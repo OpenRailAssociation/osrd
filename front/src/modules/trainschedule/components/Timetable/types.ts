@@ -114,16 +114,4 @@ export type Occurrence = {
   | { isValid: false; invalidReason?: InvalidReason }
 );
 
-export type ExceptionChangeGroup =
-  | 'pathAndSchedule'
-  | 'consist'
-  | 'name'
-  | 'speedLimitByTag'
-  | 'labels'
-  | 'departureTime'
-  | 'constraintDistribution'
-  | 'initialVelocity'
-  | 'electricalProfiles'
-  | 'category';
-
 export type ExceptionChangeGroupName = keyof OccurrenceException;
