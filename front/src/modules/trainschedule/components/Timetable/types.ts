@@ -126,4 +126,4 @@ export type ExceptionChangeGroup =
   | 'electricalProfiles'
   | 'category';
 
-export type OccurrenceExceptionChangeGroups = Extract<keyof OccurrenceException, string>;
+export type OccurrenceExceptionChangeGroups = keyof OccurrenceException;
