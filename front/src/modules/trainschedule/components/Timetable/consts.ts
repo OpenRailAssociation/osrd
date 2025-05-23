@@ -1,13 +1,10 @@
-import type { ExceptionChangeGroup, OccurrenceExceptionChangeGroups } from './types';
+import type { ExceptionChangeGroup, ExceptionChangeGroupName } from './types';
 
 export const specialCodeDictionary: { [key: string]: string } = {
   '': 'NO CODE',
 };
 
-export const exceptionChangeGroupsDict: Record<
-  OccurrenceExceptionChangeGroups,
-  ExceptionChangeGroup
-> = {
+export const exceptionChangeGroupsDict: Record<ExceptionChangeGroupName, ExceptionChangeGroup> = {
   constraint_distribution: 'constraintDistribution',
   initial_speed: 'initialVelocity',
   labels: 'labels',
