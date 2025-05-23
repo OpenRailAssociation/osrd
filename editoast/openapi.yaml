@@ -11155,6 +11155,7 @@ components:
       description: |
         A search result item for a query with `object = "signal"`
       required:
+      - obj_id
       - infra_id
       - label
       - signaling_systems
@@ -11175,6 +11176,8 @@ components:
           format: int64
           minimum: 0
         line_name:
+          type: string
+        obj_id:
           type: string
         settings:
           type: array

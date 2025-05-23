@@ -206,11 +206,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   const formatSearchResults = () => (
     <div className="search-results">
       {searchResults.map((result) => (
-        <SignalCard
-          signalSearchResult={result}
-          onResultClick={onResultClick}
-          key={`${nextId()}-${result.line_name}`}
-        />
+        <SignalCard signalSearchResult={result} onResultClick={onResultClick} key={result.obj_id} />
       ))}
     </div>
   );
@@ -284,7 +280,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="signal">
             {searchState &&
               searchResults.map((result) => (
-                <option value={result.label} key={`${nextId()}-${result.line_name}`}>
+                <option value={result.label} key={result.obj_id}>
                   {result.label}
                 </option>
               ))}

@@ -3913,6 +3913,7 @@ export type SearchResultItemSignal = {
   label: string;
   line_code: number;
   line_name: string;
+  obj_id: string;
   settings: string[];
   signaling_systems: string[];
   sprite?: string | null;
