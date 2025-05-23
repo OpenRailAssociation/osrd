@@ -99,6 +99,8 @@ export const stdcmConfSlice = createSlice({
       state.maxSpeed = stdcmConfInitialState.maxSpeed;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
       state.linkedTrains = stdcmConfInitialState.linkedTrains;
+      state.retainedSimulationIndex = stdcmConfInitialState.retainedSimulationIndex;
+      state.selectedSimulationIndex = stdcmConfInitialState.selectedSimulationIndex;
       state.simulations = stdcmConfInitialState.simulations;
     },
     restoreStdcmConfig(
@@ -297,6 +299,11 @@ export const stdcmConfSlice = createSlice({
     retainSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.retainedSimulationIndex = action.payload;
     },
+    resetStdcmSimulations(state: Draft<OsrdStdcmConfState>) {
+      state.retainedSimulationIndex = stdcmConfInitialState.retainedSimulationIndex;
+      state.selectedSimulationIndex = stdcmConfInitialState.selectedSimulationIndex;
+      state.simulations = stdcmConfInitialState.simulations;
+    },
   },
 });
 
@@ -321,6 +328,7 @@ export const {
   retainSimulation,
   updateStdcmLayers,
   addStdcmSimulations,
+  resetStdcmSimulations,
 } = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;
