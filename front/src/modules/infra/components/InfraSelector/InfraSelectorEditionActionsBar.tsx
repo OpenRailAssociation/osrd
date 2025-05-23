@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
+import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
+import type { Privilege } from 'common/authorization/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -16,30 +17,26 @@ type ActionBarProps = {
   isFocused?: number;
   setIsFocused: (focus?: number) => void;
   inputValue: string;
+  userPrivileges?: Set<Privilege>;
 };
 
-const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) => {
+const ActionsBar = ({
+  infra,
+  isFocused,
+  setIsFocused,
+  inputValue,
+  userPrivileges = new Set(),
+}: ActionBarProps) => {
   const { t } = useTranslation();
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useAppDispatch();
+  const checkProtectedAction = useCheckProtectedAction();
 
   const [lockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLock.useMutation();
   const [unlockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdUnlock.useMutation();
   const [getRailjson] = osrdEditoastApi.endpoints.getInfraByInfraIdRailjson.useLazyQuery();
   const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
-
-  const protectWithWritePrivilege = useProtectedAction({
-    resourceType: 'infra',
-    resourceId: infra.id,
-    requiredPrivileges: ['can_write'],
-  });
-
-  const protectWithOwnerGrant = useProtectedAction({
-    resourceType: 'infra',
-    resourceId: infra.id,
-    requiredGrant: 'OWNER',
-  });
 
   async function toggleLockedState() {
     if (!isWaiting) {
@@ -135,6 +132,9 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
       </button>
     );
   }
+
+  const lockButtonTitle =
+    infra.locked === true ? t('infraManagement.actions.unlock') : t('infraManagement.actions.lock');
   return (
     <>
       <button
@@ -142,9 +142,9 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
         type="button"
         aria-label={t('infraManagement.actions.unlock')}
         title={
-          infra.locked ? t('infraManagement.actions.unlock') : t('infraManagement.actions.lock')
+          userPrivileges.has('can_write') ? lockButtonTitle : t('authorization.permissionDenied')
         }
-        onClick={() => protectWithOwnerGrant(toggleLockedState)}
+        onClick={() => checkProtectedAction(userPrivileges, ['can_write'], toggleLockedState)}
       >
         {infra.locked ? <Unlock /> : <Lock />}
       </button>
@@ -152,8 +152,14 @@ const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarPro
         className="infraslist-item-action rename"
         type="button"
         aria-label={t('infraManagement.actions.rename')}
-        title={t('infraManagement.actions.rename')}
-        onClick={() => protectWithWritePrivilege(() => setIsFocused(infra.id))}
+        title={
+          userPrivileges.has('can_write')
+            ? t('infraManagement.actions.rename')
+            : t('authorization.permissionDenied')
+        }
+        onClick={() =>
+          checkProtectedAction(userPrivileges, ['can_write'], () => setIsFocused(infra.id))
+        }
       >
         <Pencil />
       </button>

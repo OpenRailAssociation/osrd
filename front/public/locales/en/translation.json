@@ -465,6 +465,7 @@
     },
     "permission": "Permission",
     "permissionDenied": "You don't have permission to perform this action",
+    "searchUser": "Search user by its name",
     "yourGrant": "Your access : {{grant}}"
   },
   "common": {

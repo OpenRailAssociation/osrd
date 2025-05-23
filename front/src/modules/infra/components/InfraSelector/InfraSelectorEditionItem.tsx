@@ -4,7 +4,8 @@ import { Lock, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
-import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
+import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
+import type { Privilege } from 'common/authorization/types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 import ActionsBar from './InfraSelectorEditionActionsBar';
@@ -15,22 +16,19 @@ type InfraSelectorEditionItemProps = {
   infra: Infra;
   isFocused?: number;
   setIsFocused: (infraId?: number) => void;
+  userPrivileges?: Set<Privilege>;
 };
 
 const InfraSelectorEditionItem = ({
   infra,
   isFocused,
   setIsFocused,
+  userPrivileges = new Set(),
 }: InfraSelectorEditionItemProps) => {
   const [value, setValue] = useState(infra.name);
   const [runningDelete, setRunningDelete] = useState(false);
   const { t } = useTranslation();
-
-  const protectWithOwnerGrant = useProtectedAction({
-    resourceType: 'infra',
-    resourceId: infra.id,
-    requiredGrant: 'OWNER',
-  });
+  const checkProtectedAction = useCheckProtectedAction();
 
   return (
     <div className="infraslist-item-edition">
@@ -43,8 +41,14 @@ const InfraSelectorEditionItem = ({
               className="infraslist-item-action delete"
               type="button"
               aria-label={t('infraManagement.actions.delete')}
-              title={t('infraManagement.actions.delete')}
-              onClick={() => protectWithOwnerGrant(() => setRunningDelete(true))}
+              title={
+                userPrivileges.has('can_delete')
+                  ? t('infraManagement.actions.delete')
+                  : t('authorization.permissionDenied')
+              }
+              onClick={() =>
+                checkProtectedAction(userPrivileges, ['can_delete'], () => setRunningDelete(true))
+              }
             >
               <Trash />
             </button>
@@ -91,6 +95,7 @@ const InfraSelectorEditionItem = ({
               isFocused={isFocused}
               setIsFocused={setIsFocused}
               inputValue={value}
+              userPrivileges={userPrivileges}
             />
           </div>
         </>

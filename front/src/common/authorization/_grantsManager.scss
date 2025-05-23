@@ -36,9 +36,15 @@
         padding: 13.6px 0 13.6px 13.6px;
       }
       &-combobox {
+        flex-grow: 1;
+        margin-right: 12px;
         * > #add-user-combobox {
           height: 32px;
         }
+      }
+      &-actions {
+        display: flex;
+        justify-content: end;
       }
       &-add-button {
         align-self: flex-end;
@@ -46,7 +52,6 @@
         border-radius: 4px;
         background-color: var(--ambientB15);
         color: var(--primary60);
-        margin-right: 30px;
       }
     }
     &-list {
@@ -72,11 +77,14 @@
         font-weight: 500;
       }
     }
-    &-select {
+    &-grant {
+      display: flex;
+      align-items: center;
+
       * > .osrd-ui-custom-select,
       * > .osrd-ui-custom-select:focus {
         background-color: var(--white100);
-        margin: 0;
+        margin: 0 0 0 8px;
         width: 136px;
         height: 32px;
       }

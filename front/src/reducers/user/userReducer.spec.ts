@@ -7,7 +7,7 @@ import {
   logoutSuccess,
   type UserState,
   updateUserPreferences,
-  setUserRoles,
+  updateAuthzUser,
   setImpersonatedUser,
 } from 'reducers/user';
 import { createStoreWithoutMiddleware } from 'store';
@@ -65,13 +65,14 @@ describe('userReducer', () => {
     expect(userState).toEqual(userInitialState);
   });
 
-  it('should handle setUserRoles', () => {
+  it('should handle updateAuthzUser', () => {
     const store = createStore(userInitialState);
-    store.dispatch(setUserRoles(['Stdcm']));
+    store.dispatch(updateAuthzUser({ userRoles: ['Stdcm'], userId: 44 }));
     const userState = store.getState().user;
     expect(userState).toEqual({
       ...userInitialState,
       userRoles: ['Stdcm'],
+      userId: 44,
     });
   });
 

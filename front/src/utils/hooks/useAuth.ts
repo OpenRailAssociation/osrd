@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type SearchResultItemUser } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-import { setUserRoles } from 'reducers/user';
+import { updateAuthzUser } from 'reducers/user';
 import { getIsUserLogged, getImpersonatedUser, getUsername } from 'reducers/user/userSelectors';
 
 type AuthHookData = {
@@ -41,7 +41,7 @@ function useAuth(): AuthHookData {
 
   useEffect(() => {
     if (data) {
-      dispatch(setUserRoles(data?.roles));
+      dispatch(updateAuthzUser(data ? { userRoles: data.roles, userId: data.id } : undefined));
     }
   }, [isUserLogged, data]);
 

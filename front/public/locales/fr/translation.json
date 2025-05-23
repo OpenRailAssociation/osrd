@@ -463,6 +463,7 @@
     },
     "permission": "Permission",
     "permissionDenied": "Vous n'avez pas la permission de réaliser cette action",
+    "searchUser": "Rechercher un utilisateur par son nom",
     "yourGrant": "Votre accès : {{grant}}"
   },
   "common": {
