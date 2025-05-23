@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import type { ImportStation } from 'applications/operationalStudies/types';
 import { searchGraouStations } from 'common/api/graouApi';
@@ -66,7 +65,7 @@ const ImportTimetableItemStationSelector = ({
               aria-label={t('selectStation')}
               tabIndex={0}
               onClick={() => onSelect(station)}
-              key={nextId()}
+              key={`${station.name}-${station.uic}-${station.trigram}`}
             >
               <StationCard station={station} fixedHeight />
             </div>

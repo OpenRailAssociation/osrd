@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useParams } from 'react-router-dom';
 
 import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
@@ -283,7 +282,7 @@ const Study = () => {
                         study.id &&
                         study.state && (
                           <StateStep
-                            key={nextId()}
+                            key={state}
                             study={study}
                             number={idx + 1}
                             state={state}
@@ -331,7 +330,7 @@ const Study = () => {
               <div className="study-details-footer">
                 <div className="study-details-tags">
                   {study.tags?.map((tag) => (
-                    <div className="study-details-tags-tag" key={`${tag}`}>
+                    <div className="study-details-tags-tag" key={tag}>
                       {tag}
                     </div>
                   ))}

@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -252,7 +251,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
           <datalist id="line" className="overflow-hidden">
             {searchLineState &&
               autocompleteLineNames.map((lineName) => (
-                <option value={lineName} key={`${nextId()}-${lineName}`}>
+                <option value={lineName} key={lineName}>
                   {lineName}
                 </option>
               ))}
