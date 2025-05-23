@@ -33,6 +33,45 @@ const mapTrainNames = (trainSchedules: TrainSchedule[], trains: Element[]): Trai
   return updatedTrainSchedules;
 };
 
+export const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration => {
+  const departureTimes = schedules
+    .map((s) => new Date(s.start_time))
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  const intervalsCount = new Map<number, number>();
+
+  for (let i = 1; i < departureTimes.length; i += 1) {
+    const interval = Duration.subtractDate(departureTimes[i], departureTimes[i - 1]);
+    const rawMin = interval.total('minute');
+
+    let roundedMin: number;
+    if (rawMin > 5) {
+      roundedMin = Math.round(rawMin / 10) * 10;
+    } else if (rawMin >= 1) {
+      roundedMin = Math.round(rawMin);
+    } else {
+      roundedMin = 1;
+    }
+
+    intervalsCount.set(roundedMin, (intervalsCount.get(roundedMin) || 0) + 1);
+  }
+
+  let mostFrequentRoundedMin = 0;
+  let maxCount = 0;
+
+  for (const [minutes, count] of intervalsCount.entries()) {
+    if (count > maxCount) {
+      mostFrequentRoundedMin = minutes;
+      maxCount = count;
+    } else if (count === maxCount && minutes < mostFrequentRoundedMin) {
+      // we take smaller interval in case of tie
+      mostFrequentRoundedMin = minutes;
+    }
+  }
+
+  return new Duration({ minutes: mostFrequentRoundedMin });
+};
+
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const trainSchedules: TrainSchedule[] = [];
 
@@ -132,45 +171,6 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
       count: highestCount,
     };
   });
-
-  const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration => {
-    const departureTimes = schedules
-      .map((s) => new Date(s.start_time))
-      .sort((a, b) => a.getTime() - b.getTime());
-
-    const intervalsCount = new Map<number, number>();
-
-    for (let i = 1; i < departureTimes.length; i += 1) {
-      const interval = Duration.subtractDate(departureTimes[i], departureTimes[i - 1]);
-      const rawMin = interval.total('minute');
-
-      let roundedMin: number;
-      if (rawMin > 5) {
-        roundedMin = Math.round(rawMin / 10) * 10;
-      } else if (rawMin >= 1) {
-        roundedMin = Math.round(rawMin);
-      } else {
-        roundedMin = 1;
-      }
-
-      intervalsCount.set(roundedMin, (intervalsCount.get(roundedMin) || 0) + 1);
-    }
-
-    let mostFrequentRoundedMin = 0;
-    let maxCount = 0;
-
-    for (const [minutes, count] of intervalsCount.entries()) {
-      if (count > maxCount) {
-        mostFrequentRoundedMin = minutes;
-        maxCount = count;
-      } else if (count === maxCount && minutes < mostFrequentRoundedMin) {
-        // we take smaller interval in case of tie
-        mostFrequentRoundedMin = minutes;
-      }
-    }
-
-    return new Duration({ minutes: mostFrequentRoundedMin });
-  };
 
   const buildPacedTrain = (
     pacedTrainId: string,
