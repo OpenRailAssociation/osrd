@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
+import { resetStdcmSimulations, updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 
 export const NO_CONFIG_FOUND_MSG = 'No configuration found';
 
@@ -21,6 +21,7 @@ export default function useStdcmEnvironment() {
       setLoading(true);
       const { data } = await getStdcmSearchEnvironment();
       if (!data) throw new Error(NO_CONFIG_FOUND_MSG);
+      dispatch(resetStdcmSimulations());
       dispatch(
         updateStdcmEnvironment({
           infraID: data.infra_id,

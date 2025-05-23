@@ -10,7 +10,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
-import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
+import { resetStdcmSimulations, updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
 import Project2Image from './ScenarioExplorerProject2Image';
@@ -91,6 +91,7 @@ export const ScenarioMiniCard = ({
 
     const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainSchedules);
 
+    dispatch(resetStdcmSimulations());
     dispatch(
       updateStdcmEnvironment({
         infraID: scenario.infra_id,
