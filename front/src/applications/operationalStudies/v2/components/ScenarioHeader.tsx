@@ -108,14 +108,12 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
               {scenario.name}
             </span>
 
-            <div className="chevron-container">
-              <button className="chevron-btn" type="button">
-                {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
-              </button>
-
-              <div className="spacer" />
-            </div>
+            <button className="chevron-btn" type="button">
+              {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
+            </button>
           </div>
+
+          <div className="spacer" />
         </div>
 
         {/* board display management */}
