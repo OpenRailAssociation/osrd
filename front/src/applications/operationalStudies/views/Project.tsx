@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import nextId from 'react-id-generator';
 import ReactMarkdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
@@ -306,7 +305,7 @@ const Project = () => {
               )}
               <div className="project-details-tags">
                 {project.tags?.map((tag) => (
-                  <div className="project-details-tags-tag" key={nextId()}>
+                  <div className="project-details-tags-tag" key={tag}>
                     {tag}
                   </div>
                 ))}
