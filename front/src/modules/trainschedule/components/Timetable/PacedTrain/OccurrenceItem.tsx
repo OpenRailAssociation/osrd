@@ -65,7 +65,7 @@ const OccurrenceItem = ({
   const [getRollingStockByName] =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
 
-  const { id, trainName, rollingStock, startTime, disabled, exceptions } = occurrence;
+  const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
   const isAfterMidnight =
     occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
@@ -169,11 +169,11 @@ const OccurrenceItem = ({
     }
     const items = [getExceptionType(occurrence) === 'added' ? deleteItem : disable, edit, project];
 
-    if (exceptions && (Object.keys(exceptions).length ?? 0) > 0) {
+    if (exceptionChangeGroups && (Object.keys(exceptionChangeGroups).length ?? 0) > 0) {
       return addElementAtIndex(items, 2, restore);
     }
     return items;
-  }, [disabled, exceptions, id]);
+  }, [disabled, exceptionChangeGroups, id]);
 
   const occurrenceMenu = AnchoredMenu({
     children: isMenuOpen && (

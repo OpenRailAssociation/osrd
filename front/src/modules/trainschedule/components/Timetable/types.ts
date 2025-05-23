@@ -102,7 +102,7 @@ export type Occurrence = {
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   stopsCount: number;
-  exceptions?: ExceptionChangeGroups;
+  exceptionChangeGroups?: ExceptionChangeGroups;
 } & (
   | {
       isValid: true;
