@@ -48,7 +48,7 @@
           }
 
           & ~ .close-label {
-            display: block;
+            opacity: 1;
             color: var(--warning60);
           }
         }
@@ -65,7 +65,7 @@
       .close-label {
         position: absolute;
         text-transform: capitalize;
-        display: none;
+        opacity: 0;
       }
 
       .scenario-name-container {
@@ -90,13 +90,15 @@
 
         &:hover {
           cursor: pointer;
-          .scenario-name-label, .chevron-btn{
+          .scenario-name-label,
+          .chevron-btn {
             color: var(--black100);
           }
         }
 
         &:active {
-          .scenario-name-label, .chevron-btn{
+          .scenario-name-label,
+          .chevron-btn {
             color: var(--grey70);
           }
         }
