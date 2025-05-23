@@ -20,6 +20,7 @@ import type {
   TrainCategory,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
+import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { InfraState } from 'reducers/infra';
 import type { LayersSettings } from 'reducers/map';
 import type { Duration } from 'utils/duration';
@@ -161,6 +162,15 @@ export type PacedTrainId = string & { readonly __type: unique symbol };
 
 export type TrainId = TrainScheduleId | OccurrenceId;
 export type TimetableItemId = TrainScheduleId | PacedTrainId;
+export type TimetableItemToEditData =
+  | {
+      timetableItemId: TrainScheduleId;
+    }
+  | {
+      timetableItemId: PacedTrainId;
+      originalPacedTrain: PacedTrainWithDetails;
+      occurrenceId?: OccurrenceId;
+    };
 
 export type TrainScheduleResponseWithTrainId = Omit<TrainScheduleResponse, 'id'> & {
   id: TrainScheduleId;

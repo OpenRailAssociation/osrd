@@ -44,7 +44,11 @@ type OccurrenceItemProps = {
   nextOccurrence?: Occurrence;
   selectOccurrence: (occurrence: TrainId) => void;
   currentPacedTrain: PacedTrainWithDetails;
-  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails, occurrenceId?: OccurrenceId) => void;
+  selectPacedTrainToEdit: (
+    pacedTrain: PacedTrainWithDetails,
+    originalPacedTrain?: PacedTrainWithDetails,
+    occurrenceId?: OccurrenceId
+  ) => void;
 };
 
 const OccurrenceItem = ({
@@ -104,7 +108,7 @@ const OccurrenceItem = ({
       };
     }
 
-    selectPacedTrainToEdit(updatedPacedtrain, occurrence.id);
+    selectPacedTrainToEdit(updatedPacedtrain, currentPacedTrain, occurrence.id);
   };
 
   // TODO exceptions : add action to menu buttons

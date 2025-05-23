@@ -10,7 +10,11 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import DotsLoader from 'common/DotsLoader';
 import { toggleEditingItemType } from 'reducers/osrdconf/operationalStudiesConf';
 import { getEditingItemType } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemId,
+  TimetableItem,
+  TimetableItemToEditData,
+} from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
@@ -21,12 +25,12 @@ import PacedTrainSettings from './PacedTrainSettings';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
-  itemIdToEdit?: TimetableItemId;
+  timetableItemToEditData?: TimetableItemToEditData;
   setDisplayTrainScheduleManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
   infraState?: InfraState;
-  setItemIdToEdit: (itemIdToEdit?: TimetableItemId) => void;
+  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
 };
 
 const TimetableManageTrainSchedule = ({
@@ -35,8 +39,8 @@ const TimetableManageTrainSchedule = ({
   upsertTimetableItems,
   removeTimetableItems,
   infraState,
-  itemIdToEdit,
-  setItemIdToEdit,
+  timetableItemToEditData,
+  setTimetableItemToEditData,
 }: TimetableManageTrainScheduleProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -47,7 +51,7 @@ const TimetableManageTrainSchedule = ({
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setItemIdToEdit(undefined);
+    setTimetableItemToEditData(undefined);
   };
 
   const updateTimetable = useUpdateTimetableItem(
@@ -55,8 +59,8 @@ const TimetableManageTrainSchedule = ({
     setDisplayTrainScheduleManagement,
     upsertTimetableItems,
     removeTimetableItems,
-    setItemIdToEdit,
-    itemIdToEdit,
+    setTimetableItemToEditData,
+    timetableItemToEditData,
     selectedTrainId
   );
 
@@ -75,35 +79,36 @@ const TimetableManageTrainSchedule = ({
   return (
     <div className="scenario-timetable-managetrainschedule">
       <div className="scenario-timetable-managetrainschedule-header">
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && itemIdToEdit && (
-          <>
-            <button
-              className="btn btn-warning mb-2"
-              type="button"
-              onClick={updateTimetable}
-              data-testid="submit-edit-train-schedule"
-            >
-              <span className="mr-2">
-                <Pencil size="lg" />
-              </span>
-              {getEditLabel(itemIdToEdit)}
-            </button>
-            {editingItemType !== 'occurrence' && (
-              <div className="osrd-config-item-container">
-                <CheckboxRadioSNCF
-                  type="checkbox"
-                  label={t('pacedTrains.defineService')}
-                  id="define-paced-train"
-                  name="define-paced-train"
-                  containerClassName="mb-0"
-                  checked={editingItemType === 'pacedTrain'}
-                  onChange={() => dispatch(toggleEditingItemType())}
-                />
-                {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
-              </div>
-            )}
-          </>
-        )}
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
+          timetableItemToEditData && (
+            <>
+              <button
+                className="btn btn-warning mb-2"
+                type="button"
+                onClick={updateTimetable}
+                data-testid="submit-edit-train-schedule"
+              >
+                <span className="mr-2">
+                  <Pencil size="lg" />
+                </span>
+                {getEditLabel(timetableItemToEditData.timetableItemId)}
+              </button>
+              {editingItemType !== 'occurrence' && (
+                <div className="osrd-config-item-container">
+                  <CheckboxRadioSNCF
+                    type="checkbox"
+                    label={t('pacedTrains.defineService')}
+                    id="define-paced-train"
+                    name="define-paced-train"
+                    containerClassName="mb-0"
+                    checked={editingItemType === 'pacedTrain'}
+                    onChange={() => dispatch(toggleEditingItemType())}
+                  />
+                  {editingItemType === 'pacedTrain' && <PacedTrainSettings />}
+                </div>
+              )}
+            </>
+          )}
 
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
           <>

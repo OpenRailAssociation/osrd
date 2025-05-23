@@ -12,14 +12,23 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { TimetableItemId, TimetableItem, OccurrenceId } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemId,
+  TimetableItem,
+  OccurrenceId,
+  TimetableItemToEditData,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToTrainScheduleId, isTrainScheduleId } from 'utils/trainId';
+import {
+  formatEditoastIdToTrainScheduleId,
+  isPacedTrainWithDetails,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
@@ -36,9 +45,9 @@ type TimetableProps = {
   infraState: InfraState;
   conflicts?: Conflict[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  setItemIdToEdit: (trainId?: TimetableItemId) => void;
+  setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
-  itemIdToEdit?: TimetableItemId;
+  timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
 };
@@ -52,8 +61,8 @@ const Timetable = ({
   conflicts,
   upsertTimetableItems,
   removeTimetableItems,
-  setItemIdToEdit,
-  itemIdToEdit,
+  setTimetableItemToEditData,
+  timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
 }: TimetableProps) => {
@@ -127,9 +136,23 @@ const Timetable = ({
   }, [currentDepartureDates]);
 
   const selectTimetableItemToEdit = useCallback(
-    (itemToEdit: TimetableItemWithDetails, occurrenceId?: OccurrenceId) => {
+    (
+      itemToEdit: TimetableItemWithDetails,
+      originalPacedTrain?: PacedTrainWithDetails,
+      occurrenceId?: OccurrenceId
+    ) => {
       dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
-      setItemIdToEdit(itemToEdit.id);
+      const editData = isPacedTrainWithDetails(itemToEdit)
+        ? {
+            timetableItemId: itemToEdit.id,
+            // param originalPacedTrain is defined only when editing an occurrence
+            originalPacedTrain: originalPacedTrain ?? itemToEdit,
+            occurrenceId,
+          }
+        : {
+            timetableItemId: itemToEdit.id,
+          };
+      setTimetableItemToEditData(editData);
       setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
     },
     []
@@ -187,7 +210,7 @@ const Timetable = ({
                   handleSelectTrain={handleSelectTimetableItem}
                   train={timetableItem as TrainScheduleWithDetails}
                   isSelected={infraState === 'CACHED' && selectedTrainId === timetableItem.id}
-                  isModified={timetableItem.id === itemIdToEdit}
+                  isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
                   upsertTrainSchedules={upsertTimetableItems}
                   removeTrains={removeAndUnselectTrains}
                   selectTrainToEdit={selectTimetableItemToEdit}
@@ -201,7 +224,7 @@ const Timetable = ({
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
-                  isOnEdit={timetableItem.id === itemIdToEdit}
+                  isOnEdit={timetableItem.id === timetableItemToEditData?.timetableItemId}
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}

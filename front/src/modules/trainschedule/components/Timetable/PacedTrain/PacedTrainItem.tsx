@@ -42,7 +42,11 @@ type PacedTrainItemProps = {
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
   selectedTrainId?: TrainId;
-  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails, occurrenceId?: OccurrenceId) => void;
+  selectPacedTrainToEdit: (
+    pacedTrainToEdit: PacedTrainWithDetails,
+    originalPacedTrain?: PacedTrainWithDetails,
+    occurrenceId?: OccurrenceId
+  ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
 };
