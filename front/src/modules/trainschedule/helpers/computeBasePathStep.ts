@@ -53,8 +53,11 @@ const computeBasePathStep = (
     name,
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
-    locked,
-    receptionSignal,
+    // If not provided, we set locked and receptionSignal to their default values
+    // in order to avoid unwanted exceptions (when not provided, editoast returns them
+    // with their default values)
+    locked: locked ?? false,
+    receptionSignal: receptionSignal ?? 'OPEN',
     theoreticalMargin,
   };
 };

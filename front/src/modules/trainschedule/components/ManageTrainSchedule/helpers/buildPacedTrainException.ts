@@ -1,0 +1,184 @@
+import dayjs from 'dayjs';
+import { isEmpty, isEqual, omit, pick } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
+
+import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
+import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import { findExceptionWithOccurrenceId } from 'modules/trainschedule/helpers/pacedTrain';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
+import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { Duration } from 'utils/duration';
+import {
+  extractExceptionIdFromOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
+  isIndexedOccurrenceId,
+} from 'utils/trainId';
+
+/**
+ * Compare the original paced train with the one from the occurrence update and
+ * fill the original paced train exceptions property every time a field is different.
+ */
+export function generatePacedTrainException(
+  updatedOccurrence: PacedTrain,
+  originalPacedTrain: PacedTrain,
+  occurrenceId: OccurrenceId
+): PacedTrainException {
+  const exceptionToUpdate = findExceptionWithOccurrenceId(
+    originalPacedTrain.exceptions,
+    occurrenceId
+  );
+
+  const exception: PacedTrainException = exceptionToUpdate
+    ? // If the exception was already present, we update it from scratch
+      {
+        ...pick(exceptionToUpdate, ['key', 'occurrence_index']),
+      }
+    : {
+        key: uuidV4(),
+        occurrence_index: isIndexedOccurrenceId(occurrenceId)
+          ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
+          : undefined,
+      };
+
+  if (
+    !isEqual(originalPacedTrain.constraint_distribution, updatedOccurrence.constraint_distribution)
+  ) {
+    exception.constraint_distribution = {
+      value: updatedOccurrence.constraint_distribution,
+    };
+  }
+
+  if (!isEqual(originalPacedTrain.initial_speed, updatedOccurrence.initial_speed)) {
+    exception.initial_speed = { value: updatedOccurrence.initial_speed! };
+  }
+
+  if (!isEqual(originalPacedTrain.labels, updatedOccurrence.labels)) {
+    exception.labels = { value: updatedOccurrence.labels ?? [] };
+  }
+
+  if (!isEqual(originalPacedTrain.options, updatedOccurrence.options)) {
+    exception.options = { value: updatedOccurrence.options ?? {} };
+  }
+
+  // Compute first all path steps of both paced trains to compare to facilitate the comparison
+  // As the front generates each path step id, between two same pathfinding, ids could be different
+  // so we don't want to compare them.
+  const originalPacedTrainPathSteps = originalPacedTrain.path.map((_, i) =>
+    computeBasePathStep(originalPacedTrain, i)
+  );
+  const pacedTrainWithOccurrenceChangesPathSteps = updatedOccurrence.path.map((_, i) =>
+    computeBasePathStep(updatedOccurrence, i)
+  );
+
+  if (
+    originalPacedTrainPathSteps.length !== pacedTrainWithOccurrenceChangesPathSteps.length ||
+    originalPacedTrainPathSteps.some(
+      (pathStep, i) =>
+        !isEqual(omit(pathStep, 'id'), omit(pacedTrainWithOccurrenceChangesPathSteps[i], 'id'))
+    )
+  ) {
+    exception.path_and_schedule = {
+      margins: updatedOccurrence.margins!,
+      path: updatedOccurrence.path,
+      power_restrictions: updatedOccurrence.power_restrictions ?? [],
+      schedule: updatedOccurrence.schedule ?? [],
+    };
+  }
+
+  if (
+    originalPacedTrain.rolling_stock_name !== updatedOccurrence.rolling_stock_name ||
+    !isEqual(originalPacedTrain.comfort, updatedOccurrence.comfort)
+  ) {
+    exception.rolling_stock = {
+      rolling_stock_name: updatedOccurrence.rolling_stock_name,
+      comfort: updatedOccurrence.comfort ?? originalPacedTrain.comfort!,
+    };
+  }
+
+  if (!isEqual(originalPacedTrain.category, updatedOccurrence.category)) {
+    exception.rolling_stock_category = { value: updatedOccurrence.category };
+  }
+
+  if (
+    !isEqual(
+      originalPacedTrain.speed_limit_tag ?? null,
+      // speed limit tag is instanciated with null if not present when formating the item
+      updatedOccurrence.speed_limit_tag ?? null
+    )
+  ) {
+    exception.speed_limit_tag = { value: updatedOccurrence.speed_limit_tag };
+  }
+
+  // Custom compare for start time as each indexed occurrence has its own built start time
+  let originalStartTimeToTest = new Date(originalPacedTrain.start_time);
+
+  if (isIndexedOccurrenceId(occurrenceId)) {
+    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+    const originalPacedTrainInterval = Duration.parse(originalPacedTrain.paced.interval);
+    originalStartTimeToTest = dayjs(originalStartTimeToTest)
+      .add(occurrenceIndex * originalPacedTrainInterval.ms, 'ms')
+      .toDate();
+  }
+  // Remove milliseconds to avoid issues with the comparison
+  originalStartTimeToTest.setMilliseconds(0);
+  const pacedTrainStartTime = new Date(updatedOccurrence.start_time);
+  pacedTrainStartTime.setMilliseconds(0);
+
+  if (!isEqual(originalStartTimeToTest, pacedTrainStartTime)) {
+    exception.start_time = { value: updatedOccurrence.start_time };
+  }
+
+  // Custom compare for name as each occurrence has its own built name
+  let originalTrainNameToTest = originalPacedTrain.train_name;
+  if (isIndexedOccurrenceId(occurrenceId)) {
+    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+    originalTrainNameToTest = computeOccurrenceName(originalTrainNameToTest, occurrenceIndex);
+  } else {
+    // If the occurrence is an added exception, we pass its standard name format
+    originalTrainNameToTest = `${originalTrainNameToTest}/+`;
+  }
+  if (!isEqual(originalTrainNameToTest, updatedOccurrence.train_name)) {
+    exception.train_name = { value: updatedOccurrence.train_name };
+  }
+
+  return exception;
+}
+
+/**
+ * Based on a new exception, update the current exceptions list by adding, updating or removing it.
+ */
+export function updatePacedTrainExceptions(
+  currentExceptions: PacedTrainException[],
+  newException: PacedTrainException,
+  occurrenceId: OccurrenceId
+): PacedTrainException[] {
+  // There is still some change groups in this exception
+  const hasExceptions = !isEmpty(omit(newException, ['key', 'occurrence_index']));
+
+  const exceptionToUpdate = findExceptionWithOccurrenceId(currentExceptions, occurrenceId);
+
+  // If the exception was not already present and it has some change groups, add it.
+  // Return the current exceptions list otherwise.
+  if (!exceptionToUpdate) {
+    return hasExceptions ? [...currentExceptions, newException] : currentExceptions;
+  }
+
+  // If the exception was already present, find it and replace it by the updated one
+  let exceptionIndex;
+  if (isIndexedOccurrenceId(occurrenceId)) {
+    const occurrenceToUpdateIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+
+    exceptionIndex = currentExceptions.findIndex(
+      (_exception) => _exception.occurrence_index === occurrenceToUpdateIndex
+    );
+  } else {
+    const addedExceptionId = extractExceptionIdFromOccurrenceId(occurrenceId);
+    exceptionIndex = currentExceptions.findIndex(({ key }) => addedExceptionId === key);
+  }
+
+  // If yes we replace the exception at the found index, otherwise we remove it
+  return hasExceptions
+    ? replaceElementAtIndex(currentExceptions, exceptionIndex, newException)
+    : removeElementAtIndex(currentExceptions, exceptionIndex);
+}

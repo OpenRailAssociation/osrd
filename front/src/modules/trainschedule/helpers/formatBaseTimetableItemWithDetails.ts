@@ -16,7 +16,6 @@ const formatBaseTimetableItemWithDetails = (
         timeWindow: Duration.parse(timetableItem.paced.time_window),
         interval: Duration.parse(timetableItem.paced.interval),
       },
-      exceptions: [],
     };
   } else {
     baseProps = timetableItem;

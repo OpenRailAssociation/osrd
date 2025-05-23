@@ -2,11 +2,21 @@ import { compact } from 'lodash';
 
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
-import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import type {
+  TimetableItemToEditData,
+  OperationalStudiesConfState,
+  PacedTrainId,
+} from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
+import { isPacedTrainId } from 'utils/trainId';
 
+import {
+  generatePacedTrainException,
+  updatePacedTrainExceptions,
+} from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
+import type { PacedTrainWithDetails } from '../../Timetable/types';
 
 export function formatTimetableItemPayload(
   osrdconf: OperationalStudiesConfState,
@@ -24,7 +34,11 @@ export function formatTimetableItemPayload(
       use_electrical_profiles: osrdconf.usingElectricalProfiles,
       use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
     },
-    path: compact(osrdconf.pathSteps).map((step) => ({ id: step.id, ...getStepLocation(step) })),
+    path: compact(osrdconf.pathSteps).map((step) => ({
+      id: step.id,
+      ...getStepLocation(step),
+      deleted: step.deleted || false,
+    })),
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: rollingStockName,
     schedule: formatSchedule(compact(osrdconf.pathSteps)),
@@ -34,18 +48,86 @@ export function formatTimetableItemPayload(
   };
 }
 
+// Format a PacedTrainWithDetails to a PacedTrain payload by keeping only the
+// necessary properties and formatting the date fields to ISO strings.
+function formatPacedTrainWithDetailsToPacedTrainPayload(
+  pacedTrainWithDetails: PacedTrainWithDetails
+): PacedTrain {
+  return {
+    category: pacedTrainWithDetails.category,
+    comfort: pacedTrainWithDetails.comfort,
+    constraint_distribution: pacedTrainWithDetails.constraint_distribution,
+    exceptions: pacedTrainWithDetails.exceptions,
+    initial_speed: pacedTrainWithDetails.initial_speed,
+    labels: pacedTrainWithDetails.labels,
+    margins: pacedTrainWithDetails.margins,
+    options: pacedTrainWithDetails.options,
+    paced: {
+      time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
+      interval: pacedTrainWithDetails.paced.interval.toISOString(),
+    },
+    path: pacedTrainWithDetails.path,
+    power_restrictions: pacedTrainWithDetails.power_restrictions,
+    // Rollingstock is missing when just created a train from nge or with import
+    rolling_stock_name: pacedTrainWithDetails.rollingStock?.name ?? '',
+    schedule: pacedTrainWithDetails.schedule,
+    speed_limit_tag: pacedTrainWithDetails.speed_limit_tag,
+    start_time: pacedTrainWithDetails.startTime.toISOString(),
+    train_name: pacedTrainWithDetails.name,
+  };
+}
+
+function isPacedTrainToEditData(
+  timetableItemToEditData: TimetableItemToEditData
+): timetableItemToEditData is Extract<TimetableItemToEditData, { timetableItemId: PacedTrainId }> {
+  return isPacedTrainId(timetableItemToEditData.timetableItemId);
+}
+
 export function formatPacedTrainPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  rollingStockName: string
+  rollingStockName: string,
+  timetableItemToEditData?: TimetableItemToEditData
 ): PacedTrain {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
-  return {
+
+  let newPacedTrain: PacedTrain = {
     ...baseTrain,
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
     },
-    exceptions: [],
+    exceptions:
+      timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)
+        ? timetableItemToEditData.originalPacedTrain.exceptions
+        : [],
   };
+
+  if (
+    timetableItemToEditData &&
+    isPacedTrainToEditData(timetableItemToEditData) &&
+    timetableItemToEditData.occurrenceId
+  ) {
+    const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
+      timetableItemToEditData.originalPacedTrain
+    );
+    const exception = generatePacedTrainException(
+      newPacedTrain,
+      originalPacedTrain,
+      timetableItemToEditData.occurrenceId
+    );
+
+    const updatedExceptions = updatePacedTrainExceptions(
+      originalPacedTrain.exceptions,
+      exception,
+      timetableItemToEditData.occurrenceId
+    );
+    // If we are updating an occurrence, we want to send the exact same original paced train
+    // with only its exceptions updated
+    newPacedTrain = {
+      ...originalPacedTrain,
+      exceptions: updatedExceptions,
+    };
+  }
+  return newPacedTrain;
 }

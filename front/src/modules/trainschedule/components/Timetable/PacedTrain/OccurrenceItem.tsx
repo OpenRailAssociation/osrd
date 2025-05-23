@@ -171,7 +171,7 @@ const OccurrenceItem = ({
       return addElementAtIndex(items, 2, restore);
     }
     return items;
-  }, [disabled, exceptionChangeGroups, id]);
+  }, [menuItems, exceptionChangeGroups]);
 
   const occurrenceMenu = AnchoredMenu({
     children: isMenuOpen && (
