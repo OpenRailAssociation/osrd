@@ -1,89 +1,32 @@
+mod error;
+mod request;
+mod response;
+
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
 use chrono::DateTime;
-use chrono::Utc;
 use editoast_authz::Role;
-use serde::Deserialize;
-use serde::Serialize;
-use utoipa::ToSchema;
+use request::Request;
+use request::Segment;
+use response::Response;
 
 use crate::error::Result;
+use crate::models::TrainSchedule;
 
 use super::AppState;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
 editoast_common::schemas! {
-    Waypoint,
-    WaypointResponse,
+    request::schemas(),
+    response::schemas(),
 }
 
 crate::routes! {
     "/similar_schedules" => {
         similar_schedules,
     },
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-#[expect(dead_code)]
-struct RollingStockCharacteristics {
-    name: String,
-    speed_limit_tag: Option<String>,
-}
-
-#[derive(Clone, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypoint)]
-struct Waypoint {
-    ci: i64,
-    ch: String,
-    stop: bool,
-}
-
-impl std::fmt::Debug for Waypoint {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}:{}{}",
-            self.ci,
-            self.ch,
-            if self.stop { "[STOP]" } else { "" },
-        )
-    }
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-#[expect(dead_code)]
-struct Request {
-    #[schema(inline)]
-    rolling_stock: RollingStockCharacteristics,
-    #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
-    waypoints: Vec<Waypoint>,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypointResponse)]
-struct WaypointResponse {
-    ci: i64,
-    ch: String,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-struct SimilarScheduleItem {
-    schedule_id: String,
-    start_time: DateTime<Utc>,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
-    begin: WaypointResponse,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
-    end: WaypointResponse,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-struct Response {
-    #[schema(inline)]
-    similar_schedules: Vec<SimilarScheduleItem>,
 }
 
 #[utoipa::path(
@@ -100,8 +43,15 @@ struct Response {
 )]
 async fn similar_schedules(
     Extension(auth): AuthenticationExt,
-    State(AppState { .. }): State<AppState>,
-    Json(Request { .. }): Json<Request>,
+    State(AppState {
+        db_pool,
+        speed_limit_tag_ids,
+        ..
+    }): State<AppState>,
+    Json(Request {
+        rolling_stock,
+        waypoints,
+    }): Json<Request>,
 ) -> Result<Json<Response>> {
     let authorized = auth
         .check_roles([Role::Stdcm].into())
@@ -111,32 +61,74 @@ async fn similar_schedules(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    // Step 1: input validation and preprocessing
+    // ------------------------------------------
+
+    rolling_stock
+        .validate(&mut db_pool.get().await?, &speed_limit_tag_ids)
+        .await?;
+    let waypoints = request::Waypoint::squash_successive_waypoints(waypoints);
+    let waypoints_count = waypoints.len();
+    let segments = Segment::split_segments(waypoints)?;
+
+    tracing::debug!(
+        n_segments = segments.len(),
+        n_waypoints = waypoints_count,
+        "pre-processing complete"
+    );
+
+    // Step 2: query train schedules and build the search graph
+    // ------------------------------------------------------------
+
+    let train_schedules = TrainSchedule::get_by_rolling_stock_name_and_speed_limit_tag(
+        db_pool.get().await?,
+        rolling_stock.name,
+        rolling_stock.speed_limit_tag,
+    )
+    .await?;
+
+    for segment in segments {
+        let start_waypoint = segment.start()?;
+        let end_waypoint = segment.end()?;
+        let similar_schedules = train_schedules
+            .iter()
+            .filter(|ts| ts.contains_stops_in_order(start_waypoint.ci, end_waypoint.ci))
+            .collect::<Vec<_>>();
+        tracing::info!("TEST similar_schedules count: {}", similar_schedules.len());
+
+        if similar_schedules.is_empty() {
+            return Ok(Json(Response {
+                similar_schedules: vec![],
+            }));
+        }
+    }
+
     let similar_schedules = Response {
         similar_schedules: vec![
-            SimilarScheduleItem {
+            response::SimilarScheduleItem {
                 schedule_id: "mock_similar_schedule_1".to_string(),
                 start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
                     .unwrap()
                     .to_utc(),
-                begin: WaypointResponse {
+                begin: response::Waypoint {
                     ci: 123,
                     ch: "A1".to_string(),
                 },
-                end: WaypointResponse {
+                end: response::Waypoint {
                     ci: 456,
                     ch: "B1".to_string(),
                 },
             },
-            SimilarScheduleItem {
+            response::SimilarScheduleItem {
                 schedule_id: "mock_similar_schedule_2".to_string(),
                 start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
                     .unwrap()
                     .to_utc(),
-                begin: WaypointResponse {
+                begin: response::Waypoint {
                     ci: 123,
                     ch: "A1".to_string(),
                 },
-                end: WaypointResponse {
+                end: response::Waypoint {
                     ci: 456,
                     ch: "B1".to_string(),
                 },

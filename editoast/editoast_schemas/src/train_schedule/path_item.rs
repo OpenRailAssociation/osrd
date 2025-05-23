@@ -29,6 +29,30 @@ pub struct PathItem {
     pub location: PathItemLocation,
 }
 
+impl PathItem {
+    #[cfg(feature = "testing")]
+    pub fn new(id: String, location: PathItemLocation) -> Self {
+        Self {
+            id: id.into(),
+            deleted: false,
+            location,
+        }
+    }
+
+    pub fn get_uic(&self) -> Option<u32> {
+        if let PathItemLocation::OperationalPointReference(operational_point_reference) =
+            &self.location
+        {
+            if let OperationalPointIdentifier::OperationalPointUic { uic, .. } =
+                &operational_point_reference.reference
+            {
+                return Some(*uic);
+            }
+        }
+        None
+    }
+}
+
 /// The location of a path waypoint
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
