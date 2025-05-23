@@ -25,6 +25,7 @@ use request::convert_steps;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing::Instrument;
@@ -521,8 +522,8 @@ impl VirtualTrainRun {
             valkey_client,
             core_client,
             infra,
-            &[train_schedule.clone()],
-            &[consist_parameters.clone()],
+            slice::from_ref(&train_schedule),
+            slice::from_ref(consist_parameters),
             None,
         )
         .await?
