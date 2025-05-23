@@ -392,7 +392,9 @@ export const translateItemsList = <T>(
 ) =>
   itemsList.map((item) => ({
     id: item,
-    label: !isNull(item) ? t(getTranslationKey(translationKey, String(item))) : t('unspecified'),
+    label: !isNull(item)
+      ? t(getTranslationKey(translationKey, String(item)), { defaultValue: item })
+      : t('unspecified'),
   }));
 
 /**
