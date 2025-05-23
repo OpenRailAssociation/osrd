@@ -70,7 +70,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
         setIsHovering(false);
       }}
     >
-      {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptions)) && (
+      {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptionChangeGroups)) && (
         <div
           className="exception-info"
           style={{
@@ -89,13 +89,13 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
             </span>
             <hr />
             <div className="change-groups">
-              {occurrence.exceptions &&
-                Object.keys(occurrence.exceptions).map((changeGroup, i) => (
+              {occurrence.exceptionChangeGroups &&
+                Object.keys(occurrence.exceptionChangeGroups).map((changeGroup, i) => (
                   <span key={i} className="change-group">
                     {changeGroup !== 'category'
                       ? t(`occurrenceChangeGroup.${changeGroup}`)
                       : t(
-                          `rollingStock.categoriesOptions.${occurrence.exceptions?.rolling_stock_category?.value}`,
+                          `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
                           { ns: 'translation', keyPrefix: '' }
                         )}
                   </span>
@@ -106,7 +106,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
       )}
       <span
         className={cx('icon', {
-          exception: !isEmpty(occurrence.exceptions),
+          exception: !isEmpty(occurrence.exceptionChangeGroups),
           disabled: occurrence.disabled,
         })}
       />

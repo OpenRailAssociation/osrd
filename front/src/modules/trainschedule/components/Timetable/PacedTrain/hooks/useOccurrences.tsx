@@ -50,17 +50,17 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
       const occurrenceArrivalTime = dayjs(arrivalTime)
         .add(i * paced.interval.ms, 'ms')
         .toDate();
-      const correspondingExceptions = findExceptionWithOccurrenceId(exceptions, occurrenceId);
+      const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
       computedOccurrences.push({
         id: occurrenceId,
         trainName: computeOccurrenceName(name, i),
         rollingStock,
         startTime: occurrenceStartTime,
         stopsCount,
-        disabled: correspondingExceptions?.disabled,
+        disabled: correspondingException?.disabled,
         occurrenceIndex: i,
-        exceptions: correspondingExceptions
-          ? omit(correspondingExceptions, ['key', 'occurrence_index', 'disabled'])
+        exceptionChangeGroups: correspondingException
+          ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
           : undefined,
         ...(isValid
           ? {
@@ -90,7 +90,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
         // An added exception will always have a least a start time in its exceptions
         startTime: new Date(exception.start_time!.value),
         stopsCount,
-        exceptions: omit(exception, ['key']),
+        exceptionChangeGroups: omit(exception, ['key']),
         ...(isValid
           ? {
               isValid: true,

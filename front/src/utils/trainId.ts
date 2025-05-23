@@ -39,11 +39,11 @@ export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || is
  * - An added exception that has been modified is still considered as an added exception.
  */
 export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' | null => {
-  const { id, exceptions } = occurrence;
+  const { id, exceptionChangeGroups } = occurrence;
   if (isAddedExceptionId(id)) {
     return 'added';
   }
-  if (isIndexedOccurrenceId(id) && !isEmpty(exceptions)) {
+  if (isIndexedOccurrenceId(id) && !isEmpty(exceptionChangeGroups)) {
     return 'modified';
   }
   return null;
