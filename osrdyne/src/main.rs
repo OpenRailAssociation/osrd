@@ -139,6 +139,7 @@ async fn main() -> Result<(), anyhow::Error> {
                     config.amqp_uri.clone(),
                     config.max_msg_size,
                     config.pool_id.clone(),
+                    config.managed_by_value.clone(),
                 ))
             }
 
@@ -150,6 +151,7 @@ async fn main() -> Result<(), anyhow::Error> {
                         config.amqp_uri.clone(),
                         config.max_msg_size,
                         config.pool_id.clone(),
+                        config.managed_by_value.clone(),
                     )
                     .await,
                 )

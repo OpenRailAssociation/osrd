@@ -17,7 +17,6 @@ use crate::Key;
 
 use super::{
     LABEL_MANAGED_BY, LABEL_VERSION_IDENTIFIER, LABEL_WORKER_ID, LABEL_WORKER_KEY,
-    MANAGED_BY_VALUE,
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
 };
 
@@ -44,6 +43,7 @@ pub struct DockerDriver {
     max_message_size: i64,
     worker_pool: String,
     version_identifier: String,
+    managed_by_value: String,
 }
 
 impl Debug for DockerDriver {
@@ -53,6 +53,7 @@ impl Debug for DockerDriver {
             .field("amqp_uri", &self.amqp_uri)
             .field("worker_pool", &self.worker_pool)
             .field("version_identifier", &self.version_identifier)
+            .field("managed_by_value", &self.managed_by_value)
             .finish()
     }
 }
@@ -63,6 +64,7 @@ impl DockerDriver {
         amqp_uri: String,
         max_message_size: i64,
         worker_pool: String,
+        managed_by_value: String,
     ) -> DockerDriver {
         let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
             .unwrap_or_else(|_| format!("run-{}", Uuid::new_v4()));
@@ -76,6 +78,7 @@ impl DockerDriver {
             max_message_size,
             worker_pool,
             version_identifier: hashed,
+            managed_by_value,
         }
     }
 }
@@ -128,7 +131,7 @@ impl WorkerDriver for DockerDriver {
             };
 
             let labels = HashMap::from([
-                (LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned()),
+                (LABEL_MANAGED_BY.to_owned(), self.managed_by_value.clone()),
                 (LABEL_WORKER_ID.to_owned(), new_id.to_string()),
                 (LABEL_WORKER_KEY.to_owned(), worker_key.to_string()),
                 (
@@ -235,7 +238,7 @@ impl WorkerDriver for DockerDriver {
                 .iter()
                 .filter_map(|container| {
                     container.labels.as_ref().and_then(|labels| {
-                        if labels.get(LABEL_MANAGED_BY) == Some(&MANAGED_BY_VALUE.to_string()) {
+                        if labels.get(LABEL_MANAGED_BY) == Some(&self.managed_by_value) {
                             let mut metadata = HashMap::new();
                             metadata.insert(
                                 LABEL_VERSION_IDENTIFIER.to_owned(),
