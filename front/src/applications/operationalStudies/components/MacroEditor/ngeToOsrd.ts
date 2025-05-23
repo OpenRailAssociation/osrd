@@ -37,6 +37,7 @@ import {
   createMacroNode,
   deleteMacroNodeByNgeId,
   getFrequencyFromFrequencyId,
+  getTrainCategoryFromId,
   updateMacroNode,
 } from './utils';
 import type {
@@ -382,6 +383,7 @@ const handleUpdateTimetableItem = async ({
     schedule,
     paced: undefined,
     exceptions: undefined,
+    category: getTrainCategoryFromId(trainrun.categoryId),
   };
 
   let updatedTimetableItem: TimetableItem;
