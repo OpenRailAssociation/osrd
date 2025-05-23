@@ -5,7 +5,6 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { getExceptionChangeGroups } from 'modules/trainschedule/helpers/pacedTrain';
 import { getExceptionType } from 'utils/trainId';
 
 import type { Occurrence } from '../types';
@@ -91,7 +90,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
             <hr />
             <div className="change-groups">
               {occurrence.exceptions &&
-                getExceptionChangeGroups(occurrence.exceptions).map((changeGroup, i) => (
+                Object.keys(occurrence.exceptions).map((changeGroup, i) => (
                   <span key={i} className="change-group">
                     {changeGroup !== 'category'
                       ? t(`occurrenceChangeGroup.${changeGroup}`)

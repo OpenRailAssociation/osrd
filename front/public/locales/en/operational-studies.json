@@ -146,15 +146,15 @@
       "noSpeedLimitTagsShort": "None",
       "noTrain": "No train",
       "occurrenceChangeGroup": {
-        "consist": "Consist",
-        "constraintDistribution": "Recovery margin",
-        "departureTime": "Departure time",
-        "electricalProfiles": "Electrical profiles",
-        "initialVelocity": "Initial velocity",
+        "constraint_distribution": "Recovery margin",
+        "initial_speed": "Initial velocity",
         "labels": "Labels",
-        "name": "Name",
-        "pathAndSchedule": "Path and schedule",
-        "speedLimitByTag": "Speed limit by tag"
+        "options": "Electrical profiles",
+        "path_and_schedule": "Path and schedule",
+        "rolling_stock": "Consist",
+        "speed_limit_tag": "Speed limit by tag",
+        "start_time": "Departure time",
+        "train_name": "Name"
       },
       "occurrenceType": {
         "addedOccurrence": "Added occurrence",
