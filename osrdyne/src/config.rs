@@ -34,6 +34,7 @@ pub struct OsrdyneConfig {
     pub max_length: Option<usize>,
     pub max_length_bytes: Option<usize>,
     pub api_address: String,
+    pub managed_by_value: String,
     pub extra_lifetime: Option<Duration>,
     pub opentelemetry: Option<OpentelemetryConfig>,
 }
@@ -64,6 +65,7 @@ impl Default for OsrdyneConfig {
             max_length: None,
             max_length_bytes: None,
             api_address: "0.0.0.0:4242".into(), // TODO: decide on the port
+            managed_by_value: "osrdyne".into(),
             extra_lifetime: None,
             opentelemetry: None,
         }

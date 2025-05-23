@@ -4,7 +4,7 @@ use crate::{
 };
 
 use super::{
-    LABEL_MANAGED_BY, LABEL_WORKER_ID, LABEL_WORKER_KEY, MANAGED_BY_VALUE,
+    LABEL_MANAGED_BY, LABEL_WORKER_ID, LABEL_WORKER_KEY,
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
 };
 use k8s_openapi::{
@@ -144,6 +144,7 @@ pub struct KubernetesDriver {
     amqp_uri: String,
     max_message_size: i64,
     version_identifier: String,
+    managed_by_value: String,
 }
 
 impl Debug for KubernetesDriver {
@@ -153,6 +154,7 @@ impl Debug for KubernetesDriver {
             .field("options", &self.options)
             .field("amqp_uri", &self.amqp_uri)
             .field("version_identifier", &self.version_identifier)
+            .field("managed_by_value", &self.managed_by_value)
             .finish()
     }
 }
@@ -163,6 +165,7 @@ impl KubernetesDriver {
         amqp_uri: String,
         max_message_size: i64,
         pool_id: String,
+        managed_by_value: String,
     ) -> KubernetesDriver {
         let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
             .unwrap_or_else(|_| format!("run-{}", Uuid::new_v4()));
@@ -178,6 +181,7 @@ impl KubernetesDriver {
             max_message_size,
             pool_id,
             version_identifier: hashed,
+            managed_by_value,
         }
     }
 
@@ -197,7 +201,7 @@ impl KubernetesDriver {
                 namespace: Some(self.options.namespace.clone()),
                 labels: Some({
                     let mut labels = BTreeMap::new();
-                    labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                    labels.insert(LABEL_MANAGED_BY.to_owned(), self.managed_by_value.clone());
                     labels.insert(LABEL_WORKER_ID.to_owned(), worker_id);
                     labels.insert(LABEL_WORKER_KEY.to_owned(), worker_key.to_string());
                     labels.insert(LABEL_QUEUE_NAME.to_owned(), queue_name.clone());
@@ -272,7 +276,7 @@ impl KubernetesDriver {
                 namespace: Some(self.options.namespace.clone()),
                 labels: Some({
                     let mut labels = BTreeMap::new();
-                    labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                    labels.insert(LABEL_MANAGED_BY.to_owned(), self.managed_by_value.clone());
                     labels.insert(LABEL_WORKER_ID.to_owned(), worker_id);
                     labels.insert(LABEL_WORKER_KEY.to_owned(), worker_key.to_string());
                     labels.insert(LABEL_QUEUE_NAME.to_owned(), queue_name.clone());
@@ -438,7 +442,7 @@ impl WorkerDriver for KubernetesDriver {
 
             let match_labels = {
                 let mut labels = BTreeMap::new();
-                labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                labels.insert(LABEL_MANAGED_BY.to_owned(), self.managed_by_value.clone());
                 labels.insert(LABEL_WORKER_ID.to_owned(), new_id.to_string());
                 labels.insert(LABEL_WORKER_KEY.to_owned(), worker_key.to_string());
                 labels
@@ -671,7 +675,7 @@ impl WorkerDriver for KubernetesDriver {
                 .iter()
                 .filter_map(|deployment| {
                     deployment.metadata.labels.as_ref().and_then(|labels| {
-                        if labels.get(LABEL_MANAGED_BY) == Some(&MANAGED_BY_VALUE.to_owned()) {
+                        if labels.get(LABEL_MANAGED_BY) == Some(&self.managed_by_value) {
                             let worker_id =
                                 labels.get(LABEL_WORKER_ID).expect("worker_id not found");
                             let worker_key =
@@ -748,7 +752,7 @@ impl WorkerDriver for KubernetesDriver {
                             .labels
                             .as_ref()
                             .and_then(|labels| labels.get(LABEL_MANAGED_BY))
-                            != Some(&MANAGED_BY_VALUE.to_owned())
+                            != Some(&self.managed_by_value)
                         {
                             continue;
                         }
@@ -794,7 +798,7 @@ impl WorkerDriver for KubernetesDriver {
                         // Check if managed by osrdyne otherwise ignore
                         if scaled_object.metadata.labels.as_ref().and_then(
                             |labels: &BTreeMap<String, String>| labels.get(LABEL_MANAGED_BY),
-                        ) != Some(&MANAGED_BY_VALUE.to_owned())
+                        ) != Some(&self.managed_by_value)
                         {
                             continue;
                         }

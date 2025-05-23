@@ -16,3 +16,4 @@ worker_driver:
 amqp_uri: "amqp://osrd:password@rabbitmq:5673/%2f"
 management_uri: "http://osrd:password@rabbitmq:15673"
 api_address: "0.0.0.0:4243"
+managed_by_value: "osrdyne-pr-test"
