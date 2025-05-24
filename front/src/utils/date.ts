@@ -4,9 +4,9 @@ import 'dayjs/locale/de';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import type { TFunction } from 'i18next';
 
 import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
-import i18n from 'i18n';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -14,9 +14,9 @@ dayjs.extend(customParseFormat);
 
 const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
 
-export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
+export function dateTimeFormatting(date: Date, locale: string, withoutTime: boolean = false) {
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-  return dayjs(date).locale(i18n.language).tz(userTimeZone).format(dateFormat).replace(/\./gi, '');
+  return dayjs(date).locale(locale).tz(userTimeZone).format(dateFormat).replace(/\./gi, '');
 }
 
 /**
@@ -100,7 +100,7 @@ export const isEqualDate = (searchDate: Date, startDate: Date) =>
  * @param end Date object
  * @returns string "Xj Yh Zmin"
  */
-export const formatTimeDifference = (_start: Date, _end: Date): string => {
+export const formatTimeDifference = (_start: Date, _end: Date, t: TFunction): string => {
   const start = dayjs(_start);
   const end = dayjs(_end);
 
@@ -109,9 +109,9 @@ export const formatTimeDifference = (_start: Date, _end: Date): string => {
   const diffInMinutes = end.diff(start, 'minute') % 60;
 
   const parts = [];
-  if (diffInDays > 0) parts.push(`${diffInDays}${i18n.t('common.units.day')}`);
-  if (diffInHours > 0) parts.push(`${diffInHours}${i18n.t('common.units.hour')}`);
-  if (diffInMinutes > 0) parts.push(`${diffInMinutes}${i18n.t('common.units.minute')}`);
+  if (diffInDays > 0) parts.push(`${diffInDays}${t('common.units.day')}`);
+  if (diffInHours > 0) parts.push(`${diffInHours}${t('common.units.hour')}`);
+  if (diffInMinutes > 0) parts.push(`${diffInMinutes}${t('common.units.minute')}`);
 
   return parts.join(' ');
 };

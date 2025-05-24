@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
-  const { t } = useTranslation('operational-studies');
+  const { t, i18n } = useTranslation('operational-studies');
   const [imageUrl, setImageUrl] = useState<string>();
   const safeWord = useSelector(getUserSafeWord);
 
@@ -72,7 +72,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           <span className="mr-1">
             <Calendar />
           </span>
-          {dateTimeFormatting(new Date(project.last_modification))}
+          {dateTimeFormatting(new Date(project.last_modification), i18n.language)}
         </div>
         <div>
           <span className="mr-1">

@@ -25,7 +25,7 @@ export default function ScenarioCard({
   isSelected,
   toggleSelect,
 }: ScenarioCardProps) {
-  const { t } = useTranslation('operational-studies');
+  const { t, i18n } = useTranslation('operational-studies');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID } = useOsrdConfActions();
@@ -97,7 +97,8 @@ export default function ScenarioCard({
             <Calendar />
           </span>
           <span className="mr-1">{t('scenario.updatedOn')}</span>
-          {scenario.last_modification && dateTimeFormatting(new Date(scenario.last_modification))}
+          {scenario.last_modification &&
+            dateTimeFormatting(new Date(scenario.last_modification), i18n.language)}
         </div>
       </div>
     </div>

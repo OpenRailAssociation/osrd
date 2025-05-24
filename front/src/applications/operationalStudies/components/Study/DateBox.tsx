@@ -9,13 +9,13 @@ type Props = {
 };
 
 export default function DateBox({ date, type, withoutTime }: Props) {
-  const { t } = useTranslation('operational-studies');
+  const { t, i18n } = useTranslation('operational-studies');
   return (
     <div className={`study-details-dates-date ${type}`}>
       <span className="study-details-dates-date-label">{t(`study.date-${type}`)}</span>
       <span className="study-details-dates-date-value">
         {date ? (
-          dateTimeFormatting(date, withoutTime)
+          dateTimeFormatting(date, i18n.language, withoutTime)
         ) : (
           <small className="text-muted">{t('study.noDateFound')}</small>
         )}

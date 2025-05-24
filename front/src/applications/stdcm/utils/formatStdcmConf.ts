@@ -39,6 +39,7 @@ type ValidStdcmConfig = {
 export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
+  i18nLanguage: string,
   osrdconf: OsrdStdcmConfState
 ): ValidStdcmConfig | null => {
   const {
@@ -135,8 +136,8 @@ export const checkStdcmConf = (
         message: t(
           'operational-studies:manageTrainSchedule.errorMessages.originTimeOutsideWindow',
           {
-            low: dateTimeFormatting(searchDatetimeWindow.begin, false),
-            high: dateTimeFormatting(searchDatetimeWindow.end, false),
+            low: dateTimeFormatting(searchDatetimeWindow.begin, i18nLanguage, false),
+            high: dateTimeFormatting(searchDatetimeWindow.end, i18nLanguage, false),
           }
         ),
       })

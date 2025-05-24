@@ -52,7 +52,7 @@ const useStdcm = ({
   );
 
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['translation', 'stdcm']);
+  const { t, i18n } = useTranslation(['translation', 'stdcm']);
   const osrdconf = useSelector(getStdcmConf);
   const timetableId = useSelector(getStdcmTimetableID);
   const infraId = useSelector(getStdcmInfraID);
@@ -218,7 +218,7 @@ const useStdcm = ({
     resetStdcmState();
     isCancelledRef.current = false;
 
-    const validConfig = checkStdcmConf(dispatch, t, osrdconf);
+    const validConfig = checkStdcmConf(dispatch, t, i18n.language, osrdconf);
     if (!validConfig) return;
 
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);

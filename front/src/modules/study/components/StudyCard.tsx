@@ -23,7 +23,7 @@ export default function StudyCard({
   isSelected,
   toggleSelect,
 }: StudyCardProps) {
-  const { t } = useTranslation('operational-studies');
+  const { t, i18n } = useTranslation('operational-studies');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();
@@ -121,7 +121,8 @@ export default function StudyCard({
             <Calendar />
           </span>
           <span className="mr-1">{t('study.updatedOn')}</span>
-          {study.last_modification && dateTimeFormatting(new Date(study.last_modification))}
+          {study.last_modification &&
+            dateTimeFormatting(new Date(study.last_modification), i18n.language)}
         </div>
       </div>
     </div>
