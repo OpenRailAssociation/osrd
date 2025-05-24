@@ -164,17 +164,22 @@ const createPathItemFromNode = async (
   };
 };
 
-const getTimeLockDate = (
+export const getTimeLockDate = (
   timeLock: TimeLockDto,
   startTimeLock: TimeLockDto,
   startDate: Date
 ): Date | null => {
   if (timeLock.time === null) return null;
-  const offset = timeLock.consecutiveTime! - startTimeLock.consecutiveTime!;
-  return new Date(startDate.getTime() + offset * 60 * 1000);
+
+  console.log('timeLock.consecutiveTime: ', timeLock.consecutiveTime);
+  console.log('startTimeLock.consecutiveTime: ', startTimeLock.consecutiveTime);
+  const offsetInMinutes = timeLock.consecutiveTime! - startTimeLock.consecutiveTime!;
+  // there are 60000ms in 1 minute
+  const newStartDate = new Date(startDate.getTime() + offsetInMinutes * 60 * 1000);
+  return newStartDate;
 };
 
-const formatDateDifferenceFrom = (start: Date, stop: Date) =>
+export const formatDateDifferenceFrom = (start: Date, stop: Date) =>
   Duration.subtractDate(stop, start).toISOString();
 
 /**
@@ -209,11 +214,15 @@ export const generatePath = async (
 /**
  * Calculate the start date of a trainrun.
  */
-const calculateStartDate = (trainrunSections: TrainrunSectionDto[], startDate: Date): Date => {
+export const calculateStartDate = (
+  trainrunSections: TrainrunSectionDto[],
+  startDate: Date
+): Date => {
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock = trainrunSections[0].sourceDeparture;
-  startDate.setMinutes(startTimeLock.time!, 0, 0);
-  return startDate;
+  const newStartDate = new Date(startDate);
+  newStartDate.setMinutes(startTimeLock.time!, 0, 0);
+  return newStartDate;
 };
 
 /**
