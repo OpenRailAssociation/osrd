@@ -12,7 +12,6 @@ import {
 } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
-import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -21,6 +20,7 @@ import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import ReleaseInformations from 'common/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
+import i18n from 'i18n';
 import { setImpersonatedUser } from 'reducers/user';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';

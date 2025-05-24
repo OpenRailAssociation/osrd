@@ -1,4 +1,3 @@
-import i18next from 'i18next';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 
@@ -14,6 +13,7 @@ import {
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import i18n from 'i18n';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
@@ -183,8 +183,8 @@ export function saveOperations(
         // success message
         dispatch(
           setSuccess({
-            title: i18next.t('common.success.save.title'),
-            text: i18next.t('common.success.save.text'),
+            title: i18n.t('common.success.save.title'),
+            text: i18n.t('common.success.save.text'),
           })
         );
         return response.data;
@@ -194,8 +194,8 @@ export function saveOperations(
       dispatch(
         setFailure(
           castErrorToFailure(e, {
-            name: i18next.t('common.failure.save.title'),
-            message: i18next.t('common.failure.save.text'),
+            name: i18n.t('common.failure.save.title'),
+            message: i18n.t('common.failure.save.text'),
           })
         )
       );
@@ -240,8 +240,8 @@ export function saveSplitTrackSection(
         // success message
         dispatch(
           setSuccess({
-            title: i18next.t('common.success.save.title'),
-            text: i18next.t('common.success.save.text'),
+            title: i18n.t('common.success.save.title'),
+            text: i18n.t('common.success.save.text'),
           })
         );
         return response.data;
@@ -251,8 +251,8 @@ export function saveSplitTrackSection(
       dispatch(
         setFailure(
           castErrorToFailure(e, {
-            name: i18next.t('common.failure.save.title'),
-            message: i18next.t('common.failure.save.text'),
+            name: i18n.t('common.failure.save.title'),
+            message: i18n.t('common.failure.save.text'),
           })
         )
       );
