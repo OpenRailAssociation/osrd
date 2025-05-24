@@ -1,10 +1,10 @@
 import type { TFunction } from 'i18next';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
-import i18n from 'i18n';
-
 function getI18nTranslation(key: string, defaultTranslation: string, t: TFunction) {
-  return i18n.exists(key) ? t(key) : defaultTranslation;
+  // The infraEditor schema is provided in English by default, and thus most of its keys are absent from locales/en.
+  // We thus want to fallback to defaultTranslation (the content of the provided schema) rather than French.
+  return t(key, { defaultValue: defaultTranslation, fallbackLng: 'en' });
 }
 
 export function translateProperties(
