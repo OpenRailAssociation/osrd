@@ -65,10 +65,11 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   );
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
-  const isFrench = i18n.language === 'fr';
   const isI18nLoaded = i18n.hasLoadedNamespace('infraEditor');
-
-  const translatedSchema = useMemo(() => translateSchema(schema, t), [schema, isI18nLoaded]);
+  const translatedSchema = useMemo(
+    () => translateSchema(schema, t),
+    [schema, isI18nLoaded, i18n.language]
+  );
 
   /**
    * When data or schema change
@@ -102,7 +103,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         noHtml5Validate
         validator={validator}
         method={undefined}
-        schema={isFrench ? translatedSchema : schema}
+        schema={translatedSchema}
         uiSchema={overrideUiSchema || {}}
         formData={formData}
         formContext={{
