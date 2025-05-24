@@ -72,7 +72,8 @@ const StdcmSimulationNavigator = ({
                   formatedTotalLength = `${Math.round(mmToKm(results.path.length))} ${t('common.units.km', { ns: 'translation' })} `;
                   formatedTripDuration = formatTimeDifference(
                     departureTime,
-                    new Date(lastPointTime + departureTime.getTime())
+                    new Date(lastPointTime + departureTime.getTime()),
+                    t
                   );
                 }
                 if (hasValidResults) {
