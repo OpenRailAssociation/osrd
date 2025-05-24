@@ -7,8 +7,7 @@ import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronte
 import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/styles.css?url';
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
-
-import i18n from 'i18n';
+import { useTranslation } from 'react-i18next';
 
 import { EMPTY_DTO } from './consts';
 import type { NetzgrafikDto, NGEEvent } from './types';
@@ -46,6 +45,8 @@ const frameSrc = `
  * logic.
  */
 const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
+  const { i18n } = useTranslation();
+
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   const [ngeRootElement, setNgeRootElement] = useState<NGEElement | null>(null);

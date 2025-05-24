@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
-import i18n from 'i18n';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -56,7 +55,7 @@ const SimulationReportSheet = ({
   operationalPointsList,
   simulationSheetLogo,
 }: SimulationReportSheetProps) => {
-  const { t } = useTranslation('stdcm');
+  const { t, i18n } = useTranslation('stdcm');
   let renderedIndex = 0;
 
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;

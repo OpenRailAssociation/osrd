@@ -20,7 +20,6 @@ import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import ReleaseInformations from 'common/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
-import i18n from 'i18n';
 import { setImpersonatedUser } from 'reducers/user';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
@@ -42,7 +41,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { logout, username, impersonatedUser } = useAuth();
   const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));

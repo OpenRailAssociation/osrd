@@ -8,7 +8,6 @@ import { Virtualizer } from 'virtua';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
-import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -42,7 +41,8 @@ type TimetableProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
 };
 
-const formatDepartureDate = (d: Date) => dayjs(d).locale(i18n.language).format('dddd D MMMM YYYY');
+const formatDepartureDate = (d: Date, locale: string) =>
+  dayjs(d).locale(locale).format('dddd D MMMM YYYY');
 
 const Timetable = ({
   setDisplayTrainScheduleManagement,
@@ -55,7 +55,7 @@ const Timetable = ({
   timetableItems = [],
   timetableItemsWithDetails,
 }: TimetableProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const { t, i18n } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
@@ -110,8 +110,9 @@ const Timetable = ({
   };
 
   const currentDepartureDates = useMemo(
-    () => filteredTimetableItems.map((train) => formatDepartureDate(train.startTime)),
-    [filteredTimetableItems]
+    () =>
+      filteredTimetableItems.map((train) => formatDepartureDate(train.startTime, i18n.language)),
+    [filteredTimetableItems, i18n.language]
   );
 
   const showDepartureDates = useMemo(() => {
