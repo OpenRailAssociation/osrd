@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
+import 'dayjs/locale/de';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -14,16 +15,8 @@ dayjs.extend(customParseFormat);
 const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
 
 export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
-  let locale;
-  switch (i18n.language) {
-    case 'fr':
-      locale = 'fr';
-      break;
-    default:
-      locale = 'en';
-  }
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-  return dayjs(date).locale(locale).tz(userTimeZone).format(dateFormat).replace(/\./gi, '');
+  return dayjs(date).locale(i18n.language).tz(userTimeZone).format(dateFormat).replace(/\./gi, '');
 }
 
 /**
