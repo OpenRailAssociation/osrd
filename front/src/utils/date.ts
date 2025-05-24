@@ -3,7 +3,6 @@ import 'dayjs/locale/fr';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import i18next from 'i18next';
 
 import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
 import i18n from 'i18n';
@@ -117,9 +116,9 @@ export const formatTimeDifference = (_start: Date, _end: Date): string => {
   const diffInMinutes = end.diff(start, 'minute') % 60;
 
   const parts = [];
-  if (diffInDays > 0) parts.push(`${diffInDays}${i18next.t('common.units.day')}`);
-  if (diffInHours > 0) parts.push(`${diffInHours}${i18next.t('common.units.hour')}`);
-  if (diffInMinutes > 0) parts.push(`${diffInMinutes}${i18next.t('common.units.minute')}`);
+  if (diffInDays > 0) parts.push(`${diffInDays}${i18n.t('common.units.day')}`);
+  if (diffInHours > 0) parts.push(`${diffInHours}${i18n.t('common.units.hour')}`);
+  if (diffInMinutes > 0) parts.push(`${diffInMinutes}${i18n.t('common.units.minute')}`);
 
   return parts.join(' ');
 };
