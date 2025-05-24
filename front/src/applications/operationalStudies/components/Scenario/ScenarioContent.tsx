@@ -19,7 +19,6 @@ import SimulationResults from 'applications/operationalStudies/views/SimulationR
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import i18n from 'i18n';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
@@ -43,7 +42,7 @@ const ScenarioContent = ({
   infra,
   infraMetadata: { isInfraLoaded, reloadCount },
 }: ScenarioDescriptionProps) => {
-  const { t } = useTranslation('operational-studies');
+  const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
 
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(

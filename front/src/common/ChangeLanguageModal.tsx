@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import i18n, { supportedLngs } from 'i18n';
+import { supportedLngs } from 'i18n';
 
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
 const SortedLanguages = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { closeModal } = useModal();
 
   const changeLanguage = (lng: string) => {
@@ -57,7 +57,7 @@ const SortedLanguages = () => {
 };
 
 export default function ChangeLanguageModal() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="informations">

@@ -16,7 +16,6 @@ import {
 } from 'applications/editor/data/utils';
 import { translateSchema } from 'applications/editor/tools/translationTools';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import i18n from 'i18n';
 import { getEditorState } from 'reducers/editor/selectors';
 import { getErrorMessage } from 'utils/error';
 
@@ -52,7 +51,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
   const [submited, setSubmited] = useState<boolean>(false);
-  const { t } = useTranslation('infraEditor');
+  const { t, i18n } = useTranslation('infraEditor');
 
   const editorState = useSelector(getEditorState);
   const layer = useMemo(
