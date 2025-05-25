@@ -101,7 +101,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
           <span className={`px-1 d-flex align-items-center ${color}`}>
             <IconComponent />
           </span>
-          <small>{t(`layers.${name}`)}</small>
+          <small>{t(`mapSettings.layers.${name}`)}</small>
         </div>
       </div>
       <div className="col-lg-6 pt-1">
