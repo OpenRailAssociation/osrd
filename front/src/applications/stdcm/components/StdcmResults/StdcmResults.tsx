@@ -200,7 +200,7 @@ const StdcmResults = ({
                   )}
                 </div>
               )}
-              {selectedSimulation && <StdcmFeedback />}
+              <StdcmFeedback />
             </div>
 
             <div className="osrd-config-item-container osrd-config-item-container-map map-results">
