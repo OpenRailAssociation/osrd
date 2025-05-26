@@ -366,19 +366,19 @@ const ImportTimetableItemConfig = ({
       )
       .filter((pacedTrain) => pacedTrain !== null);
 
-    const trains = Array.from(xmlDoc.getElementsByTagName('train'));
-    const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
     const trainSchedulesInPacedTrain = new Set(
       Object.values(pacedTrains)
         .flat()
         .map((schedule) => schedule.train_name)
     );
-
     const singleTrainSchedules = trainSchedules.filter(
       (schedule) => !trainSchedulesInPacedTrain.has(schedule.train_name)
     );
 
-    setTrainsJsonData({ train_schedules: singleTrainSchedules, paced_trains: importedPacedTrains });
+    const trains = Array.from(xmlDoc.getElementsByTagName('train'));
+    const updatedTrainSchedules = mapTrainNames(singleTrainSchedules, trains);
+
+    setTrainsJsonData({ train_schedules: updatedTrainSchedules, paced_trains: importedPacedTrains });
 
     return updatedTrainSchedules;
   };
