@@ -1050,9 +1050,9 @@ dependencies = [
 
 [[package]]
 name = "deadpool-redis"
-version = "0.21.0"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b46e5b9e5b5e7d563ac3dfbf100d30139514961dc022fc44efbfbf7a8ee7dfce"
+checksum = "667d186d69c8b4dd7f8cf1ac71bec88b312e1752f2d1a63028aa9ea124c3f191"
 dependencies = [
  "deadpool",
  "redis",
