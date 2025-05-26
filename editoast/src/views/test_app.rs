@@ -1,5 +1,5 @@
 //! Exposes [TestApp] and [TestAppBuilder] to ease the setup of the
-//! test actix server, database connection pool, and different mocking
+//! test axum server, database connection pool, and different mocking
 //! components.
 
 use std::collections::HashMap;
@@ -318,7 +318,7 @@ macro_rules! test_app {
 
 pub(crate) use test_app;
 
-/// Wraps an underlying, fully configured, actix service
+/// Wraps an underlying, fully configured, axum service
 ///
 /// It also holds a reference to the database connection pool and the core client,
 /// which can be accessed through the [TestApp] methods.
@@ -327,7 +327,7 @@ pub(crate) struct TestApp {
     server: TestServer,
     app_state: AppState,
     authorization_model: Option<&'static str>,
-    #[allow(unused)] // included here to extend its lifetime, not meant to be used in any way
+    #[expect(unused)] // included here to extend its lifetime, not meant to be used in any way
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
