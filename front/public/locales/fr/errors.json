@@ -166,7 +166,7 @@
     },
     "scenario": {
       "Database": "Erreur interne (base de données)",
-      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Scénario non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },

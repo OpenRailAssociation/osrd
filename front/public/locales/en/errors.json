@@ -166,7 +166,9 @@
     },
     "scenario": {
       "Database": "Internal error (database)",
-      "NotFound": "Scenario not found"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' not found",
+      "NotFound": "Scenario not found",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' not found"
     },
     "search": {
       "ArgMissing": "Expected argument of type {{expected}} at position {{arg_pos}} is missing",
