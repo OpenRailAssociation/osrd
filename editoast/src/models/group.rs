@@ -1,10 +1,9 @@
 use editoast_derive::Model;
 
 #[derive(Debug, Clone, Model)]
-#[model(table = editoast_models::tables::authn_user)]
+#[model(table = editoast_models::tables::authn_group)]
 #[model(gen(ops = r, list))]
-pub struct User {
+pub struct Group {
     pub id: i64,
-    pub identity_id: String,
     pub name: String,
 }
