@@ -12,6 +12,7 @@ pub mod stdcm_log;
 mod auth_driver;
 pub use auth_driver::PgAuthDriver;
 
+pub mod group;
 pub mod paced_train;
 pub mod pagination;
 #[allow(unused)]
@@ -24,6 +25,7 @@ pub mod rolling_stock_livery;
 pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
+pub mod subject;
 pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
@@ -35,6 +37,7 @@ pub mod work_schedules;
 pub use prelude::*;
 
 pub use documents::Document;
+pub use group::Group;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use paced_train::PacedTrain;
@@ -43,6 +46,7 @@ pub use rolling_stock::RollingStock;
 pub use rolling_stock_image::RollingStockImage;
 pub use scenario::Scenario;
 pub use study::Study;
+pub use subject::Subject;
 pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
 pub use user::User;
