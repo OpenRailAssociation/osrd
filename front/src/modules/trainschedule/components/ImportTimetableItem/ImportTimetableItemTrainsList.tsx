@@ -25,7 +25,7 @@ import type {
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
-import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
+import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from '../ManageTrainSchedule/helpers/findValidTrainNameKey';
 
 function LoadingIfSearching({
