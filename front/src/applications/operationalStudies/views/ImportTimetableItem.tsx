@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type {
-  ImportedTrainSchedule,
-  TimetableJsonPayload,
-} from 'applications/operationalStudies/types';
+import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type { GraouTrainSchedule } from 'common/api/graouApi';
 import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import {
@@ -24,7 +22,7 @@ type ImportTimetableItemProps = {
 const ImportTimetableItem = ({ scenario, upsertTimetableItems }: ImportTimetableItemProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
+  const [trainsList, setTrainsList] = useState<GraouTrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trainsJsonData, setTrainsJsonData] = useState<TimetableJsonPayload>({
     train_schedules: [],

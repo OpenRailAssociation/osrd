@@ -17,54 +17,10 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
-export interface ImportedStep {
-  uic: number;
-  chCode?: string;
-  yard?: string;
-  name: string;
-  trigram?: string;
-  latitude?: number;
-  longitude?: number;
-  arrivalTime: string;
-  departureTime: string;
-  duration?: number;
-}
-
-export type ImportedTrainSchedule = {
-  trainNumber: string;
-  rollingStock: string | null;
-  departureTime: string;
-  arrivalTime: string;
-  departure: string;
-  steps: ImportedStep[];
-  transilienName?: string;
-};
-
-export type ImportStation = {
-  trigram?: string;
-  name?: string;
-  yardname?: string;
-  town?: string;
-  department?: string;
-  region?: string;
-  uic?: number;
-  linename?: string;
-  pk?: string;
-  linecode?: string;
-};
-
 export type TimetableJsonPayload = {
   train_schedules: TrainSchedule[];
   paced_trains: PacedTrain[];
   macro_nodes?: MacroNodeForm[];
-};
-
-export type TrainScheduleImportConfig = {
-  from: ImportStation;
-  to: ImportStation;
-  date: string;
-  startTime: string;
-  endTime: string;
 };
 
 export type CichDictValue = {

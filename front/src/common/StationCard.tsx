@@ -1,10 +1,10 @@
 import cx from 'classnames';
 
-import type { ImportStation } from 'applications/operationalStudies/types';
+import type { GraouStation } from 'common/api/graouApi';
 import { formatUicToCi } from 'utils/strings';
 
 type Props = {
-  station: ImportStation;
+  station: GraouStation;
   onClick?: () => void;
   fixedHeight?: boolean;
 };

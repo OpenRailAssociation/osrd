@@ -4,14 +4,13 @@ import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  ImportStation,
-  ImportedTrainSchedule,
-  TrainScheduleImportConfig,
-  CichDictValue,
-  TimetableJsonPayload,
-} from 'applications/operationalStudies/types';
-import { getGraouTrainSchedules } from 'common/api/graouApi';
+import type { CichDictValue, TimetableJsonPayload } from 'applications/operationalStudies/types';
+import {
+  type GraouStation,
+  type GraouTrainSchedule,
+  type GraouTrainScheduleConfig,
+  getGraouTrainSchedules,
+} from 'common/api/graouApi';
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -31,7 +30,7 @@ import {
 } from '../ManageTrainSchedule/helpers/handleParseFiles';
 
 interface ImportTimetableItemConfigProps {
-  setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
+  setTrainsList: (trainsList: GraouTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
 }
@@ -42,9 +41,9 @@ const ImportTimetableItemConfig = ({
   setTrainsJsonData,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
-  const [from, setFrom] = useState<ImportStation | undefined>();
+  const [from, setFrom] = useState<GraouStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
-  const [to, setTo] = useState<ImportStation | undefined>();
+  const [to, setTo] = useState<GraouStation | undefined>();
   const [toSearchString, setToSearchString] = useState('');
   const [date, setDate] = useState(formatLocalDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
@@ -52,9 +51,7 @@ const ImportTimetableItemConfig = ({
   const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
 
-  function filterInvalidSteps(
-    importedTrainSchedules: ImportedTrainSchedule[]
-  ): ImportedTrainSchedule[] {
+  function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): GraouTrainSchedule[] {
     const trainNumbersOfModifiedTrains: string[] = [];
 
     const filteredSchedules = importedTrainSchedules.map((trainSchedule) => {
@@ -85,7 +82,7 @@ const ImportTimetableItemConfig = ({
 
   function validateImportedTrainSchedules(
     importedTrainSchedules: Record<string, unknown>[]
-  ): ImportedTrainSchedule[] | null {
+  ): GraouTrainSchedule[] | null {
     const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
       if (
         ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
@@ -111,10 +108,10 @@ const ImportTimetableItemConfig = ({
       );
       return null;
     }
-    return filterInvalidSteps(importedTrainSchedules as ImportedTrainSchedule[]);
+    return filterInvalidSteps(importedTrainSchedules as GraouTrainSchedule[]);
   }
 
-  function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
+  function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
     // For each train schedule, we add the duration and tracks of each step
     const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
       const stepsWithDuration = trainSchedule.steps.map((step) => {
@@ -138,7 +135,7 @@ const ImportTimetableItemConfig = ({
     setTrainsList(trainsSchedules);
   }
 
-  async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
+  async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
     setTrainsList([]);
     setIsLoading(true);
     setTrainsJsonData({ train_schedules: [], paced_trains: [] });

@@ -1,13 +1,53 @@
-import type {
-  ImportStation,
-  TrainScheduleImportConfig,
-} from 'applications/operationalStudies/types';
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
 
+export type GraouStep = {
+  uic: number;
+  chCode?: string;
+  yard?: string;
+  name: string;
+  trigram?: string;
+  latitude?: number;
+  longitude?: number;
+  arrivalTime: string;
+  departureTime: string;
+  duration?: number;
+};
+
+export type GraouTrainSchedule = {
+  trainNumber: string;
+  rollingStock: string | null;
+  departureTime: string;
+  arrivalTime: string;
+  departure: string;
+  steps: GraouStep[];
+  transilienName?: string;
+};
+
+export type GraouStation = {
+  trigram?: string;
+  name?: string;
+  yardname?: string;
+  town?: string;
+  department?: string;
+  region?: string;
+  uic?: number;
+  linename?: string;
+  pk?: string;
+  linecode?: string;
+};
+
+export type GraouTrainScheduleConfig = {
+  from: GraouStation;
+  to: GraouStation;
+  date: string;
+  startTime: string;
+  endTime: string;
+};
+
 const GRAOU_URL = 'https://graou.info';
 
-export const getGraouTrainSchedules = async (config: TrainScheduleImportConfig) => {
+export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) => {
   const params = new URLSearchParams({
     q: 'trains',
     config: JSON.stringify(config),
@@ -32,7 +72,7 @@ export const searchGraouStations = async (term: string) => {
   });
   try {
     const res = await fetch(`${GRAOU_URL}/api/stations.php?${params}`);
-    return (await res.json()) as ImportStation[];
+    return (await res.json()) as GraouStation[];
   } catch (error) {
     console.error(error);
     return null;
