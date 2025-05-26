@@ -4,6 +4,8 @@ import com.squareup.moshi.Json
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 
@@ -26,7 +28,30 @@ data class RangeValues<valueT>(
     @Json(name = "boundaries") val internalBoundaries: List<Offset<TravelledPath>> = listOf(),
     // List of `n+1` values associated to the bounded intervals
     val values: List<valueT> = listOf()
-)
+) {
+    fun toDistanceRangeMap(
+        beginPos: Offset<TravelledPath>,
+        endPos: Offset<TravelledPath>
+    ): DistanceRangeMap<valueT> {
+        val boundaries = internalBoundaries.toMutableList()
+        boundaries.add(0, beginPos)
+        boundaries.add(endPos)
+        val boundariesSize = boundaries.size
+        val valuesSize = values.size
+        assert(boundariesSize == valuesSize + 1)
+        val rangeMapEntries = mutableListOf<DistanceRangeMap.RangeMapEntry<valueT>>()
+        for (i in 0 until valuesSize) {
+            rangeMapEntries.add(
+                DistanceRangeMap.RangeMapEntry(
+                    boundaries[i].distance,
+                    boundaries[i + 1].distance,
+                    values[i]
+                )
+            )
+        }
+        return distanceRangeMapOf(*rangeMapEntries.toTypedArray())
+    }
+}
 
 class TrackLocation(val track: String, val offset: Offset<TrackSection>)
 
