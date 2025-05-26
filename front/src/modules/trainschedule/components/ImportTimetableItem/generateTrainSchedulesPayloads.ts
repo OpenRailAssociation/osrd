@@ -2,12 +2,10 @@
 import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
-import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
-import type { ImportedPacedTrainSchedule } from './ImportTimetableItemConfig';
-
-export function generateTrainSchedulePayload(train: ImportedTrainSchedule): TrainSchedule | null {
+function generateTrainSchedulePayload(train: ImportedTrainSchedule): TrainSchedule | null {
   const departureTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
     path: TrainSchedule['path'];
@@ -56,23 +54,10 @@ export function generateTrainSchedulePayload(train: ImportedTrainSchedule): Trai
   };
 }
 
-export function generateTrainSchedulesPayloads(trains: ImportedTrainSchedule[]): TrainSchedule[] {
+export default function generateTrainSchedulesPayloads(
+  trains: ImportedTrainSchedule[]
+): TrainSchedule[] {
   return trains
     .map((train) => generateTrainSchedulePayload(train))
-    .filter((payload) => payload !== null);
-}
-
-export function generatePacedTrainPayloads(trains: ImportedPacedTrainSchedule[]): PacedTrain[] {
-  return trains
-    .map((train) => {
-      const basePayload = generateTrainSchedulePayload(train);
-      if (!basePayload) return null;
-
-      return {
-        ...basePayload,
-        paced: train.paced,
-        exceptions: [],
-      };
-    })
     .filter((payload) => payload !== null);
 }

@@ -30,12 +30,6 @@ import {
   processJsonFile,
 } from '../ManageTrainSchedule/helpers/handleParseFiles';
 
-export type ImportedPacedTrainSchedule = ImportedTrainSchedule & {
-  paced: {
-    interval: string;
-    time_window: string;
-  };
-};
 interface ImportTimetableItemConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
