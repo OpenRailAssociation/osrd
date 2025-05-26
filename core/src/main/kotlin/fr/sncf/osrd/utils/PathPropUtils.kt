@@ -6,11 +6,15 @@ import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -185,4 +189,21 @@ fun makeChunkPath(
         for (chunk in chunksOnTrack) chunks.add(DirStaticIdx(chunk, dir))
     }
     return buildChunkPath(rawInfra, chunks, Offset(startOffset), Offset(endOffset))
+}
+
+/** Convert a list of route names into a route id list. */
+fun convertRoutePath(infra: RawInfra, routes: List<String>): StaticIdxList<Route> {
+    val res = mutableStaticIdxArrayListOf<Route>()
+    for (route in routes) res.add(infra.getRouteFromName(route))
+    return res
+}
+
+/** Convert a list of block names into a block id list. */
+@Throws(OSRDError::class)
+fun convertBlockPath(blockInfra: BlockInfra, blocks: List<String>): StaticIdxList<Block> {
+    val res = mutableStaticIdxArrayListOf<Block>()
+    for (blockName in blocks) res.add(
+        blockInfra.getBlockFromName(blockName) ?: throw OSRDError(ErrorType.UnknownBlock)
+    )
+    return res
 }

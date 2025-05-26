@@ -8,6 +8,7 @@ import fr.sncf.osrd.api.InfraLoadEndpoint
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.VersionEndpoint
 import fr.sncf.osrd.api.conflicts.ConflictDetectionEndpoint
+import fr.sncf.osrd.api.etcs.ETCSBrakingCurvesEndpoint
 import fr.sncf.osrd.api.path_properties.PathPropEndpoint
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.project_signals.SignalProjectionEndpoint
@@ -128,6 +129,8 @@ class WorkerCommand : CliCommand {
                     SimulationEndpoint(infraManager, electricalProfileSetManager),
                 "/signal_projection" to SignalProjectionEndpoint(infraManager),
                 "/conflict_detection" to ConflictDetectionEndpoint(infraManager),
+                "/etcs_braking_curves" to
+                    ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
                 "/version" to VersionEndpoint(),
                 "/stdcm" to STDCMEndpoint(infraManager),
                 "/infra_load" to InfraLoadEndpoint(infraManager),

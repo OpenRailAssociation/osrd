@@ -1,8 +1,6 @@
 package fr.sncf.osrd.standalone_sim
 
-import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
-import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
@@ -39,6 +37,7 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -485,18 +484,4 @@ fun getSimStops(schedule: List<SimulationScheduleItem>): List<MaxSpeedEnvelope.S
     return schedule
         .filter { it.stopFor != null }
         .map { MaxSpeedEnvelope.SimStop(it.pathOffset, it.receptionSignal) }
-}
-
-// TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase
-/**
- * Converts a DistanceRangeMap<T> into a legacy RangeMap<Double, T>. Distances are converted to
- * floats (m).
- */
-private fun <T> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
-    val res = ImmutableRangeMap.builder<Double, T>()
-    for (entry in this) {
-        if (entry.value != null)
-            res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value!!)
-    }
-    return res.build()
 }
