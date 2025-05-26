@@ -1,6 +1,3 @@
-import { setFailure } from 'reducers/main';
-import { castErrorToFailure } from 'utils/error';
-
 export type GraouStep = {
   uic: number;
   chCode?: string;
@@ -52,13 +49,8 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
     q: 'trains',
     config: JSON.stringify(config),
   });
-  try {
-    const res = await fetch(`${GRAOU_URL}/api/trainschedules.php?${params}`);
-    return res.json() as Promise<Record<string, unknown>[]>;
-  } catch (error) {
-    setFailure(castErrorToFailure(error));
-    return null;
-  }
+  const res = await fetch(`${GRAOU_URL}/api/trainschedules.php?${params}`);
+  return res.json() as Promise<Record<string, unknown>[]>;
 };
 
 /**

@@ -21,6 +21,7 @@ import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { Duration } from 'utils/duration';
+import { castErrorToFailure } from 'utils/error';
 
 import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './helpers/findMostFrequentXmlSchedule';
@@ -140,8 +141,16 @@ const ImportTimetableItemConfig = ({
     setIsLoading(true);
     setTrainsJsonData({ train_schedules: [], paced_trains: [] });
 
-    const result = await getGraouTrainSchedules(config);
-    const importedTrainSchedules = validateImportedTrainSchedules(result!);
+    let result;
+    try {
+      result = await getGraouTrainSchedules(config);
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+      setIsLoading(false);
+      return;
+    }
+
+    const importedTrainSchedules = validateImportedTrainSchedules(result);
     if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
       updateTrainSchedules(importedTrainSchedules);
     }
