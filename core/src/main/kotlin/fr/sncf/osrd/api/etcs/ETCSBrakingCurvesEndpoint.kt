@@ -174,10 +174,13 @@ class ETCSBrakingCurvesEndpoint(
     private fun buildSimpleEnvelope(envelope: Envelope?): SimpleEnvelope? {
         if (envelope == null) return envelope
         val points = envelope.iteratePoints().distinct()
+        // Reduce the number of points in the envelope. Epsilon = 1.0 for now, reduce its value if
+        // more precision is needed.
+        val simplifiedEnvelope = simplifyEnvelopePoints(points)
         return SimpleEnvelope(
-            points.map { Offset(it.position.meters) },
-            points.map { it.time.seconds },
-            points.map { it.speed }
+            simplifiedEnvelope.map { Offset(it.position.meters) },
+            simplifiedEnvelope.map { it.time.seconds },
+            simplifiedEnvelope.map { it.speed }
         )
     }
 }

@@ -24,11 +24,10 @@ import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.standalone_sim.result.ResultStops
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
-import kotlin.math.abs
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
@@ -338,25 +337,8 @@ fun makeSimpleReportTrain(
 
     // Iterate over the points and simplify the results
     val points = envelopeStopWrapper.iteratePoints()
-    val simplified =
-        CurveSimplification.rdp(points, 1.0) { point, start, end ->
-            val speedScaling = 1.0 / 0.2 // Arbitrary values adapted from tolerances previously used
-            val timeScaling = 1.0 / 5
-            if (abs(start.position - end.position) < 0.000001) {
-                return@rdp abs(point.speed - start.speed) * speedScaling +
-                    abs(point.time - start.time) * timeScaling
-            }
-            val projSpeed =
-                start.speed +
-                    (point.position - start.position) * (end.speed - start.speed) /
-                        (end.position - start.position)
-            val projTime =
-                start.time +
-                    (point.position - start.position) * (end.time - start.time) /
-                        (end.position - start.position)
-            return@rdp abs(point.speed - projSpeed) * speedScaling +
-                abs(point.time - projTime) * timeScaling
-        }
+    // Speed and time scalings are arbitrary values adapted from previously used tolerances.
+    val simplified = simplifyEnvelopePoints(points, 5.0, 0.2)
     assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
     return ReportTrain(

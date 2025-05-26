@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils;
 
+import static fr.sncf.osrd.utils.CurveSimplificationKt.simplifyCurveByRdp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -22,7 +23,7 @@ class CurveSimplificationTest {
         return Math.sin(x / Math.PI * freq);
     }
 
-    private static class Dist implements CurveSimplification.RDPDist<Point> {
+    private static class Dist implements RDPDist<Point> {
 
         @Override
         public double dist(Point point, Point start, Point end) {
@@ -35,14 +36,14 @@ class CurveSimplificationTest {
     @Test
     public void simpleSimplification() {
         var points = new ArrayList<>(Arrays.asList(new Point(0, 0), new Point(5, 5), new Point(10, 10)));
-        var filteredPoints = CurveSimplification.rdp(points, 1, new Dist());
+        var filteredPoints = simplifyCurveByRdp(points, 1, new Dist());
         assertEquals(2, filteredPoints.size());
     }
 
     @Test
     public void simpleNoSimplification() {
         var points = new ArrayList<>(Arrays.asList(new Point(0, 0), new Point(5, 9), new Point(10, 10)));
-        var filteredPoints = CurveSimplification.rdp(points, 1, new Dist());
+        var filteredPoints = simplifyCurveByRdp(points, 1, new Dist());
         assertEquals(3, filteredPoints.size());
     }
 
@@ -52,7 +53,7 @@ class CurveSimplificationTest {
         var points = new ArrayList<Point>();
         for (double x = 0; x < 1000; x += 0.5) points.add(new Point(x, customSin(x, 0.1)));
 
-        var filteredPoints = CurveSimplification.rdp(points, 0.1, new Dist());
+        var filteredPoints = simplifyCurveByRdp(points, 0.1, new Dist());
         assertEquals(32, filteredPoints.size());
     }
 
@@ -62,7 +63,7 @@ class CurveSimplificationTest {
         var points = new ArrayList<Point>();
         for (double x = 0; x < 1000; x += 0.5) points.add(new Point(x, customSin(x, 10)));
 
-        var filteredPoints = CurveSimplification.rdp(points, 0.1, new Dist());
+        var filteredPoints = simplifyCurveByRdp(points, 0.1, new Dist());
         assertEquals(1876, filteredPoints.size());
     }
 }
