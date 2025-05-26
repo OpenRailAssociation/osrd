@@ -225,7 +225,7 @@ pub trait Relation: fmt::Debug + Sized {
     ///
     /// Can be used in [`Client::list_users`](crate::client::Client::list_users) to
     /// compute which users are related to `object` via `Self`.
-    fn query_users<'a>(&'a self, object: &'a Self::Object) -> QueryUsers<'a, Self> {
+    fn query_users<'a>(&self, object: &'a Self::Object) -> QueryUsers<'a, Self> {
         QueryUsers(object)
     }
 
@@ -234,7 +234,7 @@ pub trait Relation: fmt::Debug + Sized {
     /// Can be used in [`Client::list_usersets`](crate::client::Client::list_usersets) to
     /// compute which usersets are related to `object` via `Self`.
     fn query_usersets<'a, R: Relation>(
-        &'a self,
+        &self,
         _userset_relation: R,
         object: &'a Self::Object,
     ) -> QueryUsersets<'a, Self, R> {
@@ -246,7 +246,7 @@ pub trait Relation: fmt::Debug + Sized {
     /// Can be used in [`Client::list_objects`](crate::client::Client::list_objects) to
     /// compute which objects are related to `user` via `Self`.
     fn query_objects<'a, U: AsUser<User = Self::User>>(
-        &'a self,
+        &self,
         user: &'a U,
     ) -> QueryObjects<'a, Self, U> {
         QueryObjects::<Self, U>(user, std::marker::PhantomData)
@@ -254,14 +254,14 @@ pub trait Relation: fmt::Debug + Sized {
 
     // tuple_key = { user: user:bob, relation: reader, object: document: }
     /// NOT YET IMPLEMENTED
-    fn query_objects_stored<'a>(&'a self, user: &'a Self::User) -> QueryObjectsStored<'a, Self> {
+    fn query_objects_stored<'a>(&self, user: &'a Self::User) -> QueryObjectsStored<'a, Self> {
         let _ = user;
         todo!()
     }
 
     // tuple_key = { object: document:budget-2021, relation: reader }
     /// NOT YET IMPLEMENTED
-    fn query_users_stored<'a>(&'a self, object: &'a Self::Object) -> QueryUsersStored<'a, Self> {
+    fn query_users_stored<'a>(&self, object: &'a Self::Object) -> QueryUsersStored<'a, Self> {
         let _ = object;
         todo!()
     }
