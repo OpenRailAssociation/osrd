@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -22,6 +23,17 @@ export default function RollingStockInformationPanel({
   rollingStock,
 }: RollingStockInformationPanelProps) {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
+  const { t } = useTranslation();
+
+  const exportRollingStock = () => {
+    const jsonString = JSON.stringify(rollingStock);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rollingStock-${rollingStock.name}.json`;
+    a.click();
+  };
 
   return (
     <div className={cx('rollingstock-editor-form', { borders: !isEditing })}>
@@ -48,6 +60,17 @@ export default function RollingStockInformationPanel({
               <RollingStock2Img rollingStock={rollingStock} />
             </div>
           </div>
+        </div>
+        <div className="d-flex justify-content-end">
+          <button
+            type="button"
+            className="btn btn-primary mt-4"
+            aria-label={t('rollingStock.exportRollingStock')}
+            title={t('rollingStock.exportRollingStock')}
+            onClick={exportRollingStock}
+          >
+            {t('rollingStock.export')}
+          </button>
         </div>
       </div>
     </div>
