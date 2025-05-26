@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type { ImportStation } from 'applications/operationalStudies/types';
-import { searchGraouStations } from 'common/api/graouApi';
+import { type GraouStation, searchGraouStations } from 'common/api/graouApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { Loader } from 'common/Loaders';
 import StationCard from 'common/StationCard';
@@ -12,7 +11,7 @@ import { useDebounce } from 'utils/helpers';
 interface ImportTimetableItemStationSelectorProps {
   id: string;
   term?: string;
-  onSelect: (stationName?: ImportStation) => void;
+  onSelect: (station?: GraouStation) => void;
   setTerm: (searchString: string) => void;
 }
 
@@ -23,7 +22,7 @@ const ImportTimetableItemStationSelector = ({
   setTerm,
 }: ImportTimetableItemStationSelectorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
-  const [stationsList, setStationsList] = useState<ImportStation[]>([]);
+  const [stationsList, setStationsList] = useState<GraouStation[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
 

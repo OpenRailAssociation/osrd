@@ -1,11 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 import nextId from 'react-id-generator';
 
-import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
+import type { GraouTrainSchedule } from 'common/api/graouApi';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
-function generateTrainSchedulePayload(train: ImportedTrainSchedule): TrainSchedule | null {
+function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
   const departureTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
     path: TrainSchedule['path'];
@@ -55,7 +55,7 @@ function generateTrainSchedulePayload(train: ImportedTrainSchedule): TrainSchedu
 }
 
 export default function generateTrainSchedulesPayloads(
-  trains: ImportedTrainSchedule[]
+  trains: GraouTrainSchedule[]
 ): TrainSchedule[] {
   return trains
     .map((train) => generateTrainSchedulePayload(train))

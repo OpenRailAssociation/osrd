@@ -4,10 +4,8 @@ import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  ImportedTrainSchedule,
-  TimetableJsonPayload,
-} from 'applications/operationalStudies/types';
+import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
   type PacedTrain,
@@ -43,7 +41,7 @@ function LoadingIfSearching({
 }
 
 type ImportTimetableItemTrainsListProps = {
-  trainsList: ImportedTrainSchedule[];
+  trainsList: GraouTrainSchedule[];
   isLoading: boolean;
   scenario: ScenarioResponse;
   trainsJsonData: TimetableJsonPayload;
