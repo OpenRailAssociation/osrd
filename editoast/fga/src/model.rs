@@ -213,11 +213,11 @@ pub trait Relation: fmt::Debug + Sized {
     ///
     /// Can be used in [`Client::check`](crate::client::Client::check) to check if `user`
     /// is related via `Self` to `object`.
-    fn check<'a: 'c, 'b: 'c, 'c>(
+    fn check<'a: 'c, 'b: 'c, 'c, U: AsUser<User = Self::User>>(
         &self,
-        user: &'a Self::User,
+        user: &'a U,
         object: &'b Self::Object,
-    ) -> Check<'c, Self> {
+    ) -> Check<'c, Self, U> {
         Check { user, object }
     }
 
@@ -365,8 +365,8 @@ impl<U: User> AsUser for U {
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-check-request>
 #[derive(Debug)]
-pub struct Check<'a, R: Relation> {
-    pub(crate) user: &'a R::User,
+pub struct Check<'a, R: Relation, U: AsUser<User = R::User>> {
+    pub(crate) user: &'a U,
     pub(crate) object: &'a R::Object,
 }
 
