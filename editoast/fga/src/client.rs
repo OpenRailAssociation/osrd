@@ -402,14 +402,18 @@ impl Client {
         }
     }
 
-    pub async fn check<R: Relation>(
+    pub async fn check<R, U>(
         &self,
-        Check { user, object }: Check<'_, R>,
-    ) -> Result<bool, RequestFailure> {
+        Check { user, object }: Check<'_, R, U>,
+    ) -> Result<bool, RequestFailure>
+    where
+        R: Relation,
+        U: AsUser<User = R::User>,
+    {
         self.post_stores_check(
             &self.store.id,
             RawTuple {
-                user: User::fga_user(user),
+                user: user.fga_user(),
                 relation: R::NAME.to_string(),
                 object: object.fga_object(),
             },
@@ -659,15 +663,23 @@ pub struct PreparedChecks<'a> {
 }
 
 impl PreparedChecks<'_> {
-    pub fn push<R: Relation>(&mut self, Check { user, object }: &Check<'_, R>) {
+    pub fn push<R, U>(&mut self, Check { user, object }: &Check<'_, R, U>)
+    where
+        R: Relation,
+        U: AsUser<User = R::User>,
+    {
         self.checks.push(RawTuple {
-            user: User::fga_user(*user),
+            user: user.fga_user(),
             relation: R::NAME.to_string(),
             object: object.fga_object(),
         });
     }
 
-    pub fn check<R: Relation>(mut self, check: &Check<'_, R>) -> Self {
+    pub fn check<R, U>(mut self, check: &Check<'_, R, U>) -> Self
+    where
+        R: Relation,
+        U: AsUser<User = R::User>,
+    {
         self.push(check);
         self
     }
@@ -742,8 +754,8 @@ pub trait StructuredChecks {
 }
 
 macro_rules! impl_structured_checks {
-    ($output:ty, $($relations:ident)+, $($idents:ident)+) => {
-        impl<$($relations: Relation),+> StructuredChecks for ($(Check<'_, $relations>),+) {
+    ($output:ty, $($relations:ident)+, $($users:ident)+, $($idents:ident)+) => {
+        impl<$($relations: Relation, $users: AsUser<User = $relations::User>),+> StructuredChecks for ($(Check<'_, $relations, $users>),+) {
             type Output = $output;
 
             fn prepare(self, client: &Client) -> PreparedChecks<'_> {
@@ -765,13 +777,13 @@ macro_rules! impl_structured_checks {
     };
 }
 
-impl_structured_checks!((bool, bool), R1 R2, a b);
-impl_structured_checks!((bool, bool, bool), R1 R2 R3, a b c);
-impl_structured_checks!((bool, bool, bool, bool), R1 R2 R3 R4, a b c d);
-impl_structured_checks!((bool, bool, bool, bool, bool), R1 R2 R3 R4 R5, a b c d e);
-impl_structured_checks!((bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6, a b c d e f);
-impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7, a b c d e f g);
-impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8, a b c d e f g h);
+impl_structured_checks!((bool, bool), R1 R2, U1 U2, a b);
+impl_structured_checks!((bool, bool, bool), R1 R2 R3, U1 U2 U3, a b c);
+impl_structured_checks!((bool, bool, bool, bool), R1 R2 R3 R4, U1 U2 U3 U4, a b c d);
+impl_structured_checks!((bool, bool, bool, bool, bool), R1 R2 R3 R4 R5, U1 U2 U3 U4 U5, a b c d e);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6, U1 U2 U3 U4 U5 U6, a b c d e f);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7, U1 U2 U3 U4 U5 U6 U7, a b c d e f g);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8, U1 U2 U3 U4 U5 U6 U7 U8, a b c d e f g h);
 
 pub struct PreparedWrites<'a> {
     writes: Vec<RawTuple>,
@@ -910,7 +922,7 @@ pub trait Request {
     ) -> impl future::Future<Output = Result<Self::Response, Self::Error>>;
 }
 
-impl<R: Relation> Request for Check<'_, R> {
+impl<R: Relation, U: AsUser<User = R::User>> Request for Check<'_, R, U> {
     type Response = bool;
 
     type Error = RequestFailure;
@@ -1052,6 +1064,7 @@ mod tests {
     use crate::compile_model;
     use crate::defs::*;
     use crate::fga;
+    use crate::model::AsUser;
     use crate::model::Check;
     use crate::model::Relation;
 
@@ -1114,7 +1127,11 @@ mod tests {
     impl Client {
         // TODO: comment about tokio::test
         #[track_caller]
-        fn assert_check<R: Relation>(&self, check: Check<'_, R>) -> &Self {
+        fn assert_check<R, U>(&self, check: Check<'_, R, U>) -> &Self
+        where
+            R: Relation,
+            U: AsUser<User = R::User> + std::fmt::Debug,
+        {
             let error = format!("{check:?} doesn't hold, WWWHHHHYYYYY???");
             let ok = futures::executor::block_on(check.fetch(self)).unwrap();
             assert!(ok, "{error}");
@@ -1122,7 +1139,11 @@ mod tests {
         }
 
         #[track_caller]
-        fn assert_check_not<R: Relation>(&self, check: Check<'_, R>) -> &Self {
+        fn assert_check_not<R, U>(&self, check: Check<'_, R, U>) -> &Self
+        where
+            R: Relation,
+            U: AsUser<User = R::User> + std::fmt::Debug,
+        {
             let error = format!("{check:?} does hold, it shouldn't tho");
             let ok = futures::executor::block_on(check.fetch(self)).unwrap();
             assert!(!ok, "{error}");
@@ -1190,6 +1211,52 @@ mod tests {
             assert!(bob);
             assert!(!alice);
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn check_userset() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+        client
+            .prepare_writes()
+            .write(&fga!(Infra:"france"#writer@Group:"friends"#member))
+            .write(&fga!(Infra:"espagne"#reader@Group:"company"#member))
+            .write(&fga!(Group:"friends"#member@User:"bob"))
+            .write(&fga!(Group:"company"#member@User:"bob"))
+            .write(&fga!(Group:"company"#member@User:"alice"))
+            .execute()
+            .await
+            .unwrap();
+
+        // Test batch_check with usersets
+        let (friends_write_france, company_read_spain) = client
+            .checks((
+                Infra::can_write().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
+                Infra::can_read().check(&fga!(Group:"company"#member), &fga!(Infra:"espagne")),
+            ))
+            .await
+            .unwrap();
+        assert!(friends_write_france);
+        assert!(company_read_spain);
+
+        // Test check
+        client
+            .assert_check_not(
+                Infra::can_write().check(&fga!(Group:"company"#member), &fga!(Infra:"espagne")),
+            )
+            .assert_check(
+                Infra::can_read().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
+            )
+            .assert_check(
+                Infra::can_write().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
+            )
+            .assert_check(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"espagne")))
+            .assert_check_not(Infra::can_write().check(&fga!(User:"alice"), &fga!(Infra:"espagne")))
+            .assert_check_not(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")))
+            .assert_check(Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")))
+            .assert_check(Infra::can_write().check(&fga!(User:"bob"), &fga!(Infra:"france")));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
