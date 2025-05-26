@@ -738,6 +738,9 @@
       "unableToRetrieveRollingStock": "Cannot fetch rolling stock",
       "unableToRetrieveRollingStockMessage": "An error has occurred"
     },
+    "export": "Export",
+    "exportRollingStock": "Export rolling stock",
+    "import": "Import rolling stock",
     "inertiaCoefficient": "Factor of inertia",
     "length": "Length",
     "listDisabled": "Please quit edit mode to access the list",
