@@ -81,37 +81,6 @@ const ImportTimetableItemConfig = ({
     return filteredSchedules;
   }
 
-  function validateImportedTrainSchedules(
-    importedTrainSchedules: Record<string, unknown>[]
-  ): GraouTrainSchedule[] | null {
-    const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
-      if (
-        ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
-          (key) => !(key in trainSchedule)
-        ) ||
-        !Array.isArray(trainSchedule.steps)
-      ) {
-        return true;
-      }
-      const hasInvalidSteps = trainSchedule.steps.some((step) =>
-        ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
-          (key) => !(key in step)
-        )
-      );
-      return hasInvalidSteps;
-    });
-    if (isInvalidTrainSchedules) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.error'),
-          message: t('errorMessages.errorImport'),
-        })
-      );
-      return null;
-    }
-    return filterInvalidSteps(importedTrainSchedules as GraouTrainSchedule[]);
-  }
-
   function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
     // For each train schedule, we add the duration and tracks of each step
     const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
@@ -150,7 +119,7 @@ const ImportTimetableItemConfig = ({
       return;
     }
 
-    const importedTrainSchedules = validateImportedTrainSchedules(result);
+    const importedTrainSchedules = filterInvalidSteps(result);
     if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
       updateTrainSchedules(importedTrainSchedules);
     }

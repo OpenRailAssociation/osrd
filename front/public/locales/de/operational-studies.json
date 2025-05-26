@@ -9,7 +9,6 @@
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
       "errorEmptyFile": "Leere Datei",
-      "errorImport": "Datei konnte nicht zu TrainSchedule (Zugfahrplan) konvertiert werden",
       "errorInvalidFile": "Ungültige Datei.",
       "errorNoDate": "Sie müssen ein Datum angeben.",
       "errorNoFrom": "Sie müssen einen Herkunftsort angeben.",

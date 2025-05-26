@@ -8,7 +8,6 @@
     "errorMessages": {
       "error": "Une erreur est survenue",
       "errorEmptyFile": "Fichier vide",
-      "errorImport": "Impossible de convertir les données en TrainSchedule",
       "errorInvalidFile": "Fichier invalide",
       "errorNoDate": "Vous devez renseigner une date.",
       "errorNoFrom": "Vous devez renseigner une origine.",

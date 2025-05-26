@@ -50,7 +50,29 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
     config: JSON.stringify(config),
   });
   const res = await fetch(`${GRAOU_URL}/api/trainschedules.php?${params}`);
-  return res.json() as Promise<Record<string, unknown>[]>;
+  const trainSchedules = (await res.json()) as Record<string, unknown>[];
+
+  const isInvalidTrainSchedules = trainSchedules.some((trainSchedule) => {
+    if (
+      ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
+        (key) => !(key in trainSchedule)
+      ) ||
+      !Array.isArray(trainSchedule.steps)
+    ) {
+      return true;
+    }
+    const hasInvalidSteps = trainSchedule.steps.some((step) =>
+      ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
+        (key) => !(key in step)
+      )
+    );
+    return hasInvalidSteps;
+  });
+  if (isInvalidTrainSchedules) {
+    throw new Error('Invalid train schedules returned by Graou API');
+  }
+
+  return trainSchedules as GraouTrainSchedule[];
 };
 
 /**
