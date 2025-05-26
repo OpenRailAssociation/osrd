@@ -5,7 +5,6 @@ use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation;
 use futures::stream;
-use itertools::Either;
 use tracing::Level;
 
 use crate::Authorization;
@@ -619,10 +618,7 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn get_infra_readers(
-        &self,
-        infra: &Infra,
-    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
+    pub async fn get_infra_readers(&self, infra: &Infra) -> Result<Vec<Subject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -633,20 +629,22 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let UserList { users, .. } = self
-            .openfga
-            .list_users(Infra::reader().query_users(infra))
-            .await
-            .map_err(QueryError::parsing_ok)?;
+        let (UserList { users, .. }, groups) = tokio::try_join!(
+            self.openfga.list_users(Infra::reader().query_users(infra)),
+            self.openfga
+                .list_usersets(Infra::reader().query_usersets(Group::member(), infra))
+        )
+        .map_err(QueryError::parsing_ok)?;
 
-        Ok(users.into_iter().map(Either::Left).collect())
+        Ok(users
+            .into_iter()
+            .map(Subject::User)
+            .chain(groups.into_iter().map(Subject::Group))
+            .collect())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn get_infra_writers(
-        &self,
-        infra: &Infra,
-    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
+    pub async fn get_infra_writers(&self, infra: &Infra) -> Result<Vec<Subject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -657,20 +655,22 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let UserList { users, .. } = self
-            .openfga
-            .list_users(Infra::writer().query_users(infra))
-            .await
-            .map_err(QueryError::parsing_ok)?;
+        let (UserList { users, .. }, groups) = tokio::try_join!(
+            self.openfga.list_users(Infra::writer().query_users(infra)),
+            self.openfga
+                .list_usersets(Infra::writer().query_usersets(Group::member(), infra))
+        )
+        .map_err(QueryError::parsing_ok)?;
 
-        Ok(users.into_iter().map(Either::Left).collect())
+        Ok(users
+            .into_iter()
+            .map(Subject::User)
+            .chain(groups.into_iter().map(Subject::Group))
+            .collect())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn get_infra_owners(
-        &self,
-        infra: &Infra,
-    ) -> Result<Vec<Either<User, Group>>, Error<S::Error>> {
+    pub async fn get_infra_owners(&self, infra: &Infra) -> Result<Vec<Subject>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -681,13 +681,18 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        let UserList { users, .. } = self
-            .openfga
-            .list_users(Infra::owner().query_users(infra))
-            .await
-            .map_err(QueryError::parsing_ok)?;
+        let (UserList { users, .. }, groups) = tokio::try_join!(
+            self.openfga.list_users(Infra::owner().query_users(infra)),
+            self.openfga
+                .list_usersets(Infra::owner().query_usersets(Group::member(), infra))
+        )
+        .map_err(QueryError::parsing_ok)?;
 
-        Ok(users.into_iter().map(Either::Left).collect())
+        Ok(users
+            .into_iter()
+            .map(Subject::User)
+            .chain(groups.into_iter().map(Subject::Group))
+            .collect())
     }
 
     /// Get IDS of infras a subject can read
