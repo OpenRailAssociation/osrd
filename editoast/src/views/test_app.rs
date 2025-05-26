@@ -17,8 +17,7 @@ use dashmap::DashMap;
 use editoast_authz::InfraGrant;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
-use editoast_authz::subject;
-use editoast_authz::subject::UserInfo;
+use editoast_authz::identity::UserInfo;
 use editoast_common::tracing::Stream;
 use editoast_common::tracing::Telemetry;
 use editoast_common::tracing::TracingConfig;
@@ -431,7 +430,7 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    pub fn create(self) -> subject::User {
+    pub fn create(self) -> editoast_authz::identity::User {
         let Self {
             app,
             info,

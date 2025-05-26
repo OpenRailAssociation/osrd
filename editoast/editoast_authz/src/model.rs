@@ -6,6 +6,12 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
+#[derive(Debug)]
+pub enum Subject {
+    User(User),
+    Group(Group),
+}
+
 #[derive(
     fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
 )]

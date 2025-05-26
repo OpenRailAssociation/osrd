@@ -1,7 +1,7 @@
 mod authorizer;
+pub mod identity;
 mod model;
 mod regulator;
-pub mod subject;
 
 pub use authorizer::Authorizer;
 pub use regulator::Regulator;
@@ -12,6 +12,7 @@ pub use model::Infra;
 pub use model::InfraGrant;
 pub use model::InfraPrivilege;
 pub use model::Role;
+pub use model::Subject;
 pub use model::User;
 
 use futures::TryStreamExt;

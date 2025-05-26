@@ -50,7 +50,7 @@ use chrono::Duration;
 use dashmap::DashMap;
 use editoast_authz::Authorizer;
 use editoast_authz::Role;
-use editoast_authz::subject::UserInfo;
+use editoast_authz::identity::UserInfo;
 
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::TryFutureExt;

@@ -11,13 +11,13 @@ use tracing::Level;
 use crate::Authorization;
 use crate::Error;
 use crate::Role;
+use crate::identity::GroupInfo;
+use crate::identity::GroupName;
+use crate::identity::User as UserSubject;
+use crate::identity::UserIdentity;
+use crate::identity::UserInfo;
 use crate::model;
 use crate::model::*;
-use crate::subject::GroupInfo;
-use crate::subject::GroupName;
-use crate::subject::User as UserSubject;
-use crate::subject::UserIdentity;
-use crate::subject::UserInfo;
 
 /// Entry point for managing authorizations (roles and grants)
 ///
