@@ -12,6 +12,7 @@ itertools.workspace = true
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true
 thiserror.workspace = true
+tokio.workspace = true
 tracing.workspace = true
 utoipa.workspace = true
 

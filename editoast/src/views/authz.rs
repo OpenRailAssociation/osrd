@@ -12,6 +12,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
+use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_authz as authz;
 use editoast_authz::InfraGrant;
 use editoast_authz::InfraPrivilege;
@@ -285,6 +286,7 @@ async fn subjects_with_grant_on_resource(
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
     Query(pagination): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<SubjectsWithGrantOnResource>> {
+    // Ask OpenFGA about grants on the resource
     let (readers, writers, owners) = match resource_type {
         ResourceType::Infra => {
             let infra = authz::Infra(resource_id);
@@ -304,42 +306,105 @@ async fn subjects_with_grant_on_resource(
         }
     };
 
-    let subjects_grant = readers
+    // NOTE: the same subject can appear in multiple lists. This can happen
+    // if a user inherits a grant from one of its groups and also has a direct grant.
+    // Implicit grants are not the same thing as privileges: they are not the same object,
+    // are not represented by the same enum, do no work on the same scale or in the same way.
+    // The deduplication happens in the map collection below, but the order of the chaining
+    // is important to ensure the higher grant is kept in case of duplicates (last item wins).
+    let mut subjects_grant = readers
         .into_iter()
         .map(|s| (s, InfraGrant::Reader))
         .chain(writers.into_iter().map(|s| (s, InfraGrant::Writer)))
         .chain(owners.into_iter().map(|s| (s, InfraGrant::Owner)))
-        .map(|(subject, grant)| {
-            (
-                subject.expect_left("group support has not yet been implemented"),
-                grant,
-            )
+        .map(|(subject, grant)| match subject {
+            authz::Subject::User(authz::User(id)) => (id, grant),
+            authz::Subject::Group(authz::Group(id)) => (id, grant),
         })
         .collect::<HashMap<_, _>>();
-    let user_ids = subjects_grant
-        .keys()
-        .map(|authz::User(id)| *id)
-        .collect_vec();
 
-    let (users, stats) = models::User::list_paginated(
-        &mut db_pool.get().await?,
-        pagination
-            .into_selection_settings()
-            .filter(move || models::User::ID.eq_any(user_ids.clone())),
-    )
-    .await?;
+    let subjects_id = subjects_grant.keys().copied().collect_vec();
 
-    let subjects_grant = users
+    // Query subject details from the database
+    let (stats, subjects_id, mut users, mut groups) = db_pool
+        .get()
+        .await?
+        .transaction::<_, crate::error::InternalError, _>(move |mut conn| {
+            async move {
+                // Query the subjects from the database.
+                // OpenFGA might have returned subjects that don't exist, so these will be filtered out.
+                // The pagination will be correct even in this case.
+                let (subjects, stats) = models::Subject::list_paginated(
+                    &mut conn,
+                    pagination
+                        .into_selection_settings()
+                        .filter(move || models::Subject::ID.eq_any(subjects_id.clone()))
+                        .order_by(move || models::Subject::ID.asc()),
+                )
+                .await?;
+
+                // Take the IDs of the subjects that were returned by the database — which do exist for sure now.
+                let subjects_id = subjects
+                    .into_iter()
+                    .map(|models::Subject { id }| id)
+                    .collect_vec();
+
+                // Query the database for users and groups details.
+                let users = models::User::list(
+                    &mut conn,
+                    SelectionSettings::new()
+                        .filter({
+                            let ids = subjects_id.clone();
+                            move || models::User::ID.eq_any(ids.clone())
+                        })
+                        .order_by(move || models::User::ID.asc()),
+                )
+                .await?
+                .into_iter()
+                .map(|models::User { id, name, .. }| (id, name))
+                .collect::<HashMap<_, _>>();
+
+                let groups = models::Group::list(
+                    &mut conn,
+                    SelectionSettings::new()
+                        .filter({
+                            let ids = subjects_id.clone();
+                            move || models::Group::ID.eq_any(ids.clone())
+                        })
+                        .order_by(move || models::Group::ID.asc()),
+                )
+                .await?
+                .into_iter()
+                .map(|models::Group { id, name }| (id, name))
+                .collect::<HashMap<_, _>>();
+
+                Ok((stats, subjects_id, users, groups))
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+    // We have everything we need to build the response.
+    let subjects_grant = subjects_id
         .into_iter()
-        .filter_map(|models::User { id, name, .. }| {
-            let user = authz::User(id);
-            let grant = subjects_grant.get(&user)?;
-            Some(SubjectGrant {
+        .map(|id| {
+            let (name, r#type) = users
+                .remove(&id)
+                .map(|name| (name, SubjectType::User))
+                .or_else(|| groups.remove(&id).map(|name| (name, SubjectType::Group)))
+                .expect(
+                    // no race condition possible here, the transaction locks the authn_subject table
+                    "all queried subjects are either a user or a group",
+                );
+            let grant = subjects_grant
+                .remove(&id)
+                .expect("subjects_id is a subset of subjects_grant keys by construction");
+            SubjectGrant {
                 id,
                 name,
-                r#type: SubjectType::User,
-                grant: *grant,
-            })
+                r#type,
+                grant,
+            }
         })
         .collect_vec();
 
