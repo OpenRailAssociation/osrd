@@ -318,7 +318,7 @@ mod tests {
         }
     }
 
-    async fn execute_stdcm_request(app: &TestApp, user: Option<&authz::subject::User>) -> String {
+    async fn execute_stdcm_request(app: &TestApp, user: Option<&authz::identity::User>) -> String {
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
         // create an infra and add the provided user as infra owner
         let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;

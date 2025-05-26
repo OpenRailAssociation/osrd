@@ -9,10 +9,10 @@ use crate::InfraGrant;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
+use crate::identity::UserIdentity;
+use crate::identity::UserInfo;
 use crate::model::InfraPrivilege;
 use crate::model::User;
-use crate::subject::UserIdentity;
-use crate::subject::UserInfo;
 
 /// Represents how an authenticated user can interact with the authorization system
 #[derive(Clone)]
@@ -146,12 +146,12 @@ impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
 mod tests {
     use super::*;
     use crate::Role;
+    use crate::identity::GroupInfo;
+    use crate::identity::GroupName;
+    use crate::identity::User;
+    use crate::identity::UserIdentity;
     use crate::model;
     use crate::model::Group;
-    use crate::subject::GroupInfo;
-    use crate::subject::GroupName;
-    use crate::subject::User;
-    use crate::subject::UserIdentity;
     use futures::stream;
     use pretty_assertions::assert_eq;
     use std::collections::HashMap;

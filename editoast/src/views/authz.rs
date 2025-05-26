@@ -447,7 +447,7 @@ mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt;
-    use editoast_authz::subject::UserInfo;
+    use editoast_authz::identity::UserInfo;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
