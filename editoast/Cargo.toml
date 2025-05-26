@@ -139,7 +139,7 @@ colored = "3.0.0"
 core_client = { workspace = true, features = ["mocking_client"] }
 dashmap = "6.1.0"
 deadpool.workspace = true
-deadpool-redis = { version = "0.21.0", features = [
+deadpool-redis = { version = "0.21.1", features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
