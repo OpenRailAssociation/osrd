@@ -263,7 +263,7 @@ const ImportTimetableItemConfig = ({
       const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
 
       // Build steps using the fully populated localCichDict
-      const { path, schedule } = buildSteps(ocpSteps, localCichDict, startDate);
+      const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
 
       const trainSchedule: TrainSchedule = {
         train_name: trainNumber,

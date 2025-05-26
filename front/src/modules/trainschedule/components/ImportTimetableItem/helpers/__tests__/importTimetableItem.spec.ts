@@ -33,7 +33,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const { schedule } = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const { schedule } = buildSteps(ocpTTElements, cichDict, new Date('2025-01-01'));
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT23H');
@@ -58,7 +58,7 @@ describe('buildSteps', () => {
 
     const ocpTTElements = Array.from(xmlDoc.getElementsByTagName('ocpTT'));
 
-    const { schedule } = buildSteps(ocpTTElements, cichDict, '2025-01-01');
+    const { schedule } = buildSteps(ocpTTElements, cichDict, new Date('2025-01-01'));
 
     expect(schedule).toHaveLength(2);
     expect(schedule[0].arrival).toBe('PT5M');
