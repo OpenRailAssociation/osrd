@@ -10,7 +10,7 @@ export const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''
 export const buildSteps = (
   ocpTTs: Element[],
   cichDict: Record<string, CichDictValue>,
-  startDate: string
+  startDate: Date
 ): Required<Pick<TrainSchedule, 'path' | 'schedule'>> => {
   let dayOffset = 0;
 
