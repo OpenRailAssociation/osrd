@@ -189,7 +189,7 @@ const ImportTimetableItemConfig = ({
     return updatedTrainSchedules;
   };
 
-  const parseXML = async (xmlDoc: Document): Promise<TrainSchedule[]> => {
+  const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     const trainSchedules: TrainSchedule[] = [];
 
     // Initialize localCichDict
@@ -221,7 +221,7 @@ const ImportTimetableItemConfig = ({
 
     if (!startDate) {
       console.error('Start Date not found in the timetablePeriod.');
-      return trainSchedules;
+      return { train_schedules: [], paced_trains: [] };
     }
 
     trainParts.forEach((train) => {
@@ -378,9 +378,7 @@ const ImportTimetableItemConfig = ({
     const trains = Array.from(xmlDoc.getElementsByTagName('train'));
     const updatedTrainSchedules = mapTrainNames(singleTrainSchedules, trains);
 
-    setTrainsJsonData({ train_schedules: updatedTrainSchedules, paced_trains: importedPacedTrains });
-
-    return updatedTrainSchedules;
+    return { train_schedules: updatedTrainSchedules, paced_trains: importedPacedTrains };
   };
 
   const processXmlFile = async (fileContent: string) => {
@@ -392,7 +390,8 @@ const ImportTimetableItemConfig = ({
       throw new Error('Invalid XML');
     }
 
-    await parseXML(xmlDoc);
+    const trainData = await parseXML(xmlDoc);
+    setTrainsJsonData(trainData);
   };
 
   const importFile = async (file: File) => {
