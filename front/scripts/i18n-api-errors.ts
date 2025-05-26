@@ -7,7 +7,8 @@ import type { OpenAPI, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 // relative the project's root
 const openapi_path = '../editoast/openapi.yaml';
 // relative to this file
-const i18n_error_path = '../public/locales/fr/errors.json';
+const i18n_error_path = '../public/locales/{locale}/errors.json';
+const checkedLocales = ['en', 'fr'];
 
 /**
  * Check if the given error is well filled in the i18n.
@@ -62,37 +63,42 @@ async function checkI18N(
     {} as Record<string, string>
   );
 
-  // Init the i18n system
-  const i18nData = JSON.parse(fs.readFileSync(new URL(i18n_error_path, import.meta.url), 'utf8'));
-  const i18n = await i18next.createInstance(
-    {
-      lng: 'fr',
-      resources: {
-        fr: {
-          translation: i18nData,
+  for (const locale of checkedLocales) {
+    const localized_i18n_error_path = i18n_error_path.replace('{locale}', locale);
+    const i18nData = JSON.parse(
+      fs.readFileSync(new URL(localized_i18n_error_path, import.meta.url), 'utf8')
+    );
+    // Init the i18n system
+    const i18n = await i18next.createInstance(
+      {
+        lng: locale,
+        resources: {
+          [locale]: {
+            translation: i18nData,
+          },
+        },
+        parseMissingKeyHandler: () => {
+          i18nErrors.push(
+            `Error "${errorName}" has missing i18n message. Please add the key "${errorId}" to the file "${localized_i18n_error_path}"`
+          );
+        },
+        missingInterpolationHandler: (_text, value) => {
+          const varName = `${value[0]}`;
+          // Due to the dummy variable (see comment on `errorVarExample`), if we use a key of a property object
+          // the test will fail here. That's why we check here if the var  name used in the message contains a "."
+          if (!varName.includes('.')) {
+            i18nErrors.push(
+              `Message for error "${errorName}" in the file "${localized_i18n_error_path}" is using an unknown variable ${value[0]}`
+            );
+          }
         },
       },
-      parseMissingKeyHandler: () => {
-        i18nErrors.push(
-          `Error "${errorName}" has missing i18n message. Please add the key "${errorId}" to the file "${i18n_error_path}"`
-        );
-      },
-      missingInterpolationHandler: (_text, value) => {
-        const varName = `${value[0]}`;
-        // Due to the dummy variable (see comment on `errorVarExample`), if we use a key of a property object
-        // the test will fail here. That's why we check here if the var  name used in the message contains a "."
-        if (!varName.includes('.')) {
-          i18nErrors.push(
-            `Message for error "${errorName}" is using an unknown variable ${value[0]}`
-          );
-        }
-      },
-    },
-    () => {}
-  );
+      () => {}
+    );
 
-  // Generate the error message
-  i18n.t(errorId, errorVarExample);
+    // Generate the error message
+    i18n.t(errorId, errorVarExample);
+  }
 
   return i18nErrors;
 }
