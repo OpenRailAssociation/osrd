@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.97"
-axum = "0.8.3"
+axum = "0.8.4"
 axum-extra = { version = "0.10.1", features = ["query"] }
 axum-tracing-opentelemetry = "0.28.0"
 bollard = "0.18"
