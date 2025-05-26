@@ -3,7 +3,9 @@ import {
   type ProjectPathForm,
   type ProjectPathTrainResult,
   type PostTrainScheduleProjectPathApiResponse,
+  type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathApiResponse,
+  type PostPacedTrainOccupancyBlocksApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -73,6 +75,8 @@ export default class TrainProjectionLazyLoader {
     let trainSchedulePromise: Promise<PostTrainScheduleProjectPathApiResponse> = Promise.resolve(
       {}
     );
+    let trainScheduleoccupancyBlocksPromise: Promise<PostTrainScheduleOccupancyBlocksApiResponse> =
+      Promise.resolve({});
     if (rawTrainScheduleIds.length > 0) {
       trainSchedulePromise = this.options
         .dispatch(
@@ -80,6 +84,7 @@ export default class TrainProjectionLazyLoader {
             {
               projectPathForm: {
                 infra_id: this.options.infraId,
+                // TODO : replace path with track_section_ranges when projectPathForm is updated
                 path: this.options.path,
                 ids: rawTrainScheduleIds,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
@@ -89,9 +94,24 @@ export default class TrainProjectionLazyLoader {
           )
         )
         .unwrap();
+
+      trainScheduleoccupancyBlocksPromise = this.options
+        .dispatch(
+          osrdEditoastApi.endpoints.postTrainScheduleOccupancyBlocks.initiate({
+            occupancyBlockForm: {
+              infra_id: this.options.infraId,
+              path: this.options.path,
+              ids: rawTrainScheduleIds,
+              electrical_profile_set_id: this.options.electricalProfileSetId,
+            },
+          })
+        )
+        .unwrap();
     }
 
     let pacedTrainPromise: Promise<PostPacedTrainProjectPathApiResponse> = Promise.resolve({});
+    let pacedTrainOccupancyBlocksPromise: Promise<PostPacedTrainOccupancyBlocksApiResponse> =
+      Promise.resolve({});
     if (rawPacedTrainIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
@@ -99,6 +119,7 @@ export default class TrainProjectionLazyLoader {
             {
               projectPathForm: {
                 infra_id: this.options.infraId,
+                // TODO : replace path with track_section_ranges when projectPathForm is updated
                 path: this.options.path,
                 ids: rawPacedTrainIds,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
@@ -108,22 +129,47 @@ export default class TrainProjectionLazyLoader {
           )
         )
         .unwrap();
+
+      pacedTrainOccupancyBlocksPromise = this.options
+        .dispatch(
+          osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate({
+            occupancyBlockForm: {
+              infra_id: this.options.infraId,
+              path: this.options.path,
+              ids: rawPacedTrainIds,
+              electrical_profile_set_id: this.options.electricalProfileSetId,
+            },
+          })
+        )
+        .unwrap();
     }
 
     const rawTrainScheduleResults = await trainSchedulePromise;
     const rawPacedTrainResults = await pacedTrainPromise;
+    const rawTrainScheduleOccupancyBlocks = await trainScheduleoccupancyBlocksPromise;
+    const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
     }
 
     const rawResults = new Map();
+
     for (const [rawId, rawResult] of Object.entries(rawTrainScheduleResults)) {
       const id = formatEditoastIdToTrainScheduleId(Number(rawId));
+      const occupancyBlock = rawTrainScheduleOccupancyBlocks[id];
+      if (occupancyBlock) {
+        rawResult.signal_updates = occupancyBlock.signal_updates;
+      }
       rawResults.set(id, rawResult);
     }
+
     for (const [rawId, rawResult] of Object.entries(rawPacedTrainResults)) {
       const id = formatEditoastIdToPacedTrainId(Number(rawId));
+      const occupancyBlock = rawPacedTrainOccupancyBlocks[id];
+      if (occupancyBlock) {
+        rawResult.signal_updates = occupancyBlock.signal_updates;
+      }
       rawResults.set(id, rawResult);
     }
 
