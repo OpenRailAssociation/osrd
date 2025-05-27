@@ -27,7 +27,7 @@ in their respective classes.
 
 ## Getting Started
 
-You'll need **Java 17**
+You'll need **Java 21**
 
 
 ### Server usage (preferred)
