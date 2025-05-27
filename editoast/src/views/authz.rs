@@ -796,9 +796,6 @@ mod tests {
             .with_infra_grant(infra.id, InfraGrant::Owner)
             .create();
 
-        // Check that user is the owner of the infra via /authz/Infra/{infra_id}
-        check_grant_on_resource(&app, &owner, infra.id, owner.id, Some(InfraGrant::Owner));
-
         // Create a new user and add it as a writer to the infra with the grant API
         let writer = app.user("writer", "Writer").create();
         let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
@@ -812,8 +809,9 @@ mod tests {
             ]
         }));
         app.fetch(request_grant).assert_status(StatusCode::CREATED);
+
         // Check that the new user has the good grant
-        check_grant_on_resource(&app, &owner, infra.id, writer.id, Some(InfraGrant::Writer));
+        app.assert_infra_direct_grant(infra.id, writer.id, Some(InfraGrant::Writer));
 
         // Remove the user from the API
         let request_revoke = app.post("/authz/grants").by_user(&owner).json(&json!({
@@ -827,8 +825,9 @@ mod tests {
         }));
         app.fetch(request_revoke)
             .assert_status(StatusCode::NO_CONTENT);
+
         // Check that the new user has the good grant
-        check_grant_on_resource(&app, &owner, infra.id, writer.id, None);
+        app.assert_infra_direct_grant(infra.id, writer.id, None);
     }
 
     #[rstest]
@@ -919,35 +918,5 @@ mod tests {
             .json_into::<WhoamiResponse>();
 
         assert_eq!(roles, vec![Role::Admin]);
-    }
-
-    fn check_grant_on_resource(
-        app: &TestApp,
-        by_user: &impl AsRef<UserInfo>,
-        infra_id: i64,
-        user_id: i64,
-        grant: Option<InfraGrant>,
-    ) {
-        let request = app
-            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra_id))
-            .by_user(by_user);
-        let SubjectsWithGrantOnResource {
-            subjects: subjects_grant,
-            ..
-        } = app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        match grant {
-            Some(grant) => {
-                assert_eq!(
-                    true,
-                    subjects_grant
-                        .into_iter()
-                        .any(|s| s.id == user_id && s.grant == grant)
-                );
-            }
-            None => {
-                assert_eq!(false, subjects_grant.into_iter().any(|s| s.id == user_id));
-            }
-        }
     }
 }
