@@ -152,10 +152,11 @@ export const DEFAULT_TIME_LOCK: TimeLockDto = {
 
 export const DEFAULT_PACED_TRAIN_PAYLOAD: Pick<
   PacedTrain,
-  'constraint_distribution' | 'rolling_stock_name'
+  'constraint_distribution' | 'rolling_stock_name' | 'exceptions'
 > = {
   constraint_distribution: 'STANDARD',
   rolling_stock_name: '',
+  exceptions: [],
 };
 
 export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });
