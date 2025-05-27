@@ -72,22 +72,8 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn check_infra_grant_reader(&self, infra: &Infra) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_grant_reader(&User(self.user_id), infra)
-            .await
-    }
-
-    pub async fn check_infra_grant_writer(&self, infra: &Infra) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_grant_writer(&User(self.user_id), infra)
-            .await
-    }
-
-    pub async fn check_infra_grant_owner(&self, infra: &Infra) -> Result<bool, Error<S::Error>> {
-        self.regulator
-            .check_infra_grant_owner(&User(self.user_id), infra)
-            .await
+    pub async fn infra_grant(&self, infra: &Infra) -> Result<Option<InfraGrant>, Error<S::Error>> {
+        self.regulator.infra_grant(&User(self.user_id), infra).await
     }
 
     pub async fn authorize_infra_read(
@@ -207,33 +193,33 @@ mod tests {
             .give_infra_grant_unchecked(&User(authorizer.user_id()), &Infra(1), InfraGrant::Reader)
             .await
             .expect("Update grants should be successful");
-        let is_reader = authorizer
-            .check_infra_grant_reader(&Infra(1))
+        let grant = authorizer
+            .infra_grant(&Infra(1))
             .await
             .expect("Check grants should be successful");
-        assert_eq!(is_reader, true,);
+        assert_eq!(grant, Some(InfraGrant::Reader));
 
         authorizer
             .regulator
             .give_infra_grant_unchecked(&User(user_id), &Infra(1), InfraGrant::Writer)
             .await
             .expect("Update grants should be successful");
-        let is_writer = authorizer
-            .check_infra_grant_writer(&Infra(1))
+        let grant = authorizer
+            .infra_grant(&Infra(1))
             .await
             .expect("Check grants should be successful");
-        assert_eq!(is_writer, true,);
+        assert_eq!(grant, Some(InfraGrant::Writer));
 
         authorizer
             .regulator
-            .give_infra_grant_unchecked(&User(user_id), &Infra(1), InfraGrant::Writer)
+            .give_infra_grant_unchecked(&User(user_id), &Infra(1), InfraGrant::Owner)
             .await
             .expect("Update grants should be successful");
-        let is_owner = authorizer
-            .check_infra_grant_writer(&Infra(1))
+        let grant = authorizer
+            .infra_grant(&Infra(1))
             .await
             .expect("Check grants should be successful");
-        assert_eq!(is_owner, true,);
+        assert_eq!(grant, Some(InfraGrant::Owner));
     }
 
     #[tokio::test]

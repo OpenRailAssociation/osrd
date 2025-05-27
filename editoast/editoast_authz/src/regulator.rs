@@ -355,11 +355,11 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_grant_reader(
+    pub async fn infra_grant(
         &self,
         user: &User,
         infra: &Infra,
-    ) -> Result<bool, Error<S::Error>> {
+    ) -> Result<Option<InfraGrant>, Error<S::Error>> {
         // Check if the infra exists
         if !self
             .driver
@@ -376,69 +376,35 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Calling openfga
-        let result = self
+        let (is_reader, is_writer, is_owner) = self
             .openfga
-            .check(model::Infra::reader().check(user, infra))
+            .checks((
+                model::Infra::reader().check(user, infra),
+                model::Infra::writer().check(user, infra),
+                model::Infra::owner().check(user, infra),
+            ))
             .await?;
-        Ok(result)
-    }
 
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_grant_writer(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<bool, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
+        match (is_reader, is_writer, is_owner) {
+            (true, false, false) => Ok(Some(InfraGrant::Reader)),
+            (false, true, false) => Ok(Some(InfraGrant::Writer)),
+            (false, false, true) => Ok(Some(InfraGrant::Owner)),
+            (false, false, false) => Ok(None),
+            _ => {
+                tracing::error!(
+                    is_reader,
+                    is_writer,
+                    is_owner,
+                    ?user,
+                    ?infra,
+                    "User has multiple grants on the same resource"
+                );
+                panic!(
+                    "User {user:?} has multiple grants on the same resource {infra:?}, which is not supposed to happen by design. \n\
+                    Detected grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+                )
+            }
         }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Calling openfga
-        let result = self
-            .openfga
-            .check(model::Infra::writer().check(user, infra))
-            .await?;
-        Ok(result)
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn check_infra_grant_owner(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<bool, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Calling openfga
-        let result = self
-            .openfga
-            .check(model::Infra::owner().check(user, infra))
-            .await?;
-        Ok(result)
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
