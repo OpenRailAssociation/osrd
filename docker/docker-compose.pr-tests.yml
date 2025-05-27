@@ -152,11 +152,13 @@ services:
       TELEMETRY_ENDPOINT: "http://jaeger:4319"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5673/%2f"
       EDITOAST_OPENFGA_URL: "http://openfga:8191"
-      EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-false}
-    command:
-      - /bin/sh
-      - -c
-      - "diesel migration run --locked-schema && exec editoast runserver"
+      EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-true}
+    command: >
+      /bin/sh -c "
+        diesel migration run --locked-schema &&
+        editoast user add 'mock/mocked' 'Example User' &&
+        editoast roles add 'mock/mocked' Admin &&
+        exec editoast runserver"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8089/health" ]
       start_period: 4s
