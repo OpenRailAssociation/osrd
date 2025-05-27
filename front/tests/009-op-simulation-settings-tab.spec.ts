@@ -184,7 +184,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
-    await scenarioTimetableSection.getTrainArrivalTime('11:53');
+    await scenarioTimetableSection.getTrainArrivalTime('12:53');
     await scenarioTimetableSection.collapseScenarioSideMenu();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
