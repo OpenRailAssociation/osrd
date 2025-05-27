@@ -213,10 +213,10 @@ export const getTrainrunTimeCategoryFromFrequency = (
  * Get a Frequency by its id.
  */
 export const getFrequencyFromFrequencyId = (
-  state: MacroEditorState,
+  trainrunFrequencies: TrainrunFrequency[],
   frequencyId: number
 ): TrainrunFrequency => {
-  const frequency = state.trainrunFrequencies.find((f) => f.id === frequencyId);
+  const frequency = trainrunFrequencies.find((f) => f.id === frequencyId);
   if (!frequency) {
     throw new Error(`Frequency with ID ${frequencyId} not found.`);
   }
@@ -231,7 +231,7 @@ export const getTrainrunFrequencyFromTimetableItem = (
   state: MacroEditorState
 ): TrainrunFrequency => {
   if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-    return getFrequencyFromFrequencyId(state, TRAIN_SCHEDULE_FREQUENCY_ID);
+    return getFrequencyFromFrequencyId(state.trainrunFrequencies, TRAIN_SCHEDULE_FREQUENCY_ID);
   }
   const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
   const trainrunFrequency = state.trainrunFrequencies.find(
