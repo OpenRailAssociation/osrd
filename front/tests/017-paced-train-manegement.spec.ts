@@ -261,7 +261,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Verify global item counter has one more paced train
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
-      totalTrainScheduleCount: 0,
+      totalTrainScheduleCount: 2,
     });
 
     // Delete the duplicated paced train
