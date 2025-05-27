@@ -20,9 +20,9 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'train_name',
 ];
 
-const validateTrainSchedules = (importedItems: TimetableJsonPayload): TimetableJsonPayload => {
+const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload => {
   const { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains } =
-    importedItems;
+    importedItems as TimetableJsonPayload;
 
   const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
     if (
@@ -66,7 +66,7 @@ export const processJsonFile = (
   const isJsonFile = fileExtension === 'application/json';
 
   // try to parse the file content
-  let rawContent;
+  let rawContent: unknown;
   try {
     rawContent = JSON.parse(fileContent);
   } catch {
