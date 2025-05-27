@@ -1,4 +1,3 @@
-import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -7,9 +6,11 @@ import {
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
+import type { ProjectionResult } from './TrainProjectionLazyLoader';
+
 const upsertNewProjectedTrains = (
   projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
-  projectedTrainsToUpsert: Map<TimetableItemId, ProjectPathTrainResult>,
+  projectedTrainsToUpsert: Map<TimetableItemId, ProjectionResult>,
   timetableItemsById: Map<TimetableItemId, TimetableItem>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);

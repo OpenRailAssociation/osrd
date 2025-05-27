@@ -10201,7 +10201,7 @@ components:
       required:
       - infra_id
       - ids
-      - path
+      - track_section_ranges
       properties:
         electrical_profile_set_id:
           type: integer
@@ -10216,49 +10216,42 @@ components:
         infra_id:
           type: integer
           format: int64
-        path:
-          type: object
-          description: Project path input is described by a list of routes and a list of track range
-          required:
-          - track_section_ranges
-          - routes
-          - blocks
-          properties:
-            blocks:
-              type: array
-              items:
+        track_section_ranges:
+          type: array
+          items:
+            type: object
+            description: |-
+              An oriented range on a track section.
+              `begin` is always less than `end`.
+            required:
+            - track_section
+            - begin
+            - end
+            - direction
+            properties:
+              begin:
+                type: integer
+                format: int64
+                description: The beginning of the range in mm.
+                minimum: 0
+              direction:
+                $ref: '#/components/schemas/Direction'
+              end:
+                type: integer
+                format: int64
+                description: The end of the range in mm.
+                minimum: 0
+              track_section:
                 type: string
                 maxLength: 255
                 minLength: 1
-              description: Path description as block ids
-              minItems: 1
-            routes:
-              type: array
-              items:
-                type: string
-                maxLength: 255
-                minLength: 1
-              description: List of route ids
-              minItems: 1
-            track_section_ranges:
-              type: array
-              items:
-                $ref: '#/components/schemas/TrackRange'
-              description: List of track ranges
-              minItems: 1
     ProjectPathTrainResult:
       allOf:
       - type: object
         description: Project path output is described by time-space points and blocks
         required:
         - space_time_curves
-        - signal_updates
         properties:
-          signal_updates:
-            type: array
-            items:
-              $ref: '#/components/schemas/SignalUpdate'
-            description: List of signal updates along the path
           space_time_curves:
             type: array
             items:

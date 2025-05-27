@@ -46,9 +46,8 @@ pub(super) struct OccupancyBlockForm {
     pub(super) path: ProjectPathInput,
 }
 
-// TODO : turn to pub(super) when project_path is updated
 /// Compute the signal updates of a list of train schedules
-pub async fn compute_batch_signal_updates<'a>(
+pub(super) async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
     path_track_ranges: &'a [TrackRange],
@@ -106,8 +105,19 @@ pub(super) async fn compute_occupancy_blocks(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let (trains_hash_values, trains_details) =
-        extract_train_details(infra, &trains_schedules, simulations, &path).await?;
+    let trains_details = extract_train_details(&trains_schedules, simulations).await?;
+
+    let mut trains_hash_values = vec![];
+
+    trains_hash_values.extend(trains_details.iter().map(|t| {
+        t.compute_occupancy_block_hash_with_versioning(
+            infra.id,
+            infra.version,
+            &path.track_section_ranges,
+            &path.routes,
+            &path.blocks,
+        )
+    }));
 
     // 3. Retrieve cached projection
     let (miss_cache, mut hit_cache) =
@@ -126,8 +136,14 @@ pub(super) async fn compute_occupancy_blocks(
     .await?;
 
     // 5. Store occupancy blocks in the cache (using pipeline)
+    let trains_hash_values: HashMap<_, _> = trains_details
+        .iter()
+        .map(|t| t.train_id)
+        .zip(trains_hash_values)
+        .collect();
     let mut new_items = vec![];
     for train_id in miss_cache.iter().map(|t| t.train_id) {
+        let hash = &trains_hash_values[&train_id];
         let cached_value: OccupancyBlocks = OccupancyBlocks {
             signal_updates: signal_updates
                 .get(&train_id)
@@ -135,7 +151,7 @@ pub(super) async fn compute_occupancy_blocks(
                 .clone(),
         };
         hit_cache.push((cached_value.clone(), train_id));
-        new_items.push((format!("occupancy_block_{train_id}"), cached_value));
+        new_items.push((hash, cached_value));
     }
     valkey_conn.json_set_bulk(&new_items).await?;
 

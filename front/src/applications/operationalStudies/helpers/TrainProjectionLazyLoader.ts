@@ -1,11 +1,12 @@
 import {
   osrdEditoastApi,
-  type ProjectPathForm,
   type ProjectPathTrainResult,
   type PostTrainScheduleProjectPathApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathApiResponse,
   type PostPacedTrainOccupancyBlocksApiResponse,
+  type OccupancyBlockForm,
+  type OccupancyBlocks,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -19,12 +20,16 @@ import {
 
 const BATCH_SIZE = 20;
 
+export type ProjectionResult = ProjectPathTrainResult & {
+  signal_updates: OccupancyBlocks['signal_updates'];
+};
+
 type TrainProjectionLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
   electricalProfileSetId?: number;
-  path: ProjectPathForm['path'];
-  onProgress: (results: Map<TimetableItemId, ProjectPathTrainResult>) => void;
+  path: OccupancyBlockForm['path'];
+  onProgress: (results: Map<TimetableItemId, ProjectionResult>) => void;
 };
 
 export default class TrainProjectionLazyLoader {
@@ -62,6 +67,8 @@ export default class TrainProjectionLazyLoader {
   }
 
   async processBatch(batch: TimetableItemId[]) {
+    const { infraId, path, electricalProfileSetId } = this.options;
+
     const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];
     for (const id of batch) {
@@ -75,7 +82,7 @@ export default class TrainProjectionLazyLoader {
     let trainSchedulePromise: Promise<PostTrainScheduleProjectPathApiResponse> = Promise.resolve(
       {}
     );
-    let trainScheduleoccupancyBlocksPromise: Promise<PostTrainScheduleOccupancyBlocksApiResponse> =
+    let trainScheduleOccupancyBlocksPromise: Promise<PostTrainScheduleOccupancyBlocksApiResponse> =
       Promise.resolve({});
     if (rawTrainScheduleIds.length > 0) {
       trainSchedulePromise = this.options
@@ -83,11 +90,10 @@ export default class TrainProjectionLazyLoader {
           osrdEditoastApi.endpoints.postTrainScheduleProjectPath.initiate(
             {
               projectPathForm: {
-                infra_id: this.options.infraId,
-                // TODO : replace path with track_section_ranges when projectPathForm is updated
-                path: this.options.path,
+                infra_id: infraId,
+                track_section_ranges: path.track_section_ranges,
                 ids: rawTrainScheduleIds,
-                electrical_profile_set_id: this.options.electricalProfileSetId,
+                electrical_profile_set_id: electricalProfileSetId,
               },
             },
             { subscribe: false }
@@ -95,14 +101,14 @@ export default class TrainProjectionLazyLoader {
         )
         .unwrap();
 
-      trainScheduleoccupancyBlocksPromise = this.options
+      trainScheduleOccupancyBlocksPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postTrainScheduleOccupancyBlocks.initiate({
             occupancyBlockForm: {
-              infra_id: this.options.infraId,
-              path: this.options.path,
+              infra_id: infraId,
+              path,
               ids: rawTrainScheduleIds,
-              electrical_profile_set_id: this.options.electricalProfileSetId,
+              electrical_profile_set_id: electricalProfileSetId,
             },
           })
         )
@@ -118,11 +124,10 @@ export default class TrainProjectionLazyLoader {
           osrdEditoastApi.endpoints.postPacedTrainProjectPath.initiate(
             {
               projectPathForm: {
-                infra_id: this.options.infraId,
-                // TODO : replace path with track_section_ranges when projectPathForm is updated
-                path: this.options.path,
+                infra_id: infraId,
+                track_section_ranges: path.track_section_ranges,
                 ids: rawPacedTrainIds,
-                electrical_profile_set_id: this.options.electricalProfileSetId,
+                electrical_profile_set_id: electricalProfileSetId,
               },
             },
             { subscribe: false }
@@ -134,10 +139,10 @@ export default class TrainProjectionLazyLoader {
         .dispatch(
           osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate({
             occupancyBlockForm: {
-              infra_id: this.options.infraId,
-              path: this.options.path,
+              infra_id: infraId,
+              path,
               ids: rawPacedTrainIds,
-              electrical_profile_set_id: this.options.electricalProfileSetId,
+              electrical_profile_set_id: electricalProfileSetId,
             },
           })
         )
@@ -146,31 +151,29 @@ export default class TrainProjectionLazyLoader {
 
     const rawTrainScheduleResults = await trainSchedulePromise;
     const rawPacedTrainResults = await pacedTrainPromise;
-    const rawTrainScheduleOccupancyBlocks = await trainScheduleoccupancyBlocksPromise;
+    const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
     const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
     }
 
-    const rawResults = new Map();
+    const rawResults = new Map<TimetableItemId, ProjectionResult>();
 
-    for (const [rawId, rawResult] of Object.entries(rawTrainScheduleResults)) {
-      const id = formatEditoastIdToTrainScheduleId(Number(rawId));
-      const occupancyBlock = rawTrainScheduleOccupancyBlocks[id];
-      if (occupancyBlock) {
-        rawResult.signal_updates = occupancyBlock.signal_updates;
-      }
-      rawResults.set(id, rawResult);
+    for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
+      const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));
+      rawResults.set(trainScheduleId, {
+        ...result,
+        signal_updates: rawTrainScheduleOccupancyBlocks[id].signal_updates,
+      });
     }
 
-    for (const [rawId, rawResult] of Object.entries(rawPacedTrainResults)) {
-      const id = formatEditoastIdToPacedTrainId(Number(rawId));
-      const occupancyBlock = rawPacedTrainOccupancyBlocks[id];
-      if (occupancyBlock) {
-        rawResult.signal_updates = occupancyBlock.signal_updates;
-      }
-      rawResults.set(id, rawResult);
+    for (const [id, result] of Object.entries(rawPacedTrainResults)) {
+      const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
+      rawResults.set(pacedTrainId, {
+        ...result,
+        signal_updates: rawPacedTrainOccupancyBlocks[id].signal_updates,
+      });
     }
 
     this.options.onProgress(rawResults);

@@ -1,4 +1,4 @@
-pub mod occupancy_blocks;
+mod occupancy_blocks;
 pub mod paced_train;
 pub mod similar_schedules;
 pub mod simulation;

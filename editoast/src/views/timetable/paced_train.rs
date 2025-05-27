@@ -570,10 +570,15 @@ async fn project_path(
     Json(ProjectPathForm {
         infra_id,
         ids: paced_train_ids,
-        path,
+        track_section_ranges,
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -601,8 +606,8 @@ async fn project_path(
         conn,
         core_client,
         valkey_client,
-        path,
-        infra_id,
+        track_section_ranges,
+        infra,
         first_occurrences,
         electrical_profile_set_id,
     )
@@ -634,11 +639,6 @@ async fn occupancy_blocks(
         electrical_profile_set_id,
     }): Json<OccupancyBlockForm>,
 ) -> Result<Json<HashMap<i64, OccupancyBlocks>>> {
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
-        PacedTrainError::InfraNotFound { infra_id }
-    })
-    .await?;
-
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -646,6 +646,11 @@ async fn occupancy_blocks(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
+
+    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
 
     let conn = &mut db_pool.get().await?;
 
@@ -1381,13 +1386,14 @@ mod tests {
             "infra_id": small_infra.id,
             "electrical_profile_set_id": null,
             "ids": vec![paced_train_fail.id, paced_train_valid.id],
-            "path": {
-                "track_section_ranges": [
-                    {"track_section": "TA1", "begin": 0, "end": 100, "direction": "START_TO_STOP"}
-                ],
-                "routes": [],
-                "blocks": []
-            }
+            "track_section_ranges": [
+                {
+                    "track_section": "TA1",
+                    "begin": 0,
+                    "end": 100,
+                    "direction": "START_TO_STOP"
+                }
+            ],
         }));
         let response: HashMap<i64, PartialProjectPathTrainResult> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
