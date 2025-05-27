@@ -1,7 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
-import { PATH_COLORS } from 'modules/simulationResult/consts';
+import {
+  DEFAULT_TRAIN_PATH_COLORS,
+  TRAIN_CATEGORY_PATH_COLORS,
+} from 'modules/simulationResult/consts';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
@@ -9,6 +13,7 @@ const getPathStyle = (
   hovered: HoveredItem | null,
   path: { color: string; id: string },
   dragging: boolean,
+  timetableItemsWithDetails?: TimetableItemWithDetails[],
   selectedTrainId?: TrainId
 ): {
   color: string;
@@ -20,22 +25,27 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  if (hovered && 'pathId' in hovered.element && path.id === hovered?.element.pathId && !dragging) {
-    return { color: PATH_COLORS.HOVERED_PATH, level: 1 };
+  const trainId = isOccurrenceId(path.id) ? extractPacedTrainIdFromOccurrenceId(path.id) : path.id;
+  const item = timetableItemsWithDetails?.find((t) => t.id === trainId);
+  const category = item?.category;
+
+  const colors = category ? TRAIN_CATEGORY_PATH_COLORS[category] : DEFAULT_TRAIN_PATH_COLORS;
+
+  if (hovered && 'pathId' in hovered.element && path.id === hovered.element.pathId && !dragging) {
+    return { color: colors.hovered, level: 1 };
   }
   // Apply occurrence style if selectedTrainId is an occurrence from the same paced
   if (selectedTrainId) {
     if (isOccurrenceId(selectedTrainId)) {
-      // Selected occurrence
       if (path.id === selectedTrainId) {
         return {
-          color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
+          color: colors.normal,
           level: 1,
           border: {
             offset: 3,
             width: 0.5,
-            color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
-            backgroundColor: PATH_COLORS.SELECTED_OCCURRENCE_BACKGROUND,
+            color: colors.normal,
+            backgroundColor: colors.background,
           },
         };
       }
@@ -46,20 +56,21 @@ const getPathStyle = (
           extractPacedTrainIdFromOccurrenceId(selectedTrainId)
       ) {
         return {
-          color: PATH_COLORS.SELECTED_OCCURRENCE_PATH,
+          color: colors.normal,
           level: 1,
           border: {
             offset: 3.5,
             color: 'transparent',
-            backgroundColor: PATH_COLORS.SELECTED_OCCURRENCE_BACKGROUND,
+            backgroundColor: colors.background,
           },
         };
       }
     } else if (path.id === selectedTrainId) {
-      return { color: PATH_COLORS.SELECTED_PATH, level: 1 };
+      return { color: colors.normal, level: 1 };
     }
   }
-  return { color: path.color };
+
+  return { color: colors.normal };
 };
 
 export default getPathStyle;

@@ -36,6 +36,7 @@ import type {
   TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -76,6 +77,7 @@ type ManchetteWithSpaceTimeChartProps = {
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TimetableItemId;
+  timetableItemsWithDetails?: TimetableItemWithDetails[];
 };
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
@@ -92,6 +94,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   onTrainClick,
   selectedProjectionId,
   selectedTrainId,
+  timetableItemsWithDetails,
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
@@ -493,7 +496,13 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               <PathLayer
                 key={`${path.id}-${path.points[0]?.position}`}
                 path={path}
-                {...getPathStyle(hoveredItem, path, !!draggingState, selectedTrainId)}
+                {...getPathStyle(
+                  hoveredItem,
+                  path,
+                  !!draggingState,
+                  timetableItemsWithDetails,
+                  selectedTrainId
+                )}
               />
             ))}
             {rect && <ZoomRect {...rect} />}
