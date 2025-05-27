@@ -297,6 +297,27 @@ impl Client {
         Ok(model_id)
     }
 
+    /// Returns whether a tuple exists in OpenFGA
+    ///
+    /// Not to be mistaken with [Client::check]. This function internally calls
+    /// `/stores/{store_id}/read`. Check out OpenFGA documentation for more information
+    /// about the distinction between tuples and checks.
+    pub async fn tuple_exists<R: Relation, U: AsUser<User = R::User>>(
+        &self,
+        tuple: Tuple<'_, R, U>,
+    ) -> Result<bool, RequestFailure> {
+        let (tuples, _continuation) = self
+            .get_stores_read(
+                &self.store.id,
+                RawTuple::from(&tuple),
+                Some(1),
+                self.authorization_model_id.as_deref(),
+                None,
+            )
+            .await?;
+        Ok(!tuples.is_empty())
+    }
+
     /// Writes up to `n` tuples in OpenFGA, with `n` the maximum number of tuple writes
     /// configured in the [ConnectionSettings::limits]'s [Limits::max_tuples_per_write].
     ///
@@ -920,6 +941,16 @@ pub trait Request {
         self,
         client: &Client,
     ) -> impl future::Future<Output = Result<Self::Response, Self::Error>>;
+}
+
+impl<R: Relation, U: AsUser<User = R::User>> Request for Tuple<'_, R, U> {
+    type Response = bool;
+
+    type Error = RequestFailure;
+
+    async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
+        client.tuple_exists(self).await
+    }
 }
 
 impl<R: Relation, U: AsUser<User = R::User>> Request for Check<'_, R, U> {
@@ -1636,5 +1667,43 @@ mod tests {
             .assert_check_not(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")))
             .assert_check_not(Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"espagne")))
             .assert_check(Infra::can_read().check(&fga!(User:"charlie"), &fga!(Infra:"germany")));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn tuple_exists() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+
+        client
+            .write_tuples(&[fga!(Infra:"france"#reader@User:"alice")])
+            .await
+            .unwrap();
+
+        assert!(
+            client
+                .tuple_exists(fga!(Infra:"france"#reader@User:"alice"))
+                .await
+                .unwrap()
+        );
+        assert!(
+            !client
+                .tuple_exists(fga!(Infra:"espagne"#reader@User:"bob"))
+                .await
+                .unwrap()
+        );
+
+        client
+            .delete_tuples(&[fga!(Infra:"france"#reader@User:"alice")])
+            .await
+            .unwrap();
+
+        assert!(
+            !client
+                .tuple_exists(fga!(Infra:"france"#reader@User:"alice"))
+                .await
+                .unwrap()
+        );
     }
 }
