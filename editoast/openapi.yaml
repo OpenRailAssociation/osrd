@@ -2496,15 +2496,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MacroNodeForm'
+              $ref: '#/components/schemas/MacroNodeBatchForm'
         required: true
       responses:
         '201':
-          description: Macro node created
+          description: Macro nodes created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MacroNodeResponse'
+                $ref: '#/components/schemas/MacroNodeBatchResponse'
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_nodes/{node_id}:
     get:
       tags:
@@ -8429,6 +8429,24 @@ components:
       - FR3.3
       - FR3.3/GB/G2
       - GLOTT
+    MacroNodeBatchForm:
+      type: object
+      required:
+      - macro_nodes
+      properties:
+        macro_nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroNodeForm'
+    MacroNodeBatchResponse:
+      type: object
+      required:
+      - macro_nodes
+      properties:
+        macro_nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroNodeResponse'
     MacroNodeForm:
       type: object
       required:

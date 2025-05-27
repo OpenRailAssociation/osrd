@@ -44,8 +44,10 @@ crate::routes! {
 
 editoast_common::schemas! {
     MacroNodeForm,
+    MacroNodeBatchForm,
     MacroNodeResponse,
     MacroNodeListResponse,
+    MacroNodeBatchResponse,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -66,7 +68,7 @@ struct MacroNodeIdParam {
     node_id: i64,
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, Clone)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
 struct MacroNodeForm {
     position_x: i64,
@@ -76,6 +78,12 @@ struct MacroNodeForm {
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize, PartialEq))]
+struct MacroNodeBatchForm {
+    macro_nodes: Vec<MacroNodeForm>,
 }
 
 impl MacroNodeForm {
@@ -103,6 +111,12 @@ struct MacroNodeResponse {
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
+struct MacroNodeBatchResponse {
+    macro_nodes: Vec<MacroNodeResponse>,
 }
 
 impl From<MacroNode> for MacroNodeResponse {
@@ -177,18 +191,18 @@ async fn list(
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
-    request_body = MacroNodeForm,
+    request_body = MacroNodeBatchForm,
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
-        (status = 201, body = MacroNodeResponse, description = "Macro node created"),
+        (status = 201, body = MacroNodeBatchResponse, description = "Macro nodes created"),
     )
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
-    Json(data): Json<MacroNodeForm>,
-) -> Result<Json<MacroNodeResponse>> {
+    Json(data): Json<MacroNodeBatchForm>,
+) -> Result<Json<MacroNodeBatchResponse>> {
     // Checking role
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -213,19 +227,24 @@ async fn create(
                     return Err(ScenarioError::NotFound { scenario_id }.into());
                 }
 
-                let macro_node = data
-                    .into_macro_node_changeset(scenario_id)
-                    .create(&mut conn)
-                    .await?;
+                let changesets: Vec<_> = data
+                    .macro_nodes
+                    .into_iter()
+                    .map(|node| node.into_macro_node_changeset(scenario_id))
+                    .collect();
 
-                Ok(macro_node)
+                let macro_nodes: Vec<_> = MacroNode::create_batch(&mut conn, changesets).await?;
+
+                Ok(macro_nodes)
             }
             .scope_boxed()
         },
     )
     .await?;
 
-    Ok(Json(MacroNodeResponse::from(created)))
+    Ok(Json(MacroNodeBatchResponse {
+        macro_nodes: created.into_iter().map_into().collect(),
+    }))
 }
 
 #[utoipa::path(
@@ -473,7 +492,7 @@ pub mod test {
         let fixtures =
             create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
 
-        let node_data = MacroNodeForm {
+        let nodes_data = vec![MacroNodeForm {
             position_x: 12,
             position_y: 51,
             full_name: Some("My super node".to_string()),
@@ -481,28 +500,31 @@ pub mod test {
             labels: Tags::new(vec!["".to_string(), "".to_string()]),
             trigram: None,
             path_item_key: "->".to_string(),
-        };
+        }];
 
         let request = app
             .post(&format!(
                 "/projects/{}/studies/{}/scenarios/{}/macro_nodes",
                 fixtures.project.id, fixtures.study.id, fixtures.scenario.id
             ))
-            .json(&node_data);
-        let response: MacroNodeResponse =
+            .json(&MacroNodeBatchForm {
+                macro_nodes: nodes_data.clone(),
+            });
+        let response: MacroNodeBatchResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         #[expect(deprecated)]
-        let node = MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), response.id, || {
-            MacroNodeError::NotFound {
-                node_id: response.id,
-            }
-        })
-        .await
-        .expect("Failed to retrieve node");
+        let node =
+            MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), response.macro_nodes[0].id, || {
+                MacroNodeError::NotFound {
+                    node_id: response.macro_nodes[0].id,
+                }
+            })
+            .await
+            .expect("Failed to retrieve node");
 
-        assert_eq!(node_data, response);
-        assert_eq!(node, response);
+        assert_eq!(nodes_data, response.macro_nodes);
+        assert_eq!(node, response.macro_nodes[0]);
     }
 
     #[rstest]

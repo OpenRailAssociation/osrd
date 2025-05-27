@@ -7,7 +7,7 @@ use crate::models::Tags;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::macro_node)]
-#[model(gen(ops = crud, list))]
+#[model(gen(ops = crud, batch_ops = c, list))]
 pub struct MacroNode {
     pub id: i64,
     pub scenario_id: i64,

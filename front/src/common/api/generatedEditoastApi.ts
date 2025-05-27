@@ -737,7 +737,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
           method: 'POST',
-          body: queryArg.macroNodeForm,
+          body: queryArg.macroNodeBatchForm,
         }),
         invalidatesTags: ['scenarios'],
       }),
@@ -1835,13 +1835,13 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes
   pageSize?: number | null;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
-  /** status 201 Macro node created */ MacroNodeResponse;
+  /** status 201 Macro nodes created */ MacroNodeBatchResponse;
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
   scenarioId: number;
-  macroNodeForm: MacroNodeForm;
+  macroNodeBatchForm: MacroNodeBatchForm;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
   /** status 200 The requested Macro node */ MacroNodeResponse;
@@ -3765,6 +3765,9 @@ export type MacroNodeResponse = {
 export type MacroNodeListResponse = PaginationStats & {
   results: MacroNodeResponse[];
 };
+export type MacroNodeBatchResponse = {
+  macro_nodes: MacroNodeResponse[];
+};
 export type MacroNodeForm = {
   connection_time: number;
   full_name?: string | null;
@@ -3773,6 +3776,9 @@ export type MacroNodeForm = {
   position_x: number;
   position_y: number;
   trigram?: string | null;
+};
+export type MacroNodeBatchForm = {
+  macro_nodes: MacroNodeForm[];
 };
 export type EffortCurveConditions = {
   comfort: Comfort | null;
