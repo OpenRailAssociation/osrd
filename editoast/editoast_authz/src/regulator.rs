@@ -737,10 +737,11 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_reader_unchecked(
+    pub async fn give_infra_grant_unchecked(
         &self,
         user: &User,
         infra: &Infra,
+        grant: InfraGrant,
     ) -> Result<(), Error<S::Error>> {
         // Check if the infra exists
         if !self
@@ -757,157 +758,46 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(user.0));
         }
 
-        // Avoid creating an existing tuple
-        if self
-            .openfga
-            .check(Infra::reader().check(user, infra))
-            .await?
-        {
-            return Ok(());
-        }
-
         // Remove other grants before to add the new one
         self.revoke_infra_grants_unchecked(user, infra).await?;
 
         // Grant the new one
-        self.openfga
-            .prepare_writes()
-            .write(&Infra::reader().tuple(user, infra))
-            .execute()
-            .await?;
+        let mut writes = self.openfga.prepare_writes();
+        match grant {
+            InfraGrant::Reader => {
+                writes.push(&Infra::reader().tuple(user, infra));
+            }
+            InfraGrant::Writer => {
+                writes.push(&Infra::writer().tuple(user, infra));
+            }
+            InfraGrant::Owner => {
+                writes.push(&Infra::owner().tuple(user, infra));
+            }
+        }
+        writes.execute().await?;
 
         Ok(())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_reader(
+    pub async fn give_infra_grant(
         &self,
         issuer: &User,
         user: &User,
         infra: &Infra,
+        grant: InfraGrant,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_read(issuer, infra)
-            .await?
+        let authz_share = match grant {
+            InfraGrant::Reader => self.authorize_infra_sharing_read(issuer, infra).await?,
+            InfraGrant::Writer => self.authorize_infra_sharing_write(issuer, infra).await?,
+            InfraGrant::Owner => {
+                self.authorize_infra_sharing_ownership(issuer, infra)
+                    .await?
+            }
+        };
+        authz_share
             .allowed_then_try(async || {
-                self.grant_infra_reader_unchecked(user, infra).await?;
-                Ok(Authorization::Granted(()))
-            })
-            .await
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_writer_unchecked(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<(), Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Avoid creating an existing tuple
-        if self
-            .openfga
-            .check(Infra::writer().check(user, infra))
-            .await?
-        {
-            return Ok(());
-        }
-
-        // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra).await?;
-
-        // Grant the new one
-        self.openfga
-            .prepare_writes()
-            .write(&Infra::writer().tuple(user, infra))
-            .execute()
-            .await?;
-
-        Ok(())
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_writer(
-        &self,
-        issuer: &User,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_write(issuer, infra)
-            .await?
-            .allowed_then_try(async || {
-                self.grant_infra_writer_unchecked(user, infra).await?;
-                Ok(Authorization::Granted(()))
-            })
-            .await
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_owner_unchecked(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<(), Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Avoid creating an existing tuple
-        if self
-            .openfga
-            .check(Infra::owner().check(user, infra))
-            .await?
-        {
-            return Ok(());
-        }
-
-        // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra).await?;
-
-        // Grant the new one
-        self.openfga
-            .prepare_writes()
-            .write(&Infra::owner().tuple(user, infra))
-            .execute()
-            .await?;
-
-        Ok(())
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn grant_infra_owner(
-        &self,
-        issuer: &User,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.authorize_infra_sharing_ownership(issuer, infra)
-            .await?
-            .allowed_then_try(async || {
-                self.grant_infra_owner_unchecked(user, infra).await?;
+                self.give_infra_grant_unchecked(user, infra, grant).await?;
                 Ok(Authorization::Granted(()))
             })
             .await

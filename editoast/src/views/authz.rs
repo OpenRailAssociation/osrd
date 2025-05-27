@@ -418,27 +418,10 @@ async fn update_grants(
                 let subject = authz::User(subject_id);
                 match resource_type {
                     ResourceType::Infra => {
-                        let resource = authz::Infra(resource_id);
-                        match grant {
-                            InfraGrant::Reader => {
-                                authorizer
-                                    .grant_infra_reader(&subject, &resource)
-                                    .await?
-                                    .allowed()?;
-                            }
-                            InfraGrant::Writer => {
-                                authorizer
-                                    .grant_infra_writer(&subject, &resource)
-                                    .await?
-                                    .allowed()?;
-                            }
-                            InfraGrant::Owner => {
-                                authorizer
-                                    .grant_infra_owner(&subject, &resource)
-                                    .await?
-                                    .allowed()?;
-                            }
-                        }
+                        authorizer
+                            .give_infra_grant(&subject, &authz::Infra(resource_id), grant)
+                            .await?
+                            .allowed()?;
                     }
                 }
             }

@@ -7,6 +7,7 @@ use axum::http::StatusCode;
 use axum::http::header;
 use axum::response::IntoResponse;
 use editoast_authz as authz;
+use editoast_authz::InfraGrant;
 use editoast_schemas::infra::RailJson;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
@@ -196,9 +197,10 @@ async fn post_railjson(
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on can_share_ownership
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
-            .grant_infra_owner_unchecked(
+            .give_infra_grant_unchecked(
                 &authz::User(authorizer.user_id()),
                 &authz::Infra(infra.id),
+                InfraGrant::Owner,
             )
             .await?;
     }
