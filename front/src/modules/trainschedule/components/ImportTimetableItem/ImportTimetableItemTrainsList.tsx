@@ -8,7 +8,12 @@ import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PacedTrain,
+  type TrainSchedule,
+  type ScenarioResponse,
+} from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -44,7 +49,7 @@ function LoadingIfSearching({
 type ImportTimetableItemTrainsListProps = {
   trainsList: ImportedTrainSchedule[];
   isLoading: boolean;
-  timetableId: number;
+  scenario: ScenarioResponse;
   trainsJsonData: TimetableJsonPayload;
   trainsXmlData: ImportedTrainSchedule[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -54,7 +59,7 @@ type ImportTimetableItemTrainsListProps = {
 const ImportTimetableItemTrainsList = ({
   trainsList,
   isLoading,
-  timetableId,
+  scenario,
   trainsJsonData,
   trainsXmlData,
   upsertTimetableItems,
@@ -62,8 +67,11 @@ const ImportTimetableItemTrainsList = ({
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
 
-  const { train_schedules: trainSchedulesJsonData, paced_trains: pacedTrainsJsonData } =
-    trainsJsonData;
+  const {
+    train_schedules: trainSchedulesJsonData,
+    paced_trains: pacedTrainsJsonData,
+    macro_nodes: macroNodes,
+  } = trainsJsonData;
   const formattedTrainsList = useMemo(
     () =>
       trainsList.map(({ rollingStock, ...train }) => {
@@ -84,8 +92,11 @@ const ImportTimetableItemTrainsList = ({
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postMacroNodes] =
+    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.useMutation();
 
   const dispatch = useAppDispatch();
+  const timetableId = scenario.timetable_id;
 
   async function generateTimetableItem() {
     try {
@@ -135,6 +146,15 @@ const ImportTimetableItemTrainsList = ({
           ...pacedTrain,
           id: formatEditoastIdToPacedTrainId(pacedTrain.id),
         }));
+      }
+
+      if (macroNodes && macroNodes.length > 0) {
+        await postMacroNodes({
+          projectId: scenario.project.id,
+          studyId: scenario.study_id,
+          scenarioId: scenario.id,
+          macroNodeBatchForm: { macro_nodes: macroNodes },
+        }).unwrap();
       }
 
       upsertTimetableItems([...formattedTrainSchedules, ...formattedPacedTrains]);
