@@ -246,7 +246,7 @@ const ScenarioContent = ({
           {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
             <div className="scenario-managetrainschedule">
               <ImportTimetableItem
-                timetableId={scenario.timetable_id}
+                scenario={scenario}
                 upsertTimetableItems={upsertTimetableItemsWithNge}
               />
             </div>

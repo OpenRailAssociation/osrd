@@ -8,6 +8,7 @@ import type {
   RollingStockWithLiveries,
   SimulationResponse,
   TrainSchedule,
+  MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -55,6 +56,7 @@ export type ImportStation = {
 export type TimetableJsonPayload = {
   train_schedules: TrainSchedule[];
   paced_trains: PacedTrain[];
+  macro_nodes?: MacroNodeForm[];
 };
 
 export type TrainScheduleImportConfig = {

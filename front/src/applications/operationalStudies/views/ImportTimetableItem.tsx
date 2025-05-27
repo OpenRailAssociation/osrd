@@ -6,7 +6,7 @@ import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import {
   ImportTimetableItemConfig,
@@ -18,11 +18,11 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 type ImportTimetableItemProps = {
-  timetableId: number;
+  scenario: ScenarioResponse;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
-const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimetableItemProps) => {
+const ImportTimetableItem = ({ scenario, upsertTimetableItems }: ImportTimetableItemProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
@@ -61,7 +61,7 @@ const ImportTimetableItem = ({ timetableId, upsertTimetableItems }: ImportTimeta
       />
       <ImportTimetableItemTrainsList
         isLoading={isLoading}
-        timetableId={timetableId}
+        scenario={scenario}
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
         trainsXmlData={trainsXmlData}
