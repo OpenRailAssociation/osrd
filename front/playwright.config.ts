@@ -22,7 +22,19 @@ export default defineConfig({
     locale: 'fr',
     timezoneId: 'Europe/Paris',
   },
-  reporter: process.env.CI ? 'github' : [['line'], ['html']],
+  reporter: [
+    [
+      './tests/reporter/generate-personalized-report.ts',
+      {
+        minimal: false,
+        screenshot: true,
+        annotations: true,
+        testType: 'e2e',
+      },
+    ],
+    ['line'],
+    ['html'],
+  ],
 
   projects: [
     { name: 'setup', testMatch: 'global-setup.ts', teardown: 'teardown' },
