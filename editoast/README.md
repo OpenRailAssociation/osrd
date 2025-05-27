@@ -90,6 +90,44 @@ Running editoast with deactivated cache can help repeating calls when debugging.
 NO_CACHE=true cargo run -- runserver
 ```
 
+## Authorization
+
+
+### How to disable authorizations
+
+By default editoast is running with authorization enabled. 
+You can disable it by using the environment variable `EDITOAST_ENABLE_AUTHORIZATION=false`
+
+```sh 
+EDITOAST_ENABLE_AUTHORIZATION=false cargo run -- runserver
+```
+
+If you run the stack with docker: 
+
+```sh 
+EDITOAST_ENABLE_AUTHORIZATION=false docker compose up  
+```
+
+If your client has a direct access to editoast, an other possibility is to add the header `x-osrd-skip-authz` in your requests.
+
+### User & role management
+
+You can create a new user with `Admin` role by using the following commands : 
+
+```sh 
+cargo run user add 'mock/mocked' 'Example User'
+cargo run roles add 'mock/mocked' Admin 
+```
+
+Where `mock/mocked` is the **identity** of the user and `Example User` its **name**. 
+In development, the default user `mock/mocked` which is given by the gateway.
+
+If you run the stack with docker, you can use:
+```sh
+docker exec osrd-editoast editoast user add 'mock/mocked' 'Example User'
+docker exec osrd-editoast editoast roles add 'mock/mocked' Admin 
+```
+
 ## For M1 MacOS users
 
 Our `docker-compose.yml` at the root of the project uses the `postgis` image by default.

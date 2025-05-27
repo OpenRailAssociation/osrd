@@ -60,9 +60,9 @@ Launches end to end tests.
 It requires:
 
 - Install Playwright dependencies `cd ./front/ && npx playwright install --with-deps`
-- Backend containers to be up:
+- Backend containers to be up with authorization disabled:
 
-  `docker compose up --no-build --detach valkey postgres gateway core editoast`
+  `EDITOAST_ENABLE_AUTHORIZATION=false docker compose up --no-build --detach valkey postgres gateway core editoast`
 
 - Running front with `docker compose up --build --detach front`
 
