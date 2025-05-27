@@ -294,14 +294,15 @@ const populateSecondaryCodesInPath = async (
   await Promise.all(promises);
 };
 
-const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, state: MacroEditorState) => {
+const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, dto: NetzgrafikDto) => {
   if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
     return null;
   }
 
+  const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   return {
     interval: new Duration({
-      minutes: getFrequencyFromFrequencyId(state, trainrun.frequencyId).frequency,
+      minutes: freq.frequency,
     }).toISOString(),
     time_window: DEFAULT_TIME_WINDOW.toISOString(),
   };
@@ -325,7 +326,7 @@ const handleCreateTimetableItem = async (
   await populateSecondaryCodesInPath(path, infraId, dispatch);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
-    paced: createPacedAttributesFromTrainrun(trainrun, state)!,
+    paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
     train_name: trainrun.name,
     labels,
     path,
@@ -398,7 +399,7 @@ const handleUpdateTimetableItem = async ({
     category: getTrainCategoryFromId(trainrun.categoryId),
   };
 
-  const paced = createPacedAttributesFromTrainrun(trainrun, state);
+  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
   let updatedTimetableItem: TimetableItem;
   if (!paced) {
     updatedTimetableItem = await storeTrainSchedule(
