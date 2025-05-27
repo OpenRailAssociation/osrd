@@ -145,7 +145,7 @@
 //! // let wrong_tuple = DocumentReader.tuple(&doc, &bob);
 //!
 //! // type-bound public access support
-//! let public = DocumentReader.tuple(&User::wildcard(), &Document("public".to_string()));
+//! let public = DocumentReader.tuple(User::wildcard(), &Document("public".to_string()));
 //!
 //! // a check for permission
 //! let bob_can_read = DocumentCanRead.check(&bob, &doc);
@@ -360,7 +360,7 @@ pub fn compile_model(model: &str) -> serde_json::Value {
 /// assert_eq!(
 ///     fga!(Document:"2021-budget"#reader@Person:*),
 ///     Document::reader()
-///         .tuple(&Person::wildcard(), &Document("2021-budget".to_string()))
+///         .tuple(Person::wildcard(), &Document("2021-budget".to_string()))
 /// );
 ///
 /// // Tuples with usersets
@@ -368,7 +368,7 @@ pub fn compile_model(model: &str) -> serde_json::Value {
 ///     fga!(Document:"2021-budget"#reader@Document:"topsecret"#can_write),
 ///     Document::reader()
 ///         .tuple(
-///             &Document::can_write().userset(&Document("topsecret".to_string())),
+///             Document::can_write().userset(&Document("topsecret".to_string())),
 ///             &Document("2021-budget".to_string())
 ///         )
 /// );
@@ -407,17 +407,6 @@ pub fn compile_model(model: &str) -> serde_json::Value {
 /// // Simple tuples
 /// let alice = fga!(Person:"alice");
 /// let tuple = fga!(Document:secret # reader @ alice);
-/// println!("{tuple:?}");
-///
-/// // Tuples with type-bound public access
-/// let wildcard = fga!(Person:*);
-/// let tuple = fga!(Document:secret # reader @ wildcard);
-/// println!("{tuple:?}");
-///
-/// // Tuples with usersets
-/// let budget = fga!(Document:"2021-budget");
-/// let writers = fga!(Document:secret # can_write);
-/// let tuple = fga!(Document:budget # reader @ writers);
 /// println!("{tuple:?}");
 ///
 /// // Types with variables implementing ToString
@@ -466,12 +455,12 @@ macro_rules! fga {
 
     // fga!(group:id#member@user:*) => tuple syntax for public type access bounds
     ($object:ident : $object_id:literal # $relation:ident @ $user:ident : *) => {
-        $object::$relation().tuple(&fga!($user:*), &fga!($object:$object_id))
+        $object::$relation().tuple(fga!($user:*), &fga!($object:$object_id))
     };
 
     // fga!(doc:id#reader@group#member) => tuple syntax for user set
     ($object:ident : $object_id:literal # $relation:ident @ $user:ident : $user_id:literal # $user_relation:ident) => {
-        $object::$relation().tuple(&fga!($user:$user_id # $user_relation), &fga!($object:$object_id))
+        $object::$relation().tuple(fga!($user:$user_id # $user_relation), &fga!($object:$object_id))
     };
 
     ($object:ident : $object_var:ident # $relation:ident @ $user_var:ident) => {

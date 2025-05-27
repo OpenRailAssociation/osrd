@@ -499,7 +499,7 @@ impl Client {
 
     pub async fn list_objects<R: Relation, U: AsUser<User = R::User>>(
         &self,
-        QueryObjects(user, _): QueryObjects<'_, R, U>,
+        QueryObjects(user, _): QueryObjects<R, U>,
     ) -> Result<Vec<R::Object>, QueryError> {
         let objects = self
             .post_stores_list_objects(
@@ -932,7 +932,7 @@ impl<R: Relation, U: AsUser<User = R::User>> Request for Check<'_, R, U> {
     }
 }
 
-impl<R, U> Request for QueryObjects<'_, R, U>
+impl<R, U> Request for QueryObjects<R, U>
 where
     R: Relation,
     U: AsUser<User = R::User>,
@@ -1233,8 +1233,8 @@ mod tests {
         // Test batch_check with usersets
         let (friends_write_france, company_read_spain) = client
             .checks((
-                Infra::can_write().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
-                Infra::can_read().check(&fga!(Group:"company"#member), &fga!(Infra:"espagne")),
+                Infra::can_write().check(fga!(Group:"friends"#member), &fga!(Infra:"france")),
+                Infra::can_read().check(fga!(Group:"company"#member), &fga!(Infra:"espagne")),
             ))
             .await
             .unwrap();
@@ -1244,13 +1244,13 @@ mod tests {
         // Test check
         client
             .assert_check_not(
-                Infra::can_write().check(&fga!(Group:"company"#member), &fga!(Infra:"espagne")),
+                Infra::can_write().check(fga!(Group:"company"#member), &fga!(Infra:"espagne")),
             )
             .assert_check(
-                Infra::can_read().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
+                Infra::can_read().check(fga!(Group:"friends"#member), &fga!(Infra:"france")),
             )
             .assert_check(
-                Infra::can_write().check(&fga!(Group:"friends"#member), &fga!(Infra:"france")),
+                Infra::can_write().check(fga!(Group:"friends"#member), &fga!(Infra:"france")),
             )
             .assert_check(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"espagne")))
             .assert_check_not(Infra::can_write().check(&fga!(User:"alice"), &fga!(Infra:"espagne")))
@@ -1432,7 +1432,7 @@ mod tests {
             .unwrap();
 
         let objects = client
-            .list_objects(Infra::can_read().query_objects(&fga!(User:*)))
+            .list_objects(Infra::can_read().query_objects(fga!(User:*)))
             .await
             .unwrap();
         assert_eq!(objects.as_slice(), &[fga!(Infra:"espagne")]);

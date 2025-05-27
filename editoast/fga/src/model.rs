@@ -192,11 +192,11 @@ pub trait Relation: fmt::Debug + Sized {
     /// [`Client::write_tuples`](crate::client::Client::write_tuples)
     /// or
     /// [`Client::prepare_writes`](crate::client::Client::prepare_writes).
-    fn tuple<'a: 'c, 'b: 'c, 'c, U: AsUser<User = Self::User>>(
+    fn tuple<'a, U: AsUser<User = Self::User>>(
         &self,
-        user: &'a U,
-        object: &'b Self::Object,
-    ) -> Tuple<'c, Self, U> {
+        user: U,
+        object: &'a Self::Object,
+    ) -> Tuple<'a, Self, U> {
         Tuple { user, object }
     }
 
@@ -213,11 +213,11 @@ pub trait Relation: fmt::Debug + Sized {
     ///
     /// Can be used in [`Client::check`](crate::client::Client::check) to check if `user`
     /// is related via `Self` to `object`.
-    fn check<'a: 'c, 'b: 'c, 'c, U: AsUser<User = Self::User>>(
+    fn check<'a, U: AsUser<User = Self::User>>(
         &self,
-        user: &'a U,
-        object: &'b Self::Object,
-    ) -> Check<'c, Self, U> {
+        user: U,
+        object: &'a Self::Object,
+    ) -> Check<'a, Self, U> {
         Check { user, object }
     }
 
@@ -245,10 +245,7 @@ pub trait Relation: fmt::Debug + Sized {
     ///
     /// Can be used in [`Client::list_objects`](crate::client::Client::list_objects) to
     /// compute which objects are related to `user` via `Self`.
-    fn query_objects<'a, U: AsUser<User = Self::User>>(
-        &self,
-        user: &'a U,
-    ) -> QueryObjects<'a, Self, U> {
+    fn query_objects<U: AsUser<User = Self::User>>(&self, user: U) -> QueryObjects<Self, U> {
         QueryObjects::<Self, U>(user, std::marker::PhantomData)
     }
 
@@ -351,7 +348,7 @@ pub trait AsUser {
     fn fga_user(&self) -> String;
 }
 
-impl<U: User> AsUser for U {
+impl<U: User> AsUser for &U {
     type User = U;
 
     fn fga_user(&self) -> String {
@@ -366,7 +363,7 @@ impl<U: User> AsUser for U {
 /// <https://openfga.dev/docs/concepts#what-is-a-check-request>
 #[derive(Debug)]
 pub struct Check<'a, R: Relation, U: AsUser<User = R::User>> {
-    pub(crate) user: &'a U,
+    pub(crate) user: U,
     pub(crate) object: &'a R::Object,
 }
 
@@ -376,8 +373,8 @@ pub struct Check<'a, R: Relation, U: AsUser<User = R::User>> {
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-list-objects-request>
 #[derive(Debug)]
-pub struct QueryObjects<'a, R: Relation, U: AsUser<User = R::User>>(
-    pub(crate) &'a U,
+pub struct QueryObjects<R: Relation, U: AsUser<User = R::User>>(
+    pub(crate) U,
     pub(crate) std::marker::PhantomData<R>,
 );
 
@@ -418,7 +415,7 @@ where
     R: Relation,
     U: AsUser<User = R::User>,
 {
-    pub(crate) user: &'a U,
+    pub(crate) user: U,
     pub(crate) object: &'a R::Object,
 }
 
@@ -437,7 +434,7 @@ where
 /// # OpenFGA concept
 ///
 /// <https://openfga.dev/docs/concepts#what-is-a-user>
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct UserSet<'a, R: Relation + 'static>(&'a R::Object);
 
 impl<R: Relation> AsUser for UserSet<'_, R> {
@@ -495,7 +492,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn public_access_injection_protection_user_asuser() {
-        let _ = AsUser::fga_user(&defs::User("*".to_owned()));
+        let _ = AsUser::fga_user(&&defs::User("*".to_owned()));
     }
 
     #[test]
