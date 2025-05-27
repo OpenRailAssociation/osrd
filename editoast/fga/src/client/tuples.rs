@@ -1,12 +1,15 @@
+use itertools::Itertools;
+
 use crate::model::AsUser;
 use crate::model::Object as _;
 use crate::model::Relation;
 use crate::model::Tuple;
 
 use super::Client;
+use super::Consistency;
 use super::RequestFailure;
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub(super) struct RawTuple {
     pub(super) user: String,
     pub(super) relation: String,
@@ -24,6 +27,66 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawT
 }
 
 impl Client {
+    #[tracing::instrument(skip(self), err)]
+    pub(super) async fn get_stores_read<'a>(
+        &self,
+        store_id: &str,
+        tuple_key: RawTuple,
+        page_size: Option<usize>,
+        authorization_model_id: Option<&str>,
+        consistency: Option<Consistency>,
+    ) -> Result<(Vec<RawTuple>, String), RequestFailure> {
+        #[derive(serde::Serialize)]
+        struct Request<'a> {
+            tuple_key: RawTuple,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            page_size: Option<usize>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            authorization_model_id: Option<&'a str>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            consistency: Option<Consistency>,
+        }
+
+        #[derive(serde::Deserialize)]
+        struct Response {
+            tuples: Vec<TupleResponse>,
+            #[serde(default)]
+            continuation_token: String,
+        }
+
+        #[derive(serde::Deserialize)]
+        struct TupleResponse {
+            key: RawTuple,
+            // timestamp — not needed for our use case
+        }
+
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/read").as_str())
+            .unwrap();
+
+        let Response {
+            tuples,
+            continuation_token,
+        } = self
+            .inner
+            .post(url)
+            .json(&Request {
+                tuple_key,
+                page_size,
+                authorization_model_id,
+                consistency,
+            })
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+
+        let tuples = tuples.into_iter().map(|t| t.key).collect_vec();
+        Ok((tuples, continuation_token))
+    }
+
     // It's fine to request tuples to be mapped into `RawTuple` as OpenFGA
     // doesn't support more than 100 tuples in the request. So mapping 100 objects
     // max is fine—we'll always be bounded by the network call.
