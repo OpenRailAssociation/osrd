@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
@@ -14,11 +15,6 @@ import {
 } from 'utils/trainId';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
-
-type OccurrencesState = {
-  occurrences: Occurrence[];
-  occurrencesCount: number;
-};
 
 const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
   const {
@@ -38,83 +34,120 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
     category: pacedTrainCategory,
   } = pacedTrain;
 
-  const occurrencesState = useMemo<OccurrencesState>(() => {
-    const occurrencesCount = getOccurrencesNb(paced);
-    const computedOccurrences: Occurrence[] = [];
+  const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
+  const occurrencesCount = getOccurrencesNb(paced);
 
-    // Handle indexed occurrences
-    for (let i = 0; i < occurrencesCount; i += 1) {
-      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(id, i);
-      const occurrenceStartTime = dayjs(startTime)
-        .add(i * paced.interval.ms, 'ms')
-        .toDate();
-      const occurrenceArrivalTime = dayjs(arrivalTime)
-        .add(i * paced.interval.ms, 'ms')
-        .toDate();
-      const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
-      computedOccurrences.push({
-        id: occurrenceId,
-        trainName: computeOccurrenceName(name, i),
-        rollingStock,
-        startTime: occurrenceStartTime,
-        stopsCount,
-        disabled: correspondingException?.disabled,
-        category: correspondingException?.rolling_stock_category?.value ?? pacedTrainCategory,
-        occurrenceIndex: i,
-        exceptionChangeGroups: correspondingException
-          ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
-          : undefined,
-        ...(isValid
-          ? {
-              isValid: true,
-              // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: occurrenceArrivalTime,
-              pathLength,
-              mechanicalEnergyConsumed,
-              duration,
-            }
-          : {
-              isValid: false,
-              invalidReason,
-            }),
+  const [getRollingStockByName] =
+    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
+
+  useEffect(() => {
+    const buildOccurrences = async () => {
+      const computedOccurrences: Occurrence[] = [];
+
+      // Handle indexed occurrences
+      for (let i = 0; i < occurrencesCount; i += 1) {
+        const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(id, i);
+        const occurrenceStartTime = dayjs(startTime)
+          .add(i * paced.interval.ms, 'ms')
+          .toDate();
+        const occurrenceArrivalTime = dayjs(arrivalTime)
+          .add(i * paced.interval.ms, 'ms')
+          .toDate();
+
+        const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
+
+        let occurrenceRollingStock = rollingStock;
+        if (correspondingException?.rolling_stock) {
+          const promisedRollingStock = getRollingStockByName({
+            rollingStockName: correspondingException.rolling_stock.rolling_stock_name,
+          });
+          occurrenceRollingStock = await promisedRollingStock.unwrap();
+          // we don't want to subscribe to the endpoint to prevent unnecessary calls
+          promisedRollingStock.unsubscribe();
+        }
+
+        computedOccurrences.push({
+          id: occurrenceId,
+          trainName: correspondingException?.train_name?.value ?? computeOccurrenceName(name, i),
+          rollingStock: occurrenceRollingStock,
+          startTime: correspondingException?.start_time?.value
+            ? new Date(correspondingException.start_time.value)
+            : occurrenceStartTime,
+          stopsCount: correspondingException?.path_and_schedule
+            ? correspondingException.path_and_schedule.schedule.filter((step) => step.stop_for)
+                .length
+            : stopsCount,
+          disabled: correspondingException?.disabled,
+          category: correspondingException?.rolling_stock_category?.value ?? pacedTrainCategory,
+          occurrenceIndex: i,
+          exceptionChangeGroups: correspondingException
+            ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
+            : undefined,
+          ...(isValid
+            ? {
+                isValid: true,
+                // TODO exceptions : update the arrival time if the exception is in the paced train summaries
+                arrivalTime: occurrenceArrivalTime,
+                pathLength,
+                mechanicalEnergyConsumed,
+                duration,
+              }
+            : {
+                isValid: false,
+                invalidReason,
+              }),
+        });
+      }
+
+      // Handle added exceptions
+      exceptions.forEach(async (exception) => {
+        if (exception.occurrence_index !== undefined) return;
+
+        let occurrenceRollingStock = rollingStock;
+        if (exception.rolling_stock) {
+          const promisedRollingStock = getRollingStockByName({
+            rollingStockName: exception.rolling_stock.rolling_stock_name,
+          });
+          occurrenceRollingStock = await promisedRollingStock.unwrap();
+          // we don't want to subscribe to the endpoint to prevent unnecessary calls
+          promisedRollingStock.unsubscribe();
+        }
+
+        computedOccurrences.push({
+          id: formatPacedTrainIdToExceptionId(id, exception.key),
+          trainName: exception.train_name?.value ?? `${name}/+`,
+          rollingStock: occurrenceRollingStock,
+          // An added exception will always have a least a start time in its exceptions
+          startTime: new Date(exception.start_time!.value),
+          stopsCount: exception.path_and_schedule
+            ? exception.path_and_schedule.schedule.filter((step) => step.stop_for).length
+            : stopsCount,
+          category: exception.rolling_stock_category?.value ?? pacedTrainCategory,
+          exceptionChangeGroups: omit(exception, ['key', 'disabled']),
+          ...(isValid
+            ? {
+                isValid: true,
+                // TODO exceptions : update the arrival time if the exception is in the paced train summaries
+                arrivalTime: new Date(Date.parse(exception.start_time!.value) + duration!.ms),
+                pathLength,
+                mechanicalEnergyConsumed,
+                duration,
+              }
+            : {
+                isValid: false,
+              }),
+        });
       });
-    }
 
-    // Handle added exceptions
-    exceptions.forEach((exception, i) => {
-      if (exception.occurrence_index !== undefined) return;
+      const sortedOccurrences = sortBy(computedOccurrences, 'startTime');
+      setOccurrences(sortedOccurrences);
+    };
 
-      computedOccurrences.push({
-        id: formatPacedTrainIdToExceptionId(id, exception.key),
-        // TODO exceptions : find a better way to generate added exception names
-        trainName: computeOccurrenceName(name, occurrencesCount + i),
-        rollingStock,
-        // An added exception will always have a least a start time in its exceptions
-        startTime: new Date(exception.start_time!.value),
-        stopsCount,
-        exceptionChangeGroups: omit(exception, ['key']),
-        ...(isValid
-          ? {
-              isValid: true,
-              // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: new Date(Date.parse(exception.start_time!.value) + duration!.ms),
-              pathLength,
-              mechanicalEnergyConsumed,
-              duration,
-            }
-          : {
-              isValid: false,
-            }),
-      });
-    });
-
-    const sortedOccurrences = sortBy(computedOccurrences, 'startTime');
-
-    // TODO exceptions : update the count to display only active occurrences in issue https://github.com/OpenRailAssociation/osrd/issues/11470
-    return { occurrencesCount: sortedOccurrences.length, occurrences: sortedOccurrences };
+    buildOccurrences();
   }, [pacedTrain]);
 
-  return occurrencesState;
+  // TODO exceptions : update the count to display only active occurrences in issue https://github.com/OpenRailAssociation/osrd/issues/11470
+  return { occurrencesCount: occurrences.length, occurrences };
 };
 
 export default useOccurrences;
