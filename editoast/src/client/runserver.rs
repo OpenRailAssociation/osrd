@@ -24,6 +24,8 @@ pub struct CoreArgs {
     pub(super) core_single_worker: bool,
     #[clap(long, env = "CORE_CLIENT_CHANNELS_SIZE", default_value_t = 8)]
     pub(super) core_client_channels_size: usize,
+    #[clap(long, env = "EDITOAST_CORE_WORKER_POOL_ID", default_value_t = String::from("core"))]
+    pub(super) worker_pool_id: String,
 }
 
 #[derive(Args, Debug)]
@@ -64,6 +66,7 @@ pub async fn runserver(
                 core_timeout,
                 core_single_worker,
                 core_client_channels_size,
+                worker_pool_id,
             },
         enable_authorization,
         enable_stdcm_logging,
@@ -89,6 +92,7 @@ pub async fn runserver(
                 timeout: Duration::seconds(core_timeout as i64),
                 single_worker: core_single_worker,
                 num_channels: core_client_channels_size,
+                worker_pool_id,
             },
         },
         valkey_config: valkey.into(),

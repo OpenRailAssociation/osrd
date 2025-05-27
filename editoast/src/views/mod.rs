@@ -480,6 +480,7 @@ pub struct CoreConfig {
     pub timeout: Duration,
     pub single_worker: bool,
     pub num_channels: usize,
+    pub worker_pool_id: String,
 }
 
 pub struct OsrdyneConfig {
@@ -585,10 +586,11 @@ impl AppState {
                 timeout,
                 single_worker,
                 num_channels,
+                worker_pool_id,
             } = config.osrdyne_config.core.clone();
             let options = mq_client::Options {
                 uri: config.osrdyne_config.mq_url.clone(),
-                worker_pool_identifier: "core".to_owned(),
+                worker_pool_identifier: worker_pool_id,
                 timeout: timeout.num_seconds() as u64,
                 single_worker,
                 num_channels,
