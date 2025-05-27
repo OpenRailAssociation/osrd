@@ -91,24 +91,63 @@ export type TrainrunSectionDto = {
   warnings: unknown[];
 };
 
+/**
+ * Represents a train category in NGE (Netzgrafik Editor).
+ * Mandatory attribute for any Trainrun, used for filtering and visual representation (line color, style) of trains.
+ * Some attributes are specific to NGE and not used in OSRD synchronization.
+ */
 export type TrainrunCategory = {
   /**
    * Unique identifier for the category.
    */
   id: number;
+
+  /**
+   * Display order for Category chips in NGE interface.
+   */
   order: number;
+
+  /**
+   * Displayed on Category chip mouse hover.
+   */
   name: string;
-  /** Short name, needs to be unique */
+
+  /**
+   * Abbreviated name for the category.
+   * Short name, needs to be unique
+   */
   shortName: string;
+
+  /**
+   * Category of stop time. Not used in OSRD.
+   */
   fachCategory: string;
+
+  /**
+   * Reference to the color palette entry.
+   * Used for visual representation of the different categories in NGE.
+   * Must match a key in NETZGRAFIK_COLOR_PALETTE.
+   */
   colorRef: string;
 
   /**
    * Minimum time required for a trainrun to start its backward journey after completing its forward journey. Not used in OSRD.
    */
   minimalTurnaroundTime: number;
+
+  /**
+   * Allocated time in front of the train at a station when the train stops, for track occupancy heuristics. Not used in OSRD.
+   */
   nodeHeadwayStop: number;
+
+  /**
+   * Allocated time in front of the train at a station when the train does not stop, for track occupancy heuristics. Not used in OSRD.
+   */
   nodeHeadwayNonStop: number;
+
+  /**
+   * Allocated time in front of the train between two nodes, for track occupancy heuristics. Not used in OSRD.
+   */
   sectionHeadway: number;
 };
 
