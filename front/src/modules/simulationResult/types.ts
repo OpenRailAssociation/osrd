@@ -8,9 +8,9 @@ import type {
 } from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
+  OccupancyBlocks,
   PathProperties,
   PathfindingResultSuccess,
-  ProjectPathTrainResult,
   RollingStockWithLiveries,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
@@ -43,7 +43,7 @@ export type TrainSpaceTimeData = {
     times: number[];
   }[];
   departureTime: Date;
-  signalUpdates: ProjectPathTrainResult['signal_updates'];
+  signalUpdates: OccupancyBlocks['signal_updates'];
 } & (
   | { id: TrainScheduleId }
   | { id: OccurrenceId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }

@@ -1,16 +1,18 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-import TrainProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainProjectionLazyLoader';
+import TrainProjectionLazyLoader, {
+  type ProjectionResult,
+} from 'applications/operationalStudies/helpers/TrainProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import type { ProjectPathTrainResult, ProjectPathForm } from 'common/api/osrdEditoastApi';
+import type { OccupancyBlockForm } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 type UseLazyProjectTrainsOptions = {
   infraId: number;
-  electricalProfileSetId: number | undefined;
-  path: ProjectPathForm['path'] | undefined;
+  electricalProfileSetId?: number;
+  path?: OccupancyBlockForm['path'];
 };
 
 const useLazyProjectTrains = ({
@@ -34,7 +36,7 @@ const useLazyProjectTrains = ({
       infraId,
       path: { blocks, routes, track_section_ranges },
       electricalProfileSetId,
-      onProgress: (results: Map<TimetableItemId, ProjectPathTrainResult>) => {
+      onProgress: (results: Map<TimetableItemId, ProjectionResult>) => {
         setProjectedTrainsById((prev) =>
           upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
         );

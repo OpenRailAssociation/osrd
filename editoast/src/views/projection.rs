@@ -3,7 +3,6 @@ use chrono::Utc;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
-use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
@@ -11,7 +10,6 @@ use core_client::simulation::ZoneUpdate;
 use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
-use futures::join;
 use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,6 +22,7 @@ use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
+use super::rolling_stock::RollingStockError;
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
 use crate::client::get_app_version;
@@ -38,12 +37,6 @@ use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::train_simulation_batch;
-use crate::views::timetable::train_schedule::TrainScheduleError;
-
-// TODO : remove this when project_path is updated
-use crate::views::timetable::occupancy_blocks::compute_batch_signal_updates;
-
-use super::rolling_stock::RollingStockError;
 
 editoast_common::schemas! {
     ProjectPathTrainResult,
@@ -56,7 +49,7 @@ pub struct ProjectPathForm {
     pub electrical_profile_set_id: Option<i64>,
     pub ids: HashSet<i64>,
     #[schema(inline)]
-    pub path: ProjectPathInput,
+    pub track_section_ranges: Vec<TrackRange>,
 }
 
 /// Project path input is described by a list of routes and a list of track range
@@ -102,8 +95,6 @@ pub struct CachedProjectPathTrainResult {
     /// List of space-time curves sections along the path
     #[schema(inline)]
     pub space_time_curves: Vec<SpaceTimeCurve>,
-    /// List of signal updates along the path
-    pub signal_updates: Vec<SignalUpdate>,
 }
 
 /// Input for the projection of a train schedule on a path
@@ -124,17 +115,36 @@ impl TrainSimulationDetails {
         infra_id: i64,
         infra_version: i64,
         path_projection_tracks: &[TrackRange],
+    ) -> String {
+        let osrd_version = get_app_version().unwrap_or_default();
+        let mut hasher = DefaultHasher::new();
+        self.positions.hash(&mut hasher);
+        self.times.hash(&mut hasher);
+        self.train_path.hash(&mut hasher);
+        path_projection_tracks.hash(&mut hasher);
+        let hash_simulation_input = hasher.finish();
+        format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+    }
+
+    // Compute hash input of the occupancy block of a train schedule on a path
+    pub fn compute_occupancy_block_hash_with_versioning(
+        &self,
+        infra_id: i64,
+        infra_version: i64,
+        path_projection_tracks: &[TrackRange],
         path_routes: &[Identifier],
         path_blocks: &[Identifier],
     ) -> String {
         let osrd_version = get_app_version().unwrap_or_default();
         let mut hasher = DefaultHasher::new();
-        self.hash(&mut hasher);
+        self.signal_critical_positions.hash(&mut hasher);
+        self.zone_updates.hash(&mut hasher);
+        self.train_path.hash(&mut hasher);
         path_projection_tracks.hash(&mut hasher);
         path_routes.hash(&mut hasher);
         path_blocks.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
-        format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+        format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
 }
 
@@ -290,20 +300,13 @@ pub async fn compute_projected_train_paths(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
     valkey_client: Arc<ValkeyClient>,
-    path: ProjectPathInput,
-    infra_id: i64,
+    track_section_ranges: Vec<TrackRange>,
+    infra: &Infra,
     trains_schedules: Vec<models::TrainSchedule>,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<HashMap<i64, ProjectPathTrainResult>> {
-    let path_projection = PathProjection::new(&path.track_section_ranges);
+    let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
-
-    // 1. Retrieve infra and rolling stock data
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
-        infra_id,
-    })
-    .await?;
 
     let (rolling_stocks, _): (Vec<_>, _) = RollingStock::retrieve_batch(
         conn,
@@ -314,6 +317,7 @@ pub async fn compute_projected_train_paths(
     .await
     .map_err(RollingStockError::from)?;
 
+    // 1. Get rolling stock length
     let rolling_stock_length: HashMap<_, _> = rolling_stocks
         .into_iter()
         .map(|rs| (rs.name, rs.length))
@@ -325,32 +329,26 @@ pub async fn compute_projected_train_paths(
         valkey_client.clone(),
         core_client.clone(),
         &trains_schedules,
-        &infra,
+        infra,
         electrical_profile_set_id,
     )
     .await?;
 
     // 3. Extracts train simulation details and computes unique hashes for projected train paths.
-    let (trains_hash_values, trains_details) =
-        extract_train_details(&infra, &trains_schedules, simulations, &path).await?;
+    let trains_details = extract_train_details(&trains_schedules, simulations).await?;
+
+    let mut trains_hash_values = vec![];
+
+    trains_hash_values.extend(trains_details.iter().map(|t| {
+        t.compute_projection_hash_with_versioning(infra.id, infra.version, &track_section_ranges)
+    }));
 
     // 4. Retrieve cached projection
     let (miss_cache, mut hit_cache) =
         retrieve_cached_projection(&mut valkey_conn, &trains_hash_values, &trains_details).await?;
 
-    // 5. Compute space time curves and signal updates for all miss cache
-    let (space_time_curves, signal_updates) = join!(
-        compute_batch_space_time_curves(&miss_cache, &path_projection),
-        compute_batch_signal_updates(
-            core_client.clone(),
-            &infra,
-            &path.track_section_ranges,
-            &path.routes,
-            &path.blocks,
-            &miss_cache
-        )
-    );
-    let signal_updates = signal_updates?;
+    // 5. Compute space time curves for all miss cache
+    let space_time_curves = compute_batch_space_time_curves(&miss_cache, &path_projection).await;
 
     // 6. Store the projection in the cache (using pipeline)
     let trains_hash_values: HashMap<_, _> = trains_details
@@ -365,10 +363,6 @@ pub async fn compute_projected_train_paths(
             space_time_curves: space_time_curves
                 .get(&train_id)
                 .expect("Space time curves not available for train")
-                .clone(),
-            signal_updates: signal_updates
-                .get(&train_id)
-                .expect("Signal update not available for train")
                 .clone(),
         };
         hit_cache.push((cached_value.clone(), train_id));
@@ -400,7 +394,6 @@ pub async fn compute_projected_train_paths(
     Ok(project_path_result)
 }
 
-// TODO : romove this function when project_path is updated
 async fn retrieve_cached_projection(
     valkey_conn: &mut ValkeyConnection,
     trains_hash_values: &[String],
@@ -433,18 +426,9 @@ async fn retrieve_cached_projection(
 }
 
 pub async fn extract_train_details(
-    infra: &Infra,
     trains_schedules: &[TrainSchedule],
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
-    path: &ProjectPathInput,
-) -> Result<(Vec<String>, Vec<TrainSimulationDetails>)> {
-    let ProjectPathInput {
-        track_section_ranges: path_track_ranges,
-        routes: path_routes,
-        blocks: path_blocks,
-    } = path;
-
-    let mut trains_hash_values = vec![];
+) -> Result<Vec<TrainSimulationDetails>> {
     let mut trains_details = vec![];
 
     for (train, (sim, pathfinding_result)) in izip!(trains_schedules, simulations) {
@@ -478,17 +462,9 @@ pub async fn extract_train_details(
             train_path: track_ranges.clone(),
         };
 
-        let hash = train_details.compute_projection_hash_with_versioning(
-            infra.id,
-            infra.version,
-            path_track_ranges,
-            path_routes,
-            path_blocks,
-        );
-        trains_hash_values.push(hash);
         trains_details.push(train_details);
     }
-    Ok((trains_hash_values, trains_details))
+    Ok(trains_details)
 }
 
 #[cfg(test)]

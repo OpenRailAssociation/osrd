@@ -226,26 +226,12 @@ def test_conflicts_with_reception_on_closed_signal(
     project_path_payload = {
         "ids": [train_id],
         "infra_id": small_infra.id,
-        "path": {
-            "blocks": path_response_json["blocks"],
-            "routes": path_response_json["routes"],
-            "track_section_ranges": path_response_json["track_section_ranges"],
-        },
+        "track_section_ranges": path_response_json["track_section_ranges"],
     }
     response_project_path = session.post(
         f"{EDITOAST_URL}/train_schedule/project_path", json=project_path_payload
     )
     response_project_path.raise_for_status()
-    switch_signal_free_block_update = [
-        u
-        for u in response_project_path.json()[str(train_id)]["signal_updates"]
-        if (u["signal_id"] == "SC4" and u["aspect_label"] == "VL")
-    ]
-    assert len(switch_signal_free_block_update) == 1
-    assert (
-        switch_signal_free_block_update[0]["time_start"]
-        == switch_zone_spacing_requirement[0]["begin_time"]
-    )
 
 
 def _create_paced_train_exception_payload(key: str = "exception_key_1"):

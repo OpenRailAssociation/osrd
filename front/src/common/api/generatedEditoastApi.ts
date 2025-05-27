@@ -3386,8 +3386,6 @@ export type OccupancyBlockForm = {
   };
 };
 export type ProjectPathTrainResult = {
-  /** List of signal updates along the path */
-  signal_updates: SignalUpdate[];
   /** List of space-time curves sections along the path */
   space_time_curves: {
     positions: number[];
@@ -3403,15 +3401,14 @@ export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
-  /** Project path input is described by a list of routes and a list of track range */
-  path: {
-    /** Path description as block ids */
-    blocks: string[];
-    /** List of route ids */
-    routes: string[];
-    /** List of track ranges */
-    track_section_ranges: TrackRange[];
-  };
+  track_section_ranges: {
+    /** The beginning of the range in mm. */
+    begin: number;
+    direction: Direction;
+    /** The end of the range in mm. */
+    end: number;
+    track_section: string;
+  }[];
 };
 export type SimulationSummaryResult =
   | {
