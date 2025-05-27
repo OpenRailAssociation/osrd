@@ -32,6 +32,15 @@ pub enum InfraPrivilege {
     CanShareOwnership,
 }
 
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum InfraGrant {
+    Reader,
+    Writer,
+    Owner,
+}
+
 #[derive(
     fga::User,
     Debug,

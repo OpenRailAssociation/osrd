@@ -13,6 +13,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use editoast_authz as authz;
+use editoast_authz::InfraGrant;
 use editoast_authz::InfraPrivilege;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
@@ -68,16 +69,6 @@ enum SubjectType {
 #[cfg_attr(test, derive(Debug))]
 enum ResourceType {
     Infra,
-}
-
-#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-#[cfg_attr(test, derive(Debug))]
-pub(in crate::views) enum InfraGrant {
-    Reader,
-    Writer,
-    Owner,
 }
 
 #[derive(Debug, thiserror::Error, EditoastError)]

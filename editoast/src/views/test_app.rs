@@ -13,6 +13,7 @@ use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use core_client::CoreClient;
 use core_client::mocking::MockingClient;
 use dashmap::DashMap;
+use editoast_authz::InfraGrant;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
 use editoast_authz::subject;
@@ -47,7 +48,6 @@ use super::PostgresConfig;
 use super::Regulator;
 use super::ServerConfig;
 use super::authentication_middleware;
-use super::authz::InfraGrant;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
 // 'testing' feature which brings with it tons of unneeded dependencies
