@@ -218,29 +218,12 @@ async fn user_authorizations(
         for infra_id in infra_ids {
             // check that the infra exists before to check the grants
             if Infra::exists(conn, *infra_id).await? {
-                let infra = authz::Infra(*infra_id);
-                let (is_reader, is_writer, is_owner) = tokio::try_join!(
-                    authorizer.check_infra_grant_reader(&infra),
-                    authorizer.check_infra_grant_writer(&infra),
-                    authorizer.check_infra_grant_owner(&infra)
-                )
-                .map_err(AuthzError::from)?;
-                let grant = match (is_reader, is_writer, is_owner) {
-                    (true, false, false) => InfraGrant::Reader,
-                    (false, true, false) => InfraGrant::Writer,
-                    (false, false, true) => InfraGrant::Owner,
-                    (false, false, false) => continue,
-                    _ => {
-                        tracing::error!(
-                            is_reader,
-                            is_writer,
-                            is_owner,
-                            user_id = authorizer.user_id(),
-                            infra_id = *infra_id,
-                            "User has multiple grants on the same resource"
-                        );
-                        continue;
-                    }
+                let Some(grant) = authorizer
+                    .infra_grant(&authz::Infra(*infra_id))
+                    .await
+                    .map_err(AuthzError::from)?
+                else {
+                    continue; // skip if the user has no grant on this infra
                 };
                 response
                     .entry(ResourceType::Infra)
