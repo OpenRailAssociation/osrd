@@ -19,6 +19,7 @@ use axum::response::IntoResponse;
 use core_client::AsCoreRequest;
 use core_client::infra_loading::InfraLoadRequest;
 use editoast_authz as authz;
+use editoast_authz::InfraGrant;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_models::model;
@@ -398,9 +399,10 @@ async fn create(
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
-            .grant_infra_owner_unchecked(
+            .give_infra_grant_unchecked(
                 &authz::User(authorizer.user_id()),
                 &authz::Infra(infra.id),
+                InfraGrant::Owner,
             )
             .await?;
     }
@@ -463,9 +465,10 @@ async fn clone(
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
-            .grant_infra_owner_unchecked(
+            .give_infra_grant_unchecked(
                 &authz::User(authorizer.user_id()),
                 &authz::Infra(cloned_infra.id),
+                InfraGrant::Owner,
             )
             .await?;
     }

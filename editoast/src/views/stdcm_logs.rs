@@ -164,6 +164,7 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_authz as authz;
+    use editoast_authz::InfraGrant;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -323,7 +324,11 @@ mod tests {
         let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         if let Some(user) = user {
             app.regulator()
-                .grant_infra_owner_unchecked(&authz::User(user.id), &authz::Infra(small_infra.id))
+                .give_infra_grant_unchecked(
+                    &authz::User(user.id),
+                    &authz::Infra(small_infra.id),
+                    InfraGrant::Owner,
+                )
                 .await
                 .expect("Failed to grant infra owner");
         }

@@ -437,35 +437,14 @@ impl<'a> UserBuilder<'a> {
                     .expect("roles should be granted successfully");
 
                 for (infra_id, grant) in infras_grant.into_iter() {
-                    match grant {
-                        InfraGrant::Owner => {
-                            regulator
-                                .grant_infra_owner_unchecked(
-                                    &editoast_authz::User(user.id),
-                                    &editoast_authz::Infra(infra_id),
-                                )
-                                .await
-                                .expect("Infra owner should be granted successfully");
-                        }
-                        InfraGrant::Writer => {
-                            regulator
-                                .grant_infra_writer_unchecked(
-                                    &editoast_authz::User(user.id),
-                                    &editoast_authz::Infra(infra_id),
-                                )
-                                .await
-                                .expect("Infra writer should be granted successfully");
-                        }
-                        InfraGrant::Reader => {
-                            regulator
-                                .grant_infra_reader_unchecked(
-                                    &editoast_authz::User(user.id),
-                                    &editoast_authz::Infra(infra_id),
-                                )
-                                .await
-                                .expect("Infra reader should be granted successfully");
-                        }
-                    }
+                    regulator
+                        .give_infra_grant_unchecked(
+                            &editoast_authz::User(user.id),
+                            &editoast_authz::Infra(infra_id),
+                            grant,
+                        )
+                        .await
+                        .expect("Infra grant should be given successfully")
                 }
             }
             user
