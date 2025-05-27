@@ -132,6 +132,13 @@ impl<S: StorageDriver> Regulator<S> {
             .map_err(Error::Storage)
     }
 
+    pub async fn subject_exists(&self, subject: &Subject) -> Result<bool, Error<S::Error>> {
+        match subject {
+            Subject::User(user) => self.user_exists(user.0).await,
+            Subject::Group(group) => self.group_exists(group.0).await,
+        }
+    }
+
     /// Returns the IDs of the groups for the provided user
     #[tracing::instrument(skip_all, fields(user), ret(level = Level::DEBUG), err)]
     pub async fn user_groups(&self, user: &User) -> Result<HashSet<Group>, Error<S::Error>> {
@@ -725,7 +732,8 @@ impl<S: StorageDriver> Regulator<S> {
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(user, infra).await?;
+        self.revoke_infra_grants_unchecked(&Subject::User(user.clone()), infra)
+            .await?;
 
         // Grant the new one
         let mut writes = self.openfga.prepare_writes();
@@ -773,7 +781,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn revoke_infra_grants(
         &self,
         issuer: &User,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         if !self.is_admin(issuer).await?
@@ -786,14 +794,14 @@ impl<S: StorageDriver> Regulator<S> {
                 reason: "only owners can revoke grants",
             });
         }
-        self.revoke_infra_grants_unchecked(user, infra).await?;
+        self.revoke_infra_grants_unchecked(subject, infra).await?;
         Ok(Authorization::Granted(()))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn revoke_infra_grants_unchecked(
         &self,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
     ) -> Result<(), Error<S::Error>> {
         // No need to check if the infra exists. If it doesn't, there won't be any tuples in OpenFGA.
@@ -802,30 +810,53 @@ impl<S: StorageDriver> Regulator<S> {
 
         let mut delete = self.openfga.prepare_deletes();
 
-        if self
-            .openfga
-            .check(Infra::reader().check(user, infra))
+        if subject
+            .fetch(
+                &self.openfga,
+                |user| Infra::reader().tuple(user, infra),
+                |group| Infra::reader().tuple(Group::member().userset(group), infra),
+            )
             .await?
         {
-            delete.push(&Infra::reader().tuple(user, infra));
+            match subject {
+                Subject::User(user) => delete.push(&Infra::reader().tuple(user, infra)),
+                Subject::Group(group) => {
+                    delete.push(&Infra::reader().tuple(Group::member().userset(group), infra))
+                }
+            }
         }
 
-        if self
-            .openfga
-            .check(Infra::writer().check(user, infra))
+        if subject
+            .fetch(
+                &self.openfga,
+                |user| Infra::writer().tuple(user, infra),
+                |group| Infra::writer().tuple(Group::member().userset(group), infra),
+            )
             .await?
         {
-            delete.push(&Infra::writer().tuple(user, infra));
+            match subject {
+                Subject::User(user) => delete.push(&Infra::writer().tuple(user, infra)),
+                Subject::Group(group) => {
+                    delete.push(&Infra::writer().tuple(Group::member().userset(group), infra))
+                }
+            }
         }
 
-        if self
-            .openfga
-            .check(Infra::owner().check(user, infra))
+        if subject
+            .fetch(
+                &self.openfga,
+                |user| Infra::owner().tuple(user, infra),
+                |group| Infra::owner().tuple(Group::member().userset(group), infra),
+            )
             .await?
         {
-            delete.push(&Infra::owner().tuple(user, infra));
+            match subject {
+                Subject::User(user) => delete.push(&Infra::owner().tuple(user, infra)),
+                Subject::Group(group) => {
+                    delete.push(&Infra::owner().tuple(Group::member().userset(group), infra))
+                }
+            }
         }
-
         delete.execute().await?;
         Ok(())
     }

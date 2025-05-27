@@ -17,6 +17,7 @@ use editoast_authz::InfraGrant;
 use editoast_authz::InfraPrivilege;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnectionPoolV2;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -385,10 +386,46 @@ enum BodyUpdateGrants {
     ),
 )]
 async fn update_grants(
+    State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {
     let authorizer = auth.authorizer()?;
+
+    // Fetch subjects from the database and determine whether they're a user or a group.
+    let subjects = {
+        let subjects_id = match &body {
+            BodyUpdateGrants::Grant(grants) => grants.iter().map(|g| g.subject_id).collect_vec(),
+            BodyUpdateGrants::Revoke(revoke) => revoke.iter().map(|r| r.subject_id).collect_vec(),
+        };
+        let mut conn = db_pool.get().await?;
+        let mut conn2 = conn.clone();
+        let (users, groups) = tokio::try_join!(
+            models::User::list(
+                &mut conn,
+                SelectionSettings::new().filter({
+                    let ids = subjects_id.clone();
+                    move || models::User::ID.eq_any(ids.clone())
+                })
+            ),
+            models::Group::list(
+                &mut conn2,
+                SelectionSettings::new()
+                    .filter(move || models::Group::ID.eq_any(subjects_id.clone()))
+            )
+        )?;
+        users
+            .into_iter()
+            .map(|models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
+            .chain(
+                groups
+                    .into_iter()
+                    .map(|models::Group { id, .. }| (id, authz::Subject::Group(authz::Group(id)))),
+            )
+            .collect::<HashMap<_, _>>()
+    };
+
+    //
     match body {
         BodyUpdateGrants::Grant(grants) => {
             for GrantBody {
@@ -398,7 +435,12 @@ async fn update_grants(
                 grant,
             } in grants
             {
-                let subject = authz::User(subject_id);
+                let subject = subjects
+                    .get(&subject_id)
+                    .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
+                let authz::Subject::User(subject) = subject else {
+                    todo!();
+                };
                 match resource_type {
                     ResourceType::Infra => {
                         authorizer
@@ -417,13 +459,13 @@ async fn update_grants(
                 subject_id,
             } in revoke
             {
+                let subject = subjects
+                    .get(&subject_id)
+                    .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
                 match resource_type {
                     ResourceType::Infra => {
                         authorizer
-                            .revoke_infra_grants(
-                                &authz::User(subject_id),
-                                &authz::Infra(resource_id),
-                            )
+                            .revoke_infra_grants(&subject, &authz::Infra(resource_id))
                             .await?
                             .allowed()?;
                     }
