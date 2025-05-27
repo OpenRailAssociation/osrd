@@ -1,0 +1,51 @@
+name: "Generate Test Summary"
+description: "Generates markdown summary from Playwright test results"
+branding:
+  icon: "file-text"
+  color: "blue"
+
+inputs:
+  report-path:
+    description: "Path to test report JSON file"
+    required: true
+    default: "front/test-results/personalized-report.json"
+  output-file:
+    description: "Path to save markdown summary"
+    required: true
+    default: "test-summary.md"
+
+outputs:
+  summary-markdown:
+    description: "Generated markdown content"
+    value: ${{ steps.generate.outputs.summary-markdown }}
+  failed-count:
+    description: "Number of failed tests"
+    value: ${{ steps.generate.outputs.failed-count }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate report exists
+      shell: bash
+      run: |
+        if [ ! -f "${{ inputs.report-path }}" ]; then
+          echo "::error::Test report not found at ${{ inputs.report-path }}"
+          {
+            echo "summary-markdown<<EOF"
+            echo "# ❌ Error"
+            echo ""
+            echo "Test report not found at ${{ inputs.report-path }}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          echo "failed-count=1" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+
+    - name: Generate test summary
+      shell: bash
+      id: generate
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        chmod +x ./scripts/generate-github-summary.sh
+        ./scripts/generate-github-summary.sh "${{ inputs.report-path }}" "${{ inputs.output-file }}"
