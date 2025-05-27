@@ -19,9 +19,6 @@ const formatMargin = (pathSteps: PathStep[]): Margin | undefined => {
     }
   });
 
-  if (values.length === 1) {
-    return undefined;
-  }
   return { boundaries, values };
 };
 
