@@ -40,6 +40,7 @@ use crate::ValkeyClient;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
+use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
@@ -394,6 +395,65 @@ impl TestApp {
 
     pub fn delete(&self, path: &str) -> TestRequest {
         self.server.delete(&trim_path(path))
+    }
+
+    fn authz_subject(&self, subject_id: i64) -> authz::Subject {
+        let mut conn = self.app_state.db_pool.get_ok();
+        block_on(async move {
+            use crate::models::prelude::*;
+
+            if models::User::exists(&mut conn, subject_id).await.unwrap() {
+                authz::Subject::User(authz::User(subject_id))
+            } else if models::Group::exists(&mut conn, subject_id).await.unwrap() {
+                authz::Subject::Group(authz::Group(subject_id))
+            } else {
+                panic!("Subject with ID '{subject_id}' does not exist");
+            }
+        })
+    }
+
+    pub fn infra_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
+        let regulator = &self.app_state.regulator;
+        let subject = self.authz_subject(subject_id);
+        block_on(regulator.infra_grant(&subject, &authz::Infra(infra_id)))
+            .expect("Infra grant should be fetched successfully")
+    }
+
+    pub fn infra_direct_grant(&self, infra_id: i64, subject_id: i64) -> Option<InfraGrant> {
+        let regulator = &self.app_state.regulator;
+        let subject = self.authz_subject(subject_id);
+        block_on(regulator.infra_direct_grant(&subject, &authz::Infra(infra_id)))
+            .expect("Infra direct grant should be fetched successfully")
+    }
+
+    #[track_caller]
+    pub fn assert_infra_grant(
+        &self,
+        infra_id: i64,
+        subject_id: i64,
+        expected_grant: Option<InfraGrant>,
+    ) {
+        let actual_grant = self.infra_grant(infra_id, subject_id);
+        pretty_assertions::assert_eq!(
+            actual_grant,
+            expected_grant,
+            "Infra grant for subject '{subject_id}' on infra '{infra_id}' does not match"
+        );
+    }
+
+    #[track_caller]
+    pub fn assert_infra_direct_grant(
+        &self,
+        infra_id: i64,
+        subject_id: i64,
+        expected_grant: Option<InfraGrant>,
+    ) {
+        let actual_grant = self.infra_direct_grant(infra_id, subject_id);
+        pretty_assertions::assert_eq!(
+            actual_grant,
+            expected_grant,
+            "Infra direct grant for subject '{subject_id}' on infra '{infra_id}' does not match"
+        );
     }
 }
 
