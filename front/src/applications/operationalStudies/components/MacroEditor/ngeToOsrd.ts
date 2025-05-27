@@ -306,12 +306,18 @@ const generateTrainrunProperties = async (
   return { path, labels, startDate, schedule };
 };
 
-const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, state: MacroEditorState) => ({
-  time_window: DEFAULT_TIME_WINDOW.toISOString(),
-  interval: new Duration({
-    minutes: getFrequencyFromFrequencyId(state, trainrun.frequencyId).frequency,
-  }).toISOString(),
-});
+const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, state: MacroEditorState) => {
+  if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
+    return null;
+  }
+
+  return {
+    interval: new Duration({
+      minutes: getFrequencyFromFrequencyId(state, trainrun.frequencyId).frequency,
+    }).toISOString(),
+    time_window: DEFAULT_TIME_WINDOW.toISOString(),
+  };
+};
 
 /**
  * By default (in NGE code), a newly created trainrun has a frequencyId of 3,
@@ -335,7 +341,7 @@ const handleCreateTimetableItem = async (
   );
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
-    paced: createPacedAttributesFromTrainrun(trainrun, state),
+    paced: createPacedAttributesFromTrainrun(trainrun, state)!,
     train_name: trainrun.name,
     labels,
     path,
@@ -412,8 +418,9 @@ const handleUpdateTimetableItem = async ({
     category: getTrainCategoryFromId(trainrun.categoryId),
   };
 
+  const paced = createPacedAttributesFromTrainrun(trainrun, state);
   let updatedTimetableItem: TimetableItem;
-  if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
+  if (!paced) {
     updatedTimetableItem = await storeTrainSchedule(
       timetableItemId,
       timetableItemForUpdate,
@@ -423,15 +430,9 @@ const handleUpdateTimetableItem = async ({
       addDeletedTimetableItemIds
     );
   } else {
-    const paced = {
-      interval: new Duration({
-        minutes: getFrequencyFromFrequencyId(state, trainrun.frequencyId).frequency,
-      }).toISOString(),
-      time_window: isPacedTrainResponseWithPacedTrainId(timetableItem)
-        ? timetableItem.paced.time_window
-        : DEFAULT_TIME_WINDOW.toISOString(),
-    };
-
+    if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+      paced.time_window = timetableItem.paced.time_window;
+    }
     const basePacedTrain = {
       ...timetableItemForUpdate,
       paced,
@@ -442,7 +443,6 @@ const handleUpdateTimetableItem = async ({
         ? checkChangeGroups(basePacedTrain, timetableItem.exceptions)
         : [],
     };
-
     updatedTimetableItem = await storePacedTrain(
       timetableItemId,
       updatedPacedTrain,
