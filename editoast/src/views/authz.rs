@@ -39,7 +39,7 @@ crate::routes! {
         "/me" => {
             whoami,
             "/privileges" => user_privileges,
-            "/grants" => user_authorizations,
+            "/grants" => user_grants,
         },
         "/grants" => update_grants,
         "/{resource_type}/{resource_id}" => subjects_with_grant_on_resource,
@@ -207,7 +207,7 @@ struct UserResourceGrant {
         body = inline(HashMap<ResourceType, Vec<UserResourceGrant>>)
     )),
 )]
-async fn user_authorizations(
+async fn user_grants(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -683,31 +683,51 @@ mod tests {
     }
 
     #[rstest]
-    async fn user_authorizations_test() {
+    async fn user_me_grants() {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let user = app
             .user("test", "Test")
             .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .with_infra_grant(infra.id, InfraGrant::Reader)
             .create();
 
-        // Ask the authorizations of the user for the infra
+        // Ask the grant of the user for the infra
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
             "infra": [infra.id],
         }));
-        let response: HashMap<String, Vec<UserResourceGrant>> =
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        // Checks
-        assert_eq!(response.contains_key("infra"), true);
-        let infra_grants = response.get("infra").unwrap();
+        // Check the direct grant is there
         assert_eq!(
-            infra_grants,
+            response.get(&ResourceType::Infra).unwrap(),
             &[UserResourceGrant {
                 id: infra.id,
-                grant: InfraGrant::Owner
+                grant: InfraGrant::Reader
+            }]
+        );
+
+        let _group = app
+            .group("Group")
+            .with_members([&user])
+            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .create();
+
+        // Ask the grant of the user for the infra again
+        let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
+            "infra": [infra.id],
+        }));
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        // Check the inherited grant from the group has overridden by the user's direct grant
+        assert_eq!(
+            response.get(&ResourceType::Infra).unwrap(),
+            &[UserResourceGrant {
+                id: infra.id,
+                grant: InfraGrant::Writer
             }]
         );
     }

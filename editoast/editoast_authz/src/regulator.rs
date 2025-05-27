@@ -360,10 +360,18 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(privileges)
     }
 
+    /// Returns the maximum grant a subject has on an infra
+    ///
+    /// A given user may have multiple grants on the same resource. This can happen
+    /// if a user inherits a grant from one of its groups and also has a direct grant.
+    /// Inherited grants are not the same thing as privileges: they do not have the same semantic,
+    /// are not represented by the same enum, do no work on the same scale nor in the same way.
+    ///
+    /// Groups only have direct grants. If multiple direct grants are found, this function will panic.
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn infra_grant(
         &self,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
     ) -> Result<Option<InfraGrant>, Error<S::Error>> {
         // Check if the infra exists
@@ -376,41 +384,60 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
+        // Check if subject exists
+        if !self.subject_exists(subject).await? {
+            return Err(Error::UnknownSubject(subject.id()));
         }
 
         // Calling openfga
-        let (is_reader, is_writer, is_owner) = self
-            .openfga
-            .checks((
-                model::Infra::reader().check(user, infra),
-                model::Infra::writer().check(user, infra),
-                model::Infra::owner().check(user, infra),
-            ))
-            .await?;
-
-        match (is_reader, is_writer, is_owner) {
-            (true, false, false) => Ok(Some(InfraGrant::Reader)),
-            (false, true, false) => Ok(Some(InfraGrant::Writer)),
-            (false, false, true) => Ok(Some(InfraGrant::Owner)),
-            (false, false, false) => Ok(None),
-            _ => {
-                tracing::error!(
-                    is_reader,
-                    is_writer,
-                    is_owner,
-                    ?user,
-                    ?infra,
-                    "User has multiple grants on the same resource"
-                );
-                panic!(
-                    "User {user:?} has multiple grants on the same resource {infra:?}, which is not supposed to happen by design. \n\
-                    Detected grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
-                )
+        let (is_reader, is_writer, is_owner) = match subject {
+            Subject::User(user) => {
+                self.openfga
+                    .checks((
+                        model::Infra::reader().check(user, infra),
+                        model::Infra::writer().check(user, infra),
+                        model::Infra::owner().check(user, infra),
+                    ))
+                    .await?
             }
-        }
+            Subject::Group(group) => {
+                let (is_reader, is_writer, is_owner) = self
+                    .openfga
+                    .checks((
+                        model::Infra::reader().check(Group::member().userset(group), infra),
+                        model::Infra::writer().check(Group::member().userset(group), infra),
+                        model::Infra::owner().check(Group::member().userset(group), infra),
+                    ))
+                    .await?;
+                if !matches!(
+                    (is_reader, is_writer, is_owner),
+                    (true, false, false)
+                        | (false, true, false)
+                        | (false, false, true)
+                        | (false, false, false)
+                ) {
+                    tracing::error!(
+                        is_reader,
+                        is_writer,
+                        is_owner,
+                        ?subject,
+                        resource = ?infra,
+                        "Group has multiple direct grants on the same resource"
+                    );
+                    panic!(
+                        "Group {subject:?} has multiple direct grants on the same resource {infra:?}, which is not supposed to happen by design. \n\
+                        While a user may have inherited grants from one of their groups, groups do not have inherited grants. \n\
+                        Detected direct grants: reader: {is_reader}, writer: {is_writer}, owner: {is_owner}"
+                    );
+                }
+                (is_reader, is_writer, is_owner)
+            }
+        };
+
+        Ok(is_owner
+            .then_some(InfraGrant::Owner)
+            .or_else(|| is_writer.then_some(InfraGrant::Writer))
+            .or_else(|| is_reader.then_some(InfraGrant::Reader)))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
