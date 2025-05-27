@@ -169,6 +169,7 @@ impl TestAppBuilder {
                     timeout: chrono::Duration::seconds(180),
                     single_worker: false,
                     num_channels: 8,
+                    worker_pool_id: "core".into(),
                 },
             },
             valkey_config: ValkeyConfig {
