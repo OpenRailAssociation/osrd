@@ -1,12 +1,15 @@
 import type { TFunction } from 'i18next';
 import type { Dispatch } from 'redux';
 
+import { convertNgeDtoToOsrd } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
+import type { NetzgrafikDto } from 'applications/operationalStudies/components/NGE/types';
 import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { type TrainSchedule } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
+import { castErrorToFailure } from 'utils/error';
 
 export const handleFileReadingError = (error: Error) => {
   console.error('File reading error:', error);
@@ -56,6 +59,15 @@ const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload =>
   return { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains };
 };
 
+const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
+  Boolean(
+    payload &&
+      typeof payload === 'object' &&
+      'nodes' in payload &&
+      'trainruns' in payload &&
+      'trainrunSections' in payload
+  );
+
 export const processJsonFile = (
   fileContent: string,
   fileExtension: string,
@@ -79,6 +91,18 @@ export const processJsonFile = (
       );
     }
     return isJsonFile;
+  }
+
+  if (validateNgeDto(rawContent)) {
+    let importedData;
+    try {
+      importedData = convertNgeDtoToOsrd(rawContent);
+    } catch (err) {
+      dispatch(setFailure(castErrorToFailure(err)));
+      return true;
+    }
+    setTrainsJsonData(importedData);
+    return true;
   }
 
   // validate the trainSchedules

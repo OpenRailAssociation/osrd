@@ -5,6 +5,7 @@ import {
   type PacedTrain,
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
+  type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
 import { checkChangeGroups } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import {
@@ -29,6 +30,7 @@ import {
 
 import {
   DEFAULT_PACED_TRAIN_PAYLOAD,
+  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
   DEFAULT_TIME_WINDOW,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
@@ -646,7 +648,7 @@ const handleLabelOperation = async ({
   }
 };
 
-const handleOperation = async ({
+export const handleOperation = async ({
   event,
   netzgrafikDto,
   timetableId,
@@ -702,4 +704,40 @@ const handleOperation = async ({
   }
 };
 
-export default handleOperation;
+export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
+  const macroNodes: MacroNodeForm[] = [];
+  for (const node of dto.nodes) {
+    macroNodes.push({
+      ...castNgeNode(node, dto.labels),
+      path_item_key: `trigram:${node.betriebspunktName}`,
+    });
+  }
+
+  const trainSchedules: TrainSchedule[] = [];
+  const pacedTrains: PacedTrain[] = [];
+  for (const trainrun of dto.trainruns) {
+    const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
+    const commonProps = {
+      train_name: trainrun.name,
+      labels,
+      path,
+      start_time: startDate.toISOString(),
+      schedule,
+    };
+    const paced = createPacedAttributesFromTrainrun(trainrun, dto);
+    if (paced) {
+      pacedTrains.push({
+        ...DEFAULT_PACED_TRAIN_PAYLOAD,
+        ...commonProps,
+        paced,
+      });
+    } else {
+      trainSchedules.push({
+        ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+        ...commonProps,
+      });
+    }
+  }
+
+  return { macro_nodes: macroNodes, paced_trains: pacedTrains, train_schedules: trainSchedules };
+};

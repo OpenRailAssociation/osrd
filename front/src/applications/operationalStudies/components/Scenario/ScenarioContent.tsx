@@ -4,7 +4,7 @@ import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
+import { handleOperation } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
 import {
   loadAndIndexNge,
   getNgeDto,
