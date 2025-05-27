@@ -319,6 +319,7 @@ const handleCreateTimetableItem = async (
     start_time: startDate.toISOString(),
     schedule,
     exceptions: [],
+    category: getTrainCategoryFromId(trainrun.categoryId),
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
