@@ -34,6 +34,8 @@ public final class OSRDError extends RuntimeException {
 
     public final String type;
     public final String message;
+
+    @SuppressWarnings(value = "serial") // Moshi cannot serialize HashMap<> directly
     public Map<String, Object> context = new HashMap<>();
 
     public final transient ErrorType osrdErrorType;
