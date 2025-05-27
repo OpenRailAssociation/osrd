@@ -461,7 +461,7 @@ impl<'a> UserBuilder<'a> {
                 for (infra_id, grant) in infras_grant.into_iter() {
                     regulator
                         .give_infra_grant_unchecked(
-                            &editoast_authz::User(user.id),
+                            &editoast_authz::Subject::User(editoast_authz::User(user.id)),
                             &editoast_authz::Infra(infra_id),
                             grant,
                         )
