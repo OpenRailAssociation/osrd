@@ -549,9 +549,7 @@ mod tests {
 
     use super::*;
     use crate::models::fixtures::create_small_infra;
-    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt;
-    use editoast_authz::identity::UserInfo;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -783,6 +781,57 @@ mod tests {
     }
 
     #[rstest]
+    async fn groups_grants_on_resource() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let alice = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create();
+        let bob = app
+            .user("bob", "Bob")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create();
+        let tom = app
+            .user("tom", "Tom")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create();
+        let jerry = app
+            .user("jerry", "Jerry")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create();
+        let alice_and_bob = app
+            .group("Alice and Bob")
+            .with_members([&alice, &bob])
+            .with_infra_grant(infra.id, InfraGrant::Writer)
+            .create();
+        let tom_and_jerry = app
+            .group("Tom and Jerry")
+            .with_members([&tom, &jerry])
+            .create();
+
+        let SubjectsWithGrantOnResource { subjects, .. } = app
+            .fetch(
+                app.get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
+                    .by_user(&alice),
+            )
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let grants = subjects
+            .into_iter()
+            .map(|SubjectGrant { id, grant, .. }| (id, grant))
+            .collect::<HashMap<_, _>>();
+
+        assert_eq!(grants.get(&alice.id), Some(&InfraGrant::Writer)); // group grants can supersede direct user grants
+        assert_eq!(grants.get(&bob.id), Some(&InfraGrant::Owner)); // but do not override them
+        assert_eq!(grants.get(&tom.id), Some(&InfraGrant::Owner)); // direct user grant
+        assert_eq!(grants.get(&jerry.id), Some(&InfraGrant::Reader)); // likewise
+        assert_eq!(grants.get(&alice_and_bob.id), Some(&InfraGrant::Writer)); // group direct grant
+        assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
+    }
+
+    #[rstest]
     async fn grants_test() {
         // This test starts with a user that is the owner of an infra.
         // Then it creates a new user and adds it as a writer to the infra.
@@ -828,6 +877,60 @@ mod tests {
 
         // Check that the new user has the good grant
         app.assert_infra_direct_grant(infra.id, writer.id, None);
+    }
+
+    #[rstest]
+    async fn give_grant_to_groups() {
+        let app = test_app!().enable_authorization(true).build();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let alice = app
+            .user("alice", "Alice")
+            .with_infra_grant(infra.id, InfraGrant::Owner)
+            .create();
+        let bob = app.user("bob", "Bob").create();
+        let alice_and_bob = app
+            .group("Alice and Bob")
+            .with_members([&alice, &bob])
+            .create();
+
+        app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
+            "grant": [
+                {
+                    "subject_id": alice_and_bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Writer
+                },
+                {
+                    "subject_id": bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id,
+                    "grant": InfraGrant::Reader
+                }
+            ]
+        })))
+        .assert_status(StatusCode::CREATED);
+
+        app.assert_infra_direct_grant(infra.id, alice.id, Some(InfraGrant::Owner)); // still owner
+        app.assert_infra_direct_grant(infra.id, alice_and_bob.id, Some(InfraGrant::Writer)); // direct group grant
+        app.assert_infra_direct_grant(infra.id, bob.id, Some(InfraGrant::Reader)); // direct user grant
+
+        app.assert_infra_grant(infra.id, bob.id, Some(InfraGrant::Writer)); // inherited group grant
+        app.assert_infra_grant(infra.id, alice.id, Some(InfraGrant::Owner)); // inherited group grant superseded by direct user grant
+
+        app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
+            "revoke": [
+                {
+                    "subject_id": alice_and_bob.id,
+                    "resource_type": ResourceType::Infra,
+                    "resource_id": infra.id
+                }
+            ]
+        })))
+        .assert_status(StatusCode::NO_CONTENT);
+
+        app.assert_infra_direct_grant(infra.id, alice_and_bob.id, None); // group grant removed
+        app.assert_infra_direct_grant(infra.id, bob.id, Some(InfraGrant::Reader)); // bob's direct grant is still there
     }
 
     #[rstest]
