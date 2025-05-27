@@ -94,7 +94,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
               {occurrence.exceptionChangeGroups &&
                 Object.keys(occurrence.exceptionChangeGroups).map((changeGroup, i) => (
                   <span key={i} className="change-group">
-                    {changeGroup !== 'category'
+                    {changeGroup !== 'rolling_stock_category'
                       ? t(`occurrenceChangeGroup.${changeGroup}`)
                       : t(
                           `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
