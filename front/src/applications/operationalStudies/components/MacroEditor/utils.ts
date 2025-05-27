@@ -70,11 +70,12 @@ export const createMacroNode = async (
           projectId: state.scenario.project.id,
           studyId: state.scenario.study_id,
           scenarioId: state.scenario.id,
-          macroNodeForm: node,
+          macroNodeBatchForm: { macro_nodes: [node] },
         }
       )
     );
-    const newNode = await createPromise.unwrap();
+    const result = await createPromise.unwrap();
+    const newNode = result.macro_nodes[0];
     state.indexNodeByKey(newNode.path_item_key, {
       ...omit(newNode, ['id']),
       ngeId: ngeNodeId,
