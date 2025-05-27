@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use authz::identity::GroupInfo;
 use axum::Router;
 use axum_test::TestRequest;
 use axum_test::TestServer;
@@ -13,6 +14,7 @@ use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use core_client::CoreClient;
 use core_client::mocking::MockingClient;
 use dashmap::DashMap;
+use editoast_authz as authz;
 use editoast_authz::InfraGrant;
 use editoast_authz::Role;
 use editoast_authz::StorageDriver;
@@ -357,6 +359,15 @@ impl TestApp {
         )
     }
 
+    pub fn group(&self, name: impl ToString) -> GroupBuilder {
+        GroupBuilder::new(
+            self,
+            GroupInfo {
+                name: name.to_string(),
+            },
+        )
+    }
+
     pub fn fetch(&self, req: TestRequest) -> TestResponse {
         futures::executor::block_on(async move {
             tracing::trace!(request = ?req);
@@ -393,6 +404,14 @@ pub struct UserBuilder<'a> {
     infras_grant: HashMap<i64, InfraGrant>,
 }
 
+pub struct GroupBuilder<'a> {
+    app: &'a TestApp,
+    info: GroupInfo,
+    roles: HashSet<Role>,
+    members: HashSet<&'a authz::identity::User>,
+    infras_grant: HashMap<i64, InfraGrant>,
+}
+
 impl<'a> UserBuilder<'a> {
     fn new(app: &'a TestApp, info: UserInfo) -> Self {
         Self {
@@ -413,13 +432,14 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    pub fn create(self) -> editoast_authz::identity::User {
+    pub fn create(self) -> authz::identity::User {
         let Self {
             app,
             info,
             roles,
             infras_grant,
         } = self;
+
         let authz_disabled =
             app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
         if !roles.is_empty() && authz_disabled {
@@ -437,15 +457,15 @@ impl<'a> UserBuilder<'a> {
                 .expect("User should be created successfully");
             if !authz_disabled {
                 regulator
-                    .grant_user_roles(&editoast_authz::User(user.id), roles)
+                    .grant_user_roles(&authz::User(user.id), roles)
                     .await
                     .expect("roles should be granted successfully");
 
                 for (infra_id, grant) in infras_grant.into_iter() {
                     regulator
                         .give_infra_grant_unchecked(
-                            &editoast_authz::Subject::User(editoast_authz::User(user.id)),
-                            &editoast_authz::Infra(infra_id),
+                            &authz::Subject::User(authz::User(user.id)),
+                            &authz::Infra(infra_id),
                             grant,
                         )
                         .await
@@ -453,6 +473,91 @@ impl<'a> UserBuilder<'a> {
                 }
             }
             user
+        })
+    }
+}
+
+impl<'a> GroupBuilder<'a> {
+    fn new(app: &'a TestApp, info: GroupInfo) -> Self {
+        Self {
+            app,
+            info,
+            roles: Default::default(),
+            members: Default::default(),
+            infras_grant: HashMap::default(),
+        }
+    }
+
+    #[expect(unused)]
+    pub fn with_roles(mut self, roles: impl IntoIterator<Item = Role>) -> Self {
+        self.roles = roles.into_iter().collect();
+        self
+    }
+
+    pub fn with_members(
+        mut self,
+        members: impl IntoIterator<Item = &'a authz::identity::User>,
+    ) -> Self {
+        self.members.extend(members);
+        self
+    }
+
+    pub fn with_infra_grant(mut self, infra_id: i64, grant: InfraGrant) -> Self {
+        self.infras_grant.insert(infra_id, grant);
+        self
+    }
+
+    pub fn create(self) -> authz::identity::Group {
+        let Self {
+            app,
+            info,
+            roles,
+            members,
+            infras_grant,
+        } = self;
+        let authz_disabled =
+            app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
+        if !roles.is_empty() && authz_disabled {
+            panic!(
+                "Authorization must be enabled and a model must be provided to grant a group some roles"
+            );
+        }
+        let regulator = &app.app_state.regulator;
+
+        block_on(async move {
+            let id = regulator
+                .driver()
+                .ensure_group(&info)
+                .await
+                .expect("Group should be created successfully");
+            let group = authz::identity::Group { id, info };
+            if !authz_disabled {
+                let group = authz::Group(group.id);
+                regulator
+                    .grant_group_roles(&group, roles)
+                    .await
+                    .expect("roles should be granted successfully");
+
+                regulator
+                    .add_members(
+                        &group,
+                        members
+                            .into_iter()
+                            .map(|authz::identity::User { id, .. }| authz::User(*id))
+                            .collect(),
+                    )
+                    .await
+                    .expect("members should be added successfully");
+
+                let subject = authz::Subject::Group(group);
+                for (infra_id, grant) in infras_grant.into_iter() {
+                    regulator
+                        .give_infra_grant_unchecked(&subject, &authz::Infra(infra_id), grant)
+                        .await
+                        .expect("Infra grant should be given successfully")
+                }
+            }
+            group
         })
     }
 }

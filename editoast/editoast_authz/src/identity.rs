@@ -2,13 +2,13 @@ pub type UserIdentity = String;
 pub type UserName = String;
 pub type GroupName = String;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserInfo {
     pub identity: UserIdentity,
     pub name: UserName,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct User {
     pub info: UserInfo,
     pub id: i64,
@@ -17,6 +17,12 @@ pub struct User {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupInfo {
     pub name: GroupName,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Group {
+    pub info: GroupInfo,
+    pub id: i64,
 }
 
 impl std::fmt::Display for UserInfo {
