@@ -9,6 +9,7 @@ use crate::InfraGrant;
 use crate::Regulator;
 use crate::Role;
 use crate::StorageDriver;
+use crate::Subject;
 use crate::identity::UserIdentity;
 use crate::identity::UserInfo;
 use crate::model::InfraPrivilege;
@@ -124,11 +125,11 @@ impl<S: StorageDriver> Authorizer<S> {
 
     pub async fn revoke_infra_grants(
         &self,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .revoke_infra_grants(&User(self.user_id), user, infra)
+            .revoke_infra_grants(&User(self.user_id), subject, infra)
             .await
     }
 }
