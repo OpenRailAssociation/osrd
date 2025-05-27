@@ -198,7 +198,7 @@ async fn post_railjson(
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
             .give_infra_grant_unchecked(
-                &authz::User(authorizer.user_id()),
+                &authz::Subject::User(authz::User(authorizer.user_id())),
                 &authz::Infra(infra.id),
                 InfraGrant::Owner,
             )

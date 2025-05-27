@@ -438,13 +438,10 @@ async fn update_grants(
                 let subject = subjects
                     .get(&subject_id)
                     .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-                let authz::Subject::User(subject) = subject else {
-                    todo!();
-                };
                 match resource_type {
                     ResourceType::Infra => {
                         authorizer
-                            .give_infra_grant(&subject, &authz::Infra(resource_id), grant)
+                            .give_infra_grant(subject, &authz::Infra(resource_id), grant)
                             .await?
                             .allowed()?;
                     }
@@ -465,7 +462,7 @@ async fn update_grants(
                 match resource_type {
                     ResourceType::Infra => {
                         authorizer
-                            .revoke_infra_grants(&subject, &authz::Infra(resource_id))
+                            .revoke_infra_grants(subject, &authz::Infra(resource_id))
                             .await?
                             .allowed()?;
                     }

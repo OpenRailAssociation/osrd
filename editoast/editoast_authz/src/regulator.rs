@@ -712,7 +712,7 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn give_infra_grant_unchecked(
         &self,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
         grant: InfraGrant,
     ) -> Result<(), Error<S::Error>> {
@@ -726,26 +726,34 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownResource(infra.0));
         }
 
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
+        // Check if subject exists
+        if !self.subject_exists(subject).await? {
+            return Err(Error::UnknownSubject(subject.id()));
         }
 
         // Remove other grants before to add the new one
-        self.revoke_infra_grants_unchecked(&Subject::User(user.clone()), infra)
-            .await?;
+        self.revoke_infra_grants_unchecked(subject, infra).await?;
 
         // Grant the new one
         let mut writes = self.openfga.prepare_writes();
-        match grant {
-            InfraGrant::Reader => {
+        match (subject, grant) {
+            (Subject::User(user), InfraGrant::Reader) => {
                 writes.push(&Infra::reader().tuple(user, infra));
             }
-            InfraGrant::Writer => {
+            (Subject::User(user), InfraGrant::Writer) => {
                 writes.push(&Infra::writer().tuple(user, infra));
             }
-            InfraGrant::Owner => {
+            (Subject::User(user), InfraGrant::Owner) => {
                 writes.push(&Infra::owner().tuple(user, infra));
+            }
+            (Subject::Group(group), InfraGrant::Reader) => {
+                writes.push(&Infra::reader().tuple(Group::member().userset(group), infra));
+            }
+            (Subject::Group(group), InfraGrant::Writer) => {
+                writes.push(&Infra::writer().tuple(Group::member().userset(group), infra));
+            }
+            (Subject::Group(group), InfraGrant::Owner) => {
+                writes.push(&Infra::owner().tuple(Group::member().userset(group), infra));
             }
         }
         writes.execute().await?;
@@ -757,7 +765,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn give_infra_grant(
         &self,
         issuer: &User,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
         grant: InfraGrant,
     ) -> Result<Authorization<()>, Error<S::Error>> {
@@ -771,7 +779,8 @@ impl<S: StorageDriver> Regulator<S> {
         };
         authz_share
             .allowed_then_try(async || {
-                self.give_infra_grant_unchecked(user, infra, grant).await?;
+                self.give_infra_grant_unchecked(subject, infra, grant)
+                    .await?;
                 Ok(Authorization::Granted(()))
             })
             .await

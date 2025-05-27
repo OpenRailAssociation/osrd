@@ -400,7 +400,7 @@ async fn create(
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
             .give_infra_grant_unchecked(
-                &authz::User(authorizer.user_id()),
+                &authz::Subject::User(authz::User(authorizer.user_id())),
                 &authz::Infra(infra.id),
                 InfraGrant::Owner,
             )
@@ -466,7 +466,7 @@ async fn clone(
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
             .give_infra_grant_unchecked(
-                &authz::User(authorizer.user_id()),
+                &authz::Subject::User(authz::User(authorizer.user_id())),
                 &authz::Infra(cloned_infra.id),
                 InfraGrant::Owner,
             )

@@ -325,7 +325,7 @@ mod tests {
         if let Some(user) = user {
             app.regulator()
                 .give_infra_grant_unchecked(
-                    &authz::User(user.id),
+                    &authz::Subject::User(authz::User(user.id)),
                     &authz::Infra(small_infra.id),
                     InfraGrant::Owner,
                 )

@@ -114,12 +114,12 @@ impl<S: StorageDriver> Authorizer<S> {
 
     pub async fn give_infra_grant(
         &self,
-        user: &User,
+        subject: &Subject,
         infra: &Infra,
         grant: InfraGrant,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .give_infra_grant(&User(self.user_id), user, infra, grant)
+            .give_infra_grant(&User(self.user_id), subject, infra, grant)
             .await
     }
 
@@ -184,6 +184,7 @@ mod tests {
             .await
             .expect("toto should be created")
             .id;
+        let subject = Subject::User(User(user_id));
 
         let authorizer = Authorizer::try_initialize(user_identity(), regulator())
             .await
@@ -191,7 +192,7 @@ mod tests {
 
         authorizer
             .regulator
-            .give_infra_grant_unchecked(&User(authorizer.user_id()), &Infra(1), InfraGrant::Reader)
+            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Reader)
             .await
             .expect("Update grants should be successful");
         let grant = authorizer
@@ -202,7 +203,7 @@ mod tests {
 
         authorizer
             .regulator
-            .give_infra_grant_unchecked(&User(user_id), &Infra(1), InfraGrant::Writer)
+            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Writer)
             .await
             .expect("Update grants should be successful");
         let grant = authorizer
@@ -213,7 +214,7 @@ mod tests {
 
         authorizer
             .regulator
-            .give_infra_grant_unchecked(&User(user_id), &Infra(1), InfraGrant::Owner)
+            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Owner)
             .await
             .expect("Update grants should be successful");
         let grant = authorizer
