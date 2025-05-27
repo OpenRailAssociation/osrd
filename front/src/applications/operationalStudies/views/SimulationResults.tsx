@@ -173,6 +173,7 @@ const SimulationResults = ({
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
                       selectedTrainId={selectedTrainId}
+                      timetableItemsWithDetails={timetableItemsWithDetails}
                       waypointsPanelData={{
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,

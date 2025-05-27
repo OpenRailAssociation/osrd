@@ -1,3 +1,5 @@
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
+
 import type { AspectLabel } from './types';
 
 export const TAG_COLORS = {
@@ -31,9 +33,24 @@ export const ASPECT_LABELS_COLORS: Record<AspectLabel, string> = {
   '000': OCCUPANCY_BLOCKS_COLORS.GREY,
 };
 
-export const PATH_COLORS = {
-  HOVERED_PATH: '#6B532E',
-  SELECTED_PATH: '#6B532E',
-  SELECTED_OCCURRENCE_PATH: '#8A714B',
-  SELECTED_OCCURRENCE_BACKGROUND: '#EEE7D9',
+export const DEFAULT_TRAIN_PATH_COLORS = {
+  normal: '#797671',
+  hovered: '#494641',
+  background: '#EBEBEA',
+};
+
+export const TRAIN_CATEGORY_PATH_COLORS: Record<
+  TrainCategory,
+  { normal: string; hovered: string; background: string }
+> = {
+  HIGH_SPEED_TRAIN: { normal: '#E6221A', hovered: '#A62924', background: '#FAE7E6' },
+  INTERCITY_TRAIN: { normal: '#E02271', hovered: '#9A2053', background: '#FFE8F2' },
+  REGIONAL_TRAIN: { normal: '#C75300', hovered: '#943E00', background: '#FFE7D6' },
+  NIGHT_TRAIN: { normal: '#B2539E', hovered: '#732963', background: '#FAE6F6' },
+  COMMUTER_TRAIN: { normal: '#506AE3', hovered: '#314297', background: '#E0ECFF' },
+  FREIGHT_TRAIN: { normal: '#54823B', hovered: '#2C4F19', background: '#E4EDDF' },
+  FAST_FREIGHT_TRAIN: { normal: '#13857B', hovered: '#085953', background: '#DAF7EE' },
+  TRAM_TRAIN: { normal: '#127DB8', hovered: '#195B80', background: '#D9F2FF' },
+  TOURISTIC_TRAIN: { normal: '#8A714B', hovered: '#6B532E', background: '#EEE7D9' },
+  WORK_TRAIN: { normal: '#996E00', hovered: '#705400', background: '#FFF2CC' },
 };
