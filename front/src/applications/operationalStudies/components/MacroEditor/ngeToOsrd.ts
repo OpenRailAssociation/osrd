@@ -127,45 +127,15 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   return orderedSections;
 };
 
-const createPathItemFromNode = async (
-  node: NodeDto,
-  index: number,
-  infraId: number,
-  dispatch: AppDispatch
-) => {
+const createPathItemFromNode = (node: NodeDto, index: number) => {
   const [trigram, secondaryCode] = node.betriebspunktName.split('/');
-  let finalSecondaryCode: string | undefined;
-
-  if (secondaryCode) {
-    finalSecondaryCode = secondaryCode;
-    return {
-      trigram,
-      secondary_code: finalSecondaryCode,
-      id: `${node.id}-${index}`,
-      deleted: false,
-      // TODO : handle this case in xml import refacto
-      track_reference: null,
-    };
-  }
-
-  const searchPayload = {
-    object: 'operationalpoint',
-    query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], trigram]],
-  };
-  const searchResults = (await dispatch(
-    osrdEditoastApi.endpoints.postSearch.initiate({
-      searchPayload,
-    })
-  ).unwrap()) as SearchResultItemOperationalPoint[];
-
-  const opFound = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
-  finalSecondaryCode = opFound?.ch;
-
   return {
     trigram,
-    secondary_code: finalSecondaryCode,
+    secondary_code: secondaryCode,
     id: `${node.id}-${index}`,
     deleted: false,
+    // TODO : handle this case in xml import refacto
+    track_reference: null,
   };
 };
 
@@ -185,30 +155,22 @@ const formatDateDifferenceFrom = (start: Date, stop: Date) =>
 /**
  * Generate a path from a list of trainrun sections.
  */
-export const generatePath = async (
+export const generatePath = (
   trainrunSections: TrainrunSectionDto[],
-  nodes: NodeDto[],
-  infraId: number,
-  dispatch: AppDispatch
-): Promise<TrainSchedule['path']> => {
-  const pathPromises = trainrunSections.map(async (section, index) => {
+  nodes: NodeDto[]
+): TrainSchedule['path'] => {
+  const path = trainrunSections.map((section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
     const targetNode = getNodeById(nodes, section.targetNodeId);
     if (!sourceNode || !targetNode) return [];
-    const originPathItem = await createPathItemFromNode(sourceNode, index, infraId, dispatch);
+    const originPathItem = createPathItemFromNode(sourceNode, index);
     if (index === trainrunSections.length - 1) {
-      const destinationPathItem = await createPathItemFromNode(
-        targetNode,
-        index + 1,
-        infraId,
-        dispatch
-      );
+      const destinationPathItem = createPathItemFromNode(targetNode, index + 1);
       return [originPathItem, destinationPathItem];
     }
     return [originPathItem];
   });
-
-  return (await Promise.all(pathPromises)).flat();
+  return path.flat();
 };
 
 /**
@@ -283,15 +245,13 @@ const generateSchedule = (
 /**
  * Generate properties for trainrun related caracteristics.
  */
-const generateTrainrunProperties = async (
+const generateTrainrunProperties = (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
-  infraId: number,
-  dispatch: AppDispatch,
   oldStartDate?: Date
 ) => {
   const trainrunSections = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
-  const path = await generatePath(trainrunSections, netzgrafikDto.nodes, infraId, dispatch);
+  const path = generatePath(trainrunSections, netzgrafikDto.nodes);
   const labels = compact(
     uniq(
       trainrun.labelIds.map(
@@ -303,6 +263,35 @@ const generateTrainrunProperties = async (
   const schedule = generateSchedule(trainrunSections, netzgrafikDto.nodes, startDate);
 
   return { path, labels, startDate, schedule };
+};
+
+// TODO: drop this function once this PR is merged:
+// https://github.com/OpenRailAssociation/osrd/pull/10325
+const populateSecondaryCodesInPath = async (
+  path: TrainSchedule['path'],
+  infraId: number,
+  dispatch: AppDispatch
+) => {
+  const promises = path.map(async (pathItem) => {
+    if (!('trigram' in pathItem) || pathItem.secondary_code) {
+      return;
+    }
+
+    const searchPayload = {
+      object: 'operationalpoint',
+      query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], pathItem.trigram]],
+    };
+    const searchResults = (await dispatch(
+      osrdEditoastApi.endpoints.postSearch.initiate({
+        searchPayload,
+      })
+    ).unwrap()) as SearchResultItemOperationalPoint[];
+
+    const stationOp = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
+    pathItem.secondary_code = stationOp?.ch;
+  });
+
+  await Promise.all(promises);
 };
 
 const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, state: MacroEditorState) => {
@@ -332,12 +321,8 @@ const handleCreateTimetableItem = async (
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
-  const { path, labels, startDate, schedule } = await generateTrainrunProperties(
-    netzgrafikDto,
-    trainrun,
-    infraId,
-    dispatch
-  );
+  const { path, labels, startDate, schedule } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  await populateSecondaryCodesInPath(path, infraId, dispatch);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, state)!,
@@ -393,13 +378,12 @@ const handleUpdateTimetableItem = async ({
 }) => {
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const timetableItem = await fetchTimetableItem(timetableItemId, dispatch);
-  const { path, labels, startDate, schedule } = await generateTrainrunProperties(
+  const { path, labels, startDate, schedule } = generateTrainrunProperties(
     netzgrafikDto,
     trainrun,
-    infraId,
-    dispatch,
     new Date(timetableItem.start_time)
   );
+  await populateSecondaryCodesInPath(path, infraId, dispatch);
 
   const { id: _id, timetable_id: _timetableId, ...timetableItemBase } = timetableItem;
   const timetableItemForUpdate = {
