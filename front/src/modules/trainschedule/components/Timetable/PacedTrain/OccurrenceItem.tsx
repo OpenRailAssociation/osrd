@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
 import AnchoredMenu from 'common/AnchoredMenu';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import {
@@ -62,9 +61,6 @@ const OccurrenceItem = ({
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [getRollingStockByName] =
-    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
-
   const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
   const isAfterMidnight =
     occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
@@ -79,6 +75,7 @@ const OccurrenceItem = ({
   // We build a new timetable item to edit with the current paced train modified with
   // the occurrence start time and all its eventual exceptions
   const editOccurrence = async () => {
+    // TODO refacto this function in issue https://github.com/OpenRailAssociation/osrd/issues/12030
     let updatedPacedtrain: PacedTrainWithDetails = {
       ...currentPacedTrain,
       name: occurrence.trainName,
@@ -98,9 +95,7 @@ const OccurrenceItem = ({
 
       let occurrenceRollingStock = currentPacedTrain.rollingStock;
       if (occurrenceToUpdateException.rolling_stock) {
-        occurrenceRollingStock = await getRollingStockByName({
-          rollingStockName: occurrenceToUpdateException.rolling_stock.rolling_stock_name,
-        }).unwrap();
+        occurrenceRollingStock = occurrence.rollingStock;
       }
 
       updatedPacedtrain = {
