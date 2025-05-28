@@ -72,6 +72,7 @@ data class LimitOfAuthority(
 data class EndOfAuthority(
     val offsetEOA: Offset<TravelledPath>,
     val offsetSVL: Offset<TravelledPath>?,
+    val usedCurveType: BrakingType
 ) : Comparable<EndOfAuthority> {
     init {
         if (offsetSVL != null) assert(offsetSVL >= offsetEOA)
@@ -127,12 +128,13 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         for (endOfAuthority in sortedEndsOfAuthority) {
             val eoaBrakingCurves =
                 computeBrakingCurvesAtEOA(endOfAuthority, context, envelope, beginPos)
-            val indicationCurve = eoaBrakingCurves[IND] ?: continue
-            indicationCurve.brakingCurve.stream().forEach { builder.addPart(it) }
+            // Which braking curve (indication speed, permitted speed, ...) to use depends on the
+            // EOA
+            val usedBrakingCurve = eoaBrakingCurves[endOfAuthority.usedCurveType] ?: continue
+            usedBrakingCurve.brakingCurve.stream().forEach { builder.addPart(it) }
 
             // We build EOAs along the path. We need to handle overlaps with the next EOA. To do so,
-            // we
-            // shift the left position constraint, beginPos, to this EOA's target position.
+            // we shift the left position constraint, beginPos, to this EOA's target position.
             beginPos = endOfAuthority.offsetEOA.distance.meters
         }
         return builder.build()
