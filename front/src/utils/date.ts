@@ -104,11 +104,11 @@ export const isEqualDate = (searchDate: Date, startDate: Date) =>
   searchDate.getDate() === startDate.getDate();
 
 /**
- * @param start timestamp or Date object
- * @param end timestamp or Date object
+ * @param start Date object
+ * @param end Date object
  * @returns string "Xj Yh Zmin"
  */
-export const formatTimeDifference = (_start: number | Date, _end: number | Date): string => {
+export const formatTimeDifference = (_start: Date, _end: Date): string => {
   const start = dayjs(_start);
   const end = dayjs(_end);
 
