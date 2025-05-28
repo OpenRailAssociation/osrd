@@ -106,7 +106,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
 
         try {
             // Compute max speed envelope, without any slowing down
-            val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, DoubleArray(0), mrsp)
+            val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, emptyList(), mrsp)
             val maxEffort = MaxEffortEnvelope.from(context, beginSpeed, maxSpeedEnvelope)
             if (maxEffort.none { it.hasAttr(EnvelopeProfile.CONSTANT_SPEED) }) {
                 return 0.0 // When no constant speed part, there can't be any allowance

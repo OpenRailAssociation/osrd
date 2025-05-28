@@ -9,6 +9,8 @@ import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
+import java.util.ArrayList;
 
 public class MaxEffortEnvelopeBuilder {
     /** Builds max effort envelope with the specified stops, on a flat MRSP */
@@ -26,7 +28,11 @@ public class MaxEffortEnvelopeBuilder {
     /** Builds max effort envelope with one stop in the middle, one at the end, on a funky MRSP */
     static Envelope makeComplexMaxEffortEnvelope(EnvelopeSimContext context, double[] stops) {
         var mrsp = makeComplexMRSP(context);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
+        var stopInfos = new ArrayList<MaxSpeedEnvelope.SimStopInfo>();
+        for (double stop : stops) {
+            stopInfos.add(new MaxSpeedEnvelope.SimStopInfo(stop, RJSReceptionSignal.SHORT_SLIP_STOP));
+        }
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopInfos, mrsp);
         return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
 
@@ -34,7 +40,11 @@ public class MaxEffortEnvelopeBuilder {
     public static Envelope makeMaxEffortEnvelopeFromSpeedRanges(
             EnvelopeSimContext context, RangeMap<Double, Double> speeds, double[] stops) {
         var flatMRSP = makeSimpleMRSP(context, speeds);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
+        var stopInfos = new ArrayList<MaxSpeedEnvelope.SimStopInfo>();
+        for (double stop : stops) {
+            stopInfos.add(new MaxSpeedEnvelope.SimStopInfo(stop, RJSReceptionSignal.SHORT_SLIP_STOP));
+        }
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopInfos, flatMRSP);
         return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
 }

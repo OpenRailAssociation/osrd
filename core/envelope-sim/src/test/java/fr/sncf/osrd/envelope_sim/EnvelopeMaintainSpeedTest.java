@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 public class EnvelopeMaintainSpeedTest {
     @Test
     public void suddenSlope() {
-        var stops = new double[] {};
+        List<MaxSpeedEnvelope.SimStopInfo> stops = List.of();
         var path =
                 buildNonElectrified(10000, new double[] {0, 5000, 6000, 7000, 8000, 8500, 9000, 10000}, new double[] {
                     0, 40, -40, 0, 50, -50, 0

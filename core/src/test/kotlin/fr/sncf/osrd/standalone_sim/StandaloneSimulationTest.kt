@@ -72,7 +72,7 @@ class StandaloneSimulationTest {
         rollingStock.mapTractiveEffortCurves(electrificationMap, Comfort.STANDARD)
     private var context =
         EnvelopeSimContext(rollingStock, envelopeSimPath, 2.0, curvesAndConditions.curves)
-    private val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, doubleArrayOf(), mrsp)
+    private val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, emptyList(), mrsp)
     private val maxEffortEnvelope = MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)
 
     /** Smoke test: we check that nothing crashes */

@@ -14,6 +14,7 @@ import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
@@ -128,9 +129,15 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 trainTag,
                 temporarySpeedLimitManager,
             )
-        val stopPositions = stops.map { it.position }.toMutableList()
-        if (stopAtEnd) stopPositions.add(physicsPath.length)
-        val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopPositions.toDoubleArray(), mrsp)
+        val stopInfos =
+            stops
+                .map { MaxSpeedEnvelope.SimStopInfo(it.position, it.receptionSignal) }
+                .toMutableList()
+        if (stopAtEnd)
+            stopInfos.add(
+                MaxSpeedEnvelope.SimStopInfo(physicsPath.length, RJSReceptionSignal.SHORT_SLIP_STOP)
+            )
+        val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopInfos, mrsp)
         return MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)
     }
 
