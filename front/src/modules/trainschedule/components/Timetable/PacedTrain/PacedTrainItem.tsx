@@ -30,6 +30,7 @@ import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } fro
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
+import { TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';
 
@@ -198,7 +199,13 @@ const PacedTrainItem = ({
               <Manchette iconColor="var(--white100)" />
             </div>
           )}
-          <div data-testid="occurrences-count" className="occurrences-count">
+          <div
+            data-testid="occurrences-count"
+            className={cx(
+              'occurrences-count',
+              `train-category-bg-${TRAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+            )}
+          >
             {occurrencesCount}
           </div>
           {isOccurrencesListOpen ? (
@@ -213,7 +220,13 @@ const PacedTrainItem = ({
             />
           )}
           <div className="train-info">
-            <span data-testid="paced-train-name" className="train-name">
+            <span
+              data-testid="paced-train-name"
+              className={cx(
+                'train-name',
+                `train-category-text-${TRAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+              )}
+            >
               {pacedTrain.name}
             </span>
           </div>
