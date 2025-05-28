@@ -211,19 +211,17 @@ class STDCMHeuristicBuilder(
     ): PendingBlock {
         var newIndex = currentIndex
         val actualOffset = offset ?: blockInfra.getBlockLength(block)
-        var remainingTimeWithStops = remainingTime
         while (newIndex > 0) {
             val step = steps[newIndex - 1]
             if (step.locations.none { it.edge == block && it.offset <= actualOffset }) {
                 break
             }
-            if (step.stop) remainingTimeWithStops += step.duration!!
             newIndex--
         }
         return PendingBlock(
             block,
             newIndex,
-            remainingTimeWithStops + mrspBuilder.getBlockTime(block, offset)
+            remainingTime + mrspBuilder.getBlockTime(block, offset)
         )
     }
 }
