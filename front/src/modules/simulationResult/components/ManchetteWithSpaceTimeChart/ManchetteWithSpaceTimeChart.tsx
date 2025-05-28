@@ -72,11 +72,17 @@ type ManchetteWithSpaceTimeChartProps = {
     totalTrains: number;
     allTrainsProjected: boolean;
   };
-  handleTrainDrag?: (
-    draggedTrainId: TrainId,
-    newDepartureTime: Date,
-    { stopPanning }: { stopPanning: boolean }
-  ) => Promise<void>;
+  handleTrainDrag?: ({
+    draggedTrainId,
+    newDepartureTime,
+    initialDepartureTime,
+    stopPanning,
+  }: {
+    draggedTrainId: TrainId;
+    initialDepartureTime: Date;
+    newDepartureTime: Date;
+    stopPanning: boolean;
+  }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TimetableItemId;
@@ -149,7 +155,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 
   const [previousPanning, setPreviousPanning] = useState(false);
-  // Cut the space time chart curves if the first or last waypoints are hidden
+
+  // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
     useMemo(() => {
       let filteredProjectPathTrainResult = projectedTrains;
@@ -315,7 +322,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
       const timeDiff = payload.data.time - payload.initialData.time;
 
-      let newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
+      let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
       let draggedTrainId = draggedTrain.id;
 
       // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
@@ -326,21 +333,24 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           ({ id }) => isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId
         );
         if (firstOccurrence && 'paced' in firstOccurrence) {
-          newDeparture = dayjs(newDeparture)
+          newDepartureTime = dayjs(newDepartureTime)
             .add(occurrencesIndex * -firstOccurrence.paced.interval.ms, 'ms')
             .toDate();
           draggedTrainId = firstOccurrence.id;
         }
       }
 
-      await handleTrainDrag(draggedTrainId, newDeparture, {
-        stopPanning: !isPanning,
-      });
-
       // stop dragging if necessary
       if (!isPanning) {
         setDraggingState(undefined);
       }
+
+      await handleTrainDrag({
+        draggedTrainId,
+        initialDepartureTime,
+        newDepartureTime,
+        stopPanning: !isPanning,
+      });
       return;
     }
 
