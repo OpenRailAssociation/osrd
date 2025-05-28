@@ -67,12 +67,12 @@ const StdcmSimulationNavigator = ({
                 if (hasValidResults) {
                   const { results } = outputs;
                   const lastPointTime = results.simulation.final_output.times.at(-1)!;
-                  const departureTimeInMs = new Date(results.departure_time).getTime();
+                  const departureTime = new Date(results.departure_time);
 
                   formatedTotalLength = `${Math.round(mmToKm(results.path.length))} ${t('common.units.km', { ns: 'translation' })} `;
                   formatedTripDuration = formatTimeDifference(
-                    departureTimeInMs,
-                    lastPointTime + departureTimeInMs
+                    departureTime,
+                    new Date(lastPointTime + departureTime.getTime())
                   );
                 }
                 if (hasValidResults) {
