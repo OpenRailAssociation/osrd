@@ -75,6 +75,8 @@ export type WaypointsPanelData = {
   timetableId: number | undefined;
   filteredWaypoints: PathOperationalPoint[];
   setFilteredWaypoints: Dispatch<SetStateAction<PathOperationalPoint[]>>;
+  deployedWaypoints: Set<string>;
+  toggleDeployedWaypoint: (waypointId: string, deployed?: boolean) => void;
   projectionPath: TrainSchedule['path'];
 };
 

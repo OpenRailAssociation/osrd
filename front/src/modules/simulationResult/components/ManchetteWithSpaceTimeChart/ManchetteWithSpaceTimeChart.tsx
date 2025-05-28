@@ -14,16 +14,25 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
   Manchette,
+  type SplitPoint,
   isSegmentPickingElement,
   isPointPickingElement,
   usePaths,
   isInteractiveWaypoint,
+  TrackOccupancyCanvas,
+  TrackOccupancyManchette,
+  WaypointComponent,
+  type Track,
+  type OccupancyZone,
+  TRACK_HEIGHT_CONTAINER,
+  DEFAULT_THEME,
+  BASE_WAYPOINT_HEIGHT,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
-import { compact } from 'lodash';
+import { compact, isArray, keyBy, sortBy } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
@@ -52,6 +61,10 @@ import {
   isTrainScheduleProjection,
   isOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
+  isTrainScheduleId,
+  extractEditoastIdFromTrainScheduleId,
+  extractEditoastIdFromPacedTrainId,
+  isPacedTrainId,
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
@@ -68,6 +81,15 @@ type ManchetteWithSpaceTimeChartProps = {
   waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
+  occupancyZonesLayers?: {
+    waypointId: string;
+    operationalPointId: string;
+    operationalPointPosition: number;
+    operationalPointName?: string;
+    zones?: OccupancyZone[];
+    tracks?: Track[];
+  }[];
+  onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
     allTrainsProjected: boolean;
@@ -94,6 +116,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   waypointsPanelData,
   conflicts = [],
   workSchedules,
+  occupancyZonesLayers,
+  onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
   handleTrainDrag,
@@ -249,6 +273,82 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   }, [waypointsPanelData, operationalPoints]);
 
+  const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
+    activeWaypointRef,
+    waypointsPanelData,
+    allTrainsProjected
+  );
+
+  const splitPoints = useMemo<SplitPoint[] | undefined>(() => {
+    const pathsIndex = keyBy(paths, ({ id }) => {
+      if (isTrainScheduleId(id)) return extractEditoastIdFromTrainScheduleId(id);
+      if (isPacedTrainId(id)) return extractEditoastIdFromPacedTrainId(id);
+      if (isOccurrenceId(id))
+        return extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
+      return id;
+    });
+
+    return (
+      sortBy(
+        occupancyZonesLayers || [],
+        ({ operationalPointPosition }) => operationalPointPosition
+      ).map(
+        ({
+          waypointId,
+          operationalPointId,
+          operationalPointName,
+          operationalPointPosition,
+          zones,
+          tracks,
+        }) => ({
+          id: operationalPointId,
+          position: operationalPointPosition,
+          size: isArray(tracks)
+            ? tracks.length * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize
+            : 50,
+          spaceTimeChartNode: (
+            <TrackOccupancyCanvas
+              position={operationalPointPosition}
+              tracks={tracks || []}
+              occupancyZones={(zones || []).map((zone) => ({
+                ...zone,
+                color: pathsIndex[zone.trainId]
+                  ? getPathStyle(
+                      hoveredItem,
+                      pathsIndex[zone.trainId],
+                      !!draggingState,
+                      timetableItemsWithDetails,
+                      selectedTrainId
+                    ).color
+                  : undefined,
+              }))}
+              selectedTrainId={selectedTrainId}
+              onClose={() => onCloseOccupancyLayer?.(waypointId)}
+              topPadding={BASE_WAYPOINT_HEIGHT}
+            />
+          ),
+          manchetteNode: (
+            <TrackOccupancyManchette tracks={tracks || []}>
+              <div className="waypoint-wrapper flex justify-start">
+                <WaypointComponent
+                  waypoint={{
+                    id: waypointId,
+                    name: operationalPointName || operationalPointId,
+                    position: operationalPointPosition,
+                    onClick: handleWaypointClick,
+                  }}
+                  waypointRef={activeWaypointRef}
+                  isActive={false}
+                  isMenuActive={false}
+                />
+              </div>
+            </TrackOccupancyManchette>
+          ),
+        })
+      ) || []
+    );
+  }, [occupancyZonesLayers, activeWaypointId, timetableItemsWithDetails]);
+
   const {
     manchetteProps,
     spaceTimeChartProps,
@@ -264,6 +364,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     manchetteWithSpaceTimeChartRef,
     height,
     spaceTimeChartRef,
+    splitPoints,
     defaultTimeOrigin: 0,
     defaultSpaceOrigin:
       (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0,
@@ -381,11 +482,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       setPreviousPanning(isPanning);
     }
   };
-
-  const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
-    activeWaypointRef,
-    waypointsPanelData
-  );
 
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
