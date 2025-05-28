@@ -106,10 +106,10 @@ def foo_study_id(foo_project_id: int, session: Session) -> Iterator[int]:
 
 @pytest.fixture
 def tiny_scenario(
-    tiny_infra: Infra, foo_project_id: int, foo_study_id: int
+    tiny_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id
+        EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id
@@ -118,10 +118,10 @@ def tiny_scenario(
 
 @pytest.fixture
 def small_scenario(
-    small_infra: Infra, foo_project_id: int, foo_study_id: int
+    small_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id
+        EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id
@@ -130,10 +130,10 @@ def small_scenario(
 
 @pytest.fixture
 def etcs_scenario(
-    etcs_infra: Infra, foo_project_id: int, foo_study_id: int
+    etcs_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, etcs_infra.id, foo_project_id, foo_study_id
+        EDITOAST_URL, etcs_infra.id, foo_project_id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, etcs_infra.id, timetable_id

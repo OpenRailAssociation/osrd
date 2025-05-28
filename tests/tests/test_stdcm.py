@@ -2,7 +2,7 @@ import datetime
 import json
 from typing import Any
 
-import requests
+from requests import Session
 
 from tests.utils.timetable import create_op_study, create_scenario
 
@@ -16,7 +16,11 @@ _STOP = {"track": "TH1", "offset": 0}
 
 
 def _add_train(
-    editoast_url: str, scenario: Scenario, rolling_stock_name: str, start_time: str
+    editoast_url: str,
+    scenario: Scenario,
+    rolling_stock_name: str,
+    start_time: str,
+    session: Session,
 ):
     schedule_payload = [
         {
@@ -31,7 +35,7 @@ def _add_train(
             "start_time": start_time,
         }
     ]
-    r = requests.post(
+    r = session.post(
         editoast_url + f"/timetable/{scenario.timetable}/train_schedules/",
         json=schedule_payload,
     )
@@ -44,13 +48,16 @@ def _add_train(
 
 
 def test_empty_timetable(
-    small_infra: Infra, foo_project_id: int, fast_rolling_stock: int
+    small_infra: Infra,
+    foo_project_id: int,
+    fast_rolling_stock: int,
+    session: Session,
 ):
-    op_study = create_op_study(EDITOAST_URL, foo_project_id)
+    op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
     _, timetable = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, op_study
+        EDITOAST_URL, small_infra.id, foo_project_id, op_study, session
     )
-    requests.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
+    session.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
@@ -64,7 +71,7 @@ def test_empty_timetable(
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(
+    r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
         json=payload,
     )
@@ -73,11 +80,14 @@ def test_empty_timetable(
 
 # TO ADAPT
 def test_empty_timetable_with_stop(
-    small_infra: Infra, foo_project_id: int, fast_rolling_stock: int
+    small_infra: Infra,
+    foo_project_id: int,
+    fast_rolling_stock: int,
+    session: Session,
 ):
-    op_study = create_op_study(EDITOAST_URL, foo_project_id)
+    op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
     _, timetable = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, op_study
+        EDITOAST_URL, small_infra.id, foo_project_id, op_study, session
     )
     payload = {
         "rolling_stock_id": fast_rolling_stock,
@@ -93,27 +103,31 @@ def test_empty_timetable_with_stop(
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(
+    r = session.post(
         EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
         json=payload,
     )
     assert r.status_code == 200
 
 
-def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
-    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+def test_between_trains(
+    small_scenario: Scenario, fast_rolling_stock: int, session: Session
+):
+    response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     _add_train(
         EDITOAST_URL,
         small_scenario,
         fast_rolling_stock_name,
         "2024-08-13T22:31:36.377Z",
+        session,
     )
     _add_train(
         EDITOAST_URL,
         small_scenario,
         fast_rolling_stock_name,
         "2024-08-13T23:31:36.377Z",
+        session,
     )
     payload = {
         "rolling_stock_id": fast_rolling_stock,
@@ -129,7 +143,7 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(
+    r = session.post(
         EDITOAST_URL
         + f"/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}",
         json=payload,
@@ -138,14 +152,16 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
 
 
-def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
-    requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
+def test_work_schedules(
+    small_scenario: Scenario, fast_rolling_stock: int, session: Session
+):
+    session.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc)
     end_time = start_time + datetime.timedelta(days=4)
     # TODO: we cannot delete work schedules for now, so let's give a unique name
     # to avoid collisions
     now = datetime.datetime.now()
-    work_schedules_r = requests.post(
+    work_schedules_r = session.post(
         EDITOAST_URL + "work_schedules/",
         json={
             "work_schedule_group_name": f"generic_group_{now}",
@@ -180,7 +196,7 @@ def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
-    r = requests.post(url, json=payload)
+    r = session.post(url, json=payload)
     assert r.status_code == 200
     response = r.json()
     departure_time = datetime.datetime.fromisoformat(
@@ -193,8 +209,9 @@ def test_mrsp_sources(
     small_infra: Infra,
     timetable_id: int,
     fast_rolling_stock: int,
+    session: Session,
 ):
-    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     stdcm_payload = {
         "start_time": "2024-05-22T10:00:00.000Z",
         "rolling_stock_id": fast_rolling_stock,
@@ -212,7 +229,7 @@ def test_mrsp_sources(
         "standard_allowance": "3%",
     }
 
-    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload)
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
     assert content["simulation"]["mrsp"] == {
         "boundaries": [4180000, 4580000],
         "values": [
@@ -229,7 +246,7 @@ def test_mrsp_sources(
     }
 
     stdcm_payload["speed_limit_tags"] = "MA80"
-    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload)
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
     assert content["simulation"]["mrsp"] == {
         "boundaries": [3680000, 4580000],
         "values": [
@@ -240,7 +257,9 @@ def test_mrsp_sources(
     }
 
 
-def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
+def test_max_running_time(
+    small_scenario: Scenario, fast_rolling_stock: int, session: Session
+):
     """
     We use work schedules to force a very long running time, which shouldn't be a valid solution.
     We specifically try with a very large departure time window to reproduce a bug (#9164).
@@ -259,7 +278,7 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
                    [       ] <  max running time
                    [                             ] < departure time window
     """
-    requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
+    session.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     origin_start_time = datetime.datetime(
         2024, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
     )
@@ -275,7 +294,7 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
     # TODO: we cannot delete work schedules for now, so let's give a unique name
     # to avoid collisions
     now = datetime.datetime.now()
-    work_schedules_r = requests.post(
+    work_schedules_r = session.post(
         EDITOAST_URL + "work_schedules/",
         json={
             "work_schedule_group_name": f"generic_group_{now}",
@@ -318,7 +337,7 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
     }
     url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
-    r = requests.post(url, json=payload)
+    r = session.post(url, json=payload)
     response = r.json()
     assert r.status_code == 200
     for conflict in response["conflicts"]:
@@ -430,8 +449,13 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
     }
 
 
-def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: dict[str, Any]):
-    stdcm_response = requests.post(
+def _get_stdcm_response(
+    infra: Infra,
+    timetable_id: int,
+    stdcm_payload: dict[str, Any],
+    session: Session,
+):
+    stdcm_response = session.post(
         f"{EDITOAST_URL}/timetable/{timetable_id}/stdcm/?infra={infra.id}",
         json=stdcm_payload,
     )
