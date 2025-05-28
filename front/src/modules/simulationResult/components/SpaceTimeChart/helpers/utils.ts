@@ -1,7 +1,8 @@
-import { omit } from 'lodash';
+import { chunk, noop, omit } from 'lodash';
 
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
+import type { MovableOccupancyZone } from './zones';
 import type { LayerRangeData } from '../../../types';
 
 export const cutSpaceTimeRect = (
@@ -44,3 +45,55 @@ export const getWaypointsLocalStorageKey = (
 
   return `PathOperationalPoints-${timetableId}-${JSON.stringify(simplifiedPath)}`;
 };
+
+/**
+ * Fetches track occupancy data for a large list of IDs in small sequential batches, to avoid
+ * overwhelming the server or API.
+ */
+export function batchFetchTrackOccupancy(
+  allIDs: string[],
+  fetchTrackOccupancy: (ids: string[]) => Promise<MovableOccupancyZone[]>,
+  {
+    batchSize = 50,
+    onProgress = noop,
+    onComplete = noop,
+    onError = noop,
+  }: {
+    batchSize?: number;
+    onProgress?: (allValuesYet: MovableOccupancyZone[]) => void;
+    onComplete?: (allValues: MovableOccupancyZone[]) => void;
+    onError?: (err: Error) => void;
+  }
+) {
+  let isAborted = false;
+  let allZones: MovableOccupancyZone[] = [];
+
+  const handleAbort = () => {
+    isAborted = true;
+    allZones = [];
+  };
+  const handleError = (reason: unknown) => {
+    handleAbort();
+    onError(
+      reason instanceof Error
+        ? reason
+        : new Error(`batchFetchTrackOccupancy failed`, { cause: reason })
+    );
+  };
+
+  const load = async () => {
+    for (const batch of chunk(allIDs, batchSize)) {
+      const newValues = await fetchTrackOccupancy(batch);
+      if (isAborted) return;
+
+      allZones = allZones.concat(newValues);
+      onProgress(allZones);
+    }
+
+    onComplete(allZones);
+  };
+
+  load().catch(handleError);
+
+  return handleAbort;
+}
