@@ -113,12 +113,6 @@ export function isArrivalDateInSearchTimeWindow(
   return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
 }
 
-/** Format a date to a string 'DD/MM/YY', for instance '01/01/24' */
-export const formatDateString = (date?: Date | null) => {
-  if (!date) return '';
-  return dayjs(date).format('DD/MM/YY');
-};
-
 export const isEqualDate = (searchDate: Date, startDate: Date) =>
   searchDate.getFullYear() === startDate.getFullYear() &&
   searchDate.getMonth() === startDate.getMonth() &&

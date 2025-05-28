@@ -8,11 +8,13 @@ import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { formatDateString } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { createStringSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ArrivalTimeTypes, ScheduleConstraint } from '../../types';
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString(undefined, { day: 'numeric', month: 'numeric', year: '2-digit' });
 
 type StdcmOpScheduleProps = {
   disabled: boolean;
@@ -60,8 +62,8 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
     () => ({
       invalidInput: t('form.datePickerErrors.invalidInput'),
       invalidDate: t('form.datePickerErrors.invalidDate', {
-        startDate: formatDateString(searchDatetimeWindow.begin),
-        endDate: formatDateString(searchDatetimeWindow.end),
+        startDate: formatDate(searchDatetimeWindow.begin),
+        endDate: formatDate(searchDatetimeWindow.end),
       }),
     }),
     [t, searchDatetimeWindow]
