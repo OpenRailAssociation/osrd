@@ -439,7 +439,10 @@ class SpacingRequirementAutomaton(
 
         // EoA offset is the detector (blockStartOffset) if signal is 'F' and signalOffset if 'Nf'
         // SvL offset is always the detector
-        val eoa = EndOfAuthority(if (isNf) signalOffset else blockStartOffset, blockStartOffset)
+        // The braking curve used is always the indication curve, pending potential future
+        // refinements
+        val eoa =
+            EndOfAuthority(if (isNf) signalOffset else blockStartOffset, blockStartOffset, IND)
 
         val envelope = callbacks.getRawEnvelopeIfSingle()
         // TODO: stop using a single envelope that's unavailable in STDCM and maybe move to a

@@ -12,6 +12,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.StopMeta
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
+import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
+import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
@@ -182,7 +184,20 @@ object MaxSpeedEnvelope {
         val endsOfAuthority =
             stops
                 .filter { it.isETCS }
-                .map { EndOfAuthority(Offset(it.offset.meters), getDangerPoint(context, it)) }
+                .map {
+                    EndOfAuthority(
+                        offsetEOA = Offset(it.offset.meters),
+                        // On a closed signal, we follow the indication speed curve with an SVL at
+                        // the next danger point to protect
+                        // On an open signal, we follow the permitted speed curve with no SVL
+                        offsetSVL =
+                            if (it.rjsReceptionSignal.isStopOnClosedSignal())
+                                getDangerPoint(context, it)
+                            else null,
+                        usedCurveType =
+                            if (it.rjsReceptionSignal.isStopOnClosedSignal()) IND else PS
+                    )
+                }
         return simulator.addStopBrakingCurves(envelope, endsOfAuthority)
     }
 

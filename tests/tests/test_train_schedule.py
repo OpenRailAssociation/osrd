@@ -129,10 +129,10 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S"},
-                    {"at": "second", "stop_for": "PT10S"},
-                    {"at": "third", "stop_for": "PT10S"},
-                    {"at": "fourth", "stop_for": "PT10S"},
+                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "third", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "fourth", "stop_for": "PT10S", "reception_signal": "STOP"},
                     {"at": "last", "stop_for": "P0D"},
                 ],
                 "margins": {"boundaries": [], "values": ["0%"]},
@@ -290,8 +290,8 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S"},
-                    {"at": "second", "stop_for": "PT10S"},
+                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
                     {"at": "last", "stop_for": "P0D"},
                 ],
                 "margins": {"boundaries": [], "values": ["0%"]},
@@ -404,7 +404,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S"},
+                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
                     {"at": "last", "stop_for": "P0D"},
                 ],
                 "margins": {"boundaries": [], "values": ["0%"]},
@@ -521,7 +521,11 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S"},
+                    {
+                        "at": "first",
+                        "stop_for": "PT10S",
+                        "reception_signal": "SHORT_SLIP_STOP",
+                    },
                     {"at": "last", "stop_for": "P0D"},
                 ],
                 "margins": {"boundaries": [], "values": ["0%"]},
@@ -642,7 +646,11 @@ def test_etcs_schedule_result_slowdowns(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "last", "stop_for": "P0D"},
+                    {
+                        "at": "last",
+                        "stop_for": "P0D",
+                        "reception_signal": "SHORT_SLIP_STOP",
+                    },
                 ],
                 "margins": {"boundaries": [], "values": ["0%"]},
                 "initial_speed": 0,
@@ -931,7 +939,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
 def test_etcs_spacing_req(etcs_scenario: Scenario, etcs_rolling_stock: int):
     """
     spacing requirements should:
-    * start at the same time the braking curve starts if stoping on closed signal on the entry of the block
+    * start at the same time the braking curve starts if stopping on closed signal on the entry of the block
     * end when leaving the block
     """
     rolling_stock_response = requests.get(
@@ -1027,7 +1035,7 @@ def test_etcs_spacing_req(etcs_scenario: Scenario, etcs_rolling_stock: int):
         == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
     )
     assert spacing_req_zone_final["begin_time"] == 892060
-    assert spacing_req_zone_final["end_time"] == 1087037
+    assert spacing_req_zone_final["end_time"] == 1035083
 
 
 def _assert_equal_speeds(left, right):
