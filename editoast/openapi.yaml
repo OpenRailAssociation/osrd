@@ -5486,6 +5486,7 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
@@ -6021,6 +6022,30 @@ components:
           type: string
           enum:
           - editoast:paced_train:Database
+    EditoastPacedTrainErrorExceptionNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - exception_key
+          properties:
+            exception_key:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:ExceptionNotFound
     EditoastPacedTrainErrorInfraNotFound:
       type: object
       required:

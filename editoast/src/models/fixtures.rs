@@ -16,6 +16,7 @@ use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
+use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::paced_train::ConstraintDistributionChangeGroup;
 use editoast_schemas::paced_train::ExceptionType;
 use editoast_schemas::paced_train::InitialSpeedChangeGroup;
@@ -30,6 +31,7 @@ use editoast_schemas::paced_train::RollingStockChangeGroup;
 use editoast_schemas::paced_train::SpeedLimitTagChangeGroup;
 use editoast_schemas::paced_train::StartTimeChangeGroup;
 use editoast_schemas::paced_train::TrainNameChangeGroup;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::NonBlankString;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::rolling_stock::EffortCurves;
@@ -44,6 +46,11 @@ use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::Margins;
+use editoast_schemas::train_schedule::OperationalPointIdentifier;
+use editoast_schemas::train_schedule::OperationalPointReference;
+use editoast_schemas::train_schedule::PathItem;
+use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainSchedule;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 use postgis_diesel::types::LineString;
@@ -116,6 +123,110 @@ pub fn simple_train_schedule_base() -> TrainSchedule {
         .expect("Unable to parse test train schedule")
 }
 
+pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
+    PacedTrainException {
+        key: key.into(),
+        exception_type: ExceptionType::Created {},
+        disabled: false,
+        train_name: Some(TrainNameChangeGroup {
+            value: "exception_train_name".into(),
+        }),
+        constraint_distribution: Some(ConstraintDistributionChangeGroup {
+            value: Distribution::Mareco,
+        }),
+        initial_speed: Some(InitialSpeedChangeGroup { value: 10.0 }),
+        labels: Some(LabelsChangeGroup {
+            value: vec!["Label 1".to_string(), "Label 3".to_string()],
+        }),
+        options: Some(OptionsChangeGroup {
+            value: TrainScheduleOptions::default(),
+        }),
+        path_and_schedule: Some(PathAndScheduleChangeGroup {
+            power_restrictions: vec![],
+            schedule: vec![
+                ScheduleItem {
+                    at: NonBlankString("aa".to_string()),
+                    ..Default::default()
+                },
+                ScheduleItem {
+                    at: NonBlankString("bb".to_string()),
+                    ..Default::default()
+                },
+                ScheduleItem {
+                    at: NonBlankString("cc".to_string()),
+                    ..Default::default()
+                },
+                ScheduleItem {
+                    at: NonBlankString("dd".to_string()),
+                    ..Default::default()
+                },
+            ],
+            path: vec![
+                PathItem {
+                    id: "aa".into(),
+                    deleted: false,
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        offset: 300,
+                        track: Identifier("TC0".to_string()),
+                    }),
+                },
+                PathItem {
+                    id: "bb".into(),
+                    deleted: false,
+                    location: PathItemLocation::OperationalPointReference(
+                        OperationalPointReference {
+                            reference: OperationalPointIdentifier::OperationalPointId {
+                                operational_point: Identifier("Mid_East_station".to_string()),
+                            },
+                            track_reference: None,
+                        },
+                    ),
+                },
+                PathItem {
+                    id: "cc".into(),
+                    deleted: false,
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        offset: 300,
+                        track: Identifier("TC1".to_string()),
+                    }),
+                },
+                PathItem {
+                    id: "dd".into(),
+                    deleted: false,
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        offset: 300,
+                        track: Identifier("TC2".to_string()),
+                    }),
+                },
+            ],
+            margins: Margins {
+                boundaries: vec![],
+                values: vec![MarginValue::Percentage(5.0)],
+            },
+        }),
+        rolling_stock: Some(RollingStockChangeGroup {
+            rolling_stock_name: "simulation_rolling_stock".into(),
+            comfort: Comfort::AirConditioning,
+        }),
+        rolling_stock_category: Some(RollingStockCategoryChangeGroup { value: None }),
+        speed_limit_tag: Some(SpeedLimitTagChangeGroup {
+            value: Some(NonBlankString("GB".into())),
+        }),
+        start_time: Some(StartTimeChangeGroup {
+            value: DateTime::<Utc>::from_str("2025-05-05T20:05:00+02:00").unwrap(),
+        }),
+    }
+}
+
+pub fn create_modified_exception_with_change_groups(
+    key: &str,
+    occurrence_index: i32,
+) -> PacedTrainException {
+    let mut exception = create_created_exception_with_change_groups(key);
+    exception.exception_type = ExceptionType::Modified { occurrence_index };
+    exception
+}
+
 pub fn simple_paced_train_base() -> PacedTrain {
     let train_schedule_base =
         serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
@@ -157,6 +268,18 @@ pub async fn create_simple_paced_train(
     timetable_id: i64,
 ) -> models::PacedTrain {
     simple_paced_train_changeset(timetable_id)
+        .create(conn)
+        .await
+        .expect("Failed to create paced train")
+}
+
+pub async fn create_paced_train_with_exceptions(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+    exceptions: Vec<PacedTrainException>,
+) -> models::PacedTrain {
+    let paced_train = simple_paced_train_changeset(timetable_id).exceptions(exceptions);
+    paced_train
         .create(conn)
         .await
         .expect("Failed to create paced train")

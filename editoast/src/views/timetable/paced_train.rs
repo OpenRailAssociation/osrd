@@ -77,6 +77,9 @@ enum PacedTrainError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+    #[error("Exception '{exception_key}', could not be found")]
+    #[editoast_error(status = 404)]
+    ExceptionNotFound { exception_key: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::model::Error),
@@ -354,9 +357,7 @@ async fn get_path(
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
-    Query(ExceptionQueryParam {
-        exception_key: _exception_key,
-    }): Query<ExceptionQueryParam>,
+    Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -387,15 +388,24 @@ async fn get_path(
         PacedTrainError::NotFound { paced_train_id }
     })
     .await?;
+
+    let train_schedule = match exception_key {
+        Some(exception_key) => {
+            let exception = paced_train
+                .exceptions
+                .iter()
+                .find(|e| e.key == exception_key)
+                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                    exception_key: exception_key.clone(),
+                })?;
+
+            paced_train.apply_exception(exception)
+        }
+        None => paced_train.into_first_occurrence(),
+    };
+
     Ok(Json(
-        pathfinding_from_train(
-            conn,
-            &mut valkey_conn,
-            core_client,
-            &infra,
-            paced_train.into_first_occurrence(),
-        )
-        .await?,
+        pathfinding_from_train(conn, &mut valkey_conn, core_client, &infra, train_schedule).await?,
     ))
 }
 
@@ -427,9 +437,7 @@ async fn simulation(
     Query(ElectricalProfileSetIdQueryParam {
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
-    Query(ExceptionQueryParam {
-        exception_key: _exception_key,
-    }): Query<ExceptionQueryParam>,
+    Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
 ) -> Result<Json<simulation::Response>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -462,12 +470,27 @@ async fn simulation(
         })
         .await?;
 
+    let train_schedule = match exception_key {
+        Some(exception_key) => {
+            let exception = paced_train
+                .exceptions
+                .iter()
+                .find(|e| e.key == exception_key)
+                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                    exception_key: exception_key.clone(),
+                })?;
+
+            paced_train.apply_exception(exception)
+        }
+        None => paced_train.into_first_occurrence(),
+    };
+
     // Compute simulation of a paced_train
     let (simulation, _) = train_simulation_batch(
         &mut db_pool.get().await?,
         valkey_client,
         core_client,
-        &[paced_train.into_first_occurrence()],
+        &[train_schedule],
         &infra,
         electrical_profile_set_id,
     )
@@ -620,6 +643,7 @@ mod tests {
     use chrono::DateTime;
     use chrono::Duration;
     use core_client::mocking::MockingClient;
+    use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
@@ -628,6 +652,8 @@ mod tests {
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
+    use editoast_schemas::paced_train::RollingStockChangeGroup;
+    use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::TrainSchedule;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -636,7 +662,9 @@ mod tests {
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::PartialProjectPathTrainResult;
+    use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
@@ -644,12 +672,14 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
+    use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
+    use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SummaryResponse;
 
     #[rstest]
@@ -760,7 +790,9 @@ mod tests {
                 ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                     .expect("Unable to parse")
             },
-            exceptions: vec![],
+            exceptions: vec![create_created_exception_with_change_groups(
+                "created_exception_key",
+            )],
             paced: Paced {
                 time_window: Duration::hours(1).try_into().unwrap(),
                 interval: Duration::minutes(15).try_into().unwrap(),
@@ -828,6 +860,116 @@ mod tests {
                     boundaries: vec![],
                     values: vec![]
                 }
+            }
+        );
+    }
+
+    #[rstest]
+    async fn paced_train_exception_simulation_with_invalid_exception_key() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.get(
+            format!(
+                "/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=toto"
+            )
+            .as_str(),
+        );
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:paced_train:ExceptionNotFound"
+        )
+    }
+
+    #[rstest]
+    async fn paced_train_exception_simulation() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.get(
+            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
+        );
+        let response: simulation::Response =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(
+            response,
+            simulation::Response::Success {
+                base: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1000, 2000, 3000]
+                },
+                provisional: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1000, 2000, 3000]
+                },
+                final_output: CompleteReportTrain {
+                    report_train: ReportTrain {
+                        positions: vec![0],
+                        times: vec![0],
+                        speeds: vec![],
+                        energy_consumption: 0.0,
+                        path_item_times: vec![0, 1000, 2000, 3000]
+                    },
+                    signal_critical_positions: vec![],
+                    zone_updates: vec![],
+                    spacing_requirements: vec![],
+                    routing_requirements: vec![]
+                },
+                mrsp: SpeedLimitProperties {
+                    boundaries: vec![],
+                    values: vec![]
+                },
+                electrical_profiles: ElectricalProfiles {
+                    boundaries: vec![],
+                    values: vec![]
+                }
+            }
+        );
+    }
+
+    #[rstest]
+    async fn paced_train_exception_simulation_with_rolling_stock_not_found() {
+        // GIVEN
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.get(format!("/paced_train/{train_schedule_id}").as_str());
+        let mut paced_train_response: PacedTrainResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        paced_train_response.paced_train.exceptions[0].rolling_stock =
+            Some(RollingStockChangeGroup {
+                rolling_stock_name: "R2D2".into(),
+                comfort: Comfort::AirConditioning,
+            });
+        let request = app
+            .put(format!("/paced_train/{train_schedule_id}").as_str())
+            .json(&json!(paced_train_response.paced_train));
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        // WHEN
+        let request = app.get(
+            format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
+        );
+        let response: simulation::Response =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        // THEN
+        assert_eq!(
+            response,
+            simulation::Response::PathfindingFailed {
+                pathfinding_failed: PathfindingFailure::PathfindingInputError(
+                    PathfindingInputError::RollingStockNotFound {
+                        rolling_stock_name: "R2D2".into()
+                    }
+                )
             }
         );
     }
@@ -931,6 +1073,31 @@ mod tests {
     }
 
     #[rstest]
+    async fn get_paced_train_path_with_invalid_exception_key() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+        let small_infra = create_small_infra(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let request = app.get(
+            format!(
+                "/paced_train/{}/path/?infra_id={}&exception_key=toto",
+                paced_train.id, small_infra.id
+            )
+            .as_str(),
+        );
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:paced_train:ExceptionNotFound"
+        )
+    }
+
+    #[rstest]
     async fn get_paced_train_path() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
@@ -960,6 +1127,120 @@ mod tests {
         let request = app.get(&format!(
             "/paced_train/{}/path?infra_id={}",
             paced_train.id, small_infra.id
+        ));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<PathfindingResult>();
+
+        assert_eq!(
+            response,
+            PathfindingResult::Success(PathfindingResultSuccess {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+                path_item_positions: vec![],
+                length: 1
+            })
+        )
+    }
+
+    #[rstest]
+    async fn get_paced_train_exception_path_rolling_stock_not_found() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let pool = app.db_pool();
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let mut exception = create_created_exception_with_change_groups("exception_created_key");
+        exception.rolling_stock = Some(RollingStockChangeGroup {
+            rolling_stock_name: "exception_rolling_stock".into(),
+            comfort: Comfort::Standard,
+        });
+        let paced_train = create_paced_train_with_exceptions(
+            &mut pool.get_ok(),
+            timetable.id,
+            vec![exception.clone()],
+        )
+        .await;
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app.get(&format!(
+            "/paced_train/{}/path?infra_id={}&exception_key={}",
+            paced_train.id, small_infra.id, exception.key
+        ));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<PathfindingResult>();
+
+        assert_eq!(
+            response,
+            PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::RollingStockNotFound {
+                    rolling_stock_name: "exception_rolling_stock".into()
+                }
+            ))
+        )
+    }
+
+    #[rstest]
+    async fn get_paced_train_exception_path() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let pool = app.db_pool();
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let exception = create_created_exception_with_change_groups("exception_created_key");
+        let paced_train = create_paced_train_with_exceptions(
+            &mut pool.get_ok(),
+            timetable.id,
+            vec![exception.clone()],
+        )
+        .await;
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app.get(&format!(
+            "/paced_train/{}/path?infra_id={}&exception_key={}",
+            paced_train.id, small_infra.id, exception.key
         ));
 
         let response = app
