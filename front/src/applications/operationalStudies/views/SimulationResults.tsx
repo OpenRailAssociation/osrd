@@ -105,7 +105,11 @@ const SimulationResults = ({
     timetableId,
   });
 
-  const { toggleWaypoint, deployedWaypoints } = useTrackOccupancy({
+  const {
+    toggleWaypoint,
+    deployedWaypoints,
+    handleTrainDrag: handleTrainDragInTrackOccupancy,
+  } = useTrackOccupancy({
     infraId,
     pathOperationalPoints: projectedOperationalPoints,
     trains: projectPathTrainResult,
@@ -125,6 +129,7 @@ const SimulationResults = ({
     draggedTrainId: TrainId,
     {
       newDepartureTime,
+      initialDepartureTime,
       stopPanning,
     }: { initialDepartureTime: Date; newDepartureTime: Date; stopPanning: boolean }
   ) => {
@@ -133,12 +138,26 @@ const SimulationResults = ({
 
     const newTrainData = { ...draggedTrain, departureTime: newDepartureTime };
 
+    // Handle updating track occupancy data (with no distant update yet, so with stopPanning: false)
+    await handleTrainDragInTrackOccupancy(draggedTrainId, {
+      stopPanning: false,
+      initialDepartureTime,
+      newTrainData,
+    });
+
     if (stopPanning) {
       // update in the database
       const draggedItemId = isTrainScheduleId(draggedTrainId)
         ? draggedTrainId
         : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
       await updateTrainDepartureTime(draggedItemId, newDepartureTime);
+
+      // Handle retrieving track occupancy data from server (so with stopPanning: true):
+      await handleTrainDragInTrackOccupancy(draggedTrainId, {
+        stopPanning: true,
+        initialDepartureTime,
+        newTrainData,
+      });
     } else {
       // update in the state
       setProjectPathTrainResult(
