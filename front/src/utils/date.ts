@@ -143,5 +143,3 @@ export const dateToHHMMSS = (date: Date, { withoutSeconds } = { withoutSeconds: 
   const format = withoutSeconds ? 'HH:mm' : 'HH:mm:ss';
   return dayjs(date).local().format(format);
 };
-
-export const dateToDDMMYYYY = (date: Date) => dayjs(date).format('DD/MM/YYYY');

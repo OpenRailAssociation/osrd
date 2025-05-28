@@ -3,13 +3,17 @@ import {
   type MarkerInformation,
 } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { dateToHHMMSS, dateToDDMMYYYY } from 'utils/date';
+import { dateToHHMMSS } from 'utils/date';
 
 export const getTimesInfoFromDate = (date?: Date) =>
   date
     ? {
         date,
-        arrivalDate: dateToDDMMYYYY(date), // ISO date part
+        arrivalDate: date.toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+        }),
         arrivalTime: dateToHHMMSS(date, { withoutSeconds: true }),
         arrivalTimeHours: date.getHours(),
         arrivalTimeMinutes: date.getMinutes(),
