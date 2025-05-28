@@ -638,7 +638,7 @@ def register_extension(object: Type[BaseModel], name):
             )
 
         extensions_field.annotation.model_fields[name] = FieldInfo(
-            annotation=extension,
+            annotation=Optional[extension],  # type: ignore # This is how <type> | None is handled by pydantic
             default=None,
         )
         return extension

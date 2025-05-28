@@ -158,6 +158,22 @@ class _TmpSignal(BaseModel):
     )
 
 
+def make_extensions_non_nullable(schema: dict):
+    """This is required in order not to make the front weird."""
+    for name, definition in schema["$defs"].items():
+        if not name.endswith("Extensions"):
+            continue
+
+        new_properties = {}
+        for prop_name, prop_def in definition["properties"].items():
+            new_properties[prop_name] = {
+                "default": None,
+                "$ref": prop_def["anyOf"][0]["$ref"],
+            }
+
+        definition["properties"] = new_properties
+
+
 if __name__ == "__main__":
     from json import dumps
 
@@ -167,6 +183,8 @@ if __name__ == "__main__":
     railjson_schema["$defs"]["Signal"]["properties"].update(
         tmp_signal_schema["properties"]
     )
+
+    make_extensions_non_nullable(railjson_schema)
 
     # sort keys in order to diff correctly in the CI
     print(dumps(railjson_schema, indent=4, sort_keys=True))
