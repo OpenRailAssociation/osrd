@@ -6,10 +6,9 @@
 
   .suggestions-list {
     position: absolute;
-    width: calc(100% - 2.1rem);
+    width: calc(100% - 1.55rem);
     top: calc(100% - 1.4rem);
-    left: 1rem;
-    right: 0;
+    right: 0.70rem;
     z-index: 1000;
     list-style: none;
     max-height: calc(2.5rem * var(--number-of-suggestions));
@@ -24,8 +23,8 @@
 
   &:has(.narrow) .suggestions-list {
     top: calc(100% - 7px);
-    left: 0;
-    width: calc(100% - 4px);
+    width: calc(100% + 4px);
+    left: -2px;
   }
 
   .suggestion-item {
