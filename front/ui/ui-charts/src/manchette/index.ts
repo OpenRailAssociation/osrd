@@ -9,9 +9,12 @@ export {
   type ManchetteWithSpaceTimeChartProps,
 } from './components/ManchetteWithSpaceTimeChart';
 
-export { DEFAULT_ZOOM_MS_PER_PX } from './consts';
+export { DEFAULT_ZOOM_MS_PER_PX, BASE_WAYPOINT_HEIGHT } from './consts';
 
-export { default as useManchetteWithSpaceTimeChart } from './hooks/useManchetteWithSpaceTimeChart';
+export {
+  default as useManchetteWithSpaceTimeChart,
+  type SplitPoint,
+} from './hooks/useManchetteWithSpaceTimeChart';
 export { default as usePaths } from './hooks/usePaths';
 
 export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint } from './types';
