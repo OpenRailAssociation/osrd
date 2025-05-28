@@ -42,7 +42,7 @@ type SimulationResultsProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
 
   conflicts?: Conflict[];
-  updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => void;
+  updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
 };
 
 const SimulationResults = ({
@@ -116,21 +116,26 @@ const SimulationResults = ({
 
   const handleTrainDrag = async (
     draggedTrainId: TrainId,
-    newDepartureTime: Date,
-    { stopPanning }: { stopPanning: boolean }
+    {
+      newDepartureTime,
+      stopPanning,
+    }: { initialDepartureTime: Date; newDepartureTime: Date; stopPanning: boolean }
   ) => {
+    const draggedTrain = projectPathTrainResult.find((train) => train.id === draggedTrainId);
+    if (!draggedTrain) return;
+
+    const newTrainData = { ...draggedTrain, departureTime: newDepartureTime };
+
     if (stopPanning) {
       // update in the database
       const draggedItemId = isTrainScheduleId(draggedTrainId)
         ? draggedTrainId
         : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
-      updateTrainDepartureTime(draggedItemId, newDepartureTime);
+      await updateTrainDepartureTime(draggedItemId, newDepartureTime);
     } else {
       // update in the state
       setProjectPathTrainResult(
-        projectPathTrainResult.map((train) =>
-          train.id === draggedTrainId ? { ...train, departureTime: newDepartureTime } : train
-        )
+        projectPathTrainResult.map((train) => (train.id === draggedTrainId ? newTrainData : train))
       );
     }
   };
