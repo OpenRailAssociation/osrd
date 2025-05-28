@@ -574,8 +574,12 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             </button>
             <button
               type="button"
-              className={cx('zoom-button', { 'zoom-button-clicked': zoomMode })}
+              className={cx('zoom-button', {
+                'zoom-button-clicked': zoomMode,
+                'zoom-button-disabled': !!waypointsPanelData?.deployedWaypoints.size,
+              })}
               onClick={toggleZoomMode}
+              disabled={!!waypointsPanelData?.deployedWaypoints.size}
             >
               <ZoomIn className="icon" />
             </button>

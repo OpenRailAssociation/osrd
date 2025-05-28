@@ -59,6 +59,15 @@
       }
     }
 
+    .zoom-button-disabled {
+      color: var(--black25);
+      cursor: inherit;
+
+      &:hover {
+        background: var(--white100);
+      }
+    }
+
     .reset-button {
       svg {
         transform: rotate(180deg) translate(0, 2px);
