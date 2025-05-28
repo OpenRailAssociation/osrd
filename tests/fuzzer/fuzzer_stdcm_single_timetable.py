@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from collections.abc import Iterable
 
-import requests
+from requests import Session
 
 from fuzzer.fuzzer import (
     _get_random_rolling_stock,
@@ -13,6 +13,7 @@ from fuzzer.fuzzer import (
     _to_ms,
     get_infra,
 )
+import conftest
 from tests.scenario import Scenario
 
 _TIMEOUT = 300
@@ -56,6 +57,7 @@ class TimetableTimeRange:
 def run(
     editoast_url: str,
     scenario: Scenario,
+    session: Session,
     n_test: int = 1000,
     log_folder: Path | None = None,
     seed: int | None = None,
@@ -63,16 +65,16 @@ def run(
     """
     Run the given number of tests, logging errors in the given folder as json files
     """
-    requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
-    timetable_range = _build_timetable_range(editoast_url, scenario)
+    session.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
+    timetable_range = _build_timetable_range(editoast_url, scenario, session)
     seed = seed or random.randint(0, 2**32)
-    op_list = list(_make_op_list(editoast_url, scenario.infra))
+    op_list = list(_make_op_list(editoast_url, scenario.infra, session))
     for i in range(n_test):
         seed += 1
         print("seed:", seed)
         random.seed(seed)
         try:
-            _test_stdcm(editoast_url, op_list, scenario, timetable_range)
+            _test_stdcm(editoast_url, op_list, scenario, timetable_range, session)
         except STDCMException as e:
             if log_folder is None:
                 raise e
@@ -93,14 +95,16 @@ def run(
                     )
 
 
-def _get_train_ids(editoast_url: str, scenario: Scenario) -> list[int]:
+def _get_train_ids(
+    editoast_url: str, scenario: Scenario, session: Session
+) -> list[int]:
     """
     Fetch all the train IDs in the scenario
     """
     page = 1
     res = []
     while page is not None:
-        r = requests.get(
+        r = session.get(
             f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}"
         )
         r.raise_for_status()
@@ -111,16 +115,18 @@ def _get_train_ids(editoast_url: str, scenario: Scenario) -> list[int]:
     return res
 
 
-def _build_timetable_range(editoast_url, scenario) -> TimetableTimeRange:
+def _build_timetable_range(
+    editoast_url, scenario, session: Session
+) -> TimetableTimeRange:
     """
     Build the (approximate) range in which the timetable contains trains
     """
     print("building timetable time range")
-    train_ids = _get_train_ids(editoast_url, scenario)
+    train_ids = _get_train_ids(editoast_url, scenario, session)
     train_ids = random.sample(train_ids, min(100, len(train_ids)))
     train_times = list()
     for train_id in train_ids:
-        r = requests.get(f"{editoast_url}/train_schedule/{train_id}")
+        r = session.get(f"{editoast_url}/train_schedule/{train_id}")
         r.raise_for_status()
         start_time = datetime.datetime.strptime(
             r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ"
@@ -139,10 +145,10 @@ def _build_timetable_range(editoast_url, scenario) -> TimetableTimeRange:
         )
 
 
-def _make_op_list(editoast_url, infra) -> Iterable[int]:
+def _make_op_list(editoast_url, infra, session: Session) -> Iterable[int]:
     print("loading infra to generate op list")
     url = editoast_url + f"infra/{infra}/railjson/"
-    r = requests.get(url)
+    r = session.get(url)
     infra = r.json()
     for op in infra["operational_points"]:
         yield op["extensions"]["identifier"]["uic"]
@@ -153,15 +159,16 @@ def _test_stdcm(
     op_list: list[int],
     scenario: Scenario,
     timetable_range: TimetableTimeRange,
+    session: Session,
 ):
     """
     Run a single test instance
     """
     stdcm_payload = None
     try:
-        rolling_stock = _get_random_rolling_stock(editoast_url)
+        rolling_stock = _get_random_rolling_stock(editoast_url, session)
         stdcm_payload = _make_stdcm_payload(op_list, rolling_stock.id, timetable_range)
-        r = requests.post(
+        r = session.post(
             editoast_url
             + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
             json=stdcm_payload,
@@ -224,10 +231,12 @@ def _make_steps(op_list: list[int], timetable_range: TimetableTimeRange) -> list
 
 
 if __name__ == "__main__":
-    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME)
+    session = next(conftest.session())
+    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
     run(
         _EDITOAST_URL,
         scenario=Scenario(-1, -1, -1, infra_id, _TIMETABLE_ID),
+        session=session,
         n_test=10_000,
         log_folder=Path(__file__).parent / "errors",
     )

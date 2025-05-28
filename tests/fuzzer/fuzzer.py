@@ -13,7 +13,7 @@ from typing import TypeVar
 
 # TODO: we may want to use more qualified imports
 import conftest
-import requests
+from requests import Session
 from osrd_schemas.switch_type import builtin_node_types
 from requests import Response, Timeout
 
@@ -40,6 +40,7 @@ Generates random tests, running pathfinding + simulations on random paths.
 def run(
     editoast_url: str,
     scenario: Scenario,
+    session: Session,
     scenario_ttl: int = 20,
     n_test: int = 1000,
     log_folder: Path | None = None,
@@ -59,8 +60,8 @@ def run(
     :param rolling_stock_name: rolling stock to use, random if None
     """
     print("loading infra")
-    infra_graph = _make_graph(editoast_url, scenario.infra)
-    _raise_if_error(requests.post(editoast_url + f"infra/{scenario.infra}/load"))
+    infra_graph = _make_graph(editoast_url, scenario.infra, session)
+    _raise_if_error(session.post(editoast_url + f"infra/{scenario.infra}/load"))
     # The prelude allows us to keep track of path/schedule requests sent so far,
     # so we can easily reproduce the current state.
     prelude = []
@@ -76,6 +77,7 @@ def run(
                 infra_graph,
                 editoast_url,
                 scenario,
+                session,
                 infra_name,
                 prelude,
                 rolling_stock_name,
@@ -101,7 +103,7 @@ def run(
             prelude = []
 
 
-def get_infra(editoast_url: str, infra_name: str) -> int:
+def get_infra(editoast_url: str, infra_name: str, session: Session) -> int:
     """
     Returns the ID corresponding to the infra name, if available.
     :param editoast_url: Api url
@@ -111,7 +113,7 @@ def get_infra(editoast_url: str, infra_name: str) -> int:
     # TODO: we may want a generic pages handler, if we keep adding queries
     page = 1
     while page is not None:
-        r = requests.get(editoast_url + "infra/", params={"page": page})
+        r = session.get(editoast_url + "infra/", params={"page": page})
         if r.status_code // 100 != 2:
             raise RuntimeError(f"Infra error {r.status_code}: {r.content}")
         rjson = r.json()
@@ -124,7 +126,7 @@ def get_infra(editoast_url: str, infra_name: str) -> int:
 
 def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the timetable
-    r = _post_with_timeout(editoast_url + "/timetable/", json={})
+    r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
     timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
@@ -206,6 +208,7 @@ def _run_test(
     infra: _InfraGraph,
     editoast_url: str,
     scenario: Scenario,
+    session: Session,
     infra_name: str,
     prelude: list,
     rolling_stock_name: str | None,
@@ -220,22 +223,31 @@ def _run_test(
     :param rolling_stock_name: rolling stock to use, random if None
     """
     rolling_stock = (
-        _get_random_rolling_stock(editoast_url)
+        _get_random_rolling_stock(editoast_url, session)
         if rolling_stock_name is None
-        else _get_rolling_stock(editoast_url, rolling_stock_name)
+        else _get_rolling_stock(editoast_url, rolling_stock_name, session)
     )
     path = _make_valid_path(infra)
 
     if random.randint(0, 1) == 1:
         _test_new_train(
-            editoast_url, scenario, rolling_stock.name, infra_name, path, prelude
+            editoast_url,
+            session,
+            scenario,
+            rolling_stock.name,
+            infra_name,
+            path,
+            prelude,
         )
     else:
-        _test_stdcm(editoast_url, scenario, rolling_stock.id, infra_name, path, prelude)
+        _test_stdcm(
+            editoast_url, session, scenario, rolling_stock.id, infra_name, path, prelude
+        )
 
 
 def _test_new_train(
     editoast_url: str,
+    session: Session,
     scenario: Scenario,
     rolling_stock: str,
     infra_name: str,
@@ -248,6 +260,7 @@ def _test_new_train(
     print("testing new train")
     schedule_payload = _make_payload_schedule(path, rolling_stock)
     r = _post_with_timeout(
+        session,
         editoast_url + f"/timetable/{scenario.timetable}/train_schedules/",
         json=schedule_payload,
     )
@@ -261,7 +274,9 @@ def _test_new_train(
 
     sim_id = r.json()[0]["id"]
     r = _get_with_timeout(
-        editoast_url + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}"
+        session,
+        editoast_url
+        + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}",
     )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(
@@ -276,6 +291,7 @@ def _test_new_train(
 
 def _test_stdcm(
     editoast_url: str,
+    session: Session,
     scenario: Scenario,
     rolling_stock: int,
     infra_name: str,
@@ -289,6 +305,7 @@ def _test_stdcm(
     print("testing stdcm")
     stdcm_payload = _make_stdcm_payload(path, rolling_stock)
     r = _post_with_timeout(
+        session,
         editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}",
         json=stdcm_payload,
     )
@@ -330,7 +347,9 @@ def _make_stdcm_payload(path: list[tuple[str, float]], rolling_stock: int) -> di
 
 
 @cache
-def _get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> _RollingStock:
+def _get_rolling_stock(
+    editoast_url: str, rolling_stock_name: str, session: Session
+) -> _RollingStock:
     """
     Returns the ID corresponding to the rolling stock name, if available.
     :param editoast_url: Api url
@@ -344,14 +363,14 @@ def _get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> _RollingSt
     )
 
 
-def _get_random_rolling_stock(editoast_url: str) -> _RollingStock:
+def _get_random_rolling_stock(editoast_url: str, session: Session) -> _RollingStock:
     """
     Returns a random rolling stock ID
     :param editoast_url: Api url
     :return: ID of a valid rolling stock
     """
     # TODO: we may want to check more pages, for more randomness
-    r = _get_with_timeout(editoast_url + "light_rolling_stock/")
+    r = _get_with_timeout(session, editoast_url + "light_rolling_stock/")
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]
@@ -359,14 +378,14 @@ def _get_random_rolling_stock(editoast_url: str) -> _RollingStock:
     return _RollingStock(rolling_stock["name"], rolling_stock["id"])
 
 
-def _make_graph(editoast_url: str, infra_id: int) -> _InfraGraph:
+def _make_graph(editoast_url: str, infra_id: int, session: Session) -> _InfraGraph:
     """
     Makes a graph from the infra
     :param editoast_url: editoast url
     :param infra: infra id
     """
     url = editoast_url + f"infra/{infra_id}/railjson/"
-    r = _get_with_timeout(url)
+    r = _get_with_timeout(session, url)
     infra = r.json()
     graph = _InfraGraph(infra)
 
@@ -501,11 +520,13 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
     _raise_if_error(
-        _delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/")
+        _delete_with_timeout(
+            session, editoast_url + f"/timetable/{scenario.timetable}/"
+        )
     )
 
     # Create a timetable
-    r = _post_with_timeout(editoast_url + "/timetable/", json={})
+    r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
     timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
@@ -568,29 +589,31 @@ def _make_random_time():
     return date.isoformat()
 
 
-def _delete_with_timeout(*args, **kwargs) -> Response:
-    return _request_with_timeout("delete", *args, **kwargs)
+def _delete_with_timeout(session: Session, *args, **kwargs) -> Response:
+    return _request_with_timeout("delete", session, *args, **kwargs)
 
 
-def _post_with_timeout(*args, **kwargs) -> Response:
-    return _request_with_timeout("post", *args, **kwargs)
+def _post_with_timeout(session: Session, *args, **kwargs) -> Response:
+    return _request_with_timeout("post", session, *args, **kwargs)
 
 
-def _get_with_timeout(*args, **kwargs) -> Response:
-    return _request_with_timeout("get", *args, **kwargs)
+def _get_with_timeout(session: Session, *args, **kwargs) -> Response:
+    return _request_with_timeout("get", session, *args, **kwargs)
 
 
-def _request_with_timeout(request_type: str, *args, **kwargs) -> Response:
+def _request_with_timeout(
+    request_type: str, session: Session, *args, **kwargs
+) -> Response:
     """
     Run a post or get request, catching timeout exceptions to return a 500
     """
     try:
         if request_type == "post":
-            return requests.post(*args, timeout=_TIMEOUT, **kwargs)
+            return session.post(*args, timeout=_TIMEOUT, **kwargs)
         elif request_type == "get":
-            return requests.get(*args, timeout=_TIMEOUT, **kwargs)
+            return session.get(*args, timeout=_TIMEOUT, **kwargs)
         elif request_type == "delete":
-            return requests.delete(*args, timeout=_TIMEOUT, **kwargs)
+            return session.delete(*args, timeout=_TIMEOUT, **kwargs)
         else:
             raise ValueError(f"Unsupported request type {request_type}")
     except Timeout:
@@ -618,12 +641,12 @@ _to_ms = _to_mm
 
 
 if __name__ == "__main__":
-    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME)
-    new_scenario = create_scenario(_EDITOAST_URL, infra_id)
     session = conftest.session_no_fixture()
+    infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME, session)
+    new_scenario = create_scenario(_EDITOAST_URL, infra_id)
     if _ROLLING_STOCK_NAME == "fast_rolling_stock":
         try:
-            _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME)
+            _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME, session)
         except ValueError:
             conftest.create_rolling_stock(
                 session, conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None
@@ -631,6 +654,7 @@ if __name__ == "__main__":
     run(
         _EDITOAST_URL,
         new_scenario,
+        session,
         scenario_ttl=20,
         n_test=100,
         log_folder=Path(__file__).parent / "errors",

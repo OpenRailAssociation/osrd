@@ -3,7 +3,7 @@ from typing import Any
 from collections.abc import Iterable, Mapping
 
 import pytest
-import requests
+from requests import Session
 
 from .services import EDITOAST_URL
 
@@ -33,11 +33,11 @@ class _InfraResponse:
 
 
 @pytest.mark.usefixtures("tiny_infra")
-def test_get_infra():
+def test_get_infra(session: Session):
     page = 1
     names = []
     while page is not None:
-        response = requests.get(EDITOAST_URL + "infra/", params={"page": page})
+        response = session.get(EDITOAST_URL + "infra/", params={"page": page})
         assert response.status_code == 200
         body = response.json()
         infra_response = _InfraResponse(**body)
