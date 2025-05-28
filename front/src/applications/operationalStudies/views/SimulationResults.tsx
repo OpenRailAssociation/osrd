@@ -13,6 +13,7 @@ import ManchetteWithSpaceTimeChartWrapper, {
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
+import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChart/useTrackOccupancy';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
@@ -88,6 +89,12 @@ const SimulationResults = ({
     timetableItemUsedForProjection: projectionData?.trainSchedule,
     infraId,
     timetableId,
+  });
+
+  const { toggleWaypoint, deployedWaypoints } = useTrackOccupancy({
+    infraId,
+    pathOperationalPoints: filteredOperationalPoints,
+    trains: projectPathTrainResult,
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
@@ -173,8 +180,16 @@ const SimulationResults = ({
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,
                         projectionPath: projectionData.trainSchedule.path,
+                        deployedWaypoints: new Set(
+                          deployedWaypoints.map(({ waypointId }) => waypointId)
+                        ),
+                        toggleDeployedWaypoint: toggleWaypoint,
                         timetableId,
                       }}
+                      occupancyZonesLayers={deployedWaypoints}
+                      onCloseOccupancyLayer={(waypointId: string) =>
+                        toggleWaypoint(waypointId, false)
+                      }
                       conflicts={conflictZones}
                       projectionLoaderData={projectionData.projectionLoaderData}
                       height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}

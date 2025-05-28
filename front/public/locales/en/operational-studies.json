@@ -533,7 +533,9 @@
     "toggleManchetteMenu": "Toggle manchette menu",
     "toggleWarpedMap": "Toggle the warped map",
     "waypointMenu": {
-      "hide": "Hide this OP"
+      "hide": "Hide this OP",
+      "hideOccupancy": "Hide tracks occupancy",
+      "showOccupancy": "Show tracks occupancy"
     },
     "waypointsPanel": {
       "name": "name",

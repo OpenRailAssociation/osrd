@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 
-import { EyeClosed } from '@osrd-project/ui-icons';
+import { EyeClosed, Fold, Unfold } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import AnchoredMenu from 'common/AnchoredMenu';
@@ -12,11 +12,18 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
 const useWaypointMenu = (
-  activeWaypointRef: React.RefObject<HTMLDivElement>,
-  waypointsPanelData?: WaypointsPanelData
+  activeWaypointRef: RefObject<HTMLDivElement>,
+  waypointsPanelData?: WaypointsPanelData,
+  allTrainsProjected?: boolean
 ) => {
-  const { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId } =
-    waypointsPanelData || {};
+  const {
+    filteredWaypoints,
+    setFilteredWaypoints,
+    projectionPath,
+    timetableId,
+    deployedWaypoints,
+    toggleDeployedWaypoint,
+  } = waypointsPanelData || {};
   const { t } = useTranslation('operational-studies');
 
   const [activeWaypointId, setActiveWaypointId] = useState<string>();
@@ -69,9 +76,39 @@ const useWaypointMenu = (
           );
           return newFilteredWaypoints;
         });
+
+        // Hide the tracks occupancy diagram if it is deployed now:
+        if (
+          !!activeWaypointId &&
+          deployedWaypoints?.has(activeWaypointId) &&
+          toggleDeployedWaypoint
+        )
+          toggleDeployedWaypoint(activeWaypointId, false);
       },
     },
   ];
+
+  if (deployedWaypoints && toggleDeployedWaypoint && typeof activeWaypointId === 'string') {
+    const activeWaypoint = filteredWaypoints?.find(
+      (waypoint) => waypoint.waypointId === activeWaypointId
+    );
+
+    if (typeof activeWaypoint?.opId === 'string') {
+      const isDeployed = deployedWaypoints.has(activeWaypointId);
+
+      menuItems.push({
+        disabled: !isDeployed && !allTrainsProjected,
+        title: isDeployed
+          ? t('simulationResults.waypointMenu.hideOccupancy')
+          : t('simulationResults.waypointMenu.showOccupancy'),
+        icon: isDeployed ? <Fold /> : <Unfold />,
+        onClick: () => {
+          closeMenu();
+          toggleDeployedWaypoint?.(activeWaypointId, !isDeployed);
+        },
+      });
+    }
+  }
 
   const waypointMenu = AnchoredMenu({
     children: activeWaypointId && (

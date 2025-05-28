@@ -533,7 +533,9 @@
     "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
     "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
     "waypointMenu": {
-      "hide": "Masquer ce PR"
+      "hide": "Masquer ce PR",
+      "hideOccupancy": "Masquer le GOV",
+      "showOccupancy": "Montrer le GOV"
     },
     "waypointsPanel": {
       "name": "nom",
