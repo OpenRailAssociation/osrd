@@ -79,8 +79,8 @@ struct MacroNodeForm {
 }
 
 impl MacroNodeForm {
-    pub fn into_macro_node_changeset(self, scenario_id: i64) -> Result<Changeset<MacroNode>> {
-        let macro_node = MacroNode::changeset()
+    pub fn into_macro_node_changeset(self, scenario_id: i64) -> Changeset<MacroNode> {
+        MacroNode::changeset()
             .scenario_id(scenario_id)
             .position_x(self.position_x)
             .position_y(self.position_y)
@@ -88,9 +88,7 @@ impl MacroNodeForm {
             .connection_time(self.connection_time)
             .labels(self.labels)
             .trigram(self.trigram)
-            .path_item_key(self.path_item_key);
-
-        Ok(macro_node)
+            .path_item_key(self.path_item_key)
     }
 }
 
@@ -216,7 +214,7 @@ async fn create(
                 }
 
                 let macro_node = data
-                    .into_macro_node_changeset(scenario_id)?
+                    .into_macro_node_changeset(scenario_id)
                     .create(&mut conn)
                     .await?;
 
@@ -312,7 +310,7 @@ async fn update(
                 }
 
                 let node = data
-                    .into_macro_node_changeset(scenario_id)?
+                    .into_macro_node_changeset(scenario_id)
                     .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound { node_id })
                     .await?;
 
