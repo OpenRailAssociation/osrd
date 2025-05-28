@@ -66,11 +66,13 @@ const OccurrenceItem = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
+
   const isAfterMidnight =
     occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
     ? dayjs(nextOccurrence.startTime).isAfter(occurrence.startTime, 'day')
     : false;
+  const isStartTimeException = !!exceptionChangeGroups?.start_time?.value;
 
   const closeMenu = () => {
     setIsMenuOpen(false);
@@ -199,7 +201,9 @@ const OccurrenceItem = ({
     >
       <div className="main">
         <OccurrenceIndicator occurrence={occurrence} />
-        <div className="occurrence-item-name">
+        <div
+          className={cx('occurrence-item-name', { 'start-time-exception': isStartTimeException })}
+        >
           <span title={trainName}>{trainName}</span>
         </div>
         <div className="rolling-stock">
