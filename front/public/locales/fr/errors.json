@@ -126,6 +126,7 @@
     "paced_train": {
       "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
       "Database": "Erreur interne (base de données)",
+      "ExceptionNotFound": "Exception '{{exception_key}}' non trouvée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Mission '{{paced_train_id}}' non trouvée"
     },

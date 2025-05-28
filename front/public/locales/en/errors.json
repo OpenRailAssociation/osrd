@@ -126,6 +126,7 @@
     "paced_train": {
       "BatchNotFound": "'{{count}}' paced train(s) could not be found",
       "Database": "Internal error (database)",
+      "ExceptionNotFound": "Exception '{{exception_key}}' could not be found",
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "NotFound": "Paced train '{{paced_train_id}}' could not be found"
     },
