@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-  parseLocalDateTime,
-  extractDateAndTime,
-  isArrivalDateInSearchTimeWindow,
-} from 'utils/date';
+import { parseLocalDateTime, isArrivalDateInSearchTimeWindow } from 'utils/date';
 
 describe('parseLocalDateTime', () => {
   it('should return an iso date by passing a date without milliseconds', () => {
@@ -29,32 +25,6 @@ describe('parseLocalDateTime', () => {
     const inputDate = '04-25 08:20:10';
     const isoDate = parseLocalDateTime(inputDate);
     expect(isoDate).toBeNull();
-  });
-});
-
-describe('extractDateAndTime', () => {
-  it('should correctly parse the date and time from an ISO string', () => {
-    const arrivalTime = new Date('2024-10-05T14:30:00+00:00');
-    const result = extractDateAndTime(arrivalTime);
-
-    expect(result).toEqual({
-      arrivalDate: '2024-10-05',
-      arrivalTime: '14:30',
-      arrivalTimehours: 14,
-      arrivalTimeMinutes: 30,
-    });
-  });
-
-  it('should handle single digit hours and minutes correctly', () => {
-    const arrivalTime = new Date('2024-10-05T09:05:00+00:00');
-    const result = extractDateAndTime(arrivalTime);
-
-    expect(result).toEqual({
-      arrivalDate: '2024-10-05',
-      arrivalTime: '09:05',
-      arrivalTimehours: 9,
-      arrivalTimeMinutes: 5,
-    });
   });
 });
 

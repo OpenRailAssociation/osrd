@@ -82,21 +82,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
 };
 
 /**
- * Convert an ISO date into a string formatted as 'DD/MM/YYYY' and extract the numeric values for hours and minutes.
- * @param {string} arrivalTime - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
- * @returns {object} An object containing the parsed date and time.
- */
-export function extractDateAndTime(arrivalTime: Date, dateFormat: string = 'YYYY-MM-DD') {
-  const dayjsDate = dayjs(arrivalTime);
-  return {
-    arrivalDate: dayjsDate.format(dateFormat), // ISO date part
-    arrivalTime: dayjsDate.format('HH:mm'), // ISO time part
-    arrivalTimehours: dayjsDate.hour(),
-    arrivalTimeMinutes: dayjsDate.minute(),
-  };
-}
-
-/**
  * Checks if the given arrival date falls within the specified search time window.
  *
  * @param {Date} arrivalDate - The arrival time, which is a Date object.

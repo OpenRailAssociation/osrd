@@ -1,5 +1,14 @@
-import { extractDateAndTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'numeric',
+    year: '2-digit',
+  });
+
+const formatTime = (date: Date) =>
+  date.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' });
 
 /**
  * Computes the operation schedules for a given start time and duration.
@@ -16,25 +25,17 @@ import { Duration, addDurationToDate } from 'utils/duration';
  * activities such as preparation for the next departure.
  */
 const computeOpSchedules = (startTime: Date, durationFromStartTime: Duration) => {
-  const { arrivalDate: originDate, arrivalTime: originTime } = extractDateAndTime(
-    startTime,
-    'DD/MM/YY'
-  );
   const destinationArrivalTime = addDurationToDate(startTime, durationFromStartTime);
-  const { arrivalDate: destinationDate, arrivalTime: destinationTime } = extractDateAndTime(
-    destinationArrivalTime,
-    'DD/MM/YY'
-  );
 
   return {
     origin: {
-      date: originDate,
-      time: originTime,
+      date: formatDate(startTime),
+      time: formatTime(startTime),
       arrivalDate: addDurationToDate(startTime, new Duration({ minutes: -30 })),
     },
     destination: {
-      date: destinationDate,
-      time: destinationTime,
+      date: formatDate(destinationArrivalTime),
+      time: formatTime(destinationArrivalTime),
       arrivalDate: addDurationToDate(destinationArrivalTime, new Duration({ minutes: 30 })),
     },
   };
