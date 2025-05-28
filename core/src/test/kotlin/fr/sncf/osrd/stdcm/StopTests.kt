@@ -750,6 +750,63 @@ class StopTests {
         occupancyTest(res, occupancy)
     }
 
+    /** First stop can be on different locations, its stop duration reproduces a bug */
+    @Test
+    fun stopOnDifferentLocations() {
+        /*
+        a --> b --> c -¤-> d --> e --> f --> g
+                \                    ^
+                 v                  /
+                    x -¤-> y --> z
+
+         First stop can be reached on either path.
+         The top path can reach the first step faster,
+         but the rest of the path is much longer.
+         The bottom path is better.
+
+         Reproduce a bug where the stop duration itself
+         messed with the heuristic and the node priority.
+         */
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b")
+        val topPath =
+            listOf(
+                infra.addBlock("b", "c", 10.meters),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e", 10_000.meters),
+                infra.addBlock("e", "f"),
+            )
+        val botPath =
+            listOf(
+                infra.addBlock("b", "x"),
+                infra.addBlock("x", "y"),
+                infra.addBlock("y", "z"),
+                infra.addBlock("z", "f"),
+            )
+        val lastBlock = infra.addBlock("f", "g")
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setMaxRunTime(Double.POSITIVE_INFINITY)
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters)))))
+                .addStep(
+                    STDCMStep(
+                        setOf(
+                            EdgeLocation(topPath[1], Offset(100.meters)),
+                            EdgeLocation(botPath[1], Offset(100.meters)),
+                        ),
+                        100_000.0,
+                        true
+                    )
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(lastBlock, Offset(100.meters))), 0.0, true))
+                .run()!!
+        val blocks =
+            res.blocks.ranges.map { block -> infra.blockPool[block.edge.index.toInt()].name }
+        val useBotPath = blocks.contains("x->y")
+        assertTrue { useBotPath }
+    }
+
     companion object {
         /** Check that the train actually stops at the expected times and positions */
         private fun checkStop(
