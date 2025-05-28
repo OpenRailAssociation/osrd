@@ -15,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
@@ -93,11 +94,16 @@ class STDCMSimulations {
         if (stopPosition != null && stopPosition == start) return makeSinglePointEnvelope(0.0)
         val blockLength = infraExplorer.getCurrentBlockLength()
         if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
-        var stops = doubleArrayOf()
+        var stops = emptyList<MaxSpeedEnvelope.SimStopInfo>()
         var simLength = blockLength.distance - start.distance
         if (stopPosition != null) {
-            stops = doubleArrayOf((stopPosition - start).meters)
-            simLength = Distance.min(simLength, stops.single().meters)
+            val stopOffset = (stopPosition - start).meters
+            // We presently consider all stdcm stops to be performed on closed signal by default
+            // This presently only affects ETCS computations, which are not yet supported in stdcm
+            // either
+            stops =
+                listOf(MaxSpeedEnvelope.SimStopInfo(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
+            simLength = Distance.min(simLength, stopOffset.meters)
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
         val envelopePath = EnvelopeTrainPath.from(rawInfra, path)

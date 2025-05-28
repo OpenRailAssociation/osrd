@@ -10,13 +10,15 @@ import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class MaxSpeedEnvelopeTest {
     @Test
     public void testFlat() {
         var testContext = makeSimpleContext(100000, 0);
-        var stops = new double[] {8500};
+        var stops = List.of(new MaxSpeedEnvelope.SimStopInfo(8500, RJSReceptionSignal.SHORT_SLIP_STOP));
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
         var context = makeSimpleContext(100000, 0);
@@ -33,7 +35,7 @@ public class MaxSpeedEnvelopeTest {
     @Test
     public void testSteep() {
         var testContext = makeSimpleContext(10000, 20);
-        var stops = new double[] {8500};
+        var stops = List.of(new MaxSpeedEnvelope.SimStopInfo(8500, RJSReceptionSignal.STOP));
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
         var context = makeSimpleContext(10000, 20);
@@ -50,7 +52,7 @@ public class MaxSpeedEnvelopeTest {
     @Test
     public void testInitialStop() {
         var testContext = makeSimpleContext(10000, 0);
-        var stops = new double[] {0};
+        var stops = List.of(new MaxSpeedEnvelope.SimStopInfo(0, RJSReceptionSignal.OPEN));
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
         var context = makeSimpleContext(10000, 0);
@@ -64,7 +66,7 @@ public class MaxSpeedEnvelopeTest {
         var effortCurveMap = SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP;
         var testPath = new FlatPath(10000, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, effortCurveMap);
-        var stops = new double[] {8500};
+        var stops = List.of(new MaxSpeedEnvelope.SimStopInfo(8500, RJSReceptionSignal.SHORT_SLIP_STOP));
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
         var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, effortCurveMap);
@@ -82,7 +84,9 @@ public class MaxSpeedEnvelopeTest {
     public void testWithComplexMRSP() {
         var length = 100000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] {50000, length};
+        var stops = List.of(
+                new MaxSpeedEnvelope.SimStopInfo(50000, RJSReceptionSignal.SHORT_SLIP_STOP),
+                new MaxSpeedEnvelope.SimStopInfo(length, RJSReceptionSignal.SHORT_SLIP_STOP));
 
         var mrsp = makeComplexMRSP(testContext);
         var context = makeSimpleContext(length, 0);

@@ -18,6 +18,7 @@ import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.util.List;
@@ -125,7 +126,7 @@ public class MaxEffortEnvelopeTest {
     @Test
     public void testOverlappingBrakingCurves() {
         var testContext = makeSimpleContext(100, 0);
-        var stops = new double[] {};
+        List<MaxSpeedEnvelope.SimStopInfo> stops = List.of();
         var mrspBuilder = new MRSPEnvelopeBuilder();
         mrspBuilder.addPart(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED), new double[] {0, 50}, new double[] {30, 30}));
@@ -169,7 +170,7 @@ public class MaxEffortEnvelopeTest {
     @Test
     public void testSeveralSmallPlateau() {
         var testContext = makeSimpleContext(100, 0);
-        var stops = new double[] {3_000};
+        var stops = List.of(new MaxSpeedEnvelope.SimStopInfo(3_000, RJSReceptionSignal.SHORT_SLIP_STOP));
         var mrspBuilder = new MRSPEnvelopeBuilder();
         for (int i = 0; i < 200; i++) {
             mrspBuilder.addPart(EnvelopePart.generateTimes(
@@ -193,7 +194,7 @@ public class MaxEffortEnvelopeTest {
         var testPath = new FlatPath(10, 1_000);
         var testContext = new EnvelopeSimContext(
                 testRollingStock, testPath, TIME_STEP * 10, SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var stops = new double[] {};
+        List<MaxSpeedEnvelope.SimStopInfo> stops = List.of();
         var speeds = TreeRangeMap.<Double, Double>create();
         speeds.put(Range.open(0., 9.), 40.);
         speeds.put(Range.open(9., 10.), 60.);

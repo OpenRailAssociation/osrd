@@ -123,8 +123,8 @@ fun runStandaloneSimulation(
         )
 
     // Max speed envelope
-    val stopPositions = getStopPositions(schedule)
-    val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopPositions.toDoubleArray(), mrsp)
+    val simStops = getSimStops(schedule)
+    val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, simStops, mrsp)
 
     // Add neutral sections
     context =
@@ -481,8 +481,10 @@ fun buildProvisionalEnvelope(
     return margin.apply(maxEffortEnvelope, context)
 }
 
-fun getStopPositions(schedule: List<SimulationScheduleItem>): List<Double> {
-    return schedule.filter { it.stopFor != null }.map { it.pathOffset.distance.meters }
+fun getSimStops(schedule: List<SimulationScheduleItem>): List<MaxSpeedEnvelope.SimStopInfo> {
+    return schedule
+        .filter { it.stopFor != null }
+        .map { MaxSpeedEnvelope.SimStopInfo(it.pathOffset.distance.meters, it.receptionSignal) }
 }
 
 // TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase

@@ -17,6 +17,7 @@ import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
 import fr.sncf.osrd.envelope_sim.etcs.LimitOfAuthority
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.units.Offset
@@ -27,14 +28,20 @@ import fr.sncf.osrd.utils.units.meters
  * ignoring allowances
  */
 object MaxSpeedEnvelope {
+    /**
+     * Simple data class used to pass stop data to the class. Combines the stop offset with the
+     * closed/open signal flag.
+     */
+    data class SimStopInfo(val position: Double, val rjsReceptionSignal: RJSReceptionSignal)
 
     /**
      * Simple data class for easier processing, local to this file. Combines the stop offset with
-     * the "etcs" flag.
+     * the "etcs" and closed/open signal flags.
      */
     private data class SimStop(
         val offset: Double,
         val isETCS: Boolean,
+        val rjsReceptionSignal: RJSReceptionSignal,
         val index: Int, // Index in the stop list
     )
 
@@ -128,11 +135,11 @@ object MaxSpeedEnvelope {
     private fun addStopBrakingCurves(
         etcsSimulator: ETCSBrakingSimulator,
         context: EnvelopeSimContext,
-        stopPositions: DoubleArray,
+        stopInfos: List<SimStopInfo>,
         curveWithDecelerations: Envelope
     ): Envelope {
         var envelope = curveWithDecelerations
-        val stops = makeSimStops(context, stopPositions, envelope)
+        val stops = makeSimStops(context, stopInfos, envelope)
         envelope = addETCSStopBrakingCurves(etcsSimulator, context, envelope, stops)
         envelope = addConstStopBrakingCurves(context, envelope, stops)
         return envelope
@@ -193,11 +200,12 @@ object MaxSpeedEnvelope {
      */
     private fun makeSimStops(
         context: EnvelopeSimContext,
-        stopOffsets: DoubleArray,
+        stopInfos: List<SimStopInfo>,
         envelope: Envelope
     ): List<SimStop> {
         val res = mutableListOf<SimStop>()
-        for ((i, stopOffset) in stopOffsets.withIndex()) {
+        for ((i, stopInfo) in stopInfos.withIndex()) {
+            val (stopOffset, isClosedSignal) = stopInfo
             if (stopOffset == 0.0) continue
             val isETCS =
                 context.etcsContext?.applicationRanges?.contains(stopOffset.meters) ?: false
@@ -207,18 +215,17 @@ object MaxSpeedEnvelope {
                     offset = envelope.endPos
                 else throw OSRDError.newEnvelopeError(i, offset, envelope.endPos)
             }
-            res.add(SimStop(offset, isETCS, i))
+            res.add(SimStop(offset, isETCS, isClosedSignal, i))
         }
         return res
     }
 
     /** Generate a max speed envelope given a mrsp */
     @JvmStatic
-    fun from(context: EnvelopeSimContext, stopPositions: DoubleArray, mrsp: Envelope): Envelope {
+    fun from(context: EnvelopeSimContext, stopInfos: List<SimStopInfo>, mrsp: Envelope): Envelope {
         val etcsSimulator = ETCSBrakingSimulatorImpl(context)
         var maxSpeedEnvelope = addSlowdownBrakingCurves(etcsSimulator, context, mrsp)
-        maxSpeedEnvelope =
-            addStopBrakingCurves(etcsSimulator, context, stopPositions, maxSpeedEnvelope)
+        maxSpeedEnvelope = addStopBrakingCurves(etcsSimulator, context, stopInfos, maxSpeedEnvelope)
         return maxSpeedEnvelope
     }
 }
