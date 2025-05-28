@@ -15,6 +15,7 @@ import {
   type OccupancyZonePickingElement,
   isPointPickingElement,
   isSegmentPickingElement,
+  BASE_WAYPOINT_HEIGHT,
 } from '@osrd-project/ui-charts';
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
@@ -25,8 +26,6 @@ import {
   OPERATIONAL_POINTS,
   PATHS,
 } from '../spaceTimeChart/helpers/paths';
-
-const BASE_WAYPOINT_HEIGHT = 32;
 
 /**
  * This story shows how to render a Manchette with a SpaceTimeChart, and showing a
