@@ -133,7 +133,7 @@ describe('simulationConfReducer', () => {
       store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit({ item: pacedTrain }));
 
       const state = store.getState()[operationalStudiesConfSlice.name];
-      expect(state).toEqual({
+      const expectedState: OperationalStudiesConfState = {
         ...operationalStudiesInitialConf,
         usingElectricalProfiles: false,
         labels: ['label1'],
@@ -166,7 +166,8 @@ describe('simulationConfReducer', () => {
         timeWindow: new Duration({ minutes: 60 }),
         interval: new Duration({ minutes: 30 }),
         editingItemType: 'pacedTrain',
-      });
+      };
+      expect(state).toEqual(expectedState);
     });
   });
 
