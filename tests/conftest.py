@@ -67,6 +67,7 @@ def session_no_fixture() -> Session:
     session = Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
+    session.headers.update({"x-osrd-skip-authz": "true"})
     return session
 
 
