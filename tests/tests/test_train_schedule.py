@@ -3,6 +3,7 @@ import json
 from collections.abc import Sequence
 from typing import Any
 
+import pytest
 import requests
 
 from tests.infra import Infra
@@ -623,6 +624,150 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
         simulation_final_output, offset_bending_point_svl_to_eoa
     )
     _assert_equal_speeds(speed_at_bending_point_svl_to_eoa, kph2ms(60.013_601_2))
+
+
+@pytest.mark.parametrize(
+    ["stop_signal_status", "brake_start_offset", "first_bending_point_offset"],
+    [
+        ("OPEN", 34_081_530, 37_794_783),
+        ("STOP", 33_361_530, 37_239_933),
+    ],
+)
+def test_etcs_schedule_result_stop_on_open_signal(
+    etcs_scenario: Scenario,
+    etcs_rolling_stock: int,
+    session: requests.Session,
+    stop_signal_status: str,
+    brake_start_offset: int,
+    first_bending_point_offset: int,
+):
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": (
+                    "brake from MRSP: max_speed + closed signal EoA and SvL 100m after EoA"
+                    if stop_signal_status == "STOP"
+                    else "brake from MRSP: max_speed + open signal EoA"
+                ),
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "first", "track": "TH0", "offset": 900_000},
+                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {
+                        "at": "first",
+                        "stop_for": "PT10S",
+                        "reception_signal": stop_signal_status,
+                    },
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = session.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # Check that on an open signal the curves respect the EoA (EoA = stops) but ignore the SVL,
+    # and that there is an acceleration then deceleration in between (maintain speed when reach the MRSP).
+    # The EOA permitted speed curve should also be used on an open signal
+    # instead of the less permissive EOA indication speed curve used for closed signal.
+    # Here, the stop (EoA) is 100m before the PH1 switch (SvL).
+    svl_ph1_offset = 41_138_000
+    first_stop_offset = svl_ph1_offset - 100_000
+    final_stop_offset = 45_060_000
+    stop_offsets = [
+        0,
+        first_stop_offset,
+        final_stop_offset,
+    ]
+
+    # Check null speed at stops
+    for stop_offset in stop_offsets:
+        assert _get_current_or_next_speed_at(simulation_final_output, stop_offset) == 0
+
+    # Check only one acceleration then only one deceleration between stops
+    for offset_index in range(1, len(stop_offsets) - 1):
+        accelerating = True
+        prev_speed = 0
+        start_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index - 1]
+        )
+        end_pos_index = bisect.bisect_left(
+            simulation_final_output["positions"], stop_offsets[offset_index]
+        )
+        for pos_index in range(start_pos_index, end_pos_index):
+            current_speed = simulation_final_output["speeds"][pos_index]
+            if accelerating:
+                if prev_speed > current_speed:
+                    accelerating = False
+            else:
+                assert prev_speed >= current_speed
+            prev_speed = current_speed
+
+    # Check that the braking curve starts at the expected offsets.
+    # In particular the braking occurs later on an open signal (this can be observed in the test params).
+    def check_brake_from_max_speed_at(offset, simulation_final_output):
+        speed_before_first_brake = _get_current_or_next_speed_at(
+            simulation_final_output, offset
+        )
+        _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
+        assert (
+            _get_current_or_next_speed_at(simulation_final_output, offset + 1)
+            < speed_before_first_brake
+        )
+
+    check_brake_from_max_speed_at(brake_start_offset, simulation_final_output)
+
+    # Check the first bending point for the first stop's braking curve (where the Guidance curve's influence stops).
+    # It is similarly delayed on an open signal, though less (this can be observed in the test params).
+    def check_speed_first_bending_point(offset, simulation_final_output):
+        speed_at_bending_guidance_point = _get_current_or_next_speed_at(
+            simulation_final_output, offset
+        )
+        _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(221.94))
+
+    check_speed_first_bending_point(first_bending_point_offset, simulation_final_output)
+
+    if stop_signal_status == "OPEN":
+        # Check that we continue to follow the EOA permitted speed curve for the open signal without switching to SVL
+        # This is not obvious from the shape of the curve, so this final check mostly serves to prevent accidental
+        # regression by providing a numerical value for the speed.
+        offset_post_bending_point = 40_649_200
+        speed_post_bending_point = _get_current_or_next_speed_at(
+            simulation_final_output, offset_post_bending_point
+        )
+        _assert_equal_speeds(speed_post_bending_point, kph2ms(76.84))
 
 
 def test_etcs_schedule_result_slowdowns(
