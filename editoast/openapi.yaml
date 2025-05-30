@@ -5626,6 +5626,7 @@ components:
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorInvalidPath'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -6745,6 +6746,25 @@ components:
           type: string
           enum:
           - editoast:search:SearchEngineError
+    EditoastSimilarSchedulesErrorInvalidPath:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:InvalidPath
     EditoastSpriteErrorsFileNotFound:
       type: object
       required:
@@ -11800,6 +11820,7 @@ components:
         ci:
           type: integer
           format: int64
+          minimum: 0
         stop:
           type: boolean
     SimilarScheduleWaypointResponse:
