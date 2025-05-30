@@ -36,7 +36,7 @@ const useSwitch = () => {
     () =>
       switchTypes.map((type) => ({
         value: type.id,
-        label: t('Editor.tools.switch-edition.switch_type_w_port_count_other', {
+        label: t('Editor.tools.switch-edition.switch_type_w_port_count', {
           count: type.ports.length,
           type: t(`Editor.tools.switch-edition.${type.id}`),
         }),
