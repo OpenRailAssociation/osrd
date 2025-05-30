@@ -103,7 +103,9 @@ const RollingStockEditor = () => {
       return <Loader msg={t('rollingStock.waitingLoader')} />;
     }
     if (filteredRollingStockList.length === 0) {
-      return <div className="rollingstock-empty">{t('rollingStock.resultFound_zero')}</div>;
+      return (
+        <div className="rollingstock-empty">{t('rollingStock.resultFound', { count: 0 })}</div>
+      );
     }
     return rollingStocksList;
   }
