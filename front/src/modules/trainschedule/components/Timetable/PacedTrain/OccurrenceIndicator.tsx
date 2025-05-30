@@ -18,6 +18,7 @@ const TOOLTIP_BOTTOM_MARGIN = 24;
 
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+  const { t: mainT } = useTranslation();
   const dotRef = useRef<HTMLDivElement>(null);
   const changeGroupsRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +60,8 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     });
   }, [isHovering]);
 
+  const rollingStockCategoryChangeGroup = occurrence.exceptionChangeGroups?.rolling_stock_category;
+
   return (
     <div
       className="occurrence-indicator"
@@ -94,12 +97,12 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
               {occurrence.exceptionChangeGroups &&
                 Object.keys(occurrence.exceptionChangeGroups).map((changeGroup, i) => (
                   <span key={i} className="change-group">
-                    {changeGroup !== 'category'
-                      ? t(`occurrenceChangeGroup.${changeGroup}`)
-                      : t(
-                          `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
-                          { ns: 'translation', keyPrefix: '' }
-                        )}
+                    {changeGroup === 'rolling_stock_category' &&
+                    rollingStockCategoryChangeGroup?.value
+                      ? mainT(
+                          `rollingStock.categoriesOptions.${rollingStockCategoryChangeGroup.value}`
+                        )
+                      : t(`occurrenceChangeGroup.${changeGroup}`)}
                   </span>
                 ))}
             </div>
