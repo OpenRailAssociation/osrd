@@ -1,7 +1,7 @@
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
-use crate::models::towed_rolling_stock::TowedRollingStockModel;
+use crate::models::towed_rolling_stock::TowedRollingStock;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
@@ -45,7 +45,7 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    TowedRollingStock,
+    TowedRollingStockResponse,
     TowedRollingStockCountList,
     TowedRollingStockForm,
     TowedRollingStockLockedForm,
@@ -54,7 +54,8 @@ editoast_common::schemas! {
 #[editoast_derive::annotate_units]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
-struct TowedRollingStock {
+#[schema(as = TowedRollingStock)]
+struct TowedRollingStockResponse {
     id: i64,
     name: String,
     label: String,
@@ -78,8 +79,8 @@ struct TowedRollingStock {
     max_speed: Option<Velocity>,
 }
 
-impl From<TowedRollingStockModel> for TowedRollingStock {
-    fn from(towed_rolling_stock: TowedRollingStockModel) -> Self {
+impl From<TowedRollingStock> for TowedRollingStockResponse {
+    fn from(towed_rolling_stock: TowedRollingStock) -> Self {
         Self {
             id: towed_rolling_stock.id,
             label: towed_rolling_stock.label,
@@ -136,9 +137,9 @@ pub struct TowedRollingStockForm {
     pub max_speed: Option<Velocity>,
 }
 
-impl From<TowedRollingStockForm> for Changeset<TowedRollingStockModel> {
+impl From<TowedRollingStockForm> for Changeset<TowedRollingStock> {
     fn from(towed_rolling_stock_form: TowedRollingStockForm) -> Self {
-        TowedRollingStockModel::changeset()
+        TowedRollingStock::changeset()
             .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
             .name(towed_rolling_stock_form.name)
             .label(towed_rolling_stock_form.label)
@@ -167,7 +168,7 @@ async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
-) -> Result<Json<TowedRollingStock>> {
+) -> Result<Json<TowedRollingStockResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -176,19 +177,18 @@ async fn post(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_changeset: Changeset<TowedRollingStockModel> =
-        towed_rolling_stock_form.into();
+    let rolling_stock_changeset: Changeset<TowedRollingStock> = towed_rolling_stock_form.into();
 
     let rolling_stock = rolling_stock_changeset.version(0).create(conn).await?;
 
-    Ok(Json(TowedRollingStock::from(rolling_stock)))
+    Ok(Json(TowedRollingStockResponse::from(rolling_stock)))
 }
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct TowedRollingStockCountList {
     #[schema(value_type = Vec<TowedRollingStock>)]
-    results: Vec<TowedRollingStock>,
+    results: Vec<TowedRollingStockResponse>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -215,14 +215,14 @@ async fn get_list(
     }
     let settings = page_settings
         .into_selection_settings()
-        .order_by(|| TowedRollingStockModel::ID.asc());
+        .order_by(|| TowedRollingStock::ID.asc());
     let (towed_rolling_stocks, stats) =
-        TowedRollingStockModel::list_paginated(&mut db_pool.get().await?, settings).await?;
+        TowedRollingStock::list_paginated(&mut db_pool.get().await?, settings).await?;
 
     Ok(Json(TowedRollingStockCountList {
         results: towed_rolling_stocks
             .into_iter()
-            .map(TowedRollingStock::from)
+            .map(TowedRollingStockResponse::from)
             .collect(),
         stats,
     }))
@@ -247,7 +247,7 @@ async fn get_by_id(
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
-) -> Result<Json<TowedRollingStock>> {
+) -> Result<Json<TowedRollingStockResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -257,7 +257,7 @@ async fn get_by_id(
     }
 
     #[expect(deprecated)]
-    let towed_rolling_stock = TowedRollingStockModel::retrieve_or_fail(
+    let towed_rolling_stock = TowedRollingStock::retrieve_or_fail(
         &mut db_pool.get().await?,
         towed_rolling_stock_id,
         || TowedRollingStockError::IdNotFound {
@@ -265,7 +265,7 @@ async fn get_by_id(
         },
     )
     .await?;
-    Ok(Json(TowedRollingStock::from(towed_rolling_stock)))
+    Ok(Json(TowedRollingStockResponse::from(towed_rolling_stock)))
 }
 
 #[utoipa::path(
@@ -284,7 +284,7 @@ async fn patch_by_id(
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
-) -> Result<Json<TowedRollingStock>> {
+) -> Result<Json<TowedRollingStockResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -299,7 +299,7 @@ async fn patch_by_id(
         .transaction::<_, InternalError, _>(|conn| {
             async move {
                 #[expect(deprecated)]
-                let existing_rolling_stock = TowedRollingStockModel::retrieve_or_fail(
+                let existing_rolling_stock = TowedRollingStock::retrieve_or_fail(
                     &mut conn.clone(),
                     towed_rolling_stock_id,
                     || TowedRollingStockError::IdNotFound {
@@ -316,7 +316,7 @@ async fn patch_by_id(
                 }
 
                 let mut new_towed_rolling_stock =
-                    Changeset::<TowedRollingStockModel>::from(towed_rolling_stock_form)
+                    Changeset::<TowedRollingStock>::from(towed_rolling_stock_form)
                         .update(&mut conn.clone(), towed_rolling_stock_id)
                         .await?
                         .ok_or(TowedRollingStockError::IdNotFound {
@@ -327,7 +327,7 @@ async fn patch_by_id(
                     new_towed_rolling_stock.version += 1;
                     new_towed_rolling_stock.save(&mut conn.clone()).await?;
                 }
-                Ok(TowedRollingStock::from(new_towed_rolling_stock))
+                Ok(TowedRollingStockResponse::from(new_towed_rolling_stock))
             }
             .scope_boxed()
         })
@@ -368,7 +368,7 @@ async fn patch_by_id_locked(
 
     let conn = &mut db_pool.get().await?;
 
-    TowedRollingStockModel::changeset()
+    TowedRollingStock::changeset()
         .locked(locked)
         .update_or_fail(conn, towed_rolling_stock_id, || {
             TowedRollingStockError::IdNotFound {
@@ -382,8 +382,8 @@ async fn patch_by_id_locked(
 
 #[cfg(test)]
 mod tests {
-    use super::TowedRollingStock;
     use super::TowedRollingStockCountList;
+    use super::TowedRollingStockResponse;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
@@ -395,7 +395,11 @@ mod tests {
     const LOCKED: bool = true;
     const UNLOCKED: bool = false;
 
-    fn create_towed_rolling_stock(app: &TestApp, name: &str, locked: bool) -> TowedRollingStock {
+    fn create_towed_rolling_stock(
+        app: &TestApp,
+        name: &str,
+        locked: bool,
+    ) -> TowedRollingStockResponse {
         let towed_rolling_stock_json = json!({
             "name": name,
             "label": name,
@@ -465,7 +469,7 @@ mod tests {
 
         let id = created_towed_rolling_stock.id;
 
-        let get_towed_rolling_stock: TowedRollingStock = app
+        let get_towed_rolling_stock: TowedRollingStockResponse = app
             .fetch(app.get(&format!("/towed_rolling_stock/{id}")))
             .assert_status(StatusCode::OK)
             .json_into();
@@ -497,7 +501,7 @@ mod tests {
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
-        let updated_towed_rolling_stock: TowedRollingStock = app
+        let updated_towed_rolling_stock: TowedRollingStockResponse = app
             .fetch(
                 app.patch(&format!("/towed_rolling_stock/{id}"))
                     .json(&towed_rolling_stock),

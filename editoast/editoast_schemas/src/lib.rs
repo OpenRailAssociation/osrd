@@ -9,6 +9,7 @@ pub mod train_schedule;
 pub mod fixtures;
 
 pub use rolling_stock::RollingStock;
+pub use rolling_stock::TowedRollingStock;
 pub use train_schedule::TrainSchedule;
 
 editoast_common::schemas! {

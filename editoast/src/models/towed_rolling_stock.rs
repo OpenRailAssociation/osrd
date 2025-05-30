@@ -6,20 +6,16 @@ use editoast_common::units::quantities::Mass;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
-use editoast_schemas::rolling_stock::TowedRollingStock;
 use serde::Deserialize;
 use serde::Serialize;
-use utoipa::ToSchema;
 
 use crate::models::prelude::*;
 
-#[editoast_derive::annotate_units]
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model)]
 #[model(table = editoast_models::tables::towed_rolling_stock)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(public))]
-#[schema(as = TowedRollingStock)]
-pub struct TowedRollingStockModel {
+pub struct TowedRollingStock {
     pub id: i64,
     #[model(identifier)]
     pub name: String,
@@ -33,7 +29,6 @@ pub struct TowedRollingStockModel {
     #[serde(with = "units::meter")]
     #[model(uom_unit = "units::meter")]
     pub length: Length,
-    #[schema(required)]
     #[serde(default, with = "units::meter_per_second::option")]
     #[model(uom_unit = "units::meter_per_second::option")]
     pub max_speed: Option<Velocity>,
@@ -53,8 +48,8 @@ pub struct TowedRollingStockModel {
     pub version: i64,
 }
 
-impl From<TowedRollingStockModel> for TowedRollingStock {
-    fn from(model: TowedRollingStockModel) -> Self {
+impl From<TowedRollingStock> for editoast_schemas::TowedRollingStock {
+    fn from(model: TowedRollingStock) -> Self {
         Self {
             name: model.name,
             label: model.label,
@@ -71,9 +66,9 @@ impl From<TowedRollingStockModel> for TowedRollingStock {
     }
 }
 
-impl From<TowedRollingStock> for Changeset<TowedRollingStockModel> {
-    fn from(towed_rolling_stock: TowedRollingStock) -> Self {
-        TowedRollingStockModel::changeset()
+impl From<editoast_schemas::TowedRollingStock> for Changeset<TowedRollingStock> {
+    fn from(towed_rolling_stock: editoast_schemas::TowedRollingStock) -> Self {
+        TowedRollingStock::changeset()
             .name(towed_rolling_stock.name)
             .label(towed_rolling_stock.label)
             .railjson_version(towed_rolling_stock.railjson_version)
