@@ -54,7 +54,7 @@ function RollingStockModal({
           />
         ))
       ) : (
-        <div className="rollingstock-empty">{t('rollingStock.resultFound_zero')}</div>
+        <div className="rollingstock-empty">{t('rollingStock.resultFound', { count: 0 })}</div>
       ),
     [filteredRollingStockList, openRollingStockCardId, ref2scroll, openRollingStockCardId]
   );
