@@ -108,7 +108,7 @@ pub enum RollingStockKey {
     Name(String),
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
     #[error("Impossible to read the separated image")]
@@ -148,6 +148,7 @@ pub enum RollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
+    #[from(forward)]
     Database(model::Error),
 }
 
