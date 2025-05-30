@@ -528,8 +528,8 @@ const castNgeNode = (
   trigram: node.betriebspunktName,
   full_name: node.fullName,
   connection_time: node.connectionTime,
-  position_x: node.positionX,
-  position_y: node.positionY,
+  position_x: Math.round(node.positionX),
+  position_y: Math.round(node.positionY),
   labels: node.labelIds
     .map((id) => {
       const ngeLabel = labels.find((e) => e.id === id);
