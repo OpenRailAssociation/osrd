@@ -207,6 +207,7 @@ serde_qs = { version = "0.13.0", git = "https://github.com/Atrox/serde_qs", rev 
 serde_with = "3.12.0"
 serde_yaml = "0.9.34"
 sha1 = "0.10"
+smol_str = { version = "0.3.2", features = ["serde"] }
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
