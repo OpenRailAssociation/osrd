@@ -41,7 +41,8 @@ editoast_common::schemas! {
 
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]
-#[model(table = editoast_models::tables::rolling_stock, error = Error)]
+#[model(table = editoast_models::tables::rolling_stock)]
+#[model(error(create = Error, update = Error))]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(derive(Deserialize), public))]
 pub struct RollingStock {
