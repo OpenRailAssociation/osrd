@@ -1,7 +1,7 @@
 pub mod path_item_cache;
 pub mod pathfinding;
 pub mod projection;
-mod properties;
+pub(super) mod properties;
 
 pub use pathfinding::pathfinding_from_train_batch;
 

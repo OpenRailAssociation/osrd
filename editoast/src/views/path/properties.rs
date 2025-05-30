@@ -252,7 +252,7 @@ fn path_properties_input_hash(path_properties_request: &PathPropertiesRequest<'_
 }
 
 #[tracing::instrument(skip_all, err)]
-async fn compute_path_properties_batch(
+pub(in crate::views) async fn compute_path_properties_batch(
     core_client: Arc<CoreClient>,
     conn: &mut ValkeyConnection,
     requests: &[PathPropertiesRequest<'_>],

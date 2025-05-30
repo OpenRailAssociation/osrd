@@ -5984,6 +5984,12 @@ components:
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorDatabase'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorInvalidPath'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -7107,6 +7113,140 @@ components:
           type: string
           enum:
           - editoast:search:SearchEngineError
+    EditoastSimilarTrainsErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:Database
+    EditoastSimilarTrainsErrorInfraNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - infra_id
+          properties:
+            infra_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:InfraNotFound
+    EditoastSimilarTrainsErrorInvalidPath:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:InvalidPath
+    EditoastSimilarTrainsErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:RollingStockNotFound
+    EditoastSimilarTrainsErrorSpeedLimitNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - speed_limit_tag
+          properties:
+            speed_limit_tag:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:SpeedLimitNotFound
+    EditoastSimilarTrainsErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_trains:TimetableNotFound
     EditoastSpriteErrorsFileNotFound:
       type: object
       required:
@@ -12249,6 +12389,7 @@ components:
         ci:
           type: integer
           format: int64
+          minimum: 0
         stop:
           type: boolean
     SimilarTrainWaypointResponse:

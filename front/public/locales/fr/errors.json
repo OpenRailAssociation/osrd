@@ -236,7 +236,15 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "ParseError": "Impossible de parser train_id : '{{train_id}}'"
+      "ParseError": "Impossible de parser train_id : '{{train_id}}'",
+      "similar_trains": {
+        "Database": "Erreur interne (base de données)",
+        "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+        "InvalidPath": "Chemin invalide dans la circulation",
+        "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
+        "SpeedLimitNotFound": "Code de composition '{{speed_limit_tag}}' non trouvé",
+        "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+      }
     },
     "towedrollingstocks": {
       "Database": "Erreur interne",
