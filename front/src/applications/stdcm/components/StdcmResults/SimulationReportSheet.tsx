@@ -445,9 +445,9 @@ const SimulationReportSheet = ({
                     <View style={styles.simulation.stopType}>
                       {(isFirstStep || isLastStep || step.stopType) && (
                         <TD style={tdPassageStopStyle}>
-                          {isFirstStep || isLastStep
-                            ? t('reportSheet.serviceStop')
-                            : capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`))}
+                          {step.stopType
+                            ? capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`))
+                            : t('reportSheet.serviceStop')}
                         </TD>
                       )}
                     </View>
