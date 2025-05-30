@@ -17,7 +17,7 @@ type OccurrenceIndicatorProps = {
 const TOOLTIP_BOTTOM_MARGIN = 24;
 
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+  const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main.timetable' });
   const dotRef = useRef<HTMLDivElement>(null);
   const changeGroupsRef = useRef<HTMLDivElement>(null);
 
