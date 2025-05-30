@@ -7,13 +7,12 @@ use std::sync::Arc;
 use clap::Args;
 use colored::Colorize as _;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::rolling_stock::TowedRollingStock;
 use validator::ValidationErrorsKind;
 
 use crate::CliError;
 use crate::models::RollingStock;
 use crate::models::prelude::*;
-use crate::models::towed_rolling_stock::TowedRollingStockModel;
+use crate::models::towed_rolling_stock::TowedRollingStock;
 
 #[derive(Args, Clone, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]
@@ -114,9 +113,9 @@ pub async fn import_towed_rolling_stock(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for towed_rolling_stock_path in args.rolling_stock_path {
         let towed_rolling_stock_file = File::open(towed_rolling_stock_path)?;
-        let towed_rolling_stock: TowedRollingStock =
+        let towed_rolling_stock: editoast_schemas::TowedRollingStock =
             serde_json::from_reader(BufReader::new(towed_rolling_stock_file))?;
-        let towed_rolling_stock: Changeset<TowedRollingStockModel> = towed_rolling_stock.into();
+        let towed_rolling_stock: Changeset<TowedRollingStock> = towed_rolling_stock.into();
         println!(
             "🍞 Importing towed rolling stock {}",
             towed_rolling_stock
@@ -425,7 +424,7 @@ mod tests {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
             let towed_rolling_stock_name = "towed";
-            let mut towed_rolling_stock_form: TowedRollingStock =
+            let mut towed_rolling_stock_form: editoast_schemas::TowedRollingStock =
                 serde_json::from_str(include_str!("../tests/example_towed_rolling_stock_1.json"))
                     .expect("Unable to parse");
             towed_rolling_stock_form.name = towed_rolling_stock_name.to_string();
@@ -442,7 +441,7 @@ mod tests {
             // THEN
             assert!(result.is_ok());
             #[expect(deprecated)]
-            let created_rs = TowedRollingStockModel::retrieve(
+            let created_rs = TowedRollingStock::retrieve(
                 &mut db_pool.get_ok(),
                 towed_rolling_stock_name.to_string(),
             )

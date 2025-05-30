@@ -6,7 +6,6 @@ use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingStock;
-use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItem;
@@ -26,7 +25,7 @@ use crate::SelectionSettings;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::temporary_speed_limits::TemporarySpeedLimit;
-use crate::models::towed_rolling_stock::TowedRollingStockModel;
+use crate::models::towed_rolling_stock::TowedRollingStock;
 use crate::models::work_schedules::WorkSchedule;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingFailure;
@@ -285,7 +284,7 @@ impl Request {
     pub(super) async fn get_towed_rolling_stock(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<Option<TowedRollingStockModel>> {
+    ) -> Result<Option<TowedRollingStock>> {
         if self.towed_rolling_stock_id.is_none() {
             return Ok(None);
         }
@@ -293,7 +292,7 @@ impl Request {
         let towed_rolling_stock_id = self.towed_rolling_stock_id.unwrap();
         #[expect(deprecated)]
         let towed_rolling_stock =
-            TowedRollingStockModel::retrieve_or_fail(conn, towed_rolling_stock_id, || {
+            TowedRollingStock::retrieve_or_fail(conn, towed_rolling_stock_id, || {
                 StdcmError::TowedRollingStockNotFound {
                     towed_rolling_stock_id,
                 }
@@ -305,7 +304,7 @@ impl Request {
     pub(super) fn validate_consist(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<TowedRollingStock>,
+        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
     ) -> Result<()> {
         self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
         self.validate_consist_length(traction_engine, towed_rolling_stock)?;
@@ -315,7 +314,7 @@ impl Request {
     fn validate_consist_mass(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<TowedRollingStock>,
+        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_mass = traction_engine.mass
             + towed_rolling_stock
@@ -340,7 +339,7 @@ impl Request {
     fn validate_consist_length(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<TowedRollingStock>,
+        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_length = traction_engine.length
             + towed_rolling_stock
