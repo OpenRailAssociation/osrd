@@ -39,7 +39,7 @@ export const SearchRoute = ({ searchFn, selectFn, state, disabled, isNew }: Sear
         <div>
           {state.options.length === 0 && (
             <div className="text-muted text-center">
-              {t('Editor.tools.routes-edition.routes', { count: 0 })}
+              {t('Editor.tools.routes-edition.no-route-found')}
             </div>
           )}
 

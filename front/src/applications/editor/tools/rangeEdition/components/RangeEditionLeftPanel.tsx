@@ -314,7 +314,7 @@ const RangeEditionLeftPanel = () => {
                   availableSwitchesPositions={availableSwitchesPositions}
                 />
                 {switchesRouteCandidates.length === 0 && (
-                  <p className="text-muted">{t('Editor.tools.routes-edition.routes_zero')}</p>
+                  <p className="text-muted">{t('Editor.tools.routes-edition.no-route-found')}</p>
                 )}
               </>
             )}
