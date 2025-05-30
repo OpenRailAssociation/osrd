@@ -22,8 +22,8 @@ def _add_train(
         {
             "constraint_distribution": "STANDARD",
             "path": [
-                {"offset": 837034, "track": "TA2", "id": "a"},
-                {"offset": 4386000, "track": "TH1", "id": "b"},
+                {"offset": 837034, "track": "TA2", "key": "a"},
+                {"offset": 4386000, "track": "TH1", "key": "b"},
             ],
             "rolling_stock_name": rolling_stock_name,
             "train_name": "foo",

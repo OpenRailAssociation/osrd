@@ -120,12 +120,12 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862000},
-                    {"id": "first", "track": "TD0", "offset": 9001000},
-                    {"id": "second", "track": "TD0", "offset": 10769000},
-                    {"id": "third", "track": "TD0", "offset": 17156000},
-                    {"id": "fourth", "track": "TH1", "offset": 221000},
-                    {"id": "last", "track": "TH1", "offset": 3922000},
+                    {"key": "zero", "track": "TA0", "offset": 862000},
+                    {"key": "first", "track": "TD0", "offset": 9001000},
+                    {"key": "second", "track": "TD0", "offset": 10769000},
+                    {"key": "third", "track": "TD0", "offset": 17156000},
+                    {"key": "fourth", "track": "TH1", "offset": 221000},
+                    {"key": "last", "track": "TH1", "offset": 3922000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -283,10 +283,10 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
-                    {"id": "first", "track": "TD0", "offset": 1_7156_000},
-                    {"id": "second", "track": "TH1", "offset": 1_177_000},
-                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                    {"key": "zero", "track": "TA0", "offset": 862_000},
+                    {"key": "first", "track": "TD0", "offset": 1_7156_000},
+                    {"key": "second", "track": "TH1", "offset": 1_177_000},
+                    {"key": "last", "track": "TH1", "offset": 3_922_000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -398,9 +398,9 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
-                    {"id": "first", "track": "TH0", "offset": 1_000_000},
-                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                    {"key": "zero", "track": "TA0", "offset": 862_000},
+                    {"key": "first", "track": "TH0", "offset": 1_000_000},
+                    {"key": "last", "track": "TH1", "offset": 3_922_000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -515,9 +515,9 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
-                    {"id": "first", "track": "TH0", "offset": 900_000},
-                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                    {"key": "zero", "track": "TA0", "offset": 862_000},
+                    {"key": "first", "track": "TH0", "offset": 900_000},
+                    {"key": "last", "track": "TH1", "offset": 3_922_000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -637,8 +637,8 @@ def test_etcs_schedule_result_slowdowns(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 0},
-                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                    {"key": "zero", "track": "TA0", "offset": 0},
+                    {"key": "last", "track": "TH1", "offset": 5_000_000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -832,9 +832,9 @@ def test_etcs_schedule_result_slowdowns_with_stop(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 0},
-                    {"id": "stop", "track": "TH0", "offset": 662_000},
-                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                    {"key": "zero", "track": "TA0", "offset": 0},
+                    {"key": "stop", "track": "TH0", "offset": 662_000},
+                    {"key": "last", "track": "TH1", "offset": 5_000_000},
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},

@@ -35,7 +35,7 @@ class PathWaypoint(GeometryPointTrait):
     """This class is used to characterize each waypoint of the path.
     Each waypoint is defined with its coordinates, its name, its corresponding track, its duration and its position."""
 
-    id: Optional[str] = Field(description="Id of the operational point", default=None)
+    key: Optional[str] = Field(description="Identifier of the operational point", default=None)
     name: Optional[str] = Field(
         description="Name of the operational point", default=None
     )
