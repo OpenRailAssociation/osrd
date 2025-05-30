@@ -9,7 +9,15 @@ import * as ts from 'typescript';
 
 const LANGUAGES = ['en', 'fr'];
 
-const IGNORE_MISSING: RegExp[] = [/stdcm-help-section:asu/, /stdcm-help-section:sections/];
+const IGNORE_MISSING: RegExp[] = [
+  /stdcm-help-section:asu/,
+  /stdcm-help-section:sections/,
+  /stdcm:stdcmErrors\..*/,
+  /translation:Editor.obj-types.NeutralSection/,
+  /translation:Editor.obj-types.SwitchType/,
+  /translation:Editor.obj-types.OperationalPoint/,
+  /translation:mapSettings.layers.speedlimittag/,
+];
 
 const IGNORE_UNUSED: RegExp[] = [
   /errors:.*/, // Errors are generated and used dynamicly
@@ -219,11 +227,24 @@ function visitCallExpression(
   const keyNode = node.arguments[0];
   const optionsNode = node.arguments.length > 1 ? node.arguments.at(-1) : undefined;
 
-  // Extract the key from the first function argument
-  if (!ts.isStringLiteral(keyNode)) {
-    return;
+  // Extract key(s) from the first function argument
+  let keys;
+  if (ts.isStringLiteral(keyNode) || ts.isNoSubstitutionTemplateLiteral(keyNode)) {
+    keys = [keyNode.text];
+  } else {
+    const keyType = checker.getTypeAtLocation(keyNode);
+    if (!keyType.isUnion()) {
+      return;
+    }
+
+    keys = [];
+    for (const t of keyType.types) {
+      if (!t.isStringLiteral()) {
+        return;
+      }
+      keys.push(t.value);
+    }
   }
-  let key = keyNode.text;
 
   // Extract the default namespace and key prefix from the options in the last
   // function argument
@@ -255,16 +276,18 @@ function visitCallExpression(
     }
   }
 
-  // If the key doesn't include a namespace, use the default one from options
-  // or generic type arguments
-  if (!key.includes(':')) {
-    if (prefix) {
-      key = `${prefix}.${key}`;
+  for (let key of keys) {
+    // If the key doesn't include a namespace, use the default one from options
+    // or generic type arguments
+    if (!key.includes(':')) {
+      if (prefix) {
+        key = `${prefix}.${key}`;
+      }
+      key = `${defaultNamespace}:${key}`;
     }
-    key = `${defaultNamespace}:${key}`;
-  }
 
-  extractedKeys.add(key);
+    extractedKeys.add(key);
+  }
 }
 
 /**
