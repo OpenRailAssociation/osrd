@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
@@ -78,5 +80,36 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .train_name(train_name)
             .options(options)
             .main_category(category.map(TrainCategory))
+    }
+}
+
+impl TrainSchedule {
+    // TODO: maybe find a better name
+    pub fn iter_stops(&self) -> impl Iterator<Item = &PathItem> {
+        let scheduled_items = self
+            .schedule
+            .iter()
+            .map(|item| (item.at.as_ref(), item))
+            .collect::<HashMap<_, _>>();
+        let n = self.path.len();
+        self.path
+            .iter()
+            .enumerate()
+            .filter_map(move |(i, path_item)| {
+                if i == 0 // the beginning of the path
+                    || i == n - 1 // the end of the path
+                    || scheduled_items // a scheduled stop
+                        .get(path_item.id.as_str())
+                        .is_some_and(|item| {
+                            item.stop_for
+                                .as_ref()
+                                .is_some_and(|duration| !duration.is_zero())
+                        })
+                {
+                    Some(path_item)
+                } else {
+                    None
+                }
+            })
     }
 }
