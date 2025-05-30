@@ -251,8 +251,7 @@ function visitCallExpression(
     key = `${defaultNamespace}:${key}`;
   }
 
-  // Trim plural suffixes from the key
-  extractedKeys.add(key.replace(/_(zero|one|other|many)$/, ''));
+  extractedKeys.add(key);
 }
 
 /**
