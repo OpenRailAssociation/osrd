@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpeedLimitTagIds(pub Vec<String>);
@@ -24,5 +25,13 @@ impl SpeedLimitTagIds {
                 .cloned()
                 .collect(),
         )
+    }
+}
+
+impl Deref for SpeedLimitTagIds {
+    type Target = Vec<String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
