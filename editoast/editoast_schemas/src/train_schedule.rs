@@ -129,13 +129,13 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         let internal = Internal::deserialize(deserializer)?;
 
         // Look for invalid path waypoint reference
-        let path_ids: HashSet<_> = internal.path.iter().map(|p| &p.id).collect();
-        if path_ids.len() != internal.path.len() {
+        let path_keys: HashSet<_> = internal.path.iter().map(|p| &p.key).collect();
+        if path_keys.len() != internal.path.len() {
             return Err(SerdeError::custom("Duplicate path waypoint ids"));
         }
 
         for schedule_item in &internal.schedule {
-            if !path_ids.contains(&schedule_item.at) {
+            if !path_keys.contains(&schedule_item.at) {
                 return Err(SerdeError::custom(format!(
                     "Invalid schedule, path waypoint '{}' not found",
                     schedule_item.at
@@ -144,7 +144,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         }
 
         for boundary in &internal.margins.boundaries {
-            if !path_ids.contains(&boundary) {
+            if !path_keys.contains(&boundary) {
                 return Err(SerdeError::custom(format!(
                     "Invalid boundary, path waypoint '{boundary}' not found"
                 )));
@@ -152,13 +152,13 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         }
 
         for power_restriction in internal.power_restrictions.iter() {
-            if !path_ids.contains(&power_restriction.from) {
+            if !path_keys.contains(&power_restriction.from) {
                 return Err(SerdeError::custom(format!(
                     "Invalid power restriction, path waypoint '{}' not found",
                     power_restriction.from
                 )));
             }
-            if !path_ids.contains(&power_restriction.to) {
+            if !path_keys.contains(&power_restriction.to) {
                 return Err(SerdeError::custom(format!(
                     "Invalid power restriction, path waypoint '{}' not found",
                     power_restriction.to
@@ -171,9 +171,9 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         if schedules.len() != internal.schedule.len() {
             return Err(SerdeError::custom("Schedule points at the same location"));
         }
-        let first_point_id = &internal.path.first().unwrap().id;
+        let first_point_key = &internal.path.first().unwrap().key;
         if schedules
-            .get(first_point_id)
+            .get(first_point_key)
             .is_some_and(|s| s.arrival.is_some())
         {
             return Err(SerdeError::custom(
@@ -233,7 +233,7 @@ mod tests {
             track_reference: None,
         });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
             deleted: false,
         };
@@ -291,7 +291,7 @@ mod tests {
             track_reference: None,
         });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
             deleted: false,
         };
@@ -329,7 +329,7 @@ mod tests {
             track_reference: None,
         });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
             deleted: false,
         };

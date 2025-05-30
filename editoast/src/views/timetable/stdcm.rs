@@ -500,7 +500,7 @@ impl VirtualTrainRun {
             start_time: approx_start_time,
             schedule: vec![ScheduleItem {
                 // Make the train stop at the end
-                at: last_step.id.clone(),
+                at: last_step.key.clone(),
                 arrival: None,
                 stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
                 reception_signal: ReceptionSignal::Open,

@@ -19,7 +19,7 @@ pub struct PathItem {
     /// The unique identifier of the path item.
     /// This is used to reference path items in the train schedule.
     #[schema(inline)]
-    pub id: NonBlankString,
+    pub key: NonBlankString,
     /// Metadata given to mark a point as wishing to be deleted by the user.
     /// It's useful for soft deleting the point (waiting to fix / remove all references)
     /// If true, the train schedule is consider as invalid and must be edited

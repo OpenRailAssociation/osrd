@@ -356,19 +356,19 @@ export const trainScheduleTooFast: TrainScheduleResponseWithTrainId = {
   start_time: '2024-08-02T12:00:00Z',
   path: [
     {
-      id: 'id440',
+      key: 'id440',
       deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
-      id: 'id935',
+      key: 'id935',
       deleted: false,
       uic: 4,
       secondary_code: 'BV',
     },
     {
-      id: 'id916',
+      key: 'id916',
       deleted: false,
       track: 'TH1',
       offset: 4095000,
@@ -423,19 +423,19 @@ export const trainScheduleNotHonored: TrainScheduleResponseWithTrainId = {
   start_time: '2024-08-02T12:00:00Z',
   path: [
     {
-      id: 'id440',
+      key: 'id440',
       deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
-      id: 'id584',
+      key: 'id584',
       deleted: false,
       uic: 4,
       secondary_code: 'BV',
     },
     {
-      id: 'id450',
+      key: 'id450',
       deleted: false,
       track: 'TG1',
       offset: 644000,
@@ -490,13 +490,13 @@ export const trainScheduleHonored: TrainScheduleResponseWithTrainId = {
   start_time: '2024-08-02T12:00:00Z',
   path: [
     {
-      id: 'id440',
+      key: 'id440',
       deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
-      id: 'id450',
+      key: 'id450',
       deleted: false,
       track: 'TG1',
       offset: 644000,

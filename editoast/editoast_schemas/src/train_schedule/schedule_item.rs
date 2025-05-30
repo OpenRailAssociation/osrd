@@ -25,6 +25,8 @@ pub enum ReceptionSignal {
 #[serde(deny_unknown_fields)]
 pub struct ScheduleItem {
     /// Position on the path of the schedule item.
+    ///
+    /// References a [`PathItem::key`](super::PathItem::key).
     #[schema(inline)]
     pub at: NonBlankString,
     /// The expected arrival time at the stop.

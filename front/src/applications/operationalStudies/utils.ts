@@ -223,7 +223,7 @@ export const isScheduledPointsNotHonored = (
 
   const pathItemIndexById = new Map<string, number>();
   timetableItem.path.forEach((pathItem, index) => {
-    pathItemIndexById.set(pathItem.id, index);
+    pathItemIndexById.set(pathItem.key, index);
   });
   return timetableItem.schedule.some((schedule) => {
     if (!schedule.arrival) return false;
@@ -243,7 +243,7 @@ export const isScheduledPointsNotHonored = (
 
 export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
   timetableItemResult.path.reduce((acc, pathItem, index) => {
-    acc[pathItem.id] = index;
+    acc[pathItem.key] = index;
     return acc;
   }, {} as Dictionary<number>);
 
@@ -270,7 +270,7 @@ export const isTooFast = (
       toCheckPathItemIds.add(schedule.at);
     }
   });
-  toCheckPathItemIds.add(timetableItem.path[timetableItem.path.length - 1].id);
+  toCheckPathItemIds.add(timetableItem.path[timetableItem.path.length - 1].key);
 
   if (toCheckPathItemIds.size === 0) return false;
 

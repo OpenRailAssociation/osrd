@@ -9,23 +9,23 @@ import computeMargins, { getTheoreticalMargins } from '../computeMargins';
 describe('computeMargins', () => {
   const path = [
     {
-      id: 'a',
+      key: 'a',
       uic: 1,
     },
     {
-      id: 'b',
+      key: 'b',
       uic: 2,
     },
     {
-      id: 'c',
+      key: 'c',
       uic: 3,
     },
     {
-      id: 'd',
+      key: 'd',
       uic: 4,
     },
     {
-      id: 'e',
+      key: 'e',
       uic: 5,
     },
   ];
@@ -94,7 +94,7 @@ describe('computeMargins', () => {
 
 describe('getTheoreticalMargins', () => {
   it('should compute theoretical margins with boundaries correctly', () => {
-    const path = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
+    const path = [{ key: 'a' }, { key: 'b' }, { key: 'c' }, { key: 'd' }, { key: 'e' }];
     const margins = { boundaries: ['c', 'd'], values: ['10%', '0%', '10 min/100km'] };
     const trainSchedule = { path, margins } as TimetableItem;
 

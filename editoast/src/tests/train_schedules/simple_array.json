@@ -10,21 +10,21 @@
         "start_time": "2023-12-21T08:51:30+00:00",
         "path": [
           {
-            "id": "a",
+            "key": "a",
             "uic": 87210
           },
           {
-            "id": "b",
+            "key": "b",
             "track": "foo",
             "offset": 10
           },
           {
-            "id": "c",
+            "key": "c",
             "deleted": true,
             "trigram": "ABC"
           },
           {
-            "id": "d",
+            "key": "d",
             "operational_point": "X"
           }
         ],

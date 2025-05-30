@@ -25,7 +25,7 @@ import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types
 
 const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
   if (!matchPathStepAndOp(step, op)) {
-    return step.id === op.pathStepId;
+    return step.key === op.pathStepId;
   }
   // We match the kp in case two OPs have the same uic+ch (can happen when the
   // infra is imported)

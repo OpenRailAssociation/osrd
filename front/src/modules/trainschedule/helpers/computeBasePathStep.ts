@@ -24,7 +24,9 @@ const computeBasePathStep = (
   pathItemIndex: number
 ): PathStep => {
   const step = timetableItem.path[pathItemIndex];
-  const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === step.id);
+  const correspondingSchedule = timetableItem.schedule?.find(
+    (schedule) => schedule.at === step.key
+  );
 
   const {
     arrival,
@@ -44,7 +46,7 @@ const computeBasePathStep = (
 
   let theoreticalMargin;
   if (timetableItem.margins && pathItemIndex !== timetableItem.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(step.id, pathItemIndex, timetableItem.margins);
+    theoreticalMargin = findCorrespondingMargin(step.key, pathItemIndex, timetableItem.margins);
   }
 
   return {

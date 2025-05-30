@@ -16,11 +16,11 @@ export function getTheoreticalMargins(selectedTimetableItem: TimetableItem) {
   let marginIndex = 0;
   selectedTimetableItem.path.forEach((step, index) => {
     let isBoundary = index === 0;
-    if (step.id === selectedTimetableItem.margins?.boundaries[marginIndex]) {
+    if (step.key === selectedTimetableItem.margins?.boundaries[marginIndex]) {
       marginIndex += 1;
       isBoundary = true;
     }
-    theoreticalMargins[step.id] = {
+    theoreticalMargins[step.key] = {
       theoreticalMargin: margins.values[marginIndex],
       isBoundary,
     };
@@ -37,7 +37,7 @@ function computeMargins(
   pathItemTimes: NonNullable<TrainScheduleWithDetails['pathItemTimes']> // in ms
 ) {
   const { path, margins } = selectedTimetableItem;
-  const pathStepId = path[pathStepIndex].id;
+  const pathStepId = path[pathStepIndex].key;
   const schedule = scheduleByAt[pathStepId];
   const stepTheoreticalMarginInfo = theoreticalMargins?.[pathStepId];
   if (
@@ -60,7 +60,7 @@ function computeMargins(
   let nextIndex = path.length - 1;
 
   for (let index = pathStepIndex + 1; index < path.length; index += 1) {
-    const curStepId = path[index].id;
+    const curStepId = path[index].key;
     const curStepSchedule = scheduleByAt[curStepId];
     if (theoreticalMargins[curStepId]?.isBoundary || (curStepSchedule && curStepSchedule.arrival)) {
       nextIndex = index;

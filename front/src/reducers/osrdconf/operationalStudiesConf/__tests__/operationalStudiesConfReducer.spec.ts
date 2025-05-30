@@ -46,8 +46,8 @@ describe('simulationConfReducer', () => {
         constraint_distribution: 'MARECO',
         rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
         path: [
-          { id: 'id1', uic: 123 },
-          { id: 'id2', uic: 234 },
+          { key: 'id1', uic: 123 },
+          { key: 'id2', uic: 234 },
         ],
         margins: { boundaries: ['id2'], values: ['10%', '0%'] },
         startTime: new Date('2021-01-01T00:00:00Z'),
@@ -106,8 +106,8 @@ describe('simulationConfReducer', () => {
         constraint_distribution: 'MARECO',
         rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
         path: [
-          { id: 'id1', uic: 123 },
-          { id: 'id2', uic: 234 },
+          { key: 'id1', uic: 123 },
+          { key: 'id2', uic: 234 },
         ],
         margins: { boundaries: ['id2'], values: ['10%', '0%'] },
         startTime: new Date('2021-01-01T00:00:00Z'),
@@ -193,7 +193,7 @@ describe('simulationConfReducer', () => {
       };
 
       const insertedVia: PathStep = {
-        id: 'id1',
+        key: 'id1',
         positionOnPath: 200,
         uic: 396002,
         coordinates: [47.99542250806296, 0.1918181738752042],
@@ -204,7 +204,7 @@ describe('simulationConfReducer', () => {
       expect(state.pathSteps).toEqual([
         brest,
         rennes,
-        { ...insertedVia, id: state.pathSteps[2]?.id },
+        { ...insertedVia, id: state.pathSteps[2]?.key },
         paris,
         strasbourg,
       ]);
@@ -224,7 +224,7 @@ describe('simulationConfReducer', () => {
       };
 
       const updatedVia: PathStep = {
-        id: 'lemans',
+        key: 'lemans',
         positionOnPath: 200,
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
         offset: 426.443,

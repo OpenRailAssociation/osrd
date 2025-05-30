@@ -40,7 +40,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
           <IoFlag />
         </span>
         <div
-          onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
+          onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.key)}
           role="button"
           tabIndex={0}
           className="flex-grow-1"

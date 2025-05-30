@@ -46,8 +46,8 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
     startTime: new Date('2024-10-15T03:00:00Z'),
     path: [
-      { id: 'id227', deleted: false, uic: 6, secondary_code: 'BV' },
-      { id: 'id228', deleted: false, uic: 5, secondary_code: 'BV' },
+      { key: 'id227', deleted: false, uic: 6, secondary_code: 'BV' },
+      { key: 'id228', deleted: false, uic: 5, secondary_code: 'BV' },
     ],
     schedule: [
       {
@@ -118,8 +118,8 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
       key: '123123',
       path_and_schedule: {
         path: [
-          { id: 'id225', deleted: false, uic: 6, secondary_code: 'BV' },
-          { id: 'id228', deleted: false, uic: 5, secondary_code: 'BV' },
+          { key: 'id225', deleted: false, uic: 6, secondary_code: 'BV' },
+          { key: 'id228', deleted: false, uic: 5, secondary_code: 'BV' },
         ],
         schedule: [
           {

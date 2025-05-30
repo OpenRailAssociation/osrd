@@ -20,13 +20,13 @@ export function generateTrainSchedulePayload(train: ImportedTrainSchedule): Trai
 
       if (validUICNumber) {
         acc.path.push({
-          id: stepId,
+          key: stepId,
           uic: Number(step.uic),
           secondary_code: step.chCode,
         });
       } else {
         acc.path.push({
-          id: stepId,
+          key: stepId,
           trigram: step.name, // we use ocpRef when uic is NaN
           secondary_code: step.chCode ?? '',
         });

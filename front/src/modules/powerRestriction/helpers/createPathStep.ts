@@ -80,7 +80,7 @@ const createPathStep = (
   );
 
   return {
-    id: nextId(),
+    key: nextId(),
     positionOnPath,
     coordinates,
     ...trackOffset,
@@ -128,7 +128,7 @@ export const createCutAtPathStep = (
     cutAtPosition
   );
   return {
-    id: nextId(),
+    key: nextId(),
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
     isFromPowerRestriction: true,

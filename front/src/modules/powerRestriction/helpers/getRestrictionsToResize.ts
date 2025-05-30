@@ -20,7 +20,7 @@ const getPowerRestrictionFromRange = (
   if (!fromPathStep || !toPathStep) return undefined;
 
   const powerRestrictionRange = powerRestrictionRanges.find(
-    (restriction) => restriction.from === fromPathStep.id && restriction.to === toPathStep.id
+    (restriction) => restriction.from === fromPathStep.key && restriction.to === toPathStep.key
   );
   return powerRestrictionRange;
 };

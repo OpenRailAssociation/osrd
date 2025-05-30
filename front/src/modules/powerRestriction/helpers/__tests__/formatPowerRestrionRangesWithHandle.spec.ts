@@ -27,19 +27,19 @@ describe('formatPowerRestrictionRanges', () => {
     const pathSteps: TrainSchedule['path'] = [
       {
         uic: 12345,
-        id: 'step1',
+        key: 'step1',
       },
       {
         uic: 45686,
-        id: 'step2',
+        key: 'step2',
       },
       {
         uic: 93405,
-        id: 'step3',
+        key: 'step3',
       },
       {
         uic: 93405,
-        id: 'step4',
+        key: 'step4',
       },
     ];
     const pathStepPositions = [0, 1000, 2000, 3000];

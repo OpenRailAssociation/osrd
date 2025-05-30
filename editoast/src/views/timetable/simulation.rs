@@ -418,7 +418,7 @@ fn build_simulation_request(
     let path_items_to_position: HashMap<_, _> = train_schedule
         .path
         .iter()
-        .map(|p| &p.id)
+        .map(|p| &p.key)
         .zip(path_item_positions.iter().copied())
         .collect();
 

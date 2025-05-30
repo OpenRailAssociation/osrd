@@ -10,7 +10,7 @@ describe('formatSchedule', () => {
     it('should ignore steps without arrival or stopFor', () => {
       const pathSteps: PathStep[] = [
         {
-          id: 'id331',
+          key: 'id331',
           deleted: false,
           uic: 8706,
           secondary_code: 'BV',
@@ -25,7 +25,7 @@ describe('formatSchedule', () => {
     it('should format the train schedule', () => {
       const pathSteps: PathStep[] = [
         {
-          id: 'id332',
+          key: 'id332',
           deleted: false,
           uic: 8737,
           secondary_code: 'BV',

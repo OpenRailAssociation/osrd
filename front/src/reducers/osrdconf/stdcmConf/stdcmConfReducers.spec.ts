@@ -79,6 +79,7 @@ const stdcmPathSteps = pathSteps.map(
   (step, index) =>
     ({
       ...step,
+      id: step.key,
       ...(index === 0 || index === pathSteps.length - 1
         ? {
             isVia: false,

@@ -61,17 +61,17 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints at the good position in a path with operational points', () => {
     const pathSteps = [
       {
-        id: '1',
+        key: '1',
         secondary_code: 'BV',
         uic: 2,
       },
       {
-        id: '2',
+        key: '2',
         offset: 7746000,
         track: 'TA6',
       },
       {
-        id: '3',
+        key: '3',
         secondary_code: 'BV',
         uic: 4,
       },
@@ -153,17 +153,17 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints properly even when the last two come from map clicks', () => {
     const pathSteps = [
       {
-        id: '1',
+        key: '1',
         offset: 6481000,
         track: 'TA6',
       },
       {
-        id: '2',
+        key: '2',
         offset: 679000,
         track: 'TC0',
       },
       {
-        id: '3',
+        key: '3',
         offset: 883000,
         track: 'TC0',
       },
@@ -253,12 +253,12 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints properly when there is no op on path', () => {
     const pathSteps = [
       {
-        id: '1',
+        key: '1',
         offset: 6481000,
         track: 'TA6',
       },
       {
-        id: '2',
+        key: '2',
         offset: 4733000,
         track: 'TA6',
       },
@@ -310,17 +310,17 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should return the same array if there is no waypoints added by map click', () => {
     const pathSteps = [
       {
-        id: '1',
+        key: '1',
         secondary_code: 'BV',
         uic: 2,
       },
       {
-        id: '2',
+        key: '2',
         secondary_code: 'BV',
         uic: 3,
       },
       {
-        id: '3',
+        key: '3',
         secondary_code: 'BV',
         uic: 4,
       },

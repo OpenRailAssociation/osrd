@@ -23,7 +23,7 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
   const originPointName = (
     <div
       onClick={() => {
-        zoomToFeaturePoint(origin?.coordinates, origin?.id);
+        zoomToFeaturePoint(origin?.coordinates, origin?.key);
       }}
       role="button"
       tabIndex={0}

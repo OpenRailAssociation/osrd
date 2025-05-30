@@ -54,7 +54,7 @@ pub(super) fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
     steps
         .iter()
         .map(|step| PathItem {
-            id: Default::default(),
+            key: Default::default(),
             deleted: false,
             location: step.location.clone(),
         })

@@ -22,8 +22,8 @@ export const formatPowerRestrictionRanges = (
 ): LayerData<Omit<PowerRestrictionValues, 'handled'>>[] =>
   compact(
     powerRestrictions.map((powerRestriction) => {
-      const startStep = path.findIndex((step) => step.id === powerRestriction.from);
-      const stopStep = path.findIndex((step) => step.id === powerRestriction.to);
+      const startStep = path.findIndex((step) => step.key === powerRestriction.from);
+      const stopStep = path.findIndex((step) => step.key === powerRestriction.to);
       if (startStep === -1 || stopStep === -1) {
         console.error('Power restriction range not found in path steps.');
         return null;

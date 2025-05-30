@@ -3384,7 +3384,7 @@ export type TrainSchedule = {
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */
     deleted?: boolean;
-    id: string;
+    key: string;
   })[];
   power_restrictions?: {
     from: string;
@@ -3437,7 +3437,7 @@ export type PathItem = PathItemLocation & {
     It's useful for soft deleting the point (waiting to fix / remove all references)
     If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
-  id: string;
+  key: string;
 };
 export type PowerRestrictionItem = {
   from: string;

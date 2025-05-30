@@ -139,7 +139,7 @@ const createPathItemFromNode = async (
     return {
       trigram,
       secondary_code: finalSecondaryCode,
-      id: `${node.id}-${index}`,
+      key: `${node.id}-${index}`,
     };
   }
 
@@ -160,7 +160,7 @@ const createPathItemFromNode = async (
   return {
     trigram,
     secondary_code: finalSecondaryCode,
-    id: `${node.id}-${index}`,
+    key: `${node.id}-${index}`,
   };
 };
 

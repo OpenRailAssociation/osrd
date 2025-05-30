@@ -23,7 +23,7 @@ export const insertViaFromMap = (
   const destination = last(pathSteps);
 
   const newStep = {
-    id: newVia.id,
+    key: newVia.key,
     coordinates: newVia.coordinates,
     ...('track' in newVia
       ? {
@@ -76,7 +76,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'theoreticalMargin',
       'stopFor',
     ]),
-    id: uuidV4(),
+    key: uuidV4(),
     ...(op.uic
       ? { uic: op.uic, secondary_code: op.ch }
       : {
@@ -91,12 +91,12 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
     // To avoid updating the wrong one, we need to find the one that matches the payload
     newVia = {
       ...newVia,
-      id: cleanPathSteps[stepIndex].id,
+      key: cleanPathSteps[stepIndex].key,
       track_reference:
         'track_reference' in cleanPathSteps[stepIndex]
           ? cleanPathSteps[stepIndex].track_reference
           : undefined,
-    }; // We don't need to change the id of the updated via
+    }; // We don't need to change the key of the updated via
     statePathSteps[stepIndex] = newVia;
   } else {
     // Because of import issues, there can be multiple ops at position 0

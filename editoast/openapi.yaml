@@ -9256,7 +9256,7 @@ components:
       - $ref: '#/components/schemas/PathItemLocation'
       - type: object
         required:
-        - id
+        - key
         properties:
           deleted:
             type: boolean
@@ -9264,7 +9264,7 @@ components:
               Metadata given to mark a point as wishing to be deleted by the user.
               It's useful for soft deleting the point (waiting to fix / remove all references)
               If true, the train schedule is consider as invalid and must be edited
-          id:
+          key:
             type: string
             minLength: 1
       description: A location on the path of a train
@@ -13038,7 +13038,7 @@ components:
             - $ref: '#/components/schemas/PathItemLocation'
             - type: object
               required:
-              - id
+              - key
               properties:
                 deleted:
                   type: boolean
@@ -13046,7 +13046,7 @@ components:
                     Metadata given to mark a point as wishing to be deleted by the user.
                     It's useful for soft deleting the point (waiting to fix / remove all references)
                     If true, the train schedule is consider as invalid and must be edited
-                id:
+                key:
                   type: string
                   minLength: 1
             description: A location on the path of a train

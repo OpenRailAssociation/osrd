@@ -358,10 +358,10 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
 
         // Adding schedule
         const sourceScheduleEntry = timetableItem.schedule!.find(
-          (entry) => entry.at === timetableItem.path[i].id
+          (entry) => entry.at === timetableItem.path[i].key
         );
         const targetScheduleEntry = timetableItem.schedule!.find(
-          (entry) => entry.at === timetableItem.path[i + 1].id
+          (entry) => entry.at === timetableItem.path[i + 1].key
         );
 
         // Create a transition between the previous section and the one we're creating

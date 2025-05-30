@@ -109,7 +109,7 @@ const useStdcm = ({
         timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
+        path: payload.body.steps.map((step) => ({ ...step.location, key: nextId() })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',

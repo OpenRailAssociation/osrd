@@ -24,7 +24,7 @@ export function formatTimetableItemPayload(
       use_electrical_profiles: osrdconf.usingElectricalProfiles,
       use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
     },
-    path: compact(osrdconf.pathSteps).map((step) => ({ id: step.id, ...getStepLocation(step) })),
+    path: compact(osrdconf.pathSteps).map((step) => ({ key: step.key, ...getStepLocation(step) })),
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: rollingStockName,
     schedule: formatSchedule(compact(osrdconf.pathSteps)),

@@ -121,7 +121,7 @@ export const formatOperationalPoints = (
     );
     if (correspondingStep) {
       const correspondingSchedule = timetableItem.schedule?.find(
-        (step) => step.at === correspondingStep.id
+        (step) => step.at === correspondingStep.key
       );
       if (correspondingSchedule && correspondingSchedule.stop_for) {
         stepDuration = Duration.parse(correspondingSchedule.stop_for);

@@ -47,7 +47,7 @@ const useOutputTableData = (
     let lastReferenceDate = startDatetime;
 
     return selectedTimetableItem.path.map((pathStep, index) => {
-      const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
+      const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.key];
 
       const computedArrival = new Date(startDatetime.getTime() + pathItemTimes.final[index]);
 
@@ -85,8 +85,8 @@ const useOutputTableData = (
         : false;
 
       return {
-        pathStepId: pathStep.id,
-        name: t('timeStopTable.waypoint', { id: pathStep.id }),
+        pathStepId: pathStep.key,
+        name: t('timeStopTable.waypoint', { key: pathStep.key }),
         ch: undefined,
 
         arrival,

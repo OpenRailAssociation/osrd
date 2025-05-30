@@ -86,9 +86,9 @@ const AddPathStepPopup = ({
 
       const { properties } = featureInfoClick.feature;
       setNewPathStep({
-        id: nextId(),
+        key: nextId(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
-        track: properties.id,
+        track: properties.key,
         offset: Math.round(offset),
         kp: properties.kp,
         metadata: {
@@ -133,7 +133,7 @@ const AddPathStepPopup = ({
       });
 
       setClickedOp({
-        id: nextId(),
+        key: nextId(),
         secondary_code: operationalPoint.extensions!.sncf!.ch,
         uic: operationalPoint.extensions!.identifier!.uic,
         tracks: trackPartCoordinates,

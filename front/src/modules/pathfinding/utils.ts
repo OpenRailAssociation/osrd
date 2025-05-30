@@ -100,7 +100,7 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
     // We check only for pathSteps added by map click
     if ('track' in step) {
       const formattedStep: SuggestedOP = {
-        pathStepId: step.id,
+        pathStepId: step.key,
         positionOnPath: step.positionOnPath!,
         offsetOnTrack: step.offset,
         track: step.track,
@@ -134,7 +134,7 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
         ) {
           return {
             ...op,
-            pathStepId: step.id,
+            pathStepId: step.key,
             stopFor,
             arrival,
             receptionSignal,
@@ -157,7 +157,7 @@ export const pathStepMatchesOp = (
   withKP = false
 ) => {
   if (!matchPathStepAndOp(pathStep, op)) {
-    return pathStep.id === op.pathStepId;
+    return pathStep.key === op.pathStepId;
   }
   if ('uic' in pathStep) {
     return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
