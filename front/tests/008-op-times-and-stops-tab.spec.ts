@@ -68,6 +68,7 @@ test.describe('Times and Stops Tab Verification', () => {
     translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: enTranslations,
     });
   });
 

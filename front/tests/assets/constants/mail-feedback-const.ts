@@ -3,6 +3,7 @@ import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 const tractionEngineName = 'ELECTRIC_RS_E2E';
@@ -18,6 +19,7 @@ const departureTime = '20:21';
 const getMailFeedbackData = () => {
   const translations = getTranslations({
     en: enTranslations,
+    de: deTranslations,
     fr: frTranslations,
   });
 

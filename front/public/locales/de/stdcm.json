@@ -1,4 +1,8 @@
 {
+  "noConfigurationFound": {
+    "text": "Bitte wenden Sie sich an das Admin Team, damit Sie ihm weiterhelfen können.",
+    "title": "Ein Konfigurationsproblem hindert Sie daran, eine Suche durchzuführen."
+  },
   "scenarioExplorer": {
     "infraLegend": "Betriebsnetz",
     "noScenarioSelected": "Hier klicken, um ein Szenario mit einem Betriebsnetz und eigenem Kursbuch auszuwählen.",

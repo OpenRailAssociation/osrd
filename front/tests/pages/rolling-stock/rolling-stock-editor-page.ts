@@ -65,6 +65,7 @@ class RollingstockEditorPage extends CommonPage {
     this.translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: enTranslations,
     });
     this.newRollingstockButton = page.getByTestId('new-rollingstock-button');
     this.submitRollingstockButton = page.getByTestId('submit-rollingstock-button');

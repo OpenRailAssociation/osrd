@@ -48,6 +48,7 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     const actualTableData: StationData[] = [];
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
     const headerIndexMap = await this.getHeaderIndexMap();

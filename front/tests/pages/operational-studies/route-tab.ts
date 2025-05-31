@@ -161,6 +161,7 @@ class RouteTab {
   async verifyNoSelectedRoute() {
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
     const isNoOriginChosenVisible = await this.noOriginChosen.isVisible();
@@ -239,6 +240,7 @@ class RouteTab {
     await this.pathfindingInProgressMessage.waitFor({ state: 'hidden' });
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
 

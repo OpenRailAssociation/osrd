@@ -47,6 +47,7 @@ class TimesAndStopsTab {
   ) {
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
 

@@ -7,6 +7,7 @@ import HomePage from '../home-page';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 
 class STDCMPage extends HomePage {
   private readonly consistCard: Locator;
@@ -139,6 +140,7 @@ class STDCMPage extends HomePage {
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: deTranslations,
     });
     await this.launchSimulation();
     expect(await this.simulationStatus.textContent()).toEqual(

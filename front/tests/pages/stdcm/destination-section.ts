@@ -12,6 +12,7 @@ import type { StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 
 class DestinationSection extends STDCMPage {
   private readonly destinationChField: Locator;
@@ -85,6 +86,7 @@ class DestinationSection extends STDCMPage {
     } = DESTINATION_DETAILS;
     const translations = getTranslations({
       en: enTranslations,
+      de: deTranslations,
       fr: frTranslations,
     });
     // Fill destination input and verify suggestions

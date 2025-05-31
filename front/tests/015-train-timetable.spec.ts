@@ -66,6 +66,7 @@ test.describe('Verify train schedule elements and filters', () => {
     translations = getTranslations({
       en: { ...enScenarioTranslations, ...enCommonTranslations },
       fr: { ...frScenarioTranslations, ...frCommonTranslations },
+      de: { ...enScenarioTranslations, ...enCommonTranslations },
     });
   });
 
