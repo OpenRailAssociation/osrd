@@ -30,7 +30,6 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
 import { parseLocalDateTime, formatLocalDateTime } from 'utils/date';
-import { useDebounce } from 'utils/helpers';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
@@ -41,19 +40,12 @@ const TrainSettings = () => {
   const categoryOptions = useCategoryOptions();
 
   const labels = useSelector(getLabels);
-  const nameFromStore = useSelector(getName);
-  const initialSpeedFromStore = useSelector(getInitialSpeed);
-  const startTimeFromStore = useSelector(getStartTime);
+  const name = useSelector(getName);
+  const initialSpeed = useSelector(getInitialSpeed);
+  const startTime = useSelector(getStartTime);
   const categoryFromStore = useSelector(getCategory);
 
-  const [name, setName] = useState<string>(nameFromStore);
-  const [startTime, setStartTime] = useState(formatLocalDateTime(startTimeFromStore));
-  const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
   const [trainCategory, setTrainCategory] = useState<CategoryOption>();
-
-  const debouncedName = useDebounce(name, 500);
-  const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);
-  const debouncedStartTime = useDebounce(startTime, 500);
 
   const removeTag = (idx: number) => {
     const newTags = [...labels];
@@ -65,22 +57,16 @@ const TrainSettings = () => {
     dispatch(updateLabels([...labels, tag]));
   };
 
-  useEffect(() => {
-    dispatch(updateName(debouncedName));
-  }, [debouncedName]);
+  const handleStartTimeChange = (value: string) => {
+    const newStartTime = parseLocalDateTime(value);
+    if (newStartTime) {
+      dispatch(updateStartTime(newStartTime));
+    }
+  };
 
   useEffect(() => {
     dispatch(updateCategory(trainCategory?.id || null));
   }, [trainCategory]);
-
-  useEffect(() => {
-    const newStartTime = parseLocalDateTime(debouncedStartTime);
-    if (newStartTime) dispatch(updateStartTime(newStartTime));
-  }, [debouncedStartTime]);
-
-  useEffect(() => {
-    dispatch(updateInitialSpeed(debouncedInitialSpeed));
-  }, [debouncedInitialSpeed]);
 
   useEffect(() => {
     if (categoryFromStore) {
@@ -105,7 +91,7 @@ const TrainSettings = () => {
             </>
           }
           id="timetable-item-name"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+          onChange={(e) => dispatch(updateName(e.target.value))}
           value={name}
           isInvalid={isInvalidTrainScheduleName}
           errorMsg={!name ? t('errorMessages.requiredField') : t('errorMessages.nameLengthLimit')}
@@ -126,8 +112,10 @@ const TrainSettings = () => {
             </>
           }
           id="start-time"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
-          value={startTime}
+          onChange={(e) => {
+            handleStartTimeChange(e.target.value);
+          }}
+          value={formatLocalDateTime(startTime)}
           isInvalid={!startTime}
           errorMsg={t('errorMessages.mandatoryField')}
           noMargin
@@ -158,7 +146,7 @@ const TrainSettings = () => {
             </>
           }
           id="initial-speed"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInitialSpeed(+e.target.value)}
+          onChange={(e) => dispatch(updateInitialSpeed(+e.target.value))}
           value={initialSpeed}
           min={0}
           noMargin
