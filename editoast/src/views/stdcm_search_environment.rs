@@ -1,7 +1,11 @@
 use crate::models::prelude::*;
+use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginationQueryParams;
+use crate::views::pagination::PaginationStats;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
+use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -12,6 +16,7 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
+use serde::Serialize;
 use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
 use thiserror::Error;
@@ -19,8 +24,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 #[cfg(test)]
-use serde::Serialize;
-
 use crate::Model;
 use crate::error::Result;
 use crate::models::Changeset;
@@ -33,6 +36,7 @@ crate::routes! {
     "/stdcm/search_environment" => {
         create,
         retrieve_latest,
+        "/list" => list,
         "/{env_id}" => delete,
     },
 }
@@ -211,8 +215,50 @@ async fn delete(
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct SdcmSearchEnvListResponse {
+    #[schema(value_type = Vec<StdcmSearchEnvironment>)]
+    results: Vec<StdcmSearchEnvironment>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
+
+#[utoipa::path(
+    get, path = "",
+    tag = "stdcm_search_environment",
+    params(PaginationQueryParams<1000>),
+    responses(
+        (status = 200, body = inline(SdcmSearchEnvListResponse), description = "The paginated list of all existing stdcm search environments"),
+    )
+)]
+async fn list(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Query(page_settings): Query<PaginationQueryParams<1000>>,
+) -> Result<Json<SdcmSearchEnvListResponse>> {
+    let authorized = auth
+        .check_roles([Role::Admin].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+    let mut conn = db_pool.get().await?;
+    let settings = page_settings
+        .into_selection_settings()
+        .order_by(|| StdcmSearchEnvironment::ID.asc());
+    let (listed_envs, stats) = StdcmSearchEnvironment::list_paginated(&mut conn, settings).await?;
+    Ok(Json(SdcmSearchEnvListResponse {
+        results: listed_envs,
+        stats,
+    }))
+}
+
 #[cfg(test)]
 pub mod tests {
+    use std::collections::HashSet;
+
     use axum::http::StatusCode;
     use chrono::Duration;
     use chrono::DurationRound;
@@ -384,6 +430,72 @@ pub mod tests {
             .await
             .expect("Failed to query stdcm search environment");
 
-        assert_eq!(deleted, None);
+        assert_eq!(deleted_env_exists, false);
+    }
+
+    #[rstest]
+    async fn list_stdcm_search_env() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+
+        let pool = app.db_pool();
+
+        let (
+            infra,
+            timetable,
+            work_schedule_group,
+            temporary_speed_limit_group,
+            electrical_profile_set,
+        ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
+
+        let env1 = StdcmSearchEnvironment::changeset()
+            .infra_id(infra.id)
+            .electrical_profile_set_id(Some(electrical_profile_set.id))
+            .work_schedule_group_id(Some(work_schedule_group.id))
+            .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
+            .timetable_id(timetable.id)
+            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap())
+            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap())
+            .enabled_from(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
+            .enabled_until(Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap())
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create stdcm search environment");
+
+        let env2 = env1
+            .clone()
+            .into_changeset()
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create stdcm search environment");
+
+        let env3 = env1
+            .clone()
+            .into_changeset()
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create stdcm search environment");
+
+        let request = app.get("/stdcm/search_environment/list");
+
+        // WHEN
+        let stdcm_search_env_response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<SdcmSearchEnvListResponse>();
+
+        // THEN
+        let created_ids = HashSet::from([env1.id, env2.id, env3.id]);
+        let retrieved_ids: HashSet<i64> = stdcm_search_env_response
+            .results
+            .iter()
+            .map(|env| env.id)
+            .collect();
+        assert_eq!(
+            created_ids
+                .difference(&retrieved_ids)
+                .collect::<HashSet<_>>(),
+            HashSet::default()
+        );
     }
 }

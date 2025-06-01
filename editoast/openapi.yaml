@@ -3091,6 +3091,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmSearchEnvironment'
+  /stdcm/search_environment/list:
+    get:
+      tags:
+      - stdcm_search_environment
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1000
+          nullable: true
+          maximum: 1000
+          minimum: 1
+      responses:
+        '200':
+          description: The paginated list of all existing stdcm search environments
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/StdcmSearchEnvironment'
   /stdcm/search_environment/{env_id}:
     delete:
       tags:
