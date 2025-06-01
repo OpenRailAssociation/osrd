@@ -918,6 +918,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm_search_environment'],
       }),
+      deleteStdcmSearchEnvironmentByEnvId: build.mutation<
+        DeleteStdcmSearchEnvironmentByEnvIdApiResponse,
+        DeleteStdcmSearchEnvironmentByEnvIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/stdcm/search_environment/${queryArg.envId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['stdcm_search_environment'],
+      }),
       getStdcmLog: build.query<GetStdcmLogApiResponse, GetStdcmLogApiArg>({
         query: (queryArg) => ({
           url: `/stdcm_log`,
@@ -1988,6 +1998,11 @@ export type GetStdcmSearchEnvironmentApiArg = void;
 export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
 export type PostStdcmSearchEnvironmentApiArg = {
   stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
+};
+export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
+export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
+  /** An stdcm search environment ID */
+  envId: number;
 };
 export type GetStdcmLogApiResponse = /** status 200 The STDCM log */ StdcmLog;
 export type GetStdcmLogApiArg = {

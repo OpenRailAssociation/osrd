@@ -1,5 +1,7 @@
+use crate::models::prelude::*;
 use axum::Extension;
 use axum::extract::Json;
+use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -7,10 +9,13 @@ use axum::response::Response;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_authz::Role;
+use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
+use thiserror::Error;
+use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 #[cfg(test)]
@@ -28,12 +33,26 @@ crate::routes! {
     "/stdcm/search_environment" => {
         create,
         retrieve_latest,
+        "/{env_id}" => delete,
     },
 }
 
 editoast_common::schemas! {
     StdcmSearchEnvironmentCreateForm,
     StdcmSearchEnvironment,
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "stdcm_search_env")]
+enum StdcmSearchEnvError {
+    /// Could not find the stdcm search env with the given ID
+    #[error("Stdcm search environment '{env_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { env_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -155,6 +174,43 @@ async fn retrieve_latest(
     }
 }
 
+#[derive(IntoParams, Deserialize)]
+#[allow(unused)]
+struct StdcmSearchEnvIdParam {
+    /// An stdcm search environment ID
+    env_id: i64,
+}
+
+#[utoipa::path(
+    delete, path = "",
+    tag = "stdcm_search_environment",
+    params(StdcmSearchEnvIdParam),
+    responses(
+        (status = 204, description = "The stdcm search environment was deleted successfully"),
+    )
+)]
+async fn delete(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([Role::Admin].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+    StdcmSearchEnvironment::delete_static_or_fail(conn, env_id, || StdcmSearchEnvError::NotFound {
+        env_id,
+    })
+    .await?;
+
+    Ok(axum::http::StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
@@ -206,9 +262,8 @@ pub mod tests {
             .json_into::<StdcmSearchEnvironment>();
 
         // THEN
-        #[expect(deprecated)]
         let stdcm_search_env_in_db =
-            StdcmSearchEnvironment::retrieve(&mut pool.get_ok(), stdcm_search_env.id)
+            StdcmSearchEnvironment::retrieve_real(pool.get_ok(), stdcm_search_env.id)
                 .await
                 .expect("Failed to retrieve stdcm search environment")
                 .expect("Stdcm search environment not found");
@@ -289,5 +344,46 @@ pub mod tests {
 
         // THEN
         response.assert_status(StatusCode::NO_CONTENT);
+    }
+
+    #[rstest]
+    async fn delete_stdcm_search_env() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let (
+            infra,
+            timetable,
+            work_schedule_group,
+            temporary_speed_limit_group,
+            electrical_profile_set,
+        ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
+
+        let env = StdcmSearchEnvironment::changeset()
+            .infra_id(infra.id)
+            .electrical_profile_set_id(Some(electrical_profile_set.id))
+            .work_schedule_group_id(Some(work_schedule_group.id))
+            .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
+            .timetable_id(timetable.id)
+            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap())
+            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap())
+            .enabled_from(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
+            .enabled_until(Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap())
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create stdcm search environment");
+
+        let request = app.delete(&format!("/stdcm/search_environment/{}", env.id));
+
+        // WHEN
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+
+        // THEN
+        let deleted_env_exists = StdcmSearchEnvironment::exists(&mut pool.get_ok(), env.id)
+            .await
+            .expect("Failed to query stdcm search environment");
+
+        assert_eq!(deleted, None);
     }
 }

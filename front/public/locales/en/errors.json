@@ -215,6 +215,10 @@
       "NotFound": "STDCM log entry '{{id}}' could not be found",
       "TraceIdNotFound": "STDCM log entry '{{trace_id}}' could not be found"
     },
+    "stdcm_search_env": {
+      "Database": "Internal error (database)",
+      "NotFound": "Stdcm search environment '{{env_id}}' could not be found"
+    },
     "study": {
       "Database": "Internal error (database)",
       "NotFound": "Study '{{study_id}}' could not be found",

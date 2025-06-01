@@ -3091,6 +3091,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmSearchEnvironment'
+  /stdcm/search_environment/{env_id}:
+    delete:
+      tags:
+      - stdcm_search_environment
+      parameters:
+      - name: env_id
+        in: path
+        description: An stdcm search environment ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The stdcm search environment was deleted successfully
   /stdcm_log:
     get:
       tags:
@@ -5526,6 +5541,8 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmLogErrorMissingIdAndTraceId'
       - $ref: '#/components/schemas/EditoastStdcmLogErrorNotFound'
       - $ref: '#/components/schemas/EditoastStdcmLogErrorTraceIdNotFound'
+      - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorDatabase'
+      - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
@@ -6937,6 +6954,49 @@ components:
           type: string
           enum:
           - editoast:stdcm_log:TraceIdNotFound
+    EditoastStdcmSearchEnvErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_search_env:Database
+    EditoastStdcmSearchEnvErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - env_id
+          properties:
+            env_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_search_env:NotFound
     EditoastStudyErrorDatabase:
       type: object
       required:
