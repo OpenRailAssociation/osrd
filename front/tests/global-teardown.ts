@@ -8,7 +8,7 @@ import ROLLING_STOCK_NAMES, {
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import { setStdcmEnvironment } from './utils/api-utils';
+import { createStdcmEnvironment } from './utils/api-utils';
 import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
@@ -34,7 +34,7 @@ teardown('teardown', async ({ browser }) => {
       : null;
 
     if (savedEnvironment) {
-      await setStdcmEnvironment(savedEnvironment);
+      await createStdcmEnvironment(savedEnvironment);
       logger.info('STDCM environment restored successfully.');
     } else {
       logger.warn('No STDCM environment to restore.');

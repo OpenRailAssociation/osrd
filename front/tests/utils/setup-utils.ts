@@ -14,9 +14,9 @@ import type {
 import {
   getApiRequest,
   getInfra,
-  getStdcmEnvironment,
+  retrieveLatestStdcmEnvironment,
   postApiRequest,
-  setStdcmEnvironment,
+  createStdcmEnvironment,
 } from './api-utils';
 import readJsonFile from './file-utils';
 import { sendPacedTrains } from './paced-train';
@@ -156,7 +156,7 @@ export async function createStudy(projectId: number, studyName = globalStudyName
  */
 async function saveFormerStdcmEnvironment(testInfraId: number) {
   const savedStdcmEnvFilePath = './tests/test-saved-environment/savedStdcmEnvironment.json';
-  let stdcmEnvironment = await getStdcmEnvironment();
+  let stdcmEnvironment = await retrieveLatestStdcmEnvironment();
 
   try {
     if (stdcmEnvironment && testInfraId !== stdcmEnvironment.infra_id) {
@@ -252,7 +252,7 @@ export async function createDataForTests(): Promise<void> {
       ).toISOString(),
     } as StdcmSearchEnvironment;
 
-    await setStdcmEnvironment(stdcmEnvironment);
+    await createStdcmEnvironment(stdcmEnvironment);
   } catch (error) {
     throw new Error('Error during test data setup', { cause: error });
   }

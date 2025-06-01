@@ -267,9 +267,9 @@ export const setElectricalProfile = async (): Promise<ElectricalProfileSet> => {
 };
 
 /**
- * Fetch the STDCM environment if not in CI mode.
+ * Fetch the latest enabled STDCM search environment if not in CI mode.
  */
-export async function getStdcmEnvironment(): Promise<StdcmSearchEnvironment | null> {
+export async function retrieveLatestStdcmEnvironment(): Promise<StdcmSearchEnvironment | null> {
   if (process.env.CI) return null; // Skip in CI mode.
 
   try {
@@ -289,11 +289,13 @@ export async function getStdcmEnvironment(): Promise<StdcmSearchEnvironment | nu
 }
 
 /**
- * Set the STDCM environment with the provided data.
+ * Create a STDCM search environment with the provided data.
  *
  * @param stdcmEnvironment -The stdcm search environment to use.
  */
-export async function setStdcmEnvironment(stdcmEnvironment: StdcmSearchEnvironment): Promise<void> {
+export async function createStdcmEnvironment(
+  stdcmEnvironment: StdcmSearchEnvironment
+): Promise<void> {
   // Remove the `id` field to match the StdcmSearchEnvironmentCreateForm schema
   const { id: _id, ...stdcmEnvironmentWithoutId } = stdcmEnvironment;
   await postApiRequest(
@@ -301,6 +303,25 @@ export async function setStdcmEnvironment(stdcmEnvironment: StdcmSearchEnvironme
     stdcmEnvironmentWithoutId,
     undefined,
     'Failed to update STDCM configuration environment'
+  );
+}
+
+/**
+ * List the STDCM environments.
+ */
+export async function listStdcmEnvironment(): Promise<StdcmSearchEnvironment[]> {
+  return listApiRequest('/api/stdcm/search_environment/list');
+}
+
+/**
+ * Delete the STDCM environment with the provided id.
+ *
+ * @param stdcmSearchEnvId -The id of the stdcm search environment to delete.
+ */
+export async function deleteStdcmEnvironment(stdcmSearchEnvId: number): Promise<void> {
+  await deleteApiRequest(
+    `/api/stdcm/search_environment/${stdcmSearchEnvId}`,
+    `Failed to delete the STDCM search environment with id ${stdcmSearchEnvId}`
   );
 }
 
