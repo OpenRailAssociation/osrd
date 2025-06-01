@@ -38,6 +38,7 @@ import {
 import { logger } from '../logging-fixture';
 import { createDateInSpecialTimeZone } from './date-utils';
 import type { ProjectData, StudyData } from './types';
+import { expect } from '@playwright/test';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
@@ -247,6 +248,9 @@ export async function createDataForTests(): Promise<void> {
     } as StdcmSearchEnvironment;
 
     await createStdcmEnvironment(stdcmEnvironment);
+    await expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
+      infra_id: smallInfra.id,
+    });
   } catch (error) {
     throw new Error('Error during test data setup', { cause: error });
   }
