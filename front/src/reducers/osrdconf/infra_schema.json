@@ -14,22 +14,18 @@
             "description": "An applicable directions track range is a track range with associated directions.",
             "properties": {
                 "applicable_directions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/ApplicableDirections"
-                        }
-                    ],
+                    "$ref": "#/$defs/ApplicableDirections",
                     "description": "Direction where the corresponding object is applied"
                 },
                 "begin": {
                     "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "End",
                     "type": "number"
                 },
@@ -61,11 +57,7 @@
                     "type": "array"
                 },
                 "default_parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BalSystem__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BalSystem__Parameters",
                     "description": "BAL signal parameters"
                 },
                 "next_signaling_systems": {
@@ -77,17 +69,14 @@
                     "type": "array"
                 },
                 "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BalSystem__Settings"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BalSystem__Settings",
                     "description": "BAL signal settings"
                 },
                 "signaling_system": {
                     "const": "BAL",
                     "default": "BAL",
-                    "title": "Signaling System"
+                    "title": "Signaling System",
+                    "type": "string"
                 }
             },
             "required": [
@@ -116,25 +105,18 @@
                     "type": "array"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BaprSystem__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BaprSystem__Parameters",
                     "description": "BAPR signal parameters"
                 },
                 "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BaprSystem__Settings"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BaprSystem__Settings",
                     "description": "BAPR signal settings"
                 },
                 "signaling_system": {
                     "const": "BAPR",
                     "default": "BAPR",
-                    "title": "Signaling System"
+                    "title": "Signaling System",
+                    "type": "string"
                 }
             },
             "required": [
@@ -148,11 +130,7 @@
             "description": "This class defines the buffer stop object.\nA buffer stop is a device placed at the end of a dead-end road\nto stop any drifting trains from continuing off the road.\nA buffer stop is characterized by its id and its corresponding track.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/BufferStopExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/BufferStopExtensions",
                     "default": null
                 },
                 "id": {
@@ -164,7 +142,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -187,11 +165,7 @@
         "BufferStopExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/BufferStopSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/BufferStopSncfExtension",
                     "default": null
                 }
             },
@@ -209,7 +183,8 @@
                 },
                 "type": {
                     "const": "BufferStop",
-                    "title": "Type"
+                    "title": "Type",
+                    "type": "string"
                 }
             },
             "required": [
@@ -248,6 +223,9 @@
                         "type": "string"
                     },
                     "description": "List of key value parameters, which are defined per signaling system",
+                    "propertyNames": {
+                        "minLength": 1
+                    },
                     "title": "Parameters",
                     "type": "object"
                 }
@@ -264,13 +242,13 @@
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "End",
                     "type": "number"
                 },
@@ -292,11 +270,7 @@
             "description": "This class defines detector object.\nA detector is characterized by its id and its corresponding track.\nA detector is used to locate a train\nin order to consider the section as occupied when there is a train.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/DetectorExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/DetectorExtensions",
                     "default": null
                 },
                 "id": {
@@ -308,7 +282,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -331,11 +305,7 @@
         "DetectorExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/DetectorSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/DetectorSncfExtension",
                     "default": null
                 }
             },
@@ -353,7 +323,8 @@
                 },
                 "type": {
                     "const": "Detector",
-                    "title": "Type"
+                    "title": "Type",
+                    "type": "string"
                 }
             },
             "required": [
@@ -391,21 +362,17 @@
             "properties": {
                 "begin": {
                     "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
+                    "$ref": "#/$defs/Direction",
                     "description": "Description of the direction"
                 },
                 "end": {
                     "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "End",
                     "type": "number"
                 },
@@ -478,11 +445,7 @@
                     "type": "array"
                 },
                 "default_parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____EtcsLevel2System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____EtcsLevel2System__Parameters",
                     "description": "ETCS_LEVEL2 signal parameters"
                 },
                 "next_signaling_systems": {
@@ -494,17 +457,14 @@
                     "type": "array"
                 },
                 "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____EtcsLevel2System__Settings"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____EtcsLevel2System__Settings",
                     "description": "ETCS_LEVEL2 signal settings"
                 },
                 "signaling_system": {
                     "const": "ETCS_LEVEL2",
                     "default": "ETCS_LEVEL2",
-                    "title": "Signaling System"
+                    "title": "Signaling System",
+                    "type": "string"
                 }
             },
             "required": [
@@ -649,7 +609,8 @@
                 },
                 "type": {
                     "const": "LineString",
-                    "title": "Type"
+                    "title": "Type",
+                    "type": "string"
                 }
             },
             "required": [
@@ -664,21 +625,17 @@
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "category": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LoadingGaugeType"
-                        }
-                    ],
+                    "$ref": "#/$defs/LoadingGaugeType",
                     "description": "Category of loading gauge for the corresponding rolling stock"
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding loading gauge limit",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "End",
                     "type": "number"
                 }
@@ -724,6 +681,9 @@
                         "type": "string"
                     },
                     "description": "A list of default parameters (in regards to routes), which are defined per signaling system",
+                    "propertyNames": {
+                        "minLength": 1
+                    },
                     "title": "Default Parameters",
                     "type": "object"
                 },
@@ -741,6 +701,9 @@
                         "type": "string"
                     },
                     "description": "A list of key value parameters, which are defined per signaling system",
+                    "propertyNames": {
+                        "minLength": 1
+                    },
                     "title": "Settings",
                     "type": "object"
                 },
@@ -772,11 +735,7 @@
                     "type": "array"
                 },
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/NeutralSectionExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/NeutralSectionExtensions",
                     "default": null
                 },
                 "id": {
@@ -812,11 +771,7 @@
         "NeutralSectionExtensions": {
             "properties": {
                 "neutral_sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/NeutralSectionNeutralSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/NeutralSectionNeutralSncfExtension",
                     "default": null
                 }
             },
@@ -842,11 +797,7 @@
                     "type": "array"
                 },
                 "exe": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Sign"
-                        }
-                    ],
+                    "$ref": "#/$defs/Sign",
                     "description": "Beginning of the bp/cc neutral section"
                 },
                 "rev": {
@@ -871,11 +822,7 @@
             "description": "This class describes the operational points of the corresponding infra.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/OperationalPointExtensions",
                     "default": null
                 },
                 "id": {
@@ -917,19 +864,11 @@
         "OperationalPointExtensions": {
             "properties": {
                 "identifier": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointIdentifierExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/OperationalPointIdentifierExtension",
                     "default": null
                 },
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/OperationalPointSncfExtension",
                     "default": null
                 }
             },
@@ -961,16 +900,12 @@
             "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointPartExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/OperationalPointPartExtensions",
                     "default": null
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -992,11 +927,7 @@
         "OperationalPointPartExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/OperationalPointPartSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/OperationalPointPartSncfExtension",
                     "default": null
                 }
             },
@@ -1083,11 +1014,7 @@
                     "title": "Entry Point"
                 },
                 "entry_point_direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
+                    "$ref": "#/$defs/Direction",
                     "description": "Direction of the route at the entry point"
                 },
                 "exit_point": {
@@ -1132,6 +1059,10 @@
                         "type": "string"
                     },
                     "description": "Switches position part of the route",
+                    "propertyNames": {
+                        "maxLength": 255,
+                        "minLength": 1
+                    },
                     "title": "Switches Directions",
                     "type": "object"
                 }
@@ -1161,11 +1092,7 @@
             "description": "This class is used to define signs.\nThis is a physical, punctual, cosmetic object.",
             "properties": {
                 "direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
+                    "$ref": "#/$defs/Direction",
                     "default": "START_TO_STOP",
                     "description": "Direction of the sign on the track"
                 },
@@ -1177,16 +1104,12 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Position",
                     "type": "number"
                 },
                 "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Side"
-                        }
-                    ],
+                    "$ref": "#/$defs/Side",
                     "default": "CENTER",
                     "description": "Side of the sign on the track"
                 },
@@ -1222,19 +1145,11 @@
             "description": "This class is used to describe the signal.\nA signal is characterized by its id and its corresponding track.\nBy default, the signal is located at the center of the track.",
             "properties": {
                 "direction": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Direction"
-                        }
-                    ],
+                    "$ref": "#/$defs/Direction",
                     "description": "Direction of use of the signal"
                 },
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SignalExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/SignalExtensions",
                     "default": null
                 },
                 "id": {
@@ -1254,13 +1169,13 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Position",
                     "type": "number"
                 },
                 "sight_distance": {
                     "description": "Visibility distance of the signal in meters",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Sight Distance",
                     "type": "number"
                 },
@@ -1285,11 +1200,7 @@
         "SignalExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SignalSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/SignalSncfExtension",
                     "default": null
                 }
             },
@@ -1308,11 +1219,7 @@
                     "type": "string"
                 },
                 "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Side"
-                        }
-                    ],
+                    "$ref": "#/$defs/Side",
                     "default": "CENTER",
                     "description": "Side of the signal on the track"
                 }
@@ -1340,13 +1247,13 @@
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding gradient in a track section",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "End",
                     "type": "number"
                 },
@@ -1368,11 +1275,7 @@
             "description": "Speed sections are recognized by their identifiers and are in meters per second.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SpeedSectionExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/SpeedSectionExtensions",
                     "default": null
                 },
                 "id": {
@@ -1403,7 +1306,7 @@
                 "speed_limit": {
                     "anyOf": [
                         {
-                            "exclusiveMinimum": 0.0,
+                            "exclusiveMinimum": 0,
                             "type": "number"
                         },
                         {
@@ -1419,6 +1322,9 @@
                         "type": "number"
                     },
                     "description": "Speed limit (m/s) applied to trains with a given tag",
+                    "propertyNames": {
+                        "minLength": 1
+                    },
                     "title": "Speed Limit By Tag",
                     "type": "object"
                 },
@@ -1442,11 +1348,7 @@
         "SpeedSectionExtensions": {
             "properties": {
                 "psl_sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SpeedSectionPslSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/SpeedSectionPslSncfExtension",
                     "default": null
                 }
             },
@@ -1472,11 +1374,7 @@
                     "type": "array"
                 },
                 "z": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Sign"
-                        }
-                    ],
+                    "$ref": "#/$defs/Sign",
                     "description": "Beginning of the psl speed section"
                 }
             },
@@ -1492,16 +1390,12 @@
             "description": "Switches are devices used for track changes.",
             "properties": {
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SwitchExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/SwitchExtensions",
                     "default": null
                 },
                 "group_change_delay": {
                     "description": "Time it takes to change which group of the switch is activated",
-                    "minimum": 0.0,
+                    "minimum": 0,
                     "title": "Group Change Delay",
                     "type": "number"
                 },
@@ -1517,6 +1411,10 @@
                         "$ref": "#/$defs/TrackEndpoint"
                     },
                     "description": "Location of different ports according to track sections",
+                    "propertyNames": {
+                        "maxLength": 255,
+                        "minLength": 1
+                    },
                     "title": "Ports",
                     "type": "object"
                 },
@@ -1540,11 +1438,7 @@
         "SwitchExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/SwitchSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/SwitchSncfExtension",
                     "default": null
                 }
             },
@@ -1602,6 +1496,10 @@
                         "type": "array"
                     },
                     "description": "Connection between and according ports",
+                    "propertyNames": {
+                        "maxLength": 255,
+                        "minLength": 1
+                    },
                     "title": "Groups",
                     "type": "object"
                 },
@@ -1636,11 +1534,7 @@
             "description": "This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.",
             "properties": {
                 "endpoint": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/Endpoint"
-                        }
-                    ],
+                    "$ref": "#/$defs/Endpoint",
                     "description": "Relative position of the considered end point"
                 },
                 "track": {
@@ -1670,19 +1564,11 @@
                     "type": "array"
                 },
                 "extensions": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackSectionExtensions"
-                        }
-                    ],
+                    "$ref": "#/$defs/TrackSectionExtensions",
                     "default": null
                 },
                 "geo": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LineString"
-                        }
-                    ],
+                    "$ref": "#/$defs/LineString",
                     "description": "Geographic coordinates of the corresponding object"
                 },
                 "id": {
@@ -1694,7 +1580,7 @@
                 },
                 "length": {
                     "description": "Value of the length of the track section in meters",
-                    "exclusiveMinimum": 0.0,
+                    "exclusiveMinimum": 0,
                     "title": "Length",
                     "type": "number"
                 },
@@ -1728,19 +1614,11 @@
         "TrackSectionExtensions": {
             "properties": {
                 "sncf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackSectionSncfExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/TrackSectionSncfExtension",
                     "default": null
                 },
                 "source": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/TrackSectionSourceExtension"
-                        }
-                    ],
+                    "$ref": "#/$defs/TrackSectionSourceExtension",
                     "default": null
                 }
             },
@@ -1813,11 +1691,7 @@
                     "type": "array"
                 },
                 "default_parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm300System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm300System__Parameters",
                     "description": "TVM signal parameters"
                 },
                 "next_signaling_systems": {
@@ -1829,17 +1703,14 @@
                     "type": "array"
                 },
                 "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm300System__Settings"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm300System__Settings",
                     "description": "TVM signal settings"
                 },
                 "signaling_system": {
                     "const": "TVM300",
                     "default": "TVM300",
-                    "title": "Signaling System"
+                    "title": "Signaling System",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1860,11 +1731,7 @@
                     "type": "array"
                 },
                 "default_parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm430System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm430System__Parameters",
                     "description": "TVM signal parameters"
                 },
                 "next_signaling_systems": {
@@ -1876,17 +1743,14 @@
                     "type": "array"
                 },
                 "settings": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm430System__Settings"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm430System__Settings",
                     "description": "TVM signal settings"
                 },
                 "signaling_system": {
                     "const": "TVM430",
                     "default": "TVM430",
-                    "title": "Signaling System"
+                    "title": "Signaling System",
+                    "type": "string"
                 }
             },
             "required": [
@@ -1906,11 +1770,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BalSystem__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BalSystem__Parameters",
                     "description": "BAL signal parameters"
                 }
             },
@@ -1924,11 +1784,7 @@
         "__main____BalSystem__Parameters": {
             "properties": {
                 "jaune_cli": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal yellow blinking"
                 }
             },
@@ -1941,11 +1797,7 @@
         "__main____BalSystem__Settings": {
             "properties": {
                 "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal non-passable"
                 }
             },
@@ -1965,11 +1817,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____BaprSystem__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____BaprSystem__Parameters",
                     "description": "BAPR signal parameters"
                 }
             },
@@ -1988,19 +1836,11 @@
         "__main____BaprSystem__Settings": {
             "properties": {
                 "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal non-passable"
                 },
                 "distant": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is it a distant signal"
                 }
             },
@@ -2021,11 +1861,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____EtcsLevel2System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____EtcsLevel2System__Parameters",
                     "description": "ETCS_LEVEL2 signal parameters"
                 }
             },
@@ -2044,11 +1880,7 @@
         "__main____EtcsLevel2System__Settings": {
             "properties": {
                 "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal non-passable"
                 }
             },
@@ -2068,11 +1900,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm300System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm300System__Parameters",
                     "description": "TVM300 signal parameters"
                 }
             },
@@ -2091,11 +1919,7 @@
         "__main____Tvm300System__Settings": {
             "properties": {
                 "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal non-passable"
                 }
             },
@@ -2115,11 +1939,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/__main____Tvm430System__Parameters"
-                        }
-                    ],
+                    "$ref": "#/$defs/__main____Tvm430System__Parameters",
                     "description": "TVM430 signal parameters"
                 }
             },
@@ -2138,11 +1958,7 @@
         "__main____Tvm430System__Settings": {
             "properties": {
                 "Nf": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/FlagSignalParameter"
-                        }
-                    ],
+                    "$ref": "#/$defs/FlagSignalParameter",
                     "description": "Is the signal non-passable"
                 }
             },
@@ -2248,7 +2064,8 @@
             "const": "3.4.13",
             "default": "3.4.13",
             "description": "Version of the schema",
-            "title": "Version"
+            "title": "Version",
+            "type": "string"
         }
     },
     "required": [
