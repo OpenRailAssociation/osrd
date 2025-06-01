@@ -22,7 +22,7 @@ format:
 # Verify code lints without applying any fix
 lint:
     uv run ruff check
-    uv run pyright .
+    uv run pyright
 
 # Fix all the lints that can be automatically applied
 fix-lint:
