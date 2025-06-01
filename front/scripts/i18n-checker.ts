@@ -109,9 +109,12 @@ const IGNORE_UNUSED: RegExp[] = [
 /**
  * Read a file and returns its content as a JSON
  */
-async function readJsonFile<T extends { [key: string]: unknown }>(filePath: string): Promise<T> {
+export async function readJsonFile<T extends { [key: string]: unknown }>(
+  filePath: string
+): Promise<T> {
   try {
     const data = await readFile(filePath, 'utf-8');
+    console.log('readJsonFile: ', data);
     return JSON.parse(data) as T;
   } catch (e) {
     console.error(`Problem occured while reading ${filePath}`);
@@ -122,7 +125,9 @@ async function readJsonFile<T extends { [key: string]: unknown }>(filePath: stri
 /**
  * Given a locales folder, return the list of all i18n keys.
  */
-async function getLocalesKeys(localePath: string, locale: string): Promise<Set<string>> {
+export async function getLocalesKeys(localePath: string, locale: string): Promise<Set<string>> {
+  console.log('localePath: ', localePath);
+  console.log('locale: ', locale);
   const pathForLocale = `${localePath}/${locale}/`;
   const files = await glob(`${pathForLocale}/**/*.json`);
   const allKeys = (
@@ -138,6 +143,9 @@ async function getLocalesKeys(localePath: string, locale: string): Promise<Set<s
   )
     .flat()
     .sort();
+
+  console.log('allKeys: ', allKeys);
+
   return new Set(allKeys);
 }
 
@@ -161,6 +169,8 @@ function visitCallExpression(
   file: ts.SourceFile,
   node: ts.CallExpression
 ) {
+  console.log('visitCallExpression: ', extractedKeys);
+
   const symbol = checker.getSymbolAtLocation(node.expression);
   if (!symbol) {
     return;
