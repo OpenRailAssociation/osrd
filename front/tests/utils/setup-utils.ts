@@ -242,14 +242,8 @@ export async function createDataForTests(): Promise<void> {
         'Europe/Paris'
       ).toISOString(),
       timetable_id: scenarioTrainSchedule.timetable_id,
-      enabled_from: createDateInSpecialTimeZone(
-        '2024-10-16T00:00:00',
-        'Europe/Paris'
-      ).toISOString(),
-      enabled_until: createDateInSpecialTimeZone(
-        '2024-10-17T00:00:00',
-        'Europe/Paris'
-      ).toISOString(),
+      enabled_from: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // one hour ago
+      enabled_until: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // in four hours
     } as StdcmSearchEnvironment;
 
     await createStdcmEnvironment(stdcmEnvironment);
