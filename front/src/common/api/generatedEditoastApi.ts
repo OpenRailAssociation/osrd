@@ -907,6 +907,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm_search_environment'],
       }),
+      getStdcmSearchEnvironmentList: build.query<
+        GetStdcmSearchEnvironmentListApiResponse,
+        GetStdcmSearchEnvironmentListApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/stdcm/search_environment/list`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['stdcm_search_environment'],
+      }),
       deleteStdcmSearchEnvironmentByEnvId: build.mutation<
         DeleteStdcmSearchEnvironmentByEnvIdApiResponse,
         DeleteStdcmSearchEnvironmentByEnvIdApiArg
@@ -1966,6 +1979,14 @@ export type GetStdcmSearchEnvironmentApiArg = void;
 export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
 export type PostStdcmSearchEnvironmentApiArg = {
   stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
+};
+export type GetStdcmSearchEnvironmentListApiResponse =
+  /** status 200 The paginated list of all existing stdcm search environments */ PaginationStats & {
+    results: StdcmSearchEnvironment[];
+  };
+export type GetStdcmSearchEnvironmentListApiArg = {
+  page?: number;
+  pageSize?: number | null;
 };
 export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
 export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
