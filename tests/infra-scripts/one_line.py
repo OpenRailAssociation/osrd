@@ -2,9 +2,16 @@
 
 import sys
 from pathlib import Path
+from typing import cast
 
 from railjson_generator import ApplicableDirection, InfraBuilder
 from small_infra_creator import ScenarioData
+
+from railjson_generator.schema.infra.track_section import TrackSection
+
+
+class TrackSectionWithInvertedFlag(TrackSection):
+    inverted: bool
 
 
 def _build_scenario_data():
@@ -12,7 +19,10 @@ def _build_scenario_data():
     builder = InfraBuilder()
 
     # Create track sections
-    tracks = [builder.add_track_section(length=1000) for _ in range(10)]
+    base_tracks: list[TrackSection] = [
+        builder.add_track_section(length=1000) for _ in range(10)
+    ]
+    tracks = [cast(TrackSectionWithInvertedFlag, track) for track in base_tracks]
     for i, track in enumerate(tracks):
         track.inverted = i % 2 == 1
 
