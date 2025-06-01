@@ -8,7 +8,11 @@ import ROLLING_STOCK_NAMES, {
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import { createStdcmEnvironment } from './utils/api-utils';
+import {
+  createStdcmEnvironment,
+  deleteStdcmEnvironment,
+  listStdcmEnvironment,
+} from './utils/api-utils';
 import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
@@ -45,9 +49,16 @@ teardown('teardown', async ({ browser }) => {
       force: true,
     });
 
-    // Delete infra, unless it is currently used as a foreign key by the stdcm env in the database
-    if (savedEnvironment && savedEnvironment.infra_id !== Number(process.env.TEST_INFRA_ID))
-      await deleteInfra(infrastructureName);
+    // Delete all stdcm search environments which are using the current test infra
+    const testStdcmEnvs = (await listStdcmEnvironment()).filter(
+      (env) => env.infra_id === Number(process.env.TEST_INFRA_ID)
+    );
+    for (const env of testStdcmEnvs) {
+      await deleteStdcmEnvironment(env.id);
+    }
+
+    // Delete infra
+    await deleteInfra(infrastructureName);
 
     logger.info('Test data teardown completed successfully.');
   } catch (error) {
