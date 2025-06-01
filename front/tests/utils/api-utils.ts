@@ -267,11 +267,9 @@ export const setElectricalProfile = async (): Promise<ElectricalProfileSet> => {
 };
 
 /**
- * Fetch the latest enabled STDCM search environment if not in CI mode.
+ * Fetch the latest enabled STDCM search environment.
  */
 export async function retrieveLatestStdcmEnvironment(): Promise<StdcmSearchEnvironment | null> {
-  if (process.env.CI) return null; // Skip in CI mode.
-
   try {
     const apiContext = await getApiContext();
     const response = await apiContext.get('api/stdcm/search_environment');

@@ -8,11 +8,7 @@ import ROLLING_STOCK_NAMES, {
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import {
-  createStdcmEnvironment,
-  deleteStdcmEnvironment,
-  listStdcmEnvironment,
-} from './utils/api-utils';
+import { deleteStdcmEnvironment, listStdcmEnvironment } from './utils/api-utils';
 import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
@@ -31,23 +27,6 @@ teardown('teardown', async ({ browser }) => {
     // Close all browser contexts
     await Promise.all(browser.contexts().map((context) => context.close()));
     logger.info('All browser contexts closed successfully.');
-
-    // Restore STDCM environment
-    const savedEnvironment = process.env.STDCM_ENVIRONMENT
-      ? JSON.parse(process.env.STDCM_ENVIRONMENT)
-      : null;
-
-    if (savedEnvironment) {
-      await createStdcmEnvironment(savedEnvironment);
-      logger.info('STDCM environment restored successfully.');
-    } else {
-      logger.warn('No STDCM environment to restore.');
-    }
-
-    fs.rmSync('./tests/test-saved-environment/savedStdcmEnvironment.json', {
-      recursive: true,
-      force: true,
-    });
 
     // Delete all stdcm search environments which are using the current test infra
     const testStdcmEnvs = (await listStdcmEnvironment()).filter(

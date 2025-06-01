@@ -40,7 +40,6 @@ npm-debug.log*
 /test-results/
 /playwright-report/
 /playwright/.cache/
-/tests/test-saved-environment
 
 # config overrides
 /overrides
