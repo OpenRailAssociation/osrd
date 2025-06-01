@@ -1,4 +1,4 @@
-import { promises } from 'fs';
+import { expect } from '@playwright/test';
 
 import type {
   Infra,
@@ -18,10 +18,12 @@ import {
   postApiRequest,
   createStdcmEnvironment,
 } from './api-utils';
+import { createDateInSpecialTimeZone } from './date-utils';
 import readJsonFile from './file-utils';
 import { sendPacedTrains } from './paced-train';
 import createScenario from './scenario';
 import sendTrainSchedules from './train-schedule';
+import type { ProjectData, StudyData } from './types';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -35,10 +37,6 @@ import {
   trainScheduleScenarioName,
   trainScheduleStudyName,
 } from '../assets/constants/project-const';
-import { logger } from '../logging-fixture';
-import { createDateInSpecialTimeZone } from './date-utils';
-import type { ProjectData, StudyData } from './types';
-import { expect } from '@playwright/test';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
@@ -152,42 +150,6 @@ export async function createStudy(projectId: number, studyName = globalStudyName
 }
 
 /**
- * Load and save the stdcm environment to ensure it is not erased by the e2e-tests environment
- * @param testInfraId
- */
-async function saveFormerStdcmEnvironment(testInfraId: number) {
-  const savedStdcmEnvFilePath = './tests/test-saved-environment/savedStdcmEnvironment.json';
-  let stdcmEnvironment = await retrieveLatestStdcmEnvironment();
-
-  try {
-    if (stdcmEnvironment && testInfraId !== stdcmEnvironment.infra_id) {
-      // If the stdcm env in the database isn't using the test infra, we know it is a non-test env and we save it, to avoid loss on test interruption.
-      await promises.mkdir('./tests/test-saved-environment', { recursive: true });
-      await promises.writeFile(
-        savedStdcmEnvFilePath,
-        JSON.stringify(stdcmEnvironment, null, 2),
-        'utf-8'
-      );
-    } else {
-      try {
-        // Otherwise, we check if we previously saved a non-test env and recover it.
-        // The only way this can occur normally is if the tests were interrupted before teardown.
-        stdcmEnvironment = readJsonFile<StdcmSearchEnvironment>(savedStdcmEnvFilePath);
-      } catch (error: unknown) {
-        if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
-          throw error; // Rethrow errors other than file not found
-        }
-      }
-    }
-    // Finally we put the current stdcm env in an env variable in prevision of the teardown,
-    // where we will delete the saved file and put the stdcm env back into the database
-    process.env.STDCM_ENVIRONMENT = JSON.stringify(stdcmEnvironment);
-  } catch (error) {
-    logger.error('Error handling saved STDCM environment: ', error);
-  }
-}
-
-/**
  * Main function to create all necessary test data including infrastructure, rolling stocks,
  * project, study, and scenario.
  */
@@ -230,8 +192,6 @@ export async function createDataForTests(): Promise<void> {
     await sendPacedTrains(scenarioTrainSchedule.timetable_id, pacedTrainsJson);
 
     // Step 7: Configure STDCM search environment for the tests
-    await saveFormerStdcmEnvironment(smallInfra.id);
-
     const stdcmEnvironment = {
       infra_id: smallInfra.id,
       search_window_begin: createDateInSpecialTimeZone(
