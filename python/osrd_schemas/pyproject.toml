@@ -13,3 +13,7 @@ check = ["pyright ~= 1.1.393", "ruff ~= 0.9.5"]
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+include = ["osrd_schemas"]
+exclude = ["**/__pycache__"]
