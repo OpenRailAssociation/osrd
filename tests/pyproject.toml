@@ -17,7 +17,9 @@ dependencies = [
 check = ["pyright ~= 1.1.393", "ruff ~= 0.11.2"]
 
 [tool.pyright]
-include = ["../python/osrd_schemas"]
+include = ["conftest.py", "fuzzer", "infra-scripts", "tests"]
+exclude = ["**/__pycache__"]
+extraPaths = ["../python/railjson_generator", "../python/osrd_schemas"]
 
 [tool.uv.sources]
 osrd_schemas = { path = "../python/osrd_schemas/", editable = true }
