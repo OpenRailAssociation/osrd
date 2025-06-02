@@ -8,7 +8,7 @@ use crate::valkey_utils;
 #[educe(Default)]
 pub struct ValkeyConfig {
     /// Disable cache. This should not be used in production.
-    #[clap(long, env, default_value_t = false)]
+    #[clap(long, env = "EDITOAST_NO_CACHE", default_value_t = false)]
     pub no_cache: bool,
     #[educe(Default = Url::parse("redis://localhost:6379").unwrap())]
     #[arg(long, env, default_value_t = Url::parse("redis://localhost:6379").unwrap())]
