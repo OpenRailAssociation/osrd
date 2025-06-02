@@ -116,14 +116,9 @@ For core:
 ./gradlew shadowJar && ALL_INFRA=true java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 ```
 
-Removing cache on editoast is also usually helpful to repeat requests
-(please see the [dedicated section](../editoast/README.md#no-cache-mode)). \
-For editoast server, combining single-worker and no-cache modes requires a
-local instance (or a tweak of `docker-compose.single-worker.yml`):
-```sh
-cd ../editoast
-EDITOAST_CORE_SINGLE_WORKER=true NO_CACHE=true cargo run -- runserver
-```
+No-cache mode on editoast is also usually helpful to repeat requests. \
+One may want to combine it with single-worker mode and probably manage authz. \
+Please check [editoast's README](../editoast/README.md) for all that.
 
 
 Clean or restart the whole stack can be necessary sometimes and is also available
