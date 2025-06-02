@@ -75,7 +75,7 @@ hostname = "0.4.0"
 itertools = "0.14.0"
 lapin = "2.5.3"
 mvt = "0.10.1"
-openssl = "0.10.72"
+openssl = "0.10.73"
 opentelemetry = { version = "0.29.1", default-features = false, features = [
   "trace",
 ] }
