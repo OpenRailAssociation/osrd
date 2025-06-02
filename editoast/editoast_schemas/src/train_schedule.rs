@@ -1,3 +1,6 @@
+use editoast_common::units;
+use editoast_common::units::quantities::Velocity;
+
 mod margins;
 pub use margins::MarginValue;
 pub use margins::Margins;
@@ -63,6 +66,7 @@ editoast_common::schemas! {
     TrainSchedule,
 }
 
+#[editoast_derive::annotate_units]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub struct TrainSchedule {
@@ -80,7 +84,8 @@ pub struct TrainSchedule {
     #[serde(default)]
     pub margins: Margins,
     #[serde(default)]
-    pub initial_speed: f64,
+    #[serde(with = "units::meter_per_second")]
+    pub initial_speed: Velocity,
     #[serde(default)]
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,

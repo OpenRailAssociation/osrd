@@ -13,6 +13,7 @@ chrono.workspace = true
 deadpool.workspace = true
 editoast_common = { workspace = true }
 editoast_schemas = { workspace = true }
+editoast_derive = { workspace = true }
 educe.workspace = true
 futures-util.workspace = true
 hostname.workspace = true

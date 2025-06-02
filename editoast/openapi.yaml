@@ -13082,6 +13082,7 @@ components:
         initial_speed:
           type: number
           format: double
+          description: Velocity in m·s⁻¹
         labels:
           type: array
           items:

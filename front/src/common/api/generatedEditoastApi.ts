@@ -3399,6 +3399,7 @@ export type TrainSchedule = {
   category?: TrainCategory | null;
   comfort?: Comfort;
   constraint_distribution: Distribution;
+  /** Velocity in m·s⁻¹ */
   initial_speed?: number;
   labels?: string[];
   margins?: {

@@ -1,5 +1,7 @@
 use chrono::DateTime;
 use chrono::Utc;
+use editoast_common::units;
+use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainCategory;
 use editoast_schemas;
@@ -29,7 +31,8 @@ pub struct TrainSchedule {
     pub schedule: Vec<ScheduleItem>,
     #[model(json)]
     pub margins: Margins,
-    pub initial_speed: f64,
+    #[model(uom_unit = "units::meter_per_second")]
+    pub initial_speed: Velocity,
     #[model(to_enum)]
     pub comfort: Comfort,
     #[model(json)]

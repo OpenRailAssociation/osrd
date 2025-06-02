@@ -464,8 +464,9 @@ pub struct Request {
     pub path: SimulationPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
-    #[educe(Hash(method(editoast_common::hash_float::<3,_>)))]
-    pub initial_speed: f64,
+    #[educe(Hash(method(units::meter_per_second::hash)))]
+    #[serde(with = "units::meter_per_second")]
+    pub initial_speed: Velocity,
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,
     pub speed_limit_tag: Option<String>,

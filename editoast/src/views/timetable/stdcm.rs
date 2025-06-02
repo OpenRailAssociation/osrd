@@ -18,6 +18,7 @@ use core_client::simulation::PhysicsConsistParameters;
 use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
 use editoast_authz as authz;
+use editoast_common::units;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
@@ -507,7 +508,7 @@ impl VirtualTrainRun {
                 locked: false,
             }],
             margins: build_single_margin(stdcm_request.margin),
-            initial_speed: 0.0,
+            initial_speed: units::meter_per_second::new(0.0),
             comfort: stdcm_request.comfort,
             path,
             constraint_distribution: Default::default(),
