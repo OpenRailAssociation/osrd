@@ -14,7 +14,6 @@ pub mod projection;
 pub mod rolling_stock;
 pub mod scenario;
 pub mod search;
-mod similar_schedules;
 pub mod sprites;
 pub mod stdcm_logs;
 pub mod stdcm_search_environment;
@@ -114,7 +113,6 @@ crate::routes! {
     &temporary_speed_limits,
     &timetable,
     &path,
-    &similar_schedules,
     &stdcm_logs,
     &scenario,
 }
@@ -144,7 +142,6 @@ editoast_common::schemas! {
     timetable::schemas(),
     work_schedules::schemas(),
     stdcm_logs::schemas(),
-    similar_schedules::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request
