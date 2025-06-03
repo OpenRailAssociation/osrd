@@ -13,6 +13,7 @@ import { isPacedTrainId } from 'utils/trainId';
 import {
   generatePacedTrainException,
   updatePacedTrainExceptions,
+  checkChangeGroups,
 } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
@@ -83,6 +84,9 @@ function isPacedTrainToEditData(
   return isPacedTrainId(timetableItemToEditData.timetableItemId);
 }
 
+/**
+ * @param osrdconf fields that were modified by user
+ */
 export function formatPacedTrainPayload(
   osrdconf: OperationalStudiesConfState,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
@@ -97,37 +101,41 @@ export function formatPacedTrainPayload(
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
     },
-    exceptions:
-      timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)
-        ? timetableItemToEditData.originalPacedTrain.exceptions
-        : [],
+    exceptions: [],
   };
 
-  if (
-    timetableItemToEditData &&
-    isPacedTrainToEditData(timetableItemToEditData) &&
-    timetableItemToEditData.occurrenceId
-  ) {
+  if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
     );
-    const exception = generatePacedTrainException(
-      newPacedTrain,
-      originalPacedTrain,
-      timetableItemToEditData.occurrenceId
-    );
+    if (timetableItemToEditData.occurrenceId) {
+      // === user modified an occurrence ===
+      const exception = generatePacedTrainException(
+        newPacedTrain, // contains occurrence changes
+        originalPacedTrain,
+        timetableItemToEditData.occurrenceId
+      );
 
-    const updatedExceptions = updatePacedTrainExceptions(
-      originalPacedTrain.exceptions,
-      exception,
-      timetableItemToEditData.occurrenceId
-    );
-    // If we are updating an occurrence, we want to send the exact same original paced train
-    // with only its exceptions updated
-    newPacedTrain = {
-      ...originalPacedTrain,
-      exceptions: updatedExceptions,
-    };
+      const updatedExceptions = updatePacedTrainExceptions(
+        originalPacedTrain.exceptions,
+        exception,
+        timetableItemToEditData.occurrenceId
+      );
+      // If we are updating an occurrence, we want to send the exact same original paced train
+      // with only its exceptions updated
+      newPacedTrain = {
+        ...originalPacedTrain,
+        exceptions: updatedExceptions,
+      };
+    } else {
+      // === user modified the whole paced train ===
+      const updatedExceptions = checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions);
+
+      newPacedTrain = {
+        ...newPacedTrain,
+        exceptions: updatedExceptions,
+      };
+    }
   }
   return newPacedTrain;
 }
