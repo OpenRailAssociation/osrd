@@ -2922,7 +2922,12 @@ paths:
               required:
               - rolling_stock
               - waypoints
+              - start_time
+              - end_time
               properties:
+                end_time:
+                  type: string
+                  format: date-time
                 rolling_stock:
                   type: object
                   required:
@@ -2933,6 +2938,9 @@ paths:
                     speed_limit_tag:
                       type: string
                       nullable: true
+                start_time:
+                  type: string
+                  format: date-time
                 waypoints:
                   type: array
                   items:

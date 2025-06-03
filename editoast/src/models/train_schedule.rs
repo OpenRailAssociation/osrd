@@ -1,6 +1,15 @@
+use std::ops::DerefMut;
+
 use chrono::DateTime;
 use chrono::Utc;
+use diesel::sql_query;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
+use diesel::sql_types::Timestamptz;
+use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use editoast_models::DatabaseError;
+use editoast_models::DbConnection;
 use editoast_models::rolling_stock::TrainCategory;
 use editoast_schemas;
 use editoast_schemas::train_schedule::Comfort;
@@ -42,6 +51,39 @@ pub struct TrainSchedule {
     #[model(json)]
     pub options: TrainScheduleOptions,
     pub category: Option<TrainCategory>,
+}
+
+impl TrainSchedule {
+    pub async fn get_by_rolling_stock_name_and_speed_limit_tag(
+        conn: DbConnection,
+        rolling_stock_name: String,
+        speed_limit_tag: Option<String>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<TrainSchedule>, DatabaseError> {
+        let result = sql_query(
+            "SELECT * FROM train_schedule
+            WHERE rolling_stock_name = $1
+            AND ($2 IS NULL OR speed_limit_tag = $2)
+            AND timetable_id IN (
+                SELECT timetable_id
+                FROM stdcm_search_environment
+                WHERE search_window_begin >= $3
+                AND search_window_end <= $4
+            )",
+        )
+        .bind::<Text, _>(rolling_stock_name)
+        .bind::<Nullable<Text>, _>(speed_limit_tag)
+        .bind::<Timestamptz, _>(start_time)
+        .bind::<Timestamptz, _>(end_time)
+        .get_results::<TrainScheduleRow>(conn.write().await.deref_mut())
+        .await;
+
+        match result {
+            Ok(result) => Ok(result.into_iter().map(Into::into).collect()),
+            Err(err) => Err(err.into()),
+        }
+    }
 }
 
 impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {

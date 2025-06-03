@@ -1934,10 +1934,12 @@ export type PostSimilarSchedulesApiResponse =
   };
 export type PostSimilarSchedulesApiArg = {
   body: {
+    end_time: string;
     rolling_stock: {
       name: string;
       speed_limit_tag?: string | null;
     };
+    start_time: string;
     waypoints: SimilarScheduleWaypoint[];
   };
 };

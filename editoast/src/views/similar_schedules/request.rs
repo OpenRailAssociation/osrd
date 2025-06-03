@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
+use chrono::DateTime;
+use chrono::Utc;
 use editoast_models::DbConnection;
 use serde::Deserialize;
 use utoipa::ToSchema;
@@ -23,6 +25,8 @@ pub struct Request {
     pub rolling_stock: RollingStockCharacteristics,
     #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
     pub waypoints: Vec<Waypoint>,
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

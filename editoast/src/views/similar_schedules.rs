@@ -19,6 +19,7 @@ use itertools::Either;
 use itertools::Itertools;
 
 use crate::error::Result;
+use crate::models::TrainSchedule;
 use crate::models::similar_schedule;
 
 use super::AppState;
@@ -56,6 +57,8 @@ async fn similar_schedules(
     Json(Request {
         rolling_stock,
         waypoints,
+        start_time,
+        end_time,
     }): Json<Request>,
 ) -> Result<Json<Response>> {
     let authorized = auth
@@ -84,6 +87,15 @@ async fn similar_schedules(
 
     // Step 2: query reference schedules and build the search graph
     // ------------------------------------------------------------
+
+    let _train_schedules = TrainSchedule::get_by_rolling_stock_name_and_speed_limit_tag(
+        db_pool.get().await?,
+        rolling_stock.name.clone(),
+        rolling_stock.speed_limit_tag,
+        start_time,
+        end_time,
+    )
+    .await?;
 
     let mut graphs: Vec<(_, _)> = Vec::<(_, _)>::new();
     let mut names = HashSet::new();
