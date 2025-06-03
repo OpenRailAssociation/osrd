@@ -576,9 +576,8 @@
     "value": "value"
   },
   "jsonUpload": {
-    "badJSON": "The JSON file is malformed",
+    "badJSON": "Invalid content. Only RailJSON files are supported (usually .json or .railjson extensions)",
     "emptyFile": "The file is empty",
-    "notJSONFormat": "The file is not in JSON format ",
     "uploadError": "Error occurred while upload the file"
   },
   "map": "Map viewer",

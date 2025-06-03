@@ -576,9 +576,8 @@
     "value": "Valeur"
   },
   "jsonUpload": {
-    "badJSON": "Le fichier JSON est malformé",
+    "badJSON": "Contenu non valide. Seuls les fichiers RailJSON sont pris en charge (habituellement .json ou .railjson)",
     "emptyFile": "Le fichier est vide",
-    "notJSONFormat": "Le fichier n'est pas au format JSON",
     "uploadError": "Erreur lors du chargement du fichier"
   },
   "map": "Cartographie",
