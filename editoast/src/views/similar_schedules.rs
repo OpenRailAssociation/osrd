@@ -24,6 +24,11 @@ use super::AppState;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
+editoast_common::schemas! {
+    request::schemas(),
+    response::schemas(),
+}
+
 crate::routes! {
     "/similar_schedules" => similar_schedules,
 }

@@ -144,6 +144,7 @@ editoast_common::schemas! {
     timetable::schemas(),
     work_schedules::schemas(),
     stdcm_logs::schemas(),
+    similar_schedules::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request

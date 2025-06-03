@@ -2634,67 +2634,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /ref_schedules:
-    post:
-      tags:
-      - ref_schedules
-      - stdcm
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - rolling_stock
-              - waypoints
-              properties:
-                rolling_stock:
-                  type: object
-                  required:
-                  - name
-                  properties:
-                    name:
-                      type: string
-                    speed_limit_tag:
-                      type: string
-                      nullable: true
-                    towed_rolling_stock:
-                      type: string
-                      nullable: true
-                    weight:
-                      type: integer
-                      format: int64
-                      nullable: true
-                      minimum: 0
-                waypoints:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                    - ci
-                    - ch
-                    - stop
-                    properties:
-                      ch:
-                        type: string
-                      ci:
-                        type: integer
-                        format: int64
-                      stop:
-                        type: boolean
-        required: true
-      responses:
-        '200':
-          description: A combination of reference train schedules identifiers similar to the provided schedule
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-              example:
-              - '0098'
-              - '1234'
   /rolling_stock:
     post:
       tags:
@@ -5449,6 +5388,14 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastErrorEmptySegment'
+      - $ref: '#/components/schemas/EditoastErrorFirstWaypointNotAStop'
+      - $ref: '#/components/schemas/EditoastErrorGraphConstructionFailed'
+      - $ref: '#/components/schemas/EditoastErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastErrorLastWaypointNotAStop'
+      - $ref: '#/components/schemas/EditoastErrorNotEnoughWaypoints'
+      - $ref: '#/components/schemas/EditoastErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastErrorSpeedLimitTagNotFound'
       - $ref: '#/components/schemas/EditoastFontErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
@@ -5531,6 +5478,168 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
+    EditoastErrorEmptySegment:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:EmptySegment
+    EditoastErrorFirstWaypointNotAStop:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:FirstWaypointNotAStop
+    EditoastErrorGraphConstructionFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:GraphConstructionFailed
+    EditoastErrorInfraNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - infra_id
+          properties:
+            infra_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:InfraNotFound
+    EditoastErrorLastWaypointNotAStop:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:LastWaypointNotAStop
+    EditoastErrorNotEnoughWaypoints:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:NotEnoughWaypoints
+    EditoastErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:RollingStockNotFound
+    EditoastErrorSpeedLimitTagNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:SpeedLimitTagNotFound
     EditoastFontErrorsFileNotFound:
       type: object
       required:
@@ -11580,7 +11689,8 @@ components:
           type: string
         ci:
           type: integer
-          format: int64
+          format: int32
+          minimum: 0
         stop:
           type: boolean
     SimilarScheduleWaypointResponse:
@@ -11593,7 +11703,8 @@ components:
           type: string
         ci:
           type: integer
-          format: int64
+          format: int32
+          minimum: 0
     SimulationResponse:
       oneOf:
       - type: object
