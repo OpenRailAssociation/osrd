@@ -301,7 +301,7 @@ async fn simulation_summary(
     let paced_trains_to_ts: Vec<TrainSchedule> = paced_trains
         .iter()
         .cloned()
-        .map(models::PacedTrain::into_first_occurrence)
+        .map(models::PacedTrain::into_train_schedule)
         .collect();
 
     let simulations = train_simulation_batch(
@@ -402,7 +402,7 @@ async fn get_path(
 
             paced_train.apply_exception(exception)
         }
-        None => paced_train.into_first_occurrence(),
+        None => paced_train.into_train_schedule(),
     };
 
     Ok(Json(
@@ -483,7 +483,7 @@ async fn simulation(
 
             paced_train.apply_exception(exception)
         }
-        None => paced_train.into_first_occurrence(),
+        None => paced_train.into_train_schedule(),
     };
 
     // Compute simulation of a paced_train
@@ -554,7 +554,7 @@ async fn project_path(
 
     let first_occurrences: Vec<TrainSchedule> = paced_trains
         .into_iter()
-        .map(|p| p.into_first_occurrence())
+        .map(|p| p.into_train_schedule())
         .collect();
 
     let project_path_result = compute_projected_train_paths(
@@ -619,7 +619,7 @@ async fn occupancy_blocks(
 
     let first_occurrences = paced_trains
         .into_iter()
-        .map(|p| p.into_first_occurrence())
+        .map(|p| p.into_train_schedule())
         .collect_vec();
 
     let occupancy_blocks_result = compute_occupancy_blocks(
