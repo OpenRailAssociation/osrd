@@ -243,6 +243,13 @@ struct PacedTrainSummaryResponse {
     pub exceptions: HashMap<String, SummaryResponse>,
 }
 
+#[derive(Debug, Clone)]
+struct SimulationContext {
+    paced_train_id: i64,
+    exception_key: Option<String>,
+    train_schedule: TrainSchedule,
+}
+
 /// Associate each paced train id with its simulation summaries response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
@@ -298,38 +305,71 @@ async fn simulation_summary(
             }
         })
         .await?;
-    let paced_trains_to_ts: Vec<TrainSchedule> = paced_trains
+
+    let simulation_contexts: Vec<SimulationContext> =
+        paced_trains
+            .iter()
+            .flat_map(|paced_train| {
+                std::iter::once(SimulationContext {
+                    paced_train_id: paced_train.id,
+                    exception_key: None,
+                    train_schedule: paced_train.clone().into_train_schedule(),
+                })
+                .chain(paced_train.exceptions.iter().map(|exception| {
+                    SimulationContext {
+                        paced_train_id: paced_train.id,
+                        exception_key: Some(exception.key.clone()),
+                        train_schedule: paced_train.apply_exception(exception),
+                    }
+                }))
+            })
+            .collect();
+
+    let schedules: Vec<TrainSchedule> = simulation_contexts
         .iter()
-        .cloned()
-        .map(models::PacedTrain::into_train_schedule)
+        .map(|ctx| ctx.train_schedule.clone())
         .collect();
 
     let simulations = train_simulation_batch(
         conn,
         valkey_client,
         core_client,
-        &paced_trains_to_ts,
+        &schedules,
         &infra,
         electrical_profile_set_id,
     )
     .await?;
 
-    // Transform simulations to simulation summary
-    let simulation_summaries = paced_trains
-        .into_iter()
-        .zip(simulations)
-        .map(|(paced_train, (sim, _))| {
-            (
-                paced_train.id,
-                PacedTrainSummaryResponse {
-                    paced_train: SummaryResponse::from(Arc::unwrap_or_clone(sim)),
-                    exceptions: HashMap::new(), // TODO retreive paced train exceptions simulations
-                },
-            )
-        })
-        .collect();
+    // Will remember all simulation that already have been inserted in the response
+    let mut base_simulation = Arc::clone(&simulations[0].0);
+    let results = simulation_contexts.into_iter().zip(simulations).fold(
+        HashMap::<i64, PacedTrainSummaryResponse>::new(),
+        |mut map, (simulation_context, (simulation, _))| {
+            if let Some(exception_key) = &simulation_context.exception_key {
+                if !Arc::ptr_eq(&base_simulation, &simulation) {
+                    map.entry(simulation_context.paced_train_id)
+                        .and_modify(|summary| {
+                            summary.exceptions.insert(
+                                exception_key.to_string(),
+                                SummaryResponse::from(simulation.as_ref().clone()),
+                            );
+                        });
+                }
+            } else {
+                base_simulation = Arc::clone(&simulation);
+                map.insert(
+                    simulation_context.paced_train_id,
+                    PacedTrainSummaryResponse {
+                        paced_train: SummaryResponse::from(Arc::unwrap_or_clone(simulation)),
+                        exceptions: HashMap::new(),
+                    },
+                );
+            }
+            map
+        },
+    );
 
-    Ok(Json(simulation_summaries))
+    Ok(Json(results))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -651,9 +691,12 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::paced_train::InitialSpeedChangeGroup;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
+    use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::RollingStockChangeGroup;
+    use editoast_schemas::paced_train::TrainNameChangeGroup;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::TrainSchedule;
     use pretty_assertions::assert_eq;
@@ -994,6 +1037,36 @@ mod tests {
     async fn paced_train_simulation_summary() {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
+        let mut paced_train_response: PacedTrainResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        // First remove all already generated exceptions
+        paced_train_response.paced_train.exceptions.clear();
+        // Add one exception which will not change the simulation from base
+        paced_train_response
+            .paced_train
+            .exceptions
+            .push(PacedTrainException {
+                key: "change_train_name".to_string(),
+                train_name: Some(TrainNameChangeGroup {
+                    value: "exception_name_but_same_simulation".into(),
+                }),
+                ..Default::default()
+            });
+        // Add one exception which will change the simulation from base
+        // and therefore add another entry in the response (field `exceptions`)
+        paced_train_response
+            .paced_train
+            .exceptions
+            .push(PacedTrainException {
+                key: "change_initial_speed".to_string(),
+                initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                ..Default::default()
+            });
+        let request = app
+            .put(format!("/paced_train/{paced_train_id}").as_str())
+            .json(&json!(paced_train_response.paced_train));
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
         let request = app.post("/paced_train/simulation_summary").json(&json!({
             "infra_id": infra_id,
             "ids": vec![paced_train_id],
@@ -1013,7 +1086,21 @@ mod tests {
                     path_item_times_provisional: vec![0, 1000, 2000, 3000],
                     path_item_times_base: vec![0, 1000, 2000, 3000]
                 },
-                exceptions: HashMap::new()
+                exceptions: [(
+                    "change_initial_speed".to_string(),
+                    // Simulation of the exception is the same than base
+                    // because all simulation results from core are identical stubs
+                    SummaryResponse::Success {
+                        length: 0,
+                        time: 0,
+                        energy_consumption: 0.0,
+                        path_item_times_final: vec![0, 1000, 2000, 3000],
+                        path_item_times_provisional: vec![0, 1000, 2000, 3000],
+                        path_item_times_base: vec![0, 1000, 2000, 3000]
+                    }
+                )]
+                .into_iter()
+                .collect()
             }
         );
     }
