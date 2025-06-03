@@ -1,8 +1,11 @@
 mod error;
 mod request;
+mod response;
 
 use axum::extract::State;
+use chrono::DateTime;
 use request::Request;
+use response::Response;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -33,8 +36,7 @@ crate::routes! {
         (
             status = 200,
             description = "A combination of reference train schedules identifiers similar to the provided schedule",
-            body = Vec<String>,
-            example = json!(["0098", "1234"])
+            body = inline(Response),
         ),
     ),
 )]
@@ -49,7 +51,7 @@ async fn similar_schedules(
         rolling_stock,
         waypoints,
     }): Json<Request>,
-) -> Result<Json<Vec<String>>> {
+) -> Result<Json<Response>> {
     let authorized = auth
         .check_roles([Role::Stdcm].into())
         .await
@@ -85,7 +87,9 @@ async fn similar_schedules(
         tracing::debug!(segment_start = ?segment.begin(), segment_end = ?segment.end(), n_schedules = schedules.len(), "reference schedules queried");
 
         if schedules.is_empty() {
-            return Ok(Json(vec![]));
+            return Ok(Json(Response {
+                similar_schedules: vec![],
+            }));
         }
 
         let first_waypoint = segment.begin()?;
@@ -156,9 +160,42 @@ async fn similar_schedules(
     // Final step: determine the best combination of schedules
     // -------------------------------------------------------
 
-    let schedules = decide_best_schedule_combination(schedules);
+    let _schedules = decide_best_schedule_combination(schedules);
 
-    Ok(Json(schedules))
+    let similar_schedules = Response {
+        similar_schedules: vec![
+            response::SimilarScheduleItem {
+                schedule_id: "mock_similar_schedule_1".to_string(),
+                start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
+                    .unwrap()
+                    .to_utc(),
+                begin: response::Waypoint {
+                    ci: 123,
+                    ch: "A1".to_string(),
+                },
+                end: response::Waypoint {
+                    ci: 456,
+                    ch: "B1".to_string(),
+                },
+            },
+            response::SimilarScheduleItem {
+                schedule_id: "mock_similar_schedule_2".to_string(),
+                start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
+                    .unwrap()
+                    .to_utc(),
+                begin: response::Waypoint {
+                    ci: 123,
+                    ch: "A1".to_string(),
+                },
+                end: response::Waypoint {
+                    ci: 456,
+                    ch: "B1".to_string(),
+                },
+            },
+        ],
+    };
+
+    Ok(Json(similar_schedules))
 }
 
 #[derive(Educe)]
