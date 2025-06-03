@@ -15,7 +15,9 @@ export default function useCalendar({
   selectableSlot,
   selectedSlot,
 }: CalendarProps) {
-  const referenceDate = selectableSlot?.start ?? new Date();
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const referenceDate = selectableSlot?.start ?? now;
   referenceDate.setHours(0, 0, 0, 0);
   const displayedYear = displayedMonthStartDate.getFullYear();
   const displayedMonth = displayedMonthStartDate.getMonth();
@@ -56,8 +58,7 @@ export default function useCalendar({
 
   return {
     days: allDays,
-    isReferenceDate: (date: Date) =>
-      normalizeDate(date).getTime() === normalizeDate(referenceDate).getTime(),
+    isToday: (date: Date) => normalizeDate(date).getTime() === normalizeDate(now).getTime(),
     buildDayWrapperClassName,
     isDateSelectable,
   };
