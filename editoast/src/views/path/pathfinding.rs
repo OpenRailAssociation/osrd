@@ -236,7 +236,7 @@ async fn pathfinding_blocks(
     path_input: PathfindingInput,
 ) -> Result<PathfindingResult> {
     let mut path = pathfinding_blocks_batch(conn, valkey_conn, core, infra, &[path_input]).await?;
-    Ok(path.pop().unwrap())
+    Ok(Arc::unwrap_or_clone(path.pop().unwrap()))
 }
 
 /// Pathfinding batch computation given a list of path inputs
@@ -246,11 +246,11 @@ async fn pathfinding_blocks_batch(
     core: Arc<CoreClient>,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
-) -> Result<Vec<PathfindingResult>> {
+) -> Result<Vec<Arc<PathfindingResult>>> {
     let mut hash_to_path_indexes: HashMap<String, Vec<usize>> = HashMap::default();
     let mut path_request_map: HashMap<String, PathfindingInput> = HashMap::default();
-    let mut pathfinding_results =
-        vec![PathfindingResult::Failure(PathfindingFailure::default()); pathfinding_inputs.len()];
+    let initial_value = Arc::new(PathfindingResult::Failure(PathfindingFailure::default()));
+    let mut pathfinding_results = vec![initial_value; pathfinding_inputs.len()];
     for (index, path_input) in pathfinding_inputs.iter().enumerate() {
         let pathfinding_hash =
             path_input.compute_path_hash_with_versioning(infra.id, infra.version);
@@ -272,8 +272,12 @@ async fn pathfinding_blocks_batch(
     let hashes = hash_to_path_indexes.keys().collect::<Vec<_>>();
 
     // Try to retrieve the result from Valkey
-    let pathfinding_cached_results: Vec<Option<PathfindingResult>> =
-        valkey_conn.compressed_get_bulk(&hashes).await?;
+    let pathfinding_cached_results: Vec<Option<Arc<PathfindingResult>>> = valkey_conn
+        .compressed_get_bulk(&hashes)
+        .await?
+        .iter()
+        .map(|result| result.clone().map(Arc::new))
+        .collect();
     let pathfinding_cached_results: HashMap<_, _> =
         hashes.into_iter().zip(pathfinding_cached_results).collect();
 
@@ -317,7 +321,7 @@ async fn pathfinding_blocks_batch(
             Err(result) => {
                 hash_to_path_indexes[hash]
                     .iter()
-                    .for_each(|index| pathfinding_results[*index] = result.clone());
+                    .for_each(|index| pathfinding_results[*index] = Arc::new(result.clone()));
                 to_cache.push((hash, result));
             }
         }
@@ -340,12 +344,14 @@ async fn pathfinding_blocks_batch(
         let result = match path_result {
             Ok(path) => {
                 to_cache.push((hash, path.clone().into()));
-                path.into()
+                Arc::new(path.into())
             }
             // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-                core_error: core_error.into(),
-            }),
+            Err(core_error) => Arc::new(PathfindingResult::Failure(
+                PathfindingFailure::InternalError {
+                    core_error: core_error.into(),
+                },
+            )),
         };
         hash_to_path_indexes[hash]
             .iter()
@@ -405,12 +411,12 @@ pub async fn pathfinding_from_train(
             .map_into()
             .collect();
 
-    Ok(
+    Ok(Arc::unwrap_or_clone(
         pathfinding_from_train_batch(conn, valkey, core, infra, &[train_schedule], &rolling_stock)
             .await?
             .pop()
             .unwrap(),
-    )
+    ))
 }
 
 /// Compute a path given a batch of trainschedule and an infrastructure.
@@ -421,13 +427,11 @@ pub async fn pathfinding_from_train_batch(
     infra: &Infra,
     train_schedules: &[TrainSchedule],
     rolling_stocks: &[editoast_schemas::RollingStock],
-) -> Result<Vec<PathfindingResult>> {
-    let mut results = vec![
-        PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
-            PathfindingInputError::NotEnoughPathItems
-        ));
-        train_schedules.len()
-    ];
+) -> Result<Vec<Arc<PathfindingResult>>> {
+    let initial_value = Arc::new(PathfindingResult::Failure(
+        PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
+    ));
+    let mut results = vec![initial_value; train_schedules.len()];
 
     let rolling_stocks: HashMap<_, _> = rolling_stocks.iter().map(|rs| (&rs.name, rs)).collect();
 
@@ -438,8 +442,10 @@ pub async fn pathfinding_from_train_batch(
         let rolling_stock_name = &train_schedule.rolling_stock_name;
         let Some(rolling_stock) = rolling_stocks.get(rolling_stock_name) else {
             let rolling_stock_name = rolling_stock_name.clone();
-            results[index] = PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
-                PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+            results[index] = Arc::new(PathfindingResult::Failure(
+                PathfindingFailure::PathfindingInputError(
+                    PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+                ),
             ));
             continue;
         };

@@ -435,7 +435,7 @@ async fn retrieve_cached_projection(
 pub async fn extract_train_details(
     infra: &Infra,
     trains_schedules: &[TrainSchedule],
-    simulations: Vec<(simulation::Response, PathfindingResult)>,
+    simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
     path: &ProjectPathInput,
 ) -> Result<(Vec<String>, Vec<TrainSimulationDetails>)> {
     let ProjectPathInput {
@@ -448,7 +448,7 @@ pub async fn extract_train_details(
     let mut trains_details = vec![];
 
     for (train, (sim, pathfinding_result)) in izip!(trains_schedules, simulations) {
-        let track_ranges = match pathfinding_result {
+        let track_ranges = match pathfinding_result.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
                 track_section_ranges,
                 ..
@@ -475,7 +475,7 @@ pub async fn extract_train_details(
             times,
             signal_critical_positions,
             zone_updates,
-            train_path: track_ranges,
+            train_path: track_ranges.clone(),
         };
 
         let hash = train_details.compute_projection_hash_with_versioning(

@@ -684,8 +684,8 @@ async fn retrieve_simulations(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<(
-    Vec<(simulation::Response, PathfindingResult)>,
-    Vec<(simulation::Response, PathfindingResult)>,
+    Vec<(simulation::Response, Arc<PathfindingResult>)>,
+    Vec<(simulation::Response, Arc<PathfindingResult>)>,
 )> {
     let paced_train_to_ts = paced_trains
         .iter()
@@ -717,9 +717,9 @@ async fn retrieve_simulations(
 fn build_conflict_core_request(
     infra: Infra,
     trains: &[models::TrainSchedule],
-    train_simulations: Vec<(simulation::Response, PathfindingResult)>,
+    train_simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
     paced_trains: &[models::PacedTrain],
-    paced_train_simulations: Vec<(simulation::Response, PathfindingResult)>,
+    paced_train_simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
 ) -> ConflictDetectionRequest {
     let mut trains_requirements = HashMap::new();
 
@@ -1267,7 +1267,9 @@ mod tests {
                 mrsp: SpeedLimitProperties::default(),
                 electrical_profiles: ElectricalProfiles::default(),
             },
-            PathfindingResult::Success(PathfindingResultSuccess::default()),
+            Arc::new(PathfindingResult::Success(
+                PathfindingResultSuccess::default(),
+            )),
         )];
         let paced_id = 42;
         let paced_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
@@ -1302,7 +1304,9 @@ mod tests {
                     mrsp: SpeedLimitProperties::default(),
                     electrical_profiles: ElectricalProfiles::default(),
                 },
-                PathfindingResult::Success(PathfindingResultSuccess::default()),
+                Arc::new(PathfindingResult::Success(
+                    PathfindingResultSuccess::default(),
+                )),
             ),
             2,
         )

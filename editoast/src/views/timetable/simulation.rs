@@ -200,7 +200,7 @@ pub async fn train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(simulation::Response, PathfindingResult)>> {
+) -> Result<Vec<(simulation::Response, Arc<PathfindingResult>)>> {
     // Compute path
 
     let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
@@ -261,7 +261,7 @@ pub async fn consist_train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(simulation::Response, PathfindingResult)>> {
+) -> Result<Vec<(simulation::Response, Arc<PathfindingResult>)>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let pathfinding_results = pathfinding_from_train_batch(
@@ -288,7 +288,7 @@ pub async fn consist_train_simulation_batch(
     for (index, (pathfinding, train_schedule)) in
         pathfinding_results.iter().zip(train_schedules).enumerate()
     {
-        let (path, path_item_positions) = match pathfinding {
+        let (path, path_item_positions) = match pathfinding.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
                 blocks,
                 routes,
