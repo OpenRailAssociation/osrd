@@ -27,7 +27,7 @@ pub(super) struct SimulationFailureHandler {
     pub(super) infra_id: i64,
     pub(super) infra_version: i64,
     pub(super) train_schedules: Vec<TrainSchedule>,
-    pub(super) simulations: Vec<simulation::Response>,
+    pub(super) simulations: Vec<Arc<simulation::Response>>,
     pub(super) work_schedules: Vec<WorkSchedule>,
     pub(super) virtual_train_run: VirtualTrainRun,
     pub(super) earliest_departure_time: DateTime<Utc>,
@@ -80,7 +80,7 @@ impl SimulationFailureHandler {
         train_schedules.push(train_schedule);
 
         // Combine the original simulations with the virtual train's simulation results.
-        simulations.push(simulation);
+        simulations.push(Arc::new(simulation));
 
         // Build train requirements based on the combined train schedules and simulations
         // This prepares the data structure required for conflict detection.

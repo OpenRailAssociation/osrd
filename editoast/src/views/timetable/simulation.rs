@@ -200,7 +200,7 @@ pub async fn train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(simulation::Response, Arc<PathfindingResult>)>> {
+) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
     // Compute path
 
     let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
@@ -261,7 +261,7 @@ pub async fn consist_train_simulation_batch(
     train_schedules: &[models::TrainSchedule],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<(simulation::Response, Arc<PathfindingResult>)>> {
+) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let pathfinding_results = pathfinding_from_train_batch(
@@ -282,7 +282,7 @@ pub async fn consist_train_simulation_batch(
         .map(|consist| (&consist.traction_engine.name, consist))
         .collect();
 
-    let mut simulation_results = vec![None::<simulation::Response>; train_schedules.len()];
+    let mut simulation_results = vec![None::<Arc<simulation::Response>>; train_schedules.len()];
     let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
     let mut sim_request_map: HashMap<String, core_client::simulation::Request> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
@@ -305,9 +305,10 @@ pub async fn consist_train_simulation_batch(
                 path_item_positions,
             ),
             PathfindingResult::Failure(pathfinding_failed) => {
-                simulation_results[index] = Some(simulation::Response::PathfindingFailed {
-                    pathfinding_failed: pathfinding_failed.clone(),
-                });
+                simulation_results[index] =
+                    Some(Arc::new(simulation::Response::PathfindingFailed {
+                        pathfinding_failed: pathfinding_failed.clone(),
+                    }));
                 continue;
             }
         };
@@ -343,9 +344,12 @@ pub async fn consist_train_simulation_batch(
         nb_unique_sim = to_sim.len()
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
-    let cached_results: Vec<Option<simulation::Response>> = valkey_conn
+    let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
         .compressed_get_bulk(&cached_simulation_hash)
-        .await?;
+        .await?
+        .iter()
+        .map(|result| result.clone().map(Arc::new))
+        .collect();
 
     let nb_hit = cached_results.iter().flatten().count();
     let nb_miss = to_sim.len() - nb_hit;
@@ -378,17 +382,18 @@ pub async fn consist_train_simulation_batch(
         match sim_res {
             Ok(sim_res) => {
                 to_cache.push((train_hash, sim_res.clone()));
-                train_indexes
-                    .iter()
-                    .for_each(|index| simulation_results[*index] = Some(sim_res.clone().into()))
+                train_indexes.iter().for_each(|index| {
+                    simulation_results[*index] = Some(Arc::new(sim_res.clone().into()))
+                })
             }
 
             Err(core_error) => {
                 let error: InternalError = core_error.into();
                 train_indexes.iter().for_each(|index| {
-                    simulation_results[*index] = Some(simulation::Response::SimulationFailed {
-                        core_error: error.clone(),
-                    })
+                    simulation_results[*index] =
+                        Some(Arc::new(simulation::Response::SimulationFailed {
+                            core_error: error.clone(),
+                        }))
                 })
             }
         }

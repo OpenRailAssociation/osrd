@@ -435,7 +435,7 @@ async fn retrieve_cached_projection(
 pub async fn extract_train_details(
     infra: &Infra,
     trains_schedules: &[TrainSchedule],
-    simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
+    simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
     path: &ProjectPathInput,
 ) -> Result<(Vec<String>, Vec<TrainSimulationDetails>)> {
     let ProjectPathInput {
@@ -461,7 +461,7 @@ pub async fn extract_train_details(
             signal_critical_positions,
             zone_updates,
             ..
-        } = match sim {
+        } = match Arc::unwrap_or_clone(sim) {
             simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };

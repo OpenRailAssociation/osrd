@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -324,7 +325,7 @@ async fn simulation(
     .pop()
     .unwrap();
 
-    Ok(Json(simulation))
+    Ok(Json(Arc::unwrap_or_clone(simulation)))
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -404,7 +405,7 @@ async fn simulation_summary(
     let mut simulation_summaries = HashMap::new();
     for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
         let (sim, _) = sim;
-        let simulation_summary_result = SummaryResponse::from(sim);
+        let simulation_summary_result = SummaryResponse::from(Arc::unwrap_or_clone(sim));
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
 

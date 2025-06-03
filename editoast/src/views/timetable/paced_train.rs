@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -321,7 +322,7 @@ async fn simulation_summary(
             (
                 paced_train.id,
                 PacedTrainSummaryResponse {
-                    paced_train: SummaryResponse::from(sim),
+                    paced_train: SummaryResponse::from(Arc::unwrap_or_clone(sim)),
                     exceptions: HashMap::new(), // TODO retreive paced train exceptions simulations
                 },
             )
@@ -498,7 +499,7 @@ async fn simulation(
     .pop()
     .unwrap();
 
-    Ok(Json(simulation))
+    Ok(Json(Arc::unwrap_or_clone(simulation)))
 }
 
 /// Projects the space-time curves and paths of a number of paced trains onto a given path.
