@@ -347,8 +347,8 @@ pub async fn consist_train_simulation_batch(
     let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
         .compressed_get_bulk(&cached_simulation_hash)
         .await?
-        .iter()
-        .map(|result| result.clone().map(Arc::new))
+        .into_iter()
+        .map(|result| result.map(Arc::new))
         .collect();
 
     let nb_hit = cached_results.iter().flatten().count();
@@ -358,33 +358,31 @@ pub async fn consist_train_simulation_batch(
     // Compute simulation from core
     let mut futures = Vec::with_capacity(nb_miss);
     let mut futures_hash = Vec::with_capacity(nb_miss);
-    for (train_hash, sim_cached) in cached_simulation_hash.iter().zip(cached_results) {
+    for (train_hash, sim_cached) in cached_simulation_hash.into_iter().zip(cached_results) {
         if let Some(sim_cached) = sim_cached {
-            let train_indexes = &to_sim[*train_hash];
+            let train_indexes = &to_sim[train_hash];
             for train_index in train_indexes {
                 simulation_results[*train_index] = Some(sim_cached.clone());
             }
             continue;
         }
-        let sim_request = &sim_request_map[*train_hash];
+        let sim_request = &sim_request_map[train_hash];
         futures.push(Box::pin(sim_request.fetch(core.as_ref())));
         futures_hash.push(train_hash);
     }
 
-    let simulated: Vec<_> = futures::future::join_all(futures)
-        .await
-        .into_iter()
-        .collect();
+    let simulated = futures::future::join_all(futures).await;
 
     let mut to_cache = vec![];
-    for (train_hash, sim_res) in futures_hash.iter().zip(simulated) {
-        let train_indexes = &to_sim[**train_hash];
+    for (train_hash, sim_res) in futures_hash.into_iter().zip(simulated) {
+        let train_indexes = &to_sim[train_hash];
         match sim_res {
             Ok(sim_res) => {
                 to_cache.push((train_hash, sim_res.clone()));
-                train_indexes.iter().for_each(|index| {
-                    simulation_results[*index] = Some(Arc::new(sim_res.clone().into()))
-                })
+                let sim_res = Arc::new(simulation::Response::from(sim_res));
+                train_indexes
+                    .iter()
+                    .for_each(|index| simulation_results[*index] = Some(sim_res.clone()))
             }
 
             Err(core_error) => {
