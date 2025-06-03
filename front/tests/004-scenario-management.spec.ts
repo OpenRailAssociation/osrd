@@ -81,9 +81,6 @@ test.describe('Validate the Scenario creation workflow', () => {
       tags: ['update-tag'],
     });
 
-    // TODO: check another way to wait for the scenario to be updated
-    await page.waitForTimeout(500);
-
     await scenarioPage.validateScenarioData({
       name: updatedScenarioName,
       description: `${scenario.description} (updated)`,

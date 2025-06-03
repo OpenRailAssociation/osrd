@@ -20,8 +20,6 @@ const frTranslations: ScenarioTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const EXPLICIT_UI_STABILITY_TIMEOUT = 500;
-
 class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainsMessage: Locator;
 
@@ -385,7 +383,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   async getTrainArrivalTime(expectedArrivalTime: string) {
     await expect(this.trainArrivalTime).toBeVisible();
-    await this.page.waitForTimeout(EXPLICIT_UI_STABILITY_TIMEOUT);
     const actualArrivalTime = await this.trainArrivalTime.textContent();
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
   }

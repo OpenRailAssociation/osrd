@@ -17,7 +17,7 @@ interface ScrollOptions {
 const scrollContainer = async (
   page: Page,
   containerSelector: string,
-  { stepSize = 300, timeout = 20, scrollOffsetThreshold = 200 }: ScrollOptions = {}
+  { stepSize = 300, scrollOffsetThreshold = 200 }: ScrollOptions = {}
 ): Promise<void> => {
   // Locate the scrollable container on the page
   await page.waitForSelector(containerSelector);
@@ -55,8 +55,6 @@ const scrollContainer = async (
       },
       { containerElement: container, step: stepSize }
     );
-
-    await page.waitForTimeout(timeout);
     currentScrollPosition += stepSize;
   }
 

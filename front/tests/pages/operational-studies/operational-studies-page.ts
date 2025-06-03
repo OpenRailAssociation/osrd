@@ -260,10 +260,6 @@ class OperationalStudiesPage extends CommonPage {
   async setTrainScheduleName(name: string) {
     await this.TimetableItemNameInput.fill(name);
     await expect(this.TimetableItemNameInput).toHaveValue(name);
-
-    // we need to wait, because the input has a debounce of 500ms
-    // TODO: remove this when the debounce is removed (https://github.com/OpenRailAssociation/osrd/issues/11294)
-    await this.page.waitForTimeout(600);
   }
 
   async checkNumberOfTrains(number: number) {

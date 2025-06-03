@@ -111,6 +111,7 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
         const pathStepIndex = index + 1;
         return (
           <div
+            data-testid="stdcm-via-card"
             className={cx('stdcm-vias-bundle', {
               animated: pathStepIndex === newIntermediateOpIndex && !skipAnimation,
             })}
