@@ -343,7 +343,7 @@
   border: 2px solid var(--green);
   border-radius: 4px;
   .infra-add-error {
-    height: 16px;
+    min-height: 16px;
     margin: 8px 0;
     text-align: center;
     color: var(--red);

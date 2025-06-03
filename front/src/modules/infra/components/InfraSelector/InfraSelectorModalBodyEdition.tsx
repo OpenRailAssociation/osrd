@@ -39,10 +39,6 @@ const InfraSelectorModalBodyEdition = ({
   }, [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]);
 
   const validateFile = async (fileToValidate: File) => {
-    if (fileToValidate.type !== 'application/json') {
-      setErrorMessage(t('jsonUpload.notJSONFormat'));
-      return false;
-    }
     if (fileToValidate.size === 0) {
       setErrorMessage(t('jsonUpload.emptyFile'));
       return false;
@@ -152,7 +148,7 @@ const InfraSelectorModalBodyEdition = ({
                   <span className="ml-2" title={selectedFile.name}>
                     {selectedFile.name}
                   </span>
-                  <input type="file" onChange={handleSelect} accept=".json" />
+                  <input type="file" onChange={handleSelect} accept=".json,.railjson" />
                 </label>
                 <button
                   type="button"
@@ -170,7 +166,7 @@ const InfraSelectorModalBodyEdition = ({
                   <span className="flex-grow-1 text-center">
                     {t('infraManagement.addInfraJSONFile')}
                   </span>
-                  <input type="file" onChange={handleSelect} accept=".json" />
+                  <input type="file" onChange={handleSelect} accept=".json,.railjson" />
                 </label>
               </>
             )}
