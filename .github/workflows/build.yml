@@ -955,6 +955,45 @@ jobs:
           path: front/test-results/**/trace.zip
           retention-days: 30
 
+      - name: Prepare trace folders per test
+        if: always()
+        run: |
+          mkdir -p per-test-traces
+          for trace in front/test-results/**/trace.zip; do
+            parent_dir=$(dirname "$trace")
+            context_file="$parent_dir/error-context.md"
+            folder_name=$(basename "$parent_dir")
+            if [[ -f "$context_file" ]]; then
+              extracted_name=$(grep -Po '(?<=- Name: ).*' "$context_file" | head -n 1 | awk -F '>>' '{print $2}' | xargs)
+              if [[ -n "$extracted_name" ]]; then
+                folder_name=$(echo "$extracted_name" | tr -d '\\/:*?"<>|')
+              fi
+            fi
+            dest_dir="per-test-traces/$folder_name"
+            mkdir -p "$dest_dir"
+            cp "$trace" "$dest_dir/trace.zip"
+          done
+      - name: Upload each trace.zip as its own artifact
+        if: always()
+        run: |
+          for dir in per-test-traces/*; do
+            name=$(basename "$dir")
+            echo "📤 Uploading artifact: $name"
+            echo "::group::$name"
+            tarball="$name.tar"
+            echo "::endgroup::"
+            
+            # Create temporary workflow command file for dynamic artifact upload
+            echo -e "name=$name\npath=$dir" >> upload-manifest.txt
+          done
+        continue-on-error: true
+
+      - name: Upload artifacts from manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          path: per-test-traces/*
+          retention-days: 30
       - name: Generate Test Summary
         if: always()
         id: test-summary

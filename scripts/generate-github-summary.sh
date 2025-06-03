@@ -22,20 +22,6 @@ FLAKY_COUNT=$(jq '[.results.tests[] | select(.flaky == true)] | length' "$REPORT
 DURATION_SEC=$(( (STOP - START) / 1000 ))
 DURATION=$(printf '%02d:%02d:%02d' $((DURATION_SEC/3600)) $((DURATION_SEC%3600/60)) $((DURATION_SEC%60)))
 
-REPO="${GITHUB_REPOSITORY}"
-RUN_ID="${GITHUB_RUN_ID}"
-TOKEN="${GITHUB_TOKEN}"
-
-ARTIFACTS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/repos/${REPO}/actions/runs/${RUN_ID}/artifacts")
-
-TRACE_ID=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name == "playwright-traces") | .id' | head -n1)
-VIDEO_ID=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name == "playwright-videos") | .id' | head -n1)
-
-TRACE_URL="https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${TRACE_ID}"
-VIDEO_URL="https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${VIDEO_ID}"
-
 SUMMARY=$(cat <<EOF
 ## ${ICON_TIME} Test Summary
 
@@ -45,8 +31,48 @@ SUMMARY=$(cat <<EOF
 
 EOF
 )
+echo "🔧 Step 0: Initialize Variables"
+REPO="${GITHUB_REPOSITORY}"
+RUN_ID="${GITHUB_RUN_ID}"
+TOKEN="${GITHUB_TOKEN}"
+echo "  - REPO=$REPO"
+echo "  - RUN_ID=$RUN_ID"
+
+echo "📦 Step 1: Fetch Artifact Metadata"
+ARTIFACTS=$(curl -s -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  "https://api.github.com/repos/${REPO}/actions/runs/${RUN_ID}/artifacts")
+
+echo "  - Retrieved artifact list:"
+echo "$ARTIFACTS" | jq '.artifacts[] | {name, id}'
+
+TRACE_ID=$(echo "$ARTIFACTS" | jq -r '.artifacts[] | select(.name == "artifact") | .id' | head -n1)
+
+if [ -z "$TRACE_ID" ]; then
+  echo "❌ ERROR: Artifact named 'artifact' not found."
+  exit 1
+fi
+echo "  - Selected TRACE_ID: $TRACE_ID"
+
+echo "📥 Step 2: Download artifact ZIP"
+curl -sL -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  -o artifact.zip \
+  "https://api.github.com/repos/${REPO}/actions/artifacts/${TRACE_ID}/zip"
+
+echo "  - artifact.zip downloaded successfully"
+
+echo "📂 Extracting artifact.zip to extracted-artifact/"
+unzip -q artifact.zip -d extracted-artifact
+
+echo "  - Extraction complete. Contents:"
+find extracted-artifact
+
+echo "🧪 Step 3: Processing Failed Tests"
 
 if [ "$FAILED" -gt 0 ]; then
+  echo "  - FAILED count: $FAILED"
+
   SUMMARY+="
 
 ### ${ICON_FAIL} Failed Tests
@@ -60,12 +86,36 @@ if [ "$FAILED" -gt 0 ]; then
 | Failed Test | Status | Error | Trace | Video |
 |-------------|--------|-------|-------|--------|
 "
-  SUMMARY+=$(jq -r --arg icon_fail "$ICON_FAIL" --arg trace_url "$TRACE_URL" --arg video_url "$VIDEO_URL" '
-    .results.tests[] |
-    select(.status == "failed") |
-    "| \(.name) | \($icon_fail) failed | \((.message // "No message") | gsub("\n"; " ")) | [Download the trace](\($trace_url)) | [Download the video](\($video_url)) |"
-  ' "$REPORT_FILE")
+
+  while IFS=$'\t' read -r test_name status message; do
+    trace_path="extracted-artifact/${test_name}/trace.zip"
+    echo "🔎 Checking trace for test: '$test_name'"
+    echo "  - Looking for file: $trace_path"
+
+    if [ -f "$trace_path" ]; then
+      trace_link="\`$trace_path\`"
+      echo "  ✅ Found trace.zip for '$test_name'"
+    else
+      trace_link="(Not found)"
+      echo "  ⚠️  trace.zip NOT found for '$test_name'"
+    fi
+
+    escaped_test_name="${test_name//|/\\|}"
+    escaped_message="${message//|/\\|}"
+    SUMMARY+="| $escaped_test_name | $status | $escaped_message | $trace_link | [Video](#) |\n"
+        echo "  - Running jq to extract failed test info from $REPORT_FILE"
+  done < <(
+    jq -r --arg icon_fail "$ICON_FAIL" '
+      .results.tests[]
+      | select(.status == "failed")
+      | [.name, ($icon_fail + " failed"), (.message // "No message" | gsub("\n"; " "))]
+      | @tsv
+    ' "$REPORT_FILE"
+  )
+else
+  echo "✅ No failed tests found."
 fi
+
 
 if [ "$FLAKY_COUNT" -gt 0 ]; then
   SUMMARY+="
