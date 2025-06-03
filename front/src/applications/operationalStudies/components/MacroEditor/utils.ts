@@ -190,8 +190,8 @@ export const getDefaultTrainrunFrequencies = (
     ...freq,
     name:
       freq.id === TRAIN_SCHEDULE_FREQUENCY_ID
-        ? t('macroEditor.uniqueTrainSchedule')
-        : t('macroEditor.intervalXmin', { minutes: freq.frequency }),
+        ? t('main.macroEditor.uniqueTrainSchedule')
+        : t('main.macroEditor.intervalXmin', { minutes: freq.frequency }),
   }));
 
 /**

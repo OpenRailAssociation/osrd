@@ -58,7 +58,7 @@ const getNgeTrainrunFrequencies = (
           order: 0, // temporary order
           frequency: intervalInMinutes,
           offset: 0,
-          name: t('macroEditor.intervalXmin', { minutes: intervalInMinutes }),
+          name: t('main.macroEditor.intervalXmin', { minutes: intervalInMinutes }),
           shortName: `${intervalInMinutes}`,
           linePatternRef: '60',
         };
@@ -183,8 +183,8 @@ const castNodeToNge = (
 export const getTrainrunCategories = (t: TFunction<'operational-studies'>): TrainrunCategory[] =>
   Array.from(OSRD_TRAINRUN_CATEGORY_MAPPING.entries()).map(([key, category]) => ({
     ...category,
-    name: t(`macroEditor.trainCategory.${key}.name`),
-    shortName: t(`macroEditor.trainCategory.${key}.shortName`),
+    name: t(`main.macroEditor.trainCategory.${key}.name`),
+    shortName: t(`main.macroEditor.trainCategory.${key}.shortName`),
   }));
 
 /**

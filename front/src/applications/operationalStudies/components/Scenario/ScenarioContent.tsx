@@ -43,7 +43,7 @@ const ScenarioContent = ({
   infra,
   infraMetadata: { isInfraLoaded, reloadCount },
 }: ScenarioDescriptionProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
 
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
@@ -213,7 +213,7 @@ const ScenarioContent = ({
               data-testid="timetable-collapse-button"
               className="timetable-collapse-button"
               type="button"
-              aria-label={t('toggleTimetable')}
+              aria-label={t('main.toggleTimetable')}
               onClick={() => setCollapsedTimetable(false)}
             >
               <ChevronRight />
@@ -227,7 +227,7 @@ const ScenarioContent = ({
             )}
           {isMacro && (!ngeDto || ngeIsLoading) && (
             <Loader
-              msg={t('loadingMacroEditor')}
+              msg={t('main.loadingMacroEditor')}
               className="scenario-loader"
               childClass="scenario-loader-msg"
             />

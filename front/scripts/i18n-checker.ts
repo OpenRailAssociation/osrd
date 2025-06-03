@@ -64,6 +64,9 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:study\.studyCategories\..*/,
   /operational-studies:study\.studyStates\..*/,
 
+  // MacroEditor train categories
+  /operational-studies:main\.macroEditor\.trainCategory\..*/,
+
   // Rolling stock
   /translation:rollingStock.categoriesOptions\..*/,
   /translation:rollingStock.curves\..*/,
