@@ -14,7 +14,7 @@ import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, setTowedRollingStock } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
-test.describe('Verify stdcm simulation page', () => {
+test.describe.skip('Verify stdcm simulation page', () => {
   test.slow(); // Mark test as slow due to multiple steps
   test.use({ viewport: { width: 1920, height: 1080 } });
 

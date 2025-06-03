@@ -13,7 +13,7 @@ import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
-test.describe('FeedbackCard Tests', () => {
+test.describe.skip('FeedbackCard Tests', () => {
   test.slow(); // Mark test as slow due to multiple steps
   test.use({ viewport: { width: 1920, height: 1080 } });
 

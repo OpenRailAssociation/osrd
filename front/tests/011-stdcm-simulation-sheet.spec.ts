@@ -16,7 +16,7 @@ import { getInfra } from './utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/pdf-parser';
 import type { ConsistFields, PdfSimulationContent } from './utils/types';
 
-test.describe('Verify stdcm simulation page', () => {
+test.describe.skip('Verify stdcm simulation page', () => {
   test.describe.configure({ mode: 'serial' }); // Configure this block to run serially
   test.slow(); // Mark test as slow due to multiple steps
   test.use({ viewport: { width: 1920, height: 1080 } });

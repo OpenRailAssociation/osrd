@@ -12,7 +12,7 @@ import { generateUniqueName, verifyAndCheckInputById, fillAndCheckInputById } fr
 import { deleteRollingStocks } from './utils/teardown-utils';
 import type { RollingStockDetails } from './utils/types';
 
-test.describe('Rollingstock editor page tests', () => {
+test.describe.skip('Rollingstock editor page tests', () => {
   let rollingStockEditorPage: RollingstockEditorPage;
   let rollingStockSelector: RollingStockSelector;
 

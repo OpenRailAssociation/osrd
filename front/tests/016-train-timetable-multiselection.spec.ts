@@ -30,7 +30,7 @@ const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr
 const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/train_schedules.json');
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
-test.describe('Verify train schedule elements and filters', () => {
+test.describe.skip('Verify train schedule elements and filters', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 

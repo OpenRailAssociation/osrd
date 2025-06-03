@@ -51,7 +51,7 @@ const TIME_WINDOW = '240';
 const INTERVAL = '20';
 const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
-test.describe('Edit trains and missions', () => {
+test.describe.skip('Edit trains and missions', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 

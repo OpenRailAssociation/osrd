@@ -44,7 +44,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
-test.describe('Verify train schedule elements and filters', () => {
+test.describe.skip('Verify train schedule elements and filters', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 

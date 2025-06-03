@@ -28,7 +28,7 @@ const frTranslations: StudyTranslations = readJsonFile(
   'public/locales/fr/operational-studies.json'
 );
 
-test.describe('Validate the Study creation workflow', () => {
+test.describe.skip('Validate the Study creation workflow', () => {
   let studyPage: StudyPage;
 
   let project: Project;

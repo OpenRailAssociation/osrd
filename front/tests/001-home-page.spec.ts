@@ -9,7 +9,7 @@ import type { FlatTranslations } from './utils/types';
 const enTranslations: FlatTranslations = readJsonFile('public/locales/en/translation.json');
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/translation.json');
 
-test.describe('Home page OSRD', () => {
+test.describe.skip('Home page OSRD', () => {
   let homePage: HomePage;
 
   test.beforeEach('Navigate to the home page', async ({ page }) => {

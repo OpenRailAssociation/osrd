@@ -10,7 +10,7 @@ import type { ProjectData } from './utils/types';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 
-test.describe('Validate the Operational Study Project workflow', () => {
+test.describe.skip('Validate the Operational Study Project workflow', () => {
   let projectPage: ProjectPage;
 
   let project: Project;

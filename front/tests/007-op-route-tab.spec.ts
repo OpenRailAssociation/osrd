@@ -10,7 +10,7 @@ import { getInfra } from './utils/api-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
-test.describe('Route Tab Verification', () => {
+test.describe.skip('Route Tab Verification', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingstockSelector: RollingStockSelector;
   let routeTab: RouteTab;

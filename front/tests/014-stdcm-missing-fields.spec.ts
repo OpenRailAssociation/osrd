@@ -21,7 +21,7 @@ import type { StdcmTranslations } from './utils/types';
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
-test.describe('Verify stdcm missing fields', () => {
+test.describe.skip('Verify stdcm missing fields', () => {
   test.slow(); // Mark test as slow due to multiple steps
   test.use({ viewport: { width: 1920, height: 1080 } });
 

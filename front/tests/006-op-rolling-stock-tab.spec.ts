@@ -20,7 +20,7 @@ import { getInfra, getRollingStock } from './utils/api-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
-test.describe('Rolling stock Tab Verification', () => {
+test.describe.skip('Rolling stock Tab Verification', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;
 

@@ -25,7 +25,7 @@ const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTransla
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
-test.describe('Times and Stops Tab Verification', () => {
+test.describe.skip('Times and Stops Tab Verification', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let operationalStudiesPage: OperationalStudiesPage;

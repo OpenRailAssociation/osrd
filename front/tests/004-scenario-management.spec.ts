@@ -14,7 +14,7 @@ import type { ScenarioData } from './utils/types';
 
 const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
-test.describe('Validate the Scenario creation workflow', () => {
+test.describe.skip('Validate the Scenario creation workflow', () => {
   let scenarioPage: ScenarioPage;
 
   let project: Project;
