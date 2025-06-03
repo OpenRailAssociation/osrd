@@ -389,13 +389,13 @@ async fn stdcm(
 /// that overlap with the possible simulation times.
 fn build_train_requirements(
     train_schedules: Vec<TrainSchedule>,
-    simulation_responses: Vec<simulation::Response>,
+    simulation_responses: Vec<Arc<simulation::Response>>,
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
 ) -> HashMap<String, TrainRequirements> {
     let mut trains_requirements = HashMap::new();
     for (train, sim) in train_schedules.iter().zip(simulation_responses) {
-        let final_output = match sim {
+        let final_output = match sim.as_ref() {
             simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };
@@ -415,7 +415,7 @@ fn build_train_requirements(
 
         let spacing_requirements: Vec<SpacingRequirement> = final_output
             .spacing_requirements
-            .into_iter()
+            .iter()
             .filter(|req| {
                 is_resource_in_range(
                     departure_time,
@@ -425,10 +425,11 @@ fn build_train_requirements(
                     req.end_time,
                 )
             })
+            .cloned()
             .collect();
         let routing_requirements: Vec<RoutingRequirement> = final_output
             .routing_requirements
-            .into_iter()
+            .iter()
             .filter(|req| {
                 is_resource_in_range(
                     departure_time,
@@ -442,6 +443,7 @@ fn build_train_requirements(
                         .unwrap_or(req.begin_time),
                 )
             })
+            .cloned()
             .collect();
         trains_requirements.insert(
             train.id.to_string(),
@@ -533,7 +535,7 @@ impl VirtualTrainRun {
 
         Ok(Self {
             train_schedule,
-            simulation,
+            simulation: Arc::unwrap_or_clone(simulation),
             pathfinding: Arc::unwrap_or_clone(pathfinding),
         })
     }

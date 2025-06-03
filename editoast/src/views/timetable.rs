@@ -684,8 +684,8 @@ async fn retrieve_simulations(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<(
-    Vec<(simulation::Response, Arc<PathfindingResult>)>,
-    Vec<(simulation::Response, Arc<PathfindingResult>)>,
+    Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
+    Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
 )> {
     let paced_train_to_ts = paced_trains
         .iter()
@@ -717,16 +717,16 @@ async fn retrieve_simulations(
 fn build_conflict_core_request(
     infra: Infra,
     trains: &[models::TrainSchedule],
-    train_simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
+    train_simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
     paced_trains: &[models::PacedTrain],
-    paced_train_simulations: Vec<(simulation::Response, Arc<PathfindingResult>)>,
+    paced_train_simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
 ) -> ConflictDetectionRequest {
     let mut trains_requirements = HashMap::new();
 
     // Build train schedule train requirements
     for (train, sim) in trains.iter().zip(train_simulations) {
         let (sim, _) = sim;
-        let final_output = match sim {
+        let final_output = match sim.as_ref() {
             simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
         };
@@ -735,8 +735,8 @@ fn build_conflict_core_request(
             key,
             TrainRequirements {
                 start_time: train.start_time,
-                spacing_requirements: final_output.spacing_requirements,
-                routing_requirements: final_output.routing_requirements,
+                spacing_requirements: final_output.spacing_requirements.clone(),
+                routing_requirements: final_output.routing_requirements.clone(),
             },
         );
     }
@@ -756,7 +756,7 @@ fn build_conflict_core_request(
         }
 
         for (index, (sim, _)) in simulations.into_iter().enumerate() {
-            let final_output = match sim {
+            let final_output = match sim.as_ref() {
                 simulation::Response::Success { final_output, .. } => final_output,
                 _ => continue,
             };
@@ -770,8 +770,8 @@ fn build_conflict_core_request(
                 key,
                 TrainRequirements {
                     start_time: occurrences[index].start_time,
-                    spacing_requirements: final_output.spacing_requirements,
-                    routing_requirements: final_output.routing_requirements,
+                    spacing_requirements: final_output.spacing_requirements.clone(),
+                    routing_requirements: final_output.routing_requirements.clone(),
                 },
             );
         }
@@ -1256,7 +1256,7 @@ mod tests {
             }],
         };
         let train_simulations = vec![(
-            simulation::Response::Success {
+            Arc::new(simulation::Response::Success {
                 base: ReportTrain::default(),
                 provisional: ReportTrain::default(),
                 final_output: CompleteReportTrain {
@@ -1266,7 +1266,7 @@ mod tests {
                 },
                 mrsp: SpeedLimitProperties::default(),
                 electrical_profiles: ElectricalProfiles::default(),
-            },
+            }),
             Arc::new(PathfindingResult::Success(
                 PathfindingResultSuccess::default(),
             )),
@@ -1293,7 +1293,7 @@ mod tests {
         let paced_trains = vec![paced_train.clone()];
         let paced_train_simulations = std::iter::repeat_n(
             (
-                simulation::Response::Success {
+                Arc::new(simulation::Response::Success {
                     base: ReportTrain::default(),
                     provisional: ReportTrain::default(),
                     final_output: CompleteReportTrain {
@@ -1303,7 +1303,7 @@ mod tests {
                     },
                     mrsp: SpeedLimitProperties::default(),
                     electrical_profiles: ElectricalProfiles::default(),
-                },
+                }),
                 Arc::new(PathfindingResult::Success(
                     PathfindingResultSuccess::default(),
                 )),
