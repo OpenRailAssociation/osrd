@@ -408,7 +408,11 @@ const handleUpdateTimetableItem = async ({
     };
     updatedTimetableItem = await storePacedTrain(
       timetableItemId,
-      { ...timetableItemForUpdate, paced, exceptions: [] },
+      {
+        ...timetableItemForUpdate,
+        paced,
+        exceptions: 'exceptions' in timetableItem ? timetableItem.exceptions : [],
+      },
       timetableId,
       dispatch,
       addUpsertedTimetableItems,
