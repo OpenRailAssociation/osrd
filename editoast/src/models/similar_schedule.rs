@@ -2,7 +2,7 @@ use itertools::Either;
 
 #[derive(Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct Waypoint {
-    pub ci: i64,
+    pub ci: u32,
     pub ch: Option<String>,
     pub stop: bool,
 }
@@ -36,7 +36,7 @@ impl ReferenceSchedule {
         self.waypoints.iter().position(|w| w == waypoint)
     }
 
-    pub fn find_waypoint(&self, ci: i64, ch: Option<&String>) -> Option<Waypoint> {
+    pub fn find_waypoint(&self, ci: u32, ch: Option<&String>) -> Option<Waypoint> {
         self.waypoints
             .iter()
             .find(|w| w.ci == ci && w.ch.as_ref() == ch)

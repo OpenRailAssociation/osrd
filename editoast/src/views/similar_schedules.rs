@@ -1,24 +1,21 @@
+mod error;
+mod request;
+
 use axum::extract::State;
+use request::Request;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::ops::Deref;
-use std::ops::DerefMut;
 
 use axum::Extension;
 use axum::Json;
 use editoast_authz::Role;
-use editoast_models::DbConnection;
 use educe::Educe;
 use itertools::Either;
 use itertools::Itertools;
 
 use crate::error::Result;
-use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use crate::models::RollingStock;
-use crate::models::prelude::*;
 use crate::models::similar_schedule;
-use crate::models::towed_rolling_stock::TowedRollingStockModel;
 
 use super::AppState;
 use super::AuthenticationExt;
@@ -28,72 +25,10 @@ crate::routes! {
     "/similar_schedules" => similar_schedules,
 }
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-struct RollingStockCharacteristics {
-    name: String,
-    towed_rolling_stock: Option<String>,
-    speed_limit_tag: Option<String>,
-}
-
-#[derive(Clone, serde::Deserialize, utoipa::ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-struct Waypoint {
-    ci: i64,
-    ch: String,
-    stop: bool,
-}
-
-impl From<Waypoint> for similar_schedule::Waypoint {
-    fn from(Waypoint { ci, ch, stop }: Waypoint) -> Self {
-        similar_schedule::Waypoint {
-            ci,
-            ch: Some(ch),
-            stop,
-        }
-    }
-}
-
-impl std::fmt::Debug for Waypoint {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}:{}{}",
-            self.ci,
-            self.ch,
-            if self.stop { "[STOP]" } else { "" }
-        )
-    }
-}
-
-#[derive(Debug, Clone)]
-struct Segment(VecDeque<Waypoint>);
-
-impl Deref for Segment {
-    type Target = VecDeque<Waypoint>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Segment {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-struct RefSchedulesRequest {
-    #[schema(inline)]
-    rolling_stock: RollingStockCharacteristics,
-    #[schema(inline)]
-    waypoints: Vec<Waypoint>,
-}
-
 #[utoipa::path(
     post, path = "",
-    tag = "ref_schedules,stdcm,sncf",
-    request_body = inline(RefSchedulesRequest),
+    tag = "similar_schedules,stdcm,sncf",
+    request_body = inline(Request),
     responses(
         (
             status = 200,
@@ -110,10 +45,10 @@ async fn similar_schedules(
         speed_limit_tag_ids,
         ..
     }): State<AppState>,
-    Json(RefSchedulesRequest {
+    Json(Request {
         rolling_stock,
         waypoints,
-    }): Json<RefSchedulesRequest>,
+    }): Json<Request>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
         .check_roles([Role::Stdcm].into())
@@ -123,20 +58,19 @@ async fn similar_schedules(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let mut conn = db_pool.get().await?;
-
     // Step 1: input validation and preprocessing
     // ------------------------------------------
 
-    validate_rolling_stock_input(&mut conn, &rolling_stock, &speed_limit_tag_ids).await?;
-
-    let waypoints = squash_successive_waypoints(waypoints);
-    let wp_count = waypoints.len();
-    let segments = split_segments(waypoints);
+    rolling_stock
+        .validate(&mut db_pool.get().await?, &speed_limit_tag_ids)
+        .await?;
+    let waypoints = request::Waypoint::squash_successive_waypoints(waypoints);
+    let waypoints_count = waypoints.len();
+    let segments = request::Segment::split_segments(waypoints)?;
 
     tracing::debug!(
         n_segments = segments.len(),
-        n_waypoints = wp_count,
+        n_waypoints = waypoints_count,
         "pre-processing complete"
     );
 
@@ -154,8 +88,8 @@ async fn similar_schedules(
             return Ok(Json(vec![]));
         }
 
-        let first_waypoint = segment.begin();
-        let last_waypoint = segment.end();
+        let first_waypoint = segment.begin()?;
+        let last_waypoint = segment.end()?;
 
         let selected_schedules = schedules
             .into_iter()
@@ -230,7 +164,7 @@ async fn similar_schedules(
 #[derive(Educe)]
 #[educe(Debug)]
 struct MatchingState {
-    path: VecDeque<Waypoint>,
+    path: VecDeque<request::Waypoint>,
     #[educe(Debug = "ignore")]
     graph: ReferenceGraph,
     correct_schedules_so_far: HashSet<String>,
@@ -239,7 +173,7 @@ struct MatchingState {
 }
 
 impl MatchingState {
-    fn new(Segment(mut waypoints): Segment, graph: ReferenceGraph) -> Self {
+    fn new(request::Segment(mut waypoints): request::Segment, graph: ReferenceGraph) -> Self {
         let current_waypoint = waypoints.pop_front().expect("empty segment").into();
         Self {
             path: waypoints,
@@ -315,7 +249,7 @@ struct GraphNode {
 struct ReferenceGraph {
     graph: Graph,
     // index: ci -> ch -> node_index
-    cich_index: HashMap<i64, HashMap<Option<String>, NodeIndex>>,
+    cich_index: HashMap<u32, HashMap<Option<String>, NodeIndex>>,
 }
 
 impl ReferenceGraph {
@@ -412,97 +346,6 @@ impl ReferenceGraph {
         );
         let dot = petgraph::dot::Dot::with_config(&pretty, &[petgraph::dot::Config::EdgeNoLabel]);
         format!("{dot:?}").replace("\\\"", "")
-    }
-}
-
-async fn validate_rolling_stock_input(
-    conn: &mut DbConnection,
-    RollingStockCharacteristics {
-        name,
-        towed_rolling_stock,
-        speed_limit_tag,
-        ..
-    }: &RollingStockCharacteristics,
-    speed_limit_tag_ids: &SpeedLimitTagIds,
-) -> Result<()> {
-    if !RollingStock::exists(conn, name.clone()).await? {
-        panic!("no such rolling stock, ok bye now");
-    }
-
-    if let Some(towed_rolling_stock) = towed_rolling_stock.as_ref() {
-        if !TowedRollingStockModel::exists(conn, towed_rolling_stock.clone()).await? {
-            panic!("no such towed rolling stock, ok bye now");
-        }
-    }
-
-    if speed_limit_tag
-        .as_ref()
-        .is_some_and(|tag| !speed_limit_tag_ids.contains(tag))
-    {
-        panic!("speed limit tag not found");
-    }
-
-    Ok(())
-}
-
-fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
-    let mut result = Vec::<Waypoint>::with_capacity(waypoints.len());
-    for waypoint in waypoints {
-        if let Some(prev) = result.last_mut() {
-            if prev.ci == waypoint.ci && prev.ch == waypoint.ch {
-                prev.stop |= waypoint.stop;
-                continue;
-            }
-        }
-        result.push(waypoint);
-    }
-    result
-}
-
-/// Splits the waypoints into segments between each stops
-///
-/// The stop waypoint at the end of one segment is included in the next segment.
-///
-/// # Panics
-///
-/// The first and last provided waypoints must be stop waypoints.
-/// There must be at least two waypoints in the provided list. (duh)
-fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Segment> {
-    if waypoints.len() < 2 {
-        panic!("Not enough waypoints to split into segments");
-    }
-    if !waypoints.last().unwrap().stop {
-        panic!("Last waypoint is not a stop");
-    }
-
-    let mut segments = Vec::<VecDeque<Waypoint>>::new();
-    for waypoint in waypoints {
-        if waypoint.stop {
-            if let Some(last_segment) = segments.last_mut() {
-                last_segment.push_back(waypoint.clone());
-            }
-            segments.push(VecDeque::from([waypoint]));
-        } else if let Some(last_segment) = segments.last_mut() {
-            last_segment.push_back(waypoint);
-        } else {
-            panic!("First waypoint is not a stop");
-        }
-    }
-
-    if segments.last().map(|s| s.len()) == Some(1) {
-        segments.pop();
-    }
-
-    segments.into_iter().map(Segment).collect()
-}
-
-impl Segment {
-    fn begin(&self) -> &Waypoint {
-        self.front().expect("empty segment")
-    }
-
-    fn end(&self) -> &Waypoint {
-        self.back().expect("empty segment")
     }
 }
 
@@ -738,152 +581,3 @@ fn decide_best_schedule_combination(mut segments_schedules: Vec<HashSet<String>>
 
 //     Ok(axum::http::StatusCode::NO_CONTENT)
 // }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn test_squash_waypoints() {
-        let waypoints = Vec::new();
-        assert_eq!(squash_successive_waypoints(waypoints), Vec::new());
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 2,
-                ch: "b".to_string(),
-                stop: false,
-            },
-        ];
-        assert_eq!(squash_successive_waypoints(waypoints.clone()), waypoints);
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            }]
-        );
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: true,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: true,
-            }]
-        );
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 2,
-                ch: "b".to_string(),
-                stop: false,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![
-                Waypoint {
-                    ci: 1,
-                    ch: "a".to_string(),
-                    stop: false,
-                },
-                Waypoint {
-                    ci: 2,
-                    ch: "b".to_string(),
-                    stop: false,
-                },
-            ]
-        );
-    }
-
-    #[test]
-    fn test_segmentation() {
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_string(),
-                stop: true,
-            },
-            Waypoint {
-                ci: 2,
-                ch: "b".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 3,
-                ch: "c".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 4,
-                ch: "d".to_string(),
-                stop: true,
-            },
-            Waypoint {
-                ci: 5,
-                ch: "e".to_string(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 6,
-                ch: "f".to_string(),
-                stop: true,
-            },
-            Waypoint {
-                ci: 7,
-                ch: "g".to_string(),
-                stop: true,
-            },
-        ];
-
-        let mut segments = split_segments(waypoints.clone());
-        assert_eq!(segments[0].make_contiguous(), &waypoints[0..=3]);
-        assert_eq!(segments[1].make_contiguous(), &waypoints[3..=5]);
-        assert_eq!(segments[2].make_contiguous(), &waypoints[5..=6]);
-        assert_eq!(segments.len(), 3);
-    }
-}
