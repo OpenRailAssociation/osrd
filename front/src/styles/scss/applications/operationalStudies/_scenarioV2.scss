@@ -210,9 +210,60 @@
       }
     }
     // END HANDLE SCENARIO NAME AND USER NAME HOVER WHEN TRUNCATED
+}
+
+.scenario-managetrainschedule-modal {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+
+  .scenario-timetable-managetrainschedule {
+    width: 25%;
+    overflow: hidden;
+    background-color: #d7d7d7aa;
+    border-radius: 4px;
+    animation: fadein 1s;
+    backdrop-filter: blur(4px);
+
+    .scenario-timetable-managetrainschedule-header {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 8px 0;
+
+      .custom-control-label {
+        padding-top: 0;
+      }
+
+      .input-icon {
+        margin-bottom: 2px;
+      }
+    }
+
+    .scenario-timetable-managetrainschedule-body {
+      padding: 8px;
+      height: 100%;
+    }
   }
 
-  .scenario-details {
+  .scenario-managetrainschedule {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--coolgray1);
+    width: 75%;
+    padding-left: 8px;
+    animation: fadein 1s;
+    overflow: auto;
+
+    .invalid-feedback {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+.scenario-details {
     display: flex;
     flex-direction: column;
     background-color: var(--ambientB10);
@@ -245,4 +296,4 @@
         outline: none;
       }
     }
-  }
+}
