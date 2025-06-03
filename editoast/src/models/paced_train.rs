@@ -65,7 +65,7 @@ impl PacedTrain {
     }
 
     pub fn apply_exception(&self, exception: &PacedTrainException) -> TrainSchedule {
-        let mut train_schedule = self.clone().into_first_occurrence();
+        let mut train_schedule = self.clone().into_train_schedule();
 
         if let Some(change_group) = &exception.train_name {
             train_schedule.train_name = change_group.value.clone();
@@ -105,7 +105,7 @@ impl PacedTrain {
         train_schedule
     }
 
-    pub fn into_first_occurrence(self) -> TrainSchedule {
+    pub fn into_train_schedule(self) -> TrainSchedule {
         TrainSchedule {
             id: self.id,
             train_name: self.train_name,
@@ -127,7 +127,7 @@ impl PacedTrain {
     }
 
     pub fn iter_occurrences(&self) -> impl Iterator<Item = TrainSchedule> {
-        let base_occurrence = self.clone().into_first_occurrence();
+        let base_occurrence = self.clone().into_train_schedule();
 
         (0..self.num_occurrences()).map(move |occurrence_idx| TrainSchedule {
             start_time: base_occurrence.start_time + self.interval * occurrence_idx as i32,
