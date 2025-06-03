@@ -7,6 +7,7 @@ pub mod infra;
 pub mod infra_objects;
 pub mod layers;
 pub mod macro_node;
+pub mod similar_schedule;
 pub mod stdcm_log;
 
 mod auth_driver;

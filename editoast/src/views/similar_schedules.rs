@@ -2,21 +2,12 @@ use axum::extract::State;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
-use std::iter;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
 use axum::Extension;
 use axum::Json;
 use editoast_authz::Role;
-use editoast_models::DbConnectionPoolV2;
-
-use axum::response::IntoResponse;
-use core_client::AsCoreRequest as _;
-use core_client::path_properties::OperationalPointOnPath;
-use core_client::path_properties::PathPropertiesRequest;
-use core_client::path_properties::PathPropertiesResponse;
-use diesel::QueryDsl;
 use editoast_models::DbConnection;
 use educe::Educe;
 use itertools::Either;
@@ -24,21 +15,17 @@ use itertools::Itertools;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use crate::models::Infra;
 use crate::models::RollingStock;
 use crate::models::prelude::*;
-use crate::models::reference_schedule;
-use crate::models::reference_schedule::ReferenceSchedule;
-use crate::models::timetable::Timetable;
+use crate::models::similar_schedule;
 use crate::models::towed_rolling_stock::TowedRollingStockModel;
-use crate::models::train_schedule::TrainSchedule;
 
 use super::AppState;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
 crate::routes! {
-    "/ref_schedules" => ref_schedules,
+    "/similar_schedules" => similar_schedules,
 }
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
@@ -46,7 +33,6 @@ struct RollingStockCharacteristics {
     name: String,
     towed_rolling_stock: Option<String>,
     speed_limit_tag: Option<String>,
-    mass: Option<u64>,
 }
 
 #[derive(Clone, serde::Deserialize, utoipa::ToSchema)]
@@ -57,9 +43,9 @@ struct Waypoint {
     stop: bool,
 }
 
-impl From<Waypoint> for reference_schedule::Waypoint {
+impl From<Waypoint> for similar_schedule::Waypoint {
     fn from(Waypoint { ci, ch, stop }: Waypoint) -> Self {
-        reference_schedule::Waypoint {
+        similar_schedule::Waypoint {
             ci,
             ch: Some(ch),
             stop,
@@ -74,7 +60,7 @@ impl std::fmt::Debug for Waypoint {
             "{}:{}{}",
             self.ci,
             self.ch,
-            self.stop.then_some("[STOP]").unwrap_or("")
+            if self.stop { "[STOP]" } else { "" }
         )
     }
 }
@@ -117,7 +103,7 @@ struct RefSchedulesRequest {
         ),
     ),
 )]
-async fn ref_schedules(
+async fn similar_schedules(
     Extension(auth): AuthenticationExt,
     State(AppState {
         db_pool,
@@ -157,10 +143,11 @@ async fn ref_schedules(
     // Step 2: query reference schedules and build the search graph
     // ------------------------------------------------------------
 
-    let mut graphs = Vec::new();
+    let mut graphs: Vec<(_, _)> = Vec::<(_, _)>::new();
     let mut names = HashSet::new();
     for segment in segments {
-        let schedules = query_schedules_between_stops(&mut conn, &segment, &rolling_stock).await?;
+        let schedules: Vec<similar_schedule::ReferenceSchedule> = vec![];
+        // query_schedules_between_stops(&mut conn, &segment, &rolling_stock).await?;
         tracing::debug!(segment_start = ?segment.begin(), segment_end = ?segment.end(), n_schedules = schedules.len(), "reference schedules queried");
 
         if schedules.is_empty() {
@@ -209,7 +196,7 @@ async fn ref_schedules(
         };
 
         let mut graph = ReferenceGraph::default();
-        for ReferenceSchedule {
+        for similar_schedule::ReferenceSchedule {
             name, waypoints, ..
         } in selected_schedules
         {
@@ -247,8 +234,8 @@ struct MatchingState {
     #[educe(Debug = "ignore")]
     graph: ReferenceGraph,
     correct_schedules_so_far: HashSet<String>,
-    current_waypoint: reference_schedule::Waypoint,
-    skipped: Option<reference_schedule::Waypoint>,
+    current_waypoint: similar_schedule::Waypoint,
+    skipped: Option<similar_schedule::Waypoint>,
 }
 
 impl MatchingState {
@@ -320,7 +307,7 @@ type NodeIndex = petgraph::graph::NodeIndex;
 
 #[derive(Debug)]
 struct GraphNode {
-    waypoint: reference_schedule::Waypoint,
+    waypoint: similar_schedule::Waypoint,
     schedules: HashSet<String>,
 }
 
@@ -334,7 +321,7 @@ struct ReferenceGraph {
 impl ReferenceGraph {
     fn get_or_create_node(
         &mut self,
-        waypoint: reference_schedule::Waypoint,
+        waypoint: similar_schedule::Waypoint,
         schedule_name: &str,
     ) -> NodeIndex {
         if let Some(node) = self
@@ -360,7 +347,7 @@ impl ReferenceGraph {
         }
     }
 
-    fn push(&mut self, schedule_name: String, waypoints: Vec<reference_schedule::Waypoint>) {
+    fn push(&mut self, schedule_name: String, waypoints: Vec<similar_schedule::Waypoint>) {
         for (wp1, wp2) in waypoints.into_iter().tuple_windows() {
             let from = self.get_or_create_node(wp1, &schedule_name);
             let to = self.get_or_create_node(wp2, &schedule_name);
@@ -372,8 +359,8 @@ impl ReferenceGraph {
 
     fn find_successor(
         &self,
-        train_location: &reference_schedule::Waypoint,
-        target_location: &reference_schedule::Waypoint,
+        train_location: &similar_schedule::Waypoint,
+        target_location: &similar_schedule::Waypoint,
     ) -> Option<HashSet<String>> {
         let from = self
             .cich_index
@@ -406,7 +393,7 @@ impl ReferenceGraph {
         let pretty = self.graph.map(
             |_,
              GraphNode {
-                 waypoint: reference_schedule::Waypoint { ci, ch, stop },
+                 waypoint: similar_schedule::Waypoint { ci, ch, stop },
                  schedules,
              }| {
                 let mut names = schedules
@@ -418,7 +405,7 @@ impl ReferenceGraph {
                 format!(
                     "{ci}:{}{}  —  {names}",
                     ch.as_deref().unwrap_or("ø"),
-                    stop.then_some("[STOP]").unwrap_or("")
+                    if *stop { "[STOP]" } else { "" }
                 )
             },
             |_, ()| String::new(),
@@ -495,12 +482,10 @@ fn split_segments(waypoints: Vec<Waypoint>) -> Vec<Segment> {
                 last_segment.push_back(waypoint.clone());
             }
             segments.push(VecDeque::from([waypoint]));
+        } else if let Some(last_segment) = segments.last_mut() {
+            last_segment.push_back(waypoint);
         } else {
-            if let Some(last_segment) = segments.last_mut() {
-                last_segment.push_back(waypoint);
-            } else {
-                panic!("First waypoint is not a stop");
-            }
+            panic!("First waypoint is not a stop");
         }
     }
 
@@ -521,40 +506,40 @@ impl Segment {
     }
 }
 
-async fn query_schedules_between_stops(
-    conn: &mut DbConnection,
-    segment: &Segment,
-    RollingStockCharacteristics {
-        name,
-        towed_rolling_stock,
-        speed_limit_tag,
-        mass,
-    }: &RollingStockCharacteristics,
-) -> Result<Vec<ReferenceSchedule>> {
-    let stops = vec![segment.begin().ci, segment.end().ci];
+// async fn query_schedules_between_stops(
+//     conn: &mut DbConnection,
+//     segment: &Segment,
+//     RollingStockCharacteristics {
+//         name,
+//         towed_rolling_stock,
+//         speed_limit_tag,
+//         mass,
+//     }: &RollingStockCharacteristics,
+// ) -> Result<Vec<ReferenceSchedule>> {
+//     let stops = vec![segment.begin().ci, segment.end().ci];
 
-    // use diesel::expression_methods::ExpressionMethods as _;
-    use diesel::expression_methods::PgArrayExpressionMethods as _;
-    use diesel_async::RunQueryDsl as _;
-    use editoast_models::tables::reference_schedule::dsl;
+//     // use diesel::expression_methods::ExpressionMethods as _;
+//     use diesel::expression_methods::PgArrayExpressionMethods as _;
+//     use diesel_async::RunQueryDsl as _;
+//     use editoast_models::tables::reference_schedule::dsl;
 
-    let rows = dsl::reference_schedule
-        .select(editoast_models::tables::reference_schedule::all_columns)
-        .filter(dsl::stop_points_ci.contains(stops))
-        // .filter(dsl::traction_engine.eq(name))
-        // .filter(dsl::towed_rolling_stock.eq(towed_rolling_stock))
-        // .filter(dsl::speed_limit_tag.eq(speed_limit_tag))
-        // .filter(dsl::weight.ge(mass.map(|m| m as i64)))
-        .load::<Row<ReferenceSchedule>>(&mut conn.write().await)
-        .await?;
+//     let rows = dsl::reference_schedule
+//         .select(editoast_models::tables::reference_schedule::all_columns)
+//         .filter(dsl::stop_points_ci.contains(stops))
+//         // .filter(dsl::traction_engine.eq(name))
+//         // .filter(dsl::towed_rolling_stock.eq(towed_rolling_stock))
+//         // .filter(dsl::speed_limit_tag.eq(speed_limit_tag))
+//         // .filter(dsl::weight.ge(mass.map(|m| m as i64)))
+//         .load::<Row<ReferenceSchedule>>(&mut conn.write().await)
+//         .await?;
 
-    let schedules = rows
-        .into_iter()
-        .map(|row| ReferenceSchedule::from_row(row))
-        .collect();
+//     let schedules = rows
+//         .into_iter()
+//         .map(|row| ReferenceSchedule::from_row(row))
+//         .collect();
 
-    Ok(schedules)
-}
+//     Ok(schedules)
+// }
 
 fn decide_best_schedule_combination(mut segments_schedules: Vec<HashSet<String>>) -> Vec<String> {
     let mut schedules = Vec::new();
@@ -584,175 +569,175 @@ fn decide_best_schedule_combination(mut segments_schedules: Vec<HashSet<String>>
     schedules
 }
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
-struct LoadTimetableRequest {
-    timetable_id: i64,
-    infra_id: i64,
-}
+// #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+// struct LoadTimetableRequest {
+//     timetable_id: i64,
+//     infra_id: i64,
+// }
 
-#[utoipa::path(
-    put, path = "",
-    tag = "ref_schedules,timetable,sncf",
-    request_body = inline(LoadTimetableRequest),
-    responses( ( status = 204, description = "Timetable schedules loaded as reference schedules successfully" ) ),
-)]
-async fn load_timetable(
-    Extension(auth): AuthenticationExt,
-    State(AppState {
-        db_pool,
-        valkey,
-        core_client,
-        ..
-    }): State<AppState>,
-    Json(LoadTimetableRequest {
-        timetable_id,
-        infra_id,
-    }): Json<LoadTimetableRequest>,
-) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([Role::Admin].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
+// #[utoipa::path(
+//     put, path = "",
+//     tag = "ref_schedules,timetable,sncf",
+//     request_body = inline(LoadTimetableRequest),
+//     responses( ( status = 204, description = "Timetable schedules loaded as reference schedules successfully" ) ),
+// )]
+// async fn load_timetable(
+//     Extension(auth): AuthenticationExt,
+//     State(AppState {
+//         db_pool,
+//         valkey,
+//         core_client,
+//         ..
+//     }): State<AppState>,
+//     Json(LoadTimetableRequest {
+//         timetable_id,
+//         infra_id,
+//     }): Json<LoadTimetableRequest>,
+// ) -> Result<impl IntoResponse> {
+//     let authorized = auth
+//         .check_roles([Role::Admin].into())
+//         .await
+//         .map_err(AuthorizationError::AuthError)?;
+//     if !authorized {
+//         return Err(AuthorizationError::Forbidden.into());
+//     }
 
-    let mut conn = db_pool.get().await?;
+//     let mut conn = db_pool.get().await?;
 
-    let _timetable = Timetable::retrieve_real(conn.clone(), timetable_id)
-        .await?
-        .expect("no such timetable");
+//     let _timetable = Timetable::retrieve_real(conn.clone(), timetable_id)
+//         .await?
+//         .expect("no such timetable");
 
-    let infra = Infra::retrieve_real(conn.clone(), infra_id)
-        .await?
-        .expect("no such infra");
+//     let infra = Infra::retrieve_real(conn.clone(), infra_id)
+//         .await?
+//         .expect("no such infra");
 
-    let mut train_schedules = TrainSchedule::list(
-        &mut conn,
-        SelectionSettings::new().filter(move || TrainSchedule::TIMETABLE_ID.eq(timetable_id)),
-    )
-    .await?;
+//     let mut train_schedules = TrainSchedule::list(
+//         &mut conn,
+//         SelectionSettings::new().filter(move || TrainSchedule::TIMETABLE_ID.eq(timetable_id)),
+//     )
+//     .await?;
 
-    let rolling_stock_names = train_schedules
-        .iter()
-        .map(|schedule| schedule.rolling_stock_name.clone())
-        .collect_vec();
+//     let rolling_stock_names = train_schedules
+//         .iter()
+//         .map(|schedule| schedule.rolling_stock_name.clone())
+//         .collect_vec();
 
-    let rolling_stocks = RollingStock::list(
-        &mut conn,
-        SelectionSettings::new()
-            .filter(move || RollingStock::NAME.eq_any(rolling_stock_names.clone())),
-    )
-    .await?
-    .into_iter()
-    .map_into()
-    .collect_vec();
+//     let rolling_stocks = RollingStock::list(
+//         &mut conn,
+//         SelectionSettings::new()
+//             .filter(move || RollingStock::NAME.eq_any(rolling_stock_names.clone())),
+//     )
+//     .await?
+//     .into_iter()
+//     .map_into()
+//     .collect_vec();
 
-    let paths = {
-        let paths = pathfinding_from_train_batch(
-            &mut conn,
-            &mut valkey.get_connection().await?,
-            core_client.clone(),
-            &infra,
-            &train_schedules,
-            &rolling_stocks,
-        )
-        .await?;
+//     let paths = {
+//         let paths = pathfinding_from_train_batch(
+//             &mut conn,
+//             &mut valkey.get_connection().await?,
+//             core_client.clone(),
+//             &infra,
+//             &train_schedules,
+//             &rolling_stocks,
+//         )
+//         .await?;
 
-        let mut successful_paths = Vec::with_capacity(paths.len());
-        let mut removed = 0;
-        for (i, path_result) in paths.into_iter().enumerate() {
-            match path_result {
-                PathfindingResult::Failure(error) => {
-                    tracing::warn!(?error, "Pathfinding failed");
-                    train_schedules.remove(i - removed);
-                    removed += 1;
-                }
-                PathfindingResult::Success(path) => {
-                    successful_paths.push(path);
-                }
-            }
-        }
-        successful_paths
-    };
+//         let mut successful_paths = Vec::with_capacity(paths.len());
+//         let mut removed = 0;
+//         for (i, path_result) in paths.into_iter().enumerate() {
+//             match path_result {
+//                 PathfindingResult::Failure(error) => {
+//                     tracing::warn!(?error, "Pathfinding failed");
+//                     train_schedules.remove(i - removed);
+//                     removed += 1;
+//                 }
+//                 PathfindingResult::Success(path) => {
+//                     successful_paths.push(path);
+//                 }
+//             }
+//         }
+//         successful_paths
+//     };
 
-    let path_properties_requests = paths
-        .iter()
-        .map(|path| PathPropertiesRequest {
-            track_section_ranges: &path.track_section_ranges,
-            infra: infra.id,
-            expected_version: infra.version.clone(),
-        })
-        .collect_vec();
+//     let path_properties_requests = paths
+//         .iter()
+//         .map(|path| PathPropertiesRequest {
+//             track_section_ranges: &path.track_section_ranges,
+//             infra: infra.id,
+//             expected_version: infra.version.clone(),
+//         })
+//         .collect_vec();
 
-    let waypoints = {
-        let mut waypoints = Vec::new();
-        waypoints.resize_with(path_properties_requests.len(), Default::default);
-        let futures = path_properties_requests
-            .into_iter()
-            .enumerate()
-            .zip(iter::repeat(core_client.clone()))
-            .map(|((index, request), client)| async move {
-                let response = request.fetch(&client).await;
-                response.map(|response| (index, response))
-            });
-        let properties = futures::future::try_join_all(futures).await?;
-        let response_waypoints = properties
-            .into_iter()
-            .map(
-                |(
-                    index,
-                    PathPropertiesResponse {
-                        operational_points, ..
-                    },
-                )| {
-                    let ops = operational_points
-                        .into_iter()
-                        .map(|OperationalPointOnPath { id, extensions, .. }| {
-                            reference_schedule::Waypoint {
-                                ci: extensions.sncf.as_ref().unwrap().ci,
-                                ch: Some(extensions.sncf.unwrap().ch),
-                                stop: train_schedules[index].stops_at(&id),
-                            }
-                        })
-                        .collect_vec();
-                    (index, ops)
-                },
-            )
-            .collect_vec();
-        for (index, ops) in response_waypoints {
-            waypoints[index] = ops;
-        }
-        waypoints
-    };
+//     let waypoints = {
+//         let mut waypoints = Vec::new();
+//         waypoints.resize_with(path_properties_requests.len(), Default::default);
+//         let futures = path_properties_requests
+//             .into_iter()
+//             .enumerate()
+//             .zip(iter::repeat(core_client.clone()))
+//             .map(|((index, request), client)| async move {
+//                 let response = request.fetch(&client).await;
+//                 response.map(|response| (index, response))
+//             });
+//         let properties = futures::future::try_join_all(futures).await?;
+//         let response_waypoints = properties
+//             .into_iter()
+//             .map(
+//                 |(
+//                     index,
+//                     PathPropertiesResponse {
+//                         operational_points, ..
+//                     },
+//                 )| {
+//                     let ops = operational_points
+//                         .into_iter()
+//                         .map(|OperationalPointOnPath { id, extensions, .. }| {
+//                             similar_schedule::Waypoint {
+//                                 ci: extensions.sncf.as_ref().unwrap().ci,
+//                                 ch: Some(extensions.sncf.unwrap().ch),
+//                                 stop: train_schedules[index].stops_at(&id),
+//                             }
+//                         })
+//                         .collect_vec();
+//                     (index, ops)
+//                 },
+//             )
+//             .collect_vec();
+//         for (index, ops) in response_waypoints {
+//             waypoints[index] = ops;
+//         }
+//         waypoints
+//     };
 
-    let mut changesets = Vec::with_capacity(waypoints.len());
-    for (train_schedule, waypoints) in train_schedules.into_iter().zip(waypoints.into_iter()) {
-        let stops = train_schedule
-            .operational_point_stops(&mut conn, infra.id)
-            .await?;
-        let cs = ReferenceSchedule::changeset()
-            .train_schedule(train_schedule.id)
-            .name(train_schedule.train_name)
-            .start_date(train_schedule.start_time)
-            .traction_engine(train_schedule.rolling_stock_name)
-            .towed_rolling_stock(None)
-            .speed_limit_tag(train_schedule.speed_limit_tag)
-            .weight(Some(100_000))
-            .waypoints(waypoints)
-            .stop_points_ci(
-                stops
-                    .into_iter()
-                    .map(|stop| Some(stop.schema.extensions.sncf.expect("no SNCF???").ci))
-                    .collect(),
-            );
-        changesets.push(cs);
-    }
+//     let mut changesets = Vec::with_capacity(waypoints.len());
+//     for (train_schedule, waypoints) in train_schedules.into_iter().zip(waypoints.into_iter()) {
+//         let stops = train_schedule
+//             .operational_point_stops(&mut conn, infra.id)
+//             .await?;
+//         let cs = ReferenceSchedule::changeset()
+//             .train_schedule(train_schedule.id)
+//             .name(train_schedule.train_name)
+//             .start_date(train_schedule.start_time)
+//             .traction_engine(train_schedule.rolling_stock_name)
+//             .towed_rolling_stock(None)
+//             .speed_limit_tag(train_schedule.speed_limit_tag)
+//             .weight(Some(100_000))
+//             .waypoints(waypoints)
+//             .stop_points_ci(
+//                 stops
+//                     .into_iter()
+//                     .map(|stop| Some(stop.schema.extensions.sncf.expect("no SNCF???").ci))
+//                     .collect(),
+//             );
+//         changesets.push(cs);
+//     }
 
-    let _ = ReferenceSchedule::create_batch::<_, Vec<_>>(&mut conn, changesets).await?;
+//     let _ = ReferenceSchedule::create_batch::<_, Vec<_>>(&mut conn, changesets).await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
-}
+//     Ok(axum::http::StatusCode::NO_CONTENT)
+// }
 
 #[cfg(test)]
 mod tests {
