@@ -2922,12 +2922,16 @@ paths:
               required:
               - rolling_stock
               - waypoints
+              - infra_id
               - start_time
               - end_time
               properties:
                 end_time:
                   type: string
                   format: date-time
+                infra_id:
+                  type: integer
+                  format: int64
                 rolling_stock:
                   type: object
                   required:
@@ -5396,6 +5400,7 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastErrorDatabase'
       - $ref: '#/components/schemas/EditoastErrorEmptySegment'
       - $ref: '#/components/schemas/EditoastErrorFirstWaypointNotAStop'
       - $ref: '#/components/schemas/EditoastErrorGraphConstructionFailed'
@@ -5486,6 +5491,25 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
+    EditoastErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:similar_schedules:Database
     EditoastErrorEmptySegment:
       type: object
       required:
@@ -5538,7 +5562,7 @@ components:
         status:
           type: integer
           enum:
-          - 400
+          - 500
         type:
           type: string
           enum:
@@ -5643,7 +5667,7 @@ components:
         status:
           type: integer
           enum:
-          - 400
+          - 404
         type:
           type: string
           enum:

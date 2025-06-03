@@ -9,7 +9,7 @@ use serde::Deserialize;
 use utoipa::ToSchema;
 
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use crate::models::Exists;
+use crate::models::Retrieve;
 use crate::models::RollingStock;
 use crate::models::similar_schedule;
 
@@ -25,6 +25,7 @@ pub struct Request {
     pub rolling_stock: RollingStockCharacteristics,
     #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
     pub waypoints: Vec<Waypoint>,
+    pub infra_id: i64,
     pub start_time: DateTime<Utc>,
     pub end_time: DateTime<Utc>,
 }
@@ -38,19 +39,15 @@ pub struct RollingStockCharacteristics {
 impl RollingStockCharacteristics {
     pub async fn validate(
         &self,
-        conn: &mut DbConnection,
+        conn: DbConnection,
         speed_limit_tag_ids: &SpeedLimitTagIds,
-    ) -> Result<(), Error> {
-        if !RollingStock::exists(conn, self.name.clone())
-            .await
-            .map_err(|_| Error::RollingStockNotFound {
+    ) -> Result<RollingStock, Error> {
+        let rolling_stock = RollingStock::retrieve_real_or_fail(conn, self.name.clone(), || {
+            Error::RollingStockNotFound {
                 rolling_stock_name: self.name.clone(),
-            })?
-        {
-            return Err(Error::RollingStockNotFound {
-                rolling_stock_name: self.name.clone(),
-            });
-        }
+            }
+        })
+        .await?;
 
         if self
             .speed_limit_tag
@@ -60,7 +57,7 @@ impl RollingStockCharacteristics {
             return Err(Error::SpeedLimitTagNotFound);
         }
 
-        Ok(())
+        Ok(rolling_stock)
     }
 
     #[cfg(test)]
@@ -329,7 +326,7 @@ mod tests {
 
         assert!(
             rolling_stock_characteristics
-                .validate(&mut db_pool.get_ok(), &SpeedLimitTagIds::load())
+                .validate(db_pool.get_ok(), &SpeedLimitTagIds::load())
                 .await
                 .is_ok(),
         );
@@ -350,7 +347,7 @@ mod tests {
 
         assert!(
             rolling_stock_characteristics
-                .validate(&mut db_pool.get_ok(), &SpeedLimitTagIds::load())
+                .validate(db_pool.get_ok(), &SpeedLimitTagIds::load())
                 .await
                 .is_ok(),
         );
@@ -363,7 +360,7 @@ mod tests {
             RollingStockCharacteristics::new("non_existent_rolling_stock".to_string(), None);
 
         let result = rolling_stock_characteristics
-            .validate(&mut db_pool.get_ok(), &SpeedLimitTagIds::load())
+            .validate(db_pool.get_ok(), &SpeedLimitTagIds::load())
             .await;
 
         assert_eq!(
@@ -388,7 +385,7 @@ mod tests {
             RollingStockCharacteristics::new(rolling_stock.name, Some("invalid_tag".to_string()));
 
         let result = rolling_stock_characteristics
-            .validate(&mut db_pool.get_ok(), &SpeedLimitTagIds::load())
+            .validate(db_pool.get_ok(), &SpeedLimitTagIds::load())
             .await;
 
         assert_eq!(result, Err(Error::SpeedLimitTagNotFound),);

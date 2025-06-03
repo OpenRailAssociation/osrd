@@ -1935,6 +1935,7 @@ export type PostSimilarSchedulesApiResponse =
 export type PostSimilarSchedulesApiArg = {
   body: {
     end_time: string;
+    infra_id: number;
     rolling_stock: {
       name: string;
       speed_limit_tag?: string | null;

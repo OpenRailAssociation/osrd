@@ -3,24 +3,31 @@ mod graph;
 mod request;
 mod response;
 
-use axum::extract::State;
-use chrono::DateTime;
-use graph::MatchingState;
-use graph::ReferenceGraph;
-use request::Request;
-use response::Response;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 use axum::Extension;
 use axum::Json;
+use axum::extract::State;
+use chrono::DateTime;
 use editoast_authz::Role;
+use error::Error;
+use graph::MatchingState;
+use graph::ReferenceGraph;
 use itertools::Either;
 use itertools::Itertools;
+use request::Request;
+use response::Response;
 
 use crate::error::Result;
+use crate::models::Infra;
+use crate::models::Retrieve;
 use crate::models::TrainSchedule;
 use crate::models::similar_schedule;
+use crate::views::path::pathfinding::PathfindingResult;
+use crate::views::path::pathfinding_from_train_batch;
+use crate::views::path::properties::PathPropertiesInput;
+use crate::views::path::properties::retrieve_path_properties;
 
 use super::AppState;
 use super::AuthenticationExt;
@@ -51,12 +58,15 @@ async fn similar_schedules(
     Extension(auth): AuthenticationExt,
     State(AppState {
         db_pool,
+        valkey,
+        core_client,
         speed_limit_tag_ids,
         ..
     }): State<AppState>,
     Json(Request {
         rolling_stock,
         waypoints,
+        infra_id,
         start_time,
         end_time,
     }): Json<Request>,
@@ -72,8 +82,8 @@ async fn similar_schedules(
     // Step 1: input validation and preprocessing
     // ------------------------------------------
 
-    rolling_stock
-        .validate(&mut db_pool.get().await?, &speed_limit_tag_ids)
+    let validated_rolling_stock = rolling_stock
+        .validate(db_pool.get().await?, &speed_limit_tag_ids)
         .await?;
     let waypoints = request::Waypoint::squash_successive_waypoints(waypoints);
     let waypoints_count = waypoints.len();
@@ -88,7 +98,7 @@ async fn similar_schedules(
     // Step 2: query reference schedules and build the search graph
     // ------------------------------------------------------------
 
-    let _train_schedules = TrainSchedule::get_by_rolling_stock_name_and_speed_limit_tag(
+    let mut train_schedules = TrainSchedule::get_by_rolling_stock_name_and_speed_limit_tag(
         db_pool.get().await?,
         rolling_stock.name.clone(),
         rolling_stock.speed_limit_tag,
@@ -96,6 +106,56 @@ async fn similar_schedules(
         end_time,
     )
     .await?;
+
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        Error::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let paths = {
+        let paths = pathfinding_from_train_batch(
+            &mut db_pool.get().await?,
+            &mut valkey.get_connection().await?,
+            core_client.clone(),
+            &infra,
+            &train_schedules,
+            &[validated_rolling_stock.into()],
+        )
+        .await?;
+
+        let mut successful_paths = Vec::with_capacity(paths.len());
+        let mut removed = 0;
+        for (i, path_result) in paths.into_iter().enumerate() {
+            match path_result {
+                PathfindingResult::Failure(error) => {
+                    tracing::warn!(?error, "Pathfinding failed");
+                    train_schedules.remove(i - removed);
+                    removed += 1;
+                }
+                PathfindingResult::Success(path) => {
+                    successful_paths.push(path);
+                }
+            }
+        }
+        successful_paths
+    };
+
+    let _path_properties = {
+        let mut properties = Vec::with_capacity(paths.len());
+        for path in paths {
+            let porpertie = retrieve_path_properties(
+                &mut valkey.get_connection().await?,
+                infra.id,
+                infra.version,
+                &PathPropertiesInput {
+                    track_section_ranges: path.track_section_ranges,
+                },
+            )
+            .await?;
+            properties.push(porpertie);
+        }
+        properties
+    };
 
     let mut graphs: Vec<(_, _)> = Vec::<(_, _)>::new();
     let mut names = HashSet::new();

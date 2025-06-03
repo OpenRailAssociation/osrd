@@ -59,29 +59,29 @@ pub struct PathPropertiesInput {
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
-struct PathProperties {
+pub struct PathProperties {
     #[schema(inline)]
     /// Slopes along the path
-    slopes: Option<PropertyValuesF64>,
+    pub slopes: Option<PropertyValuesF64>,
     #[schema(inline)]
     /// Curves along the path
-    curves: Option<PropertyValuesF64>,
+    pub curves: Option<PropertyValuesF64>,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
-    electrifications: Option<PropertyElectrificationValues>,
+    pub electrifications: Option<PropertyElectrificationValues>,
     /// Geometry of the path
-    geometry: Option<GeoJsonLineString>,
+    pub geometry: Option<GeoJsonLineString>,
     /// Operational points along the path
     #[schema(inline)]
-    operational_points: Option<Vec<OperationalPointOnPath>>,
+    pub operational_points: Option<Vec<OperationalPointOnPath>>,
     /// Zones along the path
     #[schema(inline)]
-    zones: Option<PropertyZoneValues>,
+    pub zones: Option<PropertyZoneValues>,
 }
 
 impl PathProperties {
     /// Determines the set of defined properties for the path.
-    pub fn get_defined_properties(&self) -> Properties {
+    fn get_defined_properties(&self) -> Properties {
         let mut properties = EnumSet::new();
 
         if self.slopes.is_some() {
@@ -107,7 +107,7 @@ impl PathProperties {
     }
 
     /// Filter properties not requested
-    pub fn filter_properties(mut self, properties: Properties) -> Self {
+    fn filter_properties(mut self, properties: Properties) -> Self {
         let to_clear = properties.complement();
         for property in to_clear.iter() {
             match property {
@@ -242,7 +242,7 @@ async fn post(
 }
 
 /// Retrieves path properties from cache.
-async fn retrieve_path_properties(
+pub async fn retrieve_path_properties(
     valkey_conn: &mut ValkeyConnection,
     infra: i64,
     infra_version: i64,
