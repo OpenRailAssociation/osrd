@@ -146,27 +146,16 @@ describe('useCalendar', () => {
     });
   });
 
-  describe('isReferenceDate', () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { result } = renderHook(() =>
-      useCalendar({
-        displayedMonthStartDate,
-        selectedSlot,
-        onDayClick: () => {},
-      })
-    );
+  describe('isToday', () => {
+    it('should return false for a date that is not today', () => {
+      const notToday = new Date();
+      notToday.setDate(notToday.getDate() + 10);
+      expect(defaultResult.current.isToday(notToday)).toBe(false);
+    });
 
     it('should return true for today', () => {
-      expect(result.current.isReferenceDate(today)).toBe(true);
-    });
-
-    it('should return true for the selectableSlot start date', () => {
-      expect(defaultResult.current.isReferenceDate(selectableSlot.start)).toBe(true);
-    });
-
-    it('should return false for a day that is not today', () => {
-      expect(result.current.isReferenceDate(new Date(2023, july, 15))).toBe(false);
+      const today = new Date();
+      expect(defaultResult.current.isToday(today)).toBe(true);
     });
   });
 });

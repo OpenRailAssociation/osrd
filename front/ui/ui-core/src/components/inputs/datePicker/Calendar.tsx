@@ -15,12 +15,12 @@ export type CalendarProps = {
 type DayProps = {
   date: Date;
   isSelectable: boolean;
-  isReferenceDate: boolean;
+  isToday: boolean;
   dayWrapperClassName: string;
   onClick: (date: Date) => void;
 };
 
-const Day = ({ date, isReferenceDate, isSelectable, dayWrapperClassName, onClick }: DayProps) => (
+const Day = ({ date, isToday, isSelectable, dayWrapperClassName, onClick }: DayProps) => (
   <div
     onClick={() => {
       if (isSelectable) onClick(date);
@@ -29,13 +29,13 @@ const Day = ({ date, isReferenceDate, isSelectable, dayWrapperClassName, onClick
   >
     <div className={dayWrapperClassName}>
       <span className="day">{date.getDate()}</span>
-      {isReferenceDate && <span className="current-date-highlight" />}
+      {isToday && <span className="current-date-highlight" />}
     </div>
   </div>
 );
 
 const Calendar = (props: CalendarProps) => {
-  const { days, isReferenceDate, isDateSelectable, buildDayWrapperClassName } = useCalendar(props);
+  const { days, isToday, isDateSelectable, buildDayWrapperClassName } = useCalendar(props);
   const { displayedMonthStartDate, onDayClick } = props;
   return (
     <div className="calendar-wrapper">
@@ -54,7 +54,7 @@ const Calendar = (props: CalendarProps) => {
               <Day
                 key={date.getTime()}
                 date={date}
-                isReferenceDate={isReferenceDate(date)}
+                isToday={isToday(date)}
                 isSelectable={isDateSelectable(date)}
                 dayWrapperClassName={buildDayWrapperClassName(date)}
                 onClick={onDayClick}
