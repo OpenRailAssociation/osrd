@@ -4,6 +4,8 @@ import type { ScenarioDetails } from '../../utils/types';
 import CommonPage from '../common-page';
 
 class ScenarioPage extends CommonPage {
+  private readonly scenarioEditionModal: Locator;
+
   private readonly scenarioUpdateButton: Locator;
 
   private readonly scenarioConfirmDeleteButton: Locator;
@@ -34,9 +36,8 @@ class ScenarioPage extends CommonPage {
     super(page);
 
     this.scenarioUpdateButton = page.getByTestId('edit-scenario');
-    this.scenarioConfirmDeleteButton = page
-      .locator('#modal-content')
-      .getByTestId('delete-scenario');
+    this.scenarioEditionModal = page.getByTestId('scenario-edition-modal');
+    this.scenarioConfirmDeleteButton = this.scenarioEditionModal.getByTestId('delete-scenario');
     this.addScenarioButton = page.getByTestId('add-scenario-button');
     this.scenarioNameInput = page.locator('#scenarioInputName');
     this.scenarioDescriptionInput = page.locator('#scenarioDescription');
@@ -45,9 +46,7 @@ class ScenarioPage extends CommonPage {
     this.scenarioName = page.locator('.scenario-details-name .scenario-name');
     this.scenarioDescription = page.locator('.scenario-details-description');
     this.scenarioInfraName = page.locator('.scenario-infra-name');
-    this.scenarioConfirmUpdateButton = page
-      .locator('#modal-content')
-      .getByTestId('update-scenario');
+    this.scenarioConfirmUpdateButton = this.scenarioEditionModal.getByTestId('update-scenario');
     this.createScenarioButton = page.getByTestId('create-scenario');
     this.scenarioTagsLabel = page.getByTestId('scenario-details-tag');
   }
@@ -66,7 +65,9 @@ class ScenarioPage extends CommonPage {
     await this.openScenarioEditForm();
     await this.fillScenarioDetails(details);
     await this.scenarioConfirmUpdateButton.click();
+    await expect(this.scenarioEditionModal).toBeHidden();
     await this.page.waitForURL('**/scenarios/*');
+    await this.page.waitForLoadState();
   }
 
   // Fill the scenario details in the form inputs.
@@ -108,6 +109,7 @@ class ScenarioPage extends CommonPage {
     infraName: string;
     tags?: string[];
   }) {
+    await expect(this.scenarioName).toBeVisible();
     expect(await this.scenarioName.textContent()).toContain(name);
     expect(await this.scenarioDescription.textContent()).toContain(description);
     expect(await this.scenarioInfraName.textContent()).toContain(infraName);

@@ -12,7 +12,6 @@ import type { StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
-const EXPLICIT_UI_STABILITY_TIMEOUT = 500;
 
 class ViaSection extends STDCMPage {
   private readonly viaIcon: Locator;
@@ -24,6 +23,8 @@ class ViaSection extends STDCMPage {
   private readonly suggestionMES: Locator;
 
   private readonly suggestionMWS: Locator;
+
+  private readonly viaCard: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -40,6 +41,7 @@ class ViaSection extends STDCMPage {
     this.suggestionMWS = this.suggestionList.locator('.suggestion-item', {
       hasText: 'MWS Mid_West_station',
     });
+    this.viaCard = this.page.getByTestId('stdcm-via-card');
   }
 
   // Dynamic selectors for via cards
@@ -69,7 +71,7 @@ class ViaSection extends STDCMPage {
 
   async addAndDeletedDefaultVia() {
     await this.addViaButton.click();
-    await this.page.waitForTimeout(EXPLICIT_UI_STABILITY_TIMEOUT); // Wait for the animation to complete
+    await expect(this.viaCard).toBeVisible();
     await expect(this.getViaCI(1)).toHaveValue('');
     await expect(this.getViaCH(1)).toHaveValue('');
     await expect(this.getViaType(1)).toHaveValue(VIA_STOP_TYPES.PASSAGE_TIME);
@@ -102,7 +104,6 @@ class ViaSection extends STDCMPage {
       await expect(this.getViaCI(viaNumber)).toBeVisible();
       await this.getViaCI(viaNumber).fill(ciSearchText);
       await selectedSuggestion.waitFor();
-      await this.page.waitForTimeout(EXPLICIT_UI_STABILITY_TIMEOUT); // TODO: Remove the timeout and find a better alternative
       await selectedSuggestion.click();
       await this.getViaCH(viaNumber).click({ trial: true });
       await expect(this.getViaCH(viaNumber)).toHaveValue(DEFAULT_DETAILS.chValue);

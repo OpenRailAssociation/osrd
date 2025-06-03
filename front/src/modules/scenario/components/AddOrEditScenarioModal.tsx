@@ -260,7 +260,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   useModalFocusTrap(modalRef, closeModal);
 
   return (
-    <div className="scenario-edition-modal" ref={modalRef}>
+    <div data-testid="scenario-edition-modal" className="scenario-edition-modal" ref={modalRef}>
       {clickedOutside && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
