@@ -534,7 +534,7 @@ impl VirtualTrainRun {
         Ok(Self {
             train_schedule,
             simulation,
-            pathfinding,
+            pathfinding: Arc::unwrap_or_clone(pathfinding),
         })
     }
 }
