@@ -11,7 +11,7 @@ import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/train
 
 const getPathStyle = (
   hovered: HoveredItem | null,
-  path: { color: string; id: string },
+  train: { color: string; id: string },
   dragging: boolean,
   timetableItemsWithDetails?: TimetableItemWithDetails[],
   selectedTrainId?: TrainId
@@ -25,19 +25,21 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  const trainId = isOccurrenceId(path.id) ? extractPacedTrainIdFromOccurrenceId(path.id) : path.id;
+  const trainId = isOccurrenceId(train.id)
+    ? extractPacedTrainIdFromOccurrenceId(train.id)
+    : train.id;
   const item = timetableItemsWithDetails?.find((t) => t.id === trainId);
   const category = item?.category;
 
   const colors = category ? TRAIN_CATEGORY_PATH_COLORS[category] : DEFAULT_TRAIN_PATH_COLORS;
 
-  if (hovered && 'pathId' in hovered.element && path.id === hovered.element.pathId && !dragging) {
+  if (hovered && 'pathId' in hovered.element && train.id === hovered.element.pathId && !dragging) {
     return { color: colors.hovered, level: 1 };
   }
   // Apply occurrence style if selectedTrainId is an occurrence from the same paced
   if (selectedTrainId) {
     if (isOccurrenceId(selectedTrainId)) {
-      if (path.id === selectedTrainId) {
+      if (train.id === selectedTrainId) {
         return {
           color: colors.normal,
           level: 1,
@@ -51,8 +53,8 @@ const getPathStyle = (
       }
       // Other occurrences from the same paced
       if (
-        isOccurrenceId(path.id) &&
-        extractPacedTrainIdFromOccurrenceId(path.id) ===
+        isOccurrenceId(train.id) &&
+        extractPacedTrainIdFromOccurrenceId(train.id) ===
           extractPacedTrainIdFromOccurrenceId(selectedTrainId)
       ) {
         return {
@@ -65,7 +67,7 @@ const getPathStyle = (
           },
         };
       }
-    } else if (path.id === selectedTrainId) {
+    } else if (train.id === selectedTrainId) {
       return { color: colors.normal, level: 1 };
     }
   }
