@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 import cx from 'classnames';
 
@@ -6,7 +6,7 @@ import { type InteractiveWaypoint } from '../types';
 import { positionMmToKm } from '../utils';
 
 type WaypointProps = {
-  waypoint: InteractiveWaypoint;
+  waypoint: Omit<InteractiveWaypoint, 'name'> & { name?: ReactNode };
   waypointRef?: React.RefObject<HTMLDivElement>;
   isActive: boolean;
   isMenuActive?: boolean;
