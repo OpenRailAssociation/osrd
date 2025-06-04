@@ -5,9 +5,12 @@ import { useSelector } from 'react-redux';
 
 import { getIsLoading } from 'reducers/main/mainSelector';
 
-type SpinnerProps = HTMLAttributes<HTMLDivElement> & { displayDelay?: number };
+type SpinnerProps = HTMLAttributes<HTMLDivElement> & {
+  displayDelay?: number;
+  spinnerClassName?: string;
+};
 
-export const Spinner = ({ displayDelay, ...props }: SpinnerProps) => {
+export const Spinner = ({ displayDelay, spinnerClassName, ...props }: SpinnerProps) => {
   const [display, setDisplay] = useState(false);
   const timeoutRef = useRef<null | number>(null);
 
@@ -25,7 +28,7 @@ export const Spinner = ({ displayDelay, ...props }: SpinnerProps) => {
   if (!display) return null;
   return (
     <div {...props}>
-      <div className="spinner-border" role="status">
+      <div className={cx('spinner-border', spinnerClassName)} role="status">
         <span className="sr-only">Loading...</span>
       </div>
     </div>
