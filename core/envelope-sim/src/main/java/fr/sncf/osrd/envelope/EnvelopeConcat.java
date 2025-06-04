@@ -6,6 +6,7 @@ import static java.lang.Math.min;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This class is used to concatenate envelopes without a deep copy of all the underlying data. All
@@ -99,6 +100,12 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     public double getTotalTime() {
         var lastEnvelope = envelopes.get(envelopes.size() - 1);
         return lastEnvelope.startTime + lastEnvelope.envelope.getTotalTime();
+    }
+
+    @Override
+    public @Nullable Envelope getRawEnvelopeIfSingle() {
+        // See interface: building concatenation is probably not a good idea
+        return null;
     }
 
     @Override

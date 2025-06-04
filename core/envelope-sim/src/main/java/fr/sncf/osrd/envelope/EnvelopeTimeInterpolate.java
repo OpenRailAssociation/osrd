@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public interface EnvelopeTimeInterpolate {
 
@@ -35,6 +36,13 @@ public interface EnvelopeTimeInterpolate {
 
     /** Returns the total time of the envelope */
     double getTotalTime();
+
+    /** Get underlying envelope if it's not a concatenation (null in that case)
+     * Note: Building the single envelope from the concatenation does not look good performance-wise
+     *   Probably better to just ask the required capacity from the interface in that case.
+     *   Ex: List<EnvelopePoint> getIntersections(envelope: EnvelopeInterpolate) */
+    @Nullable
+    Envelope getRawEnvelopeIfSingle();
 
     record EnvelopePoint(double time, double speed, double position) {}
 
