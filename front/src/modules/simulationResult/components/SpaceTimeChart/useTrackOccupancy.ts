@@ -22,6 +22,7 @@ type DeployedWaypoint = {
   operationalPointName?: string;
   zones?: OccupancyZone[];
   tracks?: Track[];
+  loading?: boolean;
 };
 
 /**
@@ -151,6 +152,7 @@ const useTrackOccupancy = ({
             operationalPointPosition: op.position,
             operationalPointName: op.extensions?.identifier?.name || undefined,
             zones: opState.zones.data,
+            loading: opState.zones.type === 'loading',
             tracks,
           });
         }
