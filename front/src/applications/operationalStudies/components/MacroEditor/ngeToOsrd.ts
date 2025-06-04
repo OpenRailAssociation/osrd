@@ -6,6 +6,7 @@ import {
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
+import { checkChangeGroups } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import {
   fetchTimetableItem,
   storePacedTrain,
@@ -141,6 +142,9 @@ const createPathItemFromNode = async (
       trigram,
       secondary_code: finalSecondaryCode,
       id: `${node.id}-${index}`,
+      deleted: false,
+      // TODO : handle this case in xml import refacto
+      track_reference: null,
     };
   }
 
@@ -162,6 +166,7 @@ const createPathItemFromNode = async (
     trigram,
     secondary_code: finalSecondaryCode,
     id: `${node.id}-${index}`,
+    deleted: false,
   };
 };
 
@@ -255,6 +260,9 @@ const generateSchedule = (
       arrival: formatDateDifferenceFrom(startDate, arrival),
       stop_for:
         departure && !isNonStopTransit ? formatDateDifferenceFrom(arrival, departure) : null,
+      // Default information
+      locked: false,
+      reception_signal: 'OPEN',
     };
   });
 
@@ -406,13 +414,21 @@ const handleUpdateTimetableItem = async ({
         ? timetableItem.paced.time_window
         : DEFAULT_TIME_WINDOW.toISOString(),
     };
+
+    const basePacedTrain = {
+      ...timetableItemForUpdate,
+      paced,
+    };
+    const updatedPacedTrain: PacedTrain = {
+      ...basePacedTrain,
+      exceptions: isPacedTrainResponseWithPacedTrainId(timetableItem)
+        ? checkChangeGroups(basePacedTrain, timetableItem.exceptions)
+        : [],
+    };
+
     updatedTimetableItem = await storePacedTrain(
       timetableItemId,
-      {
-        ...timetableItemForUpdate,
-        paced,
-        exceptions: 'exceptions' in timetableItem ? timetableItem.exceptions : [],
-      },
+      updatedPacedTrain,
       timetableId,
       dispatch,
       addUpsertedTimetableItems,
