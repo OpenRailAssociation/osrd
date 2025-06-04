@@ -44,7 +44,7 @@ object BAPR : SignalingSystemDriver {
         }
     }
 
-    override fun isConstraining(
+    override fun isConstrainingOnSight(
         signalState: SigData<SignalStateMarker>,
         trainState: SignalingTrainState
     ): Boolean {

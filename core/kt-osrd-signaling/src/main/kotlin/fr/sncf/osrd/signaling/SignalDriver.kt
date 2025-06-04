@@ -98,5 +98,5 @@ interface SignalingSystemDriver {
 
     fun checkBlock(reporter: BlockDiagReporter, block: SigBlock)
 
-    fun isConstraining(signalState: SigState, trainState: SignalingTrainState): Boolean
+    fun isConstrainingOnSight(signalState: SigState, trainState: SignalingTrainState): Boolean
 }
