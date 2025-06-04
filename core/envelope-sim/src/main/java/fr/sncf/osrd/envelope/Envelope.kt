@@ -235,6 +235,10 @@ class Envelope(parts: Array<EnvelopePart>) :
         return (totalTimeUS.toDouble()) / 1000000
     }
 
+    override fun getRawEnvelopeIfSingle(): Envelope? {
+        return this
+    }
+
     /**
      * Returns the total time required to get from the start of the envelope to the start of an
      * envelope part, in microseconds

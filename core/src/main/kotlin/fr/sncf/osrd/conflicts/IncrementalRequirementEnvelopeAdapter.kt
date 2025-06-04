@@ -1,5 +1,6 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.TravelledPath
@@ -58,6 +59,10 @@ class IncrementalRequirementEnvelopeAdapter(
             return Double.POSITIVE_INFINITY
         }
         return envelopeWithStops.interpolateDepartureFrom(pastStop)
+    }
+
+    override fun getRawEnvelopeIfSingle(): Envelope? {
+        return envelopeWithStops?.rawEnvelopeIfSingle
     }
 
     override fun arrivalTimeInRange(

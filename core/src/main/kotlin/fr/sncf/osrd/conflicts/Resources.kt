@@ -1,5 +1,6 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
 import fr.sncf.osrd.sim_infra.api.TravelledPath
@@ -35,6 +36,8 @@ interface IncrementalRequirementCallbacks {
 
     // departure time from a given stop. if the train never gets to a stop, +inf is returned
     fun departureFromStop(stopOffset: Offset<TravelledPath>): Double
+
+    fun getRawEnvelopeIfSingle(): Envelope?
 }
 
 data class PathSignal(
