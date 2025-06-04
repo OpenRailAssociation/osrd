@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
-import { flatMap, forEach, isFunction, keyBy, keys, pick } from 'lodash';
+import { flatMap, forEach, fromPairs, isFunction, keyBy, keys, noop, pick, uniqBy } from 'lodash';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -9,16 +9,11 @@ import { extractEditoastIdFromTrainId } from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
-import {
-  getMovableOccupancyZone,
-  getTracksFromZones,
-  type MovableOccupancyZone,
-} from './helpers/zones';
+import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 
 type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type: 'ok'; data: T };
-type TracksState = AsyncState<Track[]>;
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
-type OperationalPointState = { selected: boolean; tracks: TracksState; zones: ZonesState };
+type OperationalPointState = { selected: boolean; zones: ZonesState };
 
 type DeployedWaypoint = {
   waypointId: string;
@@ -78,11 +73,16 @@ const useTrackOccupancy = ({
   );
   const [postTrainScheduleTrackOccupancy] =
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
+  const [postInfraByInfraIdMatchOperationalPoints] =
+    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useMutation();
   const trainsDict = useMemo(
     () => keyBy(trains, ({ id }) => extractEditoastIdFromTrainId(id)),
     [trains]
   );
 
+  const [tracksState, setTracksState] = useState<AsyncState<Record<string, Track[]>>>({
+    type: 'loading',
+  });
   const [pathOperationalPointsState, setPathOperationalPointsState] = useState<
     Record<string, OperationalPointState>
   >({});
@@ -122,7 +122,7 @@ const useTrackOccupancy = ({
             (
               await postTrainScheduleTrackOccupancy({
                 body: {
-                  op_id: opId,
+                  operational_point_id: opId,
                   infra_id: infraId,
                   train_schedule_ids: Object.keys(trainsCollection).map((id) => +id),
                 },
@@ -140,19 +140,21 @@ const useTrackOccupancy = ({
   const deployedWaypoints = useMemo(() => {
     const res: DeployedWaypoint[] = [];
 
-    forEach(pathOperationalPointsState, (opState, waypointId) => {
-      const op = pathOperationalPointsDict[waypointId];
-      if (opState.selected && typeof op.opId === 'string') {
-        res.push({
-          waypointId,
-          operationalPointId: op.opId,
-          operationalPointPosition: op.position,
-          operationalPointName: op.extensions?.identifier?.name || undefined,
-          zones: opState.zones.data,
-          tracks: opState.tracks.data,
-        });
-      }
-    });
+    if (tracksState.type === 'ok')
+      forEach(pathOperationalPointsState, (opState, waypointId) => {
+        const op = pathOperationalPointsDict[waypointId];
+        if (opState.selected && typeof op?.opId === 'string') {
+          const tracks = tracksState.data[op.opId];
+          res.push({
+            waypointId,
+            operationalPointId: op.opId,
+            operationalPointPosition: op.position,
+            operationalPointName: op.extensions?.identifier?.name || undefined,
+            zones: opState.zones.data,
+            tracks,
+          });
+        }
+      });
 
     return res;
   }, [pathOperationalPointsState, pathOperationalPointsDict]);
@@ -184,12 +186,6 @@ const useTrackOccupancy = ({
                         ...state.zones,
                         data,
                       },
-                      // TODO:
-                      // Replace this with a proper call to the upcoming new /infra/{id}/match_operational_points/ endpoint:
-                      tracks: {
-                        ...state.tracks,
-                        data: getTracksFromZones(data),
-                      },
                     }
                   : undefined
               ),
@@ -202,12 +198,6 @@ const useTrackOccupancy = ({
                         type: 'ok',
                         data,
                       },
-                      // TODO:
-                      // Replace this with a proper call to the upcoming new /infra/{id}/match_operational_points/ endpoint:
-                      tracks: {
-                        type: 'ok',
-                        data: getTracksFromZones(data),
-                      },
                     }
                   : undefined
               );
@@ -216,7 +206,6 @@ const useTrackOccupancy = ({
         );
 
         updatePathOperationalPointState(waypointId, {
-          tracks: { type: 'loading' },
           zones: { type: 'loading', abort },
           selected: newSelected,
         });
@@ -296,13 +285,67 @@ const useTrackOccupancy = ({
   // eslint-disable-next-line
   useEffect(() => {
     return () => {
-      forEach(pathOperationalPointsState, ({ zones, tracks }) =>
-        [zones, tracks].forEach((asyncState) => {
-          if (asyncState.type === 'loading' && asyncState.abort) asyncState.abort();
-        })
-      );
+      forEach(pathOperationalPointsState, ({ zones }) => {
+        if (zones.type === 'loading' && zones.abort) zones.abort();
+      });
     };
   }, []);
+
+  // Load all tracks from all waypoints on mount / waypoints update:
+  useEffect(() => {
+    let aborted = false;
+
+    const pathOperationalPointsWithoutTracks = pathOperationalPoints.filter(
+      (op) => !(tracksState.data || {})[op.waypointId]
+    );
+    const loadAllTracks = async (
+      operationalPointReferences: {
+        operational_point: string;
+      }[]
+    ) => {
+      setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
+
+      try {
+        const { data, error } = await postInfraByInfraIdMatchOperationalPoints({
+          infraId,
+          body: {
+            operational_point_references: operationalPointReferences,
+          },
+        });
+
+        if (aborted) return;
+        if (error) throw new Error('Error while fetching tracks definition', { cause: error });
+
+        setTracksState({
+          type: 'ok',
+          data: fromPairs(
+            operationalPointReferences.map(({ operational_point }, i) => [
+              operational_point,
+              uniqBy(
+                data.related_operational_points[i][0].parts.map((part) => ({
+                  id: part.track,
+                  name: data.track_names[part.track] || undefined,
+                  line: undefined,
+                })),
+                (track) => track.id
+              ),
+            ])
+          ),
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    const waypointsPayload = pathOperationalPointsWithoutTracks.flatMap((op) =>
+      op.opId ? [{ operational_point: op.opId }] : []
+    );
+    if (!waypointsPayload.length) return noop;
+
+    loadAllTracks(waypointsPayload);
+    return () => {
+      aborted = true;
+    };
+  }, [pathOperationalPoints]);
 
   return { deployedWaypoints, toggleWaypoint, handleTrainDrag };
 };
