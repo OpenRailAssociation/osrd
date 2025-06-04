@@ -206,11 +206,9 @@ class SpacingRequirementAutomaton(
         }
 
         // emit requirements for zones protected by this signal
-        for (requiredZoneIndex in
-            lastEmittedZone + 1 until endZoneIndex + 1) addZonePendingRequirement(
-            requiredZoneIndex,
-            sightTime
-        )
+        for (requiredZoneIndex in lastEmittedZone + 1..endZoneIndex) {
+            addZonePendingRequirement(requiredZoneIndex, sightTime)
+        }
         lastEmittedZone = endZoneIndex
     }
 
@@ -400,7 +398,6 @@ class SpacingRequirementAutomaton(
     ): SpacingRequirement? {
         val zonePath = incrementalPath.getZonePath(pendingRequirement.zoneIndex)
         val zone = rawInfra.getZonePathZone(zonePath)
-        val zoneName = rawInfra.getZoneName(zone)
         val zoneEntryPathOffset =
             incrementalPath.getZonePathStartOffset(pendingRequirement.zoneIndex)
         val zoneEntryOffset = incrementalPath.toTravelledPath(zoneEntryPathOffset)
