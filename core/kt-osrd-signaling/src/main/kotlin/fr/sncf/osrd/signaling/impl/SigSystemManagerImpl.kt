@@ -51,7 +51,7 @@ class SigSystemManagerImpl : SigSystemManager {
         trainState: SignalingTrainState
     ): Boolean {
         val driver = sigSystemPool[signalingSystem]
-        return driver.isConstraining(signalState, trainState)
+        return driver.isConstrainingOnSight(signalState, trainState)
     }
 
     override val signalingSystems: StaticIdxSpace<SignalingSystem>

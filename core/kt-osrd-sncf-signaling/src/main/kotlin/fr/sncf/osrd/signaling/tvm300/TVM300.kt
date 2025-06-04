@@ -39,7 +39,10 @@ object TVM300 : SignalingSystemDriver {
         }
     }
 
-    override fun isConstraining(signalState: SigState, trainState: SignalingTrainState): Boolean {
+    override fun isConstrainingOnSight(
+        signalState: SigState,
+        trainState: SignalingTrainState
+    ): Boolean {
         if (signalState.getEnum("aspect").contains("VL")) {
             // VL should never be considered constraining,
             // it would cause infinite loops in spacing resource generation
