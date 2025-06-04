@@ -696,7 +696,8 @@
       "TOURISTIC_TRAIN": "Touristic Train",
       "TRAM_TRAIN": "Tram-Train",
       "WORK_TRAIN": "Work Train",
-      "choose": "Choose a category"
+      "choose": "Choose a category",
+      "noCategory": "No category"
     },
     "categoryMismatch": "The combination of the rolling stock and the category is unusual",
     "chooseRollingStock": "Select a rolling stock to display informations",

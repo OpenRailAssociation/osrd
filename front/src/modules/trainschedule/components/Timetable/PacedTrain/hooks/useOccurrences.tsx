@@ -78,7 +78,10 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
                 .length
             : stopsCount,
           disabled: correspondingException?.disabled,
-          category: correspondingException?.rolling_stock_category?.value ?? pacedTrainCategory,
+          // In the model, we can currently have a null category value so we need to handle this case
+          category: correspondingException?.rolling_stock_category
+            ? correspondingException.rolling_stock_category.value
+            : pacedTrainCategory,
           occurrenceIndex: i,
           exceptionChangeGroups: correspondingException
             ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
@@ -122,7 +125,10 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
           stopsCount: exception.path_and_schedule
             ? exception.path_and_schedule.schedule.filter((step) => step.stop_for).length
             : stopsCount,
-          category: exception.rolling_stock_category?.value ?? pacedTrainCategory,
+          // In the model, we can currently have a null category value so we need to handle this case
+          category: exception.rolling_stock_category
+            ? exception.rolling_stock_category.value
+            : pacedTrainCategory,
           exceptionChangeGroups: omit(exception, ['key', 'disabled']),
           ...(isValid
             ? {
