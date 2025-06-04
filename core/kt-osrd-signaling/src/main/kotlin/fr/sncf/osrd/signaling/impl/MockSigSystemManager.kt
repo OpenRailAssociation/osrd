@@ -66,6 +66,10 @@ class MockSigSystemManager(
         return this.sigSystem
     }
 
+    override fun isCurveBased(sigSystem: SignalingSystemId): Boolean {
+        return false
+    }
+
     override fun getCost(sigSystem: SignalingSystemId): Double {
         TODO("Implement this")
     }

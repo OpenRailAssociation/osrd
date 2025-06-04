@@ -77,6 +77,10 @@ class SigSystemManagerImpl : SigSystemManager {
         return sigSystemPool[sigSystem].id
     }
 
+    override fun isCurveBased(sigSystem: SignalingSystemId): Boolean {
+        return sigSystemPool[sigSystem].isCurveBased
+    }
+
     override fun getCost(sigSystem: SignalingSystemId): Double {
         return sigSystemCost[sigSystem]
             ?: throw RuntimeException("signaling system does not have an assigned cost")
