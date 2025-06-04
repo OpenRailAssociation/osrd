@@ -98,6 +98,7 @@ reqwest = { version = "0.12.15", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
+serde_with = "3.12.0"
 stdext = "0.3.3"
 strum = { version = "0.26.3", features = ["derive"] }
 syn = "2.0"
@@ -204,7 +205,7 @@ serde_json.workspace = true
 serde_qs = { version = "0.13.0", git = "https://github.com/Atrox/serde_qs", rev = "2cfa3ee0", features = [
   "axum",
 ] }
-serde_with = "3.12.0"
+serde_with.workspace = true
 serde_yaml = "0.9.34"
 sha1 = "0.10"
 strum.workspace = true
