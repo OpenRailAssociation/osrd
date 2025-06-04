@@ -95,16 +95,3 @@ export function getMovableOccupancyZone(
     dbEndTime: endTime,
   };
 }
-
-export function getTracksFromZones(zones: OccupancyZone[]) {
-  return _(zones)
-    .map((zone) => zone.trackId)
-    .uniq()
-    .sort()
-    .map((trackId, i) => ({
-      id: trackId,
-      name: `${i}`,
-      line: '-',
-    }))
-    .value();
-}
