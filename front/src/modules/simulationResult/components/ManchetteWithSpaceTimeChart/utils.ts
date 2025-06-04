@@ -25,16 +25,25 @@ const getPathStyle = (
     backgroundColor?: string;
   };
 } => {
-  const trainId = isOccurrenceId(train.id)
+  const timetableItemId = isOccurrenceId(train.id)
     ? extractPacedTrainIdFromOccurrenceId(train.id)
     : train.id;
-  const item = timetableItemsWithDetails?.find((t) => t.id === trainId);
+  const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
   const category = item?.category;
 
   const colors = category ? TRAIN_CATEGORY_PATH_COLORS[category] : DEFAULT_TRAIN_PATH_COLORS;
 
-  if (hovered && 'pathId' in hovered.element && train.id === hovered.element.pathId && !dragging) {
-    return { color: colors.hovered, level: 1 };
+  if (hovered && 'pathId' in hovered.element && !dragging) {
+    const hoveredTrainId = hovered.element.pathId as TrainId;
+
+    if (
+      train.id === hoveredTrainId ||
+      // if the hovered train is an occurrence from the same paced train, apply the hovered style
+      (isOccurrenceId(hoveredTrainId) &&
+        timetableItemId === extractPacedTrainIdFromOccurrenceId(hoveredTrainId))
+    ) {
+      return { color: colors.hovered, level: 1 };
+    }
   }
   // Apply occurrence style if selectedTrainId is an occurrence from the same paced
   if (selectedTrainId) {
