@@ -32,7 +32,7 @@ import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
-import { compact, isArray, keyBy, sortBy } from 'lodash';
+import { compact, keyBy, sortBy } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
@@ -69,6 +69,7 @@ import {
 
 import SettingsPanel from './SettingsPanel';
 import getPathStyle from './utils';
+import { Spinner } from '../../../../common/Loaders';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
@@ -88,6 +89,7 @@ type ManchetteWithSpaceTimeChartProps = {
     operationalPointName?: string;
     zones?: OccupancyZone[];
     tracks?: Track[];
+    loading?: boolean;
   }[];
   onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
@@ -300,12 +302,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           operationalPointPosition,
           zones,
           tracks,
+          loading,
         }) => ({
           id: operationalPointId,
           position: operationalPointPosition,
-          size: isArray(tracks)
-            ? tracks.length * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize
-            : 50,
+          size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
           spaceTimeChartNode: (
             <TrackOccupancyCanvas
               position={operationalPointPosition}
@@ -333,7 +334,14 @@ const ManchetteWithSpaceTimeChartWrapper = ({
                 <WaypointComponent
                   waypoint={{
                     id: waypointId,
-                    name: operationalPointName || operationalPointId,
+                    name: (
+                      <div className="d-flex flex-row align-items-center">
+                        {operationalPointName || operationalPointId}
+                        {loading && (
+                          <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
+                        )}
+                      </div>
+                    ),
                     position: operationalPointPosition,
                     onClick: handleWaypointClick,
                   }}
