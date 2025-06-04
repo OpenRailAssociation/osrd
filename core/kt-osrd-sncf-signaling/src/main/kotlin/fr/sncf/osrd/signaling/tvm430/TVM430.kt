@@ -4,7 +4,10 @@ import fr.sncf.osrd.signaling.BlockDiagReporter
 import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.SignalingSystemDriver
 import fr.sncf.osrd.signaling.SignalingTrainState
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.SigParametersSchema
+import fr.sncf.osrd.sim_infra.api.SigSettingsSchema
+import fr.sncf.osrd.sim_infra.api.SigState
+import fr.sncf.osrd.sim_infra.api.SigStateSchema
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.kilometersPerHour
 
@@ -21,6 +24,7 @@ object TVM430 : SignalingSystemDriver {
 
     override val isBlockDelimiterExpr = "true"
     override val isRouteDelimiterExpr = "Nf"
+    override val isCurveBased = false
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {
         // Check that we have the correct number of signals

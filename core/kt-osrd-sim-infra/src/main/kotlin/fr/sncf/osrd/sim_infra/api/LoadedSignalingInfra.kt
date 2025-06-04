@@ -48,6 +48,8 @@ interface InfraSigSystemManager {
 
     fun getName(sigSystem: SignalingSystemId): String
 
+    fun isCurveBased(sigSystem: SignalingSystemId): Boolean
+
     fun getCost(sigSystem: SignalingSystemId): Double
 
     val drivers: StaticIdxSpace<SignalDriver>
