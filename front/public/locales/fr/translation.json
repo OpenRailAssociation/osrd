@@ -696,7 +696,8 @@
       "TOURISTIC_TRAIN": "Train touristique",
       "TRAM_TRAIN": "Tram-train",
       "WORK_TRAIN": "Train de travaux",
-      "choose": "Choisissez une catégorie"
+      "choose": "Choisissez une catégorie",
+      "noCategory": "Pas de catégorie"
     },
     "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
     "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",

@@ -97,7 +97,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
                     {changeGroup !== 'rolling_stock_category'
                       ? t(`occurrenceChangeGroup.${changeGroup}`)
                       : t(
-                          `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
+                          `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value ?? 'noCategory'}`,
                           { ns: 'translation', keyPrefix: '' }
                         )}
                   </span>
