@@ -135,7 +135,7 @@ class SpacingRequirementAutomaton(
         pendingRequirements.add(req)
     }
 
-    private fun getSignalProtectedZone(signal: PathSignal): Int {
+    private fun getSignalFirstProtectedZone(signal: PathSignal): Int {
         // the signal protects all zone inside the block
         // if a signal is at a block boundary,
         return incrementalPath.getBlockEndZone(signal.minBlockPathIndex)
@@ -166,7 +166,7 @@ class SpacingRequirementAutomaton(
         val firstSignal = pendingSignals.firstOrNull()
         val firstProtectedZone =
             if (firstSignal != null) {
-                getSignalProtectedZone(firstSignal)
+                getSignalFirstProtectedZone(firstSignal)
             } else {
                 startZone + 1
             }
@@ -296,7 +296,7 @@ class SpacingRequirementAutomaton(
         // the solutions mostly follow a gaussian distribution centered
         // on start+20 that rarely exceeds start+40.
         // We run a binary search on that range, and iterate one by one when the solution is above.
-        var lowerBound = getSignalProtectedZone(pathSignal)
+        var lowerBound = getSignalFirstProtectedZone(pathSignal)
         val initialUpperBound = min(lowerBound + 40, lastZoneIndex)
         var upperBound = initialUpperBound
 
@@ -361,7 +361,7 @@ class SpacingRequirementAutomaton(
             val trainState = SignalingTrainStateImpl(speed = maxSpeedInSignalArea.metersPerSecond)
 
             // Find the first and last zone required by the signal
-            val firstRequiredZone = getSignalProtectedZone(pathSignal)
+            val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
             val firstNonRequiredZone =
                 findFirstNonRequiredZoneIndex(pathSignal, routes, trainState)
                     ?: return NotEnoughPath
