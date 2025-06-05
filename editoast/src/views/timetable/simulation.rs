@@ -5,7 +5,6 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ElectricalProfiles;
 use core_client::simulation::PhysicsConsist;
-use core_client::simulation::PhysicsConsistParameters;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationMargins;
 use core_client::simulation::SimulationPath;
@@ -39,6 +38,7 @@ use crate::views::path::pathfinding_from_train_batch;
 use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::Infra;
 use crate::views::timetable::PathfindingResult;
+use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
