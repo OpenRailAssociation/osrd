@@ -250,7 +250,22 @@ const generateSchedule = (
       ? getTimeLockDate(nextSection.sourceDeparture, trainrunSections[0].sourceDeparture, startDate)
       : null;
 
-    if (!arrival && !departure) return [];
+    if (!arrival && !departure) {
+      if (index === trainrunSections.length - 1) {
+        // In micro, by default we put a zero stop duration on the destination
+        // to make the train stop.
+        // This need to be done here so it doesn't make an exception pop because the
+        // destination is not configured the same way in macro.
+        return {
+          at: `${section.targetNodeId}-${index + 1}`,
+          stop_for: 'P0D',
+          // Default information
+          locked: false,
+          reception_signal: 'OPEN',
+        };
+      }
+      return [];
+    }
 
     // If missing arrival time, default to a zero stop duration
     arrival = arrival || departure!;
