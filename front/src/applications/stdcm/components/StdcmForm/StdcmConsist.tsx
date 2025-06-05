@@ -269,6 +269,7 @@ const StdcmConsist = ({
               }
             }}
             {...createStandardSelectOptions(GAUGE_LIST)}
+            disabled={disabled}
             narrow
           />
         </div>
