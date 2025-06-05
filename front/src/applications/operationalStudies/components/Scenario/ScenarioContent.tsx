@@ -34,6 +34,7 @@ import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
 import MicroMacroSwitch from '../MicroMacroSwitch';
 import NGE from '../NGE';
+import { EditedElementContainerProvider } from './EditedElementContainerContext';
 
 type ScenarioDescriptionProps = {
   scenario: ScenarioResponse;
@@ -177,7 +178,7 @@ const ScenarioContent = ({
             <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
 
             {infra && (
-              <>
+              <EditedElementContainerProvider>
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
@@ -200,7 +201,7 @@ const ScenarioContent = ({
                   timetableItems={timetableItems}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                 />
-              </>
+              </EditedElementContainerProvider>
             )}
           </div>
         </div>
