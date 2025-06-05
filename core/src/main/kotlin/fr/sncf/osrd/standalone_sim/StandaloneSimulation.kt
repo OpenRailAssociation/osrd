@@ -184,6 +184,7 @@ fun runStandaloneSimulation(
             rollingStock,
             schedule,
             pathItemPositions,
+            context,
         )
 
     return SimulationSuccess(
