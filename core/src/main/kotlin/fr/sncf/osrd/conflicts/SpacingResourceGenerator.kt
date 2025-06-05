@@ -1,6 +1,10 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
+import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
+import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
+import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -10,8 +14,10 @@ import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.min
+import mu.KotlinLogging
 
 /*
  * ```
@@ -28,6 +34,8 @@ import kotlin.math.min
  * We have to emit implicit requirements for all zones between and including those occupied by the train
  * when it starts, and the first zone required by signaling.
  */
+
+val logger = KotlinLogging.logger {}
 
 data class PendingSpacingRequirement(
     val zoneIndex: Int,
@@ -143,6 +151,13 @@ class SpacingRequirementAutomaton(
         // the signal protects all zone inside the block
         // if a signal is at a block boundary,
         return incrementalPath.getBlockEndZone(signal.minBlockPathIndex)
+    }
+
+    private fun getSignalFirstProtectedBlockLastZone(signal: PathSignal): Int {
+        if (signal.minBlockPathIndex >= incrementalPath.blockCount) {
+            return incrementalPath.zonePathCount - 1
+        }
+        return incrementalPath.getBlockEndZone(signal.minBlockPathIndex + 1) - 1
     }
 
     // create requirements for zones occupied by the train at the beginning of the simulation
@@ -404,7 +419,49 @@ class SpacingRequirementAutomaton(
         pathSignal: PathSignal,
         etcsSimulator: ETCSBrakingSimulator,
     ): SignalRequirementsCreationStatus {
-        TODO()
+        val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+        // Find the first zone of the block protected by signal
+        val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
+        val blockStartOffset =
+            incrementalPath.toTravelledPath(
+                incrementalPath.getZonePathStartOffset(firstRequiredZone)
+            )
+
+        var isNf = true
+        try {
+            isNf = loadedSignalInfra.getSettings(pathSignal.signal).getFlag("Nf")
+        } catch (e: Throwable) {
+            logger.warn {
+                "Unable to determine if " +
+                    "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} is Nf or F: $e"
+            }
+        }
+
+        // EoA offset is the detector (blockStartOffset) if signal is 'F' and signalOffset if 'Nf'
+        // SvL offset is always the detector
+        val eoa = EndOfAuthority(if (isNf) signalOffset else blockStartOffset, blockStartOffset)
+
+        val envelope = callbacks.getRawEnvelopeIfSingle()
+        // TODO: stop using a single envelope that's unavailable in STDCM and maybe move to a
+        //   dedicated EnvelopeTimeInterpolate.getIntersection().
+        //   Then probably protect its failure by returning
+        //   SignalRequirementsCreationStatus.NOT_SEEN_IN_AVAILABLE_SIM.
+        assert(envelope != null) {
+            "A single envelope covering whole path is currently expected (used only through standalone simulation)"
+        }
+        val curvesList = etcsSimulator.computeStopBrakingCurves(envelope!!, listOf(eoa))
+
+        assert(curvesList.size == 1)
+        val reqPos = curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+
+        // Find the last zone required by the signal
+        val lastRequiredZone = getSignalFirstProtectedBlockLastZone(pathSignal)
+
+        val reqTime = callbacks.arrivalTimeInRange(Offset(reqPos), Offset(reqPos))
+        assert(reqTime.isFinite())
+        addSignalRequirements(firstRequiredZone, lastRequiredZone, reqTime)
+
+        return SignalRequirementsCreationStatus.REQUIREMENTS_ADDED
     }
 
     private fun addSightSignalRequirements(
