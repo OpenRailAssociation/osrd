@@ -121,7 +121,7 @@ const SimulationReportSheet = ({
                 <Text style={styles.consistAndRoute.consistInfoData}>
                   {`${Math.floor(consistMaxSpeed)} km/h`}
                 </Text>
-                <Text style={styles.consistAndRoute.consistInfoData}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.loadingGauge')}
                 </Text>
                 <Text style={styles.consistAndRoute.consistInfoData}>{consist?.loadingGauge}</Text>
