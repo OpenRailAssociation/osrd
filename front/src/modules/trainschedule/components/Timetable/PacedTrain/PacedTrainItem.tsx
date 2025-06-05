@@ -4,8 +4,10 @@ import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
 import {
   osrdEditoastApi,
   type PacedTrain,
@@ -62,6 +64,7 @@ const PacedTrainItem = ({
   upsertTimetableItems,
   removePacedTrains,
 }: PacedTrainItemProps) => {
+  const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
@@ -165,7 +168,7 @@ const PacedTrainItem = ({
     );
   };
 
-  return (
+  const content = (
     <div
       data-testid="scenario-timetable-train"
       className={cx('scenario-timetable-train paced-train', {
@@ -316,6 +319,15 @@ const PacedTrainItem = ({
       )}
     </div>
   );
+
+  if (!isOnEdit) {
+    return content;
+  }
+
+  if (!editedElementContainer) {
+    return null;
+  }
+  return createPortal(content, editedElementContainer);
 };
 
 export default PacedTrainItem;

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
@@ -42,6 +43,7 @@ const TimetableManageTrainSchedule = ({
   timetableItemToEditData,
   setTimetableItemToEditData,
 }: TimetableManageTrainScheduleProps) => {
+  const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const editingItemType = useSelector(getEditingItemType);
@@ -161,6 +163,7 @@ const TimetableManageTrainSchedule = ({
           {t('returnToSimulationResults')}
         </button>
       </div>
+      <div ref={setEditedElementContainer} id="timetable-edited-element" />
     </div>
   );
 };
