@@ -22,6 +22,7 @@ import type {
   StdcmSearchEnvironment,
   TowedRollingStock,
   GetTowedRollingStockApiResponse,
+  PaginationStats,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -57,6 +58,35 @@ export const getApiRequest = async <T>(
   const apiContext = await getApiContext();
   const response = await apiContext.get(url, { params });
   return response.json() as T;
+};
+
+/**
+ * Send GET requests to the specified paginated listing API endpoint with optional query parameters.
+ * This function will send as many requests as needed to get all pages, and return the aggregated full list of items.
+ * To get a specific page, use getApiRequest with appropriate pagination parameters.
+ *
+ * @template T - Type of the listed item.
+ * @param url - The API endpoint URL.
+ * @param params - Optional query parameters to include in the request.
+ */
+export const listApiRequest = async <T>(
+  url: string,
+  params?: { [key: string]: string | number | boolean }
+): Promise<T[]> => {
+  const apiContext = await getApiContext();
+  const itemList: T[] = [];
+  let nextPage: number | null = 1;
+  while (nextPage) {
+    const response = await apiContext.get(url, {
+      params: { page_size: 1000, ...params, page: nextPage },
+    });
+    const { results, next } = (await response.json()) as PaginationStats & {
+      results: T[];
+    };
+    itemList.push(...results);
+    nextPage = next;
+  }
+  return itemList;
 };
 
 /**
