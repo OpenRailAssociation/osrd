@@ -333,40 +333,13 @@ class SpacingRequirementAutomaton(
         // more path is needed
         while (pendingSignals.isNotEmpty()) {
             val pathSignal = pendingSignals.first()
-            val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
-            // figure out when the signal is first seen
-            val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
-            val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
-            // If the train's simulation hasn't reached the point where the signal is seen, bail out
-            if (callbacks.currentPathOffset <= sightOffset) {
+            val status = addSightSignalRequirements(pathSignal, routes)
+
+            if (status == SignalRequirementsCreationStatus.NOT_SEEN_IN_AVAILABLE_SIM) {
                 break
-            }
-            val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
-            assert(sightTime.isFinite())
-
-            // Build the train state. We need to have the position of the next signal or to have a
-            // complete path.
-            val nextSignalOffset =
-                if (pendingSignals.size > 1) {
-                    incrementalPath.toTravelledPath(pendingSignals[1].pathOffset)
-                } else if (incrementalPath.pathComplete) {
-                    incrementalPath.toTravelledPath(incrementalPath.travelledPathEnd)
-                } else {
-                    return NotEnoughPath
-                }
-            val maxSpeedInSignalArea = callbacks.maxSpeedInRange(sightOffset, nextSignalOffset)
-
-            class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
-            val trainState = SignalingTrainStateImpl(speed = maxSpeedInSignalArea.metersPerSecond)
-
-            // Find the first and last zone required by the signal
-            val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
-            val firstNonRequiredZone =
-                findFirstNonRequiredZoneIndex(pathSignal, routes, trainState)
-                    ?: return NotEnoughPath
-            for (i in firstRequiredZone until firstNonRequiredZone) {
-                addSignalRequirements(firstRequiredZone, i, sightTime)
+            } else if (status == SignalRequirementsCreationStatus.NOT_ENOUGH_PATH) {
+                return NotEnoughPath
             }
 
             pendingSignals.removeFirst()
@@ -391,6 +364,54 @@ class SpacingRequirementAutomaton(
         for (i in 0 until firstIncompleteReq) pendingRequirements.removeFirst()
 
         return SpacingRequirements(spacingRequirements)
+    }
+
+    private enum class SignalRequirementsCreationStatus {
+        REQUIREMENTS_ADDED,
+        NOT_SEEN_IN_AVAILABLE_SIM,
+        NOT_ENOUGH_PATH,
+    }
+
+    private fun addSightSignalRequirements(
+        pathSignal: PathSignal,
+        routes: List<RouteId>
+    ): SignalRequirementsCreationStatus {
+        val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+
+        // figure out when the signal is first seen
+        val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+        val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
+        // If the train's simulation hasn't reached the point where the signal is seen, bail out
+        if (callbacks.currentPathOffset <= sightOffset) {
+            return SignalRequirementsCreationStatus.NOT_SEEN_IN_AVAILABLE_SIM
+        }
+        val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
+        assert(sightTime.isFinite())
+
+        // Build the train state. We need to have the position of the next signal or to have a
+        // complete path.
+        val nextSignalOffset =
+            if (pendingSignals.size > 1) {
+                incrementalPath.toTravelledPath(pendingSignals[1].pathOffset)
+            } else if (incrementalPath.pathComplete) {
+                incrementalPath.toTravelledPath(incrementalPath.travelledPathEnd)
+            } else {
+                return SignalRequirementsCreationStatus.NOT_ENOUGH_PATH
+            }
+        val maxSpeedInSignalArea = callbacks.maxSpeedInRange(sightOffset, nextSignalOffset)
+
+        class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
+        val trainState = SignalingTrainStateImpl(speed = maxSpeedInSignalArea.metersPerSecond)
+
+        // Find the first and last zone required by the signal
+        val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
+        val firstNonRequiredZone =
+            findFirstNonRequiredZoneIndex(pathSignal, routes, trainState)
+                ?: return SignalRequirementsCreationStatus.NOT_ENOUGH_PATH
+        for (i in firstRequiredZone until firstNonRequiredZone) {
+            addSignalRequirements(firstRequiredZone, i, sightTime)
+        }
+        return SignalRequirementsCreationStatus.REQUIREMENTS_ADDED
     }
 
     private fun postProcessRequirement(
