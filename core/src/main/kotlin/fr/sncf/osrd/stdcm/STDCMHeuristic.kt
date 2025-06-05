@@ -141,7 +141,10 @@ class STDCMHeuristicBuilder(
         }
         val bestTravelTime =
             steps.first().locations.minOfOrNull {
-                remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
+                val remainingTimeSinceBlockStart =
+                    remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
+                val timeSinceBlockStart = mrspBuilder.getBlockTime(it.edge, it.offset)
+                remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
             "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.toInt()} seconds"
