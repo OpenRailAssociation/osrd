@@ -928,6 +928,108 @@ def test_etcs_schedule_result_slowdowns_with_stop(
         )
 
 
+def test_etcs_spacing_req(etcs_scenario: Scenario, etcs_rolling_stock: int):
+    """
+    spacing requirements should:
+    * start at the same time the braking curve starts if stoping on closed signal on the entry of the block
+    * end when leaving the block
+    """
+    rolling_stock_response = requests.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = requests.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "stop", "track": "TH0", "offset": 662_000},
+                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "stop", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # zone entry buffer_stop.0
+    spacing_req_z0 = simulation_final_output["spacing_requirements"][0]
+    assert spacing_req_z0["zone"] == "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]"
+    assert spacing_req_z0["begin_time"] == 0
+    assert spacing_req_z0["end_time"] == 103241
+
+    # zone entry DA2 (triggered by SA2)
+    spacing_req_z1 = simulation_final_output["spacing_requirements"][1]
+    assert (
+        spacing_req_z1["zone"]
+        == "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]"
+    )
+    assert spacing_req_z1["begin_time"] == 62181
+    assert spacing_req_z1["end_time"] == 111927
+
+    # zone entry DA3 (triggered by SA2)
+    spacing_req_z2 = simulation_final_output["spacing_requirements"][2]
+    assert spacing_req_z2["zone"] == "zone.[DA3:INCREASING, DA6_1:DECREASING]"
+    assert spacing_req_z2["begin_time"] == 62181
+    assert spacing_req_z2["end_time"] == 145858
+
+    # zone entry DD0_8 (triggered by SD0_8)
+    spacing_req_zone_intersect_full_speed = simulation_final_output[
+        "spacing_requirements"
+    ][19]
+    assert (
+        spacing_req_zone_intersect_full_speed["zone"]
+        == "zone.[DD0_8:INCREASING, DD0_9:DECREASING]"
+    )
+    assert spacing_req_zone_intersect_full_speed["begin_time"] == 347978
+    assert spacing_req_zone_intersect_full_speed["end_time"] == 464473
+
+    # zone entry DH1 (triggered by SG0)
+    spacing_req_zone_stop = simulation_final_output["spacing_requirements"][32]
+    assert spacing_req_zone_stop["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
+    assert spacing_req_zone_stop["begin_time"] == 535548
+    assert spacing_req_zone_stop["end_time"] == 843357
+
+    # zone entry DH1_2 (triggered by SH1_2)
+    spacing_req_zone_final = simulation_final_output["spacing_requirements"][36]
+    assert (
+        spacing_req_zone_final["zone"]
+        == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
+    )
+    assert spacing_req_zone_final["begin_time"] == 892060
+    assert spacing_req_zone_final["end_time"] == 1087037
+
+
 def _assert_equal_speeds(left, right):
     assert abs(left - right) < 1e-2
 
