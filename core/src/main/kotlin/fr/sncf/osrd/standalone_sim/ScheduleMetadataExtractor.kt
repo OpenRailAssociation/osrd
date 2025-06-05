@@ -10,6 +10,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
@@ -90,6 +91,7 @@ fun runScheduleMetadataExtractor(
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<TravelledPath>>,
+    context: EnvelopeSimContext? = null,
 ): CompleteReportTrain {
     assert(envelope.continuous)
 
@@ -238,7 +240,8 @@ fun runScheduleMetadataExtractor(
             blockInfra,
             simulator,
             envelopeAdapter,
-            incrementalPath
+            incrementalPath,
+            context,
         )
     incrementalPath.extend(
         PathFragment(

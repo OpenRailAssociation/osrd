@@ -1,8 +1,10 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
@@ -48,6 +50,8 @@ class SpacingRequirementAutomaton(
     val simulator: SignalingSimulator,
     var callbacks: IncrementalRequirementCallbacks, // Not read-only to be updated along the path
     var incrementalPath: IncrementalPath, // Not read-only to be updated along the path
+    // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
+    val context: EnvelopeSimContext? = null,
 ) {
     private var nextProcessedBlock = 0
 
@@ -328,13 +332,14 @@ class SpacingRequirementAutomaton(
         setupInitialRequirements()
 
         val routes = incrementalPath.routes.toList()
+        val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
         // for all signals, update zone requirement times until a signal is found for which
         // more path is needed
         while (pendingSignals.isNotEmpty()) {
             val pathSignal = pendingSignals.first()
 
-            val status = addSightSignalRequirements(pathSignal, routes)
+            val status = addSignalRequirements(pathSignal, routes, etcsSimulator)
 
             if (status == SignalRequirementsCreationStatus.NOT_SEEN_IN_AVAILABLE_SIM) {
                 break
@@ -370,6 +375,36 @@ class SpacingRequirementAutomaton(
         REQUIREMENTS_ADDED,
         NOT_SEEN_IN_AVAILABLE_SIM,
         NOT_ENOUGH_PATH,
+    }
+
+    private fun addSignalRequirements(
+        pathSignal: PathSignal,
+        routes: List<RouteId>,
+        etcsSimulator: ETCSBrakingSimulator?,
+    ): SignalRequirementsCreationStatus {
+        val sigSystemId = loadedSignalInfra.getSignalingSystem(pathSignal.signal)
+        val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
+        return if (isCurveBased) {
+            if (
+                simulator.sigModuleManager.getName(sigSystemId) != ETCS_LEVEL2.id ||
+                    etcsSimulator == null
+            ) {
+                TODO(
+                    "Spacing requirements for curve-based signal are only available for " +
+                        "ETCS_LEVEL2 and through StandaloneSimulation"
+                )
+            }
+            addEtcsSignalRequirements(pathSignal, etcsSimulator)
+        } else {
+            addSightSignalRequirements(pathSignal, routes)
+        }
+    }
+
+    private fun addEtcsSignalRequirements(
+        pathSignal: PathSignal,
+        etcsSimulator: ETCSBrakingSimulator,
+    ): SignalRequirementsCreationStatus {
+        TODO()
     }
 
     private fun addSightSignalRequirements(
@@ -481,7 +516,8 @@ class SpacingRequirementAutomaton(
                 this.blockInfra,
                 this.simulator,
                 this.callbacks.clone(),
-                this.incrementalPath.clone()
+                this.incrementalPath.clone(),
+                this.context,
             )
         res.nextProcessedBlock = nextProcessedBlock
         res.lastEmittedZone = lastEmittedZone
