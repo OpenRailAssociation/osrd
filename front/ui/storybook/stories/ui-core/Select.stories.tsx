@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { Select, type SelectProps } from '@osrd-project/ui-core';
 import { type StoryObj, type Meta } from '@storybook/react-vite';
 
-import { Select, type SelectProps } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';
 
 type Option = { value: string; label: string };

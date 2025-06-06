@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { PasswordInput } from '@osrd-project/ui-core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { PasswordInput } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';
 
 const meta: Meta<typeof PasswordInput> = {

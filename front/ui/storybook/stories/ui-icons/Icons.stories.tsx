@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+
 import { SearchIcons } from './SearchIcons';
 
 const meta: Meta<typeof SearchIcons> = {

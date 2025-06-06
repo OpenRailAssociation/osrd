@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
+import { ComboBox } from '@osrd-project/ui-core';
 import { type StoryObj, type Meta } from '@storybook/react-vite';
 
-import { ComboBox } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';
 import './stories.css';
 

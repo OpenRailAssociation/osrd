@@ -1,6 +1,6 @@
+import { RadioButton } from '@osrd-project/ui-core';
 import { type StoryObj, type Meta } from '@storybook/react-vite';
 
-import { RadioButton } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';
 
 const meta: Meta<typeof RadioButton> = {

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
+import { ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';
 
 type Suggestion = { id: string; label: string };
