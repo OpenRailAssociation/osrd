@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-import { type StoryObj, type Meta } from '@storybook/react-vite';
-
 import {
   DatePicker,
   type DatePickerProps,
@@ -9,6 +7,8 @@ import {
   type SingleDatePickerProps,
   type CalendarSlot,
 } from '@osrd-project/ui-core';
+import { type StoryObj, type Meta } from '@storybook/react-vite';
+
 import '@osrd-project/ui-core/dist/theme.css';
 import './stories.css';
 

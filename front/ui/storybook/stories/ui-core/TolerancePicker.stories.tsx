@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import { type Meta, type StoryObj } from '@storybook/react-vite';
-
 import {
   TolerancePicker,
   type TolerancePickerProps,
   type ToleranceValues,
 } from '@osrd-project/ui-core';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
+
 import '@osrd-project/ui-core/dist/theme.css';
 
 const TolerancePickerStory = (props: TolerancePickerProps) => {

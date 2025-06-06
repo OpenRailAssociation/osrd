@@ -1,4 +1,4 @@
-import { OccupancyZone } from '@osrd-project/ui-charts';
+import { type OccupancyZone } from '@osrd-project/ui-charts';
 
 const OCCUPANCY_ZONES: OccupancyZone[] = [
   {

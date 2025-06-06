@@ -8,7 +8,7 @@ import {
   type PathData,
   type OperationalPoint,
   DEFAULT_THEME,
-  SpaceScale,
+  type SpaceScale,
 } from '@osrd-project/ui-charts';
 import { Button, Slider } from '@osrd-project/ui-core';
 import type { Meta } from '@storybook/react-vite';
@@ -19,9 +19,9 @@ import '@osrd-project/ui-charts/dist/theme.css';
 import './styles/rectangle-zoom.css';
 
 import { MouseTracker } from './helpers/components';
+import { KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { getDiff } from './helpers/utils';
-import { KILOMETER } from './helpers/consts';
 
 const DEFAULT_WIDTH = 1000;
 const DEFAULT_HEIGHT = 500;

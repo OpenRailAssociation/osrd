@@ -1,8 +1,10 @@
-import React, { FC, useCallback, useMemo, useState, useRef } from 'react';
-import { ErrorBoundary } from './ErrorBoundary';
+import React, { type FC, useCallback, useMemo, useState, useRef } from 'react';
+
 import { Input } from '@osrd-project/ui-core';
 import * as Icons from '@osrd-project/ui-icons';
 import type { UiIcon } from '@osrd-project/ui-icons';
+
+import { ErrorBoundary } from './ErrorBoundary';
 
 const ICONS: Array<{ name: string; icon: UiIcon }> = Object.keys(Icons).map((name) => ({
   name,
@@ -29,9 +31,10 @@ export const SearchIcons: FC<{
     },
     [debounceTimer]
   );
-  const icons: Array<{ name: string; icon: UiIcon }> = useMemo(() => {
-    return ICONS.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));
-  }, [search]);
+  const icons: Array<{ name: string; icon: UiIcon }> = useMemo(
+    () => ICONS.filter((i) => i.name.toLowerCase().includes(search.toLowerCase())),
+    [search]
+  );
 
   return (
     <div>
