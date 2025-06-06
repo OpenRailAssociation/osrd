@@ -9,6 +9,7 @@ type TimetableItemActionsProps = {
   duplicateTimetableItem: () => Promise<void>;
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
+  isTimetableItemValid?: boolean;
 };
 
 const TimetableItemActions = ({
@@ -16,6 +17,7 @@ const TimetableItemActions = ({
   duplicateTimetableItem,
   editTimetableItem,
   deleteTimetableItem,
+  isTimetableItemValid = true,
 }: TimetableItemActionsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   return (
@@ -26,6 +28,7 @@ const TimetableItemActions = ({
         title={t('timetable.choosePath')}
         onClick={selectPathProjection}
         data-testid="project-item"
+        disabled={!isTimetableItemValid}
       >
         <GiPathDistance />
       </button>

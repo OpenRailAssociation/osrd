@@ -668,9 +668,15 @@
               color: var(--primary60);
               margin-left: 8px;
 
-              &:hover {
+              &:hover:not(:disabled) {
                 background-color: var(--white100);
                 color: var(--primary80);
+              }
+
+              &:disabled {
+                cursor: not-allowed;
+                pointer-events: none;
+                color: var(--grey30);
               }
 
               &:first-child {
