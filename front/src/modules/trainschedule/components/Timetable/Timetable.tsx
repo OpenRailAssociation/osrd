@@ -9,8 +9,7 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
-import ConflictsList from 'modules/conflict/components/ConflictsList';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
@@ -18,17 +17,12 @@ import type {
   OccurrenceId,
   TimetableItemToEditData,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastIdToTrainScheduleId,
-  isPacedTrainWithDetails,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
@@ -43,7 +37,6 @@ import useFilterTimetableItems from './useFilterTimetableItems';
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   infraState: InfraState;
-  conflicts?: Conflict[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
@@ -58,7 +51,6 @@ const formatDepartureDate = (d: Date, locale: string) =>
 const Timetable = ({
   setDisplayTrainScheduleManagement,
   infraState,
-  conflicts,
   upsertTimetableItems,
   removeTimetableItems,
   setTimetableItemToEditData,
@@ -68,7 +60,6 @@ const Timetable = ({
 }: TimetableProps) => {
   const { t, i18n } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
-  const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const selectedTrainId = useSelector(getSelectedTrainId);
@@ -90,10 +81,6 @@ const Timetable = ({
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
 
-  const toggleConflictsListExpanded = () => {
-    setConflictsListExpanded(!conflictsListExpanded);
-  };
-
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
       const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIds;
@@ -109,16 +96,6 @@ const Timetable = ({
     },
     [selectedTimetableItemIds]
   );
-
-  const handleConflictClick = (conflict: Conflict) => {
-    if (conflict.train_schedule_ids.length > 0) {
-      // TODO Paced train : Adapt this to handle paced trains in conflict issue
-      const formattedFirstTrainId = formatEditoastIdToTrainScheduleId(
-        conflict.train_schedule_ids[0]
-      );
-      dispatch(updateSelectedTrainId(formattedFirstTrainId));
-    }
-  };
 
   const currentDepartureDates = useMemo(
     () =>
@@ -180,7 +157,6 @@ const Timetable = ({
       </div>
       <div
         className={cx('scenario-timetable-trains', {
-          expanded: conflictsListExpanded,
           'with-details': showTrainDetails,
         })}
       >
@@ -242,15 +218,6 @@ const Timetable = ({
           })}
         />
       </div>
-      {conflicts && (
-        <ConflictsList
-          conflicts={conflicts}
-          expanded={conflictsListExpanded}
-          toggleConflictsList={toggleConflictsListExpanded}
-          timetableItems={filteredTimetableItems}
-          onConflictClick={handleConflictClick}
-        />
-      )}
     </div>
   );
 };

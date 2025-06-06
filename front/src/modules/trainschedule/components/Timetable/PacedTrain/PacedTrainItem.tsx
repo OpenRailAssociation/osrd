@@ -356,7 +356,6 @@ const PacedTrainItem = ({
       )}
     </div>
   );
-
   if (!isOnEdit) {
     return content;
   }

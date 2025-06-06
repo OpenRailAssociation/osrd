@@ -18,6 +18,7 @@ import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import RouteTab from './pages/operational-studies/route-tab';
+import ScenarioPage from './pages/operational-studies/scenario-page';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import OpSimulationResultPage from './pages/operational-studies/simulation-results-page';
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
@@ -86,6 +87,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   let timesAndStopsTab: TimesAndStopsTab;
   let simulationResultPage: OpSimulationResultPage;
   let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
+  let scenarioPage: ScenarioPage;
 
   let project: Project;
   let study: Study;
@@ -123,6 +125,7 @@ test.describe('Verify simulation configuration in operational studies for train 
       timesAndStopsTab,
       simulationResultPage,
       timeAndStopSimulationOutputs,
+      scenarioPage,
     ] = [
       new RollingStockSelector(page),
       new OperationalStudiesPage(page),
@@ -132,6 +135,7 @@ test.describe('Verify simulation configuration in operational studies for train 
       new TimesAndStopsTab(page),
       new OpSimulationResultPage(page),
       new TimeAndStopSimulationOutputs(page),
+      new ScenarioPage(page),
     ];
 
     ({ project, study, scenario } = await createScenario());
@@ -140,6 +144,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
+    await operationalStudiesPage.removeViteOverlay();
 
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
@@ -207,7 +212,6 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Verify the paced train has been added and return to the simulation results and timetable
     await operationalStudiesPage.checkToastHasBeenLaunched(translations.pacedTrains.added);
     await operationalStudiesPage.returnSimulationResult();
-    await operationalStudiesPage.closeToastNotification();
 
     // Confirm that the number of paced trains added matches the expected number
     await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
@@ -218,8 +222,8 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Click on occurrence to check its simulation results
     await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-
-    await scenarioTimetableSection.collapseScenarioSideMenu();
+    await scenarioPage.toggletrainList();
+    await scenarioPage.toggleConflictsList();
 
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
       'SpeedSpaceChart-InitialInputs.png'

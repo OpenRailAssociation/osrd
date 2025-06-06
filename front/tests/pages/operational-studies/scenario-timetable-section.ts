@@ -69,12 +69,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly trainArrivalTime: Locator;
 
-  private readonly scenarioCollapseButton: Locator;
-
-  private readonly timetableCollapseButton: Locator;
-
-  private readonly scenarioSideMenu: Locator;
-
   private readonly emptyTimetable: Locator;
 
   constructor(page: Page) {
@@ -113,9 +107,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
-    this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
-    this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
-    this.scenarioSideMenu = page.getByTestId('scenario-side-menu');
     this.emptyTimetable = page.locator('.empty-list');
   }
 
@@ -383,20 +374,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   async getTrainArrivalTime(expectedArrivalTime: string) {
     await expect(this.trainArrivalTime).toBeVisible();
+    await this.trainArrivalTime.locator('.arrival-time-loader').waitFor({ state: 'hidden' });
     const actualArrivalTime = await this.trainArrivalTime.textContent();
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
-  }
-
-  async collapseScenarioSideMenu() {
-    await expect(this.scenarioCollapseButton).toBeVisible();
-    await this.scenarioCollapseButton.click();
-    await expect(this.scenarioSideMenu).toBeHidden();
-  }
-
-  async expandScenarioSideMenu() {
-    await expect(this.timetableCollapseButton).toBeVisible();
-    await this.timetableCollapseButton.click();
-    await expect(this.scenarioSideMenu).toBeVisible();
   }
 
   async selectAllTimetableItems(
