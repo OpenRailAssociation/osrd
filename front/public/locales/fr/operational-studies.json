@@ -1,4 +1,13 @@
 {
+  "boards": {
+    "conflicts": "Conflits",
+    "macro": "Macro",
+    "map": "Carte",
+    "sdd": "GEV",
+    "std": "GET",
+    "tables": "Tableaux",
+    "trains": "Trains"
+  },
   "importTrains": {
     "cancel": "Annuler",
     "date": "DATE",

@@ -1,4 +1,13 @@
 {
+  "boards": {
+    "conflicts": "Conflicts",
+    "macro": "Macro",
+    "map": "Map",
+    "sdd": "SDD",
+    "std": "STD",
+    "tables": "Tables",
+    "trains": "Trains"
+  },
   "importTrains": {
     "cancel": "Cancel",
     "date": "DATE",

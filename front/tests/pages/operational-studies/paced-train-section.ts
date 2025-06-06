@@ -311,7 +311,6 @@ class PacedTrainSection extends CommonPage {
     const [firstPart, secondPart] = translations.timetable.pacedTrainDeleted.split('{{name}}');
     const expectedDeleteToast = `${firstPart}${duplicatedPacedTrainName}${secondPart}`;
     await this.checkToastTitle(expectedDeleteToast);
-    await this.closeToastNotification();
   }
 
   async checkExceptionTooltip(

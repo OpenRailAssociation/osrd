@@ -12,18 +12,30 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
 
+type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
+
 type ScenarioHeaderProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
+  toggleTimetable: () => void;
+  toggleConflictsList: () => void;
 };
 
-const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
+const ScenarioHeader = ({
+  scenario,
+  infra,
+  toggleConflictsList,
+  toggleTimetable,
+}: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
 
   const { t } = useTranslation('operational-studies');
-  const [activeBoards, setActiveBoards] = useState<string[]>([]);
+
+  const boards: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
+  const [activeBoards, setActiveBoards] = useState<Board[]>([...boards]);
+
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
     username: false,
@@ -32,8 +44,6 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
 
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLButtonElement>(null);
-
-  const boards = ['Traits', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -47,7 +57,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
     }
   );
 
-  const toggleBoard = (selectedBoard: string) => {
+  const toggleBoard = (selectedBoard: Board) => {
     setActiveBoards((prevBoards) => {
       if (prevBoards.includes(selectedBoard)) {
         return prevBoards.filter((b) => b !== selectedBoard);
@@ -100,10 +110,12 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
             role="button"
             tabIndex={0}
             onClick={toggleScenarioDetails}
+            data-testid="scenario-name-container"
           >
             <span
               ref={scenarioNameRef}
               className={cx('scenario-name-label', { 'is-truncated': isTruncated.scenarioName })}
+              data-testid="scenario-name-label"
             >
               {scenario.name}
             </span>
@@ -128,11 +140,17 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
                     on: activeBoards.includes(board),
                   })}
                   type="button"
+                  data-testid={`${board}-button`}
                   onClick={() => {
+                    if (board === 'conflicts') {
+                      toggleConflictsList();
+                    } else if (board === 'trains') {
+                      toggleTimetable();
+                    }
                     toggleBoard(board);
                   }}
                 >
-                  {board}
+                  {t(`boards.${board}`)}
                 </button>
                 {index < boards.length - 1 && <div className="inactive-area" />}
               </Fragment>
@@ -159,13 +177,18 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
       {/* scenario details */}
       {areScenarioDetailsVisible && (
         <div className="scenario-details">
-          <span className="scenario-description"> {scenario.description} </span>
+          <span className="scenario-description" data-testid="scenario-details-description">
+            {scenario.description}
+          </span>
 
           <div className="scenario-details-infra-name">
             {t('main.infrastructure')} :&nbsp;
             {infra && <InfraLoadingState infra={infra} />}
             &nbsp;
-            <span className="scenario-infra-name">{scenario.infra_name}</span>&nbsp;| ID
+            <span className="scenario-infra-name" data-testid="scenario-infra-name">
+              {scenario.infra_name}
+            </span>
+            &nbsp;| ID
             {scenario.infra_id}
           </div>
 
@@ -199,6 +222,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
                 )
               }
               title={t('main.editScenario')}
+              data-testid="edit-scenario"
             >
               {t('translation:common.edit')}
             </button>

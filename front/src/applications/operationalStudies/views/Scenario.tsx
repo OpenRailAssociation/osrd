@@ -1,13 +1,15 @@
+import { useState } from 'react';
+
 import { useSelector } from 'react-redux';
 
-import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import ScenarioContent from 'applications/operationalStudies/components/Scenario/ScenarioContent';
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+
+import ScenarioHeader from '../v2/components/ScenarioHeader';
 
 const Scenario = () => {
   const { scenario } = useScenario();
@@ -20,16 +22,34 @@ const Scenario = () => {
   const infraData = useInfraStatus({ infraId });
   const { infra } = infraData;
 
+  const [isTimetableDisplayed, setIsTimeTableDisplayed] = useState(true);
+  const [isConflictsListDisplayed, setIsConflictsListDisplayed] = useState(true);
+
   if (!scenario || !infra) return null;
+
+  const toggleTimetable = () => {
+    setIsTimeTableDisplayed((prev) => !prev);
+  };
+  const toggleConflictsList = () => {
+    setIsConflictsListDisplayed((prev) => !prev);
+  };
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
-      <NavBarSNCF
-        appName={
-          <BreadCrumbs project={scenario.project} study={scenario.study} scenario={scenario} />
-        }
+      <ScenarioHeader
+        scenario={scenario}
+        infra={infra}
+        toggleTimetable={toggleTimetable}
+        toggleConflictsList={toggleConflictsList}
       />
-      <ScenarioContent scenario={scenario} infra={infra} infraMetadata={infraData} />
+
+      <ScenarioContent
+        scenario={scenario}
+        infra={infra}
+        infraMetadata={infraData}
+        isTimetableDisplayed={isTimetableDisplayed}
+        isConflictsListDisplayed={isConflictsListDisplayed}
+      />
     </ScenarioContextProvider>
   );
 };
