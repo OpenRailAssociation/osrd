@@ -8,6 +8,7 @@ const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.
 const tractionEngineName = 'ELECTRIC_RS_E2E';
 const towedRollingStockName = '-';
 const compositionCode = 'HLP';
+const loadingGauge = 'GA';
 const tonnage = '950 t';
 const length = '567 m';
 const maxSpeed = '100 km/h';
@@ -31,6 +32,7 @@ ${translations.mailFeedback.simulationDetails}:
 ${translations.consist.tractionEngine}: ${tractionEngineName}
 ${translations.consist.towedRollingStock}: ${towedRollingStockName}
 ${translations.consist.compositionCode}: ${compositionCode}
+${translations.consist.loadingGauge}: ${loadingGauge}
 ${translations.consist.tonnage}: ${tonnage}
 ${translations.consist.length}: ${length}
 ${translations.consist.maxSpeed}: ${maxSpeed}

@@ -262,6 +262,7 @@ export type StdcmTranslations = {
     tractionEngine: string;
     towedRollingStock: string;
     compositionCode: string;
+    loadingGauge: string;
     tonnage: string;
     length: string;
     maxSpeed: string;
