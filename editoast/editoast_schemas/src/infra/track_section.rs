@@ -3,6 +3,7 @@ use geojson::Geometry;
 use geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
+use uom::si::length::millimeter;
 use utoipa::ToSchema;
 
 use super::Curve;
@@ -14,6 +15,9 @@ use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
+
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 
 editoast_common::schemas! {
     TrackSection,
@@ -27,8 +31,9 @@ editoast_common::schemas! {
 pub struct TrackSection {
     #[schema(inline)]
     pub id: Identifier,
-    #[educe(Default = 100.)]
-    pub length: f64,
+    #[serde(with = "units::millimeter")]
+    #[educe(Default = Length::new::<millimeter>(100.))]
+    pub length: Length,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
     #[serde(default)]

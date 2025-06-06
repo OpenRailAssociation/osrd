@@ -7,6 +7,8 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_common::units::meter;
+use editoast_common::units::quantities::Length;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::Identifier;
@@ -32,13 +34,13 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
         track: Identifier,
-        distance_fraction: f64,
+        distance_fraction: Length,
     ) -> Result<Option<SplitTrackSectionWithData>> {
         let query = include_str!("sql/get_split_track_section_with_data.sql");
         let result = sql_query(query)
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(track.to_string())
-            .bind::<Double, _>(distance_fraction)
+            .bind::<Double, _>(meter::from(distance_fraction))
             .get_result::<SplitTrackSectionWithData>(conn.write().await.deref_mut())
             .await
             .optional()?;

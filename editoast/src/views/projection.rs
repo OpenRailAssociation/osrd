@@ -9,8 +9,11 @@ use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use editoast_common::units;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Time;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
+use educe::Educe;
 use futures::join;
 use itertools::izip;
 use serde::Deserialize;
@@ -22,6 +25,7 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
 use tracing::info;
+use uom::si::time::millisecond;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
@@ -73,15 +77,17 @@ pub struct ProjectPathInput {
     pub blocks: Vec<Identifier>,
 }
 
+// #[editoast_derive::annotate_units] // TODO PR fix issue with `#[schema(min_items)]`
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SpaceTimeCurve {
-    // List of positions of a train in mm
     // Both positions and times must have the same length
     #[schema(min_items = 2)]
-    positions: Vec<u64>,
-    // List of times in ms since `departure_time` associated to a position
+    #[serde(with = "units::millimeter")]
+    positions: Vec<Length>,
+    // List of times since `departure_time` associated to a position
     #[schema(min_items = 2)]
-    times: Vec<u64>,
+    #[serde(with = "units::millisecond")]
+    times: Vec<Time>,
 }
 
 /// Project path output is described by time-space points and blocks
@@ -107,11 +113,13 @@ pub struct CachedProjectPathTrainResult {
 }
 
 /// Input for the projection of a train schedule on a path
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Educe)]
+#[educe(Hash)]
 pub struct TrainSimulationDetails {
     pub train_id: i64,
-    pub positions: Vec<u64>,
-    pub times: Vec<u64>,
+    #[educe(Hash(method(editoast_common::hash_length_slice)))]
+    pub positions: Vec<Length>,
+    pub times: Vec<Time>,
     pub train_path: Vec<TrackRange>,
     pub signal_critical_positions: Vec<SignalCriticalPosition>,
     pub zone_updates: Vec<ZoneUpdate>,
@@ -208,7 +216,7 @@ fn compute_space_time_curves(
         ));
         space_time_curves.push(SpaceTimeCurve {
             positions: segment_positions,
-            times: segment_times,
+            times: Time::new::<millisecond>(segment_times), // TODO PR stop converting here
         });
     }
     space_time_curves
@@ -252,10 +260,10 @@ fn find_index_upper(values: &[u64], value: u64) -> usize {
 ///
 /// Panics if the position is not part of **both** paths
 fn project_pos(
-    train_pos: u64,
+    train_pos: Length,
     train_path: &PathProjection,
     path_projection: &PathProjection,
-) -> u64 {
+) -> Length {
     match train_path.get_location(train_pos) {
         TrackLocationFromPath::One(loc) => path_projection
             .get_position(&loc)
@@ -272,11 +280,11 @@ fn project_pos(
 
 /// Interpolate a time value between two positions
 fn interpolate(
-    start_pos: u64,
-    end_pos: u64,
-    start_time: u64,
-    end_time: u64,
-    pos_to_interpolate: u64,
+    start_pos: Length,
+    end_pos: Length,
+    start_time: Time,
+    end_time: Time,
+    pos_to_interpolate: Length,
 ) -> u64 {
     if start_pos == end_pos {
         start_time

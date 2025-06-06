@@ -1,7 +1,11 @@
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::Identifier;
 use std::collections::HashMap;
+
+use uom::si::length::millimeter;
 
 use super::TrackRange;
 
@@ -17,11 +21,11 @@ pub struct PathProjection<'a> {
     /// The path used for projections.
     path: &'a Vec<TrackRange>,
     /// Map track section to their position in the path (in mm).
-    map_position: HashMap<&'a Identifier, u64>,
+    map_position: HashMap<&'a Identifier, Length>,
     /// Map track section to their index in the path.
     track_index: HashMap<&'a Identifier, usize>,
     /// The length of the path (in mm).
-    length: u64,
+    length: Length,
 }
 
 impl<'a> PathProjection<'a> {
@@ -39,7 +43,7 @@ impl<'a> PathProjection<'a> {
     pub fn new(path: &'a Vec<TrackRange>) -> Self {
         let mut track_index = HashMap::new();
         let mut map_position = HashMap::new();
-        let mut pos: u64 = 0;
+        let mut pos: Length = Length::new::<millimeter>(0);
         for (index, track_range) in path.iter().enumerate() {
             assert!(
                 track_index
@@ -58,7 +62,7 @@ impl<'a> PathProjection<'a> {
     }
 
     /// Get the position in the path given a location (track section and offset).
-    pub fn get_position(&self, location: &TrackOffset) -> Option<u64> {
+    pub fn get_position(&self, location: &TrackOffset) -> Option<Length> {
         let base_position = *self.map_position.get(&location.track)?;
         let track_range = self
             .get_track_range(&location.track)
@@ -80,7 +84,7 @@ impl<'a> PathProjection<'a> {
     /// # Panics
     ///
     /// Panics if the position is out of bounds.
-    pub fn get_location(&self, position: u64) -> TrackLocationFromPath {
+    pub fn get_location(&self, position: Length) -> TrackLocationFromPath {
         assert!(position <= self.length, "Position out of bounds");
 
         // Binary search to retrieve the corresponding track section range.
@@ -108,7 +112,7 @@ impl<'a> PathProjection<'a> {
         let mut has_prev = false;
         let first_track_loc = {
             let track_range_offset = found_track_range.offset(position - found_position);
-            if track_range_offset.offset == 0 && index > 0 {
+            if track_range_offset.offset == Length::new::<millimeter>(0) && index > 0 {
                 has_prev = true;
             } else if track_range_offset.offset == found_track_range.length()
                 && index < self.path.len() - 1
@@ -207,7 +211,7 @@ impl<'a> PathProjection<'a> {
     }
 
     /// Returns the length of the path in mm
-    pub fn len(&self) -> u64 {
+    pub fn len(&self) -> Length {
         self.length
     }
 }
@@ -216,12 +220,14 @@ impl<'a> PathProjection<'a> {
 #[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, utoipa::ToSchema)]
 pub struct Intersection {
     /// Distance of the beginning of the intersection relative to the beginning of the path
-    start: u64,
+    #[serde(with = "units::millimeter")]
+    start: Length,
     /// Distance of the end of the intersection relative to the beginning of the path
-    end: u64,
+    #[serde(with = "units::millimeter")]
+    end: Length,
 }
-impl From<(u64, u64)> for Intersection {
-    fn from((start, end): (u64, u64)) -> Self {
+impl From<(Length, Length)> for Intersection {
+    fn from((start, end): (Length, Length)) -> Self {
         debug_assert!(
             start <= end,
             "intersection should have a 'start' ({start}) smaller than 'end' ({end})"
@@ -230,16 +236,16 @@ impl From<(u64, u64)> for Intersection {
     }
 }
 impl Intersection {
-    pub fn start(&self) -> u64 {
+    pub fn start(&self) -> Length {
         self.start
     }
-    pub fn end(&self) -> u64 {
+    pub fn end(&self) -> Length {
         self.end
     }
 }
 struct IntersectionBuilder {
-    start: Option<u64>,
-    current: u64,
+    start: Option<Length>,
+    current: Length,
     intersections: Vec<Intersection>,
 }
 
@@ -247,7 +253,7 @@ impl IntersectionBuilder {
     fn new() -> Self {
         Self {
             start: None,
-            current: 0,
+            current: Length::new::<millimeter>(0),
             intersections: vec![],
         }
     }
@@ -261,7 +267,7 @@ impl IntersectionBuilder {
         self.start = None;
     }
 
-    fn start_new_intersection(&mut self, start_pos: u64) {
+    fn start_new_intersection(&mut self, start_pos: Length) {
         assert!(self.start.is_none());
         if self.start.is_none() {
             self.start = Some(start_pos);
@@ -269,7 +275,7 @@ impl IntersectionBuilder {
         }
     }
 
-    fn grow_intersection(&mut self, amount: u64) {
+    fn grow_intersection(&mut self, amount: Length) {
         self.current += amount;
     }
 }
@@ -297,11 +303,17 @@ mod tests {
     #[should_panic]
     fn projection_invalid_creation() {
         let path = vec![
-            DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
+            DirectionalTrackRange::new(
+                "A",
+                Length::new::<meter>(50.),
+                Length::new::<meter>(100.),
+                Direction::StartToStop,
+            )
+            .into(),
             DirectionalTrackRange::new(
                 "A", // Same track section
-                20.,
-                200.,
+                Length::new::<meter>(20.),
+                Length::new::<meter>(200.),
                 Direction::StopToStart,
             )
             .into(),
@@ -311,18 +323,18 @@ mod tests {
     }
 
     #[rstest]
-    #[case("A", 50_000, Some(0))]
-    #[case("A", 80_000, Some(30_000))]
-    #[case("A", 20_000, None)]
-    #[case("A", 101_000, None)]
-    #[case("B", 100_000, Some(150_000))]
-    #[case("B", 19_000, None)]
-    #[case("B", 22_0000, None)]
-    #[case("C", 100_000, Some(330_000))]
-    #[case("C", 300_000, Some(530_000))]
-    #[case("C", 301_000, None)]
+    #[case("A", units::millimeter::new(50_000), Some(0))]
+    #[case("A", units::millimeter::new(80_000), Some(30_000))]
+    #[case("A", units::millimeter::new(20_000), None)]
+    #[case("A", units::millimeter::new(101_000), None)]
+    #[case("B", units::millimeter::new(100_000), Some(150_000))]
+    #[case("B", units::millimeter::new(19_000), None)]
+    #[case("B", units::millimeter::new(22_0000), None)]
+    #[case("C", units::millimeter::new(100_000), Some(330_000))]
+    #[case("C", units::millimeter::new(300_000), Some(530_000))]
+    #[case("C", units::millimeter::new(301_000), None)]
     #[case("C", 3_000_000, None)]
-    fn projection_odd(#[case] track: &str, #[case] offset: u64, #[case] expected: Option<u64>) {
+    fn projection_odd(#[case] track: &str, #[case] offset: Length, #[case] expected: Option<u64>) {
         let path = vec![
             DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
             DirectionalTrackRange::new("B", 20., 200., Direction::StopToStart).into(),
@@ -344,16 +356,40 @@ mod tests {
     }
 
     #[rstest]
-    #[case(50_000, "A", 100_000, "B", 220_000)]
-    #[case(250_000, "B", 20_000, "C", 300_000)]
-    #[case(550_000, "C", 0, "D", 50_000)]
-    #[case(650_000, "D", 150_000, "E", 100_000)]
+    #[case(
+        units::millimeter::new(50_000),
+        "A",
+        units::millimeter::new(100_000),
+        "B",
+        units::millimeter::new(220_000)
+    )]
+    #[case(
+        units::millimeter::new(250_000),
+        "B",
+        units::millimeter::new(20_000),
+        "C",
+        units::millimeter::new(300_000)
+    )]
+    #[case(
+        units::millimeter::new(550_000),
+        "C",
+        units::millimeter::new(0),
+        "D",
+        units::millimeter::new(50_000)
+    )]
+    #[case(
+        units::millimeter::new(650_000),
+        "D",
+        units::millimeter::new(150_000),
+        "E",
+        units::millimeter::new(100_000)
+    )]
     fn projection_boundaries(
-        #[case] position: u64,
+        #[case] position: Length,
         #[case] track_a: &str,
-        #[case] offset_a: u64,
+        #[case] offset_a: Length,
         #[case] track_b: &str,
-        #[case] offset_b: u64,
+        #[case] offset_b: Length,
     ) {
         let path = vec![
             DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
@@ -389,11 +425,11 @@ mod tests {
     }
 
     #[rstest]
-    #[case("A", 50_000, 0)]
-    #[case("B", 80_000, 170_000)]
-    #[case("C", 20_000, 250_000)]
-    #[case("D", 101_000, 779_000)]
-    fn projection_even(#[case] track: &str, #[case] offset: u64, #[case] expected: u64) {
+    #[case("A", units::millimeter::new(50_000), units::millimeter::new(0))]
+    #[case("B", units::millimeter::new(80_000), units::millimeter::new(170_000))]
+    #[case("C", units::millimeter::new(20_000), units::millimeter::new(250_000))]
+    #[case("D", units::millimeter::new(101_000), units::millimeter::new(779_000))]
+    fn projection_even(#[case] track: &str, #[case] offset: Length, #[case] expected: Length) {
         let path = vec![
             DirectionalTrackRange::new("A", 50., 100., Direction::StartToStop).into(),
             DirectionalTrackRange::new("B", 20., 200., Direction::StopToStart).into(),
@@ -514,6 +550,15 @@ mod tests {
         // and the offsets will be subtracted from the total length
         #[values(false, true)] toggle_track_ranges: bool,
     ) {
+        let expected_intersections = expected_intersections
+            .iter()
+            .map(|(begin, end)| {
+                (
+                    Length::new::<millimeter>(begin),
+                    Length::new::<millimeter>(end),
+                )
+            })
+            .collect::<Vec<_>>();
         let path = path
             .iter()
             .map(|s| s.parse::<DirectionalTrackRange>().unwrap().into());
@@ -532,7 +577,7 @@ mod tests {
         } else {
             track_ranges.collect()
         };
-        let expected_intersections = expected_intersections
+        let expected_intersections = &expected_intersections
             .iter()
             .copied()
             .map(Intersection::from);

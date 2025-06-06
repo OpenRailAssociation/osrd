@@ -1,15 +1,19 @@
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
+use uom::si::length::meter;
 use utoipa::ToSchema;
 
 use super::Direction;
 use crate::primitives::Identifier;
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 
 editoast_common::schemas! {
     DirectionalTrackRange,
 }
 
+#[editoast_derive::annotate_units]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
@@ -17,22 +21,24 @@ pub struct DirectionalTrackRange {
     #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
-    pub begin: f64,
-    #[educe(Default = 100.)]
-    pub end: f64,
+    #[serde(with = "units::meter")]
+    pub begin: Length,
+    #[serde(with = "units::meter")]
+    #[educe(Default = Length::new::<meter>(100.))]
+    pub end: Length,
     #[educe(Default = Direction::StartToStop)]
     pub direction: Direction,
 }
 
 impl DirectionalTrackRange {
-    pub fn entry_bound(&self) -> f64 {
+    pub fn entry_bound(&self) -> Length {
         match self.direction {
             Direction::StartToStop => self.begin,
             Direction::StopToStart => self.end,
         }
     }
 
-    pub fn get_begin(&self) -> f64 {
+    pub fn get_begin(&self) -> Length {
         if self.direction == Direction::StartToStop {
             self.begin
         } else {
@@ -40,7 +46,7 @@ impl DirectionalTrackRange {
         }
     }
 
-    pub fn get_end(&self) -> f64 {
+    pub fn get_end(&self) -> Length {
         if self.direction == Direction::StartToStop {
             self.end
         } else {
@@ -48,7 +54,7 @@ impl DirectionalTrackRange {
         }
     }
 
-    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64, direction: Direction) -> Self {
+    pub fn new<T: AsRef<str>>(track: T, begin: Length, end: Length, direction: Direction) -> Self {
         Self {
             track: track.as_ref().into(),
             begin,

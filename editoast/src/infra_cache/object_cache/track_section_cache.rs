@@ -9,6 +9,7 @@ use educe::Educe;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use editoast_common::units::quantities::Length;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
 
@@ -19,7 +20,7 @@ pub struct TrackSectionCache {
     #[educe(Hash(ignore), PartialEq(ignore))]
     pub line_code: Option<i32>,
     #[educe(Hash(ignore), PartialEq(ignore))]
-    pub length: f64,
+    pub length: Length,
     #[educe(Hash(ignore), PartialEq(ignore))]
     pub slopes: Vec<Slope>,
     #[educe(Hash(ignore), PartialEq(ignore))]

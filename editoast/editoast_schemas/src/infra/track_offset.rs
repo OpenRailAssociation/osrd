@@ -1,6 +1,10 @@
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
+
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 
 use crate::primitives::Identifier;
 
@@ -8,18 +12,21 @@ editoast_common::schemas! {
     TrackOffset,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, ToSchema, Hash)]
+#[editoast_derive::annotate_units]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize, ToSchema, Educe)]
+#[educe(Hash, Eq)]
 pub struct TrackOffset {
     /// Track section identifier
     #[schema(inline)]
     pub track: Identifier,
-    /// Offset in mm
-    pub offset: u64,
+    #[serde(with = "units::millimeter")]
+    #[educe(Hash(method(units::millimeter::hash)))]
+    pub offset: Length,
 }
 
 impl TrackOffset {
     /// Create a new track location.
-    pub fn new<T: AsRef<str>>(track: T, offset: u64) -> Self {
+    pub fn new<T: AsRef<str>>(track: T, offset: Length) -> Self {
         Self {
             track: track.as_ref().into(),
             offset,

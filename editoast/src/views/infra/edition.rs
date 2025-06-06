@@ -26,6 +26,7 @@ use std::collections::HashMap;
 use thiserror::Error;
 use tracing::error;
 use tracing::info;
+use uom::si::length::millimeter;
 use uuid::Uuid;
 
 use crate::AppState;
@@ -45,8 +46,10 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use editoast_common::units::quantities::Length;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
+use uom::si::length::meter;
 
 crate::routes! {
     edit,
@@ -184,9 +187,9 @@ pub async fn split_track_section(
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
 
     // Check if the distance is compatible with the length of the TrackSection
-    let distance = payload.offset as f64 / 1000.0;
+    let distance = payload.offset;
     let distance_fraction = distance / tracksection_cached.length;
-    if distance <= 0.0 || distance >= tracksection_cached.length {
+    if distance <= Length::new::<meter>(0.0) || distance >= tracksection_cached.length {
         return Err(EditionError::SplitTrackSectionBadOffset {
             infra_id,
             tracksection_id: payload.track.to_string(),
@@ -265,7 +268,7 @@ pub async fn split_track_section(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                item.begin = (item.begin - distance).max(0.0);
+                item.begin = (item.begin - distance).max(Length::new::<millimeter>(0.0));
                 item.end -= distance;
                 item
             })
@@ -276,7 +279,7 @@ pub async fn split_track_section(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                item.begin = (item.begin - distance).max(0.0);
+                item.begin = (item.begin - distance).max(Length::new::<millimeter>(0.0));
                 item.end -= distance;
                 item
             })
@@ -287,7 +290,7 @@ pub async fn split_track_section(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                item.begin = (item.begin - distance).max(0.0);
+                item.begin = (item.begin - distance).max(Length::new::<millimeter>(0.0));
                 item.end -= distance;
                 item
             })
@@ -394,7 +397,7 @@ pub async fn split_track_section(
 fn get_split_operations_for_impacted(
     infra_cache: &mut InfraCache,
     tracksection: &TrackSection,
-    distance: f64,
+    distance: Length,
     left_tracksection_id: Uuid,
     right_tracksection_id: Uuid,
 ) -> Vec<Operation> {
@@ -797,7 +800,7 @@ fn get_split_patch_operations_for_applicable_ranges(
 /// * `ranges` - List of track section ranges
 fn get_split_patch_operations_for_ranges(
     tracksection_id: Identifier,
-    distance: f64,
+    distance: Length,
     left_tracksection_id: Uuid,
     right_tracksection_id: Uuid,
     path: String,
@@ -847,7 +850,7 @@ fn get_split_patch_operations_for_ranges(
                         path: format!("{path}/-").parse().unwrap(),
                         value: json!(DirectionalTrackRange {
                             track: Identifier::from(right_tracksection_id),
-                            begin: 0.0,
+                            begin: Length::new::<meter>(0.0),
                             end: range.end - distance,
                             ..range.clone()
                         }),
@@ -936,7 +939,7 @@ enum EditionError {
     SplitTrackSectionBadOffset {
         infra_id: i64,
         tracksection_id: String,
-        tracksection_length: f64,
+        tracksection_length: Length,
     },
 }
 

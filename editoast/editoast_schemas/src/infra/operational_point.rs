@@ -9,6 +9,8 @@ use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 
 editoast_common::schemas! {
     OperationalPoint,
@@ -35,7 +37,8 @@ pub struct OperationalPointPart {
     #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]
     pub track: Identifier,
-    pub position: f64,
+    #[serde(with = "units::meter")]
+    pub position: Length,
     #[serde(default)]
     #[schema(inline)]
     pub extensions: OperationalPointPartExtension,
@@ -102,7 +105,7 @@ impl OperationalPoint {
             .into_iter()
             .map(|el| TrackOffset {
                 track: el.track,
-                offset: (el.position * 1000.0) as u64,
+                offset: el.position,
             })
             .collect()
     }

@@ -2,7 +2,11 @@ use crate::primitives::Identifier;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
+use uom::si::length::meter;
 use utoipa::ToSchema;
+
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 
 editoast_common::schemas! {
     TrackRange,
@@ -15,13 +19,15 @@ pub struct TrackRange {
     #[schema(value_type=String, example="01234567-89ab-cdef-0123-456789abcdef")]
     #[educe(Default = "InvalidRef".into())]
     pub track: Identifier,
-    pub begin: f64,
-    #[educe(Default = 100.)]
-    pub end: f64,
+    #[serde(with = "units::meter")]
+    pub begin: Length,
+    #[educe(Default = Length::new::<meter>(100.))]
+    #[serde(with = "units::meter")]
+    pub end: Length,
 }
 
 impl TrackRange {
-    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64) -> Self {
+    pub fn new<T: AsRef<str>>(track: T, begin: Length, end: Length) -> Self {
         Self {
             track: track.as_ref().into(),
             begin,

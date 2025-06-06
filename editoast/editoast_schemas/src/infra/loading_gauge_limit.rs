@@ -2,6 +2,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
+
 use crate::rolling_stock::LoadingGaugeType;
 
 editoast_common::schemas! {
@@ -12,6 +15,8 @@ editoast_common::schemas! {
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {
     pub category: LoadingGaugeType,
-    pub begin: f64,
-    pub end: f64,
+    #[serde(with = "units::millimeter")]
+    pub begin: Length,
+    #[serde(with = "units::millimeter")]
+    pub end: Length,
 }

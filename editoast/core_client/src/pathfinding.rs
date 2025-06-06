@@ -1,8 +1,12 @@
+use editoast_common::units;
+use editoast_common::units::quantities::Length;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
+use educe::Educe;
+
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -160,15 +164,19 @@ pub enum PathfindingNotFound {
 
 /// An oriented range on a track section.
 /// `begin` is always less than `end`.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[editoast_derive::annotate_units]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, PartialEq, Educe)]
+#[educe(Hash, Eq)]
 pub struct TrackRange {
     /// The track section identifier.
     #[schema(inline)]
     pub track_section: Identifier,
-    /// The beginning of the range in mm.
-    pub begin: u64,
-    /// The end of the range in mm.
-    pub end: u64,
+    #[serde(with = "units::millimeter")]
+    #[educe(Hash(method(units::millimeter::hash)))]
+    pub begin: Length,
+    #[serde(with = "units::millimeter")]
+    #[educe(Hash(method(units::millimeter::hash)))]
+    pub end: Length,
     /// The direction of the range.
     pub direction: Direction,
 }
@@ -177,8 +185,8 @@ impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
     fn from(value: editoast_schemas::infra::DirectionalTrackRange) -> Self {
         TrackRange {
             track_section: value.track,
-            begin: (value.begin * 1000.).round() as u64,
-            end: (value.end * 1000.).round() as u64,
+            begin: value.begin,
+            end: value.end,
             direction: value.direction,
         }
     }
@@ -186,7 +194,7 @@ impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
 
 impl TrackRange {
     /// Returns the starting offset of the range (depending on the direction).
-    pub fn start(&self) -> u64 {
+    pub fn start(&self) -> Length {
         if self.direction == Direction::StartToStop {
             self.begin
         } else {
@@ -195,7 +203,7 @@ impl TrackRange {
     }
 
     /// Returns the ending offset of the range (depending on the direction).
-    pub fn stop(&self) -> u64 {
+    pub fn stop(&self) -> Length {
         if self.direction == Direction::StartToStop {
             self.end
         } else {
@@ -204,7 +212,7 @@ impl TrackRange {
     }
 
     /// Computes a TrackRangeOffset location on this track range following its direction
-    pub fn offset(&self, offset: u64) -> TrackRangeOffset<'_> {
+    pub fn offset(&self, offset: Length) -> TrackRangeOffset<'_> {
         assert!(offset <= self.length(), "offset out of track range bounds");
         TrackRangeOffset {
             track_range: self,
@@ -212,14 +220,14 @@ impl TrackRange {
         }
     }
 
-    pub fn length(&self) -> u64 {
+    pub fn length(&self) -> Length {
         self.end - self.begin
     }
 }
 
 pub struct TrackRangeOffset<'a> {
     track_range: &'a TrackRange,
-    pub offset: u64,
+    pub offset: Length,
 }
 
 impl TrackRangeOffset<'_> {
