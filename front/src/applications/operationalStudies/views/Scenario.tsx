@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useSelector } from 'react-redux';
 
 import ScenarioContent from 'applications/operationalStudies/components/Scenario/ScenarioContent';
@@ -20,13 +22,34 @@ const Scenario = () => {
   const infraData = useInfraStatus({ infraId });
   const { infra } = infraData;
 
+  const [isTimetableDisplay, setIsTimeTableDisplay] = useState(true);
+  const [isConflictsListDisplay, setIsConflictsListDisplay] = useState(true);
+
   if (!scenario || !infra) return null;
+
+  const toggleTimetable = () => {
+    setIsTimeTableDisplay((prev) => !prev);
+  };
+  const toggleConflictsList = () => {
+    setIsConflictsListDisplay((prev) => !prev);
+  };
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
-      <ScenarioHeader scenario={scenario} infra={infra} />
+      <ScenarioHeader
+        scenario={scenario}
+        infra={infra}
+        toggleTimeTable={toggleTimetable}
+        toggleConflictsList={toggleConflictsList}
+      />
 
-      <ScenarioContent scenario={scenario} infra={infra} infraMetadata={infraData} />
+      <ScenarioContent
+        scenario={scenario}
+        infra={infra}
+        infraMetadata={infraData}
+        isTimetableDisplay={isTimetableDisplay}
+        isConflictsListDisplay={isConflictsListDisplay}
+      />
     </ScenarioContextProvider>
   );
 };

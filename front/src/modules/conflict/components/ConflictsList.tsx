@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 
-import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
