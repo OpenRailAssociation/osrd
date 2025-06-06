@@ -29,6 +29,7 @@ import {
 import { useAppDispatch } from 'store';
 import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
+import BoardWrapper from '../components/Scenario/BoardWrapper';
 import useSimulationResults from '../hooks/useSimulationResults';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
@@ -201,23 +202,26 @@ const SimulationResults = ({
         <>
           {/* SIMULATION : SPEED SPACE CHART */}
           {selectedTimetableItemRollingStock && pathProperties && (
-            <div className="osrd-simulation-container speedspacechart-container">
-              <div
-                className="chart-container"
-                style={{
-                  height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
-                }}
-              >
-                <SpeedSpaceChartContainer
-                  timetableItemSimulation={timetableItemSimulation}
-                  selectedTimetableItemPowerRestrictions={selectedTimetableItemPowerRestrictions}
-                  rollingStock={selectedTimetableItemRollingStock}
-                  pathProperties={pathProperties}
-                  heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
-                  setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-                />
+            // TODO control visible prop value
+            <BoardWrapper visible name="SDD">
+              <div className="osrd-simulation-container speedspacechart-container">
+                <div
+                  className="chart-container"
+                  style={{
+                    height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+                  }}
+                >
+                  <SpeedSpaceChartContainer
+                    timetableItemSimulation={timetableItemSimulation}
+                    selectedTimetableItemPowerRestrictions={selectedTimetableItemPowerRestrictions}
+                    rollingStock={selectedTimetableItemRollingStock}
+                    pathProperties={pathProperties}
+                    heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+                    setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
+                  />
+                </div>
               </div>
-            </div>
+            </BoardWrapper>
           )}
 
           {/* SIMULATION : MAP */}
