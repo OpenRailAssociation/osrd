@@ -186,10 +186,21 @@ class STDCMPathfinding(
             queue.add(location)
         }
         val start = Instant.now()
+        var lastFValue = Double.NEGATIVE_INFINITY
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll() ?: return null
+
+            // Checks that the f-value (best anticipated final value on path) only goes up,
+            // otherwise the A* heuristic isn't admissible
+            val fValue = endNode.timeData.totalRunningTime + endNode.remainingTimeEstimation
+            if (fValue + 1.0 < lastFValue) { // Small tolerance
+                // We don't need to crash, logging an error is enough
+                logger.error("f-value decreases: new=$fValue, previous=$lastFValue")
+            }
+            lastFValue = fValue
+
             progressLogger.processNode(endNode)
             if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 continue
