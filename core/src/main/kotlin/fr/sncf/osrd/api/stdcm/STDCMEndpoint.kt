@@ -6,7 +6,10 @@ import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
-import fr.sncf.osrd.conflicts.*
+import fr.sncf.osrd.conflicts.IncrementalConflictDetector
+import fr.sncf.osrd.conflicts.NoConflictResponse
+import fr.sncf.osrd.conflicts.Requirements
+import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
@@ -20,6 +23,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
@@ -103,7 +107,10 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 parseRawRollingStock(
                     request.physicsConsist,
                     request.rollingStockLoadingGauge,
-                    request.rollingStockSupportedSignalingSystems
+                    request.rollingStockSupportedSignalingSystems.filter {
+                        // Ignoring ETCS as it is not (yet) supported for STDCM
+                        it != ETCS_LEVEL2.id
+                    }
                 )
             val trainsRequirements =
                 parseTrainsRequirements(
