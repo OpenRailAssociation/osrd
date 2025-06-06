@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
 import * as Icons from '@osrd-project/ui-icons';
@@ -8,25 +8,27 @@ import { ErrorBoundary } from './ErrorBoundary';
 
 const ICONS: Array<{ name: string; icon: UiIcon }> = Object.keys(Icons).map((name) => ({
   name,
+  // eslint-disable-next-line import/namespace
   icon: Icons[name] as UiIcon,
 }));
 
-export const SearchIcons: FC<{
+export const SearchIcons: {
   size: 'sm' | 'lg';
   variant: 'base' | 'fill';
   title?: string;
   iconColor: string;
-}> = (args) => {
+} = (args) => {
+  // eslint-disable-next-line no-console
   console.log(args);
   const [search, setSearch] = useState('');
   const debounceTimer = useRef<null | number>(null);
   const debouncedOnSearch = useCallback(
-    (search: string) => {
+    (searchString: string) => {
       if (debounceTimer.current) {
         window.clearTimeout(debounceTimer.current);
       }
       debounceTimer.current = window.setTimeout(() => {
-        setSearch(search);
+        setSearch(searchString);
       }, 200);
     },
     [debounceTimer]
