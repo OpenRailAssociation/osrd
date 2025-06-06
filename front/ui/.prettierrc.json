@@ -3,5 +3,13 @@
   "singleQuote": true,
   "arrowParens": "always",
   "proseWrap": "always",
-  "trailingComma": "es5"
+  "trailingComma": "es5",
+  "overrides": [
+    {
+      "files": ["*.jsonc", ".eslintrc", "tsconfig*.json"],
+      "options": {
+        "trailingComma": "none"
+      }
+    }
+  ]
 }
