@@ -10,10 +10,8 @@ import {
 } from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
-import ImportTimetableItem from 'applications/operationalStudies/views/ImportTimetableItem';
-import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
+import ManageTrainScheduleModal from 'applications/operationalStudies/views/ManageTrainScheduleModal';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
@@ -21,7 +19,6 @@ import { Loader } from 'common/Loaders';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
 import useFilterTimetableItems from 'modules/trainschedule/components/Timetable/useFilterTimetableItems';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -170,6 +167,18 @@ const ScenarioContent = ({
   };
   return (
     <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+      {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+        <ManageTrainScheduleModal
+          displayTrainScheduleManagement={displayTrainScheduleManagement}
+          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+          upsertTimetableItems={upsertTimetableItemsWithNge}
+          removeTimetableItems={removeTimetableItemsWithNge}
+          itemIdToEdit={itemIdToEdit}
+          setItemIdToEdit={setItemIdToEdit}
+          infraState={infra.state}
+          timetableId={scenario.timetable_id}
+        />
+      )}
       <div
         data-testid="scenario-side-menu"
         className="left-column"
@@ -179,29 +188,16 @@ const ScenarioContent = ({
           <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
 
           {infra && (
-            <>
-              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
-                <TimetableManageTrainSchedule
-                  displayTrainScheduleManagement={displayTrainScheduleManagement}
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  upsertTimetableItems={upsertTimetableItemsWithNge}
-                  removeTimetableItems={removeTimetableItemsWithNge}
-                  itemIdToEdit={itemIdToEdit}
-                  setItemIdToEdit={setItemIdToEdit}
-                  infraState={infra.state}
-                />
-              )}
-              <Timetable
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                infraState={infra.state}
-                upsertTimetableItems={upsertTimetableItemsWithNge}
-                removeTimetableItems={removeTimetableItemsWithNge}
-                setItemIdToEdit={setItemIdToEdit}
-                itemIdToEdit={itemIdToEdit}
-                timetableItems={timetableItems}
-                timetableItemsWithDetails={timetableItemsWithDetails}
-              />
-            </>
+            <Timetable
+              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+              infraState={infra.state}
+              upsertTimetableItems={upsertTimetableItemsWithNge}
+              removeTimetableItems={removeTimetableItemsWithNge}
+              setItemIdToEdit={setItemIdToEdit}
+              itemIdToEdit={itemIdToEdit}
+              timetableItems={timetableItems}
+              timetableItemsWithDetails={timetableItemsWithDetails}
+            />
           )}
         </div>
       </div>
@@ -229,22 +225,6 @@ const ScenarioContent = ({
             className="scenario-loader"
             childClass="scenario-loader-msg"
           />
-        )}
-        {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-          displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-          <div className="scenario-managetrainschedule" data-testid="manage-train-schedule">
-            <ManageTrainScheduleContextProvider>
-              <ManageTrainSchedule />
-            </ManageTrainScheduleContextProvider>
-          </div>
-        )}
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
-          <div className="scenario-managetrainschedule">
-            <ImportTimetableItem
-              timetableId={scenario.timetable_id}
-              upsertTimetableItems={upsertTimetableItemsWithNge}
-            />
-          </div>
         )}
         <div className="scenario-results">
           {isMacro ? (
