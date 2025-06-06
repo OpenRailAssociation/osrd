@@ -8,6 +8,7 @@ import useScenarioQueryParams from 'applications/operationalStudies/hooks/useSce
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import ScenarioHeader from '../v2/components/ScenarioHeader';
 
 const Scenario = () => {
   const { scenario } = useScenario();
@@ -24,11 +25,8 @@ const Scenario = () => {
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
-      <NavBarSNCF
-        appName={
-          <BreadCrumbs project={scenario.project} study={scenario.study} scenario={scenario} />
-        }
-      />
+      <ScenarioHeader scenario={scenario} infra={infra} />
+
       <ScenarioContent scenario={scenario} infra={infra} infraMetadata={infraData} />
     </ScenarioContextProvider>
   );
