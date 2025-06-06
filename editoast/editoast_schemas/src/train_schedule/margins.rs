@@ -10,9 +10,10 @@ editoast_common::schemas! {
     Margins,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Educe, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Educe, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
+#[serde(remote = "Self")]
 pub struct Margins {
     #[schema(inline)]
     pub boundaries: Vec<NonBlankString>,
@@ -28,19 +29,22 @@ impl<'de> Deserialize<'de> for Margins {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct InternalMargins {
-            boundaries: Vec<NonBlankString>,
-            values: Vec<MarginValue>,
-        }
-
-        let InternalMargins { boundaries, values } = InternalMargins::deserialize(deserializer)?;
-        if boundaries.len() + 1 != values.len() {
+        let margins = Margins::deserialize(deserializer)?;
+        if margins.boundaries.len() + 1 != margins.values.len() {
             return Err(serde::de::Error::custom(
                 "It's expected to have one more value than boundaries",
             ));
         }
-        Ok(Margins { boundaries, values })
+        Ok(margins)
+    }
+}
+
+impl Serialize for Margins {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Margins::serialize(self, serializer)
     }
 }
 

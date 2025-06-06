@@ -70,9 +70,10 @@ pub struct EffortCurveConditions {
     power_restriction_code: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, ToSchema, Educe)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]
+#[serde(remote = "Self")]
 pub struct EffortCurve {
     #[educe(Hash(method(editoast_common::hash_float_slice::<3,_>)))]
     #[schema(min_items = 2, example = json!([0.0, 2.958, 46.719]))]
@@ -89,49 +90,53 @@ impl<'de> Deserialize<'de> for EffortCurve {
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct InnerParams {
-            speeds: Vec<f64>,
-            max_efforts: Vec<f64>,
-        }
-
-        let inner = InnerParams::deserialize(deserializer)?;
+        let effort_curve = EffortCurve::deserialize(deserializer)?;
 
         // Validate the curve
-        if inner.max_efforts.len() != inner.speeds.len() {
+        if effort_curve.max_efforts.len() != effort_curve.speeds.len() {
             return Err(serde::de::Error::custom(
                 "effort curve invalid, max_efforts and speeds arrays should have the same length",
             ));
         }
 
-        if inner.max_efforts.len() < 2 {
+        if effort_curve.max_efforts.len() < 2 {
             return Err(serde::de::Error::custom(
                 "effort curve should have at least 2 points.",
             ));
         }
 
-        if inner.max_efforts.iter().any(|&x| x < 0.0) {
+        if effort_curve.max_efforts.iter().any(|&x| x < 0.0) {
             return Err(serde::de::Error::custom(
                 "max_efforts values must be equal or greater than 0.",
             ));
         };
 
-        if inner.speeds.iter().any(|&x| x < 0.0) {
+        if effort_curve.speeds.iter().any(|&x| x < 0.0) {
             return Err(serde::de::Error::custom(
                 "speeds values must be equal or greater than 0.",
             ));
         };
 
-        if inner.speeds.windows(2).any(|window| window[0] >= window[1]) {
+        if effort_curve
+            .speeds
+            .windows(2)
+            .any(|window| window[0] >= window[1])
+        {
             return Err(serde::de::Error::custom(
                 "speeds values must be strictly increasing.",
             ));
         }
 
-        Ok(EffortCurve {
-            speeds: inner.speeds,
-            max_efforts: inner.max_efforts,
-        })
+        Ok(effort_curve)
+    }
+}
+
+impl Serialize for EffortCurve {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        EffortCurve::serialize(self, serializer)
     }
 }
 

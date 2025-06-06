@@ -21,8 +21,9 @@ pub enum ReceptionSignal {
     ShortSlipStop,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
+#[serde(remote = "Self")]
 pub struct ScheduleItem {
     /// Position on the path of the schedule item.
     #[schema(inline)]
@@ -49,33 +50,25 @@ impl<'de> Deserialize<'de> for ScheduleItem {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Internal {
-            pub at: NonBlankString,
-            pub arrival: Option<PositiveDuration>,
-            pub stop_for: Option<PositiveDuration>,
-            #[serde(default)]
-            pub reception_signal: ReceptionSignal,
-            #[serde(default)]
-            pub locked: bool,
-        }
-        let internal = Internal::deserialize(deserializer)?;
-
+        let schedule_item = ScheduleItem::deserialize(deserializer)?;
         // Check that the reception_signal is Open if stop_for duration is None
-        if internal.reception_signal != ReceptionSignal::Open && internal.stop_for.is_none() {
+        if schedule_item.reception_signal != ReceptionSignal::Open
+            && schedule_item.stop_for.is_none()
+        {
             return Err(serde::de::Error::custom(
                 "Field reception_signal must be `Open` if stop_for is None",
             ));
         }
+        Ok(schedule_item)
+    }
+}
 
-        Ok(Self {
-            at: internal.at,
-            arrival: internal.arrival,
-            stop_for: internal.stop_for,
-            reception_signal: internal.reception_signal,
-            locked: internal.locked,
-        })
+impl Serialize for ScheduleItem {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ScheduleItem::serialize(self, serializer)
     }
 }
 

@@ -36,7 +36,8 @@ editoast_common::schemas! {
     StdcmSearchEnvironment,
 }
 
-#[derive(ToSchema)]
+#[derive(Deserialize, ToSchema)]
+#[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
 struct StdcmSearchEnvironmentCreateForm {
     infra_id: i64,
@@ -55,46 +56,31 @@ impl<'de> Deserialize<'de> for StdcmSearchEnvironmentCreateForm {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Internal {
-            infra_id: i64,
-            electrical_profile_set_id: Option<i64>,
-            work_schedule_group_id: Option<i64>,
-            temporary_speed_limit_group_id: Option<i64>,
-            timetable_id: i64,
-            search_window_begin: DateTime<Utc>,
-            search_window_end: DateTime<Utc>,
-            enabled_from: DateTime<Utc>,
-            enabled_until: DateTime<Utc>,
-        }
-        let internal = Internal::deserialize(deserializer)?;
-
+        let create_form = StdcmSearchEnvironmentCreateForm::deserialize(deserializer)?;
         // Check dates
-        if internal.search_window_begin >= internal.search_window_end {
+        if create_form.search_window_begin >= create_form.search_window_end {
             return Err(SerdeError::custom(format!(
                 "The search environment simulation window begin '{}' must be before the end '{}'",
-                internal.search_window_begin, internal.search_window_end
+                create_form.search_window_begin, create_form.search_window_end
             )));
         }
-        if internal.enabled_from >= internal.enabled_until {
+        if create_form.enabled_from >= create_form.enabled_until {
             return Err(SerdeError::custom(format!(
                 "The search environment enabled window begin '{}' must be before the end '{}'",
-                internal.enabled_from, internal.enabled_until
+                create_form.enabled_from, create_form.enabled_until
             )));
         }
+        Ok(create_form)
+    }
+}
 
-        Ok(StdcmSearchEnvironmentCreateForm {
-            infra_id: internal.infra_id,
-            electrical_profile_set_id: internal.electrical_profile_set_id,
-            work_schedule_group_id: internal.work_schedule_group_id,
-            temporary_speed_limit_group_id: internal.temporary_speed_limit_group_id,
-            timetable_id: internal.timetable_id,
-            search_window_begin: internal.search_window_begin,
-            search_window_end: internal.search_window_end,
-            enabled_from: internal.enabled_from,
-            enabled_until: internal.enabled_until,
-        })
+#[cfg(test)]
+impl Serialize for StdcmSearchEnvironmentCreateForm {
+    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        StdcmSearchEnvironmentCreateForm::serialize(self, serializer)
     }
 }
 
