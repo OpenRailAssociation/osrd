@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
-import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
@@ -19,6 +18,8 @@ import SimulationResults from 'applications/operationalStudies/views/SimulationR
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import i18n from 'i18n';
+import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
@@ -26,7 +27,6 @@ import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
-import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
 import MicroMacroSwitch from '../MicroMacroSwitch';
 import NGE from '../NGE';
@@ -152,106 +152,122 @@ const ScenarioContent = ({
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
+  function handleConflictClick(conflict: ConflictWithTrainNames): void {
+    // Scroll to the timetable item or highlight it when a conflict is clicked
+    // For now, just select the first involved train if present
+    if (conflict.trainIds && conflict.trainIds.length > 0) {
+      setItemIdToEdit(conflict.trainIds[0]);
+      setCollapsedTimetable(false);
+    }
+  }
   return (
     <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
       <div data-testid="scenario-side-menu" className="left-column">
-          <div className="scenario-sidemenu">
-            <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
+        <div className="scenario-sidemenu">
+          <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
 
-            {infra && (
-              <>
-                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
-                  <TimetableManageTrainSchedule
-                    displayTrainScheduleManagement={displayTrainScheduleManagement}
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    upsertTimetableItems={upsertTimetableItemsWithNge}
-                    removeTimetableItems={removeTimetableItemsWithNge}
-                    itemIdToEdit={itemIdToEdit}
-                    setItemIdToEdit={setItemIdToEdit}
-                    infraState={infra.state}
-                  />
-                )}
-                <Timetable
+          {infra && (
+            <>
+              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+                <TimetableManageTrainSchedule
+                  displayTrainScheduleManagement={displayTrainScheduleManagement}
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  infraState={infra.state}
-                  conflicts={conflicts}
                   upsertTimetableItems={upsertTimetableItemsWithNge}
                   removeTimetableItems={removeTimetableItemsWithNge}
-                  setItemIdToEdit={setItemIdToEdit}
                   itemIdToEdit={itemIdToEdit}
-                  timetableItems={timetableItems}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  setItemIdToEdit={setItemIdToEdit}
+                  infraState={infra.state}
                 />
-              </>
-            )}
-          </div>
-        </div>
-      <div className="center-column">
-          {collapsedTimetable && (
-            <button
-              data-testid="timetable-collapse-button"
-              className="timetable-collapse-button"
-              type="button"
-              aria-label={t('main.toggleTimetable')}
-              onClick={() => setCollapsedTimetable(false)}
-            >
-              <ChevronRight />
-            </button>
-          )}
-          {!isInfraLoaded &&
-            !isMacro &&
-            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
-            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
-              <ScenarioLoaderMessage infraState={infra?.state} />
-            )}
-          {isMacro && (!ngeDto || ngeIsLoading) && (
-            <Loader
-              msg={t('main.loadingMacroEditor')}
-              className="scenario-loader"
-              childClass="scenario-loader-msg"
-            />
-          )}
-          {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-            displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-            <div className="scenario-managetrainschedule" data-testid="manage-train-schedule">
-              <ManageTrainScheduleContextProvider>
-                <ManageTrainSchedule />
-              </ManageTrainScheduleContextProvider>
-            </div>
-          )}
-          {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
-            <div className="scenario-managetrainschedule">
-              <ImportTimetableItem
-                timetableId={scenario.timetable_id}
+              )}
+              <Timetable
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                infraState={infra.state}
+                conflicts={conflicts}
                 upsertTimetableItems={upsertTimetableItemsWithNge}
+                removeTimetableItems={removeTimetableItemsWithNge}
+                setItemIdToEdit={setItemIdToEdit}
+                itemIdToEdit={itemIdToEdit}
+                timetableItems={timetableItems}
+                timetableItemsWithDetails={timetableItemsWithDetails}
               />
-            </div>
+            </>
           )}
-          <div className="scenario-results">
-            {isMacro ? (
-              <div className="h-100 p-1">
-                <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
-              </div>
-            ) : (
-              isInfraLoaded &&
-              infra && (
-                <SimulationResults
-                  scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
-                  projectionData={projectionData}
-                  infraId={infra.id}
-                  conflicts={conflicts}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
-                  updateTrainDepartureTime={updateTrainDepartureTime}
-                />
-              )
-            )}
-          </div>
         </div>
+      </div>
+      <div className="center-column">
+        {collapsedTimetable && (
+          <button
+            data-testid="timetable-collapse-button"
+            className="timetable-collapse-button"
+            type="button"
+            aria-label={t('main.toggleTimetable')}
+            onClick={() => setCollapsedTimetable(false)}
+          >
+            <ChevronRight />
+          </button>
+        )}
+        {!isInfraLoaded &&
+          !isMacro &&
+          displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
+          displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+            <ScenarioLoaderMessage infraState={infra?.state} />
+          )}
+        {isMacro && (!ngeDto || ngeIsLoading) && (
+          <Loader
+            msg={t('main.loadingMacroEditor')}
+            className="scenario-loader"
+            childClass="scenario-loader-msg"
+          />
+        )}
+        {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+          displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
+          <div className="scenario-managetrainschedule" data-testid="manage-train-schedule">
+            <ManageTrainScheduleContextProvider>
+              <ManageTrainSchedule />
+            </ManageTrainScheduleContextProvider>
+          </div>
+        )}
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
+          <div className="scenario-managetrainschedule">
+            <ImportTimetableItem
+              timetableId={scenario.timetable_id}
+              upsertTimetableItems={upsertTimetableItemsWithNge}
+            />
+          </div>
+        )}
+        <div className="scenario-results">
+          {isMacro ? (
+            <div className="h-100 p-1">
+              <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
+            </div>
+          ) : (
+            isInfraLoaded &&
+            infra && (
+              <SimulationResults
+                scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
+                projectionData={projectionData}
+                infraId={infra.id}
+                conflicts={conflicts}
+                timetableItemsWithDetails={timetableItemsWithDetails}
+                updateTrainDepartureTime={updateTrainDepartureTime}
+              />
+            )
+          )}
+        </div>
+      </div>
       {/* TODO : add right column */}
       <div
         // style={{ display: displayConflictsList ? 'block' : 'none' }}
         className="right-column"
-      />
+      >
+        {conflicts && (
+          <ConflictsList
+            conflicts={conflicts}
+            timetableItems={[]}
+            onConflictClick={handleConflictClick}
+          />
+        )}
+      </div>
     </main>
   );
 };

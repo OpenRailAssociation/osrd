@@ -1,13 +1,12 @@
 import { useSelector } from 'react-redux';
 
-import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import ScenarioContent from 'applications/operationalStudies/components/Scenario/ScenarioContent';
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+
 import ScenarioHeader from '../v2/components/ScenarioHeader';
 
 const Scenario = () => {

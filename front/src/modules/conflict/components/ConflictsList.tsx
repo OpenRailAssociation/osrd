@@ -13,19 +13,11 @@ import addTrainNamesToConflicts from '../utils';
 
 type ConflictsListProps = {
   conflicts: Conflict[];
-  expanded: boolean;
   timetableItems: TimetableItemWithDetails[];
-  toggleConflictsList: () => void;
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 };
 
-const ConflictsList = ({
-  conflicts,
-  expanded,
-  timetableItems,
-  toggleConflictsList,
-  onConflictClick,
-}: ConflictsListProps) => {
+const ConflictsList = ({ conflicts, timetableItems, onConflictClick }: ConflictsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const enrichedConflicts = useMemo(
     () => addTrainNamesToConflicts(conflicts, timetableItems),
@@ -35,22 +27,16 @@ const ConflictsList = ({
     return null;
   }
   return (
-    <div className={cx('conflicts-list', expanded && 'expanded')}>
-      <div
-        className="conflicts-list-header"
-        role="button"
-        tabIndex={0}
-        onClick={toggleConflictsList}
-      >
+    <div className={cx('conflicts-list')}>
+      <div className="conflicts-list-header" role="button" tabIndex={0}>
         <h2>
           {t('conflictsCount', {
             count: conflicts.length,
           })}
         </h2>
-        {expanded ? <ChevronUp /> : <ChevronDown />}
       </div>
 
-      <div className={cx('conflicts-container', expanded && 'expanded')}>
+      <div className={cx('conflicts-container')}>
         {enrichedConflicts.map((conflict, index) => (
           <ConflictCard key={index} conflict={conflict} onConflictClick={onConflictClick} />
         ))}

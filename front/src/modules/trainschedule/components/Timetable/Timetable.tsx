@@ -216,15 +216,6 @@ const Timetable = ({
           })}
         />
       </div>
-      {conflicts && (
-        <ConflictsList
-          conflicts={conflicts}
-          expanded={conflictsListExpanded}
-          toggleConflictsList={toggleConflictsListExpanded}
-          timetableItems={filteredTimetableItems}
-          onConflictClick={handleConflictClick}
-        />
-      )}
     </div>
   );
 };
