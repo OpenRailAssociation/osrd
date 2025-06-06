@@ -267,6 +267,7 @@ const TrainScheduleItem = ({
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
+        isTimetableItemValid={!train.invalidReason}
       />
     </div>
   );

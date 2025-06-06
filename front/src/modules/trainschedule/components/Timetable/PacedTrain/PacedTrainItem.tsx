@@ -261,6 +261,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
+          isTimetableItemValid={!pacedTrain.invalidReason}
         />
       </div>
       {pacedTrain.isValid && (
