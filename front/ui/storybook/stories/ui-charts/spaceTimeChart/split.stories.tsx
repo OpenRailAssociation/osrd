@@ -10,7 +10,7 @@ import {
   type DrawingFunction,
   type Point,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import { clamp, keyBy } from 'lodash';
 
 import { AMBIANT_A10 } from './helpers/consts';

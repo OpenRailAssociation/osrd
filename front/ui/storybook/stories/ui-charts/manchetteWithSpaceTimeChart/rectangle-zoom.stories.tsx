@@ -12,7 +12,7 @@ import {
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import { ZoomIn } from '@osrd-project/ui-icons';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
 import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';

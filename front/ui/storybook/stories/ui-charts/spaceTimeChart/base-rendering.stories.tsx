@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SpaceTimeChart, PathLayer } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL } from './helpers/utils';

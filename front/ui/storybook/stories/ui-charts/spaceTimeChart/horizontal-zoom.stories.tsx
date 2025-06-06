@@ -8,7 +8,7 @@ import {
   type OperationalPoint,
 } from '@osrd-project/ui-charts';
 import { Button, Slider } from '@osrd-project/ui-core';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';

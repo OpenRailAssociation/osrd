@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { PATH_EXTRA_LONG, PATH_LONG, PATH_MEDIUM, PATH_NAMES, PATH_SHORT } from './helpers';
 import SampleMap from './SampleMap';

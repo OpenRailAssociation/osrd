@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import Algorithms from './Algorithms';
 import { PATH_LONG, PATH_NAMES } from './helpers';

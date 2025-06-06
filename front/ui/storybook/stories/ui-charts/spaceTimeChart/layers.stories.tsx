@@ -10,7 +10,7 @@ import {
   isConflictPickingElement,
   type Point,
 } from '@osrd-project/ui-charts';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import {
   KILOMETER,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { TimePicker, type TimePickerProps } from '@osrd-project/ui-core';
 import '@osrd-project/ui-core/dist/theme.css';

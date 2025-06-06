@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { SpaceTimeChart, PathLayer, type DataPoint, type Point } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
 import { MouseTracker } from './helpers/components';
