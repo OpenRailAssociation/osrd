@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { TrackOccupancyStandalone } from '@osrd-project/ui-charts';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import OCCUPANCY_ZONES from './assets/occupancyZones';
 import TRACKS from './assets/tracks';

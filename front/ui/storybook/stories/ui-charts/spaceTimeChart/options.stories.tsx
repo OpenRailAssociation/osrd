@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 
 import { CanvasContext, SpaceTimeChart, PathLayer, type Point } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import FileSaver from 'file-saver';
 

@@ -1,7 +1,7 @@
 import { Manchette } from '@osrd-project/ui-charts';
 import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SAMPLE_WAYPOINTS } from './assets/sampleData';
 

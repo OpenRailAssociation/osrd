@@ -6,7 +6,7 @@ import {
   Quadrilateral,
   type QuadrilateralProps,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 import { HOUR, KILOMETER } from './helpers/consts';
 import { OPERATIONAL_POINTS, PATHS, START_DATE } from './helpers/paths';

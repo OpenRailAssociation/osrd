@@ -9,7 +9,7 @@ import {
   isPathOnScreen,
   type Point,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import { keyBy } from 'lodash';
 

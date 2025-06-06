@@ -11,7 +11,7 @@ import {
   PathLayer,
   usePaths,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';
 

@@ -7,7 +7,7 @@ import {
   type Point,
   type PickingElement,
 } from '@osrd-project/ui-charts';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { OPERATIONAL_POINTS, PATHS } from './helpers/paths';
 import { X_ZOOM_LEVEL, Y_ZOOM_LEVEL } from './helpers/utils';

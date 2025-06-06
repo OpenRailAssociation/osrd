@@ -9,7 +9,7 @@ import {
   type OperationalPoint,
   type WorkSchedule,
 } from '@osrd-project/ui-charts';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 import upward from './assets/images/ScheduledMaintenanceUp.svg';
 import { KILOMETER } from './helpers/consts';

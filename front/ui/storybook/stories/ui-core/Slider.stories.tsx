@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { Slider, type SliderProps } from '@osrd-project/ui-core';
 

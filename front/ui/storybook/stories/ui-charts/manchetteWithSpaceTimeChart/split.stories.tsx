@@ -13,7 +13,7 @@ import {
 } from '@osrd-project/ui-charts';
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
 import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';

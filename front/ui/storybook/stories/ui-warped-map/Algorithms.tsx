@@ -5,7 +5,14 @@ import type { Feature, LineString } from 'geojson';
 import { Layer, type LineLayer, Source } from 'react-map-gl/maplibre';
 
 import { OSM_BASE_MAP_STYLE, OSM_SOURCE } from './helpers';
-import { BaseMap, Loader, WarpedMap, getWarping, type WarpingOptions, type SourceDefinition } from '@osrd-project/ui-warped-map';
+import {
+  BaseMap,
+  Loader,
+  WarpedMap,
+  getWarping,
+  type WarpingOptions,
+  type SourceDefinition,
+} from '@osrd-project/ui-warped-map';
 import { useAsyncMemo } from './useAsyncMemo';
 
 const SOURCES: SourceDefinition[] = [OSM_SOURCE];
