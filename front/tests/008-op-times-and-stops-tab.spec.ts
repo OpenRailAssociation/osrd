@@ -6,6 +6,7 @@ import { dualModeRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import RouteTab from './pages/operational-studies/route-tab';
+import ScenarioPage from './pages/operational-studies/scenario-page';
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
@@ -33,6 +34,7 @@ test.describe('Times and Stops Tab Verification', () => {
   let routeTab: RouteTab;
   let timesAndStopsTab: TimesAndStopsTab;
   let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
+  let scenarioPage: ScenarioPage;
 
   let project: Project;
   let study: Study;
@@ -80,12 +82,14 @@ test.describe('Times and Stops Tab Verification', () => {
         rollingStockSelector,
         timesAndStopsTab,
         timeAndStopSimulationOutputs,
+        scenarioPage,
       ] = [
         new OperationalStudiesPage(page),
         new RouteTab(page),
         new RollingStockSelector(page),
         new TimesAndStopsTab(page),
         new TimeAndStopSimulationOutputs(page),
+        new ScenarioPage(page),
       ];
 
       // Set up scenario for operational study
@@ -173,6 +177,7 @@ test.describe('Times and Stops Tab Verification', () => {
     // Add train schedule, verify results and output table data
     await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
+    await scenarioPage.toggleConflictsList();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
 
     // Scroll and extract output table data for verification

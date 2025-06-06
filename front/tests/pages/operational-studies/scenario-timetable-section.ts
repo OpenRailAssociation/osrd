@@ -69,11 +69,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly trainArrivalTime: Locator;
 
-  private readonly scenarioCollapseButton: Locator;
-
-  private readonly timetableCollapseButton: Locator;
-
-  private readonly scenarioSideMenu: Locator;
+  private readonly trainArrivalTimeLoader: Locator;
 
   private readonly emptyTimetable: Locator;
 
@@ -112,10 +108,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
-    this.trainArrivalTime = page.getByTestId('train-arrival-time');
-    this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
-    this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
-    this.scenarioSideMenu = page.getByTestId('scenario-side-menu');
+    this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
+    this.trainArrivalTimeLoader = this.trainArrivalTime.locator('.arrival-time-loader');
     this.emptyTimetable = page.locator('.empty-list');
   }
 
@@ -384,19 +378,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async getTrainArrivalTime(expectedArrivalTime: string, index = 0) {
     await expect(this.trainArrivalTime.nth(index)).toBeVisible();
     const actualArrivalTime = await this.trainArrivalTime.nth(index).textContent();
+    await this.trainArrivalTimeLoader.waitFor({ state: 'hidden' });
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
-  }
-
-  async collapseScenarioSideMenu() {
-    await expect(this.scenarioCollapseButton).toBeVisible();
-    await this.scenarioCollapseButton.click();
-    await expect(this.scenarioSideMenu).toBeHidden();
-  }
-
-  async expandScenarioSideMenu() {
-    await expect(this.timetableCollapseButton).toBeVisible();
-    await this.timetableCollapseButton.click();
-    await expect(this.scenarioSideMenu).toBeVisible();
   }
 
   async selectAllTimetableItems(

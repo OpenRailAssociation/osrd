@@ -85,6 +85,7 @@ test.describe('Validate the Scenario creation workflow', () => {
       name: updatedScenarioName,
       description: `${scenario.description} (updated)`,
       infraName: infrastructureName,
+      isUpdating: true,
     });
 
     // Navigate back to the study page to verify the updated tags

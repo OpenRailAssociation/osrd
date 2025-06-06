@@ -22,6 +22,8 @@ class ScenarioPage extends CommonPage {
 
   private readonly scenarioName: Locator;
 
+  private readonly scenarioNameContainer: Locator;
+
   private readonly scenarioDescription: Locator;
 
   private readonly scenarioInfraName: Locator;
@@ -31,6 +33,14 @@ class ScenarioPage extends CommonPage {
   private readonly createScenarioButton: Locator;
 
   private readonly scenarioTagsLabel: Locator;
+
+  private readonly conflictsButton: Locator;
+
+  private readonly conflictsList: Locator;
+
+  private readonly trainsButton: Locator;
+
+  private readonly trainList: Locator;
 
   constructor(readonly page: Page) {
     super(page);
@@ -43,12 +53,17 @@ class ScenarioPage extends CommonPage {
     this.scenarioDescriptionInput = page.locator('#scenarioDescription');
     this.scenarioInfraList = page.getByTestId('infra-list');
     this.scenarioElectricProfileSelect = page.locator('.input-group');
-    this.scenarioName = page.locator('.scenario-details-name .scenario-name');
-    this.scenarioDescription = page.locator('.scenario-details-description');
-    this.scenarioInfraName = page.locator('.scenario-infra-name');
+    this.scenarioName = page.getByTestId('scenario-name-label');
+    this.scenarioNameContainer = page.getByTestId('scenario-name-container');
+    this.scenarioDescription = page.getByTestId('scenario-details-description');
+    this.scenarioInfraName = page.getByTestId('scenario-infra-name');
     this.scenarioConfirmUpdateButton = this.scenarioEditionModal.getByTestId('update-scenario');
     this.createScenarioButton = page.getByTestId('create-scenario');
     this.scenarioTagsLabel = page.getByTestId('scenario-details-tag');
+    this.conflictsButton = page.getByTestId('conflicts-button');
+    this.conflictsList = page.getByTestId('conflicts-list');
+    this.trainsButton = page.getByTestId('trains-button');
+    this.trainList = page.getByTestId('scenario-left-column');
   }
 
   // Create a scenario based on the provided details.
@@ -103,19 +118,43 @@ class ScenarioPage extends CommonPage {
     description,
     infraName,
     tags,
+    isUpdating = false,
   }: {
     name: string;
     description: string;
     infraName: string;
     tags?: string[];
+    isUpdating?: boolean;
   }) {
     await expect(this.scenarioName).toBeVisible();
     expect(await this.scenarioName.textContent()).toContain(name);
+    // Wait for the scenario name to be clickable if not updating
+    // this is to prevent the description panel from being hidden
+    if (!isUpdating) await this.scenarioNameContainer.click();
+    const scenarioNameText = (await this.scenarioName.innerText()).slice(-1, 3);
+    expect(name).toContain(scenarioNameText);
     expect(await this.scenarioDescription.textContent()).toContain(description);
     expect(await this.scenarioInfraName.textContent()).toContain(infraName);
-
     if (tags) {
       expect(await this.scenarioTagsLabel.textContent()).toContain(tags.join(''));
+    }
+  }
+
+  async toggleConflictsList(isOpen: boolean = true) {
+    await this.conflictsButton.click();
+    if (isOpen) {
+      await expect(this.conflictsList).not.toBeVisible();
+    } else {
+      await expect(this.conflictsList).toBeVisible();
+    }
+  }
+
+  async toggletrainList(isOpen: boolean = true) {
+    await this.trainsButton.click();
+    if (isOpen) {
+      await expect(this.trainList).not.toBeVisible();
+    } else {
+      await expect(this.trainList).toBeVisible();
     }
   }
 
@@ -139,7 +178,7 @@ class ScenarioPage extends CommonPage {
   }
 
   async openScenarioEditForm() {
-    await this.scenarioDescription.hover();
+    await this.scenarioNameContainer.click();
     await this.scenarioUpdateButton.click();
   }
 
