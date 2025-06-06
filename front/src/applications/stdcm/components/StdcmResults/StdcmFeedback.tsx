@@ -21,12 +21,20 @@ const StdcmFeedback = () => {
   )
     return null;
 
-  const { tractionEngine, towedRollingStock, speedLimitByTag, totalLength, totalMass, maxSpeed } =
-    consist;
+  const {
+    tractionEngine,
+    towedRollingStock,
+    speedLimitByTag,
+    totalLength,
+    totalMass,
+    maxSpeed,
+    loadingGauge,
+  } = consist;
 
   const tractionEngineName = tractionEngine.name;
   const towedRollingStockName = towedRollingStock?.name ?? '-';
   const consistCode = speedLimitByTag ?? '-';
+  const consistLoadingGauge = loadingGauge;
   const consistLength = `${totalLength} m`;
   const consistMass = `${totalMass} t`;
   const consistSpeed = `${Math.round(maxSpeed)} km/h`;
@@ -45,6 +53,7 @@ ${t('mailFeedback.simulationDetails')}:
 ${t('consist.tractionEngine')}: ${tractionEngineName}
 ${t('consist.towedRollingStock')}: ${towedRollingStockName}
 ${t('consist.compositionCode')}: ${consistCode}
+${t('consist.loadingGauge')}: ${consistLoadingGauge}
 ${t('consist.tonnage')}: ${consistMass}
 ${t('consist.length')}: ${consistLength}
 ${t('consist.maxSpeed')}: ${consistSpeed}
