@@ -1,5 +1,5 @@
 .scenario {
-  height: 100vh;
+  height: calc(100vh - 40px);
   background-color: var(--ambientB10);
   font-family: 'IBM Plex Sans';
 
@@ -90,39 +90,6 @@
     padding-bottom: 8px;
     z-index: 1;
     background-color: var(--coolgray1);
-  }
-
-  .scenario-timetable-managetrainschedule {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    z-index: 3;
-    background-color: #d7d7d7aa;
-    border-radius: 4px;
-    animation: fadein 1s;
-    backdrop-filter: blur(4px);
-
-    .scenario-timetable-managetrainschedule-header {
-      display: flex;
-      flex-direction: column;
-      padding: 8px 8px 0;
-
-      .custom-control-label {
-        padding-top: 0;
-      }
-
-      .input-icon {
-        margin-bottom: 2px;
-      }
-    }
-
-    .scenario-timetable-managetrainschedule-body {
-      padding: 8px;
-      height: 100%;
-    }
   }
 
   .scenario-sidemenu {
@@ -859,25 +826,6 @@
           height: 112px;
         }
       }
-    }
-  }
-
-  .scenario-managetrainschedule {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    top: 0;
-    left: 0;
-    background-color: var(--coolgray1);
-    z-index: 3;
-    height: 100%;
-    width: 100%;
-    padding-left: 8px;
-    animation: fadein 1s;
-    overflow: auto;
-
-    .invalid-feedback {
-      font-size: 0.7rem;
     }
   }
 

@@ -19,7 +19,7 @@ import AddTrainScheduleButton from './AddTrainScheduleButton';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
-type TimetableManageTrainScheduleProps = {
+export type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   itemIdToEdit?: TimetableItemId;
   setDisplayTrainScheduleManagement: (type: string) => void;

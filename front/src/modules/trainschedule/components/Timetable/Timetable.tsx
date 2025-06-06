@@ -10,7 +10,6 @@ import { Virtualizer } from 'virtua';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
-import i18n from 'i18n';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import {
