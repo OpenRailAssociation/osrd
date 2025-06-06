@@ -15,15 +15,30 @@ import useAuth from 'utils/hooks/useAuth';
 type ScenarioHeaderProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
+  toggleTimeTable: () => void;
+  toggleConflictsList: () => void;
 };
 
-const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
+const ScenarioHeader = ({
+  scenario,
+  infra,
+  toggleConflictsList,
+  toggleTimeTable,
+}: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
 
   const { t } = useTranslation('operational-studies');
-  const [activeBoards, setActiveBoards] = useState<string[]>([]);
+  const [activeBoards, setActiveBoards] = useState<string[]>([
+    'Trains',
+    'Map',
+    'Macro',
+    'STD',
+    'SDD',
+    'Table',
+    'Conflicts',
+  ]);
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
     username: false,
@@ -33,7 +48,7 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLButtonElement>(null);
 
-  const boards = ['Traits', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
+  const boards = ['Trains', 'Map', 'Macro', 'STD', 'SDD', 'Table', 'Conflicts'];
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -129,6 +144,11 @@ const ScenarioHeader = ({ scenario, infra }: ScenarioHeaderProps) => {
                   })}
                   type="button"
                   onClick={() => {
+                    if (board === 'Conflicts') {
+                      toggleConflictsList();
+                    } else if (board === 'Trains') {
+                      toggleTimeTable();
+                    }
                     toggleBoard(board);
                   }}
                 >
