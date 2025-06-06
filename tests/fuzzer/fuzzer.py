@@ -337,7 +337,7 @@ def _get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> _RollingSt
     :param rolling_stock_name: name of the rolling stock
     :return: ID the rolling stock
     """
-    session = next(conftest.session())
+    session = conftest.session_no_fixture()
     return _RollingStock(
         rolling_stock_name,
         conftest.get_rolling_stock(session, editoast_url, rolling_stock_name),
@@ -620,7 +620,7 @@ _to_ms = _to_mm
 if __name__ == "__main__":
     infra_id = get_infra(_EDITOAST_URL, _INFRA_NAME)
     new_scenario = create_scenario(_EDITOAST_URL, infra_id)
-    session = next(conftest.session())
+    session = conftest.session_no_fixture()
     if _ROLLING_STOCK_NAME == "fast_rolling_stock":
         try:
             _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME)

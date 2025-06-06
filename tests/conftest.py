@@ -50,6 +50,13 @@ def etcs_infra(session: Session) -> Iterator[Infra]:
 
 @pytest.fixture(scope="session")
 def session() -> Iterator[Session]:
+    yield session_no_fixture()
+
+
+def session_no_fixture() -> Session:
+    """
+    Used to generate a session without calling a fixture, useful for standalone scripts (e.g. fuzzer)
+    """
     # A failed request will retry up to 5 times with the following timings [2, 4, 8, 16, 32] for a total of 62 seconds
     retry_strategy = Retry(
         total=5,
@@ -60,7 +67,7 @@ def session() -> Iterator[Session]:
     session = Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    yield session
+    return session
 
 
 @pytest.fixture
