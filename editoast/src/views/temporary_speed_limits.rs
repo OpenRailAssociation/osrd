@@ -30,7 +30,9 @@ crate::routes! {
     "/temporary_speed_limit_group" => create_temporary_speed_limit_group,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Deserialize, ToSchema)]
+#[serde(remote = "Self")]
+#[cfg_attr(test, derive(Serialize))]
 struct TemporarySpeedLimitItemForm {
     start_date_time: NaiveDateTime,
     end_date_time: NaiveDateTime,
@@ -39,7 +41,8 @@ struct TemporarySpeedLimitItemForm {
     obj_id: String,
 }
 
-#[derive(Serialize, Deserialize, ToSchema)]
+#[derive(Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
 struct TemporarySpeedLimitCreateForm {
     speed_limit_group_name: String,
     #[schema(inline)]
@@ -71,38 +74,24 @@ impl<'de> Deserialize<'de> for TemporarySpeedLimitItemForm {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Internal {
-            start_date_time: NaiveDateTime,
-            end_date_time: NaiveDateTime,
-            track_ranges: Vec<DirectionalTrackRange>,
-            speed_limit: f64,
-            obj_id: String,
-        }
-        let Internal {
-            start_date_time,
-            end_date_time,
-            track_ranges,
-            speed_limit,
-            obj_id,
-        } = Internal::deserialize(deserializer)?;
-
-        // Validation checks
-
-        if end_date_time <= start_date_time {
+        let speed_limit = TemporarySpeedLimitItemForm::deserialize(deserializer)?;
+        if speed_limit.end_date_time <= speed_limit.start_date_time {
             return Err(SerdeError::custom(format!(
-                "The temporary_speed_limit start date '{start_date_time}' must be before the end date '{end_date_time}'"
+                "The temporary_speed_limit start date '{}' must be before the end date '{}'",
+                speed_limit.start_date_time, speed_limit.end_date_time,
             )));
         }
+        Ok(speed_limit)
+    }
+}
 
-        Ok(TemporarySpeedLimitItemForm {
-            start_date_time,
-            end_date_time,
-            track_ranges,
-            speed_limit,
-            obj_id,
-        })
+#[cfg(test)]
+impl Serialize for TemporarySpeedLimitItemForm {
+    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        TemporarySpeedLimitItemForm::serialize(self, serializer)
     }
 }
 

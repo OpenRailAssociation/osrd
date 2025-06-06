@@ -88,7 +88,8 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
     }
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(remote = "Self")]
 struct WorkScheduleItemForm {
     pub start_date_time: DateTime<Utc>,
     pub end_date_time: DateTime<Utc>,
@@ -103,32 +104,24 @@ impl<'de> Deserialize<'de> for WorkScheduleItemForm {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Internal {
-            start_date_time: DateTime<Utc>,
-            end_date_time: DateTime<Utc>,
-            track_ranges: Vec<TrackRange>,
-            obj_id: String,
-            work_schedule_type: WorkScheduleType,
-        }
-        let internal = Internal::deserialize(deserializer)?;
-
+        let item_form = WorkScheduleItemForm::deserialize(deserializer)?;
         // Check dates
-        if internal.start_date_time >= internal.end_date_time {
+        if item_form.start_date_time >= item_form.end_date_time {
             return Err(SerdeError::custom(format!(
                 "The work_schedule start date '{}' must be before the end date '{}'",
-                internal.start_date_time, internal.end_date_time
+                item_form.start_date_time, item_form.end_date_time
             )));
         }
+        Ok(item_form)
+    }
+}
 
-        Ok(WorkScheduleItemForm {
-            start_date_time: internal.start_date_time,
-            end_date_time: internal.end_date_time,
-            track_ranges: internal.track_ranges,
-            obj_id: internal.obj_id,
-            work_schedule_type: internal.work_schedule_type,
-        })
+impl Serialize for WorkScheduleItemForm {
+    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        WorkScheduleItemForm::serialize(self, serializer)
     }
 }
 

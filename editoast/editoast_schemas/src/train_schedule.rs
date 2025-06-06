@@ -63,7 +63,8 @@ editoast_common::schemas! {
     TrainSchedule,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Serialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(remote = "Self")]
 pub struct TrainSchedule {
     pub train_name: String,
     #[serde(default)]
@@ -100,41 +101,15 @@ impl<'de> Deserialize<'de> for TrainSchedule {
     where
         D: serde::Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        #[serde(deny_unknown_fields)]
-        struct Internal {
-            train_name: String,
-            #[serde(default)]
-            labels: Vec<String>,
-            rolling_stock_name: String,
-            start_time: DateTime<Utc>,
-            path: Vec<PathItem>,
-            #[serde(default)]
-            schedule: Vec<ScheduleItem>,
-            #[serde(default)]
-            margins: Margins,
-            #[serde(default)]
-            initial_speed: f64,
-            #[serde(default)]
-            comfort: Comfort,
-            constraint_distribution: Distribution,
-            #[serde(default)]
-            speed_limit_tag: Option<NonBlankString>,
-            #[serde(default)]
-            power_restrictions: Vec<PowerRestrictionItem>,
-            #[serde(default)]
-            options: TrainScheduleOptions,
-            category: Option<TrainCategory>,
-        }
-        let internal = Internal::deserialize(deserializer)?;
+        let train_schedule = TrainSchedule::deserialize(deserializer)?;
 
         // Look for invalid path waypoint reference
-        let path_ids: HashSet<_> = internal.path.iter().map(|p| &p.id).collect();
-        if path_ids.len() != internal.path.len() {
+        let path_ids: HashSet<_> = train_schedule.path.iter().map(|p| &p.id).collect();
+        if path_ids.len() != train_schedule.path.len() {
             return Err(SerdeError::custom("Duplicate path waypoint ids"));
         }
 
-        for schedule_item in &internal.schedule {
+        for schedule_item in &train_schedule.schedule {
             if !path_ids.contains(&schedule_item.at) {
                 return Err(SerdeError::custom(format!(
                     "Invalid schedule, path waypoint '{}' not found",
@@ -143,7 +118,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             }
         }
 
-        for boundary in &internal.margins.boundaries {
+        for boundary in &train_schedule.margins.boundaries {
             if !path_ids.contains(&boundary) {
                 return Err(SerdeError::custom(format!(
                     "Invalid boundary, path waypoint '{boundary}' not found"
@@ -151,7 +126,7 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             }
         }
 
-        for power_restriction in internal.power_restrictions.iter() {
+        for power_restriction in train_schedule.power_restrictions.iter() {
             if !path_ids.contains(&power_restriction.from) {
                 return Err(SerdeError::custom(format!(
                     "Invalid power restriction, path waypoint '{}' not found",
@@ -167,11 +142,11 @@ impl<'de> Deserialize<'de> for TrainSchedule {
         }
 
         // Check scheduled points
-        let schedules: HashMap<_, _> = internal.schedule.iter().map(|s| (&s.at, s)).collect();
-        if schedules.len() != internal.schedule.len() {
+        let schedules: HashMap<_, _> = train_schedule.schedule.iter().map(|s| (&s.at, s)).collect();
+        if schedules.len() != train_schedule.schedule.len() {
             return Err(SerdeError::custom("Schedule points at the same location"));
         }
-        let first_point_id = &internal.path.first().unwrap().id;
+        let first_point_id = &train_schedule.path.first().unwrap().id;
         if schedules
             .get(first_point_id)
             .is_some_and(|s| s.arrival.is_some())
@@ -181,22 +156,16 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             ));
         }
 
-        Ok(TrainSchedule {
-            train_name: internal.train_name,
-            labels: internal.labels,
-            rolling_stock_name: internal.rolling_stock_name,
-            start_time: internal.start_time,
-            path: internal.path,
-            schedule: internal.schedule,
-            margins: internal.margins,
-            initial_speed: internal.initial_speed,
-            comfort: internal.comfort,
-            constraint_distribution: internal.constraint_distribution,
-            speed_limit_tag: internal.speed_limit_tag,
-            power_restrictions: internal.power_restrictions,
-            options: internal.options,
-            category: internal.category,
-        })
+        Ok(train_schedule)
+    }
+}
+
+impl Serialize for TrainSchedule {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        TrainSchedule::serialize(self, serializer)
     }
 }
 
