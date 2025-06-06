@@ -1,0 +1,34 @@
+.scenario-content-v2{
+    display: flex;
+    padding:8px 12px 0px 12px;
+    gap:16px;
+    .right-column, .left-column {
+        min-width: 488px;
+        height: 100vh;
+        border: 0.5px solid var(--black10);
+    }
+    @media screen and (max-width: 2400px) {
+        .scenario-right-column, .scenario-left-column {
+            min-width: 424px
+        }
+        
+    }
+    @media screen and (max-width: 1920px) {
+        .right-column, .left-column {
+            min-width: 392px
+        }
+        
+    }
+    @media screen and (max-width: 1249px) {
+        .right-column, .left-column {
+            min-width: 360px
+        }
+        
+    }
+    .center-column {
+        width: 100%;
+        height: 100vh;
+        border: 0.5px solid var(--black10);
+
+    }
+}
