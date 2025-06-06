@@ -7,6 +7,8 @@ import ScenarioHeader from 'applications/operationalStudies/v2/components/Scenar
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
+import ScenarioContentV2 from '../v2/components/ScenarioContentV2';
+
 const ScenarioV2 = () => {
   const { scenario } = useScenario();
 
@@ -23,6 +25,14 @@ const ScenarioV2 = () => {
   return (
     <ScenarioContextProvider infraId={infra.id}>
       <ScenarioHeader scenario={scenario} infra={infra} />
+      <ScenarioContentV2
+        displayTimetable
+        displayConflictsList
+        displaySpeedSpaceChart
+        displayManchetteWithSpaceTimeChart
+        displaySimulationResultMap
+        displayTimeStopTable
+      />
     </ScenarioContextProvider>
   );
 };
