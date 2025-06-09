@@ -34,7 +34,7 @@
     "react": ">=18.0"
   },
   "devDependencies": {
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.1.0",
     "svgo": "3.3.2"
   }
 }
