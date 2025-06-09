@@ -213,7 +213,7 @@ thiserror.workspace = true
 tokio.workspace = true
 tokio-util = { version = "0.7.15", features = ["io", "tracing"] }
 tower = "0.5.2"
-tower-http = { version = "0.6.5", features = [
+tower-http = { version = "0.6.6", features = [
   "cors",
   "fs",
   "limit",
