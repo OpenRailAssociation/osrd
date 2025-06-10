@@ -113,7 +113,7 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   // startTime is already in format ISO 8601
-  private async setFormattedStartTime(startTime: string) {
+  async setFormattedStartTime(startTime: string) {
     await this.startTimeField.fill(startTime);
     await expect(this.startTimeField).toHaveValue(startTime);
   }

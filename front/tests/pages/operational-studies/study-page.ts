@@ -58,6 +58,10 @@ class StudyPage extends CommonPage {
 
   private readonly realEndDate: Locator;
 
+  private readonly deleteScenarioButton: Locator;
+
+  private readonly confirmDeleteScenarioButton: Locator;
+
   constructor(page: Page) {
     super(page);
     this.studyName = page.getByTestId('study-name-info');
@@ -95,6 +99,16 @@ class StudyPage extends CommonPage {
     this.realEndDate = page.locator(
       '.study-details-dates-date.real-end .study-details-dates-date-value'
     );
+    this.deleteScenarioButton = page.getByTestId('delete-scenario-button');
+    this.confirmDeleteScenarioButton = page.getByTestId('confirm-delete-button');
+  }
+
+  getScenarioCardLocator(scenarioName: string): Locator {
+    return this.page.getByTestId(`scenario-card-${scenarioName}`);
+  }
+
+  getScenarioTrainCount(scenarioName: string): Locator {
+    return this.getScenarioCardLocator(scenarioName).getByTestId('scenario-trains-count');
   }
 
   // Fill the study details in the form inputs.
@@ -210,6 +224,18 @@ class StudyPage extends CommonPage {
     await this.studyDeleteConfirmButton.click();
     await expect(this.studyDeleteConfirmButton).not.toBeVisible();
     await expect(this.getStudyByName(name)).not.toBeVisible();
+  }
+
+  async verifyScenarioTrainCount(scenarioName: string, expectedTrainCount: string) {
+    await expect(this.getScenarioTrainCount(scenarioName)).toBeVisible();
+    expect(await this.getScenarioTrainCount(scenarioName).innerText()).toEqual(expectedTrainCount);
+  }
+
+  async deleteScenario(scenarioName: string) {
+    await this.getScenarioCardLocator(scenarioName).click();
+    await this.deleteScenarioButton.click();
+    await this.confirmDeleteScenarioButton.click();
+    await expect(this.getScenarioCardLocator(scenarioName)).not.toBeVisible();
   }
 }
 export default StudyPage;

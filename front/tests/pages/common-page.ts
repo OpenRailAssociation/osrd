@@ -15,6 +15,10 @@ class CommonPage {
 
   private readonly closeToastButton: Locator;
 
+  private readonly navigationToHomeButton: Locator;
+
+  private readonly navigationBackButton: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.toastContainer = page.getByTestId('toast-SNCF');
@@ -22,6 +26,8 @@ class CommonPage {
     this.tagField = page.getByTestId('chips-input');
     this.viteOverlay = page.locator('vite-plugin-checker-error-overlay');
     this.closeToastButton = page.getByTestId('close-toast-button');
+    this.navigationToHomeButton = page.getByTestId('navigation-to-home-button');
+    this.navigationBackButton = page.getByTestId('navigation-back-button');
   }
 
   // Set the tag of project, study or scenario
@@ -64,6 +70,11 @@ class CommonPage {
         }
       })
     );
+  }
+
+  async expectResourceNotFoundPage() {
+    await expect(this.navigationToHomeButton).toBeVisible();
+    await expect(this.navigationBackButton).toBeVisible();
   }
 }
 

@@ -250,27 +250,26 @@ class PacedTrainSection extends CommonPage {
   }
 
   async deletePacedTrain(
-    pacedTrainData: PacedTrainDetails,
     index: number,
-    translations: TimetableFilterTranslations
+    translations: TimetableFilterTranslations,
+    pacedTrainData?: PacedTrainDetails
   ) {
-    const { name } = pacedTrainData;
-
     const timetableItemToDelete = await this.getPacedTrainToClickableZone(index);
     await timetableItemToDelete.click();
 
-    const duplicatedPacedTrainActionButtons = await this.getActionButtonsLocators(
-      index,
-      'paced-train'
-    );
-    await duplicatedPacedTrainActionButtons.deleteItem.click();
+    const pacedTrainActionButtons = await this.getActionButtonsLocators(index, 'paced-train');
+    await pacedTrainActionButtons.deleteItem.click();
 
     await expect(this.confirmationModalDeleteButton).toBeVisible();
     await this.confirmationModalDeleteButton.click();
 
-    await this.verifyPacedTrainHasBeenDeleted(name, translations);
+    if (pacedTrainData) {
+      const { name } = pacedTrainData;
 
-    await expect(timetableItemToDelete).not.toHaveText(name); // the item at this index should not be the same
+      await this.verifyPacedTrainHasBeenDeleted(name, translations);
+
+      await expect(timetableItemToDelete).not.toHaveText(name);
+    }
   }
 
   private async verifyPacedTrainHasBeenDeleted(

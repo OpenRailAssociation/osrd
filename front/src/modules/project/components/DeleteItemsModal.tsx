@@ -22,7 +22,7 @@ export default function DeleteItemsModal({
             {t('translation:common.cancel')}
           </button>
           <button
-            data-testid="deleteProject"
+            data-testid="confirm-delete-button"
             className="btn btn-danger flex-grow-1 ml-1"
             type="button"
             onClick={() => {
