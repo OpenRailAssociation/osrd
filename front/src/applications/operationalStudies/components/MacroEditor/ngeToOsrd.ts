@@ -30,7 +30,6 @@ import {
 import {
   DEFAULT_PACED_TRAIN_PAYLOAD,
   DEFAULT_TIME_WINDOW,
-  TRAIN_SCHEDULE_FREQUENCY_ID,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
@@ -295,15 +294,14 @@ const populateSecondaryCodesInPath = async (
 };
 
 const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, dto: NetzgrafikDto) => {
-  if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
+  const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
+  const interval = new Duration({ minutes: freq.frequency });
+  if (interval >= new Duration({ hours: 24 })) {
+    // We use a 24-hour interval to indicate that a train isn't paced
     return null;
   }
-
-  const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   return {
-    interval: new Duration({
-      minutes: freq.frequency,
-    }).toISOString(),
+    interval: interval.toISOString(),
     time_window: DEFAULT_TIME_WINDOW.toISOString(),
   };
 };
