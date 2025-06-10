@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::ops::DerefMut;
+use std::str::FromStr;
 
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
@@ -9,14 +10,27 @@ use editoast_models::DbConnection;
 
 use editoast_common::units;
 use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
+use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
+use editoast_schemas::paced_train::ConstraintDistributionChangeGroup;
 use editoast_schemas::paced_train::ExceptionType;
+use editoast_schemas::paced_train::InitialSpeedChangeGroup;
+use editoast_schemas::paced_train::LabelsChangeGroup;
+use editoast_schemas::paced_train::OptionsChangeGroup;
 use editoast_schemas::paced_train::Paced;
 use editoast_schemas::paced_train::PacedTrain;
 use editoast_schemas::paced_train::PacedTrainException;
+use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
+use editoast_schemas::paced_train::RollingStockCategoryChangeGroup;
+use editoast_schemas::paced_train::RollingStockChangeGroup;
+use editoast_schemas::paced_train::SpeedLimitTagChangeGroup;
+use editoast_schemas::paced_train::StartTimeChangeGroup;
+use editoast_schemas::paced_train::TrainNameChangeGroup;
+use editoast_schemas::primitives::NonBlankString;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
@@ -26,7 +40,12 @@ use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::rolling_stock::TrainCategories;
 use editoast_schemas::rolling_stock::TrainCategory;
+use editoast_schemas::train_schedule::Comfort;
+use editoast_schemas::train_schedule::Distribution;
+use editoast_schemas::train_schedule::MarginValue;
+use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::TrainSchedule;
+use editoast_schemas::train_schedule::TrainScheduleOptions;
 use postgis_diesel::types::LineString;
 use serde::Deserialize;
 use serde_json::Value;
@@ -103,21 +122,10 @@ pub fn simple_paced_train_base() -> PacedTrain {
             .expect("Unable to parse test train schedule");
     PacedTrain {
         train_schedule_base,
-        exceptions: vec![PacedTrainException {
-            key: "exception_key".into(),
-            exception_type: ExceptionType::Created {},
-            disabled: false,
-            constraint_distribution: None,
-            initial_speed: None,
-            labels: None,
-            options: None,
-            path_and_schedule: None,
-            rolling_stock: None,
-            rolling_stock_category: None,
-            speed_limit_tag: None,
-            start_time: None,
-            train_name: None,
-        }],
+        exceptions: vec![
+            simple_created_exception_with_change_groups("exception_key_1"),
+            simple_modified_exception_with_change_groups("exception_key_2", 0),
+        ],
         paced: Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),

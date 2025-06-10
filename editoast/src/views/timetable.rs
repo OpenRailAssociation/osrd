@@ -415,12 +415,30 @@ impl Conflict {
             .iter()
             .partition_map(|train_id| match train_id.parse() {
                 Ok(TrainId::TrainSchedule(id)) => Either::Left(id),
-                Ok(TrainId::PacedTrainOccurrence {
+                Ok(TrainId::PacedTrainBaseOccurrence {
                     paced_train_id,
                     index,
                 }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
+                }),
+                Ok(TrainId::PacedTrainCreatedException {
+                    paced_train_id,
+                    exception_key,
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
+                }),
+                Ok(TrainId::PacedTrainModifiedException {
+                    paced_train_id,
+                    exception_key,
                     index,
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
+                        index,
+                        exception_key,
+                    },
                 }),
                 Err(_) => unreachable!("Unreachable case encountered while partitioning train IDs"),
             });
@@ -449,23 +467,55 @@ impl Conflict {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 struct PacedTrainOccurrenceId {
     paced_train_id: i64,
-    index: u64,
+    #[schema(inline)]
+    #[serde(flatten)]
+    occurrence_ref: PacedTrainOccurrenceRef,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[serde(untagged)]
+enum PacedTrainOccurrenceRef {
+    BaseOccurrence { index: u64 },
+    ModifiedException { index: u64, exception_key: String },
+    CreatedException { exception_key: String },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+/// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 enum TrainId {
     TrainSchedule(i64),
-    PacedTrainOccurrence { paced_train_id: i64, index: u64 },
+    PacedTrainBaseOccurrence {
+        paced_train_id: i64,
+        index: u64,
+    },
+    PacedTrainModifiedException {
+        paced_train_id: i64,
+        index: u64,
+        exception_key: String,
+    },
+    PacedTrainCreatedException {
+        paced_train_id: i64,
+        exception_key: String,
+    },
 }
 
 impl Display for TrainId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TrainSchedule(id) => write!(f, "{id}"),
-            Self::PacedTrainOccurrence {
+            Self::PacedTrainBaseOccurrence {
                 paced_train_id,
                 index,
             } => write!(f, "{paced_train_id}#{index}"),
+            Self::PacedTrainCreatedException {
+                paced_train_id,
+                exception_key,
+            } => write!(f, "{paced_train_id}@{exception_key}"),
+            Self::PacedTrainModifiedException {
+                paced_train_id,
+                exception_key,
+                index,
+            } => write!(f, "{paced_train_id}@{exception_key}#{index}"),
         }
     }
 }
@@ -474,23 +524,45 @@ impl FromStr for TrainId {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.contains('#') {
-            let parts: Vec<&str> = s.split('#').collect();
-            if parts.len() != 2 {
-                return Err("Invalid PacedTrainOccurrenceId format");
+        // Is it a paced train exception?
+        if let Some((train_id_str, exception_str)) = s.split_once('@') {
+            let paced_train_id = train_id_str
+                .parse::<i64>()
+                .map_err(|_| "Invalid train id")?;
+            // Is it a modified paced train exception?
+            if let Some((exception_key, index_str)) = exception_str.split_once('#') {
+                let index = index_str
+                    .parse::<u64>()
+                    .map_err(|_| "Invalid exception index")?;
+                Ok(TrainId::PacedTrainModifiedException {
+                    paced_train_id,
+                    exception_key: exception_key.to_string(),
+                    index,
+                })
+            } else {
+                let exception_key = exception_str.to_string();
+                Ok(TrainId::PacedTrainCreatedException {
+                    paced_train_id,
+                    exception_key,
+                })
             }
-
-            let paced_train_id = parts[0].parse::<i64>().map_err(|_| "Invalid train id")?;
-            let index = parts[1]
-                .parse::<u64>()
-                .map_err(|_| "Invalid occurence id")?;
-            Ok(TrainId::PacedTrainOccurrence {
-                paced_train_id,
-                index,
-            })
         } else {
-            let id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
-            Ok(TrainId::TrainSchedule(id))
+            // Is it a base paced train exception?
+            if let Some((train_id_str, index_str)) = s.split_once('#') {
+                let paced_train_id = train_id_str
+                    .parse::<i64>()
+                    .map_err(|_| "Invalid train id")?;
+                let index = index_str
+                    .parse::<u64>()
+                    .map_err(|_| "Invalid occurrence index")?;
+                Ok(TrainId::PacedTrainBaseOccurrence {
+                    paced_train_id,
+                    index,
+                })
+            } else {
+                let train_id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
+                Ok(TrainId::TrainSchedule(train_id))
+            }
         }
     }
 }
@@ -680,7 +752,7 @@ fn build_conflict_core_request(
                 _ => continue,
             };
 
-            let key = TrainId::PacedTrainOccurrence {
+            let key = TrainId::PacedTrainBaseOccurrence {
                 paced_train_id: paced_train.id,
                 index: index as u64,
             }
@@ -718,6 +790,8 @@ mod tests {
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
     use core_client::simulation::SpeedLimitProperties;
+    use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
+    use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
     use editoast_schemas::paced_train::ExceptionType;
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
@@ -1011,6 +1085,10 @@ mod tests {
             start_time: paced_start_time,
             time_window: chrono::Duration::try_hours(2).unwrap(),
             interval: paced_interval,
+            exceptions: vec![
+                simple_created_exception_with_change_groups("exception_key_1"),
+                simple_modified_exception_with_change_groups("exception_key_2", 0),
+            ],
             ..Default::default()
         };
         let paced_trains = vec![paced_train.clone()];
@@ -1090,5 +1168,32 @@ mod tests {
             paced_1_requirements.routing_requirements,
             vec![routing_requirement]
         );
+    }
+
+    #[rstest]
+    #[case("42")]
+    #[case("42#10")]
+    #[case("84@exception_21")]
+    #[case("84@exception_21#7")]
+    fn train_id_parse_and_to_string_roundtrip(#[case] id: &str) {
+        assert_eq!(id.parse::<TrainId>().unwrap().to_string(), id);
+    }
+
+    #[rstest]
+    #[case("", "Invalid train id")]
+    #[case("#", "Invalid train id")]
+    #[case("@", "Invalid train id")]
+    #[case("@#", "Invalid train id")]
+    #[case("22#", "Invalid occurrence index")]
+    #[case("22@#", "Invalid exception index")]
+    #[case("22@#zero", "Invalid exception index")]
+    #[case("zero#", "Invalid train id")]
+    #[case("zero@", "Invalid train id")]
+    #[case("zero@#", "Invalid train id")]
+    #[case("22#zero", "Invalid occurrence index")]
+    #[case("22@key#", "Invalid exception index")]
+    #[case("22@key#zero", "Invalid exception index")]
+    fn train_id_parse_fails(#[case] id: &str, #[case] err: &str) {
+        assert_eq!(&id.parse::<TrainId>().unwrap_err().to_string(), err);
     }
 }

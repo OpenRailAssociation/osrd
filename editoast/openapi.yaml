@@ -4373,18 +4373,40 @@ components:
         paced_train_occurrence_ids:
           type: array
           items:
-            type: object
-            required:
-            - paced_train_id
-            - index
-            properties:
-              index:
-                type: integer
-                format: int64
-                minimum: 0
-              paced_train_id:
-                type: integer
-                format: int64
+            allOf:
+            - oneOf:
+              - type: object
+                required:
+                - index
+                properties:
+                  index:
+                    type: integer
+                    format: int64
+                    minimum: 0
+              - type: object
+                required:
+                - index
+                - exception_key
+                properties:
+                  exception_key:
+                    type: string
+                  index:
+                    type: integer
+                    format: int64
+                    minimum: 0
+              - type: object
+                required:
+                - exception_key
+                properties:
+                  exception_key:
+                    type: string
+            - type: object
+              required:
+              - paced_train_id
+              properties:
+                paced_train_id:
+                  type: integer
+                  format: int64
           description: |-
             List of paced train occurrences involved in the conflict.
             Each occurrence is identified by a `paced_train_id` and its `index`

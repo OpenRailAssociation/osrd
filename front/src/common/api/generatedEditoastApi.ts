@@ -4137,10 +4137,20 @@ export type Conflict = {
   end_time: string;
   /** List of paced train occurrences involved in the conflict.
     Each occurrence is identified by a `paced_train_id` and its `index` */
-  paced_train_occurrence_ids: {
-    index: number;
+  paced_train_occurrence_ids: ((
+    | {
+        index: number;
+      }
+    | {
+        exception_key: string;
+        index: number;
+      }
+    | {
+        exception_key: string;
+      }
+  ) & {
     paced_train_id: number;
-  }[];
+  })[];
   /** List of requirements causing the conflict */
   requirements: ConflictRequirement[];
   /** Datetime of the start of the conflict */
