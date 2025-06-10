@@ -86,7 +86,7 @@ if [ "$FAILED" -gt 0 ]; then
 | Failed Test | Status | Error | Trace | Video |
 |-------------|--------|-------|-------|--------|
 "
-
+  echo "  - Running jq to extract failed test info from $REPORT_FILE"
   while IFS=$'\t' read -r test_name status message; do
     trace_path="extracted-artifact/${test_name}/trace.zip"
     echo "🔎 Checking trace for test: '$test_name'"
@@ -103,7 +103,6 @@ if [ "$FAILED" -gt 0 ]; then
     escaped_test_name="${test_name//|/\\|}"
     escaped_message="${message//|/\\|}"
     SUMMARY+="| $escaped_test_name | $status | $escaped_message | $trace_link | [Video](#) |\n"
-        echo "  - Running jq to extract failed test info from $REPORT_FILE"
   done < <(
     jq -r --arg icon_fail "$ICON_FAIL" '
       .results.tests[]
