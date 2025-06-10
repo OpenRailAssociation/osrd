@@ -368,7 +368,7 @@ const Study = () => {
               onDeselectAll={() => setSelectedScenarioIds([])}
               onDelete={handleDeleteScenario}
               item="scenario"
-              dataTestId="deleteScenarios"
+              dataTestId="delete-scenario-button"
             />
           )}
 

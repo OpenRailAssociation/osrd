@@ -28,11 +28,16 @@ export default function ErrorBoundary() {
           )}
 
           <Link to="/">
-            <button type="button" className="btn btn-primary btn-sm px-2">
+            <button
+              data-testid="navigation-to-home-button"
+              type="button"
+              className="btn btn-primary btn-sm px-2"
+            >
               {t('common.navigation.goHome')}
             </button>
           </Link>
           <button
+            data-testid="navigation-back-button"
             className="btn btn-primary btn-sm px-2 ml-2"
             type="button"
             onClick={() => navigate(-1)}

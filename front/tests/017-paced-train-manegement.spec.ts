@@ -266,9 +266,9 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Delete the duplicated paced train
     await pacedTrainSection.deletePacedTrain(
-      DUPLICATED_PACED_TRAIN_DETAILS,
       DUPLICATED_PACED_TRAIN_INDEX,
-      translations
+      translations,
+      DUPLICATED_PACED_TRAIN_DETAILS
     );
 
     // Verify global item counter has one less paced train

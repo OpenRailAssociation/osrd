@@ -112,7 +112,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
-    this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
+    this.trainArrivalTime = page.getByTestId('train-arrival-time');
     this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
     this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
     this.scenarioSideMenu = page.getByTestId('scenario-side-menu');
@@ -381,9 +381,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.closeToastNotification();
   }
 
-  async getTrainArrivalTime(expectedArrivalTime: string) {
-    await expect(this.trainArrivalTime).toBeVisible();
-    const actualArrivalTime = await this.trainArrivalTime.textContent();
+  async getTrainArrivalTime(expectedArrivalTime: string, index = 0) {
+    await expect(this.trainArrivalTime.nth(index)).toBeVisible();
+    const actualArrivalTime = await this.trainArrivalTime.nth(index).textContent();
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
   }
 

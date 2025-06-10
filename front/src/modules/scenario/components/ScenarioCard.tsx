@@ -86,7 +86,7 @@ export default function ScenarioCard({
           <img src={infraLogo} alt="infra logo" className="infra-logo" />
           {scenario.infra_name}
         </div>
-        <div className="scenario-card-trains-count ml-auto">
+        <div data-testid="scenario-trains-count" className="scenario-card-trains-count ml-auto">
           <span className="mr-1">
             <MdTrain />
           </span>
