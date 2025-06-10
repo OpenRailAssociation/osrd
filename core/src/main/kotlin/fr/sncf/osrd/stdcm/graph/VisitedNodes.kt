@@ -172,30 +172,7 @@ data class VisitedNodes(val minDelay: Double) {
             return true
         }
         val visitedRanges = visitedRangesPerLocation[parameters.fingerprint] ?: return false
-        val timeData = parameters.timeData
-
-        val visitingRange =
-            Range.closedOpen(
-                timeData.earliestReachableTime,
-                timeData.earliestReachableTime + timeData.maxDepartureDelayingWithoutConflict
-            )
-        if (visitingRange.isEmpty) {
-            // Special case for empty range, `subRangeMap` returns an empty list
-            val value = visitedRanges.get(timeData.earliestReachableTime) ?: return false
-            return value.isVisited(visitingRange, parameters)
-        }
-        val subMap = visitedRanges.subRangeMap(visitingRange)
-
-        // Keep track of any range that isn't covered by the map
-        val uncovered = TreeRangeSet.create<Double>()
-        uncovered.add(visitingRange)
-        for (entry in subMap.asMapOfRanges()) {
-            uncovered.remove(entry.key)
-            // Value isn't visited: we can early return "false"
-            if (!entry.value.isVisited(entry.key, parameters)) return false
-        }
-        // If any area is left uncovered, we still return "false"
-        return uncovered.isEmpty
+        return isMapVisited(visitedRanges, parameters)
     }
 
     /** Marks the input as visited */
@@ -226,10 +203,34 @@ data class VisitedNodes(val minDelay: Double) {
             startTime + timeData.maxDepartureDelayingWithoutConflict + minDelay
         val endRangeExtraTravelTime = endRangeExtraStopTime + parameters.maxMarginDuration
 
+        markAsVisited(
+            visitedRanges,
+            startTime,
+            endRangeDepartureTimeChange,
+            endRangeExtraStopTime,
+            endRangeExtraTravelTime,
+            timeData.totalStopDuration,
+            parameters.nodeCost,
+        )
+    }
+
+    /**
+     * Marks the given time ranges as visited in the map. Adds 3 ranges: visited with added
+     * departure time, with extra stop duration, and with added travel time.
+     */
+    private fun markAsVisited(
+        map: RangeMap<Double, ConditionallyVisitedRange>,
+        startTime: Double,
+        endRangeDepartureTimeChange: Double,
+        endRangeExtraStopTime: Double,
+        endRangeExtraTravelTime: Double,
+        totalStopDuration: Double,
+        nodeCost: Double,
+    ) {
         fun putRange(start: Double, end: Double, value: ConditionallyVisitedRange) {
             if (start < end) {
                 val range = Range.closedOpen(start, end)
-                visitedRanges.merge(range, value) { a, b -> a.mergeWith(b) }
+                map.merge(range, value) { a, b -> a.mergeWith(b) }
             }
         }
 
@@ -245,16 +246,50 @@ data class VisitedNodes(val minDelay: Double) {
             endRangeDepartureTimeChange,
             endRangeExtraStopTime,
             VisitedWithAddedStopTime(
-                LinearFunction(timeData.totalStopDuration - endRangeDepartureTimeChange),
-                parameters.nodeCost,
+                LinearFunction(totalStopDuration - endRangeDepartureTimeChange),
+                nodeCost,
             )
         )
         // Visited with extra margins, starting from the end of the previous range
         putRange(
             endRangeExtraStopTime,
             endRangeExtraTravelTime,
-            VisitedWithAddedTravelTime(LinearFunction(parameters.nodeCost - endRangeExtraStopTime))
+            VisitedWithAddedTravelTime(LinearFunction(nodeCost - endRangeExtraStopTime))
         )
+    }
+
+    /**
+     * Returns true if the map already contains visited ranges for all new ranges from the given
+     * parameters.
+     */
+    private fun isMapVisited(
+        map: RangeMap<Double, ConditionallyVisitedRange>,
+        parameters: Parameters,
+    ): Boolean {
+        val timeData = parameters.timeData
+
+        val visitingRange =
+            Range.closedOpen(
+                timeData.earliestReachableTime,
+                timeData.earliestReachableTime + timeData.maxDepartureDelayingWithoutConflict
+            )
+        if (visitingRange.isEmpty) {
+            // Special case for empty range, `subRangeMap` returns an empty list
+            val value = map.get(timeData.earliestReachableTime) ?: return false
+            return value.isVisited(visitingRange, parameters)
+        }
+        val subMap = map.subRangeMap(visitingRange)
+
+        // Keep track of any range that isn't covered by the map
+        val uncovered = TreeRangeSet.create<Double>()
+        uncovered.add(visitingRange)
+        for (entry in subMap.asMapOfRanges()) {
+            uncovered.remove(entry.key)
+            // Value isn't visited: we can early return "false"
+            if (!entry.value.isVisited(entry.key, parameters)) return false
+        }
+        // If any area is left uncovered, we still return "false"
+        return uncovered.isEmpty
     }
 }
 
