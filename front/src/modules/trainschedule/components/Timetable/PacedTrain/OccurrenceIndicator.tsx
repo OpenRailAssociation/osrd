@@ -20,7 +20,9 @@ const TOOLTIP_BOTTOM_MARGIN = 24;
  * The bullet that marks each item of the list of occurrences, with its tooltip.
  */
 const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable' });
+  const { t } = useTranslation(['operational-studies', 'translation'], {
+    keyPrefix: 'main.timetable',
+  });
   const dotRef = useRef<HTMLDivElement>(null);
   const changeGroupsRef = useRef<HTMLDivElement>(null);
 
