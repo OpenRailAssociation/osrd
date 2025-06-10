@@ -86,7 +86,10 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
         title: t('name'),
         ...(isOutputTable && {
           component: ({ rowData }) => (
-            <span title={rowData.name} className="ml-2 text-nowrap overflow-hidden">
+            <span
+              title={rowData.name}
+              className="align-right-responsive m-2 text-nowrap overflow-hidden"
+            >
               {rowData.name}
             </span>
           ),
