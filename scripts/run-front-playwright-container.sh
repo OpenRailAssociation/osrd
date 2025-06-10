@@ -18,11 +18,12 @@ if [ "$(echo "$VERSION" | wc -l)" -ne 1 ]; then
 fi
 cd ..
 
-# Loop through each argument passed to the scripts, and replace --ui with --ui=host=localhost
+# Loop through each argument passed to the scripts, and replace --ui with
+# something which works in Docker containers
 args=()
 for arg in "$@"; do
   if [ "$arg" = "--ui" ]; then
-    args+=("--ui-host=localhost")
+    args+=("--ui-host=0.0.0.0" "--ui-port=8888")
   else
     args+=("$arg")
   fi
@@ -37,9 +38,11 @@ mkdir -p "$PWD/front/tests/test-saved-environment"
 
 docker run -it --rm \
   --ipc=host \
-  --network=host \
+  --network=osrd_default \
+  -p 8888:8888 \
   -v "$PWD/front/playwright-report:/app/front/playwright-report" \
   -v "$PWD/front/test-results:/app/front/test-results" \
   -v "$PWD/front/tests/test-saved-environment:/app/front/tests/test-saved-environment" \
   -u "$(stat -c %u:%g .)" \
+  -e BASE_URL="http://gateway:4000" \
   osrd-playwright:latest npx playwright test "${args[@]}"
