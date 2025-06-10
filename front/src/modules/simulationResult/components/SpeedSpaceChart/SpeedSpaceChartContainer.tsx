@@ -28,7 +28,7 @@ export type SpeedSpaceChartContainerProps = {
 
 const SPEEDSPACECHART_HEIGHT = 521.5;
 const SPEEDSPACECHART_MIN_HEIGHT = 400;
-const SPEEDSPACECHART_BACKGROUND_COLOR = 'rgb(247, 246, 238)';
+const SPEEDSPACECHART_BACKGROUND_COLOR = 'transparent';
 const SPEEDSPACECHART_PADDING_BOTTOM = 22.5;
 
 const SpeedSpaceChartContainer = ({

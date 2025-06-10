@@ -17,6 +17,7 @@ type ScenarioHeaderProps = {
   infra: InfraWithState;
   toggleTimeTable: () => void;
   toggleConflictsList: () => void;
+  toggleMacroEditor: () => void;
 };
 
 const ScenarioHeader = ({
@@ -24,6 +25,7 @@ const ScenarioHeader = ({
   infra,
   toggleConflictsList,
   toggleTimeTable,
+  toggleMacroEditor,
 }: ScenarioHeaderProps) => {
   const { username } = useAuth();
   const { openModal } = useModal();
@@ -148,6 +150,8 @@ const ScenarioHeader = ({
                       toggleConflictsList();
                     } else if (board === 'Trains') {
                       toggleTimeTable();
+                    } else if (board === 'Macro' && toggleMacroEditor) {
+                      toggleMacroEditor();
                     }
                     toggleBoard(board);
                   }}
