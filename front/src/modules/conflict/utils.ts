@@ -13,12 +13,18 @@ function getConflictTrainNames(
   const trainScheduleNames = conflict.train_schedule_ids.map((id) =>
     trainNameMap.get(formatEditoastIdToTrainScheduleId(id))
   );
-  const occurenceNames = conflict.paced_train_occurrence_ids.map(({ paced_train_id, index }) => {
-    const pacedTrainName = trainNameMap.get(formatEditoastIdToPacedTrainId(paced_train_id));
+  const occurrenceNames = conflict.paced_train_occurrence_ids.map((occurrence) => {
+    const pacedTrainName = trainNameMap.get(
+      formatEditoastIdToPacedTrainId(occurrence.paced_train_id)
+    );
     if (!pacedTrainName) return undefined;
-    return computeOccurrenceName(pacedTrainName, index);
+    if ('index' in occurrence) {
+      return computeOccurrenceName(pacedTrainName, occurrence.index);
+    }
+    // TODO handle paced train created exceptions
+    return undefined;
   });
-  return [...trainScheduleNames, ...occurenceNames].filter((name) => name !== undefined);
+  return [...trainScheduleNames, ...occurrenceNames].filter((name) => name !== undefined);
 }
 
 export default function addTrainNamesToConflicts(

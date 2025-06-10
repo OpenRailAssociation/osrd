@@ -248,6 +248,17 @@ def test_conflicts_with_reception_on_closed_signal(
     )
 
 
+def _create_paced_train_exception_payload(key: str = "exception_key_1"):
+    return {
+        "key": key,
+        "disabled": False,
+        "start_time": {
+            "value": "2024-05-22T08:16:00.000Z",
+        },
+        "train_name": {"value": "exception_train_name"},
+    }
+
+
 @pytest.mark.parametrize(
     ["paced_train_interval", "expected_conflict_types"],
     [
@@ -290,7 +301,7 @@ def test_paced_train_conflicts(
         "start_time": "2024-05-22T08:00:00.000Z",
         "train_name": "paced train",
         "paced": {"time_window": "PT1H", "interval": paced_train_interval},
-        "exceptions": [],
+        "exceptions": [_create_paced_train_exception_payload()],
     }
 
     paced_train_response = requests.post(
