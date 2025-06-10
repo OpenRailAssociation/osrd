@@ -137,7 +137,7 @@ data class VisitedNodes(val minDelay: Double) {
             range: Range<Double>,
             parameters: Parameters,
         ): Boolean {
-            val runningTimeForVisited = visitedWithTravelTime.apply(range.lowerEndpoint())
+            val runningTimeForVisited = visitedWithTravelTime.apply(range.upperEndpoint())
             return runningTimeForVisited <= parameters.nodeCost
         }
 
