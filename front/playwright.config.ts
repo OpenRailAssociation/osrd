@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { BASE_URL } from './tests/assets/constants/project-const';
+
 export default defineConfig({
   testDir: './tests',
 
@@ -16,7 +18,7 @@ export default defineConfig({
   use: {
     navigationTimeout: 30_000,
     actionTimeout: 10_000,
-    baseURL: process.env.BASE_URL || 'http://localhost:4000',
+    baseURL: BASE_URL,
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
     locale: 'fr',
