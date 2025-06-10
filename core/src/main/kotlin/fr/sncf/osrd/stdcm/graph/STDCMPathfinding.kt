@@ -1,6 +1,8 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint
+import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -25,8 +27,11 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import kotlin.Double.Companion.POSITIVE_INFINITY
+import kotlin.math.abs
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.FileOutputStream
+import kotlin.time.measureTime
 
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
@@ -58,22 +63,61 @@ fun findPath(
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
 ): STDCMResult? {
-    return STDCMPathfinding(
-            fullInfra,
-            rollingStock,
-            comfort,
-            startTime,
-            steps,
-            blockAvailability,
-            timeStep,
-            maxDepartureDelay,
-            maxRunTime,
-            tag,
-            standardAllowance,
-            pathfindingTimeout,
-            temporarySpeedLimitManager,
-        )
-        .findPath()
+    var res1: STDCMResult?
+    var res2: STDCMResult?
+    featureFlag = false
+    val time1 = measureTime {
+        res1 =
+            STDCMPathfinding(
+                fullInfra,
+                rollingStock,
+                comfort,
+                startTime,
+                steps,
+                blockAvailability,
+                timeStep,
+                maxDepartureDelay,
+                maxRunTime,
+                tag,
+                standardAllowance,
+                pathfindingTimeout,
+                temporarySpeedLimitManager,
+            )
+                .findPath()
+    }
+    featureFlag = true
+    val time2 = measureTime {
+        res2 =
+            STDCMPathfinding(
+                fullInfra,
+                rollingStock,
+                comfort,
+                startTime,
+                steps,
+                blockAvailability,
+                timeStep,
+                maxDepartureDelay,
+                maxRunTime,
+                tag,
+                standardAllowance,
+                pathfindingTimeout,
+                temporarySpeedLimitManager,
+            )
+                .findPath()
+    }
+    val str = "${time1.inWholeMilliseconds / 1_000.0},${time2.inWholeMilliseconds / 1_000.0}"
+    logger.info(str)
+    FileOutputStream("times.txt", true).bufferedWriter().use { writer ->
+        writer.write(str + "\n")
+    }
+    if (res1 == null || res2 == null) {
+        assert(res1 == null && res2 == null)
+        return null
+    }
+    assert(abs(res1!!.envelope.totalTime - res2!!.envelope.totalTime) < 5.0) {
+        "results differ: ${res1!!.envelope.totalTime}, ${res2!!.envelope.totalTime}"
+    }
+    return res1
 }
 
 class STDCMPathfinding(

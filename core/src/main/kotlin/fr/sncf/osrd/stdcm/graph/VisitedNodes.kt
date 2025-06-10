@@ -18,6 +18,8 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
 
+var featureFlag = false
+
 /**
  * This class keeps track of which nodes have already been visited.
  *
@@ -270,7 +272,12 @@ data class VisitedNodes(
         )
 
         // Mark the visited time range at the start of the current block
-        if (parameters.explorer != null && infra != null && fingerprint.startOffset == 0.meters) {
+        if (
+            featureFlag &&
+                parameters.explorer != null &&
+                infra != null &&
+                fingerprint.startOffset == 0.meters
+        ) {
             val block = parameters.explorer.getCurrentBlock()
             val mapAtStepIndex =
                 visitedAtDetector.getOrPut(parameters.fingerprint!!.waypointIndex) {

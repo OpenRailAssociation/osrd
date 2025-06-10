@@ -26,6 +26,7 @@ import okio.buffer
 import okio.source
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 
 @Parameters(commandDescription = "Debug tool to reproduce a request based on a payload json file")
 class ReproduceRequest : CliCommand {
@@ -83,26 +84,11 @@ class ReproduceRequest : CliCommand {
                 return checkNotNull(adapter.fromJson(bufferedSource))
             }
 
-            val time = measureTime {
-                if (stdcmPayloadPath != null) {
-                    logger.info("running stdcm request at $stdcmPayloadPath")
-                    STDCMEndpoint(infraManager)
-                        .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
-                }
-                if (pathfindingPayloadPath != null) {
-                    logger.info("running pathfinding request at $pathfindingPayloadPath")
-                    PathfindingBlocksEndpoint(infraManager)
-                        .run(loadRequest(pathfindingPayloadPath!!, pathfindingRequestAdapter))
-                }
-                if (simulationPayloadPath != null) {
-                    logger.info("running simulation request at $simulationPayloadPath")
-                    val electricalProfileSetManager =
-                        ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
-                    SimulationEndpoint(infraManager, electricalProfileSetManager)
-                        .run(loadRequest(simulationPayloadPath!!, SimulationRequest.adapter))
-                }
+            for (file in File("bench_payloads").listFiles()!!) {
+                logger.info("running stdcm request at $file")
+                STDCMEndpoint(infraManager)
+                    .run(loadRequest(file.toString(), stdcmRequestAdapter))
             }
-            logger.info("done in ${time.inWholeMilliseconds / 1_000.0} seconds")
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
