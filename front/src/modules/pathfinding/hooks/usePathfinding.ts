@@ -167,9 +167,25 @@ const usePathfinding = ({
       pathResult.length
     );
 
+    let validOpIndex = 0;
+
     // We update existing pathsteps with coordinates, positionOnPath and kp corresponding to the new pathfinding result
     const updatedPathSteps: (PathStep | null)[] = pathStepsInput.map((step, i) => {
       if (!step) return step;
+      if (step.isInvalid) {
+        return {
+          ...step,
+          coordinates: undefined,
+          positionOnPath: undefined,
+        };
+      }
+      const positionOnPath = pathResult.path_item_positions[validOpIndex];
+      const coordinates = getPointOnPathCoordinates(
+        trackSectionsById,
+        pathResult.track_section_ranges,
+        tracksLengthCumulativeSums,
+        positionOnPath
+      );
       const correspondingOp = suggestedOperationalPoints.find((suggestedOp) =>
         matchPathStepAndOp(step, suggestedOp)
       );
@@ -179,19 +195,15 @@ const usePathfinding = ({
       const stopFor =
         i === pathStepsInput.length - 1 && !step.stopFor ? Duration.zero : step.stopFor;
 
+      validOpIndex += 1;
       return {
         ...step,
-        positionOnPath: pathResult.path_item_positions[i],
+        positionOnPath,
         stopFor,
         theoreticalMargin,
-        coordinates: getPointOnPathCoordinates(
-          trackSectionsById,
-          pathResult.track_section_ranges,
-          tracksLengthCumulativeSums,
-          pathResult.path_item_positions[i]
-        ),
+        coordinates,
+        name: correspondingOp?.name || step.name,
         ...(correspondingOp && {
-          name: correspondingOp.name,
           uic: correspondingOp.uic,
           secondary_code: correspondingOp.ch,
           kp: correspondingOp.kp,
