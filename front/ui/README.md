@@ -24,7 +24,16 @@ To execute the test suite, run `npm run test`.
 
 ## Publishing versions
 
-TBD
+1. Go to the [new release page](//github.com/OpenRailAssociation/osrd/releases/new).
+2. In "Choose a tag", type `ui-vX.Y.Z` and click "Create new tag".
+3. In "Previous tag", pick the latest osrd-ui release and click "Generate
+   release notes".
+4. In "Release title", type "osrd-ui vX.Y.Z".
+5. Trim down the release notes by filtering out OSRD PRs, only keeping ui-*
+   material. Organize the changelog by package and highlight breaking API
+   changes.
+6. Untick "Set as latest release".
+7. Publish the release.
 
 ### Implications
 
