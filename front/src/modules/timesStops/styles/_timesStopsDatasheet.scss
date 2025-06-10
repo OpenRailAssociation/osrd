@@ -97,4 +97,15 @@
       --dsg-cell-disabled-background-color: var(--ambientB5);
     }
   }
+
+  .align-right-responsive {
+    text-align: right;
+    flex-grow: 1;
+  }
+
+  @container (max-width: 1140px) {
+    .align-right-responsive {
+      text-align: left;
+    }
+  }
 }
