@@ -68,7 +68,16 @@ const usePathfinding = ({
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const fetchOperationalPoints = useCallback(
+  /**
+   * Fetches operational point data for the given path steps using a search API call
+   * and updates each step with the matched operational point's name (if found).
+   *
+   * This is useful when the pathfinding can not be ran or fails.
+   * If pathfinding is successful, calling this function is unnecessary.
+   *
+   * @param steps - An array of `PathStep` objects to be enriched with operational point data.
+   */
+  const fetchPathStepsOperationalPointNames = useCallback(
     async (steps: PathStep[]) => {
       if (!infraId || !steps.length) return;
 
@@ -264,7 +273,7 @@ const usePathfinding = ({
 
       if (!pathfindingInput) {
         setIsMissingParam();
-        await fetchOperationalPoints(pathSteps.filter((step) => step !== null));
+        await fetchPathStepsOperationalPointNames(steps.filter((step) => step !== null));
         return;
       }
 
@@ -276,6 +285,8 @@ const usePathfinding = ({
           setIsDone();
           return;
         }
+
+        await fetchPathStepsOperationalPointNames(steps.filter((step) => step !== null));
 
         const incompatibleConstraintsCheck =
           pathfindingResult.failed_status === 'pathfinding_not_found' &&
