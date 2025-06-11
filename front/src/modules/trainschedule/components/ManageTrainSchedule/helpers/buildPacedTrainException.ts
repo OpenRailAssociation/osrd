@@ -148,7 +148,7 @@ export function generatePacedTrainException(
 /**
  * Based on a new exception, update the current exceptions list by adding, updating or removing it.
  */
-export function updatePacedTrainExceptions(
+export function updatePacedTrainExceptionsList(
   currentExceptions: PacedTrainException[],
   newException: PacedTrainException,
   occurrenceId: OccurrenceId
@@ -184,10 +184,10 @@ export function updatePacedTrainExceptions(
 }
 
 /**
- * This function is after updating a paced train when the user send the form.
+ * This function is called after updating a paced train when the user sends the form.
  * It checks if an exception change group can be removed.
- * If the paced train matches an exception change group value and if it was the last one remaining,
- * the exception is removed.
+ * If the change group value in the paced train matches the exceptions, the exception change group is removed.
+ * If the exceptions as no change group after those checks, the exception is removed.
  */
 export function checkChangeGroups(
   updatedPacedTrain: Omit<PacedTrain, 'exceptions'>,
