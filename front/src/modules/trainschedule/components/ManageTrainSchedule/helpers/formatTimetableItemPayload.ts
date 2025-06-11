@@ -110,13 +110,12 @@ export function formatPacedTrainPayload(
     exceptions,
   };
 
-  // ========== Editing a pacedtrain ==========
   if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
     );
+    // ========== user modified an occurrence ==========
     if (timetableItemToEditData.occurrenceId) {
-      // === user modified an occurrence ===
       const exception = generatePacedTrainException(
         newPacedTrain, // contains occurrence changes
         originalPacedTrain,
@@ -134,13 +133,13 @@ export function formatPacedTrainPayload(
         ...originalPacedTrain,
         exceptions: updatedExceptions,
       };
+      // ========== user modified the whole paced train ==========
     } else {
-      // === user modified the whole paced train ===
-      const updatedExceptions = checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions);
-
+      const updatedExceptionsList = checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions);
+      const newExceptionList = [...updatedExceptionsList, ...newPacedTrain.exceptions];
       newPacedTrain = {
         ...newPacedTrain,
-        exceptions: updatedExceptions,
+        exceptions: newExceptionList,
       };
     }
   }
