@@ -32,25 +32,6 @@ jobs:
       - name: Get new OpenAPI
         if: steps.changes.outputs.openapi == 'true'
         run: git show ${{ github.event.pull_request.head.sha }}:editoast/openapi.yaml > new-openapi.yaml
-      - name: Generate OpenAPI diff
-        if: steps.changes.outputs.openapi == 'true'
-        id: openapi-diff
-        run: |
-          docker run \
-            --name=openapi-diff \
-            --net=host \
-            --volume $PWD:/osrd\
-            openapitools/openapi-diff --markdown /osrd/openapi-diff.md /osrd/base-openapi.yaml /osrd/new-openapi.yaml
-          # https://trstringer.com/github-actions-multiline-strings/
-          echo "OPENAPI_DIFF<<EOF" >> $GITHUB_ENV
-          echo "## Changes in OpenAPI" >> $GITHUB_ENV
-          echo "The OpenAPI changed, see below for what changed." >> $GITHUB_ENV
-          echo "<details><summary>Summary of the OpenAPI changes (unfold for details)</summary>" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          cat openapi-diff.md >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "</details>" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
       - name: Generate Schema notification
         if: steps.changes.outputs.schemas == 'true'
         run: |
@@ -80,7 +61,5 @@ jobs:
             - [ ] please own it: notify or even prepare dedicated PR(s) to consumer projects
 
             ${{ env.SCHEMA_NOTIFICATION }}
-
-            ${{ env.OPENAPI_DIFF }}
           edit-mode: replace
           
