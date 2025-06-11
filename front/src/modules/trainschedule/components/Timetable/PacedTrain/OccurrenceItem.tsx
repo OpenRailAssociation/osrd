@@ -45,7 +45,7 @@ const OccurrenceItem = ({
   occurrence,
   isSelected,
   nextOccurrence,
-  occurrenceActions: { selectOccurrence, editOccurrence },
+  occurrenceActions: { selectOccurrence, editOccurrence, updateOccurrenceStatus },
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
@@ -72,6 +72,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.disable'),
       icon: <Skip />,
       onClick: () => {
+        updateOccurrenceStatus(occurrence, 'disabled');
         closeMenu();
       },
     },
@@ -79,6 +80,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.enable'),
       icon: <Play />,
       onClick: () => {
+        updateOccurrenceStatus(occurrence, 'enable');
         closeMenu();
       },
     },

@@ -1,26 +1,52 @@
 import { useCallback } from 'react';
 
+import { useSelector } from 'react-redux';
+import { v4 as uuidV4 } from 'uuid';
+
+import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import { updatePacedTrainExceptionsList } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatTimetableItemPayload';
 import {
   findExceptionWithOccurrenceId,
   formatPacedTrainWithOccurenceDetails,
 } from 'modules/trainschedule/helpers/pacedTrain';
-import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
+import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type {
+  OccurrenceId,
+  TimetableItem,
+  TimetableItemId,
+  TrainId,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
 type OccurrenceActionsParams = {
   pacedTrain: PacedTrainWithDetails;
+  occurrences: Occurrence[];
   selectPacedTrainToEdit: (
     pacedTrainToEdit: PacedTrainWithDetails,
     originalPacedTrain?: PacedTrainWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
+  removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
 };
 
-const useOccurrenceActions = ({ pacedTrain, selectPacedTrainToEdit }: OccurrenceActionsParams) => {
+const useOccurrenceActions = ({
+  pacedTrain,
+  occurrences,
+  selectPacedTrainToEdit,
+  upsertTimetableItems,
+  removePacedTrains,
+}: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
+
+  const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const selectOccurrence = useCallback((occurrenceId: TrainId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
@@ -64,9 +90,67 @@ const useOccurrenceActions = ({ pacedTrain, selectPacedTrainToEdit }: Occurrence
     [pacedTrain, selectPacedTrainToEdit]
   );
 
+  const updateOccurrenceStatus = useCallback(
+    (occurrence: Occurrence, status: 'disabled' | 'enable') => {
+      const occurrenceToUpdateException = findExceptionWithOccurrenceId(
+        pacedTrain.exceptions,
+        occurrence.id
+      );
+
+      // If we can enable an occurrence, it should be among the exceptions with disabled true
+      if (status === 'enable' && !occurrenceToUpdateException) {
+        throw new Error('Cannot enable an occurrence which was not disabled');
+      }
+
+      const updatedException: PacedTrainException = occurrenceToUpdateException
+        ? {
+            ...occurrenceToUpdateException,
+            disabled: status === 'disabled' ? true : undefined,
+          }
+        : {
+            key: uuidV4(),
+            occurrence_index: occurrence.occurrenceIndex,
+            disabled: true,
+          };
+
+      const updatedExceptions = updatePacedTrainExceptionsList(
+        pacedTrain.exceptions,
+        updatedException,
+        occurrence.id
+      );
+
+      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
+        ...pacedTrain,
+        exceptions: updatedExceptions,
+      });
+
+      storePacedTrain(
+        pacedTrain.id,
+        formattedPacedTrain,
+        timetableId!,
+        dispatch,
+        upsertTimetableItems,
+        removePacedTrains
+      );
+
+      // If we are disabling the selected occurrence, we want to put the selection
+      // on the first enabled occurrence chronologically
+      if (status === 'disabled' && selectedTrainId === occurrence.id) {
+        const firstEnabledOccurrence = occurrences.find(
+          (occ) => occ.id !== occurrence.id && !occ.disabled
+        );
+
+        dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
+        // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
+      }
+    },
+    [pacedTrain, occurrences, selectedTrainId]
+  );
+
   return {
     selectOccurrence,
     editOccurrence,
+    updateOccurrenceStatus,
   };
 };
 
