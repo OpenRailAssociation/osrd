@@ -9,10 +9,16 @@ import { capitalizeFirstLetter } from 'utils/strings';
 import type { Grant, Privilege, ResourceType } from '../types';
 import GrantsManagerSubjects from './GrantsManagerSubjects';
 
+function getGrantLabel(userPrivileges: Set<Privilege>): keyof typeof GRANTS_LABEL {
+  if (userPrivileges.has('can_delete')) return 'OWNER';
+  if (userPrivileges.has('can_write')) return 'WRITER';
+  if (userPrivileges.has('can_read')) return 'READER';
+  return 'NONE';
+}
+
 type GrantsManagerProps = {
   resourceId: number;
   resourceType: ResourceType;
-  userGrant?: Grant;
   userPrivileges?: Set<Privilege>;
   onChangeSuccess?: (subjectId: number, grant?: Grant) => void | Promise<void>;
 };
@@ -20,21 +26,20 @@ type GrantsManagerProps = {
 const GrantsManager = ({
   resourceId,
   resourceType,
-  userGrant,
   userPrivileges = new Set(),
   onChangeSuccess,
 }: GrantsManagerProps) => {
   const { t } = useTranslation();
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
 
+  const grantLabel = getGrantLabel(userPrivileges);
+
   return (
     <div className="grant-manager">
       <div className="grant-manager-header">
         <span className="user-grant">
           {t('authorization.yourGrant', {
-            grant: capitalizeFirstLetter(
-              t(`authorization.grants.${GRANTS_LABEL[userGrant || 'NONE']}`)
-            ),
+            grant: capitalizeFirstLetter(t(`authorization.grants.${GRANTS_LABEL[grantLabel]}`)),
           })}
         </span>
         <button

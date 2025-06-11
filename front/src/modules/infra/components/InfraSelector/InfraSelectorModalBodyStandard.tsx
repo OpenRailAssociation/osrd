@@ -52,15 +52,8 @@ const InfraSelectorModalBodyStandard = ({
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
   const navigate = useNavigate();
-  const { userId, getUserGrants, getUserPrivileges } = useAuthz();
+  const { userId, getUserPrivileges } = useAuthz();
   const [redraw, setRedraw] = useState(0);
-
-  // Get the user grants for infras
-  const userGrantsByInfraId = useAsyncMemo(async () => {
-    const data = await getUserGrants({ infra: infraIdsList });
-    return data.infra || {};
-    // redraw is in the deps to force the reload of the grants when the user changes his own grant
-  }, [getUserGrants, infraIdsList, redraw]);
 
   // Get the user privileges for infras
   const userPrivilegesByInfraId = useAsyncMemo(async () => {
@@ -128,11 +121,6 @@ const InfraSelectorModalBodyStandard = ({
               <GrantsManager
                 resourceId={infra.id}
                 resourceType="infra"
-                userGrant={
-                  userGrantsByInfraId.type === 'ready'
-                    ? userGrantsByInfraId.data[infra.id]
-                    : undefined
-                }
                 userPrivileges={
                   userPrivilegesByInfraId.type === 'ready'
                     ? userPrivilegesByInfraId.data[infra.id]
