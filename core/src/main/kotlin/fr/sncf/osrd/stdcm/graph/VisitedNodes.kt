@@ -194,29 +194,31 @@ data class VisitedNodes(
         // at the very end of the lookahead section.
         if (parameters.explorer != null && infra != null) {
             val lastLookaheadBlock = parameters.explorer.getLookahead().lastOrNull()
-            val minTravelTime =
-                parameters.explorer.getRemainingBlocks().sumOf {
-                    mrspBuilder!!.getBlockTime(it, null)
-                }
-            // We only check after adding the fastest travel time, and then add some extra margin at
-            // the end (in case engineering allowances are impossible there).
-            // TODO: we should compare possible "engineering allowances" in `isMapVisited`,
-            // with a large max allowance value here.
-            // The current margin (travel time / 2) is a heuristic. Lowerng it has a very large
-            // impact on the performance gain, but may block valid solutions when engineering
-            // allowances are impossible.
-            val newTimeData =
-                parameters.timeData
-                    .withAddedTime(minTravelTime, null, null)
-                    .copy(
-                        maxDepartureDelayingWithoutConflict =
-                            parameters.timeData.maxDepartureDelayingWithoutConflict +
-                                (minTravelTime / 2),
-                    )
             if (lastLookaheadBlock != null) {
                 val exitDet = infra.blockInfra.getBlockExit(infra.rawInfra, lastLookaheadBlock)
                 val mapAtStepIndex = visitedAtDetector[parameters.fingerprint!!.waypointIndex]
                 val mapAtDetector = mapAtStepIndex?.get(exitDet)
+
+                val minTravelTime =
+                    parameters.explorer.getRemainingBlocks().sumOf {
+                        mrspBuilder!!.getBlockTime(it, null)
+                    }
+                // We only check after adding the fastest travel time, and then add some extra
+                // margin at the end (in case engineering allowances are impossible there).
+                // TODO: we should compare possible "engineering allowances" in `isMapVisited`,
+                // with a large max allowance value here.
+                // The current margin (travel time / 2) is a heuristic. Lowering it has a very large
+                // impact on the performance gain, but may block valid solutions when engineering
+                // allowances are impossible.
+                val newTimeData =
+                    parameters.timeData
+                        .withAddedTime(minTravelTime, null, null)
+                        .copy(
+                            maxDepartureDelayingWithoutConflict =
+                                parameters.timeData.maxDepartureDelayingWithoutConflict +
+                                    (minTravelTime / 2),
+                        )
+
                 if (
                     mapAtDetector != null &&
                         isMapVisited(mapAtDetector, parameters.copy(timeData = newTimeData))
