@@ -38,7 +38,10 @@ import type {
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
-import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  getOccurrencesNb,
+} from 'modules/trainschedule/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -117,16 +120,25 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         if (isTrainScheduleProjection(train)) {
           return train;
         }
+        // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
         const occurrencesCount = getOccurrencesNb(train.paced);
         const occurrences = [];
         for (let i = 0; i < occurrencesCount; i += 1) {
+          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+          const correspondingException = findExceptionWithOccurrenceId(
+            train.exceptions,
+            occurrenceId
+          );
+          // Disabled occurrences should not be projected
+          if (correspondingException?.disabled) continue;
+
           const occurrenceStartTime = dayjs(train.departureTime)
             .add(i * train.paced.interval.ms, 'ms')
             .toDate();
           occurrences.push({
             ...train,
-            id: formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i),
+            id: occurrenceId,
             name: computeOccurrenceName(train.name, i),
             departureTime: occurrenceStartTime,
           });

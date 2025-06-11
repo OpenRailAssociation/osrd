@@ -34,6 +34,7 @@ const upsertNewProjectedTrains = (
               timeWindow: Duration.parse(matchingTrain.paced.time_window),
               interval: Duration.parse(matchingTrain.paced.interval),
             },
+            exceptions: matchingTrain.exceptions,
           }
         : { id: matchingTrain.id }),
     };

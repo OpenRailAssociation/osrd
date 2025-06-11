@@ -7,6 +7,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type {
+  PacedTrainException,
   PathProperties,
   PathfindingResultSuccess,
   ProjectPathTrainResult,
@@ -43,7 +44,10 @@ export type TrainSpaceTimeData = {
   }[];
   departureTime: Date;
   signalUpdates: ProjectPathTrainResult['signal_updates'];
-} & ({ id: TrainScheduleId } | { id: OccurrenceId; paced: PacedTrainWithDetails['paced'] });
+} & (
+  | { id: TrainScheduleId }
+  | { id: OccurrenceId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
+);
 
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
