@@ -1,34 +1,20 @@
 import { useMemo, type ReactElement } from 'react';
 
-import {
-  Gear,
-  Hubot,
-  Info,
-  Person,
-  Report,
-  ShieldCheck,
-  SignOut,
-  XCircle,
-} from '@osrd-project/ui-icons';
+import { Hubot, Person, ShieldCheck, XCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import ChangeLanguageModal from 'common/ChangeLanguageModal';
-import ReleaseInformations from 'common/ReleaseInformations';
+import UserActionsDropdown from 'common/UserActionsDropdown';
 import UserSettings from 'common/UserSettings';
 import { setImpersonatedUser } from 'reducers/user';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
-import { language2flag } from 'utils/strings';
 
-import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
-import HelpModalSNCF from './HelpModalSNCF';
 import { useModal } from './ModalSNCF';
 
 type Props = {
@@ -41,9 +27,9 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
-  const { logout, username, impersonatedUser } = useAuth();
+  const { username, impersonatedUser } = useAuth();
   const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
 
   const { logoUrl, name } = useMemo(() => {
@@ -59,6 +45,17 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
       name: deploymentSettings.operationalStudiesName,
     };
   }, [deploymentSettings, showLogoWithName]);
+
+  const userDropdownTitle = (
+    <div className={cx({ 'impersonated-user': impersonatedUser })}>
+      {impersonatedUser ? (
+        <Hubot size="lg" className="mr-xl-2" />
+      ) : (
+        <Person variant="fill" size="lg" className="mr-xl-2" />
+      )}
+      <span>{username}</span>
+    </div>
+  );
 
   return (
     <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : 'mastheader')}>
@@ -101,96 +98,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
           </li>
         )}
         <li className="toolbar-item separator-gray-500">
-          <DropdownSNCF
-            titleContent={
-              <div className={cx({ 'impersonated-user': impersonatedUser })}>
-                {impersonatedUser ? (
-                  <Hubot size="lg" className="mr-xl-2" />
-                ) : (
-                  <Person variant="fill" size="lg" className="mr-xl-2" />
-                )}
-                <span>{username}</span>
-              </div>
-            }
-            type={DROPDOWN_STYLE_TYPES.transparent}
-            items={[
-              // Button to open modal displaying release version
-              {
-                node: (
-                  <button
-                    type="button"
-                    className="btn-link text-reset"
-                    onClick={() => openModal(<ReleaseInformations />, 'lg')}
-                  >
-                    <span className="mr-2">
-                      <Info />
-                    </span>
-                    {t('nav-bar.about')}
-                  </button>
-                ),
-                key: 'about',
-              },
-              {
-                node: (
-                  <button
-                    type="button"
-                    className="btn-link text-reset"
-                    onClick={() => openModal(<HelpModalSNCF />, 'lg')}
-                  >
-                    <span className="mr-2">
-                      <Report />
-                    </span>
-                    {t('nav-bar.help')}
-                  </button>
-                ),
-                key: 'help',
-              },
-              {
-                node: (
-                  <button
-                    type="button"
-                    className="btn-link text-reset"
-                    onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
-                  >
-                    <span className="mr-2">
-                      {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
-                    </span>
-                    <span data-testid="language-info">
-                      {t(`nav-bar.language.${i18n.language}`)}{' '}
-                    </span>
-                  </button>
-                ),
-                key: 'language',
-              },
-              {
-                node: (
-                  <button
-                    data-testid="user-settings-btn"
-                    type="button"
-                    className="user-settings-btn btn-link text-reset"
-                    onClick={() => openModal(<UserSettings />)}
-                  >
-                    <span className="mr-2">
-                      <Gear variant="fill" />
-                    </span>
-                    {t('nav-bar.userSettings')}
-                  </button>
-                ),
-                key: 'user-settings',
-              },
-              {
-                node: (
-                  <button type="button" className="btn-link text-reset" onClick={logout}>
-                    <span className="mr-2">
-                      <SignOut />
-                    </span>
-                    {t('nav-bar.disconnect')}
-                  </button>
-                ),
-                key: 'sign-out',
-              },
-            ]}
-          />
+          <UserActionsDropdown titleContent={userDropdownTitle} />
           {impersonatedUser && (
             <button
               className="impersonated-user"
