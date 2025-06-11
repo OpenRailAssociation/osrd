@@ -57,7 +57,6 @@ export type SpeedSpaceChartData = {
   formattedPowerRestrictions: LayerData<PowerRestrictionValues>[] | undefined;
   simulation?: SimulationResponseSuccess;
   formattedPathProperties: PathPropertiesFormatted;
-  departureTime: string;
 };
 
 export type ProjectionData = {

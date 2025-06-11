@@ -20,8 +20,7 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 const useSpeedSpaceChart = (
   timetableItem?: TimetableItem,
   pathfindingResult?: PathfindingResultSuccess,
-  simulation?: SimulationResponse,
-  departureTime?: string
+  simulation?: SimulationResponse
 ): SpeedSpaceChartData | null => {
   const { t } = useTranslation('operational-studies');
   const infraId = useInfraID();
@@ -88,14 +87,12 @@ const useSpeedSpaceChart = (
   return timetableItem &&
     rollingStock &&
     simulation?.status === 'success' &&
-    formattedPathProperties &&
-    departureTime
+    formattedPathProperties
     ? {
         rollingStock,
         formattedPowerRestrictions,
         simulation,
         formattedPathProperties,
-        departureTime,
       }
     : null;
 };
