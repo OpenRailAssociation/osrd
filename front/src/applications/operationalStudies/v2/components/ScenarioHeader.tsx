@@ -9,6 +9,7 @@ import InfraLoadingState from 'applications/operationalStudies/components/Scenar
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import UserActionsDropdown from 'common/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
 
@@ -43,7 +44,7 @@ const ScenarioHeader = ({
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
 
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
-  const usernameRef = useRef<HTMLButtonElement>(null);
+  const usernameRef = useRef<HTMLSpanElement>(null);
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -91,6 +92,12 @@ const ScenarioHeader = ({
       window.removeEventListener('resize', checkTruncation);
     };
   }, []);
+
+  const userDropdownTitle = (
+    <span ref={usernameRef} className={cx('user-name', { 'is-truncated': isTruncated.username })}>
+      {username}
+    </span>
+  );
 
   return (
     <header className="scenario-header-container">
@@ -163,14 +170,7 @@ const ScenarioHeader = ({
         {/* user informations */}
         <div className="user-info">
           <div className="spacer" />
-
-          <button
-            ref={usernameRef}
-            className={cx('user-name', { 'is-truncated': isTruncated.username })}
-            type="button"
-          >
-            {username}
-          </button>
+          <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
         </div>
       </div>
 
