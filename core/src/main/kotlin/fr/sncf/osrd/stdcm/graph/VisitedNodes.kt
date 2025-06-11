@@ -207,7 +207,7 @@ data class VisitedNodes(
                 // margin at the end (in case engineering allowances are impossible there).
                 // TODO: we should compare possible "engineering allowances" in `isMapVisited`,
                 // with a large max allowance value here.
-                // The current margin (travel time / 2) is a heuristic. Lowering it has a very large
+                // The current margin (travel time) is a heuristic. Lowering it has a very large
                 // impact on the performance gain, but may block valid solutions when engineering
                 // allowances are impossible.
                 val newTimeData =
@@ -216,7 +216,7 @@ data class VisitedNodes(
                         .copy(
                             maxDepartureDelayingWithoutConflict =
                                 parameters.timeData.maxDepartureDelayingWithoutConflict +
-                                    (minTravelTime / 2),
+                                    minTravelTime,
                         )
 
                 if (
