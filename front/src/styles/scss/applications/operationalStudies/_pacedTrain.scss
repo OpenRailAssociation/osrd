@@ -8,6 +8,9 @@
       .action-buttons {
         display: flex !important;
         z-index: 1;
+        .reset-exceptions {
+          transform: rotate(180deg);
+        }
       }
 
       .paced-train-right-zone {

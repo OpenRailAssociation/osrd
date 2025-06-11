@@ -5,15 +5,19 @@ import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-projec
 import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import {
   osrdEditoastApi,
   type PacedTrain,
   type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
+import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainId,
   PacedTrainResponseWithPacedTrainId,
@@ -31,6 +35,7 @@ import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } fro
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTrainSchedule/helpers/formatTimetableItemPayload';
 import { TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';
@@ -65,10 +70,13 @@ const PacedTrainItem = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
+  const { closeModal } = useContext(ModalContext);
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
 
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
+
+  const timetableId = useSelector(getOperationalStudiesTimetableID);
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
@@ -110,6 +118,24 @@ const PacedTrainItem = ({
       }
     }
   };
+
+  async function deleteExceptions() {
+    const updatedPacedTrainPayload = {
+      ...formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain),
+      exceptions: [],
+    };
+
+    await storePacedTrain(
+      pacedTrain.id,
+      updatedPacedTrainPayload,
+      timetableId!,
+      dispatch,
+      upsertTimetableItems,
+      removePacedTrains
+    );
+
+    closeModal();
+  }
 
   const duplicatePacedTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
@@ -280,6 +306,15 @@ const PacedTrainItem = ({
             );
           }}
           isTimetableItemValid={!pacedTrain.invalidReason}
+          showResetExceptionsButton={pacedTrain.exceptions.length > 0}
+          resetAllExceptions={() => {
+            openModal(
+              <ConfirmModal
+                onConfirm={() => deleteExceptions()}
+                title={t('timetable.resetAllExceptions')}
+              />
+            );
+          }}
         />
       </div>
       {pacedTrain.isValid && (

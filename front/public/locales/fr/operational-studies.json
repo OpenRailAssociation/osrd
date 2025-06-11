@@ -211,6 +211,8 @@
       "pacedTrainAdded": "Mission ajoutée",
       "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",
       "punctuality": "Ponctualité",
+      "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission?",
+      "resetExceptions": "Réinitialiser les exceptions",
       "rollingStockFilterPlaceholder": "Famille, détail, série",
       "showAllCategories": "Tous",
       "showAllTrains": "Tous",
