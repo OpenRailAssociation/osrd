@@ -204,11 +204,7 @@ private class InfraExplorerImpl(
     }
 
     override fun getLastEdgeIdentifier(): EdgeIdentifier {
-        val currentAndRemainingBlocks = mutableStaticIdxArrayListOf<Block>()
-        for (i in currentIndex ..< blocks.size) {
-            currentAndRemainingBlocks.add(blocks[i])
-        }
-        return EdgeIdentifierImpl(currentAndRemainingBlocks)
+        return EdgeIdentifierImpl(getRemainingBlocks())
     }
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorer> {
@@ -383,7 +379,7 @@ private class InfraExplorerImpl(
     }
 }
 
-private class EdgeIdentifierImpl(private val blocks: StaticIdxList<Block>) : EdgeIdentifier {
+private class EdgeIdentifierImpl(private val blocks: List<BlockId>) : EdgeIdentifier {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         return if (other !is EdgeIdentifierImpl) false else this.blocks == other.blocks
