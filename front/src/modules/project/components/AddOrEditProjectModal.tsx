@@ -268,7 +268,6 @@ export default function AddOrEditProjectModal({
           <div className="confirm-modal-content">
             <ConfirmModal
               title={t('common.leaveEditionMode', { ns: 'translation' })}
-              onConfirm={closeModal}
               onCancel={resetClickedOutside}
               withCloseButton={false}
             />

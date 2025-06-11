@@ -266,7 +266,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           <div className="confirm-modal-content">
             <ConfirmModal
               title={t('common.leaveEditionMode', { ns: 'translation' })}
-              onConfirm={closeModal}
               onCancel={resetClickedOutside}
               withCloseButton={false}
             />

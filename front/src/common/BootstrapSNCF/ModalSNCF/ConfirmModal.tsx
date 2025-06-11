@@ -10,7 +10,7 @@ export interface ConfirmModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   confirmDisabled?: boolean;
-  onConfirm: () => void | Promise<void>;
+  onConfirm?: () => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
   withCloseButton?: boolean;
 }
@@ -30,15 +30,19 @@ export const ConfirmModal = ({
   const [disabled, setDisabled] = useState(false);
 
   const confirm = useCallback(async () => {
-    setDisabled(true);
-    try {
-      await onConfirm();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setDisabled(false);
+    if (onConfirm) {
+      setDisabled(true);
+      try {
+        await onConfirm();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setDisabled(false);
+      }
+    } else {
+      closeModal();
     }
-  }, [onConfirm]);
+  }, [onConfirm, closeModal]);
 
   const cancel = useCallback(async () => {
     if (onCancel) {
