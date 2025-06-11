@@ -2,7 +2,7 @@
 
 ### Run the tests
 
-To run tests `uv run pytest` after starting docker containers without authorization mode (`EDITOAST_ENABLE_AUTHORIZATION=false docker compose up` at the root of the project) and installing dependencies (`uv sync --all-extras`, see [uv doc](https://docs.astral.sh/uv/)).
+To run tests `uv run pytest` after starting docker containers (`docker compose up` or `./osrd-compose up` at the root of the project) and installing dependencies (`uv sync --all-extras`, see [uv doc](https://docs.astral.sh/uv/)).
 
 To run a list of specific tests, run `uv run pytest -k test_name_1 test_name_2 ...`.
 

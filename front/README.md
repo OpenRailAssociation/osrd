@@ -4,17 +4,16 @@
 
 ### Inside of Docker
 
-A Docker Compose override is provided in `docker/docker-compose.front.yml` to
-run the frontend in watch mode together with the rest of the OSRD stack. The
-osrd-compose script can be used to start OSRD in this mode:
+A Docker Compose override is provided in `docker/docker-compose.front.yml` to run the frontend in
+watch mode together with the rest of the OSRD stack. The osrd-compose script can be used to start
+OSRD in this mode:
 
     ./osrd-compose dev-front build
     ./osrd-compose up -d
 
-The first time the container starts up, the osrd-ui library will be missing.
-This will trigger some build errors, which should go away as soon as osrd-ui
-gets built. Restarting the front container helps getting rid of lingering
-ESLint errors.
+The first time the container starts up, the osrd-ui library will be missing. This will trigger some
+build errors, which should go away as soon as osrd-ui gets built. Restarting the front container
+helps getting rid of lingering ESLint errors.
 
 ### Outside of Docker
 
@@ -62,7 +61,7 @@ It requires:
 - Install Playwright dependencies `cd ./front/ && npx playwright install --with-deps`
 - Backend containers to be up with authorization disabled:
 
-  `EDITOAST_ENABLE_AUTHORIZATION=false docker compose up --no-build --detach valkey postgres gateway core editoast`
+  `docker compose up --no-build --detach valkey postgres gateway core editoast`
 
 - Running front with `docker compose up --build --detach front`
 
