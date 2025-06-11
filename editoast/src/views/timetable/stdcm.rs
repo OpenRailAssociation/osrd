@@ -271,8 +271,8 @@ async fn stdcm(
     .collect();
 
     let trains_requirements = build_train_requirements(
-        train_schedules.clone(),
-        simulations.clone(),
+        &train_schedules,
+        &simulations,
         earliest_departure_time,
         latest_simulation_end,
     );
@@ -388,8 +388,8 @@ async fn stdcm(
 /// Build the list of scheduled train requirements, only including requirements
 /// that overlap with the possible simulation times.
 fn build_train_requirements(
-    train_schedules: Vec<TrainSchedule>,
-    simulation_responses: Vec<Arc<simulation::Response>>,
+    train_schedules: &[TrainSchedule],
+    simulation_responses: &[impl AsRef<simulation::Response>],
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
 ) -> HashMap<String, TrainRequirements> {

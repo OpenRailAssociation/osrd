@@ -85,8 +85,8 @@ impl SimulationFailureHandler {
         // Build train requirements based on the combined train schedules and simulations
         // This prepares the data structure required for conflict detection.
         let trains_requirements = build_train_requirements(
-            train_schedules,
-            simulations,
+            &train_schedules,
+            &simulations,
             earliest_departure_time,
             latest_simulation_end,
         );
