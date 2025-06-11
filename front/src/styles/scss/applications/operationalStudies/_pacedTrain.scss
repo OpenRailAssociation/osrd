@@ -143,6 +143,26 @@
         }
       }
 
+      &.disabled {
+        cursor: default;
+
+        .occurrence-item-name {
+          color: var(--grey30);
+        }
+
+        .rolling-stock {
+          opacity: 0.5;
+        }
+
+        .occurrence-item-horaries {
+          color: var(--grey30);
+        }
+
+        .icon {
+          opacity: 0.5;
+        }
+      }
+
       &.selected {
         background-color: var(--selection20);
       }

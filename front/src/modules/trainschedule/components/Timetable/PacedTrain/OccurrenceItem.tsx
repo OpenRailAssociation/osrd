@@ -145,11 +145,12 @@ const OccurrenceItem = ({
         'after-midnight': isAfterMidnight,
         'next-after-midnight': isNextAfterMidnight,
         selected: isSelected,
+        disabled,
       })}
       role="button"
       tabIndex={0}
       onClick={() => {
-        if (isMenuOpen) return;
+        if (isMenuOpen || disabled) return;
         // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
         if (getExceptionType(occurrence) !== 'added') selectOccurrence(id);
       }}
@@ -186,7 +187,7 @@ const OccurrenceItem = ({
         )}
       </div>
 
-      {isException(occurrence) && occurrence.isValid && (
+      {isException(occurrence) && occurrence.isValid && !disabled && (
         <div className="more-info">
           <div className="more-info-left">
             {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
