@@ -1084,7 +1084,8 @@ def test_etcs_schedule_result_slowdowns_with_stop(
 def test_etcs_spacing_req(etcs_scenario: Scenario, etcs_rolling_stock: int):
     """
     spacing requirements should:
-    * start at the same time the braking curve starts if stopping on closed signal on the entry of the block
+    * start **roughly** at the same time the braking curve starts if stopping on closed signal
+      on the entry of the block (depending on SvL and if signal is Nf or F, this does change)
     * end when leaving the block
     """
     rolling_stock_response = requests.get(
