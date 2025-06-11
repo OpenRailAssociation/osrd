@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -41,6 +41,7 @@ import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTrai
 import { TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';
+import useOccurrenceActions from './hooks/useOccurrenceActions';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -74,22 +75,22 @@ const PacedTrainItem = ({
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
+  const timetableId = useSelector(getOperationalStudiesTimetableID);
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
 
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
 
-  const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const occurrenceActions = useOccurrenceActions({
+    pacedTrain,
+    selectPacedTrainToEdit,
+  });
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
-
-  const selectOccurrence = useCallback((occurrenceId: TrainId) => {
-    dispatch(updateSelectedTrainId(occurrenceId));
-  }, []);
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
@@ -345,9 +346,7 @@ const PacedTrainItem = ({
               key={occurrence.id}
               isSelected={selectedTrainId === occurrence.id}
               nextOccurrence={occurrences[index + 1]}
-              selectOccurrence={selectOccurrence}
-              currentPacedTrain={pacedTrain}
-              selectPacedTrainToEdit={selectPacedTrainToEdit}
+              occurrenceActions={occurrenceActions}
             />
           ))}
         </div>

@@ -9,18 +9,14 @@ import { GiPathDistance } from 'react-icons/gi';
 import AnchoredMenu from 'common/AnchoredMenu';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import {
-  findExceptionWithOccurrenceId,
-  formatPacedTrainWithOccurenceDetails,
-} from 'modules/trainschedule/helpers/pacedTrain';
-import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getExceptionType, isException } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
-import type { Occurrence, PacedTrainWithDetails } from '../types';
+import type { Occurrence } from '../types';
 import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
+import type useOccurrenceActions from './hooks/useOccurrenceActions';
 
 const ConsecutiveDayDateDisplay = ({
   departureTime,
@@ -42,22 +38,14 @@ type OccurrenceItemProps = {
   occurrence: Occurrence;
   isSelected: boolean;
   nextOccurrence?: Occurrence;
-  selectOccurrence: (occurrence: TrainId) => void;
-  currentPacedTrain: PacedTrainWithDetails;
-  selectPacedTrainToEdit: (
-    pacedTrain: PacedTrainWithDetails,
-    originalPacedTrain?: PacedTrainWithDetails,
-    occurrenceId?: OccurrenceId
-  ) => void;
+  occurrenceActions: ReturnType<typeof useOccurrenceActions>;
 };
 
 const OccurrenceItem = ({
   occurrence,
   isSelected,
   nextOccurrence,
-  selectOccurrence,
-  currentPacedTrain,
-  selectPacedTrainToEdit,
+  occurrenceActions: { selectOccurrence, editOccurrence },
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
@@ -76,41 +64,6 @@ const OccurrenceItem = ({
 
   const closeMenu = () => {
     setIsMenuOpen(false);
-  };
-
-  // We build a new timetable item to edit with the current paced train modified with
-  // the occurrence start time and all its eventual exceptions
-  const editOccurrence = async () => {
-    // TODO refacto this function in issue https://github.com/OpenRailAssociation/osrd/issues/12030
-    let updatedPacedtrain: PacedTrainWithDetails = {
-      ...currentPacedTrain,
-      name: occurrence.trainName,
-      startTime: occurrence.startTime,
-    };
-
-    const occurrenceToUpdateException = findExceptionWithOccurrenceId(
-      currentPacedTrain.exceptions,
-      id
-    );
-
-    if (occurrenceToUpdateException) {
-      const pacedTrainWithOccurrenceDetails = formatPacedTrainWithOccurenceDetails(
-        updatedPacedtrain,
-        occurrenceToUpdateException
-      );
-
-      let occurrenceRollingStock = currentPacedTrain.rollingStock;
-      if (occurrenceToUpdateException.rolling_stock) {
-        occurrenceRollingStock = occurrence.rollingStock;
-      }
-
-      updatedPacedtrain = {
-        ...pacedTrainWithOccurrenceDetails,
-        rollingStock: occurrenceRollingStock,
-      };
-    }
-
-    selectPacedTrainToEdit(updatedPacedtrain, currentPacedTrain, occurrence.id);
   };
 
   // TODO exceptions : add action to menu buttons
@@ -133,7 +86,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.edit'),
       icon: <Pencil />,
       onClick: () => {
-        editOccurrence();
+        editOccurrence(occurrence);
         closeMenu();
       },
     },
