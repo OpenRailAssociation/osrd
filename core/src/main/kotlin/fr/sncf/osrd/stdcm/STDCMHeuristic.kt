@@ -135,7 +135,7 @@ class STDCMHeuristicBuilder(
                         )
                     )
             }
-            if (block.stepIndex > 0) {
+            if (block.stepIndex >= 0) {
                 pendingBlocks.addAll(getPredecessors(block))
             }
         }
