@@ -166,6 +166,12 @@ fun runScheduleMetadataExtractor(
     var closedSignalStopOffset =
         getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop, pathOffsetBuilder)
     for ((indexPathSignal, pathSignal) in pathSignals.withIndex()) {
+        val sigSystemId = loadedSignalInfra.getSignalingSystem(pathSignal.signal)
+        if (simulator.sigModuleManager.isCurveBased(sigSystemId)) {
+            // no on-sight green block in space-time chart (VL requirement) for curve-based signals
+            continue
+        }
+
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
         var signalCriticalOffset =
             Offset.max(
