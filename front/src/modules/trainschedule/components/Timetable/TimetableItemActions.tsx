@@ -1,6 +1,6 @@
 // import React from 'react';
 
-import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
+import { Duplicate, Iterations, Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
@@ -10,6 +10,8 @@ type TimetableItemActionsProps = {
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
   isTimetableItemValid?: boolean;
+  showResetExceptionsButton?: boolean;
+  resetAllExceptions?: () => void;
 };
 
 const TimetableItemActions = ({
@@ -18,10 +20,23 @@ const TimetableItemActions = ({
   editTimetableItem,
   deleteTimetableItem,
   isTimetableItemValid = true,
+  showResetExceptionsButton,
+  resetAllExceptions,
 }: TimetableItemActionsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   return (
     <div className="action-buttons">
+      {showResetExceptionsButton && (
+        <button
+          className="reset-exceptions"
+          type="button"
+          aria-label={t('timetable.resetExceptions')}
+          title={t('timetable.resetExceptions')}
+          onClick={resetAllExceptions}
+        >
+          <Iterations />
+        </button>
+      )}
       <button
         type="button"
         aria-label={t('timetable.choosePath')}

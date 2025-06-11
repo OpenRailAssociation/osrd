@@ -51,7 +51,7 @@ export function formatTimetableItemPayload(
 
 // Format a PacedTrainWithDetails to a PacedTrain payload by keeping only the
 // necessary properties and formatting the date fields to ISO strings.
-function formatPacedTrainWithDetailsToPacedTrainPayload(
+export function formatPacedTrainWithDetailsToPacedTrainPayload(
   pacedTrainWithDetails: PacedTrainWithDetails
 ): PacedTrain {
   return {
