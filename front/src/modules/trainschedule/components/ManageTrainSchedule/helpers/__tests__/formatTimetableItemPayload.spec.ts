@@ -174,86 +174,88 @@ describe('formatTimetableItemPayload', () => {
       },
     },
   };
-  describe('when user updates a paced train', () => {
-    describe('user modified paced train category so that it matches the exception category, and the exception is only a category exception', () => {
-      const userChanges: Record<string, TrainCategory> = {
-        category: 'NIGHT_TRAIN',
-      };
-      const osrdconfWithUserChanges: OperationalStudiesConfState = {
-        ...osrdconf,
-        category: userChanges.category,
-      };
-      const timetableItemToEditDataWithOneChangeGroup: TimetableItemToEditData = {
-        ...timetableItemToEditData,
-        originalPacedTrain: {
-          ...timetableItemToEditData.originalPacedTrain,
-          exceptions: [
-            {
-              key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
-              occurrence_index: 1,
-              rolling_stock_category: {
-                value: 'NIGHT_TRAIN',
+  describe('User updates a paced train', () => {
+    describe('use modifies category in the pace train to match the exception', () => {
+      describe('exception is only a category exception', () => {
+        const userChanges: Record<string, TrainCategory> = {
+          category: 'NIGHT_TRAIN',
+        };
+        const osrdconfWithUserChanges: OperationalStudiesConfState = {
+          ...osrdconf,
+          category: userChanges.category,
+        };
+        const timetableItemToEditDataWithOneChangeGroup: TimetableItemToEditData = {
+          ...timetableItemToEditData,
+          originalPacedTrain: {
+            ...timetableItemToEditData.originalPacedTrain,
+            exceptions: [
+              {
+                key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
+                occurrence_index: 1,
+                rolling_stock_category: {
+                  value: 'NIGHT_TRAIN',
+                },
               },
-            },
-          ],
-        },
-      };
-      test('if the exception matches the paced train, it’s no longer an exception and it should reset it in the exception array', () => {
-        const result = formatPacedTrainPayload(
-          osrdconfWithUserChanges,
-          rollingStockName,
-          timetableItemToEditDataWithOneChangeGroup
-        );
-        expect(result.exceptions).toEqual([]);
+            ],
+          },
+        };
+        test('the exception should be removed (it now matches completely the paced train)', () => {
+          const result = formatPacedTrainPayload(
+            osrdconfWithUserChanges,
+            rollingStockName,
+            timetableItemToEditDataWithOneChangeGroup
+          );
+          expect(result.exceptions).toEqual([]);
+        });
       });
-    });
-    describe('user modified paced train category so that it matches the exception category, and the exception is label and category exception', () => {
-      const userChanges: Record<string, TrainCategory> = {
-        category: 'NIGHT_TRAIN',
-      };
-      const osrdconfWithUserChanges: OperationalStudiesConfState = {
-        ...osrdconf,
-        category: userChanges.category,
-      };
+      describe('exception is both a label and category exception', () => {
+        const userChanges: Record<string, TrainCategory> = {
+          category: 'NIGHT_TRAIN',
+        };
+        const osrdconfWithUserChanges: OperationalStudiesConfState = {
+          ...osrdconf,
+          category: userChanges.category,
+        };
 
-      const timetableItemToEditDataWithTwoChangeGroups: TimetableItemToEditData = {
-        ...timetableItemToEditData,
-        originalPacedTrain: {
-          ...timetableItemToEditData.originalPacedTrain,
-          exceptions: [
+        const timetableItemToEditDataWithTwoChangeGroups: TimetableItemToEditData = {
+          ...timetableItemToEditData,
+          originalPacedTrain: {
+            ...timetableItemToEditData.originalPacedTrain,
+            exceptions: [
+              {
+                key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
+                occurrence_index: 1,
+                rolling_stock_category: {
+                  value: 'NIGHT_TRAIN',
+                },
+                labels: {
+                  value: ['label1', 'label2'],
+                },
+              },
+            ],
+          },
+        };
+        test('exception remains a label exception but the category change groups is removed', () => {
+          const result = formatPacedTrainPayload(
+            osrdconfWithUserChanges,
+            rollingStockName,
+            timetableItemToEditDataWithTwoChangeGroups
+          );
+          expect(result.exceptions).toEqual([
             {
               key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
               occurrence_index: 1,
-              rolling_stock_category: {
-                value: 'NIGHT_TRAIN',
-              },
               labels: {
                 value: ['label1', 'label2'],
               },
             },
-          ],
-        },
-      };
-      test('if the exception matches the paced train, it’s no longer an exception and it should reset it in the exception array', () => {
-        const result = formatPacedTrainPayload(
-          osrdconfWithUserChanges,
-          rollingStockName,
-          timetableItemToEditDataWithTwoChangeGroups
-        );
-        expect(result.exceptions).toEqual([
-          {
-            key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
-            occurrence_index: 1,
-            labels: {
-              value: ['label1', 'label2'],
-            },
-          },
-        ]);
+          ]);
+        });
       });
     });
   });
 
-  describe('when user updates an occurrence', () => {
+  describe('User updates an occurrence', () => {
     describe('when the user modifies occurrence at index 2', () => {
       it('should create a new exception if it was not present before', () => {
         const userChanges: Partial<OperationalStudiesConfState> = {

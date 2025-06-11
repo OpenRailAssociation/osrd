@@ -20,7 +20,7 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
-import AddTrainScheduleButton from './AddTrainScheduleButton';
+import CreateTimetableItemButton from './CreateTimetableItemButton';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
@@ -34,6 +34,9 @@ type TimetableManageTrainScheduleProps = {
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
 };
 
+/**
+ * Create/edit train schedules and paced trains
+ */
 const TimetableManageTrainSchedule = ({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
@@ -124,7 +127,7 @@ const TimetableManageTrainSchedule = ({
                 <DotsLoader />
               </button>
             ) : (
-              <AddTrainScheduleButton
+              <CreateTimetableItemButton
                 infraState={infraState}
                 setIsWorking={setIsWorking}
                 upsertTimetableItems={upsertTimetableItems}

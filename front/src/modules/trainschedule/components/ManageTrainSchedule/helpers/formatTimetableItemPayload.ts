@@ -12,7 +12,7 @@ import { isPacedTrainId } from 'utils/trainId';
 
 import {
   generatePacedTrainException,
-  updatePacedTrainExceptions,
+  updatePacedTrainExceptionsList,
   checkChangeGroups,
 } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
@@ -86,8 +86,8 @@ function isPacedTrainToEditData(
 
 /**
  * Used when creating and editing a paced train
- * timetableItemToEditData given when creating, not editing
  * @param osrdconf pace train fields that were modified by user
+ * @param timetableItemToEditData the existing paced train we’re editing
  */
 export function formatPacedTrainPayload(
   osrdconf: OperationalStudiesConfState,
@@ -110,6 +110,7 @@ export function formatPacedTrainPayload(
     exceptions,
   };
 
+  // ========== Editing a pacedtrain ==========
   if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
@@ -122,7 +123,7 @@ export function formatPacedTrainPayload(
         timetableItemToEditData.occurrenceId
       );
 
-      const updatedExceptions = updatePacedTrainExceptions(
+      const updatedExceptions = updatePacedTrainExceptionsList(
         originalPacedTrain.exceptions,
         exception,
         timetableItemToEditData.occurrenceId
