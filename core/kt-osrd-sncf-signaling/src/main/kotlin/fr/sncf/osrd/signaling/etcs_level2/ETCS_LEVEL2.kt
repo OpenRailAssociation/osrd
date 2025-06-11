@@ -16,12 +16,7 @@ import fr.sncf.osrd.sim_infra.api.SigStateSchema
  */
 object ETCS_LEVEL2 : SignalingSystemDriver {
     override val id = "ETCS_LEVEL2"
-    override val stateSchema = SigStateSchema {
-        enum(
-            "aspect",
-            listOf("300VL", "300(VL)", "270A", "220A", "160A", "080A", "000", "OCCUPIED")
-        )
-    }
+    override val stateSchema = SigStateSchema { enum("aspect", listOf("VL", "OCCUPIED")) }
     override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val parametersSchema = SigParametersSchema {}
 
