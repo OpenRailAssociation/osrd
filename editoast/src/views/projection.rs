@@ -409,8 +409,10 @@ async fn retrieve_cached_projection(
     Vec<TrainSimulationDetails>,
     Vec<(CachedProjectPathTrainResult, i64)>,
 )> {
-    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> =
-        valkey_conn.json_get_bulk(trains_hash_values).await?;
+    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> = valkey_conn
+        .json_get_bulk(trains_hash_values)
+        .await?
+        .collect();
 
     let mut hit_cache = vec![];
     let mut miss_cache = vec![];
