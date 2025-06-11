@@ -128,7 +128,6 @@ const StdcmConfig = ({
     } else {
       // The console error is only for debugging the user tests (temporary)
       console.warn('The form is not valid:', { pathfinding, formErrorsStatus });
-      setFormErrors(formErrorsStatus);
     }
   };
 
