@@ -625,23 +625,28 @@ async fn conflicts(
 
     let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
 
-    let (train_simulations, paced_train_simulations) = retrieve_simulations(
-        &mut db_pool.get().await?,
-        valkey_client,
-        core_client.clone(),
-        &trains,
-        &paced_trains,
-        &infra,
-        electrical_profile_set_id,
-    )
-    .await?;
+    let (train_simulations_and_pathfindings, paced_train_simulations_and_pathfindings) =
+        retrieve_simulations(
+            &mut db_pool.get().await?,
+            valkey_client,
+            core_client.clone(),
+            &trains,
+            &paced_trains,
+            &infra,
+            electrical_profile_set_id,
+        )
+        .await?;
 
+    let (train_simulations, _): (Vec<_>, Vec<_>) =
+        train_simulations_and_pathfindings.into_iter().unzip();
+    let (paced_train_simulations, _): (Vec<_>, Vec<_>) =
+        paced_train_simulations_and_pathfindings.into_iter().unzip();
     let conflict_detection_request = build_conflict_core_request(
         infra,
         &trains,
-        train_simulations,
+        &train_simulations,
         &paced_trains,
-        paced_train_simulations,
+        &paced_train_simulations,
     );
 
     // 3. Call core
@@ -717,15 +722,14 @@ async fn retrieve_simulations(
 fn build_conflict_core_request(
     infra: Infra,
     trains: &[models::TrainSchedule],
-    train_simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
+    train_simulations: &[impl AsRef<simulation::Response>],
     paced_trains: &[models::PacedTrain],
-    paced_train_simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
+    paced_train_simulations: &[impl AsRef<simulation::Response>],
 ) -> ConflictDetectionRequest {
     let mut trains_requirements = HashMap::new();
 
     // Build train schedule train requirements
     for (train, sim) in trains.iter().zip(train_simulations) {
-        let (sim, _) = sim;
         let final_output = match sim.as_ref() {
             simulation::Response::Success { final_output, .. } => final_output,
             _ => continue,
@@ -742,7 +746,7 @@ fn build_conflict_core_request(
     }
 
     // Build paced train requirements
-    let mut it = paced_train_simulations.into_iter();
+    let mut it = paced_train_simulations.iter();
     for paced_train in paced_trains {
         let occurrences = paced_train.iter_occurrences().collect_vec();
         let occurrences_count = occurrences.len();
@@ -755,7 +759,7 @@ fn build_conflict_core_request(
             );
         }
 
-        for (index, (sim, _)) in simulations.into_iter().enumerate() {
+        for (index, sim) in simulations.into_iter().enumerate() {
             let final_output = match sim.as_ref() {
                 simulation::Response::Success { final_output, .. } => final_output,
                 _ => continue,
@@ -975,7 +979,6 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
     use chrono::NaiveDate;
-    use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
@@ -1255,22 +1258,17 @@ mod tests {
                 end_time: 15,
             }],
         };
-        let train_simulations = vec![(
-            Arc::new(simulation::Response::Success {
-                base: ReportTrain::default(),
-                provisional: ReportTrain::default(),
-                final_output: CompleteReportTrain {
-                    spacing_requirements: vec![spacing_requirement.clone()],
-                    routing_requirements: vec![routing_requirement.clone()],
-                    ..Default::default()
-                },
-                mrsp: SpeedLimitProperties::default(),
-                electrical_profiles: ElectricalProfiles::default(),
-            }),
-            Arc::new(PathfindingResult::Success(
-                PathfindingResultSuccess::default(),
-            )),
-        )];
+        let train_simulations = [Arc::new(simulation::Response::Success {
+            base: ReportTrain::default(),
+            provisional: ReportTrain::default(),
+            final_output: CompleteReportTrain {
+                spacing_requirements: vec![spacing_requirement.clone()],
+                routing_requirements: vec![routing_requirement.clone()],
+                ..Default::default()
+            },
+            mrsp: SpeedLimitProperties::default(),
+            electrical_profiles: ElectricalProfiles::default(),
+        })];
         let paced_id = 42;
         let paced_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
             .unwrap()
@@ -1292,33 +1290,28 @@ mod tests {
         };
         let paced_trains = vec![paced_train.clone()];
         let paced_train_simulations = std::iter::repeat_n(
-            (
-                Arc::new(simulation::Response::Success {
-                    base: ReportTrain::default(),
-                    provisional: ReportTrain::default(),
-                    final_output: CompleteReportTrain {
-                        spacing_requirements: vec![spacing_requirement.clone()],
-                        routing_requirements: vec![routing_requirement.clone()],
-                        ..Default::default()
-                    },
-                    mrsp: SpeedLimitProperties::default(),
-                    electrical_profiles: ElectricalProfiles::default(),
-                }),
-                Arc::new(PathfindingResult::Success(
-                    PathfindingResultSuccess::default(),
-                )),
-            ),
+            Arc::new(simulation::Response::Success {
+                base: ReportTrain::default(),
+                provisional: ReportTrain::default(),
+                final_output: CompleteReportTrain {
+                    spacing_requirements: vec![spacing_requirement.clone()],
+                    routing_requirements: vec![routing_requirement.clone()],
+                    ..Default::default()
+                },
+                mrsp: SpeedLimitProperties::default(),
+                electrical_profiles: ElectricalProfiles::default(),
+            }),
             2,
         )
-        .collect();
+        .collect_vec();
 
         // When
         let conflict_core_request = build_conflict_core_request(
             infra,
             &trains,
-            train_simulations,
+            &train_simulations,
             &paced_trains,
-            paced_train_simulations,
+            &paced_train_simulations,
         );
 
         // Then (assert the train schedule)
