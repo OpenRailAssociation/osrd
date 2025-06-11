@@ -3,31 +3,8 @@ import type {
   LightRollingStock,
 } from 'common/api/osrdEditoastApi';
 
-import {
-  getApiRequest,
-  deleteApiRequest,
-  getInfra,
-  getStudy,
-  getScenario,
-  getProject,
-} from './api-utils';
+import { getApiRequest, deleteApiRequest, getStudy, getScenario, getProject } from './api-utils';
 import { logger } from '../logging-fixture';
-
-/**
- * Delete infrastructure by name if it exists.
- *
- * @param infraName - The name of the infrastructure to delete.
- * @returns {Promise<void>} - A promise that resolves when the infrastructure is deleted or if not found.
- */
-export async function deleteInfra(infraName: string): Promise<void> {
-  const infra = await getInfra(infraName);
-
-  if (infra) {
-    await deleteApiRequest(`/api/infra/${infra.id}`);
-  } else {
-    logger.warn(`Infra "${infraName}" not found for deletion.`);
-  }
-}
 
 /**
  * Delete a project by name if it exists.

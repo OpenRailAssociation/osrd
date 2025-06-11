@@ -4,12 +4,11 @@ import { test as teardown } from '@playwright/test';
 
 import ROLLING_STOCK_NAMES, {
   globalProjectName,
-  infrastructureName,
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import { deleteStdcmEnvironment, listStdcmEnvironment } from './utils/api-utils';
-import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
+import { deleteApiRequest, deleteStdcmEnvironment, listStdcmEnvironment } from './utils/api-utils';
+import { deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
   try {
@@ -37,7 +36,7 @@ teardown('teardown', async ({ browser }) => {
     }
 
     // Delete infra
-    await deleteInfra(infrastructureName);
+    await deleteApiRequest(`/api/infra/${process.env.TEST_INFRA_ID}`);
 
     logger.info('Test data teardown completed successfully.');
   } catch (error) {
