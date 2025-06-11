@@ -716,71 +716,29 @@ async fn track_occupancy(
     let path_item_cache =
         PathItemCache::load(&mut db_pool.get().await?, infra_id, &path_items).await?;
 
-    let track_occupancy_map = {
-        let mut track_occupancy_map: HashMap<String, Vec<TrackOccupancy>> = HashMap::new();
-        for ((simulation, pathfinding), train_schedule) in
-            simulations_result.iter().zip(train_schedules)
-        {
-            // Get the track ranges from the pathfinding
-            let (track_ranges, path_item_positions) = match pathfinding {
-                PathfindingResult::Success(pathfinding_result_success) => (
-                    &pathfinding_result_success.track_section_ranges,
-                    &pathfinding_result_success.path_item_positions,
-                ),
-                PathfindingResult::Failure(_) => {
-                    // The timetable can have a pathfinding failure for a train schedule
-                    // because the train schedule is not valid.
-                    // We skip it because we don't want to compute the track occupancy for an invalid train schedule.
-                    // It's not a problem because we are just looking for the track occupancy of the operational point for the valid trains.
-                    tracing::info!(train_schedule.id, "pathfinding failed");
-                    continue;
-                }
-            };
-
-            let path_projection = PathProjection::new(track_ranges);
-
-            // Get the positions and the times from the simulation
-            let report_train = match simulation {
-                Response::Success { final_output, .. } => &final_output.report_train,
-                _ => {
-                    tracing::info!(train_schedule.id, "simulation failed");
-                    continue;
-                }
-            };
-
-            let path_item_id = match_path_item_id_with_op_id(
-                &path_item_cache,
-                &train_schedule,
+    let track_occupancy_map = simulations_result
+        .iter()
+        .zip(train_schedules)
+        .flat_map(|((simulation, pathfinding), train_schedule)| {
+            find_track_occupancy_for_operational_point(
                 &operational_point_id,
-            );
-
-            // If not, it infers the position and time based on track offsets and interpolation.
-            let track_occupancy = if let Some(path_item_id) = path_item_id {
-                track_occupancy_on_path_item(
-                    &train_schedule,
-                    path_item_id,
-                    path_item_positions,
-                    &path_projection,
-                    &operational_point_track_offsets,
-                    report_train,
-                )
-            } else {
-                interpolate_track_occupancy(
-                    &train_schedule,
-                    &path_projection,
-                    &operational_point_track_offsets,
-                    report_train,
-                )
-            };
-            if let Some((track_section, track_occupancy)) = track_occupancy {
+                &operational_point_track_offsets,
+                &path_item_cache,
+                simulation,
+                pathfinding,
+                &train_schedule,
+            )
+        })
+        .fold(
+            HashMap::<String, Vec<TrackOccupancy>>::new(),
+            |mut track_occupancy_map, (track_section, track_occupancy)| {
                 track_occupancy_map
                     .entry(track_section)
                     .or_default()
-                    .push(track_occupancy)
-            }
-        }
-        track_occupancy_map
-    };
+                    .push(track_occupancy);
+                track_occupancy_map
+            },
+        );
     Ok(Json(track_occupancy_map))
 }
 
@@ -878,6 +836,61 @@ fn interpolate_track_occupancy(
         }
     }
     None
+}
+
+fn find_track_occupancy_for_operational_point(
+    operational_point_id: &str,
+    operational_point_track_offsets: &[TrackOffset],
+    path_item_cache: &PathItemCache,
+    simulation: &Response,
+    pathfinding: &PathfindingResult,
+    train_schedule: &models::TrainSchedule,
+) -> Option<(String, TrackOccupancy)> {
+    // Get the track ranges from the pathfinding
+    let (track_ranges, path_item_positions) = match pathfinding {
+        PathfindingResult::Success(pathfinding_result_success) => (
+            &pathfinding_result_success.track_section_ranges,
+            &pathfinding_result_success.path_item_positions,
+        ),
+        PathfindingResult::Failure(_) => {
+            // The timetable can have a pathfinding failure for a train schedule
+            // because the train schedule is not valid.
+            // We skip it because we don't want to compute the track occupancy for an invalid train schedule.
+            // It's not a problem because we are just looking for the track occupancy of the operational point for the valid trains.
+            tracing::info!(train_schedule.id, "pathfinding failed");
+            return None;
+        }
+    };
+    let path_projection = PathProjection::new(track_ranges);
+
+    // Get the positions and the times from the simulation
+    let report_train = match simulation {
+        Response::Success { final_output, .. } => final_output.report_train.clone(),
+        _ => {
+            tracing::info!(train_schedule.id, "simulation failed");
+            return None;
+        }
+    };
+
+    let path_item_id =
+        match_path_item_id_with_op_id(path_item_cache, train_schedule, operational_point_id);
+    if let Some(path_item_id) = path_item_id {
+        track_occupancy_on_path_item(
+            train_schedule,
+            path_item_id,
+            path_item_positions,
+            &path_projection,
+            operational_point_track_offsets,
+            &report_train,
+        )
+    } else {
+        interpolate_track_occupancy(
+            train_schedule,
+            &path_projection,
+            operational_point_track_offsets,
+            &report_train,
+        )
+    }
 }
 
 /// Match the id of an operational point with a path item in the train schedule and return the id of the path item concerned
