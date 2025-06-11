@@ -382,6 +382,8 @@ const handleUpdateTimetableItem = async ({
     path,
     start_time: startDate.toISOString(),
     schedule,
+    // Reset margins because they contain references to path items
+    margins: undefined,
     paced: undefined,
     exceptions: undefined,
     category: getTrainCategoryFromId(trainrun.categoryId),
