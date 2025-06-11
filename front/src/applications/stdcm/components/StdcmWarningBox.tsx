@@ -10,10 +10,7 @@ import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
 const SHORT_TEXT_ERRORS = [StdcmConfigErrorTypes.INFRA_NOT_LOADED];
 
 type StdcmWarningBoxProps = {
-  errorInfos: {
-    errorType: StdcmConfigErrorTypes;
-    errorDetails?: StdcmConfigErrors['errorDetails'];
-  };
+  errorInfos: StdcmConfigErrors;
   removeOriginArrivalTime: () => void;
   removeDestinationArrivalTime: () => void;
 };
