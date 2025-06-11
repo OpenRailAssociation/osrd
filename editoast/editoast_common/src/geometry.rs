@@ -46,7 +46,7 @@ pub enum GeoJsonMultiPoint {
     MultiPoint(GeoJsonMultiPointValue),
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, ToSchema, Debug, Clone)]
 #[serde(tag = "type", content = "coordinates")]
 #[allow(unused)]
 pub enum GeoJsonLineString {
@@ -74,17 +74,17 @@ pub enum GeoJsonMultiPolygon {
     MultiPolygon(GeoJsonMultiPolygonValue),
 }
 
-#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[allow(unused)]
-pub struct GeoJsonPointValue(#[schema(min_items = 2, max_items = 2)] Vec<f64>);
+pub struct GeoJsonPointValue(#[schema(min_items = 2, max_items = 2)] pub Vec<f64>);
 
 #[derive(Serialize, ToSchema)]
 #[allow(unused)]
 pub struct GeoJsonMultiPointValue(#[schema(min_items = 1)] Vec<GeoJsonPointValue>);
 
-#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[allow(unused)]
-pub struct GeoJsonLineStringValue(#[schema(min_items = 2)] Vec<GeoJsonPointValue>);
+pub struct GeoJsonLineStringValue(#[schema(min_items = 2)] pub Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, ToSchema)]
 #[allow(unused)]
