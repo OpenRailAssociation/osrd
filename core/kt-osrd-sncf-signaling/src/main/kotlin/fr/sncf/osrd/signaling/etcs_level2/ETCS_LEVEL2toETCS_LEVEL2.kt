@@ -13,20 +13,6 @@ object ETCS_LEVEL2toETCS_LEVEL2 : SignalDriver {
     override val inputSignalingSystem = "ETCS_LEVEL2"
     override val outputSignalingSystem = "ETCS_LEVEL2"
 
-    private fun cascadePrimaryAspect(aspect: String, parameters: SigParameters): String {
-        return when (aspect) {
-            "300VL" -> "300VL"
-            "300(VL)" -> "300VL"
-            "270A" -> "300(VL)"
-            "220A" -> "270A"
-            "160A" -> "220A"
-            "080A" -> "160A"
-            "000" -> "080A"
-            "OCCUPIED" -> "000"
-            else -> throw OSRDError.newAspectError(aspect)
-        }
-    }
-
     override fun evalSignal(
         signal: SigSettings,
         parameters: SigParameters,
@@ -40,15 +26,7 @@ object ETCS_LEVEL2toETCS_LEVEL2 : SignalDriver {
                     throw OSRDError(ErrorType.BALUnprotectedZones)
                 ProtectionStatus.INCOMPATIBLE -> value("aspect", "OCCUPIED")
                 ProtectionStatus.OCCUPIED -> value("aspect", "OCCUPIED")
-                ProtectionStatus.CLEAR -> {
-                    if (!maView.hasNextSignal) {
-                        value("aspect", "000")
-                    } else {
-                        val nextSignalState = maView.nextSignalState
-                        val nextAspect = nextSignalState.getEnum("aspect")
-                        value("aspect", cascadePrimaryAspect(nextAspect, parameters))
-                    }
-                }
+                ProtectionStatus.CLEAR -> value("aspect", "VL")
             }
         }
     }

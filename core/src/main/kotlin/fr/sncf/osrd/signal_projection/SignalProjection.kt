@@ -58,7 +58,7 @@ fun projectSignals(
         value("aspect", "300VL")
     }
     leastConstrainingStates[etcsLevel2] = (sigModuleManager.getStateSchema(etcsLevel2)) {
-        value("aspect", "300VL")
+        value("aspect", "VL")
     }
 
     val zoneMap = mutableMapOf<String, Int>()

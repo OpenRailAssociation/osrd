@@ -18,7 +18,7 @@ object BAPRtoETCS_LEVEL2 : SignalDriver {
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
     ): SigState {
-        return stateSchema { value("aspect", "300VL") }
+        return stateSchema { value("aspect", "VL") }
     }
 
     override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {}
