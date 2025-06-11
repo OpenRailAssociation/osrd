@@ -13,7 +13,7 @@ import { Duration } from 'utils/duration';
 import { formatPacedTrainPayload } from '../formatTimetableItemPayload';
 
 describe('formatTimetableItemPayload', () => {
-  const osrdconf: OperationalStudiesConfState = {
+  const rawOsrdconf: OperationalStudiesConfState = {
     timetableID: 184,
     rollingStockID: 1,
     infraID: 2,
@@ -65,7 +65,7 @@ describe('formatTimetableItemPayload', () => {
     addedExceptions: [],
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
-  const timetableItemToEditData: TimetableItemToEditData = {
+  const rawTimetableItemToEditData: TimetableItemToEditData = {
     timetableItemId: 'paced_238' as PacedTrainId,
     originalPacedTrain: {
       category: 'FREIGHT_TRAIN',
@@ -174,20 +174,174 @@ describe('formatTimetableItemPayload', () => {
       },
     },
   };
+  describe('User creates a paced train', () => {
+    it('should add the exceptions defined by user', () => {
+      const userChanges: Partial<OperationalStudiesConfState> = {
+        addedExceptions: [
+          {
+            key: 'az',
+            startTime: new Date('2025-07-01T00:00:00'),
+          },
+        ],
+      };
+      const osrdconfWithUserChanges: OperationalStudiesConfState = {
+        ...rawOsrdconf,
+        ...userChanges,
+      };
+      const result = formatPacedTrainPayload(osrdconfWithUserChanges, rollingStockName);
+      expect(result).toEqual({
+        category: 'FREIGHT_TRAIN',
+        comfort: 'STANDARD',
+        constraint_distribution: 'MARECO',
+        initial_speed: 0,
+        labels: [],
+        margins: { boundaries: [], values: ['0%'] },
+        options: {
+          use_electrical_profiles: true,
+          use_speed_limits_for_simulation: true,
+        },
+        path: [
+          {
+            id: '0-0',
+            trigram: 'WS',
+            secondary_code: 'BV',
+            track_reference: null,
+            deleted: false,
+          },
+          {
+            id: '1-1',
+            trigram: 'SS',
+            secondary_code: 'BV',
+            track_reference: null,
+            deleted: false,
+          },
+        ],
+        power_restrictions: [],
+        rolling_stock_name: 'DUAL-MODE_RS_E2Ee',
+        schedule: [],
+        speed_limit_tag: undefined,
+        start_time: '2025-06-02T12:45:00.000Z',
+        train_name: 'test',
+        paced: { time_window: 'PT3H', interval: 'PT1H' },
+        exceptions: [
+          {
+            key: 'az',
+            start_time: {
+              value: '2025-07-01T00:00:00.000Z',
+            },
+          },
+        ],
+      });
+    });
+  });
   describe('User updates a paced train', () => {
+    describe('User creates 2 more added exceptions, and 1 already existed', () => {
+      it('should concanate new added exceptions with existing ones', () => {
+        const userChanges: Partial<OperationalStudiesConfState> = {
+          addedExceptions: [
+            {
+              key: 'by',
+              startTime: new Date('2025-07-02T00:00:00'),
+            },
+            {
+              key: 'cx',
+              startTime: new Date('2025-07-03T00:00:00'),
+            },
+          ],
+        };
+        const osrdconfWithUserChanges: OperationalStudiesConfState = {
+          ...rawOsrdconf,
+          ...userChanges,
+        };
+        const itemDataWithPREVIOUSLYAddedException = {
+          ...rawTimetableItemToEditData,
+          originalPacedTrain: {
+            ...rawTimetableItemToEditData.originalPacedTrain,
+            exceptions: [
+              {
+                key: 'az',
+                start_time: {
+                  value: '2025-07-01T00:00:00.000Z',
+                },
+              },
+            ],
+          },
+        };
+        const result = formatPacedTrainPayload(
+          osrdconfWithUserChanges,
+          rollingStockName,
+          itemDataWithPREVIOUSLYAddedException
+        );
+        expect(result).toEqual({
+          category: 'FREIGHT_TRAIN',
+          comfort: 'STANDARD',
+          constraint_distribution: 'MARECO',
+          initial_speed: 0,
+          labels: [],
+          margins: { boundaries: [], values: ['0%'] },
+          options: {
+            use_electrical_profiles: true,
+            use_speed_limits_for_simulation: true,
+          },
+          path: [
+            {
+              id: '0-0',
+              trigram: 'WS',
+              secondary_code: 'BV',
+              track_reference: null,
+              deleted: false,
+            },
+            {
+              id: '1-1',
+              trigram: 'SS',
+              secondary_code: 'BV',
+              track_reference: null,
+              deleted: false,
+            },
+          ],
+          power_restrictions: [],
+          rolling_stock_name: 'DUAL-MODE_RS_E2Ee',
+          schedule: [],
+          speed_limit_tag: undefined,
+          start_time: '2025-06-02T12:45:00.000Z',
+          train_name: 'test',
+          paced: { time_window: 'PT3H', interval: 'PT1H' },
+          exceptions: [
+            {
+              key: 'az',
+              start_time: {
+                value: '2025-07-01T00:00:00.000Z',
+              },
+            },
+            {
+              key: 'by',
+              start_time: {
+                value: '2025-07-02T00:00:00.000Z',
+              },
+            },
+            {
+              key: 'cx',
+              start_time: {
+                value: '2025-07-03T00:00:00.000Z',
+              },
+            },
+          ],
+        });
+      });
+    });
     describe('use modifies category in the pace train to match the exception', () => {
       describe('exception is only a category exception', () => {
         const userChanges: Record<string, TrainCategory> = {
           category: 'NIGHT_TRAIN',
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
-          ...osrdconf,
+          ...rawOsrdconf,
           category: userChanges.category,
         };
         const timetableItemToEditDataWithOneChangeGroup: TimetableItemToEditData = {
-          ...timetableItemToEditData,
+          ...rawTimetableItemToEditData,
           originalPacedTrain: {
-            ...timetableItemToEditData.originalPacedTrain,
+            ...rawTimetableItemToEditData.originalPacedTrain,
             exceptions: [
               {
                 key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
@@ -213,14 +367,14 @@ describe('formatTimetableItemPayload', () => {
           category: 'NIGHT_TRAIN',
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
-          ...osrdconf,
+          ...rawOsrdconf,
           category: userChanges.category,
         };
 
         const timetableItemToEditDataWithTwoChangeGroups: TimetableItemToEditData = {
-          ...timetableItemToEditData,
+          ...rawTimetableItemToEditData,
           originalPacedTrain: {
-            ...timetableItemToEditData.originalPacedTrain,
+            ...rawTimetableItemToEditData.originalPacedTrain,
             exceptions: [
               {
                 key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
@@ -266,9 +420,9 @@ describe('formatTimetableItemPayload', () => {
           name: 'test 5', // occurrence with index 2 generated name
         };
         const timetableItemToEditDataWithExceptions: TimetableItemToEditData = {
-          ...timetableItemToEditData,
+          ...rawTimetableItemToEditData,
           originalPacedTrain: {
-            ...timetableItemToEditData.originalPacedTrain,
+            ...rawTimetableItemToEditData.originalPacedTrain,
             exceptions: [
               {
                 key: '444-555',
@@ -282,7 +436,7 @@ describe('formatTimetableItemPayload', () => {
           occurrenceId: 'indexedoccurrence_238_2' as IndexedOccurrenceId,
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
-          ...osrdconf,
+          ...rawOsrdconf,
           ...userChanges,
         };
 
@@ -315,7 +469,7 @@ describe('formatTimetableItemPayload', () => {
         const userChanges: Partial<OperationalStudiesConfState> = {
           name: 'Added exception',
           pathSteps: [
-            osrdconf.pathSteps[0],
+            rawOsrdconf.pathSteps[0],
             {
               id: '1-1',
               deleted: false,
@@ -332,11 +486,11 @@ describe('formatTimetableItemPayload', () => {
           startTime: new Date('2025-06-02T14:30:00.000Z'),
         };
         const timetableItemToEditDataWithExceptions: TimetableItemToEditData = {
-          ...timetableItemToEditData,
+          ...rawTimetableItemToEditData,
           originalPacedTrain: {
-            ...timetableItemToEditData.originalPacedTrain,
+            ...rawTimetableItemToEditData.originalPacedTrain,
             exceptions: [
-              ...timetableItemToEditData.originalPacedTrain.exceptions,
+              ...rawTimetableItemToEditData.originalPacedTrain.exceptions,
               {
                 key: '987-654',
                 start_time: { value: '2025-06-02T14:30:00.000Z' },
@@ -346,7 +500,7 @@ describe('formatTimetableItemPayload', () => {
           occurrenceId: 'exception_238_987-654' as AddedExceptionId,
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
-          ...osrdconf,
+          ...rawOsrdconf,
           ...userChanges,
         };
 
@@ -411,11 +565,11 @@ describe('formatTimetableItemPayload', () => {
           name: 'test 1', // occurrence with index 0 generated name
         };
         const timetableItemToEditDataWithExceptions: TimetableItemToEditData = {
-          ...timetableItemToEditData,
+          ...rawTimetableItemToEditData,
           originalPacedTrain: {
-            ...timetableItemToEditData.originalPacedTrain,
+            ...rawTimetableItemToEditData.originalPacedTrain,
             exceptions: [
-              ...timetableItemToEditData.originalPacedTrain.exceptions,
+              ...rawTimetableItemToEditData.originalPacedTrain.exceptions,
               {
                 key: '444-555',
                 occurrence_index: 0,
@@ -428,7 +582,7 @@ describe('formatTimetableItemPayload', () => {
           occurrenceId: 'indexedoccurrence_238_0' as IndexedOccurrenceId,
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
-          ...osrdconf,
+          ...rawOsrdconf,
           ...userChanges,
         };
         const result = formatPacedTrainPayload(
