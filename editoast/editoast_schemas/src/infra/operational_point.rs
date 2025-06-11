@@ -28,9 +28,9 @@ pub struct OperationalPoint {
     pub weight: Option<u8>,
 }
 
-#[derive(Debug, Educe, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Educe, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
-#[educe(Default, PartialEq)]
+#[educe(Default)]
 pub struct OperationalPointPart {
     #[educe(Default = "InvalidRef".into())]
     #[schema(inline)]

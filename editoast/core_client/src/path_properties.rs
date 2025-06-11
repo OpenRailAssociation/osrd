@@ -1,6 +1,7 @@
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
+use editoast_schemas::infra::OperationalPointPartExtension;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
@@ -36,6 +37,7 @@ pub struct PathPropertiesResponse {
 
 /// Property f64 values along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct PropertyValuesF64 {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
@@ -44,8 +46,17 @@ pub struct PropertyValuesF64 {
     values: Vec<f64>,
 }
 
+#[cfg(feature = "mocking_client")]
+impl PropertyValuesF64 {
+    pub fn new(boundaries: Vec<u64>, values: Vec<f64>) -> Self {
+        assert!(boundaries.len() == values.len() + 1);
+        Self { boundaries, values }
+    }
+}
+
 /// Electrification property along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct PropertyElectrificationValues {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
@@ -55,7 +66,16 @@ pub struct PropertyElectrificationValues {
     values: Vec<PropertyElectrificationValue>,
 }
 
+#[cfg(feature = "mocking_client")]
+impl PropertyElectrificationValues {
+    pub fn new(boundaries: Vec<u64>, values: Vec<PropertyElectrificationValue>) -> Self {
+        assert!(boundaries.len() == values.len() + 1);
+        Self { boundaries, values }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PropertyElectrificationValue {
     /// Electrified section with a given voltage
@@ -68,6 +88,7 @@ pub enum PropertyElectrificationValue {
 
 /// Operational point along a path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct OperationalPointOnPath {
     /// Id of the operational point
     #[schema(inline)]
@@ -84,6 +105,32 @@ pub struct OperationalPointOnPath {
     weight: Option<u8>,
 }
 
+#[cfg(feature = "mocking_client")]
+impl OperationalPointOnPath {
+    pub fn new(
+        id: String,
+        track_id: String,
+        position: f64,
+        path_position: u64,
+        weight: Option<u8>,
+    ) -> Self {
+        OperationalPointOnPath {
+            id: Identifier(id),
+            part: OperationalPointPart {
+                track: Identifier(track_id),
+                position,
+                extensions: OperationalPointPartExtension { sncf: None },
+            },
+            extensions: OperationalPointExtensions {
+                sncf: None,
+                identifier: None,
+            },
+            position: path_position,
+            weight,
+        }
+    }
+}
+
 /// Zones along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PropertyZoneValues {
@@ -92,6 +139,14 @@ pub struct PropertyZoneValues {
     boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     values: Vec<String>,
+}
+
+#[cfg(feature = "mocking_client")]
+impl PropertyZoneValues {
+    pub fn new(boundaries: Vec<u64>, values: Vec<String>) -> Self {
+        assert!(boundaries.len() == values.len() + 1);
+        Self { boundaries, values }
+    }
 }
 
 impl AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'_> {

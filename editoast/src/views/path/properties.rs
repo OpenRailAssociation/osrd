@@ -290,17 +290,67 @@ fn path_properties_input_hash(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
+    use core_client::mocking::MockingClient;
+    use core_client::path_properties::OperationalPointOnPath;
+    use core_client::path_properties::PathPropertiesResponse;
+    use core_client::path_properties::PropertyElectrificationValue;
+    use core_client::path_properties::PropertyElectrificationValues;
+    use core_client::path_properties::PropertyValuesF64;
+    use core_client::path_properties::PropertyZoneValues;
+    use editoast_common::geometry::GeoJsonLineString;
+    use editoast_common::geometry::GeoJsonLineStringValue;
+    use editoast_common::geometry::GeoJsonPointValue;
+    use editoast_models::DbConnectionPoolV2;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
     use super::PathProperties;
     use crate::models::fixtures::create_small_infra;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
+    fn path_properties_response() -> PathPropertiesResponse {
+        PathPropertiesResponse {
+            slopes: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
+            curves: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
+            electrifications: PropertyElectrificationValues::new(
+                vec![0, 1],
+                vec![PropertyElectrificationValue::NonElectrified],
+            ),
+            geometry: GeoJsonLineString::LineString(GeoJsonLineStringValue(vec![
+                GeoJsonPointValue(vec![0.0, 0.0]),
+            ])),
+            operational_points: vec![OperationalPointOnPath::new(
+                "1".into(),
+                "track-1".into(),
+                0.0,
+                0,
+                None,
+            )],
+            zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
+        }
+    }
+
+    fn init_test_app() -> TestApp {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+
+        core.stub("/path_properties")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(path_properties_response())
+            .finish();
+
+        TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build()
+    }
+
     #[rstest]
-    #[ignore] // TODO: Need to mock the core response to fix this test
-    async fn path_properties_small_infra() {
-        let app = TestAppBuilder::default_app();
+    async fn returns_all_path_properties() {
+        let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let url = format!(
             "/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points",
@@ -309,13 +359,48 @@ mod tests {
 
         // Should succeed
         let request = app.post(&url).json(&json!(
-            {"track_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
+            {"track_section_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
         );
         let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
-        assert!(response.slopes.is_some());
-        assert!(response.curves.is_some());
-        assert!(response.electrifications.is_some());
-        assert!(response.geometry.is_some());
-        assert!(response.operational_points.is_some());
+        let path_properties_response = path_properties_response();
+        assert_eq!(response.slopes, Some(path_properties_response.slopes));
+        assert_eq!(response.curves, Some(path_properties_response.curves));
+        assert_eq!(
+            response.electrifications,
+            Some(path_properties_response.electrifications)
+        );
+        assert_eq!(response.geometry, Some(path_properties_response.geometry));
+        assert_eq!(
+            response.operational_points,
+            Some(path_properties_response.operational_points)
+        );
+    }
+
+    #[rstest]
+    async fn returns_only_requested_path_properties() {
+        let app = init_test_app();
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let url = format!(
+            "/infra/{}/path_properties?props[]=electrifications&props[]=geometry&props[]=operational_points",
+            infra.id
+        );
+
+        // Should succeed
+        let request = app.post(&url).json(&json!(
+            {"track_section_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
+        );
+        let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let path_properties_response = path_properties_response();
+        assert!(response.slopes.is_none());
+        assert!(response.curves.is_none());
+        assert_eq!(
+            response.electrifications,
+            Some(path_properties_response.electrifications)
+        );
+        assert_eq!(response.geometry, Some(path_properties_response.geometry));
+        assert_eq!(
+            response.operational_points,
+            Some(path_properties_response.operational_points)
+        );
     }
 }
