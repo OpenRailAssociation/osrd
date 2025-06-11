@@ -275,8 +275,7 @@ async fn pathfinding_blocks_batch(
     let pathfinding_cached_results: Vec<Option<Arc<PathfindingResult>>> = valkey_conn
         .compressed_get_bulk(&hashes)
         .await?
-        .iter()
-        .map(|result| result.clone().map(Arc::new))
+        .map(|result| result.map(Arc::new))
         .collect();
     let pathfinding_cached_results: HashMap<_, _> =
         hashes.into_iter().zip(pathfinding_cached_results).collect();

@@ -123,27 +123,25 @@ impl ValkeyConnection {
     pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         keys: &[K],
-    ) -> Result<Vec<Option<T>>> {
-        // Avoid mget to fail if keys is empty
-        if keys.is_empty() {
-            return Ok(vec![]);
-        }
-        let values: Vec<Option<String>> = self.mget(keys).await?;
-        let cached_values = values
-            .into_iter()
-            .map(|value| {
-                value.and_then(|v| match serde_json::from_str(&v) {
-                    Ok(value) => Some(value),
-                    Err(e) => {
-                        tracing::warn!(
-                            "the cached value is not a valid JSON for type '{}': {e}",
-                            std::any::type_name::<T>()
-                        );
-                        None
-                    }
-                })
+    ) -> Result<impl Iterator<Item = Option<T>>> {
+        let values: Vec<Option<String>> = if !keys.is_empty() {
+            self.mget(keys).await?
+        } else {
+            // Avoid mget to fail if keys is empty
+            vec![]
+        };
+        let cached_values = values.into_iter().map(|value| {
+            value.and_then(|v| match serde_json::from_str(&v) {
+                Ok(value) => Some(value),
+                Err(e) => {
+                    tracing::warn!(
+                        "the cached value is not a valid JSON for type '{}': {e}",
+                        std::any::type_name::<T>()
+                    );
+                    None
+                }
             })
-            .collect();
+        });
         Ok(cached_values)
     }
 
@@ -240,17 +238,18 @@ impl ValkeyConnection {
     pub async fn compressed_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
         &mut self,
         keys: &[K],
-    ) -> Result<Vec<Option<T>>> {
-        // Avoid mget to fail if keys is empty
-        if keys.is_empty() {
-            return Ok(vec![]);
-        }
+    ) -> Result<impl Iterator<Item = Option<T>>> {
         debug!(nb_keys = keys.len());
 
         // Fetch the values from Redis
-        let values = span!(Level::INFO, "Fetching values from Redis")
-            .in_scope(|| self.mget::<_, Vec<Option<Vec<u8>>>>(keys))
-            .await?;
+        let values = if !keys.is_empty() {
+            span!(Level::INFO, "Fetching values from Redis")
+                .in_scope(|| self.mget::<_, Vec<Option<Vec<u8>>>>(keys))
+                .await?
+        } else {
+            // Avoid mget to fail if keys is empty
+            vec![]
+        };
 
         // Decompress each value if it exists
         let cached_values = span!(Level::INFO, "Decompressing data").in_scope(|| {
@@ -271,7 +270,6 @@ impl ValkeyConnection {
                         }
                     })
                 })
-                .collect()
         });
         Ok(cached_values)
     }

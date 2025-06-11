@@ -347,8 +347,7 @@ pub async fn consist_train_simulation_batch(
     let cached_results: Vec<Option<Arc<simulation::Response>>> = valkey_conn
         .compressed_get_bulk(&cached_simulation_hash)
         .await?
-        .into_iter()
-        .map(|result| result.map(Arc::new))
+        .map(|simulation| simulation.map(Arc::new))
         .collect();
 
     let nb_hit = cached_results.iter().flatten().count();
