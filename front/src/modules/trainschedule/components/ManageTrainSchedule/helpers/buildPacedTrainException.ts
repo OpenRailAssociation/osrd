@@ -153,8 +153,9 @@ export function updatePacedTrainExceptionsList(
   newException: PacedTrainException,
   occurrenceId: OccurrenceId
 ): PacedTrainException[] {
-  // There is still some change groups in this exception
-  const hasExceptions = !isEmpty(omit(newException, ['key', 'occurrence_index']));
+  // Check if there are change groups in this exception or if it is disabled.
+  const hasExceptions =
+    !isEmpty(omit(newException, ['key', 'occurrence_index', 'disabled'])) || newException.disabled;
 
   const exceptionToUpdate = findExceptionWithOccurrenceId(currentExceptions, occurrenceId);
 
