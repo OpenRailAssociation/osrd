@@ -82,7 +82,13 @@ const StcdmResultsTable = ({
                   >
                     {index + 1}
                   </td>
-                  <td className="name" style={{ color: 'rgb(49, 46, 43)' }}>
+                  <td
+                    className="name"
+                    style={{
+                      color: 'rgb(49, 46, 43)',
+                      fontWeight: isRequestedPathStep ? '600' : 'normal',
+                    }}
+                  >
                     {isNotExtremity &&
                     !isRequestedPathStep &&
                     step.name === prevStep.name &&
