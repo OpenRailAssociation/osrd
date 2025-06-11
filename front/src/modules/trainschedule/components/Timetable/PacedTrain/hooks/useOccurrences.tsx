@@ -37,6 +37,12 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const occurrencesCount = getOccurrencesNb(paced);
 
+  // Add to the count the added exceptions and substract the disabled ones
+  const occurrenceCountLabel = exceptions.reduce((acc, exception) => {
+    if (exception.disabled) acc -= 1;
+    return acc;
+  }, occurrences.length);
+
   const [getRollingStockByName] =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
 
@@ -152,8 +158,7 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
     buildOccurrences();
   }, [pacedTrain]);
 
-  // TODO exceptions : update the count to display only active occurrences in issue https://github.com/OpenRailAssociation/osrd/issues/11470
-  return { occurrencesCount: occurrences.length, occurrences };
+  return { occurrencesCount: occurrenceCountLabel, occurrences };
 };
 
 export default useOccurrences;
