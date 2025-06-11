@@ -173,7 +173,6 @@ const useSimulationResults = (): SimulationResultsData => {
     selectedTimetableItemPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
     timetableItemSimulation: speedSpaceChart?.simulation,
     pathProperties: speedSpaceChart?.formattedPathProperties,
-    pathLength: path?.length,
     path,
   };
 };
