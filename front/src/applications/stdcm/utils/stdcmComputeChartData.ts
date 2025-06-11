@@ -14,7 +14,7 @@ const computeChartData = (
   rollingStock: RollingStockWithLiveries,
   pathProperties: StdcmPathProperties
 ): SpeedSpaceChartData => {
-  const { simulation, path: pathfindingResult, departure_time: departureTime } = stdcmResponse;
+  const { simulation, path: pathfindingResult } = stdcmResponse;
 
   /**
    * TODO:
@@ -42,7 +42,6 @@ const computeChartData = (
     formattedPowerRestrictions,
     simulation,
     formattedPathProperties,
-    departureTime,
   } as SpeedSpaceChartData;
 };
 

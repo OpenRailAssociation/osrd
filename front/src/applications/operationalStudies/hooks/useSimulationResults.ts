@@ -126,7 +126,6 @@ const useSimulationResults = (): SimulationResultsData => {
               id: formatEditoastIdToTrainScheduleId(selectedTrainSchedule.id),
             },
             selectedTimetableItemSimulation: selectedTrainScheduleSimulation,
-            selectedTimetableItemStartTime: selectedTrainSchedule?.start_time,
           }
         : undefined;
     }
@@ -148,7 +147,6 @@ const useSimulationResults = (): SimulationResultsData => {
     return {
       selectedTimetableItem: updatedSelectedPacedTrain,
       selectedTimetableItemSimulation: selectedPacedTrainSimulation,
-      selectedTimetableItemStartTime: selectedOccurrenceStartTime,
     };
   }, [
     selectedTrainId,
@@ -161,8 +159,7 @@ const useSimulationResults = (): SimulationResultsData => {
   const speedSpaceChart = useSpeedSpaceChart(
     selectedTimetableItemSimulationData?.selectedTimetableItem,
     path,
-    selectedTimetableItemSimulationData?.selectedTimetableItemSimulation,
-    selectedTimetableItemSimulationData?.selectedTimetableItemStartTime
+    selectedTimetableItemSimulationData?.selectedTimetableItemSimulation
   );
 
   if (!selectedTrainId)
