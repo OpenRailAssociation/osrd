@@ -781,11 +781,12 @@ const massageData = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
 };
 
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
-  const macroNodes: MacroNodeForm[] = [];
+  const macroNodes = new Map<string, MacroNodeForm>();
   for (const node of dto.nodes) {
-    macroNodes.push({
+    const key = `trigram:${node.betriebspunktName}`;
+    macroNodes.set(key, {
       ...castNgeNode(node, dto.labels),
-      path_item_key: `trigram:${node.betriebspunktName}`,
+      path_item_key: key,
     });
   }
 
@@ -822,5 +823,5 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     }
   }
 
-  return { macro_nodes: macroNodes, paced_trains: pacedTrains, train_schedules: trainSchedules };
+  return { macro_nodes: [...macroNodes.values()], paced_trains: pacedTrains, train_schedules: trainSchedules };
 };
