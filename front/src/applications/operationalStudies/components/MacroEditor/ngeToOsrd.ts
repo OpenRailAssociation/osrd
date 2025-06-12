@@ -719,6 +719,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
     const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
+    const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
+    if (category) labels.push(category.name);
     const commonProps = {
       train_name: trainrun.name,
       labels,
