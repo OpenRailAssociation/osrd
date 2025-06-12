@@ -410,7 +410,7 @@ export const splitRollingStockProperties = (
   propertiesToDisplay: string[],
   effortCurves?: EffortCurveForms | null,
   checkCondition?: boolean
-) => {
+): { [key: string]: SchemaProperty[] } => {
   const displayedProperties = RS_SCHEMA_PROPERTIES.filter((property) => {
     const isInThisGroup = propertiesToDisplay.includes(property.title);
     if (checkCondition && effortCurves) {
@@ -419,7 +419,7 @@ export const splitRollingStockProperties = (
     }
     return isInThisGroup;
   });
-  return groupBy(displayedProperties, 'side') as { [key: string]: SchemaProperty[] };
+  return groupBy(displayedProperties, 'side');
 };
 
 /**
