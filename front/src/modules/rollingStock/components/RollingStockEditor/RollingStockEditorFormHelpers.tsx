@@ -464,7 +464,7 @@ export const RollingStockEditorCategoryForm = ({
             rollingStockValues.primaryCategory
               ? {
                   id: rollingStockValues.primaryCategory,
-                  label: t(rollingStockValues.primaryCategory),
+                  label: t(`categoriesOptions.${rollingStockValues.primaryCategory}`),
                 }
               : { label: t('categoriesOptions.choose') }
           }
