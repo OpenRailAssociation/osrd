@@ -157,13 +157,19 @@ class I18nSyntaxError extends Error {
   }
 }
 
+type KeyMetadata = {
+  // Filename and line number the extracted translation key comes from
+  sourceFilename: string;
+  sourceLine: number;
+};
+
 /**
  * Check whether a function call invokes a translation function, record the
  * translation key if so.
  */
 function visitCallExpression(
   checker: ts.TypeChecker,
-  extractedKeys: Set<string>,
+  extractedKeys: Map<string, KeyMetadata>,
   file: ts.SourceFile,
   node: ts.CallExpression
 ) {
@@ -276,6 +282,7 @@ function visitCallExpression(
     }
   }
 
+  const pos = file.getLineAndCharacterOfPosition(node.pos);
   for (let key of keys) {
     // If the key doesn't include a namespace, use the default one from options
     // or generic type arguments
@@ -286,7 +293,10 @@ function visitCallExpression(
       key = `${defaultNamespace}:${key}`;
     }
 
-    extractedKeys.add(key);
+    extractedKeys.set(key, {
+      sourceFilename: file.fileName,
+      sourceLine: pos.line + 1,
+    });
   }
 }
 
@@ -295,7 +305,7 @@ function visitCallExpression(
  */
 function visitNode(
   checker: ts.TypeChecker,
-  extractedKeys: Set<string>,
+  extractedKeys: Map<string, KeyMetadata>,
   file: ts.SourceFile,
   node: ts.Node
 ) {
@@ -330,7 +340,7 @@ function extractKeysFromTypeScript() {
   const checker = program.getTypeChecker();
 
   const files = program.getSourceFiles();
-  const extractedKeys = new Set<string>();
+  const extractedKeys = new Map<string, KeyMetadata>();
   for (const file of files) {
     visitNode(checker, extractedKeys, file, file);
   }
@@ -357,15 +367,15 @@ keysByLocale.forEach(({ locale, keys }) => {
 });
 
 const missingKeys: string[] = [];
-extractedKeys.forEach((key) => {
+for (const [key, metadata] of extractedKeys) {
   if (IGNORE_MISSING.every((pattern) => !key.match(pattern))) {
     keysByLocale.forEach(({ locale, keys }) => {
       if (!keys.has(key)) {
-        missingKeys.push(`${locale}:${key}`);
+        missingKeys.push(`${locale}:${key} (${metadata.sourceFilename}:${metadata.sourceLine})`);
       }
     });
   }
-});
+}
 
 if (unusedKeys.length > 0) {
   console.warn(`Unused keys (${unusedKeys.length})`);
