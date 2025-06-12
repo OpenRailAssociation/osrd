@@ -225,8 +225,8 @@ function visitCallExpression(
   }
   let key = keyNode.text;
 
-  // Extract the default namespace from the options in the last function
-  // argument
+  // Extract the default namespace and key prefix from the options in the last
+  // function argument
   if (optionsNode && ts.isObjectLiteralExpression(optionsNode)) {
     const optionsType = checker.getTypeAtLocation(optionsNode);
     const nsSymbol = optionsType.symbol.members?.get(ts.escapeLeadingUnderscores('ns'));
@@ -237,6 +237,21 @@ function visitCallExpression(
       ts.isStringLiteral(nsSymbol.valueDeclaration.initializer)
     ) {
       defaultNamespace = nsSymbol.valueDeclaration.initializer.text;
+    }
+
+    // The key prefix option is only valid if getFixedT() was called with a
+    // prefix
+    const keyPrefixSymbol = optionsType.symbol.members?.get(
+      ts.escapeLeadingUnderscores('keyPrefix')
+    );
+    if (
+      prefix &&
+      keyPrefixSymbol &&
+      keyPrefixSymbol.valueDeclaration &&
+      ts.isPropertyAssignment(keyPrefixSymbol.valueDeclaration) &&
+      ts.isStringLiteral(keyPrefixSymbol.valueDeclaration.initializer)
+    ) {
+      prefix = keyPrefixSymbol.valueDeclaration.initializer.text;
     }
   }
 
