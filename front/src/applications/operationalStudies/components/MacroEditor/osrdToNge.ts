@@ -444,20 +444,19 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
   };
 };
 
-const getNgeLabels = (state: MacroEditorState): LabelDto[] => [
-  ...Array.from(state.nodeLabels).map((l, i) => ({
-    id: i,
-    label: l,
-    labelGroupId: NODE_LABEL_GROUP.id,
-    labelRef: 'Node',
-  })),
-  ...Array.from(state.trainrunLabels).map((l, i) => ({
-    id: i,
-    label: l,
-    labelGroupId: TRAINRUN_LABEL_GROUP.id,
-    labelRef: 'Trainrun',
-  })),
-];
+const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
+  [
+    ...Array.from(state.nodeLabels).map((l) => ({
+      label: l,
+      labelGroupId: NODE_LABEL_GROUP.id,
+      labelRef: 'Node',
+    })),
+    ...Array.from(state.trainrunLabels).map((l) => ({
+      label: l,
+      labelGroupId: TRAINRUN_LABEL_GROUP.id,
+      labelRef: 'Trainrun',
+    })),
+  ].map((l, i) => ({ ...l, id: i }));
 
 /**
  * Return a compatible object for NGE.
