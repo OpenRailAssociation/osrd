@@ -353,12 +353,6 @@ export function isOnModeMove(interactionStateType: string): boolean {
   return ['moveRangeExtremity', 'moveSign'].includes(interactionStateType);
 }
 
-export const getObjTypeEdition = (objType: 'SpeedSection' | 'Electrification') =>
-  objType === 'SpeedSection' ? 'speed' : 'electrification';
-
-export const getObjTypeAction = (objType: 'SpeedSection' | 'Electrification') =>
-  objType === 'SpeedSection' ? 'speed-section' : 'electrification';
-
 export const isNew = (entity: SpeedSectionEntity | ElectrificationEntity) =>
   entity.properties.id === NEW_ENTITY_ID;
 

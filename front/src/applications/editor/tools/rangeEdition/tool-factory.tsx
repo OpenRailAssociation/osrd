@@ -36,8 +36,6 @@ import {
   getSignInformationFromInteractionState,
   isOnModeMove,
   selectPslSign,
-  getObjTypeAction,
-  getObjTypeEdition,
   isNew,
 } from './utils';
 import type { OptionsStateType } from '../routeEdition/types';
@@ -85,8 +83,10 @@ function getRangeEditionTool<T extends EditorRange>({
     };
   }
 
-  const objectTypeEdition = getObjTypeEdition(layersEntity.objType);
-  const objectTypeAction = getObjTypeAction(layersEntity.objType);
+  const [objectTypeEdition, objectTypeAction] =
+    layersEntity.objType === 'SpeedSection'
+      ? ['speed', 'speed-section']
+      : ['electrification', 'electrification'];
 
   return {
     id,
