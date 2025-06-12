@@ -5,10 +5,10 @@ import type {
   PacedTrain,
   PathProperties,
   PathfindingResultSuccess,
-  RollingStockWithLiveries,
   SimulationResponse,
   TrainSchedule,
   MacroNodeForm,
+  RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -104,14 +104,13 @@ export type ElectrificationVoltage = {
   voltage?: string;
 };
 
-export type SimulationResultsData = {
-  selectedTimetableItem?: TimetableItem;
-  selectedTimetableItemRollingStock?: RollingStockWithLiveries;
-  selectedTimetableItemPowerRestrictions: LayerData<PowerRestrictionValues>[];
-  timetableItemSimulation?: SimulationResponseSuccess;
-  pathProperties?: PathPropertiesFormatted;
-  pathLength?: number;
-  path?: PathfindingResultSuccess;
+export type SimulationResults = {
+  timetableItem: TimetableItem;
+  rollingStock: RollingStockWithLiveries;
+  simulation: SimulationResponseSuccess;
+  path: PathfindingResultSuccess;
+  pathProperties: PathPropertiesFormatted;
+  powerRestrictions: LayerData<PowerRestrictionValues>[];
 };
 
 export type OperationalPointWithTimeAndSpeed = {

@@ -58,14 +58,7 @@ const SimulationResults = ({
   const timetableId = useSelector(getOperationalStudiesTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const {
-    selectedTimetableItem,
-    selectedTimetableItemRollingStock,
-    selectedTimetableItemPowerRestrictions,
-    timetableItemSimulation,
-    pathProperties,
-    path,
-  } = useSimulationResults(infraId);
+  const simulationResults = useSimulationResults(infraId);
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -101,10 +94,10 @@ const SimulationResults = ({
 
   const selectedTrainSummary = useMemo(
     () =>
-      timetableItemsWithDetails?.find(
-        (timetableItem) => timetableItem.id === selectedTimetableItem?.id
+      timetableItemsWithDetails.find(
+        (timetableItem) => timetableItem.id === simulationResults?.timetableItem?.id
       ),
-    [timetableItemsWithDetails, selectedTimetableItem]
+    [timetableItemsWithDetails, simulationResults?.timetableItem]
   );
 
   const handleTrainDrag = async (
@@ -128,7 +121,7 @@ const SimulationResults = ({
     }
   };
 
-  if ((!selectedTimetableItem || !timetableItemSimulation) && !projectionData) {
+  if (!simulationResults && !projectionData) {
     return null;
   }
   return (
@@ -190,35 +183,33 @@ const SimulationResults = ({
         </div>
       </ResizableSection>
 
-      {selectedTimetableItem && timetableItemSimulation && (
+      {simulationResults && (
         <>
           {/* SIMULATION : SPEED SPACE CHART */}
-          {selectedTimetableItemRollingStock && pathProperties && (
-            <div className="osrd-simulation-container speedspacechart-container">
-              <div
-                className="chart-container"
-                style={{
-                  height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
-                }}
-              >
-                <SpeedSpaceChartContainer
-                  timetableItemSimulation={timetableItemSimulation}
-                  selectedTimetableItemPowerRestrictions={selectedTimetableItemPowerRestrictions}
-                  rollingStock={selectedTimetableItemRollingStock}
-                  pathProperties={pathProperties}
-                  heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
-                  setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-                />
-              </div>
+          <div className="osrd-simulation-container speedspacechart-container">
+            <div
+              className="chart-container"
+              style={{
+                height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+              }}
+            >
+              <SpeedSpaceChartContainer
+                timetableItemSimulation={simulationResults.simulation}
+                selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                rollingStock={simulationResults.rollingStock}
+                pathProperties={simulationResults.pathProperties}
+                heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+                setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
+              />
             </div>
-          )}
+          </div>
 
           {/* SIMULATION : MAP */}
           <div data-testid="simulation-map" className="simulation-map">
             <SimulationResultsMap
-              geometry={pathProperties?.geometry}
+              geometry={simulationResults.pathProperties.geometry}
               setMapCanvas={setMapCanvas}
-              pathfindingResult={path}
+              pathfindingResult={simulationResults.path}
             />
           </div>
 
@@ -226,26 +217,24 @@ const SimulationResults = ({
           <div className="time-stop-outputs">
             <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('timetableOutput')}</p>
             <TimesStopsOutput
-              simulatedTimetableItem={timetableItemSimulation}
+              simulatedTimetableItem={simulationResults.simulation}
               timetableItemWithDetails={selectedTrainSummary}
-              operationalPoints={pathProperties?.operationalPoints}
-              selectedTimetableItem={selectedTimetableItem}
-              path={path}
+              operationalPoints={simulationResults.pathProperties.operationalPoints}
+              selectedTimetableItem={simulationResults.timetableItem}
+              path={simulationResults.path}
             />
           </div>
 
           {/* SIMULATION EXPORT BUTTONS */}
-          {pathProperties && selectedTimetableItemRollingStock && path && (
-            <SimulationResultExport
-              path={path}
-              scenarioData={scenarioData}
-              timetableItem={selectedTimetableItem}
-              simulation={timetableItemSimulation}
-              pathProperties={pathProperties}
-              rollingStock={selectedTimetableItemRollingStock}
-              mapCanvas={mapCanvas}
-            />
-          )}
+          <SimulationResultExport
+            path={simulationResults.path}
+            scenarioData={scenarioData}
+            timetableItem={simulationResults.timetableItem}
+            simulation={simulationResults.simulation}
+            pathProperties={simulationResults.pathProperties}
+            rollingStock={simulationResults.rollingStock}
+            mapCanvas={mapCanvas}
+          />
         </>
       )}
     </div>
