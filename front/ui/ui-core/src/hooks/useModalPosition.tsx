@@ -23,12 +23,15 @@ export const useModalPosition = (
       const top = inputRect.bottom - parentRect.top - offset;
 
       // Center the modal horizontally relative to the input
-      let left = inputRect.left - parentRect.left + (inputRect.width - modalRect.width) / 2;
+      const modalViewportLeft = inputRect.left + (inputRect.width - modalRect.width) / 2;
 
-      // Prevent going out of bounds on the left
-      if (left < 10) {
-        left = 10;
-      }
+      // Keep modal to stay within viewport bounds
+      const adjustedViewportLeft = Math.max(
+        0,
+        Math.min(modalViewportLeft, window.innerWidth - modalRect.width)
+      );
+
+      const left = adjustedViewportLeft - parentRect.left;
 
       setModalPosition({ top, left });
     }
