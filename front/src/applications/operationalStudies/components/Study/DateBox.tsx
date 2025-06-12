@@ -4,7 +4,7 @@ import { dateTimeFormatting } from 'utils/date';
 
 type Props = {
   date?: Date | null;
-  type: 'creation' | 'expected-end' | 'modified' | 'real-end' | 'start' | 'end';
+  type: 'creation' | 'expected-end' | 'modified' | 'real-end' | 'start';
   withoutTime?: boolean;
 };
 
