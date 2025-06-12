@@ -12,16 +12,11 @@ import {
 } from 'modules/trainschedule/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type {
-  OccurrenceId,
-  TimetableItem,
-  TimetableItemId,
-  TrainId,
-} from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isIndexedOccurrenceId } from 'utils/trainId';
+import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
@@ -49,7 +44,7 @@ const useOccurrenceActions = ({
   const timetableId = useSelector(getOperationalStudiesTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const selectOccurrence = useCallback((occurrenceId: TrainId) => {
+  const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
   }, []);
 
@@ -197,11 +192,33 @@ const useOccurrenceActions = ({
     [pacedTrain]
   );
 
+  const deleteAddedException = useCallback(
+    async (occurrenceId: OccurrenceId) => {
+      const key = extractExceptionIdFromOccurrenceId(occurrenceId);
+      const newExceptions = pacedTrain.exceptions.filter((ex) => ex.key !== key);
+      const updatedPacedTrainPayload = {
+        ...formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain),
+        exceptions: newExceptions,
+      };
+
+      storePacedTrain(
+        pacedTrain.id,
+        updatedPacedTrainPayload,
+        timetableId!,
+        dispatch,
+        upsertTimetableItems,
+        removePacedTrains
+      );
+    },
+    [pacedTrain.exceptions]
+  );
+
   return {
     selectOccurrence,
     editOccurrence,
     updateOccurrenceStatus,
     resetOccurrenceExceptions,
+    deleteAddedException,
   };
 };
 
