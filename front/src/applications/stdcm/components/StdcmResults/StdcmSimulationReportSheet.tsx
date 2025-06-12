@@ -11,8 +11,10 @@ import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import ConsistAndRoute from 'modules/SimulationReportSheet/ConsistAndRoute';
 import Header from 'modules/SimulationReportSheet/Header';
 import RCInfo from 'modules/SimulationReportSheet/RCInfo';
+import SchedulesToDuplicate from 'modules/SimulationReportSheet/SchedulesToDuplicate';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
+import type { RefSchedule } from 'modules/SimulationReportSheet/types';
 import { msToKmh } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
@@ -22,6 +24,7 @@ type StdcmSimulationReportSheetProps = {
   simulationReportSheetNumber: string;
   operationalPointsList: StdcmResultsOperationalPoint[];
   simulationSheetLogo?: string;
+  refSchedules: RefSchedule[];
 };
 
 const StdcmSimulationReportSheet = ({
@@ -31,6 +34,7 @@ const StdcmSimulationReportSheet = ({
   simulationReportSheetNumber,
   operationalPointsList,
   simulationSheetLogo,
+  refSchedules,
 }: StdcmSimulationReportSheetProps) => {
   const { t } = useTranslation('stdcm');
 
@@ -64,6 +68,7 @@ const StdcmSimulationReportSheet = ({
           consistLength={consistLength}
           consistMaxSpeed={consistMaxSpeed}
         />
+        <SchedulesToDuplicate stdcmData={stdcmData} refSchedules={refSchedules} />
         <SimulationTable
           mode="stdcm"
           stdcmData={stdcmData}

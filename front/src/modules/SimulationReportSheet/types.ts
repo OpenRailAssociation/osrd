@@ -29,3 +29,16 @@ export type SimulationTableScenarioProps = {
   operationalPointsList: OperationalPointWithTimeAndSpeed[];
   rollingStock: RollingStockWithLiveries;
 };
+
+export type RefSchedule = {
+  schedule_id: string;
+  start_time: string;
+  begin: {
+    ci: number;
+    ch: string;
+  };
+  end: {
+    ci: number;
+    ch: string;
+  };
+};

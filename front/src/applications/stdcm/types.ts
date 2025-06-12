@@ -54,6 +54,30 @@ export type StdcmPathProperties = {
   zones: NonNullable<PathProperties['zones']>;
 };
 
+export type RefSchedule = {
+  schedule_id: string;
+  start_time: string;
+  begin: {
+    ci: number;
+    ch: string;
+  };
+  end: {
+    ci: number;
+    ch: string;
+  };
+};
+
+export type SimulationReportSheetProps = {
+  stdcmLinkedTrains: LinkedTrains;
+  stdcmData: StdcmSuccessResponse;
+  consist: StdcmSimulationInputs['consist'];
+  simulationReportSheetNumber: string;
+  operationalPointsList: StdcmResultsOperationalPoint[];
+  userName?: string;
+  simulationSheetLogo?: string;
+  refSchedules: RefSchedule[];
+};
+
 export type StdcmResultsOperationalPoint = {
   opId?: string;
   positionOnPath: number;

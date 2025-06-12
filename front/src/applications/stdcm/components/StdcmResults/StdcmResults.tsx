@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -6,6 +6,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useConflictsMessages from 'applications/stdcm/hooks/useConflictsMessages';
+import type { RefSchedule } from 'applications/stdcm/types';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -86,7 +87,7 @@ const StdcmResults = ({
     return extractMarkersInfo(outputs.results.simulationPathSteps);
   }, [hasSimulationResults, outputs]);
 
-  const [refSchedule, setRefSchedules] = useState<string[]>([]);
+  const [refSchedule, setRefSchedules] = useState<RefSchedule[]>([]);
 
   const [postRefSchedules] = osrdEditoastApi.endpoints.postSimilarSchedules.useMutation();
   const requestTrainSchedules = async () => {
@@ -121,9 +122,14 @@ const StdcmResults = ({
       waypoints,
     };
     const response = await postRefSchedules({ body: request });
-    const ids = response.data?.similar_schedules.map((s) => s.schedule_id);
-    setRefSchedules(ids ?? ['Aucun sillon de référence trouvé T_T']);
+    setRefSchedules(response.data?.similar_schedules ?? []);
   };
+  useEffect(() => {
+    if (isSelectedSimulationRetained) {
+      requestTrainSchedules();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSelectedSimulationRetained]);
 
   return (
     <>
@@ -160,19 +166,6 @@ const StdcmResults = ({
                   />
                   {isSelectedSimulationRetained && (
                     <div className="get-simulation">
-                      <Button
-                        style={{ marginTop: '20px' }}
-                        label="L'avion c'est quand même mieux..."
-                        variant="Destructive"
-                        onClick={async () => requestTrainSchedules()}
-                      />
-                      {refSchedule.length > 0 && (
-                        <ul>
-                          {refSchedule.map((schedule, index) => (
-                            <li key={index}>{schedule}</li>
-                          ))}
-                        </ul>
-                      )}
                       <div className="download-simulation">
                         <PDFDownloadLink
                           document={
@@ -183,6 +176,7 @@ const StdcmResults = ({
                               simulationReportSheetNumber={simulationReportSheetNumber}
                               operationalPointsList={operationalPointsList}
                               simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+                              refSchedules={refSchedule}
                             />
                           }
                           fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
