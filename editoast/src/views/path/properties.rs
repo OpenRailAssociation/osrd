@@ -10,6 +10,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use core_client::AsCoreRequest;
+use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PropertyElectrificationValues;
@@ -29,7 +30,7 @@ use serde_qs::axum::QsQuery;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
-use tracing::info;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::AppState;
@@ -80,32 +81,6 @@ struct PathProperties {
 }
 
 impl PathProperties {
-    /// Determines the set of defined properties for the path.
-    pub fn get_defined_properties(&self) -> Properties {
-        let mut properties = EnumSet::new();
-
-        if self.slopes.is_some() {
-            properties.insert(Property::Slopes);
-        }
-        if self.curves.is_some() {
-            properties.insert(Property::Curves);
-        }
-        if self.electrifications.is_some() {
-            properties.insert(Property::Electrifications);
-        }
-        if self.geometry.is_some() {
-            properties.insert(Property::Geometry);
-        }
-        if self.operational_points.is_some() {
-            properties.insert(Property::OperationalPoints);
-        }
-        if self.zones.is_some() {
-            properties.insert(Property::Zones);
-        }
-
-        properties
-    }
-
     /// Filter properties not requested
     pub fn filter_properties(mut self, properties: Properties) -> Self {
         let to_clear = properties.complement();
@@ -192,81 +167,38 @@ async fn post(
     let query_props: Properties = props.into();
     let mut valkey_conn = valkey.get_connection().await?;
 
-    // 1) Try to retrieve all the informations from Valkey
-    let mut path_properties = retrieve_path_properties(
-        &mut valkey_conn,
-        infra_id,
-        infra_version,
-        &path_properties_input,
-    )
-    .await?;
-
-    // 2) Search for missing properties
-    let missing_props = query_props - path_properties.get_defined_properties();
-
-    // 3) Compute missing properties
-    if !missing_props.is_empty() {
-        let request = PathPropertiesRequest {
-            track_section_ranges: &path_properties_input.track_section_ranges,
-            infra: infra_id,
-            expected_version: infra_version,
-        };
-        let computed_path_properties = request.fetch(&core_client).await?;
-
-        path_properties = PathProperties {
-            slopes: Some(computed_path_properties.slopes),
-            curves: Some(computed_path_properties.curves),
-            electrifications: Some(computed_path_properties.electrifications),
-            geometry: Some(computed_path_properties.geometry),
-            operational_points: Some(computed_path_properties.operational_points),
-            zones: Some(computed_path_properties.zones),
-        };
-
-        // Cache new properties
-        cache_path_properties(
-            &mut valkey_conn,
-            infra_id,
-            infra_version,
-            &path_properties_input,
-            &path_properties,
-        )
-        .await?;
-    } else {
-        info!("Hit cache");
-    }
-
-    // 4) Filter queried properties
-    let filtered_path_properties = path_properties.filter_properties(query_props);
+    let request = PathPropertiesRequest {
+        track_section_ranges: &path_properties_input.track_section_ranges,
+        infra: infra_id,
+        expected_version: infra_version,
+    };
+    let filtered_path_properties =
+        compute_path_properties_batch(core_client, &mut valkey_conn, &[request])
+            .await?
+            .pop()
+            .unwrap()
+            .filter_properties(query_props);
 
     Ok(Json(filtered_path_properties))
 }
 
 /// Retrieves path properties from cache.
-async fn retrieve_path_properties(
+async fn retrieve_path_properties_from_cache(
     valkey_conn: &mut ValkeyConnection,
-    infra: i64,
-    infra_version: i64,
-    path_properties_input: &PathPropertiesInput,
-) -> Result<PathProperties> {
-    let track_ranges = &path_properties_input.track_section_ranges;
-    let hash = path_properties_input_hash(infra, infra_version, track_ranges);
-
-    let path_properties: PathProperties = valkey_conn.json_get(&hash).await?.unwrap_or_default();
-
-    Ok(path_properties)
+    path_properties_request: &PathPropertiesRequest<'_>,
+) -> Result<Option<PathProperties>> {
+    let hash = path_properties_input_hash(path_properties_request);
+    valkey_conn.json_get(&hash).await
 }
 
 /// Set the cache of path properties.
 async fn cache_path_properties(
     valkey_conn: &mut ValkeyConnection,
-    infra: i64,
-    infra_version: i64,
-    path_properties_input: &PathPropertiesInput,
+    path_properties_request: &PathPropertiesRequest<'_>,
     path_properties: &PathProperties,
 ) -> Result<()> {
     // Compute hash
-    let track_ranges = &path_properties_input.track_section_ranges;
-    let hash = path_properties_input_hash(infra, infra_version, track_ranges);
+    let hash = path_properties_input_hash(path_properties_request);
 
     // Cache all properties except electrifications
     valkey_conn.json_set(&hash, &path_properties).await?;
@@ -275,16 +207,53 @@ async fn cache_path_properties(
 }
 
 /// Compute path properties input hash without supported electrifications
-fn path_properties_input_hash(
-    infra: i64,
-    infra_version: i64,
-    track_ranges: &[TrackRange],
-) -> String {
+fn path_properties_input_hash(path_properties_request: &PathPropertiesRequest<'_>) -> String {
     let osrd_version = get_app_version().unwrap_or_default();
     let mut hasher = DefaultHasher::new();
-    track_ranges.hash(&mut hasher);
+    path_properties_request
+        .track_section_ranges
+        .hash(&mut hasher);
     let hash_track_ranges = hasher.finish();
-    format!("path_properties.{osrd_version}.{infra}.{infra_version}.{hash_track_ranges}")
+    format!(
+        "path_properties.{osrd_version}.{infra}.{infra_version}.{hash_track_ranges}",
+        infra = path_properties_request.infra,
+        infra_version = path_properties_request.expected_version
+    )
+}
+
+async fn compute_path_properties_batch(
+    core_client: Arc<CoreClient>,
+    valkey_conn: &mut ValkeyConnection,
+    path_properties_requests: &[PathPropertiesRequest<'_>],
+) -> Result<Vec<PathProperties>> {
+    let mut path_properties_result = Vec::with_capacity(path_properties_requests.len());
+
+    for request in path_properties_requests {
+        match retrieve_path_properties_from_cache(valkey_conn, request).await? {
+            Some(path_properties) => {
+                tracing::debug!("Hit cache");
+                path_properties_result.push(path_properties);
+            }
+            None => {
+                let computed_path_properties = request.fetch(&core_client).await?;
+
+                let path_properties = PathProperties {
+                    slopes: Some(computed_path_properties.slopes),
+                    curves: Some(computed_path_properties.curves),
+                    electrifications: Some(computed_path_properties.electrifications),
+                    geometry: Some(computed_path_properties.geometry),
+                    operational_points: Some(computed_path_properties.operational_points),
+                    zones: Some(computed_path_properties.zones),
+                };
+
+                cache_path_properties(valkey_conn, request, &path_properties).await?;
+
+                path_properties_result.push(path_properties)
+            }
+        }
+    }
+
+    Ok(path_properties_result)
 }
 
 #[cfg(test)]
