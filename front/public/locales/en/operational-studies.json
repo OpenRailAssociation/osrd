@@ -326,6 +326,7 @@
       "departureDay": "Departure day",
       "departureTime": "Departure time",
       "interval": "Cadence of the service",
+      "resetExceptionsConfirmation": "Editing the cadence/duration of the service will reset the exceptions. Do you wish to continue ?",
       "timeWindow": "Duration of the repetition time range"
     },
     "pathfinding": "Path search",
