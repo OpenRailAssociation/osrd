@@ -74,24 +74,20 @@ export const convertPowerRestrictionsAndCheckCompatibility = (
 };
 
 const formatPowerRestrictionRangesWithHandled = ({
-  selectedTimetableItem,
+  selectedTimetableItem: { power_restrictions: powerRestrictions, path: pathInput },
   selectedTrainRollingStock,
   pathfindingResult,
   pathProperties,
 }: {
-  selectedTimetableItem?: TimetableItem;
+  selectedTimetableItem: Pick<TimetableItem, 'path' | 'power_restrictions'>;
   selectedTrainRollingStock?: RollingStock;
   pathfindingResult: PathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;
 }) => {
-  if (
-    selectedTimetableItem &&
-    selectedTimetableItem.power_restrictions &&
-    selectedTrainRollingStock
-  ) {
+  if (powerRestrictions && selectedTrainRollingStock) {
     const powerRestrictionsRanges = formatPowerRestrictionRanges(
-      selectedTimetableItem.power_restrictions,
-      selectedTimetableItem.path,
+      powerRestrictions,
+      pathInput,
       pathfindingResult.path_item_positions
     );
     const powerRestrictionsWithHandled = convertPowerRestrictionsAndCheckCompatibility(
