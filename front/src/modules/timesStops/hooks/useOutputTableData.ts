@@ -11,7 +11,7 @@ import type {
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -25,7 +25,7 @@ const useOutputTableData = (
   simulatedTrain?: SimulationResponseSuccess['final_output'],
   timetableItemWithDetails?: TimetableItemWithDetails,
   operationalPoints?: PathPropertiesFormatted['operationalPoints'],
-  selectedTimetableItem?: TimetableItem,
+  selectedTrain?: Train,
   path?: PathfindingResultSuccess
 ): TimesStopsRow[] => {
   const { t } = useTranslation();
@@ -33,20 +33,18 @@ const useOutputTableData = (
 
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
 
-  const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTimetableItem?.schedule, 'at');
-  const theoreticalMargins = selectedTimetableItem && getTheoreticalMargins(selectedTimetableItem);
+  const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
+  const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
-  const startDatetime = selectedTimetableItem
-    ? new Date(selectedTimetableItem.start_time)
-    : undefined;
+  const startDatetime = selectedTrain ? new Date(selectedTrain.start_time) : undefined;
 
   const pathStepRows = useMemo(() => {
     const pathItemTimes = timetableItemWithDetails?.pathItemTimes;
-    if (!path || !selectedTimetableItem || !pathItemTimes || !startDatetime) return [];
+    if (!path || !selectedTrain || !pathItemTimes || !startDatetime) return [];
 
     let lastReferenceDate = startDatetime;
 
-    return selectedTimetableItem.path.map((pathStep, index) => {
+    return selectedTrain.path.map((pathStep, index) => {
       const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
 
       const computedArrival = new Date(startDatetime.getTime() + pathItemTimes.final[index]);
@@ -61,13 +59,7 @@ const useOutputTableData = (
         theoreticalMarginSeconds,
         calculatedMargin,
         diffMargins,
-      } = computeMargins(
-        theoreticalMargins,
-        selectedTimetableItem,
-        scheduleByAt,
-        index,
-        pathItemTimes
-      );
+      } = computeMargins(theoreticalMargins, selectedTrain, scheduleByAt, index, pathItemTimes);
 
       const { theoreticalArrival, arrival, departure, refDate } = computeInputDatetimes(
         startDatetime,
@@ -105,7 +97,7 @@ const useOutputTableData = (
         positionOnPath: path.path_item_positions[index],
       };
     });
-  }, [selectedTimetableItem, path, timetableItemWithDetails?.pathItemTimes]);
+  }, [selectedTrain, path, timetableItemWithDetails?.pathItemTimes]);
 
   useEffect(() => {
     const formatRows = async () => {

@@ -7,7 +7,7 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 
 import { formatOperationalPoints } from '../SimulationResultExport/utils';
 
@@ -15,7 +15,7 @@ import { formatOperationalPoints } from '../SimulationResultExport/utils';
  * add time, speed, position, duration to operational points
  */
 export const useFormattedOperationalPoints = (
-  timetableItem?: TimetableItem,
+  timetableItem?: Train,
   simulatedTimetableItem?: SimulationResponseSuccess,
   pathProperties?: PathPropertiesFormatted
 ) => {

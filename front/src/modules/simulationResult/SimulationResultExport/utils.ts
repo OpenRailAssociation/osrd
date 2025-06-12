@@ -7,7 +7,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import { type ReportTrain, type TrackSection } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { mmToM, msToKmhRounded } from 'utils/physics';
@@ -96,7 +96,7 @@ const getTimeAndSpeed = (
 export const formatOperationalPoints = (
   operationalPoints: PathPropertiesFormatted['operationalPoints'],
   simulatedTimetableItem: SimulationResponseSuccess,
-  timetableItem: TimetableItem,
+  timetableItem: Train,
   trackSections: Record<string, TrackSection>
 ): OperationalPointWithTimeAndSpeed[] => {
   // Format operational points

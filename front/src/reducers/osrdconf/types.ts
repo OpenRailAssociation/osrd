@@ -183,5 +183,9 @@ export type TrainScheduleWithTrainId = TrainSchedule & {
 export type PacedTrainWithPacedTrainId = PacedTrain & {
   id: PacedTrainId;
 };
+export type TrainBaseWithOccurrenceId = TrainSchedule & {
+  id: OccurrenceId;
+};
 
 export type TimetableItem = TrainScheduleWithTrainId | PacedTrainWithPacedTrainId;
+export type Train = TrainScheduleWithTrainId | TrainBaseWithOccurrenceId;

@@ -12,7 +12,7 @@ import type {
   PathfindingResultSuccess,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 
 import exportTrainCSV from './exportTrainCSV';
 import SimulationReportSheetScenario from './SimulationReportSheetScenario';
@@ -21,7 +21,7 @@ import { useFormattedOperationalPoints } from '../hooks/useFormattedOperationalP
 const exportTrainPDF = async (
   path: PathfindingResultSuccess,
   scenarioData: { name: string; infraName: string },
-  timetableItem: TimetableItem,
+  train: Train,
   simulation: SimulationResponseSuccess,
   rollingStock: RollingStockWithLiveries,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
@@ -32,12 +32,12 @@ const exportTrainPDF = async (
       path={path}
       scenarioData={scenarioData}
       trainData={{
-        trainName: timetableItem.train_name,
+        trainName: train.train_name,
         departure_time: '',
         simulation,
         creationDate: new Date(),
         rollingStock,
-        speedLimitByTag: timetableItem.speed_limit_tag,
+        speedLimitByTag: train.speed_limit_tag,
       }}
       operationalPointsList={operationalPoints}
       mapCanvas={mapCanvas}
@@ -53,7 +53,7 @@ const exportTrainPDF = async (
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
-  timetableItem: TimetableItem;
+  train: Train;
   simulation: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
   rollingStock: RollingStockWithLiveries;
@@ -63,7 +63,7 @@ type SimulationResultExportProps = {
 const SimulationResultExport = ({
   path,
   scenarioData,
-  timetableItem,
+  train,
   simulation,
   pathProperties,
   rollingStock,
@@ -71,11 +71,7 @@ const SimulationResultExport = ({
 }: SimulationResultExportProps) => {
   const { t } = useTranslation('operational-studies');
 
-  const operationalPoints = useFormattedOperationalPoints(
-    timetableItem,
-    simulation,
-    pathProperties
-  );
+  const operationalPoints = useFormattedOperationalPoints(train, simulation, pathProperties);
 
   return (
     <div className="simulation-sheet-container">
@@ -84,7 +80,7 @@ const SimulationResultExport = ({
           exportTrainPDF(
             path,
             scenarioData,
-            timetableItem,
+            train,
             simulation,
             rollingStock,
             operationalPoints,
@@ -99,12 +95,7 @@ const SimulationResultExport = ({
 
       <Button
         onClick={() =>
-          exportTrainCSV(
-            simulation,
-            operationalPoints,
-            pathProperties.electrifications,
-            timetableItem
-          )
+          exportTrainCSV(simulation, operationalPoints, pathProperties.electrifications, train)
         }
         variant="Quiet"
         label=".csv"
