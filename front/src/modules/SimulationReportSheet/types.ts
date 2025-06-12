@@ -45,3 +45,16 @@ export type RouteTableRow = {
   tolerances?: { before: Duration; after: Duration };
   italic?: boolean;
 };
+
+export type RefSchedule = {
+  train_name: string;
+  start_time: string;
+  begin: {
+    ci: number;
+    ch: string;
+  };
+  end: {
+    ci: number;
+    ch: string;
+  };
+};

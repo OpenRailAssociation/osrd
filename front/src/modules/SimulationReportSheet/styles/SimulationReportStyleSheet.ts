@@ -394,6 +394,155 @@ const styles = {
       marginTop: '8',
     },
   }),
+  schedulesToDuplicate: StyleSheet.create({
+    schedulesToDuplicate: {
+      height: 'auto',
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    titleBox: {
+      borderTop: '1 solid #D3D1CF',
+      width: '1344',
+    },
+    title: {
+      marginTop: '13',
+      marginBottom: '13',
+      marginLeft: '16',
+      textTransform: 'uppercase',
+      fontSize: '18',
+      fontWeight: 'bold',
+      color: '#000000',
+      letterSpacing: '0.4',
+    },
+    // schedulesToDuplicateContainer: {
+    //   backgroundColor: '#EFF3F5',
+    //   marginBottom: '13',
+    //   height: 'auto',
+    //   width: '1344',
+    // },
+    container: {
+      backgroundColor: '#EFF3F5',
+      marginBottom: '13',
+      height: '160',
+      marginLeft: '16',
+      marginRight: '16',
+      width: '426',
+    },
+    table: {
+      border: '0',
+    },
+    tableTH: {
+      fontSize: '14',
+      fontWeight: 'normal',
+      color: '#797671',
+      height: '40',
+      padding: '10',
+    },
+    indexWidth: {
+      width: '40',
+    },
+    opWidth: {
+      width: '328',
+    },
+    chColumn: {
+      fontSize: '14',
+      color: '#797671',
+      fontWeight: 'medium',
+      letterSpacing: '-0.17',
+      paddingLeft: '10',
+    },
+    chWidth: {
+      width: '50',
+      textAlign: 'right',
+    },
+    departureWidth: {
+      width: '150',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scheduleNumberWidth: {
+      width: '150',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    indexColumn: {
+      fontFamily: 'IBM Plex Mono',
+      fontSize: '16',
+      fontWeight: 'medium',
+      color: '#000000',
+      opacity: 0.25,
+      paddingLeft: '16',
+    },
+    opColumn: {
+      fontSize: '16',
+      fontWeight: 'semibold',
+      color: '#000000',
+      letterSpacing: '-0.2',
+      paddingLeft: '10',
+    },
+    stopTableStartColumn: {
+      fontSize: '16',
+      fontFamily: 'IBM Plex Mono',
+      fontWeight: 'medium',
+      color: '#000000',
+      letterSpacing: '-0.2',
+    },
+    stopTableStartWidth: {
+      width: '168',
+    },
+    schedulesToDuplicateWidth: {
+      width: '216',
+    },
+    stopTableContainer: {
+      height: '112',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-evenly',
+      alignItems: 'center',
+    },
+    stopTableTbody: {
+      borderRadius: '4',
+      backgroundColor: '#FFFFFF',
+      height: '32',
+      width: '378',
+      marginLeft: '24',
+    },
+
+    schedulesToDuplicateTbody: {
+      width: '378',
+      marginLeft: '24',
+      height: '32',
+      display: 'flex',
+    },
+    scheduleWrapper: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingTop: '5',
+    },
+    departureDate: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      display: 'flex',
+    },
+    startDateWidth: {
+      width: '350',
+      paddingLeft: '270',
+    },
+    scheduleIdWidth: {
+      width: '50',
+    },
+    scheduleIdColumn: {
+      fontSize: '14',
+      fontWeight: 'semibold',
+      paddingLeft: '10',
+    },
+    startDateColumn: {
+      fontSize: '14',
+      paddingLeft: '10',
+      // paddingTop: '10',
+    },
+  }),
+
   simulation: StyleSheet.create({
     simulation: {
       paddingBottom: '17',
