@@ -4,14 +4,15 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.squareup.moshi.JsonAdapter
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
-import fr.sncf.osrd.api.pathfinding.pathfindingRequestAdapter
-import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
-import fr.sncf.osrd.api.standalone_sim.SimulationRequest
+import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.InfraProvider
+import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
+import java.io.File
 import java.io.IOException
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -21,6 +22,10 @@ import okio.buffer
 import okio.source
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+var GLOBAL_RES: String = ""
+var GLOBAL_N_NODES: Int = 0
+var GLOBAL_RAM: Int = 0
 
 @Parameters(commandDescription = "Debug tool to reproduce a request based on a payload json file")
 class ReproduceRequest : CliCommand {
@@ -87,26 +92,24 @@ class ReproduceRequest : CliCommand {
                 return checkNotNull(adapter.fromJson(bufferedSource))
             }
 
-            val time = measureTime {
-                if (stdcmPayloadPath != null) {
-                    logger.info("running stdcm request at $stdcmPayloadPath")
-                    STDCMEndpoint(infraManager, cacheManager)
-                        .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
-                }
-                if (pathfindingPayloadPath != null) {
-                    logger.info("running pathfinding request at $pathfindingPayloadPath")
-                    PathfindingBlocksEndpoint(infraManager)
-                        .run(loadRequest(pathfindingPayloadPath!!, pathfindingRequestAdapter))
-                }
-                if (simulationPayloadPath != null) {
-                    logger.info("running simulation request at $simulationPayloadPath")
-                    val electricalProfileSetManager =
-                        ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
-                    SimulationEndpoint(infraManager, electricalProfileSetManager)
-                        .run(loadRequest(simulationPayloadPath!!, SimulationRequest.adapter))
+            val files = File("bench_payloads").listFiles()!!
+            File("bench-before.csv").printWriter().use { out ->
+                out.println("filename,time,res,nodes,mb")
+                for (file in files) {
+                    GLOBAL_RES = "undefined"
+                    GLOBAL_N_NODES = 0
+                    GLOBAL_RAM = 0
+                    logger.info("running stdcm request at $file")
+                    val t = measureTime {
+                        STDCMEndpoint(infraManager, cacheManager)
+                            .run(loadRequest(file.toString(), stdcmRequestAdapter))
+                    }
+                    out.println(
+                        "$file,${t.inWholeMilliseconds / 1000.0},$GLOBAL_RES,$GLOBAL_N_NODES,$GLOBAL_RAM"
+                    )
+                    out.flush()
                 }
             }
-            logger.info("done in ${time.inWholeMilliseconds / 1_000.0} seconds")
         } catch (e: IOException) {
             throw RuntimeException(e)
         }

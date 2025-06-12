@@ -8,6 +8,7 @@ import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
+import fr.sncf.osrd.cli.GLOBAL_RES
 import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
@@ -143,11 +144,13 @@ class STDCMEndpoint(
                     allowedTrackSections,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
+                GLOBAL_RES = "no_path_found"
                 val response = PathNotFound()
                 return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
             }
             val pathfindingResponse =
                 runPathfindingBlockPostProcessing(infra, path.trainPath, path.waypointOffsets)
+            GLOBAL_RES = path.envelope.totalTime.toString()
 
             val simulationResponse =
                 buildSimResponse(
@@ -164,6 +167,7 @@ class STDCMEndpoint(
             val response = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
             RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
         } catch (ex: Throwable) {
+            GLOBAL_RES = ex.message ?: "error"
             ExceptionHandler.handle(ex)
         }
     }

@@ -17,6 +17,7 @@ import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.logUsedMB
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
@@ -127,6 +128,7 @@ class STDCMPathfinding(
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, listOf(constraints))
         val path = findPathImpl()
+        logUsedMB()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
             logger.info("Failed to find a path")
@@ -227,6 +229,7 @@ class STDCMPathfinding(
 
             progressLogger.processNode(endNode)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
+                logUsedMB()
                 return buildResult(endNode)
             }
             queue += getAdjacentNodes(endNode)

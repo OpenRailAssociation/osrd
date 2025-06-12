@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.cli.GLOBAL_N_NODES
+import fr.sncf.osrd.cli.GLOBAL_RAM
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
@@ -10,6 +12,7 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import java.time.Duration.*
 import java.time.Instant
+import kotlin.math.max
 import kotlin.math.pow
 
 /**
@@ -29,6 +32,7 @@ data class ProgressLogger(
     /** Process one node, logging it if it reaches a new threshold */
     fun processNode(node: STDCMNode) {
         seenSteps++
+        GLOBAL_N_NODES++
         val progress =
             (graph.bestPossibleTime - node.remainingTimeEstimation) / graph.bestPossibleTime
         if (progress.isInfinite()) {
@@ -62,6 +66,7 @@ data class ProgressLogger(
                     .build()
             Span.current().addEvent("progress $nSamplesReached/$nStepsProgress", eventAttributes)
 
+            logUsedMB()
             while (progress >= thresholdDistance * nSamplesReached) nSamplesReached++
         }
 
@@ -79,4 +84,15 @@ data class ProgressLogger(
             logger.info(str)
         }
     }
+}
+
+fun logUsedMB(): Int {
+    val rt = Runtime.getRuntime()
+    val free = rt.freeMemory()
+    val total = rt.totalMemory()
+    val used = total - free
+    val mb = 2.0.pow(20.0)
+    val res = (used / mb).toInt()
+    GLOBAL_RAM = max(GLOBAL_RAM, res)
+    return res
 }

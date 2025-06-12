@@ -389,6 +389,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     companion object {
-        const val TIMEOUT = 180.0
+        const val TIMEOUT = 1800.0
     }
 }
