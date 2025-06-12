@@ -305,7 +305,7 @@ const generateSchedule = (
   });
 
 /**
- * Generate properties for trainrun related caracteristics.
+ * Generate properties (labels, startDate and trainrunSections) for a trainrun.
  */
 const generateTrainrunProperties = (
   netzgrafikDto: NetzgrafikDto,
@@ -313,7 +313,6 @@ const generateTrainrunProperties = (
   oldStartDate?: Date
 ) => {
   const trainrunSections = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
-  const path = generatePath(trainrunSections, netzgrafikDto.nodes);
   const labels = compact(
     uniq(
       trainrun.labelIds.map(
@@ -322,9 +321,21 @@ const generateTrainrunProperties = (
     )
   );
   const startDate = calculateStartDate(trainrunSections, oldStartDate || new Date());
-  const schedule = generateSchedule(trainrunSections, netzgrafikDto.nodes, startDate);
 
-  return { path, labels, startDate, schedule };
+  return { labels, startDate, trainrunSections };
+};
+
+/**
+ * Generate path and schedule from a trainrun.
+ */
+const generatePathAndSchedule = (
+  trainrunSections: TrainrunSectionDto[],
+  nodes: NodeDto[],
+  startDate: Date
+) => {
+  const path = generatePath(trainrunSections, nodes);
+  const schedule = generateSchedule(trainrunSections, nodes, startDate);
+  return { path, schedule };
 };
 
 // TODO: drop this function once this PR is merged:
@@ -383,7 +394,15 @@ const handleCreateTimetableItem = async (
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
-  const { path, labels, startDate, schedule } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  const { labels, startDate, trainrunSections } = generateTrainrunProperties(
+    netzgrafikDto,
+    trainrun
+  );
+  const { path, schedule } = generatePathAndSchedule(
+    trainrunSections,
+    netzgrafikDto.nodes,
+    startDate
+  );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
@@ -440,10 +459,15 @@ const handleUpdateTimetableItem = async ({
 }) => {
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const timetableItem = await fetchTimetableItem(timetableItemId, dispatch);
-  const { path, labels, startDate, schedule } = generateTrainrunProperties(
+  const { labels, startDate, trainrunSections } = generateTrainrunProperties(
     netzgrafikDto,
     trainrun,
     new Date(timetableItem.start_time)
+  );
+  const { path, schedule } = generatePathAndSchedule(
+    trainrunSections,
+    netzgrafikDto.nodes,
+    startDate
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
 
@@ -780,7 +804,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const trainSchedules: TrainSchedule[] = [];
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
-    const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
+    const { labels, startDate, trainrunSections } = generateTrainrunProperties(dto, trainrun);
+    const { path, schedule } = generatePathAndSchedule(trainrunSections, dto.nodes, startDate);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     if (category) labels.push(category.name);
     const commonProps = {
