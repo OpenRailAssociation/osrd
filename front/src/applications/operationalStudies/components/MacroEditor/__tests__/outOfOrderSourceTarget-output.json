@@ -61,6 +61,36 @@
         }
       ],
       "paced": { "interval": "PT1H", "time_window": "PT2H" }
+    },
+    {
+      "constraint_distribution": "STANDARD",
+      "rolling_stock_name": "",
+      "exceptions": [],
+      "train_name": "Carotte",
+      "labels": ["InterCity"],
+      "path": [
+        { "trigram": "SS", "id": "6-0", "deleted": false, "track_reference": null },
+        { "trigram": "LTH", "id": "8-1", "deleted": false, "track_reference": null },
+        { "trigram": "RTR", "id": "7-2", "deleted": false, "track_reference": null }
+      ],
+      "start_time": "2025-06-25T13:56:00.000Z",
+      "schedule": [
+        {
+          "at": "8-1",
+          "arrival": "PT1M",
+          "stop_for": "PT2M",
+          "locked": false,
+          "reception_signal": "OPEN"
+        },
+        {
+          "at": "7-2",
+          "arrival": "PT4M",
+          "stop_for": null,
+          "locked": false,
+          "reception_signal": "OPEN"
+        }
+      ],
+      "paced": { "interval": "PT1H", "time_window": "PT2H" }
     }
   ],
   "train_schedules": []

@@ -32,6 +32,7 @@ import {
   DEFAULT_PACED_TRAIN_PAYLOAD,
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
   DEFAULT_TIME_WINDOW,
+  TRAINRUN_DIRECTIONS,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
@@ -219,15 +220,17 @@ const formatDateDifferenceFrom = (start: Date, stop: Date) =>
  */
 export const generatePath = (
   trainrunSections: TrainrunSectionDto[],
-  nodes: NodeDto[]
+  nodes: NodeDto[],
+  trainrunDirection: TRAINRUN_DIRECTIONS
 ): TrainSchedule['path'] => {
+  const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   const path = trainrunSections.map((section, index) => {
-    const sourceNode = getNodeById(nodes, section.sourceNodeId);
-    const targetNode = getNodeById(nodes, section.targetNodeId);
-    if (!sourceNode || !targetNode) return [];
-    const originPathItem = createPathItemFromNode(sourceNode, index);
+    const fromNode = getNodeById(nodes, isForward ? section.sourceNodeId : section.targetNodeId);
+    const toNode = getNodeById(nodes, isForward ? section.targetNodeId : section.sourceNodeId);
+    if (!fromNode || !toNode) return [];
+    const originPathItem = createPathItemFromNode(fromNode, index);
     if (index === trainrunSections.length - 1) {
-      const destinationPathItem = createPathItemFromNode(targetNode, index + 1);
+      const destinationPathItem = createPathItemFromNode(toNode, index + 1);
       return [originPathItem, destinationPathItem];
     }
     return [originPathItem];
@@ -238,9 +241,16 @@ export const generatePath = (
 /**
  * Calculate the start date of a trainrun.
  */
-const calculateStartDate = (trainrunSections: TrainrunSectionDto[], startDate: Date): Date => {
+const calculateStartDate = (
+  trainrunSections: TrainrunSectionDto[],
+  startDate: Date,
+  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
+): Date => {
   // The departure time of the first section is guaranteed to be non-null
-  const startTimeLock = trainrunSections[0].sourceDeparture;
+  const startTimeLock =
+    trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD
+      ? trainrunSections[0].targetDeparture
+      : trainrunSections[0].sourceDeparture;
   startDate.setMinutes(startTimeLock.time!, 0, 0);
   return startDate;
 };
@@ -248,30 +258,41 @@ const calculateStartDate = (trainrunSections: TrainrunSectionDto[], startDate: D
 /**
  * Generate a schedule (list of stops with their arrival and departure times)
  * from a list of trainrun sections.
+ * The schedule is generated based on the trainrun direction.
  */
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  startDate: Date
-): TrainSchedule['schedule'] =>
-  trainrunSections.flatMap((section, index) => {
+  startDate: Date,
+  trainrunDirection: TRAINRUN_DIRECTIONS
+): TrainSchedule['schedule'] => {
+  const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
+  return trainrunSections.flatMap((section, index) => {
     const nextSection = trainrunSections[index + 1];
-    const node = getNodeById(nodes, section.targetNodeId)!;
-    const transition = node.transitions.find(
-      (tr) => tr.port1Id === section.targetPortId || tr.port2Id === section.targetPortId
+    const toNodeId = isForward ? section.targetNodeId : section.sourceNodeId;
+    const toPortId = isForward ? section.targetPortId : section.sourcePortId;
+
+    const transition = getNodeById(nodes, toNodeId)!.transitions.find(
+      (tr) => tr.port1Id === toPortId || tr.port2Id === toPortId
     );
     const isNonStopTransit = transition?.isNonStopTransit ?? false;
 
-    // Note that arrival is the time the train arrives at the node
-    // and departure is the time the train leaves the node
-    let arrival = getTimeLockDate(
-      section.targetArrival,
-      trainrunSections[0].sourceDeparture,
-      startDate
-    );
-    const departure = nextSection
-      ? getTimeLockDate(nextSection.sourceDeparture, trainrunSections[0].sourceDeparture, startDate)
-      : null;
+    // Note that "arrival" is the time the train arrives at the node
+    // and "departure" is the time the train leaves the node
+    const firstSection = trainrunSections[0];
+    const arrivalTimeLock = isForward ? section.targetArrival : section.sourceArrival;
+    const trainrunStartTimeLock = isForward
+      ? firstSection.sourceDeparture
+      : firstSection.targetDeparture;
+
+    let arrival = getTimeLockDate(arrivalTimeLock, trainrunStartTimeLock, startDate);
+    let departure: Date | null = null;
+    if (nextSection) {
+      const nextDepartureTimeLock = isForward
+        ? nextSection.sourceDeparture
+        : nextSection.targetDeparture;
+      departure = getTimeLockDate(nextDepartureTimeLock, trainrunStartTimeLock, startDate);
+    }
 
     if (!arrival && !departure) {
       if (index === trainrunSections.length - 1) {
@@ -280,7 +301,7 @@ const generateSchedule = (
         // This need to be done here so it doesn't make an exception pop because the
         // destination is not configured the same way in macro.
         return {
-          at: `${section.targetNodeId}-${index + 1}`,
+          at: `${toNodeId}-${index + 1}`,
           stop_for: 'P0D',
           // Default information
           locked: false,
@@ -294,7 +315,7 @@ const generateSchedule = (
     arrival = arrival || departure!;
 
     return {
-      at: `${section.targetNodeId}-${index + 1}`,
+      at: `${toNodeId}-${index + 1}`,
       arrival: formatDateDifferenceFrom(startDate, arrival),
       stop_for:
         departure && !isNonStopTransit ? formatDateDifferenceFrom(arrival, departure) : null,
@@ -303,6 +324,7 @@ const generateSchedule = (
       reception_signal: 'OPEN',
     };
   });
+};
 
 /**
  * Generate properties (labels, startDate and trainrunSections) for a trainrun.
@@ -326,15 +348,23 @@ const generateTrainrunProperties = (
 };
 
 /**
- * Generate path and schedule from a trainrun.
+ * Generate path and schedule from a trainrun. If the trainrun is backward,
+ * the sections are reversed.
  */
 const generatePathAndSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  startDate: Date
+  startDate: Date,
+  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
 ) => {
-  const path = generatePath(trainrunSections, nodes);
-  const schedule = generateSchedule(trainrunSections, nodes, startDate);
+  let sections = trainrunSections;
+  let directionStartDate = startDate;
+  if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
+    sections = [...trainrunSections].reverse();
+    directionStartDate = calculateStartDate(sections, startDate, trainrunDirection);
+  }
+  const path = generatePath(sections, nodes, trainrunDirection);
+  const schedule = generateSchedule(sections, nodes, directionStartDate, trainrunDirection); // directionStartDate, trainrunDirection);
   return { path, schedule };
 };
 
@@ -805,28 +835,37 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
     const { labels, startDate, trainrunSections } = generateTrainrunProperties(dto, trainrun);
-    const { path, schedule } = generatePathAndSchedule(trainrunSections, dto.nodes, startDate);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     if (category) labels.push(category.name);
-    const commonProps = {
-      train_name: trainrun.name,
-      labels,
-      path,
-      start_time: startDate.toISOString(),
-      schedule,
-    };
-    const paced = createPacedAttributesFromTrainrun(trainrun, dto);
-    if (paced) {
-      pacedTrains.push({
-        ...DEFAULT_PACED_TRAIN_PAYLOAD,
-        ...commonProps,
-        paced,
-      });
-    } else {
-      trainSchedules.push({
-        ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-        ...commonProps,
-      });
+    for (const direction of Object.values(TRAINRUN_DIRECTIONS)) {
+      // TODO: handle the one-way trainrun cases when this PR is merged:
+      // https://github.com/SchweizerischeBundesbahnen/netzgrafik-editor-frontend/pull/477
+      const { path, schedule } = generatePathAndSchedule(
+        trainrunSections,
+        dto.nodes,
+        startDate,
+        direction
+      );
+      const commonProps = {
+        train_name: trainrun.name,
+        labels,
+        path,
+        start_time: startDate.toISOString(),
+        schedule,
+      };
+      const paced = createPacedAttributesFromTrainrun(trainrun, dto);
+      if (paced) {
+        pacedTrains.push({
+          ...DEFAULT_PACED_TRAIN_PAYLOAD,
+          ...commonProps,
+          paced,
+        });
+      } else {
+        trainSchedules.push({
+          ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+          ...commonProps,
+        });
+      }
     }
   }
 
