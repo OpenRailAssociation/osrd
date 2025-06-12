@@ -20,12 +20,12 @@ import {
   extractPacedTrainIdFromOccurrenceId,
 } from 'utils/trainId';
 
-import type { SimulationResultsData } from '../types';
+import type { SimulationResults } from '../types';
 
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (infraId: number): SimulationResultsData => {
+const useSimulationResults = (infraId: number): SimulationResults | undefined => {
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
@@ -148,17 +148,19 @@ const useSimulationResults = (infraId: number): SimulationResultsData => {
     selectedTimetableItemSimulationData?.selectedTimetableItemSimulation
   );
 
-  if (!selectedTrainId)
-    return {
-      selectedTimetableItemPowerRestrictions: [],
-    };
+  if (
+    selectedTimetableItemSimulationData?.selectedTimetableItemSimulation?.status !== 'success' ||
+    !speedSpaceChart ||
+    !path
+  )
+    return undefined;
 
   return {
-    selectedTimetableItem: selectedTimetableItemSimulationData?.selectedTimetableItem,
-    selectedTimetableItemRollingStock: speedSpaceChart?.rollingStock,
-    selectedTimetableItemPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
-    timetableItemSimulation: speedSpaceChart?.simulation,
-    pathProperties: speedSpaceChart?.formattedPathProperties,
+    timetableItem: selectedTimetableItemSimulationData.selectedTimetableItem,
+    rollingStock: speedSpaceChart.rollingStock,
+    powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
+    simulation: selectedTimetableItemSimulationData.selectedTimetableItemSimulation,
+    pathProperties: speedSpaceChart.formattedPathProperties,
     path,
   };
 };
