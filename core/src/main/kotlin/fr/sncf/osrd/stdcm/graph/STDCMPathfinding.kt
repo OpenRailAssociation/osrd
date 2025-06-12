@@ -202,8 +202,6 @@ class STDCMPathfinding(
             lastFValue = fValue
 
             progressLogger.processNode(endNode)
-            if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
-                continue
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
                 return buildResult(endNode)
             }
@@ -212,7 +210,10 @@ class STDCMPathfinding(
     }
 
     private fun getAdjacentNodes(node: STDCMNode): Collection<STDCMNode> {
-        return graph.getAdjacentEdges(node).map { it.getEdgeEnd(graph) }
+        return graph
+            .getAdjacentEdges(node)
+            .map { it.getEdgeEnd(graph) }
+            .filter { it.timeData.timeSinceDeparture + it.remainingTimeEstimation <= maxRunTime }
     }
 
     private fun buildResult(node: STDCMNode): Result {
