@@ -96,7 +96,8 @@ struct Request {
 #[schema(as = SimilarScheduleWaypointResponse)]
 struct WaypointResponse {
     ci: i64,
-    ch: String,
+    #[schema(value_type = String)]
+    ch: SmolStr,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -223,6 +224,11 @@ async fn similar_schedules(
         }));
     }
 
+    let candidate_schedules_departure_date = candidate_schedules
+        .iter()
+        .map(|ts| (ts.train_name.to_smolstr(), ts.start_time))
+        .collect::<HashMap<_, _>>();
+
     let selected_past_schedules = simulate_past_schedules(
         &mut conn,
         valkey,
@@ -252,39 +258,76 @@ async fn similar_schedules(
 
     let mut schedules = Vec::new();
     for (segment, graph) in graphs {
+        let begin = segment.begin().clone();
+        let end = segment.end().clone();
         #[cfg(debug_assertions)]
         std::fs::write("/tmp/dot.txt", graph.to_dot()).unwrap();
         let mut state = graph::MatchingState::new(segment, graph);
         while state.keep_advancing() {
             state = state.advance();
         }
-        tracing::debug!(schedules = ?state.correct_schedules_so_far, "reference schedules found for segment");
-        schedules.push(state.correct_schedules_so_far);
+        tracing::debug!(
+            segment_begin = ?begin,
+            segment_end = ?end,
+            schedules = ?state.correct_schedules_so_far,
+            "reference schedules found for segment"
+        );
+        schedules.push(((begin, end), state.correct_schedules_so_far));
     }
 
     // Final step: determine the best combination of schedules
     // -------------------------------------------------------
 
-    let schedules = decide_best_schedule_combination(schedules);
+    let similar_trains = decide_best_schedule_combination(
+        schedules
+            .iter()
+            .map(|(_, trains)| trains)
+            .cloned()
+            .collect(),
+    );
+
+    // Build the response
+    // ------------------
+
+    let similar_trains = schedules
+        .into_iter()
+        .map(|(seg, trains)| {
+            (
+                seg,
+                trains.intersection(&similar_trains).next().unwrap().clone(),
+            )
+        })
+        .fold(Vec::new(), |mut trains, ((begin, end), train_name)| {
+            if let Some(((_, prev_end), prev_train)) = trains.last_mut() {
+                if *prev_train == train_name {
+                    *prev_end = end;
+                }
+            } else {
+                trains.push(((begin, end), train_name));
+            }
+            trains
+        });
+
+    let response_items = similar_trains
+        .into_iter()
+        .map(|((begin, end), train_name)| SimilarScheduleItem {
+            start_time: *candidate_schedules_departure_date
+                .get(&train_name)
+                .expect("retained similar trains are in the candidate schedules pool"),
+            schedule_id: train_name,
+            begin: WaypointResponse {
+                ci: begin.primary_code() as i64,
+                ch: begin.secondary_code().unwrap_or_default(),
+            },
+            end: WaypointResponse {
+                ci: end.primary_code() as i64,
+                ch: end.secondary_code().unwrap_or_default(),
+            },
+        })
+        .collect();
 
     Ok(Json(Response {
-        similar_schedules: schedules
-            .into_iter()
-            .map(|schedule_id| SimilarScheduleItem {
-                schedule_id,
-                start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
-                    .unwrap()
-                    .to_utc(),
-                begin: WaypointResponse {
-                    ci: 123,
-                    ch: "A1".to_string(),
-                },
-                end: WaypointResponse {
-                    ci: 456,
-                    ch: "B1".to_string(),
-                },
-            })
-            .collect(),
+        similar_schedules: response_items,
     }))
 }
 
