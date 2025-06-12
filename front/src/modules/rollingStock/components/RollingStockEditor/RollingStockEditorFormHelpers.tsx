@@ -179,6 +179,7 @@ const RollingStockEditorParameterFormColumn = ({
     <>
       {propertiesList.map((property, index, arr) => {
         const isLast = index === arr.length - 1;
+        const label = t(property.title as RollingStockEditorParameter);
 
         if (property.type === 'select' && property.enum) {
           return (
@@ -197,7 +198,7 @@ const RollingStockEditorParameterFormColumn = ({
                 sm
                 id={property.title}
                 name={property.title}
-                label={t(property.title).toString()}
+                label={label}
                 // with an enum, type is a string
                 value={rollingStockValues[property.title] as string}
                 options={property.enum}
@@ -231,7 +232,7 @@ const RollingStockEditorParameterFormColumn = ({
               <InputGroupSNCF
                 id={property.title}
                 inputDataTestId={`${property.title}-input`}
-                label={t(property.title)}
+                label={label}
                 currentValue={{
                   unit: currentParam.unit,
                   value: currentParam.value,
@@ -262,11 +263,7 @@ const RollingStockEditorParameterFormColumn = ({
             noMargin={isLast}
             id={property.title}
             name={property.title}
-            label={
-              property.title in RS_REQUIRED_FIELDS
-                ? `${t(property.title)}\u00a0*`
-                : t(property.title)
-            }
+            label={property.title in RS_REQUIRED_FIELDS ? `${label}\u00a0*` : label}
             type={property.type}
             step="any"
             min={property.min}
