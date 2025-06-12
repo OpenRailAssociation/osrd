@@ -325,6 +325,7 @@
       "departureDay": "Jour de départ",
       "departureTime": "Heure de départ",
       "interval": "Cadence de la mission",
+      "resetExceptionsConfirmation": "La modification de la cadence/durée de la mission réinitialisera les exceptions. Voulez-vous continuer?",
       "timeWindow": "Durée de la plage de répétition"
     },
     "pathfinding": "Recherche d’itinéraire",

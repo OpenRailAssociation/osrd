@@ -8,9 +8,13 @@ import { EditedElementContainerContext } from 'applications/operationalStudies/c
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
 import { toggleEditingItemType } from 'reducers/osrdconf/operationalStudiesConf';
-import { getEditingItemType } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import {
+  getEditingItemType,
+  getOperationalStudiesConf,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   TimetableItemId,
   TimetableItem,
@@ -21,6 +25,7 @@ import { useAppDispatch } from 'store';
 import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
+import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
@@ -51,6 +56,9 @@ const TimetableManageTrainSchedule = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const editingItemType = useSelector(getEditingItemType);
   const selectedTrainId = useSelector(getSelectedTrainId);
+  const osrdConf = useSelector(getOperationalStudiesConf);
+
+  const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
 
@@ -90,7 +98,31 @@ const TimetableManageTrainSchedule = ({
               <button
                 className="btn btn-warning mb-2"
                 type="button"
-                onClick={updateTimetable}
+                onClick={() => {
+                  if (
+                    isPacedTrainToEditData(timetableItemToEditData) &&
+                    timetableItemToEditData.originalPacedTrain.exceptions.length > 0 &&
+                    (osrdConf.timeWindow.toISOString() !==
+                      timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
+                      osrdConf.interval.toISOString() !==
+                        timetableItemToEditData.originalPacedTrain.paced.interval.toISOString())
+                  ) {
+                    openModal(
+                      <ConfirmModal
+                        title={t('pacedTrains.resetExceptionsConfirmation')}
+                        onConfirm={() => {
+                          updateTimetable();
+                          closeModal();
+                        }}
+                        onCancel={closeModal}
+                        withCloseButton={false}
+                      />,
+                      'sm'
+                    );
+                  } else {
+                    updateTimetable();
+                  }
+                }}
                 data-testid="submit-edit-train-schedule"
               >
                 <span className="mr-2">

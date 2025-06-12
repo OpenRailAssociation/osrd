@@ -78,7 +78,7 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
   };
 }
 
-function isPacedTrainToEditData(
+export function isPacedTrainToEditData(
   timetableItemToEditData: TimetableItemToEditData
 ): timetableItemToEditData is Extract<TimetableItemToEditData, { timetableItemId: PacedTrainId }> {
   return isPacedTrainId(timetableItemToEditData.timetableItemId);
@@ -135,8 +135,20 @@ export function formatPacedTrainPayload(
       };
       // ========== user modified the whole paced train ==========
     } else {
-      const updatedExceptionsList = checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions);
-      const newExceptionList = [...updatedExceptionsList, ...newPacedTrain.exceptions];
+      const hasPacedTrainSettingsChanged =
+        osrdconf.timeWindow.toISOString() !==
+          timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
+        osrdconf.interval.toISOString() !==
+          timetableItemToEditData.originalPacedTrain.paced.interval.toISOString();
+
+      // Reset all exceptions if the paced train settings have changed
+      const newExceptionList = !hasPacedTrainSettingsChanged
+        ? [
+            ...checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions),
+            ...newPacedTrain.exceptions,
+          ]
+        : [];
+
       newPacedTrain = {
         ...newPacedTrain,
         exceptions: newExceptionList,
