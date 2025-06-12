@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.takes.TakesUtils
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -13,6 +14,24 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Test
 import org.takes.rq.RqFake
+
+fun getPathfindingBlockRequest(
+    rs: RollingStock,
+    pathItems: List<Collection<TrackLocation>>
+): PathfindingBlockRequest {
+    return PathfindingBlockRequest(
+        rs.loadingGaugeType,
+        rs.isThermal,
+        rs.modeNames.filterNot { it == "thermal" }.toList(),
+        rs.supportedSignalingSystems.toList(),
+        rs.maxSpeed,
+        rs.length,
+        null,
+        "unused_name",
+        0,
+        pathItems
+    )
+}
 
 class PathfindingTest : ApiTest() {
     @Test
