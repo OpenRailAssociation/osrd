@@ -14,11 +14,11 @@ import { useInfraID } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 
 /** Prepare data needed for speedSpaceChart */
 const useSpeedSpaceChart = (
-  timetableItem?: TimetableItem,
+  timetableItem?: Train,
   pathfindingResult?: PathfindingResultSuccess,
   simulation?: SimulationResponse
 ): SpeedSpaceChartData | null => {

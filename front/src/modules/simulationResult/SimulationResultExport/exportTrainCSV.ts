@@ -4,7 +4,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { ReportTrain } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { dateToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
@@ -200,12 +200,12 @@ export default function exportTrainCSV(
   simulatedTrain: SimulationResponseSuccess,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   electrificationRanges: ElectrificationRange[],
-  timetableItem: TimetableItem
+  train: Train
 ) {
   const trainRegimeWithAccurateTime: ReportTrain = {
     ...simulatedTrain.final_output,
     times: simulatedTrain.final_output.times.map(
-      (time) => new Date(timetableItem.start_time).getTime() + time
+      (time) => new Date(train.start_time).getTime() + time
     ),
   };
 
@@ -254,5 +254,5 @@ export default function exportTrainCSV(
     }
   });
 
-  if (steps) createFakeLinkWithData(timetableItem.train_name, spreadDataBetweenSteps(steps));
+  if (steps) createFakeLinkWithData(train.train_name, spreadDataBetweenSteps(steps));
 }

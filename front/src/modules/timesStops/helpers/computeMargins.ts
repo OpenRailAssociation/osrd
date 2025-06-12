@@ -1,5 +1,5 @@
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { formatDigitsAndUnit } from './utils';
@@ -7,16 +7,16 @@ import type { ScheduleEntry, TheoreticalMarginsRecord } from '../types';
 
 /** Extracts the theoretical margin for each path step in the train schedule,
  * and marks whether margins are repeated or correspond to a boundary between margin values */
-export function getTheoreticalMargins(selectedTimetableItem: TimetableItem) {
-  const { margins } = selectedTimetableItem;
+export function getTheoreticalMargins(train: Pick<Train, 'margins' | 'path'>) {
+  const { margins } = train;
   if (!margins) {
     return undefined;
   }
   const theoreticalMargins: TheoreticalMarginsRecord = {};
   let marginIndex = 0;
-  selectedTimetableItem.path.forEach((step, index) => {
+  train.path.forEach((step, index) => {
     let isBoundary = index === 0;
-    if (step.id === selectedTimetableItem.margins?.boundaries[marginIndex]) {
+    if (step.id === train.margins?.boundaries[marginIndex]) {
       marginIndex += 1;
       isBoundary = true;
     }
@@ -31,18 +31,18 @@ export function getTheoreticalMargins(selectedTimetableItem: TimetableItem) {
 /** Compute all margins to display for a given train schedule path step */
 function computeMargins(
   theoreticalMargins: TheoreticalMarginsRecord | undefined,
-  selectedTimetableItem: TimetableItem,
+  train: Pick<Train, 'path' | 'margins'>,
   scheduleByAt: Record<string, ScheduleEntry>,
   pathStepIndex: number,
   pathItemTimes: NonNullable<TrainScheduleWithDetails['pathItemTimes']> // in ms
 ) {
-  const { path, margins } = selectedTimetableItem;
+  const { path, margins } = train;
   const pathStepId = path[pathStepIndex].id;
   const schedule = scheduleByAt[pathStepId];
   const stepTheoreticalMarginInfo = theoreticalMargins?.[pathStepId];
   if (
     !margins ||
-    pathStepIndex === selectedTimetableItem.path.length - 1 ||
+    pathStepIndex === train.path.length - 1 ||
     !stepTheoreticalMarginInfo ||
     !((schedule && schedule.arrival) || stepTheoreticalMarginInfo.isBoundary)
   ) {

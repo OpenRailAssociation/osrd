@@ -1,16 +1,15 @@
 import { useMemo } from 'react';
 
 import dayjs from 'dayjs';
+import { omit } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
-  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   extractOccurrenceIndexFromOccurrenceId,
@@ -119,19 +118,16 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
 
     const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
     const pacedTrainIntervalInMs = Duration.parse(selectedPacedTrain.paced.interval).ms;
-
     const selectedOccurrenceStartTime: string = dayjs(selectedPacedTrain.start_time)
       .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
       .toISOString();
 
-    const updatedSelectedPacedTrain: PacedTrainWithPacedTrainId = {
-      ...selectedPacedTrain,
-      id: formatEditoastIdToPacedTrainId(selectedPacedTrain.id),
-      start_time: selectedOccurrenceStartTime,
-    };
-
     return {
-      selectedTimetableItem: updatedSelectedPacedTrain,
+      selectedTimetableItem: {
+        ...omit(selectedPacedTrain, ['id', 'paced', 'exceptions']),
+        id: selectedTrainId,
+        start_time: selectedOccurrenceStartTime,
+      },
       selectedTimetableItemSimulation: selectedPacedTrainSimulation,
     };
   }, [
@@ -156,7 +152,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     return undefined;
 
   return {
-    timetableItem: selectedTimetableItemSimulationData.selectedTimetableItem,
+    train: selectedTimetableItemSimulationData.selectedTimetableItem,
     rollingStock: speedSpaceChart.rollingStock,
     powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
     simulation: selectedTimetableItemSimulationData.selectedTimetableItemSimulation,

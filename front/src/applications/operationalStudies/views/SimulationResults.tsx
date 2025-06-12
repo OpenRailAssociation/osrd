@@ -92,13 +92,15 @@ const SimulationResults = ({
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
-  const selectedTrainSummary = useMemo(
-    () =>
-      timetableItemsWithDetails.find(
-        (timetableItem) => timetableItem.id === simulationResults?.timetableItem?.id
-      ),
-    [timetableItemsWithDetails, simulationResults?.timetableItem]
-  );
+  const selectedTimetableItemSummary = useMemo(() => {
+    if (!simulationResults) return undefined;
+    const selectedTimetableItemId = isTrainScheduleId(simulationResults.train.id)
+      ? simulationResults.train.id
+      : extractPacedTrainIdFromOccurrenceId(simulationResults.train.id);
+    return timetableItemsWithDetails.find(
+      (timetableItem) => timetableItem.id === selectedTimetableItemId
+    );
+  }, [timetableItemsWithDetails, simulationResults?.train]);
 
   const handleTrainDrag = async (
     draggedTrainId: TrainId,
@@ -218,9 +220,9 @@ const SimulationResults = ({
             <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('timetableOutput')}</p>
             <TimesStopsOutput
               simulatedTimetableItem={simulationResults.simulation}
-              timetableItemWithDetails={selectedTrainSummary}
+              timetableItemWithDetails={selectedTimetableItemSummary}
               operationalPoints={simulationResults.pathProperties.operationalPoints}
-              selectedTimetableItem={simulationResults.timetableItem}
+              selectedTrain={simulationResults.train}
               path={simulationResults.path}
             />
           </div>
@@ -229,7 +231,7 @@ const SimulationResults = ({
           <SimulationResultExport
             path={simulationResults.path}
             scenarioData={scenarioData}
-            timetableItem={simulationResults.timetableItem}
+            train={simulationResults.train}
             simulation={simulationResults.simulation}
             pathProperties={simulationResults.pathProperties}
             rollingStock={simulationResults.rollingStock}
