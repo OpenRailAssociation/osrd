@@ -46,7 +46,12 @@ const OccurrenceItem = ({
   occurrence,
   isSelected,
   nextOccurrence,
-  occurrenceActions: { selectOccurrence, editOccurrence, updateOccurrenceStatus },
+  occurrenceActions: {
+    selectOccurrence,
+    editOccurrence,
+    updateOccurrenceStatus,
+    resetOccurrenceExceptions,
+  },
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
@@ -97,6 +102,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.restore'),
       icon: <Reverse />,
       onClick: () => {
+        resetOccurrenceExceptions(occurrence.id);
         closeMenu();
       },
     },

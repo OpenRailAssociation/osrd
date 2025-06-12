@@ -21,6 +21,7 @@ import type {
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { isIndexedOccurrenceId } from 'utils/trainId';
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
@@ -147,10 +148,60 @@ const useOccurrenceActions = ({
     [pacedTrain, occurrences, selectedTrainId]
   );
 
+  /**
+   * Resets an occurrence exceptions.
+   * If it is an indexed occurrence exception, it is totally removed.
+   * If it is an added exception, every change groups are removed except the start time.
+   */
+  const resetOccurrenceExceptions = useCallback(
+    (occurrenceId: OccurrenceId) => {
+      const exceptionToUpdate = findExceptionWithOccurrenceId(pacedTrain.exceptions, occurrenceId);
+
+      if (!exceptionToUpdate) {
+        throw new Error('Cannot reset an occurrence which was not an exception');
+      }
+
+      let updatedExceptions: PacedTrainException[];
+
+      if (isIndexedOccurrenceId(occurrenceId)) {
+        updatedExceptions = pacedTrain.exceptions.filter(
+          // If it is an indexed occurrence, the corresponding exception will always have an occurrence_index
+          (exception) => exception.occurrence_index !== exceptionToUpdate.occurrence_index
+        );
+      } else {
+        // update exceptionToUpdate by removing all its properties except key and start time
+        updatedExceptions = pacedTrain.exceptions.map((exception) =>
+          exception.key === exceptionToUpdate.key
+            ? {
+                key: exceptionToUpdate.key,
+                start_time: exceptionToUpdate.start_time,
+              }
+            : exception
+        );
+      }
+
+      const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
+        ...pacedTrain,
+        exceptions: updatedExceptions,
+      });
+
+      storePacedTrain(
+        pacedTrain.id,
+        formattedPacedTrain,
+        timetableId!,
+        dispatch,
+        upsertTimetableItems,
+        removePacedTrains
+      );
+    },
+    [pacedTrain]
+  );
+
   return {
     selectOccurrence,
     editOccurrence,
     updateOccurrenceStatus,
+    resetOccurrenceExceptions,
   };
 };
 
