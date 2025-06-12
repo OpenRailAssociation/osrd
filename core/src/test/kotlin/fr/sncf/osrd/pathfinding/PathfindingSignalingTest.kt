@@ -4,12 +4,10 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
-import fr.sncf.osrd.api.pathfinding.PathfindingBlockRequest
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -30,24 +28,6 @@ class PathfindingSignalingTest {
         val id =
             infra.fullInfra().signalingSimulator.sigModuleManager.findSignalingSystem(signaling)
         infra.blockPool.forEach { if (blocks.contains(it.name)) it.signalingSystemId = id!! }
-    }
-
-    private fun getPathfindingBlockRequest(
-        rs: RollingStock,
-        pathItems: List<Collection<TrackLocation>>
-    ): PathfindingBlockRequest {
-        return PathfindingBlockRequest(
-            rs.loadingGaugeType,
-            rs.isThermal,
-            rs.modeNames.filterNot { it == "thermal" }.toList(),
-            rs.supportedSignalingSystems.toList(),
-            rs.maxSpeed,
-            rs.length,
-            null,
-            "unused_name",
-            0,
-            pathItems
-        )
     }
 
     @BeforeEach
@@ -92,7 +72,7 @@ class PathfindingSignalingTest {
                         as IncompatibleConstraintsPathResponse
                 assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
                 assert(
-                    resp.incompatibleConstraints.incompatibleSignalingSystemRanges.first().value ==
+                    resp.incompatibleConstraints.incompatibleSignalingSystemRanges.single().value ==
                         TVM300.id
                 )
             })
