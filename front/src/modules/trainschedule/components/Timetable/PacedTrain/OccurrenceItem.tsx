@@ -51,20 +51,20 @@ const OccurrenceItem = ({
     editOccurrence,
     updateOccurrenceStatus,
     resetOccurrenceExceptions,
+    deleteAddedException,
   },
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
-
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { id, trainName, rollingStock, startTime, disabled, exceptionChangeGroups } = occurrence;
+  const { trainName, rollingStock, startTime, disabled, exceptionChangeGroups, isValid } =
+    occurrence;
 
-  const isAfterMidnight =
-    occurrence.isValid && dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
+  const isAfterMidnight = isValid && dayjs(occurrence.arrivalTime).isAfter(startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
-    ? dayjs(nextOccurrence.startTime).isAfter(occurrence.startTime, 'day')
+    ? dayjs(nextOccurrence.startTime).isAfter(startTime, 'day')
     : false;
   const isStartTimeException = !!exceptionChangeGroups?.start_time?.value;
 
@@ -117,6 +117,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.delete'),
       icon: <Trash />,
       onClick: () => {
+        deleteAddedException(occurrence.id);
         closeMenu();
       },
     },
@@ -134,7 +135,7 @@ const OccurrenceItem = ({
     if (
       exceptionChangeGroups &&
       (Object.keys(
-        isIndexedOccurrenceId(id)
+        isIndexedOccurrenceId(occurrence.id)
           ? exceptionChangeGroups
           : omit(exceptionChangeGroups, 'start_time')
       ).length ?? 0) > 0
@@ -166,7 +167,7 @@ const OccurrenceItem = ({
       onClick={() => {
         if (isMenuOpen || disabled) return;
         // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        if (getExceptionType(occurrence) !== 'added') selectOccurrence(id);
+        if (getExceptionType(occurrence) !== 'added') selectOccurrence(occurrence.id);
       }}
     >
       <div className="main">
