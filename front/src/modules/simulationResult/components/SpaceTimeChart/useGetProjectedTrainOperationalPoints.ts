@@ -21,7 +21,7 @@ const useGetProjectedTrainOperationalPoints = ({
   timetableId,
   timetableItemUsedForProjection,
 }: {
-  infraId: number | undefined;
+  infraId: number;
   timetableId: number | undefined;
   timetableItemUsedForProjection?: TimetableItem;
 }) => {
@@ -38,7 +38,7 @@ const useGetProjectedTrainOperationalPoints = ({
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      if (!timetableItemUsedForProjection || !infraId) return;
+      if (!timetableItemUsedForProjection) return;
 
       const trainIdUsedForProjection = timetableItemUsedForProjection.id;
 

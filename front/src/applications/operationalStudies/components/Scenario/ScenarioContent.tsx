@@ -258,12 +258,10 @@ const ScenarioContent = ({
                 <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
               </div>
             ) : (
-              isInfraLoaded &&
-              infra && (
+              isInfraLoaded && (
                 <SimulationResults
                   scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
                   projectionData={projectionData}
-                  infraId={infra.id}
                   conflicts={conflicts}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                   updateTrainDepartureTime={updateTrainDepartureTime}

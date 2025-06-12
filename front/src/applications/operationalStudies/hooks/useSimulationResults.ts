@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PacedTrainResponseWithPacedTrainId } from 'reducers/osrdconf/types';
@@ -26,8 +25,7 @@ import type { SimulationResultsData } from '../types';
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (): SimulationResultsData => {
-  const infraId = useInfraID();
+const useSimulationResults = (infraId: number): SimulationResultsData => {
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
@@ -58,26 +56,20 @@ const useSimulationResults = (): SimulationResultsData => {
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
       {
         id: editoastSelectedTrainId!,
-        infraId: infraId!,
+        infraId,
       },
       {
-        skip:
-          !editoastSelectedTrainId ||
-          !infraId ||
-          (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
+        skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
       }
     );
 
   const { data: rawPacedTrainPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(
     {
       id: editoastSelectedTrainId!,
-      infraId: infraId!,
+      infraId,
     },
     {
-      skip:
-        !editoastSelectedTrainId ||
-        !infraId ||
-        (selectedTrainId && !isOccurrenceId(selectedTrainId)),
+      skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)),
     }
   );
   const path = useMemo(() => {
@@ -91,12 +83,9 @@ const useSimulationResults = (): SimulationResultsData => {
 
   const { data: selectedTrainScheduleSimulation } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
-      { id: editoastSelectedTrainId!, infraId: infraId!, electricalProfileSetId },
+      { id: editoastSelectedTrainId!, infraId, electricalProfileSetId },
       {
-        skip:
-          !editoastSelectedTrainId ||
-          !infraId ||
-          (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
+        skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
       }
     );
 
@@ -104,14 +93,11 @@ const useSimulationResults = (): SimulationResultsData => {
     osrdEditoastApi.endpoints.getPacedTrainByIdSimulation.useQuery(
       {
         id: editoastSelectedTrainId!,
-        infraId: infraId!,
+        infraId,
         electricalProfileSetId,
       },
       {
-        skip:
-          !editoastSelectedTrainId ||
-          !infraId ||
-          (selectedTrainId && !isOccurrenceId(selectedTrainId)),
+        skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)),
       }
     );
 
