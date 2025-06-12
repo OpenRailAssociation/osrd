@@ -55,6 +55,14 @@ import type {
 const getNodeById = (nodes: NodeDto[], nodeId: number | string) =>
   nodes.find((node) => node.id === nodeId);
 
+const findConnectedPortId = (node: NodeDto, portId: number) => {
+  const transition = node.transitions.find((tr) => tr.port1Id === portId || tr.port2Id === portId);
+  if (!transition) {
+    return null;
+  }
+  return transition.port1Id === portId ? transition.port2Id : transition.port1Id;
+};
+
 const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
   // The sections we obtain here may be out-of-order. For instance, for a path
   // A → B → C, we may get two sections B → C and then A → B. We need to
@@ -74,58 +82,111 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   //                 │                      │
   //                 └──────────────────────┘
   //
+  // Two subsequent sections can be linked together at a node by connecting
+  // each section's source or target to a transition via a port. Example:
   //
-  // Two subsequent sections can be linked together at a node with a target
-  // port followed by a transition itself followed by a source port.
+  //     const node = { id: 10, transitions: [{ port1Id: 30, port2Id: 31 }], … };
+  //     const leftSection = { id: 20, targetNodeId: 10, targetPortId: 30, … };
+  //     const rightSection = { id: 21, sourceNodeId: 10, sourcePortId: 31, … };
   //
-  // Build a map of sections keyed by their previous section's target port ID.
-  // Find the departure section: it's the one without a transition for its
-  // source port.
-  let departureSection: TrainrunSectionDto | undefined;
-  const sectionsByPrevTargetPortId = new Map<number, TrainrunSectionDto>();
+  // Note, there is no guarantee that a train run will be made up of stricly
+  // ordered source → target chains. Source and target are arbitrary names for
+  // a section's ends. For instance, two sections' sources might point to the
+  // same node:
+  //
+  //     const node = { id: 10, transitions: [{ port1Id: 30, port2Id: 31 }], … };
+  //     const leftSection = { id: 20, sourceNodeId: 10, sourcePortId: 30, … };
+  //     const rightSection = { id: 21, sourceNodeId: 10, sourcePortId: 31, … };
+  //
+  // Build a map of sections keyed by the outgoing port ID they are connected
+  // to. Find the leaf (departure/arrival) sections: these are the ones without
+  // a transition for their source or target port.
+  const sectionsByConnectedPortId = new Map<number, TrainrunSectionDto>();
+  const leafSectionsAndNodes: [TrainrunSectionDto, number][] = [];
   for (const section of sections) {
     const sourceNode = getNodeById(netzgrafikDto.nodes, section.sourceNodeId)!;
-    const transition = sourceNode.transitions.find(
-      (tr) => tr.port1Id === section.sourcePortId || tr.port2Id === section.sourcePortId
-    );
-    if (transition) {
-      const prevPortId =
-        transition.port1Id === section.sourcePortId ? transition.port2Id : transition.port1Id;
-      sectionsByPrevTargetPortId.set(prevPortId, section);
+    const targetNode = getNodeById(netzgrafikDto.nodes, section.targetNodeId)!;
+
+    const sourceConnectedPortId = findConnectedPortId(sourceNode, section.sourcePortId);
+    const targetConnectedPortId = findConnectedPortId(targetNode, section.targetPortId);
+
+    if (sourceConnectedPortId !== null) {
+      sectionsByConnectedPortId.set(sourceConnectedPortId, section);
     } else {
-      departureSection = section;
+      leafSectionsAndNodes.push([section, section.sourceNodeId]);
+    }
+    if (targetConnectedPortId !== null) {
+      sectionsByConnectedPortId.set(targetConnectedPortId, section);
+    } else {
+      leafSectionsAndNodes.push([section, section.targetNodeId]);
     }
   }
-  if (!departureSection) {
-    throw new Error('Trainrun is missing departure section');
-  }
 
-  // Start with the departure section and iterate over the path
-  const orderedSections = [departureSection];
-  const seenSectionIds = new Set<number>([departureSection.id]);
-  let section: TrainrunSectionDto | undefined = departureSection;
-  for (;;) {
-    section = sectionsByPrevTargetPortId.get(section.targetPortId);
-    if (!section) {
-      break;
+  // Start with a leaf node and walk over the path. Ignore any leaf node we've
+  // already seen (because we've reached it at the end of a previous walk).
+  const seenSectionIds = new Set<number>();
+  const orderedSectionPaths = [];
+  for (const [startSection, startNodeId] of leafSectionsAndNodes) {
+    if (seenSectionIds.has(startSection.id)) {
+      continue;
     }
 
-    orderedSections.push(section);
+    let section: TrainrunSectionDto | undefined = startSection;
+    let nodeId = startNodeId;
+    const orderedSections = [];
+    while (section) {
+      // Make sure we don't enter an infinite loop
+      if (seenSectionIds.has(section.id)) {
+        throw new Error('Cycle detected in trainrun');
+      }
+      seenSectionIds.add(section.id);
 
-    // Make sure we don't enter an infinite loop
-    if (seenSectionIds.has(section.id)) {
-      throw new Error('Cycle detected in trainrun');
+      if (section.sourceNodeId === nodeId) {
+        orderedSections.push(section);
+        nodeId = section.targetNodeId;
+        section = sectionsByConnectedPortId.get(section.targetPortId);
+      } else if (section.targetNodeId === nodeId) {
+        // Swap source and target, so that the rest of the conversion logic
+        // can assume sections are always ordered from source to target
+        orderedSections.push({
+          ...section,
+          sourceNodeId: section.targetNodeId,
+          targetNodeId: section.sourceNodeId,
+          sourcePortId: section.targetPortId,
+          targetPortId: section.sourcePortId,
+          sourceDeparture: section.targetDeparture,
+          targetDeparture: section.sourceDeparture,
+          sourceArrival: section.targetArrival,
+          targetArrival: section.sourceArrival,
+        });
+        nodeId = section.sourceNodeId;
+        section = sectionsByConnectedPortId.get(section.sourcePortId);
+      } else {
+        // Unreachable: the previous section's end node should be either this
+        // node's source or target
+        throw new Error('Section is disconnected from previous section');
+      }
     }
-    seenSectionIds.add(section.id);
+
+    orderedSectionPaths.push(orderedSections);
   }
 
-  // If we haven't seen all sections belonging to the trainrun, it's because
-  // it's made up of multiple separate parts
-  if (orderedSections.length !== sections.length) {
+  // We should've seen all of the train run's sections by now
+  if (seenSectionIds.size !== sections.length) {
+    throw new Error('Trainrun graph search failed to find all sections');
+  }
+
+  if (orderedSectionPaths.length === 0) {
+    throw new Error('Trainrun has no path');
+  }
+
+  // TODO: some train runs are made up of multiple parts. We should create one
+  // train schedule per part.
+  if (orderedSectionPaths.length > 1) {
     throw new Error('Trainrun is not continuous');
   }
 
-  return orderedSections;
+  return orderedSectionPaths[0];
 };
 
 const createPathItemFromNode = (node: NodeDto, index: number) => {
