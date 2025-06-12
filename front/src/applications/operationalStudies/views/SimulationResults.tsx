@@ -28,6 +28,7 @@ import {
 import { useAppDispatch } from 'store';
 import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
+import { useScenarioContext } from '../hooks/useScenarioContext';
 import useSimulationResults from '../hooks/useSimulationResults';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
@@ -36,7 +37,6 @@ const MANCHETTE_HEIGHT_DIFF = 76;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
-  infraId?: number;
   projectionData?: ProjectionData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
 
@@ -46,7 +46,6 @@ type SimulationResultsProps = {
 
 const SimulationResults = ({
   scenarioData,
-  infraId,
   projectionData,
   timetableItemsWithDetails,
   conflicts = [],
@@ -54,6 +53,7 @@ const SimulationResults = ({
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
   const dispatch = useAppDispatch();
+  const { infraId } = useScenarioContext();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
@@ -65,7 +65,7 @@ const SimulationResults = ({
     timetableItemSimulation,
     pathProperties,
     path,
-  } = useSimulationResults();
+  } = useSimulationResults(infraId);
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -235,7 +235,7 @@ const SimulationResults = ({
           </div>
 
           {/* SIMULATION EXPORT BUTTONS */}
-          {pathProperties && selectedTimetableItemRollingStock && path && infraId && (
+          {pathProperties && selectedTimetableItemRollingStock && path && (
             <SimulationResultExport
               path={path}
               scenarioData={scenarioData}

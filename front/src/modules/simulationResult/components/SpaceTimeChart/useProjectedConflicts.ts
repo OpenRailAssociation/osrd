@@ -8,7 +8,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const useProjectedConflicts = (
-  infraId: number | undefined,
+  infraId: number,
   conflicts: Conflict[],
   path: PathfindingResultSuccess | undefined
 ) => {
@@ -19,7 +19,7 @@ const useProjectedConflicts = (
   useEffect(() => {
     const fetchProjectedZones = async ({ track_section_ranges }: PathfindingResultSuccess) => {
       const { zones } = await postPathProperties({
-        infraId: infraId!,
+        infraId,
         props: ['zones'],
         pathPropertiesInput: {
           track_section_ranges,
