@@ -706,6 +706,80 @@ export const handleOperation = async ({
   }
 };
 
+const findConnectedPortId = (node: NodeDto, portId: number) => {
+  const transition = node.transitions.find((tr) => tr.port1Id === portId || tr.port2Id === portId);
+  if (!transition) {
+    return null;
+  }
+  return transition.port1Id === portId ? transition.port2Id : transition.port1Id;
+};
+
+const massageData = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
+  const sections = netzgrafikDto.trainrunSections.filter(
+    (section) => section.trainrunId === trainrunId
+  );
+
+  const sectionsByConnectedTargetPortId = new Map<number, TrainrunSectionDto>();
+  const sectionsByConnectedSourcePortId = new Map<number, TrainrunSectionDto>();
+  const startSectionsAndNodes: [TrainrunSectionDto, number][] = [];
+  for (const section of sections) {
+    const sourceNode = getNodeById(netzgrafikDto.nodes, section.sourceNodeId)!;
+    const targetNode = getNodeById(netzgrafikDto.nodes, section.targetNodeId)!;
+
+    const sourceConnectedPortId = findConnectedPortId(sourceNode, section.sourcePortId);
+    const targetConnectedPortId = findConnectedPortId(targetNode, section.targetPortId);
+
+    if (sourceConnectedPortId !== null) {
+      sectionsByConnectedTargetPortId.set(sourceConnectedPortId, section);
+    } else {
+      startSectionsAndNodes.push([section, section.sourceNodeId]);
+    }
+    if (targetConnectedPortId !== null) {
+      sectionsByConnectedSourcePortId.set(targetConnectedPortId, section);
+    } else {
+      startSectionsAndNodes.push([section, section.targetNodeId]);
+    }
+  }
+
+  const seenSectionIds = new Set<number>();
+  const invertedSections = [];
+  for (const [startSection, startNodeId] of startSectionsAndNodes) {
+    if (seenSectionIds.has(startSection.id)) {
+      continue;
+    }
+
+    let section: TrainrunSectionDto | undefined = startSection;
+    let nodeId = startNodeId;
+    while (section) {
+      // Make sure we don't enter an infinite loop
+      if (seenSectionIds.has(section.id)) {
+        throw new Error('Cycle detected in trainrun');
+      }
+      seenSectionIds.add(section.id);
+
+      if (section.sourceNodeId === nodeId) {
+        nodeId = section.targetNodeId;
+        section = sectionsByConnectedTargetPortId.get(section.targetPortId);
+      } else if (section.targetNodeId === nodeId) {
+        invertedSections.push(section);
+        nodeId = section.sourceNodeId;
+        section = sectionsByConnectedSourcePortId.get(section.sourcePortId);
+      } else {
+        throw new Error('Section is disconnected from previous section');
+      }
+    }
+  }
+
+  if (seenSectionIds.size !== sections.length) {
+    throw new Error('Trainrun graph search failed to find all sections');
+  }
+
+  for (const section of invertedSections) {
+    [section.sourceNodeId, section.targetNodeId] = [section.targetNodeId, section.sourceNodeId];
+    [section.sourcePortId, section.targetPortId] = [section.targetPortId, section.sourcePortId];
+  }
+};
+
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const macroNodes: MacroNodeForm[] = [];
   for (const node of dto.nodes) {
@@ -718,6 +792,13 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const trainSchedules: TrainSchedule[] = [];
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
+    massageData(dto, trainrun.id);
+    try {
+      getTrainrunSectionsByTrainrunId(dto, trainrun.id);
+    } catch (err) {
+      console.error('Dropping trainrun on the floor', trainrun, err);
+      continue; // TODO: don't do that!
+    }
     const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
     const commonProps = {
       train_name: trainrun.name,
