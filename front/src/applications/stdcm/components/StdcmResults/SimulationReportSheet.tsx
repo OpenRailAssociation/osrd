@@ -5,15 +5,14 @@ import { useTranslation } from 'react-i18next';
 
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
-import i18n from 'i18n';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
+import { dateToDDMMYYYY, dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
 
 import styles from './SimulationReportStyleSheet';
-import type { SimulationReportSheetProps } from '../../types';
+import type { RefSchedule, SimulationReportSheetProps } from '../../types';
 import { getStopDurationTime } from '../../utils/formatSimulationReportSheet';
 
 const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_code;
@@ -55,16 +54,50 @@ const SimulationReportSheet = ({
   simulationReportSheetNumber,
   operationalPointsList,
   simulationSheetLogo,
+  refSchedules,
 }: SimulationReportSheetProps) => {
-  const { t } = useTranslation('stdcm');
+  const { t, i18n } = useTranslation('stdcm');
   let renderedIndex = 0;
-
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
   const { anteriorTrain, posteriorTrain } = stdcmLinkedTrains;
 
   const consistMass = consist?.totalMass ?? rollingStock.mass / 1000;
   const consistLength = consist?.totalLength ?? rollingStock.length;
   const consistMaxSpeed = consist?.maxSpeed ?? msToKmh(rollingStock.max_speed);
+
+  const fullUIC = (ci: number) => Number(`87${ci}`);
+
+  const findSchedulesBetween = (
+    beginStep: StdcmPathStep,
+    allFollowingSteps: StdcmPathStep[],
+    schedules: RefSchedule[]
+  ) =>
+    schedules.filter((schedule) => {
+      const scheduleBeginUIC = fullUIC(schedule.begin.ci);
+      const scheduleEndUIC = fullUIC(schedule.end.ci);
+
+      const beginMatches =
+        scheduleBeginUIC === beginStep.location?.uic &&
+        schedule.begin.ch === beginStep.location?.secondary_code;
+
+      const endMatches = allFollowingSteps.some(
+        (step) =>
+          scheduleEndUIC === step.location?.uic && schedule.end.ch === step.location?.secondary_code
+      );
+
+      return beginMatches && endMatches;
+    });
+
+  const isRelevantStep = (step: StdcmPathStep, schedules: RefSchedule[]) =>
+    schedules.some(
+      (s) =>
+        step.location?.uic === Number(`87${s.begin.ci}`) &&
+        step.location?.secondary_code === s.begin.ch
+    ) ||
+    schedules.some(
+      (s) =>
+        step.location?.uic === Number(`87${s.end.ci}`) && step.location?.secondary_code === s.end.ch
+    );
 
   return (
     <Document>
@@ -122,7 +155,7 @@ const SimulationReportSheet = ({
                 <Text style={styles.consistAndRoute.consistInfoData}>
                   {`${Math.floor(consistMaxSpeed)} km/h`}
                 </Text>
-                <Text style={styles.consistAndRoute.consistInfoData}>
+                <Text style={styles.consistAndRoute.consistInfoTitles}>
                   {t('reportSheet.loadingGauge')}
                 </Text>
                 <Text style={styles.consistAndRoute.consistInfoData}>{consist?.loadingGauge}</Text>
@@ -290,6 +323,105 @@ const SimulationReportSheet = ({
             )}
           </View>
         </View>
+        <View style={styles.schedulesToDuplicate.schedulesToDuplicate}>
+          <View style={styles.schedulesToDuplicate.titleBox}>
+            <Text style={styles.schedulesToDuplicate.title}>
+              {t('reportSheet.schedulesToDuplicate')}
+            </Text>
+
+            <View style={styles.schedulesToDuplicate.container}>
+              <Table style={styles.schedulesToDuplicate.table}>
+                {/* <TH style={styles.schedulesToDuplicate.tableTH}>
+                  <View style={styles.schedulesToDuplicate.indexWidth}>
+                    <TD aria-label="line-count" />
+                  </View>
+                  <View style={styles.schedulesToDuplicate.opWidth}>
+                    <TD>{t('reportSheet.operationalPoint')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.chWidth}>
+                    <TD>{t('reportSheet.code')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.departureWidth}>
+                    <TD>{t('reportSheet.departureDate')}</TD>
+                  </View>
+                  <View style={styles.schedulesToDuplicate.scheduleNumberWidth}>
+                    <TD>{t('reportSheet.scheduleNumber')}</TD>
+                  </View>
+                </TH> */}
+                {stdcmData.simulationPathSteps
+                  .filter((step) => isRelevantStep(step, refSchedules))
+                  .map((step, index, array) => {
+                    const followingSteps = array.slice(index + 1);
+                    const matchedSchedules = findSchedulesBetween(
+                      step,
+                      followingSteps,
+                      refSchedules
+                    );
+                    const isEndStep = refSchedules.some(
+                      (schedule) =>
+                        step.location?.uic === Number(`87${schedule.end.ci}`) &&
+                        step.location?.secondary_code === schedule.end.ch
+                    );
+
+                    return (
+                      <>
+                        <View style={styles.schedulesToDuplicate.stopTableContainer}>
+                          <TR
+                            key={index}
+                            style={{
+                              ...styles.schedulesToDuplicate.stopTableTbody,
+                              alignSelf: isEndStep ? 'flex-end' : 'flex-start',
+                              marginRight: isEndStep ? '24' : '0',
+                            }}
+                          >
+                            <View style={styles.schedulesToDuplicate.opWidth}>
+                              <TD style={styles.schedulesToDuplicate.opColumn}>
+                                {step.location!.name}
+                              </TD>
+                            </View>
+                            <View style={styles.schedulesToDuplicate.chWidth}>
+                              <TD style={styles.schedulesToDuplicate.chColumn}>
+                                {getSecondaryCode(step)}
+                              </TD>
+                            </View>
+                          </TR>
+                        </View>
+                        {matchedSchedules.length > 0 && (
+                          <TR style={styles.schedulesToDuplicate.schedulesToDuplicateTbody}>
+                            <View style={styles.schedulesToDuplicate.schedulesToDuplicateWidth}>
+                              {matchedSchedules.map((schedule, refIdx) => (
+                                <View
+                                  key={`sched-wrapper-${index}-${refIdx}`}
+                                  style={styles.schedulesToDuplicate.scheduleWrapper}
+                                >
+                                  <View
+                                    key={`sched-wrapper-${index}-${refIdx}`}
+                                    style={styles.schedulesToDuplicate.scheduleWrapper}
+                                  >
+                                    <View style={styles.schedulesToDuplicate.scheduleIdWidth}>
+                                      <TD style={styles.schedulesToDuplicate.scheduleIdColumn}>
+                                        {schedule.schedule_id}
+                                      </TD>
+                                    </View>
+                                    <View style={styles.schedulesToDuplicate.startDateWidth}>
+                                      <TD style={styles.schedulesToDuplicate.startDateColumn}>
+                                        {dateToDDMMYYYY(new Date(schedule.start_time))}
+                                      </TD>
+                                    </View>
+                                  </View>
+                                </View>
+                              ))}
+                            </View>
+                          </TR>
+                        )}
+                      </>
+                    );
+                  })}
+              </Table>
+            </View>
+          </View>
+        </View>
+
         <View style={styles.simulation.simulation}>
           <View style={styles.simulation.simulationContainer}>
             <Text style={styles.simulation.simulationUppercase}>{t('reportSheet.simulation')}</Text>
