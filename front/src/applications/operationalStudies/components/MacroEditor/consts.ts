@@ -9,6 +9,11 @@ import type {
   TrainrunTimeCategory,
 } from '../NGE/types';
 
+export enum TRAINRUN_DIRECTIONS {
+  FORWARD = 'forward',
+  BACKWARD = 'backward',
+}
+
 export const TRAINRUN_CATEGORY_HALTEZEITEN = {
   HaltezeitIPV: { haltezeit: 0, no_halt: false },
   HaltezeitA: { haltezeit: 0, no_halt: false },
