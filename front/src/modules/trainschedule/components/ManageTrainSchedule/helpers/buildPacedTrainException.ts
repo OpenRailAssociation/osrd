@@ -271,13 +271,12 @@ export function checkChangeGroups(
       const originalStartTimeToTest = dayjs(new Date(updatedPacedTrain.start_time))
         .add(exception.occurrence_index * originalPacedTrainInterval.ms, 'ms')
         .toDate();
-      const pacedTrainStartTime = new Date(updatedPacedTrain.start_time);
+      const exceptionStartTime = new Date(exception.start_time.value);
 
       // Remove milliseconds to avoid issues with the comparison
       originalStartTimeToTest.setMilliseconds(0);
-      pacedTrainStartTime.setMilliseconds(0);
-
-      if (isEqual(originalStartTimeToTest, pacedTrainStartTime)) {
+      exceptionStartTime.setMilliseconds(0);
+      if (isEqual(originalStartTimeToTest, exceptionStartTime)) {
         delete updatedException.start_time;
       }
     }
