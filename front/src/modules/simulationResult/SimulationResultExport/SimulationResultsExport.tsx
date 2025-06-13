@@ -6,7 +6,6 @@ import { pdf } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type {
-  OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
@@ -19,14 +18,14 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import exportTrainCSV from './exportTrainCSV';
 import SimulationReportSheetScenario from './SimulationReportSheetScenario';
 import type { SimulationSheetData } from './types';
+import { useFormattedOperationalPoints } from '../hooks/useFormattedOperationalPoints';
 
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
   timetableItem: TimetableItem;
   simulatedTimetableItem: SimulationResponseSuccess;
-  pathElectrifications: PathPropertiesFormatted['electrifications'];
-  operationalPoints: OperationalPointWithTimeAndSpeed[];
+  pathProperties: PathPropertiesFormatted;
   rollingStock: RollingStockWithLiveries;
   mapCanvas?: string;
 };
@@ -36,12 +35,17 @@ const SimulationResultExport = ({
   scenarioData,
   timetableItem,
   simulatedTimetableItem,
-  pathElectrifications,
-  operationalPoints,
+  pathProperties,
   rollingStock,
   mapCanvas,
 }: SimulationResultExportProps) => {
   const { t } = useTranslation('operational-studies');
+
+  const operationalPoints = useFormattedOperationalPoints(
+    timetableItem,
+    simulatedTimetableItem,
+    pathProperties
+  );
 
   const simulationSheetData: SimulationSheetData = useMemo(
     () => ({
@@ -88,7 +92,7 @@ const SimulationResultExport = ({
           exportTrainCSV(
             simulatedTimetableItem,
             operationalPoints,
-            pathElectrifications,
+            pathProperties.electrifications,
             timetableItem
           )
         }
