@@ -334,7 +334,7 @@
     "pathfindingError": "Erreur dans la recherche d’itinéraire : {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Contraintes incompatibles",
-      "invalid_path_item": "Point de passage non trouvé",
+      "invalid_path_items": "Point de passage non trouvé",
       "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
       "not_found_in_blocks": "Canton manquant",
       "not_found_in_routes": "Itinéraire manquant",
