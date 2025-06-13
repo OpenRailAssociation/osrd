@@ -175,14 +175,23 @@ const OccurrenceItem = ({
       }}
     >
       <div className="main">
-        <OccurrenceIndicator occurrence={occurrence} />
-        <div
-          className={cx('occurrence-item-name', { 'start-time-exception': isStartTimeException })}
-        >
-          <span title={trainName}>{trainName}</span>
-        </div>
-        <div className="rolling-stock">
-          {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
+        <div className="title-img">
+          <div className="indicator-title">
+            <OccurrenceIndicator occurrence={occurrence} />
+
+            <div className="label">
+              <div
+                className={cx('occurrence-item-name', {
+                  'start-time-exception': isStartTimeException,
+                })}
+              >
+                <span title={trainName}>{trainName}</span>
+              </div>
+            </div>
+          </div>
+          <div className="rolling-stock">
+            {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
+          </div>
         </div>
 
         <div className="occurrence-item-horaries">
