@@ -11,7 +11,11 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addElementAtIndex } from 'utils/array';
-import { getExceptionType, isException, isIndexedOccurrenceId } from 'utils/trainId';
+import {
+  getExceptionType,
+  isExceptionFromPathOrSimulation,
+  isIndexedOccurrenceId,
+} from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
@@ -202,7 +206,7 @@ const OccurrenceItem = ({
         )}
       </div>
 
-      {isException(occurrence) && occurrence.isValid && !disabled && (
+      {occurrence.isValid && !disabled && isExceptionFromPathOrSimulation(occurrence) && (
         <div className="more-info">
           <div className="more-info-left">
             {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
