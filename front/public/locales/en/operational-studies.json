@@ -340,7 +340,8 @@
       "not_found_in_routes": "Missing route",
       "not_found_in_tracks": "Missing track",
       "pathfinding_failure": "No path found",
-      "rolling_stock_not_found": "Rolling stock not found"
+      "rolling_stock_not_found": "Rolling stock not found",
+      "zero_length_path": "Departure and arrival are identical"
     },
     "pathfindingInProgress": "Pathfinding in progress…",
     "pathfindingMissingParams": "Missing parameters for pathfinding: {{missingElements}}.",
