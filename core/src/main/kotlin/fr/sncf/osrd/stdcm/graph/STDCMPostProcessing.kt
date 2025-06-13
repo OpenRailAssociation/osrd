@@ -3,9 +3,10 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -130,15 +131,10 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 temporarySpeedLimitManager,
             )
         val stopInfos =
-            stops
-                .map { MaxSpeedEnvelope.SimStop(Offset(it.position.meters), it.receptionSignal) }
-                .toMutableList()
-        if (stopAtEnd)
-            stopInfos.add(
-                MaxSpeedEnvelope.SimStop(Offset(physicsPath.length.meters), SHORT_SLIP_STOP)
-            )
-        val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopInfos, mrsp)
-        return MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)
+            stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
+        if (stopAtEnd) stopInfos.add(SimStop(Offset(physicsPath.length.meters), SHORT_SLIP_STOP))
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
+        return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
     }
 
     /** Creates the list of waypoints on the path */

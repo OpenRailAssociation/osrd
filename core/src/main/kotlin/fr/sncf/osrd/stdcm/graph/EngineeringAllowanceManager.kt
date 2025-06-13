@@ -11,8 +11,8 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
@@ -106,8 +106,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
 
         try {
             // Compute max speed envelope, without any slowing down
-            val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, emptyList(), mrsp)
-            val maxEffort = MaxEffortEnvelope.from(context, beginSpeed, maxSpeedEnvelope)
+            val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, emptyList(), mrsp)
+            val maxEffort = maxEffortEnvelopeFrom(context, beginSpeed, maxSpeedEnvelope)
             if (maxEffort.none { it.hasAttr(EnvelopeProfile.CONSTANT_SPEED) }) {
                 return 0.0 // When no constant speed part, there can't be any allowance
             }

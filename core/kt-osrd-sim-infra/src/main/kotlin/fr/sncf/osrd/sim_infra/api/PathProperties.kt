@@ -20,10 +20,7 @@ typealias IdxWithBlockPathOffset<T> = IdxWithOffset<T, BlockPath>
 
 typealias IdxWithTravelledPathOffset<T> = IdxWithOffset<T, TravelledPath>
 
-data class TrackLocation(
-    @get:JvmName("getTrackId") val trackId: TrackSectionId,
-    @get:JvmName("getOffset") val offset: Offset<TrackSection>
-)
+data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
 
 /**
  * A marker type for Length and Offset. In BlockPath, start refers to the beginning of the first
@@ -55,7 +52,6 @@ interface PathProperties {
 
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
 
-    @JvmName("getSpeedLimitProperties")
     fun getSpeedLimitProperties(
         trainTag: String?,
         temporarySpeedLimitManager: TemporarySpeedLimitManager?
@@ -63,12 +59,10 @@ interface PathProperties {
 
     fun getZones(): DistanceRangeMap<ZoneId>
 
-    @JvmName("getLength") fun getLength(): Distance
+    fun getLength(): Distance
 
-    @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation
 
-    @JvmName("getTrackLocationOffset")
     fun getTrackLocationOffset(location: TrackLocation): Offset<TravelledPath>?
 
     fun <T> getRangeMapFromUndirected(
@@ -96,7 +90,6 @@ fun buildPathPropertiesFrom(
     return makePathProperties(infra, chunkPath, routes)
 }
 
-@JvmName("makePathProperties")
 fun makePathProperties(
     infra: RawSignalingInfra,
     chunkPath: ChunkPath,
@@ -104,33 +97,4 @@ fun makePathProperties(
     temporarySpeedLimitManager: TemporarySpeedLimitManager? = null,
 ): PathProperties {
     return PathPropertiesImpl(infra, chunkPath, routes)
-}
-
-/** For java interoperability purpose */
-@JvmName("makePathPropertiesWithRouteNames")
-fun makePathPropertiesWithRouteNames(
-    infra: RawSignalingInfra,
-    chunkPath: ChunkPath,
-    routes: List<String>
-): PathProperties {
-    return makePathProperties(infra, chunkPath, routes.map { r -> infra.getRouteFromName(r) })
-}
-
-/** For java interoperability purpose */
-@JvmName("makeTrackLocation")
-fun makeTrackLocation(track: TrackSectionId, offset: Offset<TrackSection>): TrackLocation {
-    return TrackLocation(track, offset)
-}
-
-/**
- * For java interoperability purpose. An optional inline return type can't be handled by java when
- * it's generic.
- */
-@JvmName("getTrackLocationOffsetOrThrow")
-fun getTrackLocationOffsetOrThrow(
-    path: PathProperties,
-    location: TrackLocation
-): Offset<TravelledPath> {
-    return path.getTrackLocationOffset(location)
-        ?: throw RuntimeException("Can't find location on path")
 }

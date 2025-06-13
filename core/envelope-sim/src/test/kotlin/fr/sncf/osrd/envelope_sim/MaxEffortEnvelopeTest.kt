@@ -8,9 +8,9 @@ import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.from
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.SimStop
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.from
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -191,8 +191,8 @@ class MaxEffortEnvelopeTest {
             )
         )
         val mrsp = mrspBuilder.build()
-        val maxSpeedEnvelope = from(testContext, stops, mrsp)
-        from(testContext, 0.0, maxSpeedEnvelope)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(testContext, stops, mrsp)
+        maxEffortEnvelopeFrom(testContext, 0.0, maxSpeedEnvelope)
     }
 
     @Test
@@ -264,8 +264,8 @@ class MaxEffortEnvelopeTest {
             )
         )
         val mrsp = mrspBuilder.build()
-        val maxSpeedEnvelope = from(testContext, stops, mrsp)
-        from(testContext, 0.0, maxSpeedEnvelope)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(testContext, stops, mrsp)
+        maxEffortEnvelopeFrom(testContext, 0.0, maxSpeedEnvelope)
     }
 
     /**
@@ -288,8 +288,8 @@ class MaxEffortEnvelopeTest {
         speeds.put(Range.open(0.0, 9.0), 40.0)
         speeds.put(Range.open(9.0, 10.0), 60.0)
         val mrsp = TestMRSPBuilder.makeSimpleMRSP(testContext, speeds)
-        val maxSpeedEnvelope = from(testContext, stops, mrsp)
-        val maxEffortEnvelope = from(testContext, 40.0, maxSpeedEnvelope)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(testContext, stops, mrsp)
+        val maxEffortEnvelope = maxEffortEnvelopeFrom(testContext, 40.0, maxSpeedEnvelope)
         Assertions.assertTrue(maxEffortEnvelope.continuous)
     }
 }

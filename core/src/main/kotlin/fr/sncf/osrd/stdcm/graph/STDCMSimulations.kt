@@ -10,8 +10,9 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -94,14 +95,14 @@ class STDCMSimulations {
         if (stopPosition != null && stopPosition == start) return makeSinglePointEnvelope(0.0)
         val blockLength = infraExplorer.getCurrentBlockLength()
         if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
-        var stops = emptyList<MaxSpeedEnvelope.SimStop>()
+        var stops = emptyList<SimStop>()
         var simLength = blockLength.distance - start.distance
         if (stopPosition != null) {
             val stopOffset = Offset<TravelledPath>(stopPosition - start)
             // We presently consider all stdcm stops to be performed on closed signal by default
             // This presently only affects ETCS computations, which are not yet supported in stdcm
             // either
-            stops = listOf(MaxSpeedEnvelope.SimStop(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
+            stops = listOf(SimStop(stopOffset, RJSReceptionSignal.SHORT_SLIP_STOP))
             simLength = Distance.min(simLength, stopOffset.distance)
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
@@ -116,8 +117,8 @@ class STDCMSimulations {
                 temporarySpeedLimitManager,
             )
         return try {
-            val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp)
-            MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope)
+            val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
+            maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
         } catch (e: OSRDError) {
             // The train can't reach its destination, for example because of high slopes
             if (nFailedSimulation == 0) {

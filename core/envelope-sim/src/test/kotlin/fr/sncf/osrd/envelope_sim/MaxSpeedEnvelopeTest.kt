@@ -2,8 +2,8 @@ package fr.sncf.osrd.envelope_sim
 
 import fr.sncf.osrd.envelope.EnvelopeShape
 import fr.sncf.osrd.envelope.EnvelopeTransitions
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.SimStop
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.from
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -17,7 +17,7 @@ class MaxSpeedEnvelopeTest {
 
         val flatMRSP = TestMRSPBuilder.makeSimpleMRSP(testContext, 44.4)
         val context = SimpleContextBuilder.makeSimpleContext(100000.0, 0.0)
-        val maxSpeedEnvelope = from(context, stops, flatMRSP)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         EnvelopeShape.check(
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
@@ -39,7 +39,7 @@ class MaxSpeedEnvelopeTest {
 
         val flatMRSP = TestMRSPBuilder.makeSimpleMRSP(testContext, 44.4)
         val context = SimpleContextBuilder.makeSimpleContext(10000.0, 20.0)
-        val maxSpeedEnvelope = from(context, stops, flatMRSP)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         EnvelopeShape.check(
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
@@ -61,7 +61,7 @@ class MaxSpeedEnvelopeTest {
 
         val flatMRSP = TestMRSPBuilder.makeSimpleMRSP(testContext, 44.4)
         val context = SimpleContextBuilder.makeSimpleContext(10000.0, 0.0)
-        val maxSpeedEnvelope = from(context, stops, flatMRSP)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         EnvelopeShape.check(maxSpeedEnvelope, EnvelopeShape.CONSTANT)
     }
 
@@ -87,7 +87,7 @@ class MaxSpeedEnvelopeTest {
                 SimpleContextBuilder.TIME_STEP,
                 effortCurveMap
             )
-        val maxSpeedEnvelope = from(context, stops, flatMRSP)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         EnvelopeShape.check(
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
@@ -114,7 +114,7 @@ class MaxSpeedEnvelopeTest {
 
         val mrsp = TestMRSPBuilder.makeComplexMRSP(testContext)
         val context = SimpleContextBuilder.makeSimpleContext(length.toDouble(), 0.0)
-        val maxSpeedEnvelope = from(context, stops, mrsp)
+        val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
         EnvelopeShape.check(
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,

@@ -27,11 +27,11 @@ value class Duration(val milliseconds: Long) : Comparable<Duration> {
     }
 
     companion object {
-        @JvmStatic val ZERO = Duration(milliseconds = 0L)
+        val ZERO = Duration(milliseconds = 0L)
 
-        @JvmStatic @JvmName("fromSeconds") fun fromSeconds(time: Double): Duration = time.seconds
+        fun fromSeconds(time: Double): Duration = time.seconds
 
-        @JvmStatic @JvmName("toSeconds") fun fromSeconds(time: Duration): Double = time.seconds
+        fun fromSeconds(time: Duration): Double = time.seconds
     }
 
     override fun compareTo(other: Duration): Int {

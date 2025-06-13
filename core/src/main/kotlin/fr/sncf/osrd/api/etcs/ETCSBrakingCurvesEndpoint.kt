@@ -8,7 +8,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingCurves
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -120,9 +120,7 @@ class ETCSBrakingCurvesEndpoint(
                     .map { pathOffsetBuilder.toTravelledPath(it) }
                     .filter { it.distance > Distance.ZERO && it.distance <= chunkPath.length }
             val etcsSignalStops =
-                etcsSignalOffsets.map {
-                    MaxSpeedEnvelope.SimStop(it, RJSReceptionSignal.SHORT_SLIP_STOP)
-                }
+                etcsSignalOffsets.map { SimStop(it, RJSReceptionSignal.SHORT_SLIP_STOP) }
             val etcsSignalEoas = etcsSimulator.computeEoaLocations(mrsp, etcsSignalStops)
             val signalBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsSignalEoas)
 
