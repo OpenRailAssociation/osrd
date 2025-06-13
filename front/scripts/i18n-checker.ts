@@ -22,21 +22,12 @@ const IGNORE_MISSING: RegExp[] = [
 const IGNORE_UNUSED: RegExp[] = [
   /errors:.*/, // Errors are generated and used dynamicly
   /infraEditor:.*/, // Translation of properties object for the form
-  /infraEditor:__main____.*/, // Found by error by i18n parser in a json-schema
   /translation:Editor\.tools\..*/, // Editor tool's label are generated
-  /translation:Editor.obj-types\..*/, // Type of object are translated dynamicly on the sumpup popin
-  /translation:Editor.directions\..*/,
   /translation:Editor.layers\..*/,
   /translation:common.map-actions\..*/,
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
-  /translation:Editor\.infra-errors\.error-level\..*/, // Infra error level are generated
-  /translation:Editor\.infra-errors\.list\..*/, // Total-error keys are generated
-  /translation:Editor\.infra-errors\.corrector-modal\..*/,
   /translation:nav-bar.language\..*/, // Language selector which is generated with the locale
-
-  // Authorization
-  /translation:authorization\.grants\..*/,
 
   // Map
   /translation:mapKey.alternatingCurrent/,
@@ -45,48 +36,25 @@ const IGNORE_UNUSED: RegExp[] = [
 
   // Manage train schedule
   /operational-studies:manageTrainSchedule.errorMessages\..*/,
-  /operational-studies:manageTrainSchedule.incompatibleConstraints\..*/,
-  /operational-studies:manageTrainSchedule.pathfindingErrors\..*/,
+  /operational-studies:manageTrainSchedule.pathfindingErrors\.pathfinding_failure/,
   /operational-studies:manageTrainSchedule.tabs\..*/,
 
-  // Operational studies management
-  /operational-studies:.*.delete/,
-  /operational-studies:.*.confirm-delete/,
-  /operational-studies:.*.unselect-all/,
-  /operational-studies:.*.create/,
-  /operational-studies:.*.select/,
-
   // Project
-  /operational-studies:main\.Routing/,
-  /operational-studies:main\.Spacing/,
   /operational-studies:main\.pacedTrain/,
   /operational-studies:main\.pacedTrainCount/,
-  /operational-studies:main\.timetable\.invalid\..*/,
+  /operational-studies:main\.timetable\.invalid\.pathfinding_not_found/,
   /operational-studies:main\.timetable\.occurrenceChangeGroup\..*/,
   /operational-studies:main\.train/,
   /operational-studies:main\.trainCount/,
-  /operational-studies:main\.timetable\.occurrenceChangeGroup\..*/,
 
   // Study
-  /operational-studies:study\.date-*/,
-  /operational-studies:study\.studyCategories\..*/,
-  /operational-studies:study\.studyStates\..*/,
-
-  // MacroEditor train categories
-  /operational-studies:main\.macroEditor\.trainCategory\..*/,
+  /operational-studies:study\.studyStates\.nothingSelected/,
 
   // Rolling stock
-  /translation:rollingStock.categoriesOptions\..*/,
   /translation:rollingStock.curves\..*/,
-  /translation:rollingStock.delete\..*/,
   /translation:rollingStock.errorMessages\..*/,
-  /translation:rollingStock.electricalPowerStartupTime/,
-  /translation:rollingStock.length/,
-  /translation:rollingStock.mass/,
-  /translation:rollingStock.maxSpeed/,
   /translation:rollingStock.messages\..*/,
   /translation:rollingStock.metadata\..*/,
-  /translation:rollingStock.raisePantographTime/,
 
   // Simulation
   /operational-studies:simulationResults.departureTime/,
@@ -99,17 +67,10 @@ const IGNORE_UNUSED: RegExp[] = [
   // Stdcm
   /stdcm:consist\.errors\..*/,
   /stdcm:datetimeOutsideWindow/,
-  /stdcm:departureDate/,
-  /stdcm:linkedTrainDefaultCard\..*/,
-  /stdcm:simulation.additionalResults/,
-  /stdcm:simulation.calculatingSimulation/,
-  /stdcm:simulation\.results\..*Conflict*/,
   /stdcm:stdcmErrors\..*/,
   /stdcm:trainPath.asSoonAsPossible/,
-  /stdcm:trainPath\.linkedTrain\..*/,
   /stdcm:trainPath.preciseTime/,
   /stdcm:trainPath.respectDestinationSchedule/,
-  /stdcm:trainPath\.stopType\..*/,
 ];
 
 /**
