@@ -97,7 +97,9 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
     }
   }
   if (!departureSection) {
-    throw new Error('Trainrun is missing departure section');
+    throw new Error('Trainrun is missing departure section', {
+      cause: 'missingDepartureSectionTrainrun',
+    });
   }
 
   // Start with the departure section and iterate over the path
@@ -114,7 +116,9 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
 
     // Make sure we don't enter an infinite loop
     if (seenSectionIds.has(section.id)) {
-      throw new Error('Cycle detected in trainrun');
+      throw new Error('Cycle detected in trainrun', {
+        cause: 'cyclicTrainrun',
+      });
     }
     seenSectionIds.add(section.id);
   }
@@ -122,7 +126,9 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   // If we haven't seen all sections belonging to the trainrun, it's because
   // it's made up of multiple separate parts
   if (orderedSections.length !== sections.length) {
-    throw new Error('Trainrun is not continuous');
+    throw new Error('Trainrun is not continuous', {
+      cause: 'nonContinuousTrainrun',
+    });
   }
 
   return orderedSections;
@@ -792,12 +798,13 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   const trainSchedules: TrainSchedule[] = [];
   const pacedTrains: PacedTrain[] = [];
+  const failedTrainruns: { trainrun: TrainrunDto; error: unknown }[] = [];
   for (const trainrun of dto.trainruns) {
     massageData(dto, trainrun.id);
     try {
       getTrainrunSectionsByTrainrunId(dto, trainrun.id);
-    } catch (err) {
-      console.error('Dropping trainrun on the floor', trainrun, err);
+    } catch (error) {
+      failedTrainruns.push({ trainrun, error });
       continue; // TODO: don't do that!
     }
     const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
@@ -823,5 +830,10 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     }
   }
 
-  return { macro_nodes: [...macroNodes.values()], paced_trains: pacedTrains, train_schedules: trainSchedules };
+  return {
+    macro_nodes: [...macroNodes.values()],
+    paced_trains: pacedTrains,
+    train_schedules: trainSchedules,
+    failed_trainruns: failedTrainruns,
+  };
 };

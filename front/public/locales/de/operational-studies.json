@@ -1,6 +1,7 @@
 {
   "importTrains": {
     "and": "und",
+    "cyclicTrainrun": "Zyklischer Weg",
     "cancel": "Abbrechen",
     "date": "DATUM",
     "datetime": "Datum & Uhrzeit",
@@ -16,12 +17,17 @@
       "errorNoTo": "Sie müssen einen Zielort angeben.",
       "errorSameFromTo": "Herkunfts- und Zielort müssen sich unterscheiden."
     },
+    "failedTrainrunImports": "Einige Züge konnten nicht importiert werden",
     "failure": "Operation fehlgeschlagen",
     "from": "Herkunft",
     "importTimetable": "Fahrplan importieren",
     "inputPlaceholder": "Name, Dreierkürzel",
     "launchImport": "Import starten",
+    "missingDepartureSectionTrainrun": "Fehlender Startabschnitt",
+    "nonContinuousTrainrun": "Unterbrochener Weg",
     "noResults": "Kein Ergebnis",
+    "pacedTrainsFound_one": "1 Dienstleistung gefunden",
+    "pacedTrainsFound_other": "{{count}} Dienstleistungen gefunden",
     "searchTimetable": "Fahrplan suchen",
     "selectStation": "Betriebsstelle auswählen",
     "startTime": "START",

@@ -17,6 +17,8 @@ import { setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
+import type { TrainrunDto } from '../components/NGE/types';
+
 type ImportTimetableItemProps = {
   scenario: ScenarioResponse;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -33,6 +35,9 @@ const ImportTimetableItem = ({ scenario, upsertTimetableItems }: ImportTimetable
   });
   const [trainsXmlData, setTrainsXmlData] = useState<ImportedTrainSchedule[]>([]);
   const [pacedTrainXmlData, setPacedTrainXmlData] = useState<ImportedPacedTrainSchedule[]>([]);
+  const [failedTrainruns, setFailedTrainruns] = useState<
+    { trainrun: TrainrunDto; error: unknown }[]
+  >([]);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
@@ -58,6 +63,7 @@ const ImportTimetableItem = ({ scenario, upsertTimetableItems }: ImportTimetable
         setTrainsJsonData={setTrainsJsonData}
         setTrainsXmlData={setTrainsXmlData}
         setPacedTrainsXmlData={setPacedTrainXmlData}
+        setFailedTrainruns={setFailedTrainruns}
       />
       <ImportTimetableItemTrainsList
         isLoading={isLoading}
@@ -67,6 +73,7 @@ const ImportTimetableItem = ({ scenario, upsertTimetableItems }: ImportTimetable
         trainsXmlData={trainsXmlData}
         pacedTrainXmlData={pacedTrainXmlData}
         upsertTimetableItems={upsertTimetableItems}
+        failedTrainruns={failedTrainruns}
       />
     </main>
   ) : (

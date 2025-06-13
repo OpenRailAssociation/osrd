@@ -4,6 +4,7 @@ import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
+import type { TrainrunDto } from 'applications/operationalStudies/components/NGE/types';
 import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
@@ -54,6 +55,7 @@ type ImportTimetableItemTrainsListProps = {
   trainsXmlData: ImportedTrainSchedule[];
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   pacedTrainXmlData: ImportedPacedTrainSchedule[];
+  failedTrainruns?: { trainrun: TrainrunDto; error: unknown }[];
 };
 
 const ImportTimetableItemTrainsList = ({
@@ -64,6 +66,7 @@ const ImportTimetableItemTrainsList = ({
   trainsXmlData,
   upsertTimetableItems,
   pacedTrainXmlData,
+  failedTrainruns,
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
 
@@ -213,6 +216,24 @@ const ImportTimetableItemTrainsList = ({
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
+        {failedTrainruns && failedTrainruns.length > 0 && (
+          <div className="container-fluid alert alert-warning mt-2 mb-0">
+            <h2>
+              {t('failedTrainrunImports')} ({failedTrainruns.length}):
+            </h2>
+            <ul>
+              {failedTrainruns.map(({ trainrun, error }) => (
+                <li key={trainrun.id}>
+                  <span>
+                    <b>{trainrun.name}</b> (id {trainrun.id})
+                  </span>
+                  {': '}
+                  {error instanceof Error ? t(String(error.cause)) : String(error)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   ) : (

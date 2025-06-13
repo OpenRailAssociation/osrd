@@ -2,7 +2,10 @@ import type { TFunction } from 'i18next';
 import type { Dispatch } from 'redux';
 
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
-import type { NetzgrafikDto } from 'applications/operationalStudies/components/NGE/types';
+import type {
+  NetzgrafikDto,
+  TrainrunDto,
+} from 'applications/operationalStudies/components/NGE/types';
 import type {
   ImportedTrainSchedule,
   TimetableJsonPayload,
@@ -23,7 +26,7 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'train_name',
 ];
 
-const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload => {
+const validateTimetableItems = (importedItems: unknown): TimetableJsonPayload => {
   const { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains } =
     importedItems as TimetableJsonPayload;
 
@@ -73,7 +76,8 @@ export const processJsonFile = (
   fileExtension: string,
   setTrainsJsonData: (data: TimetableJsonPayload) => void,
   dispatch: Dispatch,
-  t: TFunction<'operational-studies', 'importTrains'>
+  t: TFunction<'operational-studies', 'importTrains'>,
+  setFailedTrainruns?: (failed: { trainrun: TrainrunDto; error: unknown }[]) => void
 ) => {
   const isJsonFile = fileExtension === 'application/json';
 
@@ -102,17 +106,24 @@ export const processJsonFile = (
       return true;
     }
     setTrainsJsonData(importedData);
+    if (
+      setFailedTrainruns &&
+      importedData.failed_trainruns &&
+      importedData.failed_trainruns.length > 0
+    ) {
+      setFailedTrainruns(importedData.failed_trainruns);
+    }
     return true;
   }
 
-  // validate the trainSchedules
+  // validate the timetableItems
   try {
-    const importedTrainSchedules = validateTrainSchedules(rawContent);
+    const importedTimetableItems = validateTimetableItems(rawContent);
     if (
-      importedTrainSchedules.train_schedules.length > 0 ||
-      importedTrainSchedules.paced_trains.length > 0
+      importedTimetableItems.train_schedules.length > 0 ||
+      importedTimetableItems.paced_trains.length > 0
     ) {
-      setTrainsJsonData(importedTrainSchedules);
+      setTrainsJsonData(importedTimetableItems);
     } else {
       dispatch(
         setFailure({

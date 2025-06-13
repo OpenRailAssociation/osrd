@@ -4,6 +4,7 @@ import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import type { TrainrunDto } from 'applications/operationalStudies/components/NGE/types';
 import type {
   ImportStation,
   ImportedTrainSchedule,
@@ -42,6 +43,7 @@ interface ImportTimetableItemConfigProps {
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
   setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
   setPacedTrainsXmlData: (pacedTrainsXmlData: ImportedPacedTrainSchedule[]) => void;
+  setFailedTrainruns?: (failed: { trainrun: TrainrunDto; error: unknown }[]) => void;
 }
 
 const ImportTimetableItemConfig = ({
@@ -50,6 +52,7 @@ const ImportTimetableItemConfig = ({
   setTrainsJsonData,
   setTrainsXmlData,
   setPacedTrainsXmlData,
+  setFailedTrainruns,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -442,7 +445,8 @@ const ImportTimetableItemConfig = ({
       file.type,
       setTrainsJsonData,
       dispatch,
-      t
+      t,
+      setFailedTrainruns
     );
 
     // the file has been processed, return

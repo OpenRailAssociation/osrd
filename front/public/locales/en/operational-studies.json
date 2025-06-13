@@ -1,6 +1,7 @@
 {
   "importTrains": {
     "cancel": "Cancel",
+    "cyclicTrainrun": "Cyclic path",
     "date": "DATE",
     "datetime": "Date & time",
     "download": "Download",
@@ -15,11 +16,14 @@
       "errorNoTo": "You must fill in a destination.",
       "errorSameFromTo": "Origin and destination must be different"
     },
+    "failedTrainrunImports": "Some trains could not be imported",
     "failure": "Operation failed",
     "from": "Origin",
     "importTimetable": "Import a timetable",
     "inputPlaceholder": "Name, trigram",
     "launchImport": "Start import",
+    "missingDepartureSectionTrainrun": "Missing departure section",
+    "nonContinuousTrainrun": "Non-continuous path",
     "noResults": "No results",
     "pacedTrainsFound_one": "1 service found",
     "pacedTrainsFound_other": "{{count}} services found",

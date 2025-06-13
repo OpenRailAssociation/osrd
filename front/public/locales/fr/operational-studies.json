@@ -1,6 +1,7 @@
 {
   "importTrains": {
     "cancel": "Annuler",
+    "cyclicTrainrun": "Chemin cyclique",
     "date": "DATE",
     "datetime": "Date & horaires",
     "download": "Télécharger",
@@ -15,11 +16,14 @@
       "errorNoTo": "Vous devez renseigner une destination.",
       "errorSameFromTo": "L'origine et la destination doivent être différentes."
     },
+    "failedTrainrunImports": "Certains trains n'ont pas pu être importés ",
     "failure": "Opération échouée",
     "from": "Origine",
     "importTimetable": "Importer une grille horaire",
     "inputPlaceholder": "Nom, trigramme",
     "launchImport": "Démarrer l'importation",
+    "missingDepartureSectionTrainrun": "Section de départ manquante",
+    "nonContinuousTrainrun": "Chemin non continu",
     "noResults": "Aucun résultat",
     "pacedTrainsFound_one": "1 mission trouvée",
     "pacedTrainsFound_other": "{{count}} missions trouvées",
