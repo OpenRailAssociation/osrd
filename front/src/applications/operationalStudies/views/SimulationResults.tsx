@@ -14,7 +14,6 @@ import SimulationResultsMap from 'modules/simulationResult/components/Simulation
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
-import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/useFormattedOperationalPoints';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
@@ -79,12 +78,6 @@ const SimulationResults = ({
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [mapCanvas, setMapCanvas] = useState<string>();
-
-  const operationalPoints = useFormattedOperationalPoints(
-    selectedTimetableItem,
-    timetableItemSimulation,
-    pathProperties
-  );
 
   const [projectPathTrainResult, setProjectPathTrainResult] = useState<TrainSpaceTimeData[]>([]);
 
@@ -242,22 +235,17 @@ const SimulationResults = ({
           </div>
 
           {/* SIMULATION EXPORT BUTTONS */}
-          {pathProperties &&
-            selectedTimetableItemRollingStock &&
-            operationalPoints &&
-            path &&
-            infraId && (
-              <SimulationResultExport
-                path={path}
-                scenarioData={scenarioData}
-                timetableItem={selectedTimetableItem}
-                simulatedTimetableItem={timetableItemSimulation}
-                pathElectrifications={pathProperties.electrifications}
-                operationalPoints={operationalPoints}
-                rollingStock={selectedTimetableItemRollingStock}
-                mapCanvas={mapCanvas}
-              />
-            )}
+          {pathProperties && selectedTimetableItemRollingStock && path && infraId && (
+            <SimulationResultExport
+              path={path}
+              scenarioData={scenarioData}
+              timetableItem={selectedTimetableItem}
+              simulatedTimetableItem={timetableItemSimulation}
+              pathProperties={pathProperties}
+              rollingStock={selectedTimetableItemRollingStock}
+              mapCanvas={mapCanvas}
+            />
+          )}
         </>
       )}
     </div>

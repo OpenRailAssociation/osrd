@@ -19,7 +19,9 @@ export const useFormattedOperationalPoints = (
   simulatedTimetableItem?: SimulationResponseSuccess,
   pathProperties?: PathPropertiesFormatted
 ) => {
-  const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>();
+  const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>(
+    []
+  );
   const { getTrackSectionsByIds } = useScenarioContext();
 
   useEffect(() => {
