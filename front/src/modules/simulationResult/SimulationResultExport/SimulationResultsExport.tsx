@@ -24,7 +24,7 @@ type SimulationResultExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
   timetableItem: TimetableItem;
-  simulatedTimetableItem: SimulationResponseSuccess;
+  simulation: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
   rollingStock: RollingStockWithLiveries;
   mapCanvas?: string;
@@ -34,7 +34,7 @@ const SimulationResultExport = ({
   path,
   scenarioData,
   timetableItem,
-  simulatedTimetableItem,
+  simulation,
   pathProperties,
   rollingStock,
   mapCanvas,
@@ -43,7 +43,7 @@ const SimulationResultExport = ({
 
   const operationalPoints = useFormattedOperationalPoints(
     timetableItem,
-    simulatedTimetableItem,
+    simulation,
     pathProperties
   );
 
@@ -51,12 +51,12 @@ const SimulationResultExport = ({
     () => ({
       trainName: timetableItem.train_name,
       departure_time: '',
-      simulation: simulatedTimetableItem,
+      simulation,
       creationDate: new Date(),
       rollingStock,
       speedLimitByTag: timetableItem.speed_limit_tag,
     }),
-    [simulatedTimetableItem]
+    [simulation]
   );
 
   const exportTrainPDF = useCallback(async () => {
@@ -90,7 +90,7 @@ const SimulationResultExport = ({
       <Button
         onClick={() =>
           exportTrainCSV(
-            simulatedTimetableItem,
+            simulation,
             operationalPoints,
             pathProperties.electrifications,
             timetableItem
