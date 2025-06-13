@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import { KebabHorizontal, Moon, Pencil, Play, Reverse, Skip, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
+import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
@@ -10,7 +11,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addElementAtIndex } from 'utils/array';
-import { getExceptionType, isException } from 'utils/trainId';
+import { getExceptionType, isException, isIndexedOccurrenceId } from 'utils/trainId';
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
@@ -124,7 +125,14 @@ const OccurrenceItem = ({
     }
     const items = [getExceptionType(occurrence) === 'added' ? deleteItem : disable, edit, project];
 
-    if (exceptionChangeGroups && (Object.keys(exceptionChangeGroups).length ?? 0) > 0) {
+    if (
+      exceptionChangeGroups &&
+      (Object.keys(
+        isIndexedOccurrenceId(id)
+          ? exceptionChangeGroups
+          : omit(exceptionChangeGroups, 'start_time')
+      ).length ?? 0) > 0
+    ) {
       return addElementAtIndex(items, 2, restore);
     }
     return items;
