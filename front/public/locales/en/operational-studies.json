@@ -182,7 +182,8 @@
         "pathfinding_failure": "Pathfinding failed",
         "pathfinding_not_found": "Pathfinding not found",
         "rolling_stock_not_found": "RS not found",
-        "simulation_failed": "Simulation failed"
+        "simulation_failed": "Simulation failed",
+        "zero_length_path": "Departure and arrival are identical"
       },
       "invalidTrains": "Some trains are invalid",
       "itemsSelectionDeletedCount_one": "The item has been deleted.",

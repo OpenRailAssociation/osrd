@@ -182,7 +182,8 @@
         "pathfinding_failure": "Calcul non abouti",
         "pathfinding_not_found": "Chemin introuvable",
         "rolling_stock_not_found": "MR non trouvé",
-        "simulation_failed": "Simulation impossible"
+        "simulation_failed": "Simulation impossible",
+        "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
       "itemsSelectionDeletedCount_one": "L'item a bien été supprimé.",
