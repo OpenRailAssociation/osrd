@@ -19,7 +19,6 @@ type TimesStopsOutputProps = {
   operationalPoints?: PathPropertiesFormatted['operationalPoints'];
   selectedTimetableItem?: TimetableItem;
   path?: PathfindingResultSuccess;
-  dataIsLoading: boolean;
 };
 
 const TimesStopsOutput = ({
@@ -28,7 +27,6 @@ const TimesStopsOutput = ({
   operationalPoints,
   selectedTimetableItem,
   path,
-  dataIsLoading,
 }: TimesStopsOutputProps) => {
   const enrichedOperationalPoints = useOutputTableData(
     simulatedTimetableItem?.final_output,
@@ -54,9 +52,7 @@ const TimesStopsOutput = ({
         });
       }}
       headerRowHeight={40}
-      dataIsLoading={
-        dataIsLoading || !timetableItemWithDetails || !operationalPoints || !selectedTimetableItem
-      }
+      dataIsLoading={!timetableItemWithDetails || !operationalPoints || !selectedTimetableItem}
     />
   );
 };
