@@ -51,6 +51,18 @@ export const getExceptionType = (occurrence: Occurrence): 'added' | 'modified' |
 
 export const isException = (occurrence: Occurrence) => !!getExceptionType(occurrence);
 
+/**
+ * Checks if an exception is related to the path or simulation.
+ */
+export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occurrence) =>
+  exceptionChangeGroups &&
+  (exceptionChangeGroups.path_and_schedule ||
+    exceptionChangeGroups.options ||
+    exceptionChangeGroups.constraint_distribution ||
+    exceptionChangeGroups.speed_limit_tag ||
+    exceptionChangeGroups.initial_speed ||
+    exceptionChangeGroups.rolling_stock);
+
 export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItem
 ): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrainId(timetableItem.id);
