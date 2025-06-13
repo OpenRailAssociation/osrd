@@ -334,7 +334,7 @@
     "pathfindingError": "An error occurred in pathfinding: {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Incompatible constraints",
-      "invalid_path_item": "Waypoint not found",
+      "invalid_path_items": "Waypoint not found",
       "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
       "not_found_in_blocks": "Missing block",
       "not_found_in_routes": "Missing route",
