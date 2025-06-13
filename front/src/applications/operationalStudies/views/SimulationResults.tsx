@@ -80,7 +80,7 @@ const SimulationResults = ({
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [mapCanvas, setMapCanvas] = useState<string>();
 
-  const { operationalPoints, loading: formattedOpPointsLoading } = useFormattedOperationalPoints(
+  const operationalPoints = useFormattedOperationalPoints(
     selectedTimetableItem,
     timetableItemSimulation,
     pathProperties
@@ -238,7 +238,6 @@ const SimulationResults = ({
               operationalPoints={pathProperties?.operationalPoints}
               selectedTimetableItem={selectedTimetableItem}
               path={path}
-              dataIsLoading={formattedOpPointsLoading}
             />
           </div>
 

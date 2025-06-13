@@ -20,14 +20,11 @@ export const useFormattedOperationalPoints = (
   pathProperties?: PathPropertiesFormatted
 ) => {
   const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>();
-  const [loading, setLoading] = useState(false);
   const { getTrackSectionsByIds } = useScenarioContext();
 
   useEffect(() => {
     if (timetableItem && simulatedTimetableItem && pathProperties) {
       const fetchOperationalPoints = async () => {
-        setLoading(true);
-
         const trackIds = pathProperties.operationalPoints.map((op) => op.part.track);
         const trackSections = await getTrackSectionsByIds(trackIds);
         const formattedOperationalPoints = formatOperationalPoints(
@@ -37,11 +34,10 @@ export const useFormattedOperationalPoints = (
           trackSections
         );
         setOperationalPoints(formattedOperationalPoints);
-        setLoading(false);
       };
       fetchOperationalPoints();
     }
   }, [timetableItem, simulatedTimetableItem, pathProperties, getTrackSectionsByIds]);
 
-  return { operationalPoints, loading };
+  return operationalPoints;
 };
