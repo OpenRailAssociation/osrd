@@ -12,14 +12,15 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.FixedTime
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
@@ -123,7 +124,7 @@ fun runStandaloneSimulation(
 
     // Max speed envelope
     val simStops = getSimStops(schedule)
-    val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, simStops, mrsp)
+    val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, simStops, mrsp)
 
     // Add neutral sections
     context =
@@ -136,7 +137,7 @@ fun runStandaloneSimulation(
         )
 
     // Max effort envelope : the train goes as fast as possible
-    val maxEffortEnvelope = MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope)
+    val maxEffortEnvelope = maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
     // Provisional envelope: the train matches the standard allowances
     val provisionalEnvelope =
         if (margins.values.isEmpty()) maxEffortEnvelope
@@ -480,8 +481,6 @@ fun buildProvisionalEnvelope(
     return margin.apply(maxEffortEnvelope, context)
 }
 
-fun getSimStops(schedule: List<SimulationScheduleItem>): List<MaxSpeedEnvelope.SimStop> {
-    return schedule
-        .filter { it.stopFor != null }
-        .map { MaxSpeedEnvelope.SimStop(it.pathOffset, it.receptionSignal) }
+fun getSimStops(schedule: List<SimulationScheduleItem>): List<SimStop> {
+    return schedule.filter { it.stopFor != null }.map { SimStop(it.pathOffset, it.receptionSignal) }
 }

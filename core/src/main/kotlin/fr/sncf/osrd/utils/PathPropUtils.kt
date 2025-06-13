@@ -21,7 +21,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
 /** Creates the path from a given block id */
-@JvmName("makePathProps")
 fun makePathProps(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,

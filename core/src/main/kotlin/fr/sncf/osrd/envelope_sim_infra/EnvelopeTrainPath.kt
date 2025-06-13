@@ -15,7 +15,6 @@ import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 
 object EnvelopeTrainPath {
     /** Create EnvelopePath from a path and a ElectricalProfileMapping */
-    @JvmStatic
     fun from(
         infra: RawSignalingInfra,
         path: PathProperties,

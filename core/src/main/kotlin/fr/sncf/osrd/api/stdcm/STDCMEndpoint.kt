@@ -10,9 +10,9 @@ import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.conflicts.NoConflictResponse
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.SpacingRequirement
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.Pathfinding

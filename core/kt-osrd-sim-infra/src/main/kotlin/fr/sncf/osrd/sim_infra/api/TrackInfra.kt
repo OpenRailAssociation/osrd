@@ -18,15 +18,13 @@ sealed interface TrackChunk
 
 typealias TrackChunkId = StaticIdx<TrackChunk>
 
-@Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackInfra {
-    @JvmName("getTrackSectionName") fun getTrackSectionName(trackSection: TrackSectionId): String
+    fun getTrackSectionName(trackSection: TrackSectionId): String
 
     fun getTrackSectionFromName(name: String): TrackSectionId?
 
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
 
-    @JvmName("getTrackSectionLength")
     fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection>
 }
 

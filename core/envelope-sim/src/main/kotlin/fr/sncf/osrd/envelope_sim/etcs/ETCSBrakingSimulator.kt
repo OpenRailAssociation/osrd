@@ -7,7 +7,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.pipelines.increase
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.units.Distance
@@ -63,10 +64,7 @@ interface ETCSBrakingSimulator {
      * Compute the ETCS EoAs, only for the stops which are inside an ETCS portion of the path
      * present in the envelope.
      */
-    fun computeEoaLocations(
-        envelope: Envelope,
-        stops: Collection<MaxSpeedEnvelope.SimStop>
-    ): List<EndOfAuthority>
+    fun computeEoaLocations(envelope: Envelope, stops: Collection<SimStop>): List<EndOfAuthority>
 }
 
 typealias BrakingCurves = EnumMap<BrakingType, BrakingCurve?>
@@ -189,7 +187,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
         val cursor = EnvelopeCursor.backward(mrsp)
         val limitsOfAuthority = mutableListOf<LimitOfAuthority>()
-        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+        while (cursor.findPartTransition(::increase)) {
             val offset = Offset<TravelledPath>(cursor.position.meters)
             if (etcsRanges.contains(offset.distance)) {
                 limitsOfAuthority.add(
@@ -206,7 +204,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun computeEoaLocations(
         envelope: Envelope,
-        stops: Collection<MaxSpeedEnvelope.SimStop>
+        stops: Collection<SimStop>
     ): List<EndOfAuthority> {
         val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
         val orderedStops = stops.sortedBy { it.offset }

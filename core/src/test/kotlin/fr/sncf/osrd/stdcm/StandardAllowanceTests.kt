@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -536,7 +536,6 @@ class StandardAllowanceTests {
         private const val TIME_STEP = 2.0
 
         /** Runs the pathfinding with the given parameters, with and without allowance */
-        @JvmStatic
         fun runWithAndWithoutAllowance(builder: STDCMPathfindingBuilder): STDCMAllowanceResults {
             builder.setTimeStep(TIME_STEP)
             val resultWithAllowance = builder.run()
@@ -553,7 +552,6 @@ class StandardAllowanceTests {
          * Compares the run time with and without allowance, checks that the allowance is properly
          * applied
          */
-        @JvmStatic
         fun checkAllowanceResult(
             results: STDCMAllowanceResults,
             value: AllowanceValue,

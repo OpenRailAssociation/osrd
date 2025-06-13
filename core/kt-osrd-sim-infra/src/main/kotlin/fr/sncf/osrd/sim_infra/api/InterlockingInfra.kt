@@ -88,7 +88,7 @@ interface RoutingInfra : ReservationInfra {
 
     fun getRouteLength(route: RouteId): Length<Route>
 
-    @JvmName("getRouteFromName") fun getRouteFromName(name: String): RouteId
+    fun getRouteFromName(name: String): RouteId
 
     /**
      * Returns a list of indices of zones in the train path at which the reservations shall be

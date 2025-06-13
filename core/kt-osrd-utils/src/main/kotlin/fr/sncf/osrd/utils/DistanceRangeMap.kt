@@ -15,9 +15,9 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */
     data class RangeMapEntry<T>(
-        @get:JvmName("getLower") val lower: Distance,
-        @get:JvmName("getUpper") val upper: Distance,
-        @get:JvmName("getValue") val value: T,
+        val lower: Distance,
+        val upper: Distance,
+        val value: T,
     )
 
     /** Sets the value between the lower and upper distances */

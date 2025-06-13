@@ -15,13 +15,10 @@ value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
     }
 
     companion object {
-        @JvmStatic
         fun fromMetersPerSecond(metersPerSecond: Double): Speed {
             return Speed(millimetersPerSecond = Math.round(metersPerSecond * multiplier).toULong())
         }
 
-        @JvmStatic
-        @JvmName("toMetersPerSecond")
         fun toMetersPerSecond(speed: Speed): Double {
             return speed.metersPerSecond
         }

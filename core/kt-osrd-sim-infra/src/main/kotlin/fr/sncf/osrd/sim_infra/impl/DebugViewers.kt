@@ -51,7 +51,6 @@ fun <T, U> makeDirViewer(id: DirStaticIdx<T>, value: U): DirectedViewer<U> {
     return DirectedViewer(id.data, id.direction, value)
 }
 
-@JvmName("makeChunk")
 fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
     return ChunkViewer(
         infra.getTrackSectionName(infra.getTrackFromChunk(id)),
@@ -61,12 +60,10 @@ fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
     )
 }
 
-@JvmName("makeDirChunk")
 fun makeDirChunk(infra: RawInfra, id: DirStaticIdx<TrackChunk>): DirectedViewer<ChunkViewer> {
     return makeDirViewer(id, makeChunk(infra, id.value))
 }
 
-@JvmName("makeZonePath")
 fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
     return ZonePathViewer(
         infra.getZonePathChunks(id).map { dirChunk ->
@@ -77,7 +74,6 @@ fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
     )
 }
 
-@JvmName("makeBlock")
 fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>): BlockViewer {
     val entry = rawInfra.getZonePathEntry(blockInfra.getBlockZonePaths(id)[0])
     val exit = rawInfra.getZonePathExit(blockInfra.getBlockZonePaths(id).last())
@@ -90,7 +86,6 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
     )
 }
 
-@JvmName("makeRoute")
 fun makeRoute(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,

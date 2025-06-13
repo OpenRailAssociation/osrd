@@ -31,12 +31,10 @@ value class DynIdx<T> private constructor(val data: ULong) : NumIdx {
     constructor(index: UInt) : this(index.toULong())
 
     companion object {
-        @JvmStatic
         fun <T> fromData(data: ULong): DynIdx<T> {
             return DynIdx(data)
         }
 
-        @JvmStatic
         fun <T> fromData(data: Long): DynIdx<T> {
             return DynIdx(data.toULong())
         }

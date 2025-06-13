@@ -7,10 +7,10 @@ import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
+import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
@@ -72,8 +72,8 @@ class StandaloneSimulationTest {
         rollingStock.mapTractiveEffortCurves(electrificationMap, Comfort.STANDARD)
     private var context =
         EnvelopeSimContext(rollingStock, envelopeSimPath, 2.0, curvesAndConditions.curves)
-    private val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, emptyList(), mrsp)
-    private val maxEffortEnvelope = MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)
+    private val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, emptyList(), mrsp)
+    private val maxEffortEnvelope = maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
 
     /** Smoke test: we check that nothing crashes */
     @Test

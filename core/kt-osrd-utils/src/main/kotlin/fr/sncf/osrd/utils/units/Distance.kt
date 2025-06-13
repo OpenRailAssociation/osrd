@@ -36,14 +36,10 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     }
 
     companion object {
-        @JvmStatic val ZERO = Distance(millimeters = 0L)
+        val ZERO = Distance(millimeters = 0L)
 
-        @JvmStatic
-        @JvmName("fromMeters")
         fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
 
-        @JvmStatic
-        @JvmName("toMeters")
         fun toMeters(distance: Distance) =
             distance.meters // Only meant to be used in java, for compatibility
 
@@ -116,12 +112,10 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
     operator fun times(d: Double): Offset<T> = Offset(distance * d)
 
     companion object {
-        @JvmStatic fun <T> zero() = Offset<T>(Distance.ZERO)
+        fun <T> zero() = Offset<T>(Distance.ZERO)
 
-        @JvmStatic
         fun <T> min(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.min(a.distance, b.distance))
 
-        @JvmStatic
         fun <T> max(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.max(a.distance, b.distance))
     }
 }
