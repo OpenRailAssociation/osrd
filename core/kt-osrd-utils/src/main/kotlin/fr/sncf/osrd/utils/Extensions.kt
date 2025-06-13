@@ -13,3 +13,16 @@ fun <T> List<DirStaticIdx<T>>.toIdxList(): DirStaticIdxList<T> {
     res.addAll(this)
     return res
 }
+
+/** Removes consecutive duplicated values from a list. Keeps duplicates that aren't consecutive. */
+fun <T> List<T>.withoutConsecutiveDuplicates(): List<T> {
+    val res = mutableListOf<T>()
+    var last: T? = null
+    for (x in this) {
+        if (last != x) {
+            res.add(x)
+            last = x
+        }
+    }
+    return res
+}

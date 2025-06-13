@@ -8,6 +8,7 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.withoutConsecutiveDuplicates
 
 /** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
 fun getNextStopOnCurrentBlock(
@@ -24,7 +25,7 @@ fun getNextStopOnCurrentBlock(
 
 /** Create a TrainPath instance from a list of edge ranges */
 fun makeChunkPathFromEdges(graph: STDCMGraph, edges: List<STDCMEdge>): ChunkPath {
-    val blocks = edges.stream().map { edge -> edge.block }.distinct().toList()
+    val blocks = edges.map { edge -> edge.block }.withoutConsecutiveDuplicates()
     val totalPathLength =
         Length<TravelledPath>(
             Distance(
