@@ -1,9 +1,12 @@
+use crate::views::projection::TrainSimulationDetails;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::TrackRange;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
+use core_client::simulation::SignalCriticalPosition;
+use core_client::simulation::ZoneUpdate;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use itertools::izip;
@@ -11,17 +14,20 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::hash::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
+use crate::client::get_app_version;
 use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;
 use crate::views::projection::ProjectPathInput;
-use crate::views::projection::TrainSimulationDetails;
 use crate::views::projection::extract_train_details;
 use crate::views::timetable::simulation::train_simulation_batch;
 
@@ -105,7 +111,7 @@ pub(super) async fn compute_occupancy_blocks(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(&trains_schedules, simulations).await?;
+    let trains_details = extract_train_details(simulations).await?;
 
     let mut trains_hash_values = vec![];
 

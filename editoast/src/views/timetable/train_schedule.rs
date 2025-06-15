@@ -694,17 +694,22 @@ async fn project_path(
         })
         .await?;
 
-    let project_path_result = compute_projected_train_paths(
+    let compute_project_path = compute_projected_train_paths(
         conn,
         core_client,
         valkey_client,
         track_section_ranges,
         infra,
-        trains_schedules,
+        &trains_schedules,
         electrical_profile_set_id,
     )
     .await?;
 
+    let project_path_result = compute_project_path
+        .into_iter()
+        .zip(trains_schedules)
+        .map(|(result, train_schedule)| (train_schedule.id, Arc::unwrap_or_clone(result)))
+        .collect();
     Ok(Json(project_path_result))
 }
 
@@ -1366,7 +1371,8 @@ pub mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // EXPECT
-        assert_eq!(response.len(), 1);
+        // TODO: improve this test
+        assert_eq!(response.len(), 2);
     }
 
     #[rstest]
