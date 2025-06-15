@@ -58,6 +58,7 @@ crate::routes! {
 
 editoast_common::schemas! {
     PacedTrainResponse,
+    ProjectPathPacedTrainResult,
     PacedTrainForm,
     PacedTrain,
     OccupancyBlockForm,
@@ -542,6 +543,17 @@ async fn simulation(
     Ok(Json(Arc::unwrap_or_clone(simulation)))
 }
 
+/// Project path output is described by time-space points and blocks
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ProjectPathPacedTrainResult {
+    /// Paced train
+    #[schema(value_type = Vec<SpaceTimeCurve>)]
+    pub paced_train: SpaceTimeCurves,
+    /// Exceptions whose projection is different from the paced train
+    #[schema(value_type = HashMap<String, Vec<SpaceTimeCurve>>)]
+    pub exceptions: HashMap<String, SpaceTimeCurves>,
+}
+
 /// Projects the space-time curves and paths of a number of paced trains onto a given path.
 ///
 /// - Returns 404 if the infra or any of the paced trains are not found
@@ -556,7 +568,7 @@ async fn simulation(
     tag = "paced_train",
     request_body = ProjectPathForm,
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<i64, Vec<SpaceTimeCurve>>)),
+        (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathPacedTrainResult>)),
 )]
 async fn project_path(
     State(AppState {
@@ -572,7 +584,7 @@ async fn project_path(
         track_section_ranges,
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
-) -> Result<Json<HashMap<i64, SpaceTimeCurves>>> {
+) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
     let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
@@ -596,10 +608,24 @@ async fn project_path(
         })
         .await?;
 
-    let first_occurrences: Vec<TrainSchedule> = paced_trains
-        .into_iter()
-        .map(|p| p.into_train_schedule())
-        .collect();
+    let simulation_contexts: Vec<SimulationContext> =
+        paced_trains
+            .iter()
+            .flat_map(|paced_train| {
+                std::iter::once(SimulationContext {
+                    paced_train_id: paced_train.id,
+                    exception_key: None,
+                    train_schedule: paced_train.clone().into_train_schedule(),
+                })
+                .chain(paced_train.exceptions.iter().map(|exception| {
+                    SimulationContext {
+                        paced_train_id: paced_train.id,
+                        exception_key: Some(exception.key.clone()),
+                        train_schedule: paced_train.apply_exception(exception),
+                    }
+                }))
+            })
+            .collect();
 
     let project_path_result = compute_projected_train_paths(
         conn,
@@ -607,12 +633,47 @@ async fn project_path(
         valkey_client,
         track_section_ranges,
         infra,
-        first_occurrences,
+        &simulation_contexts
+            .iter()
+            .map(|c| c.train_schedule.clone())
+            .collect::<Vec<_>>(),
         electrical_profile_set_id,
     )
-    .await?;
+    .await?
+    .into_iter()
+    .collect::<Vec<_>>();
 
-    Ok(Json(project_path_result))
+    let mut base_project_path = project_path_result[0].clone();
+
+    let results = simulation_contexts.into_iter().enumerate().fold(
+        HashMap::<i64, ProjectPathPacedTrainResult>::new(),
+        |mut results, (index, simulation_context)| {
+            if let Some(exception_key) = simulation_context.exception_key {
+                if !Arc::ptr_eq(&base_project_path, &project_path_result[index]) {
+                    results
+                        .get_mut(&simulation_context.paced_train_id)
+                        .expect("paced_train_id should exist")
+                        .exceptions
+                        .insert(
+                            exception_key,
+                            Arc::unwrap_or_clone(project_path_result[index].clone()),
+                        );
+                }
+            } else {
+                results.insert(
+                    simulation_context.paced_train_id,
+                    ProjectPathPacedTrainResult {
+                        paced_train: Arc::unwrap_or_clone(project_path_result[index].clone()),
+                        exceptions: HashMap::new(),
+                    },
+                );
+                base_project_path = project_path_result[index].clone();
+            };
+            results
+        },
+    );
+
+    Ok(Json(results))
 }
 
 #[utoipa::path(
@@ -729,7 +790,7 @@ mod tests {
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
-    use crate::views::timetable::paced_train::SpaceTimeCurves;
+    use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
@@ -1489,9 +1550,10 @@ mod tests {
                 }
             ],
         }));
-        let response: HashMap<i64, SpaceTimeCurves> =
+        let response: HashMap<i64, ProjectPathPacedTrainResult> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         // EXPECT
-        assert_eq!(response.len(), 1);
+        // TODO: improve this test
+        assert_eq!(response.len(), 2);
     }
 }

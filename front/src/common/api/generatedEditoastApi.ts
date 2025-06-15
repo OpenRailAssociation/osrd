@@ -1812,7 +1812,7 @@ export type PostPacedTrainOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
 export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: SpaceTimeCurve[];
+  [key: string]: ProjectPathPacedTrainResult;
 };
 export type PostPacedTrainProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
@@ -3519,6 +3519,14 @@ export type OccupancyBlockForm = {
 export type SpaceTimeCurve = {
   positions: number[];
   times: number[];
+};
+export type ProjectPathPacedTrainResult = {
+  /** Exceptions whose projection is different from the paced train */
+  exceptions: {
+    [key: string]: SpaceTimeCurve[];
+  };
+  /** Paced train */
+  paced_train: SpaceTimeCurve[];
 };
 export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;

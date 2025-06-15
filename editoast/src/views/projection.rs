@@ -1,3 +1,4 @@
+use crate::error::Result;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
@@ -7,7 +8,6 @@ use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
-use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -16,16 +16,12 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
-use tracing::info;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
-use crate::ValkeyConnection;
 use crate::client::get_app_version;
-use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;
-use crate::models::train_schedule::TrainSchedule;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
@@ -77,7 +73,6 @@ pub struct SpaceTimeCurve {
 /// Input for the projection of a train schedule on a path
 #[derive(Debug, Clone, Hash)]
 pub struct TrainSimulationDetails {
-    pub train_id: i64,
     pub positions: Vec<u64>,
     pub times: Vec<u64>,
     pub train_path: Vec<TrackRange>,
@@ -123,22 +118,6 @@ impl TrainSimulationDetails {
         let hash_simulation_input = hasher.finish();
         format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
-}
-
-/// Compute space time curves of a list of train schedules
-pub async fn compute_batch_space_time_curves(
-    trains_details: &Vec<TrainSimulationDetails>,
-    path_projection: &PathProjection<'_>,
-) -> HashMap<i64, SpaceTimeCurves> {
-    let mut space_time_curves = HashMap::new();
-
-    for train_detail in trains_details {
-        space_time_curves.insert(
-            train_detail.train_id,
-            compute_space_time_curves(train_detail, path_projection),
-        );
-    }
-    space_time_curves
 }
 
 /// Compute the space time curves of a train schedule on a path
@@ -279,107 +258,122 @@ pub async fn compute_projected_train_paths(
     valkey_client: Arc<ValkeyClient>,
     track_section_ranges: Vec<TrackRange>,
     infra: &Infra,
-    trains_schedules: Vec<models::TrainSchedule>,
+    train_schedules: &[models::TrainSchedule],
     electrical_profile_set_id: Option<i64>,
-) -> Result<HashMap<i64, SpaceTimeCurves>> {
+) -> Result<Vec<Arc<SpaceTimeCurves>>> {
     let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
+    let mut projection_request_map: HashMap<String, TrainSimulationDetails> = HashMap::new();
+    let mut project_path_result: Vec<Arc<SpaceTimeCurves>> =
+        vec![Arc::default(); train_schedules.len()];
 
     // 1. Get train simulations
     let simulations = train_simulation_batch(
         conn,
         valkey_client.clone(),
         core_client.clone(),
-        &trains_schedules,
+        train_schedules,
         infra,
         electrical_profile_set_id,
     )
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(&trains_schedules, simulations).await?;
+    let trains_details = extract_train_details(simulations).await?;
 
-    let mut trains_hash_values = vec![];
-
-    trains_hash_values.extend(trains_details.iter().map(|t| {
-        t.compute_projection_hash_with_versioning(infra.id, infra.version, &track_section_ranges)
-    }));
+    let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
+        .iter()
+        .enumerate()
+        .filter_map(|(index, train_details)| {
+            train_details.as_ref().map(|train_details| {
+                (
+                    index,
+                    train_details.compute_projection_hash_with_versioning(
+                        infra.id,
+                        infra.version,
+                        &track_section_ranges,
+                    ),
+                )
+            })
+        })
+        .fold(HashMap::new(), |mut map, (index, hash)| {
+            map.entry(hash).or_default().push(index);
+            map
+        });
+    let train_hashes: Vec<_> = train_hashes_to_idx.keys().cloned().collect();
 
     // 3. Retrieve cached projection
-    let (miss_cache, mut hit_cache) =
-        retrieve_cached_projection(&mut valkey_conn, &trains_hash_values, &trains_details).await?;
 
-    // 4. Compute space time curves for all miss cache
-    let space_time_curves = compute_batch_space_time_curves(&miss_cache, &path_projection).await;
-
-    // 5. Store the projection in the cache (using pipeline)
-    let trains_hash_values: HashMap<_, _> = trains_details
-        .iter()
-        .map(|t| t.train_id)
-        .zip(trains_hash_values)
-        .collect();
-    let mut new_items = vec![];
-    for train_id in miss_cache.iter().map(|t| t.train_id) {
-        let hash = &trains_hash_values[&train_id];
-        let cached_value = space_time_curves
-            .get(&train_id)
-            .expect("Space time curves not available for train")
-            .clone();
-        hit_cache.push((cached_value.clone(), train_id));
-        new_items.push((hash, cached_value));
-    }
-    valkey_conn.json_set_bulk(&new_items).await?;
-
-    // 6. Build the projection response
-    Ok(hit_cache
-        .into_iter()
-        .map(|(cached, train_id)| (train_id, cached))
-        .collect())
-}
-
-async fn retrieve_cached_projection(
-    valkey_conn: &mut ValkeyConnection,
-    trains_hash_values: &[String],
-    trains_details: &[TrainSimulationDetails],
-) -> Result<(Vec<TrainSimulationDetails>, Vec<(SpaceTimeCurves, i64)>)> {
-    let cached_projections: Vec<Option<SpaceTimeCurves>> = valkey_conn
-        .json_get_bulk(trains_hash_values)
+    let cached_projections = valkey_conn
+        .json_get_bulk(&train_hashes)
         .await?
-        .collect();
+        .collect::<Vec<Option<SpaceTimeCurves>>>();
 
-    let mut hit_cache = vec![];
-    let mut miss_cache = vec![];
-
-    for (train_details, projection) in izip!(trains_details, cached_projections) {
-        if let Some(cached) = projection {
-            hit_cache.push((cached, train_details.train_id));
+    let mut projection_request_map: HashMap<String, TrainSimulationDetails> = HashMap::new();
+    let mut project_path_result: Vec<Arc<SpaceTimeCurves>> =
+        vec![Arc::default(); train_schedules.len()];
+    for (hash, projection) in train_hashes.into_iter().zip(cached_projections) {
+        if let Some(projection) = projection {
+            let indexes = &train_hashes_to_idx[&hash];
+            let projection = Arc::new(projection);
+            for index in indexes {
+                project_path_result[*index] = projection.clone();
+            }
         } else {
-            miss_cache.push(train_details.clone());
+            let index = train_hashes_to_idx[&hash]
+                .first()
+                .expect("indexes should not be empty");
+            projection_request_map.insert(
+                hash,
+                trains_details[*index]
+                    .clone()
+                    .expect("train_details must exist if hash is computed"),
+            );
         }
     }
 
-    info!(
-        nb_hit = hit_cache.len(),
-        nb_miss = miss_cache.len(),
-        "Hit cache"
-    );
+    // 4. Compute space time curves for all miss cache
 
-    Ok((miss_cache, hit_cache))
+    let space_time_curves = projection_request_map
+        .into_iter()
+        .map(|(hash, train_details)| {
+            (
+                hash,
+                compute_space_time_curves(&train_details, &path_projection),
+            )
+        })
+        .collect::<Vec<_>>();
+    // 5. Store the projection in the cache (using pipeline)
+
+    valkey_conn.json_set_bulk(&space_time_curves).await?;
+
+    // 6. Build the projection response
+    for (hash, space_time_curve) in space_time_curves.into_iter() {
+        let indexes = &train_hashes_to_idx[&hash];
+        let space_time_curve = Arc::new(space_time_curve);
+        for index in indexes {
+            project_path_result[*index] = space_time_curve.clone();
+        }
+    }
+
+    Ok(project_path_result)
 }
 
 pub async fn extract_train_details(
-    trains_schedules: &[TrainSchedule],
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
-) -> Result<Vec<TrainSimulationDetails>> {
+) -> Result<Vec<Option<TrainSimulationDetails>>> {
     let mut trains_details = vec![];
 
-    for (train, (sim, pathfinding_result)) in izip!(trains_schedules, simulations) {
+    for (sim, pathfinding_result) in simulations {
         let track_ranges = match pathfinding_result.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
                 track_section_ranges,
                 ..
             }) => track_section_ranges,
-            _ => continue,
+            _ => {
+                trains_details.push(None);
+                continue;
+            }
         };
 
         let CompleteReportTrain {
@@ -391,14 +385,16 @@ pub async fn extract_train_details(
             simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
                 final_output
             }
-            _ => continue,
+            _ => {
+                trains_details.push(None);
+                continue;
+            }
         };
         let ReportTrain {
             times, positions, ..
         } = report_train;
 
         let train_details = TrainSimulationDetails {
-            train_id: train.id,
             positions,
             times,
             signal_critical_positions,
@@ -406,7 +402,7 @@ pub async fn extract_train_details(
             train_path: track_ranges.clone(),
         };
 
-        trains_details.push(train_details);
+        trains_details.push(Some(train_details));
     }
     Ok(trains_details)
 }
@@ -454,7 +450,6 @@ mod tests {
         ];
 
         let project_path_input = TrainSimulationDetails {
-            train_id: 0,
             positions,
             times,
             train_path,
@@ -492,7 +487,6 @@ mod tests {
         ];
 
         let project_path_input = TrainSimulationDetails {
-            train_id: 0,
             positions: positions.clone(),
             times: times.clone(),
             train_path,
@@ -533,7 +527,6 @@ mod tests {
         let path_projection = PathProjection::new(&path);
 
         let project_path_input = TrainSimulationDetails {
-            train_id: 0,
             positions,
             times,
             train_path,

@@ -1773,9 +1773,7 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SpaceTimeCurve'
+                  $ref: '#/components/schemas/ProjectPathPacedTrainResult'
   /paced_train/simulation_summary:
     post:
       tags:
@@ -10609,6 +10607,25 @@ components:
                 type: string
                 maxLength: 255
                 minLength: 1
+    ProjectPathPacedTrainResult:
+      type: object
+      description: Project path output is described by time-space points and blocks
+      required:
+      - paced_train
+      - exceptions
+      properties:
+        exceptions:
+          type: object
+          description: Exceptions whose projection is different from the paced train
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SpaceTimeCurve'
+        paced_train:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpaceTimeCurve'
+          description: Paced train
     ProjectWithStudies:
       allOf:
       - $ref: '#/components/schemas/Project'
