@@ -1866,13 +1866,9 @@ paths:
                     - interval
                     properties:
                       interval:
-                        type: string
-                        description: Time between two occurrences, an ISO 8601 format is expected
-                        example: PT15M
+                        $ref: '#/components/schemas/PositiveDuration'
                       time_window:
-                        type: string
-                        description: Duration of the paced train, an ISO 8601 format is expected
-                        example: PT2H
+                        $ref: '#/components/schemas/PositiveDuration'
         required: true
       responses:
         '204':
@@ -9297,13 +9293,9 @@ components:
             - interval
             properties:
               interval:
-                type: string
-                description: Time between two occurrences, an ISO 8601 format is expected
-                example: PT15M
+                $ref: '#/components/schemas/PositiveDuration'
               time_window:
-                type: string
-                description: Duration of the paced train, an ISO 8601 format is expected
-                example: PT2H
+                $ref: '#/components/schemas/PositiveDuration'
     PacedTrainException:
       allOf:
       - type: object
@@ -10073,6 +10065,10 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
+    PositiveDuration:
+      type: string
+      description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
+      example: PT2H
     PowerRestriction:
       type: object
       required:
@@ -11205,10 +11201,8 @@ components:
       - at
       properties:
         arrival:
-          type: string
-          description: |-
-            The expected arrival time at the stop.
-            This will be used to compute the final simulation time.
+          allOf:
+          - $ref: '#/components/schemas/PositiveDuration'
           nullable: true
         at:
           type: string
@@ -11219,12 +11213,8 @@ components:
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
         stop_for:
-          type: string
-          description: |-
-            Duration of the stop.
-            Can be `None` if the train does not stop.
-            If `None`, `reception_signal` must be `Open`.
-            `Some("PT0S")` means the train stops for 0 seconds.
+          allOf:
+          - $ref: '#/components/schemas/PositiveDuration'
           nullable: true
       additionalProperties: false
     SearchPayload:
@@ -13375,10 +13365,8 @@ components:
             - at
             properties:
               arrival:
-                type: string
-                description: |-
-                  The expected arrival time at the stop.
-                  This will be used to compute the final simulation time.
+                allOf:
+                - $ref: '#/components/schemas/PositiveDuration'
                 nullable: true
               at:
                 type: string
@@ -13389,12 +13377,8 @@ components:
               reception_signal:
                 $ref: '#/components/schemas/ReceptionSignal'
               stop_for:
-                type: string
-                description: |-
-                  Duration of the stop.
-                  Can be `None` if the train does not stop.
-                  If `None`, `reception_signal` must be `Open`.
-                  `Some("PT0S")` means the train stops for 0 seconds.
+                allOf:
+                - $ref: '#/components/schemas/PositiveDuration'
                 nullable: true
             additionalProperties: false
         speed_limit_tag:

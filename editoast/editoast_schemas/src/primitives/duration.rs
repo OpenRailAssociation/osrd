@@ -30,6 +30,11 @@ use iso8601::Duration as IsoDuration;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use utoipa::ToSchema;
+use utoipa::openapi::ObjectBuilder;
+use utoipa::openapi::RefOr;
+use utoipa::openapi::Schema;
+use utoipa::openapi::SchemaType;
 
 #[derive(Debug, Error)]
 pub enum PositiveDurationError {
@@ -63,6 +68,26 @@ pub struct PositiveDuration(ChronoDuration);
 impl Default for PositiveDuration {
     fn default() -> Self {
         PositiveDuration(ChronoDuration::zero())
+    }
+}
+
+/// Custom implementation of `ToSchema` for `PositiveDuration`
+/// is required because the current version of `utoipa`
+/// does not support adding a `description` attribute
+/// directly via `#[derive(ToSchema)]`.
+///
+/// TODO: Upgrade `utoipa` to version 5.3.1 or later to
+impl ToSchema<'_> for PositiveDuration {
+    fn schema() -> (&'static str, RefOr<Schema>) {
+        (
+            "PositiveDuration",
+            ObjectBuilder::new()
+                .schema_type(SchemaType::String)
+                .description(Some("Duration in ISO 8601 format (e.g. PT2H for 2 hours)"))
+                .example(Some(serde_json::Value::String("PT2H".to_string())))
+                .build()
+                .into(),
+        )
     }
 }
 

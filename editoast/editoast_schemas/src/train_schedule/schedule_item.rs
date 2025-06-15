@@ -30,13 +30,11 @@ pub struct ScheduleItem {
     pub at: NonBlankString,
     /// The expected arrival time at the stop.
     /// This will be used to compute the final simulation time.
-    #[schema(value_type = Option<chrono::Duration>)]
     pub arrival: Option<PositiveDuration>,
     /// Duration of the stop.
     /// Can be `None` if the train does not stop.
     /// If `None`, `reception_signal` must be `Open`.
     /// `Some("PT0S")` means the train stops for 0 seconds.
-    #[schema(value_type = Option<chrono::Duration>)]
     pub stop_for: Option<PositiveDuration>,
     #[serde(default)]
     pub reception_signal: ReceptionSignal,

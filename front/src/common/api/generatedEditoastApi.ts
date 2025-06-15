@@ -1754,10 +1754,8 @@ export type PutPacedTrainByIdApiArg = {
   body: TrainSchedule & {
     exceptions: PacedTrainException[];
     paced: {
-      /** Time between two occurrences, an ISO 8601 format is expected */
-      interval: string;
-      /** Duration of the paced train, an ISO 8601 format is expected */
-      time_window: string;
+      interval: PositiveDuration;
+      time_window: PositiveDuration;
     };
   };
 };
@@ -3457,6 +3455,7 @@ export type PacedTrainSimulationSummaryResult = {
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
+export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainSchedule = {
   category?: TrainCategory | null;
@@ -3488,18 +3487,12 @@ export type TrainSchedule = {
   }[];
   rolling_stock_name: string;
   schedule?: {
-    /** The expected arrival time at the stop.
-        This will be used to compute the final simulation time. */
-    arrival?: string | null;
+    arrival?: PositiveDuration | null;
     at: string;
     /** Whether the schedule item is locked (only for display purposes) */
     locked?: boolean;
     reception_signal?: ReceptionSignal;
-    /** Duration of the stop.
-        Can be `None` if the train does not stop.
-        If `None`, `reception_signal` must be `Open`.
-        `Some("PT0S")` means the train stops for 0 seconds. */
-    stop_for?: string | null;
+    stop_for?: PositiveDuration | null;
   }[];
   speed_limit_tag?: string | null;
   start_time: string;
@@ -3540,18 +3533,12 @@ export type PowerRestrictionItem = {
   value: string;
 };
 export type ScheduleItem = {
-  /** The expected arrival time at the stop.
-    This will be used to compute the final simulation time. */
-  arrival?: string | null;
+  arrival?: PositiveDuration | null;
   at: string;
   /** Whether the schedule item is locked (only for display purposes) */
   locked?: boolean;
   reception_signal?: ReceptionSignal;
-  /** Duration of the stop.
-    Can be `None` if the train does not stop.
-    If `None`, `reception_signal` must be `Open`.
-    `Some("PT0S")` means the train stops for 0 seconds. */
-  stop_for?: string | null;
+  stop_for?: PositiveDuration | null;
 };
 export type PathAndScheduleChangeGroup = {
   margins: Margins;
@@ -3595,10 +3582,8 @@ export type PacedTrainException = {
 export type PacedTrain = TrainSchedule & {
   exceptions: PacedTrainException[];
   paced: {
-    /** Time between two occurrences, an ISO 8601 format is expected */
-    interval: string;
-    /** Duration of the paced train, an ISO 8601 format is expected */
-    time_window: string;
+    interval: PositiveDuration;
+    time_window: PositiveDuration;
   };
 };
 export type PacedTrainResponse = PacedTrain & {

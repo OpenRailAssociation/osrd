@@ -34,15 +34,14 @@ editoast_common::schemas! {
     InitialSpeedChangeGroup,
     OptionsChangeGroup,
     PathAndScheduleChangeGroup,
+    PositiveDuration,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
-    #[schema(value_type = chrono::Duration, example = "PT2H")]
     pub time_window: PositiveDuration,
     /// Time between two occurrences, an ISO 8601 format is expected
-    #[schema(value_type = chrono::Duration, example = "PT15M")]
     pub interval: PositiveDuration,
 }
 
