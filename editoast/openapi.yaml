@@ -1812,6 +1812,60 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/PacedTrainSimulationSummaryResult'
+  /paced_train/track_occupancy:
+    post:
+      tags:
+      - paced_train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - paced_train_ids
+              - operational_point_id
+              - infra_id
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_point_id:
+                  type: string
+                paced_train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+        required: true
+      responses:
+        '200':
+          description: Track section occupancy periods for a set of paced trains
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - time_begin
+                    - duration
+                    - paced_train_id
+                    properties:
+                      duration:
+                        type: string
+                        example: PT5M
+                      paced_train_id:
+                        type: integer
+                        format: int64
+                      time_begin:
+                        type: string
+                        format: date-time
   /paced_train/{id}:
     get:
       tags:
@@ -5597,6 +5651,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTimetableErrorOperationalPointNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
@@ -5605,7 +5660,6 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorOperationalPointNotFound'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -7173,6 +7227,30 @@ components:
           type: string
           enum:
           - editoast:timetable:NotFound
+    EditoastTimetableErrorOperationalPointNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - operational_point_id
+          properties:
+            operational_point_id:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:OperationalPointNotFound
     EditoastTimetableErrorParseError:
       type: object
       required:
@@ -7355,30 +7433,6 @@ components:
           type: string
           enum:
           - editoast:train_schedule:NotFound
-    EditoastTrainScheduleErrorOperationalPointNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - operational_point_id
-          properties:
-            operational_point_id:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:OperationalPointNotFound
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:

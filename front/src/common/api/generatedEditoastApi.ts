@@ -535,6 +535,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['paced_train'],
       }),
+      postPacedTrainTrackOccupancy: build.mutation<
+        PostPacedTrainTrackOccupancyApiResponse,
+        PostPacedTrainTrackOccupancyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/paced_train/track_occupancy`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['paced_train'],
+      }),
       getPacedTrainById: build.query<GetPacedTrainByIdApiResponse, GetPacedTrainByIdApiArg>({
         query: (queryArg) => ({ url: `/paced_train/${queryArg.id}` }),
         providesTags: ['timetable', 'paced_train'],
@@ -1718,6 +1729,22 @@ export type PostPacedTrainSimulationSummaryApiArg = {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
+  };
+};
+export type PostPacedTrainTrackOccupancyApiResponse =
+  /** status 200 Track section occupancy periods for a set of paced trains */ {
+    [key: string]: {
+      duration: string;
+      paced_train_id: number;
+      time_begin: string;
+    }[];
+  };
+export type PostPacedTrainTrackOccupancyApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    operational_point_id: string;
+    paced_train_ids: number[];
   };
 };
 export type GetPacedTrainByIdApiResponse =

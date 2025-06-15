@@ -229,7 +229,8 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
-      "ParseError": "Failed to parse train_id: '{{train_id}}'"
+      "ParseError": "Failed to parse train_id: '{{train_id}}'",
+      "OperationalPointNotFound": "Operational Point '{{operational_point_id}}' could not be found"
     },
     "towedrollingstocks": {
       "Database": "Internal error",
@@ -244,7 +245,6 @@
       "NoSimulation": "No simulation given",
       "NoTrainSchedules": "No train schedules given",
       "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
-      "OperationalPointNotFound": "Operational Point '{{operational_point_id}}' could not be found",
       "PathNotFound": "Path '{{path_id}}' could not be found",
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",

@@ -1,3 +1,6 @@
+use chrono::DateTime;
+use chrono::Utc;
+use editoast_schemas::primitives::PositiveDuration;
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -33,6 +36,7 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::compute_track_occupancy;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
 use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
@@ -46,6 +50,7 @@ crate::routes! {
         "/project_path" => project_path,
         "/occupancy_blocks" => occupancy_blocks,
         "/simulation_summary" => simulation_summary,
+        "/track_occupancy" => track_occupancy,
         "/{id}" => {
             get_by_id,
             update_paced_train,
@@ -633,6 +638,105 @@ async fn occupancy_blocks(
     .await?;
 
     Ok(Json(occupancy_blocks_result))
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = PacedTrainTrackOccupancyForm)]
+struct TrackOccupancyForm {
+    paced_train_ids: Vec<i64>,
+    operational_point_id: String,
+    infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = PacedTrainTrackOccupancy)]
+struct TrackOccupancy {
+    time_begin: DateTime<Utc>,
+    #[schema(value_type = chrono::Duration, example = "PT5M")]
+    duration: PositiveDuration,
+    paced_train_id: i64,
+}
+
+#[utoipa::path(
+    post, path = "",
+    tag = "paced_train",
+    request_body = inline(TrackOccupancyForm),
+    responses(
+        (status = 200, description = "Track section occupancy periods for a set of paced trains", body = inline(HashMap<String, Vec<TrackOccupancy>>)),
+    ),
+)]
+async fn track_occupancy(
+    State(AppState {
+        db_pool,
+        valkey,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(TrackOccupancyForm {
+        paced_train_ids,
+        operational_point_id,
+        infra_id,
+        electrical_profile_set_id,
+    }): Json<TrackOccupancyForm>,
+) -> Result<Json<HashMap<String, Vec<TrackOccupancy>>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    let paced_trains: Vec<models::PacedTrain> = models::PacedTrain::retrieve_batch_or_fail(
+        &mut db_pool.get().await?,
+        paced_train_ids,
+        |missing| PacedTrainError::BatchNotFound {
+            count: missing.len(),
+        },
+    )
+    .await?;
+
+    let paced_trains_into_ts = paced_trains
+        .into_iter()
+        .map(|p| p.into_first_occurrence())
+        .collect_vec();
+
+    let track_occupancy_map = compute_track_occupancy(
+        db_pool,
+        valkey,
+        core_client,
+        operational_point_id,
+        &paced_trains_into_ts,
+        infra_id,
+        electrical_profile_set_id,
+    )
+    .await?
+    .into_iter()
+    .map(|(track_section, track_occupancy)| {
+        (
+            track_section,
+            track_occupancy
+                .into_iter()
+                .map(|t| TrackOccupancy {
+                    time_begin: t.time_begin,
+                    duration: t.duration,
+                    paced_train_id: t.train_schedule_id,
+                })
+                .collect(),
+        )
+    })
+    .collect();
+
+    Ok(Json(track_occupancy_map))
 }
 
 #[cfg(test)]
