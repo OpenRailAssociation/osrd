@@ -1,0 +1,5 @@
+*.md
+dist
+node_modules
+storybook-static
+ui-icons
