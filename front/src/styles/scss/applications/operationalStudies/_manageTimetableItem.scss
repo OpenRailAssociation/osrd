@@ -34,5 +34,7 @@
   select {
     color: #303383;
     font-weight: 500;
+    text-overflow: ellipsis;
+    padding-right: 50px;
   }
 }
