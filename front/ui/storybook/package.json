@@ -3,10 +3,10 @@
   "private": true,
   "devDependencies": {
     "@chromatic-com/storybook": "^4.0.0",
-    "@storybook/addon-docs": "^9.0.5",
-    "@storybook/addon-links": "^9.0.5",
-    "@storybook/addon-onboarding": "^9.0.5",
-    "@storybook/react-vite": "^9.0.5",
+    "@storybook/addon-docs": "^9.0.10",
+    "@storybook/addon-links": "^9.0.10",
+    "@storybook/addon-onboarding": "^9.0.10",
+    "@storybook/react-vite": "^9.0.10",
     "storybook": "^9.0.5",
     "storybook-addon-run-script": "^0.1.4"
   },
