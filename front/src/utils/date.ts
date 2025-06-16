@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/de';
@@ -5,6 +7,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
 
@@ -125,4 +128,13 @@ export const dateToHHMMSS = (date: Date, options?: { withoutSeconds?: boolean; u
   const format = options?.withoutSeconds ? 'HH:mm' : 'HH:mm:ss';
   if (options?.utc) return dayjs(date).utc().format(format);
   return dayjs(date).local().format(format);
+};
+
+export const useDateTimeLocale = () => {
+  const { i18n } = useTranslation();
+
+  return useMemo(() => {
+    const dateTimeLocale = new Intl.DateTimeFormat().resolvedOptions().locale;
+    return new Intl.Locale(dateTimeLocale, { language: i18n.language });
+  }, [i18n.language]);
 };
