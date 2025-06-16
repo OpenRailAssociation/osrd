@@ -129,18 +129,22 @@ impl ValkeyConnection {
             return Ok(vec![]);
         }
         let values: Vec<Option<String>> = self.mget(keys).await?;
-        values
+        let cached_values = values
             .into_iter()
-            .map(|value| match value {
-                Some(v) => match serde_json::from_str::<T>(&v) {
-                    Ok(value) => Ok(Some(value)),
-                    Err(_) => {
-                        Err(RedisError::from((ErrorKind::TypeError, "Expected valid json")).into())
+            .map(|value| {
+                value.and_then(|v| match serde_json::from_str(&v) {
+                    Ok(value) => Some(value),
+                    Err(e) => {
+                        tracing::warn!(
+                            "the cached value is not a valid JSON for type '{}': {e}",
+                            std::any::type_name::<T>()
+                        );
+                        None
                     }
-                },
-                None => Ok(None),
+                })
             })
-            .collect()
+            .collect();
+        Ok(cached_values)
     }
 
     /// Set a serializable value to valkey with expiry time
@@ -249,19 +253,27 @@ impl ValkeyConnection {
             .await?;
 
         // Decompress each value if it exists
-        span!(Level::INFO, "Decompressing data").in_scope(|| {
+        let cached_values = span!(Level::INFO, "Decompressing data").in_scope(|| {
             values
                 .into_iter()
-                .map(|value| match value {
-                    Some(compressed_data) => {
+                .map(|value| {
+                    value.and_then(|compressed_data| {
                         let mut decoder = lz4_flex::frame::FrameDecoder::new(&compressed_data[..]);
-                        let deserialized: T = serde_json::from_reader(&mut decoder)?;
-                        Ok(Some(deserialized))
-                    }
-                    None => Ok(None),
+                        match serde_json::from_reader(&mut decoder) {
+                            Ok(deserialized) => Some(deserialized),
+                            Err(e) => {
+                                tracing::warn!(
+                                    "the cached value is not a valid compressed JSON data for type '{}': {e}",
+                                    std::any::type_name::<T>()
+                                );
+                                None
+                            }
+                        }
+                    })
                 })
                 .collect()
-        })
+        });
+        Ok(cached_values)
     }
 }
 
