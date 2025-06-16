@@ -98,7 +98,7 @@ reqwest = { version = "0.12.19", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
-serde_with = "3.12.0"
+serde_with = "3.13.0"
 stdext = "0.3.3"
 strum = { version = "0.26.3", features = ["derive"] }
 syn = "2.0"
