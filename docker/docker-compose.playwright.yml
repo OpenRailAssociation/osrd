@@ -1,0 +1,16 @@
+services:
+  playwright:
+    container_name: osrd-playwright
+    image: mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}
+    network_mode: host
+    volumes:
+      - "front_pw_node_modules:/app/front/node_modules"
+      - "./front:/app/front"
+      - "./tests:/app/tests"
+    stdin_open: true
+    tty: true
+    entrypoint: ["/app/front/docker/playwright-entrypoint.sh"]
+    working_dir: /app/front
+
+volumes:
+  front_pw_node_modules:
