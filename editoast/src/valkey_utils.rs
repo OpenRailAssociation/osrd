@@ -230,7 +230,7 @@ impl ValkeyConnection {
 
         // Store the compressed values using mset
         span!(Level::INFO, "Sending items to Redis")
-            .in_scope(|| async move { self.mset::<_, _, ()>(&compressed_items).await })
+            .in_scope(|| self.mset::<_, _, ()>(&compressed_items))
             .await?;
         Ok(())
     }
@@ -249,7 +249,7 @@ impl ValkeyConnection {
 
         // Fetch the values from Redis
         let values = span!(Level::INFO, "Fetching values from Redis")
-            .in_scope(|| async move { self.mget::<_, Vec<Option<Vec<u8>>>>(keys).await })
+            .in_scope(|| self.mget::<_, Vec<Option<Vec<u8>>>>(keys))
             .await?;
 
         // Decompress each value if it exists
