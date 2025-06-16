@@ -1,9 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 
 import cx from 'classnames';
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-import 'dayjs/locale/de';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
@@ -22,6 +19,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { useDateTimeLocale } from 'utils/date';
 import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
@@ -45,8 +43,8 @@ type TimetableProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
 };
 
-const formatDepartureDate = (d: Date, locale: string) =>
-  dayjs(d).locale(locale).format('dddd D MMMM YYYY');
+const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
+  d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 const Timetable = ({
   setDisplayTimetableItemManagement,
@@ -58,7 +56,8 @@ const Timetable = ({
   timetableItems = [],
   timetableItemsWithDetails,
 }: TimetableProps) => {
-  const { t, i18n } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const dateTimeLocale = useDateTimeLocale();
 
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
@@ -114,8 +113,8 @@ const Timetable = ({
 
   const currentDepartureDates = useMemo(
     () =>
-      filteredTimetableItems.map((train) => formatDepartureDate(train.startTime, i18n.language)),
-    [filteredTimetableItems, i18n.language]
+      filteredTimetableItems.map((train) => formatDepartureDate(train.startTime, dateTimeLocale)),
+    [filteredTimetableItems, dateTimeLocale]
   );
 
   const showDepartureDates = useMemo(() => {
