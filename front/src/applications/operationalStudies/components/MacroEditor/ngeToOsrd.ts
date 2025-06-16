@@ -720,6 +720,13 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const trainSchedules: TrainSchedule[] = [];
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
+    // TODO: remove this hack
+    try {
+      getTrainrunSectionsByTrainrunId(dto, trainrun.id);
+    } catch (err) {
+      console.error('Dropping trainrun on the floor', trainrun.id, err);
+      continue;
+    }
     const { path, labels, startDate, schedule } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     if (category) labels.push(category.name);
