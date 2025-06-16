@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 
 import type { Duration } from 'utils/duration';
+import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import { specialCodeDictionary } from './consts';
 import type { TimetableItemWithDetails } from './types';
@@ -8,11 +9,21 @@ import type { TimetableItemWithDetails } from './types';
 /** Filter timetable items by their names and labels */
 export const keepItem = (item: TimetableItemWithDetails, searchString: string): boolean => {
   if (searchString) {
+    let hasMatchingExceptions = false;
+    if (isPacedTrainWithDetails(item)) {
+      hasMatchingExceptions = item.exceptions.some(
+        (exception) =>
+          exception.train_name?.value.toLowerCase().includes(searchString.toLowerCase()) ||
+          exception.labels?.value.some((label) =>
+            label.toLowerCase().includes(searchString.toLowerCase())
+          )
+      );
+    }
     const searchStringInName = item.name.toLowerCase().includes(searchString.toLowerCase());
     const searchStringInTags = item.labels
       ? item.labels.join('').toLowerCase().includes(searchString.toLowerCase())
       : false;
-    return searchStringInName || searchStringInTags;
+    return searchStringInName || searchStringInTags || hasMatchingExceptions;
   }
   return true;
 };
