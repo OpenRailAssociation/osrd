@@ -17,6 +17,7 @@ Flags (optional, can be combined):
   dev-front    Add front-end development container (docker/docker-compose.front.yml)
   sw           Enable single worker mode (docker/docker-compose.single-worker.yml)
   host         Use host networking mode (docker/docker-compose.host.yml)
+  playwright   Start playwright container with the stack (docker/docker-compose.playwright.yml)
   default      Reset to base configuration only and clear saved state
 
 Examples:
@@ -57,7 +58,7 @@ while [[ $# -gt 0 ]]; do
             DEFAULT_FLAG=true
             shift
             ;;
-        dev-front|sw|host)
+        dev-front|sw|host|playwright)
             flags+=("$1")
             shift
             ;;
@@ -117,6 +118,26 @@ fi
 
 if has_flag "sw"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.single-worker.yml")
+fi
+
+if has_flag "playwright"; then
+
+    # Detect the playwright version installed in the front
+    if ! command -v jq &>/dev/null; then
+        echo "Error: jq is not installed. Please install jq using your package manager to continue." >&2
+        exit 1
+    fi
+
+    PLAYWRIGHT_VERSION=$(cd front && npm list --package-lock-only --pattern playwright --json | jq -r '.dependencies["@playwright/test"].version' | sort -u)
+    if [ "$(echo "$PLAYWRIGHT_VERSION" | wc -l)" -ne 1 ]; then
+        echo "Error: Zero or multiple playwright versions found: $PLAYWRIGHT_VERSION" >&2
+        exit 1
+    fi
+
+    echo "Using playwright version: $PLAYWRIGHT_VERSION"
+    export PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION
+
+    compose_files+=("$OVERRIDE_DIR/docker-compose.playwright.yml")
 fi
 
 # Check if DOCKER_SOCKET is already set

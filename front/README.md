@@ -68,9 +68,14 @@ It requires:
 Now you can run the test with `cd front/ && npm run e2e-tests`.
 
 If you are using a Linux distribution not supported by Playwright (Playwright only supports Windows,
-macOS and Ubuntu/Debian), you can start the tests inside a Docker container using:
-`osrd/scripts/run-front-playwright-container.sh`. This script accepts the same options and arguments
-as `npm run e2e-tests` or `npx playwright test`.
+macOS and Ubuntu/Debian), you can start the tests inside a Docker container.
+
+First start the playwright container using `./osrd-compose playwright up playwright`. You can also
+start all back and front containers at the same time as the playwright container, for example using
+`./osrd-compose playwright dev-front up`.
+
+Then you can run the tests using `osrd/scripts/run-front-playwright-container.sh`. This script
+accepts the same options and arguments as `npm run e2e-tests` or `npx playwright test`.
 
 > [!CAUTION] If you try to run `npm run start` instead of running it through docker, you'll notice
 > it doesn't work because the gateway can't access your local port from inside a container. 2
