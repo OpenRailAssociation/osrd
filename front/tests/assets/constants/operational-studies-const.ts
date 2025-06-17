@@ -89,7 +89,7 @@ export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
       arrivalTime: '06:07',
     },
     {
-      name: 'Paced Train 4',
+      name: 'abc',
       startTime: '06:30',
       arrivalTime: '06:37',
     },
