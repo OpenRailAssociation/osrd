@@ -35,34 +35,15 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
 
   const train = useSelectedTrain();
 
-  const { data: rawTrainSchedulePath } =
-    osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
-      {
-        id: editoastSelectedTrainId!,
-        infraId,
-      },
-      {
-        skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
-      }
-    );
-
-  const { data: rawPacedTrainPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(
+  const { data: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
     {
-      id: editoastSelectedTrainId!,
+      id: selectedTrainId!,
       infraId,
     },
     {
-      skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)),
+      skip: !selectedTrainId,
     }
   );
-  const path = useMemo(() => {
-    if (!selectedTrainId) return undefined;
-
-    if (isTrainScheduleId(selectedTrainId)) {
-      return rawTrainSchedulePath?.status === 'success' ? rawTrainSchedulePath : undefined;
-    }
-    return rawPacedTrainPath?.status === 'success' ? rawPacedTrainPath : undefined;
-  }, [selectedTrainId, rawTrainSchedulePath, rawPacedTrainPath]);
 
   const { data: selectedTrainScheduleSimulation } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
@@ -85,26 +66,32 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     );
 
   const selectedTimetableItemSimulationData = useMemo(() => {
-    if (!selectedTrainId || !train) return undefined;
+    if (!selectedTrainId || !train || pathfinding?.status !== 'success') return undefined;
 
     return {
       train,
+      path: pathfinding,
       selectedTimetableItemSimulation: isTrainScheduleId(selectedTrainId)
         ? selectedTrainScheduleSimulation
         : selectedPacedTrainSimulation,
     };
-  }, [selectedTrainId, train, selectedTrainScheduleSimulation, selectedPacedTrainSimulation]);
+  }, [
+    selectedTrainId,
+    train,
+    pathfinding,
+    selectedTrainScheduleSimulation,
+    selectedPacedTrainSimulation,
+  ]);
 
   const speedSpaceChart = useSpeedSpaceChart(
     selectedTimetableItemSimulationData?.train,
-    path,
+    selectedTimetableItemSimulationData?.path,
     selectedTimetableItemSimulationData?.selectedTimetableItemSimulation
   );
 
   if (
     selectedTimetableItemSimulationData?.selectedTimetableItemSimulation?.status !== 'success' ||
-    !speedSpaceChart ||
-    !path
+    !speedSpaceChart
   )
     return undefined;
 
@@ -114,7 +101,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
     simulation: selectedTimetableItemSimulationData.selectedTimetableItemSimulation,
     pathProperties: speedSpaceChart.formattedPathProperties,
-    path,
+    path: selectedTimetableItemSimulationData.path,
   };
 };
 

@@ -1,9 +1,10 @@
 import { isNil, sortBy } from 'lodash';
 
-import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  extractPacedTrainIdFromOccurrenceId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -14,6 +15,7 @@ import {
   type Property,
   type TrainScheduleResponse,
   type PacedTrainResponse,
+  type PathfindingResult,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -105,6 +107,38 @@ const osrdEditoastApi = generatedEditoastApi
         },
         providesTags: (_result, _error, arg) => [
           'timetable',
+          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
+        ],
+      }),
+      getTrainPath: builder.query<PathfindingResult, { id: TrainId; infraId: number }>({
+        queryFn: async ({ id: trainId, infraId }, { dispatch }) => {
+          let path: PathfindingResult;
+          if (isTrainScheduleId(trainId)) {
+            path = await dispatch(
+              generatedEditoastApi.endpoints.getTrainScheduleByIdPath.initiate(
+                {
+                  id: extractEditoastIdFromTrainScheduleId(trainId),
+                  infraId,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+          } else {
+            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            path = await dispatch(
+              generatedEditoastApi.endpoints.getPacedTrainByIdPath.initiate(
+                {
+                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                  infraId,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+          }
+          return { data: path };
+        },
+        providesTags: (_result, _error, arg) => [
+          'pathfinding',
           isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
         ],
       }),
