@@ -1,19 +1,21 @@
-import { useMemo } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
+import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import useSelectedTrain from 'modules/trainschedule/hooks/useSelectedTrain';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 
 import type { SimulationResults } from '../types';
+import { preparePathPropertiesData } from '../utils';
 
 /**
  * Prepare data to be used in simulation results
  */
 const useSimulationResults = (infraId: number): SimulationResults | undefined => {
+  const { t } = useTranslation('operational-studies');
+
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
@@ -40,37 +42,64 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     }
   );
 
-  const selectedTimetableItemSimulationData = useMemo(() => {
-    if (
-      !selectedTrainId ||
-      !train ||
-      pathfinding?.status !== 'success' ||
-      simulation?.status !== 'success'
-    )
-      return undefined;
+  // TODO: replace this API call by extracting the rolling stock from the rolling
+  // stocks list
+  const { data: rollingStock } =
+    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
+      {
+        rollingStockName: train?.rolling_stock_name || '',
+      },
+      {
+        skip: !train,
+      }
+    );
 
-    return {
-      train,
-      path: pathfinding,
-      simulation,
-    };
-  }, [selectedTrainId, train, pathfinding, simulation]);
+  const { data: rawPathProperties } =
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
+      {
+        infraId,
+        props: ['electrifications', 'geometry', 'operational_points', 'curves', 'slopes'],
+        pathPropertiesInput: {
+          track_section_ranges:
+            pathfinding?.status === 'success' ? pathfinding.track_section_ranges : [],
+        },
+      },
+      { skip: pathfinding?.status !== 'success' }
+    );
 
-  const speedSpaceChart = useSpeedSpaceChart(
-    selectedTimetableItemSimulationData?.train,
-    selectedTimetableItemSimulationData?.path,
-    selectedTimetableItemSimulationData?.simulation
+  if (
+    !train ||
+    pathfinding?.status !== 'success' ||
+    simulation?.status !== 'success' ||
+    !rawPathProperties ||
+    !rollingStock
+  ) {
+    return undefined;
+  }
+
+  const pathProperties = preparePathPropertiesData(
+    simulation.electrical_profiles,
+    rawPathProperties,
+    pathfinding,
+    train.path,
+    t
   );
 
-  if (!selectedTimetableItemSimulationData || !speedSpaceChart) return undefined;
+  const powerRestrictions =
+    formatPowerRestrictionRangesWithHandled({
+      selectedTimetableItem: train,
+      selectedTrainRollingStock: rollingStock,
+      pathfindingResult: pathfinding,
+      pathProperties,
+    }) ?? [];
 
   return {
-    train: selectedTimetableItemSimulationData.train,
-    rollingStock: speedSpaceChart.rollingStock,
-    powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
-    simulation: selectedTimetableItemSimulationData.simulation,
-    pathProperties: speedSpaceChart.formattedPathProperties,
-    path: selectedTimetableItemSimulationData.path,
+    train,
+    rollingStock,
+    simulation,
+    path: pathfinding,
+    pathProperties,
+    powerRestrictions,
   };
 };
 
