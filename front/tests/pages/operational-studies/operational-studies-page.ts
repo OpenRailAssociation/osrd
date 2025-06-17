@@ -1,5 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { Duration } from 'utils/duration';
+
 import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
@@ -33,6 +35,14 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly pacedTrainIntervalInput: Locator;
 
+  private readonly pacedTrainAddException: {
+    label: Locator;
+    dateInput: Locator;
+    timeInput: Locator;
+    button: Locator;
+    list: Locator;
+  };
+
   private readonly TimetableItemNameInput: Locator;
 
   private readonly initialSpeedInput: Locator;
@@ -61,6 +71,13 @@ class OperationalStudiesPage extends CommonPage {
     this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
     this.pacedTrainTimeWindow = page.locator('#paced-train-time-window');
     this.pacedTrainIntervalInput = page.locator('#paced-train-interval');
+    this.pacedTrainAddException = {
+      label: page.getByTestId('added-occurrences'),
+      dateInput: page.locator('#added-occurrences-date'),
+      timeInput: page.locator('#added-occurrences-time'),
+      button: page.getByTestId('added-occurrences-add-button'),
+      list: page.getByTestId('added-occurrences-list'),
+    };
     this.addTrainButton = page.getByTestId('add-train');
     this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
@@ -127,7 +144,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.returnSimulationResultButton.click();
   }
 
-  private async editTrain() {
+  async validateAndCloseTrainEdition() {
     await this.editTrainButton.click();
     await expect(this.returnSimulationResultButton).not.toBeVisible();
   }
@@ -169,7 +186,7 @@ class OperationalStudiesPage extends CommonPage {
     if (expectedButtonText) {
       await expect(this.editTrainButton).toHaveText(expectedButtonText);
     }
-    await this.editTrain();
+    await this.validateAndCloseTrainEdition();
   }
 
   async turnTrainScheduleIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
@@ -181,7 +198,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTrainButton).toHaveText(translations.turnTrainScheduleIntoPacedTrain);
 
-    await this.editTrain();
+    await this.validateAndCloseTrainEdition();
   }
 
   async turnPacedTrainIntoTrainSchedule(translations: ManageTrainScheduleTranslations) {
@@ -193,7 +210,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTrainButton).toHaveText(translations.turnPacedTrainIntoTrainSchedule);
 
-    await this.editTrain();
+    await this.validateAndCloseTrainEdition();
   }
 
   async checkTabs() {
@@ -210,11 +227,18 @@ class OperationalStudiesPage extends CommonPage {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
-    await expect(this.pacedTrainTimeWindow).toBeVisible();
-    await expect(this.pacedTrainTimeWindow).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.timeWindow);
+    await this.checkTimeWindowValue(DEFAULT_PACED_TRAIN_SETTINGS.timeWindow);
+    await this.checkIntervalValue(DEFAULT_PACED_TRAIN_SETTINGS.interval);
+  }
 
+  private async checkTimeWindowValue(value: string) {
+    await expect(this.pacedTrainTimeWindow).toBeVisible();
+    await expect(this.pacedTrainTimeWindow).toHaveValue(value);
+  }
+
+  private async checkIntervalValue(value: string) {
     await expect(this.pacedTrainIntervalInput).toBeVisible();
-    await expect(this.pacedTrainIntervalInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.interval);
+    await expect(this.pacedTrainIntervalInput).toHaveValue(value);
   }
 
   async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
@@ -264,6 +288,34 @@ class OperationalStudiesPage extends CommonPage {
 
   async checkNumberOfTrains(number: number) {
     await expect(this.trainTimetable).toHaveCount(number);
+  }
+
+  async checkInputsBeforeEditingAPacedTrain(
+    translations: ManageTrainScheduleTranslations,
+    editedPacedTrainTimeWindow: string,
+    editedPacedTrainInterval: string
+  ) {
+    await expect(this.definePacedTrainCheckbox).toBeChecked();
+    await this.checkTimeWindowValue(
+      String(Duration.parse(editedPacedTrainTimeWindow).total('minute'))
+    );
+    await this.checkIntervalValue(String(Duration.parse(editedPacedTrainInterval).total('minute')));
+
+    await expect(this.pacedTrainAddException.label).toContainText(
+      translations.pacedTrains.addExtraOccurrences
+    );
+    await expect(this.pacedTrainAddException.dateInput).toBeVisible();
+    await expect(this.pacedTrainAddException.timeInput).toBeVisible();
+    await expect(this.pacedTrainAddException.button).toBeVisible();
+    await expect(this.returnSimulationResultButton).toBeVisible();
+  }
+
+  async createPacedTrainException(date: string, time: string) {
+    await this.pacedTrainAddException.dateInput.fill(date);
+    await this.pacedTrainAddException.timeInput.fill(time);
+    await this.pacedTrainAddException.button.click();
+    const expected = new Date(`${date}T${time}`).toLocaleDateString('fr-FR');
+    await expect(this.pacedTrainAddException.list).toContainText(expected);
   }
 }
 export default OperationalStudiesPage;

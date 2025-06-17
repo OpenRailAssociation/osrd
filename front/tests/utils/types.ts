@@ -257,6 +257,8 @@ export type OccurrenceDetails = {
   arrivalTime: string;
 };
 
+export type OccurrenceMenuButton = 'delete' | 'disable' | 'edit' | 'enable' | 'project' | 'restore';
+
 export type StdcmTranslations = {
   consist: {
     tractionEngine: string;
@@ -323,9 +325,25 @@ export type ManageTrainScheduleTranslations = FlatTranslations & {
 };
 
 export type TimetableFilterTranslations = FlatTranslations & {
-  timetable: FlatTranslations;
+  timetable: FlatTranslations & {
+    occurrenceType: FlatTranslations;
+    occurrenceChangeGroup: FlatTranslations;
+  };
+  occurrenceMenu: FlatTranslations;
 };
 
 export type CommonTranslations = FlatTranslations & {
   common: FlatTranslations;
 };
+
+export type ChangeGroup =
+  | 'constraint_distribution'
+  | 'initial_speed'
+  | 'labels'
+  | 'options'
+  | 'path_and_schedule'
+  | 'rolling_stock'
+  | 'rolling_stock_category'
+  | 'speed_limit_tag'
+  | 'start_time'
+  | 'train_name';

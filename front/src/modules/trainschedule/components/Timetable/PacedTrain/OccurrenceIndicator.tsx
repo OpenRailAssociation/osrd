@@ -80,6 +80,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
       ));
   return (
     <div
+      data-testid="occurrence-indicator"
       className="occurrence-indicator"
       ref={dotRef}
       onMouseEnter={() => {
@@ -93,6 +94,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     >
       {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptionChangeGroups)) && (
         <div
+          data-testid="exception-info"
           className="exception-info"
           style={{
             top: position?.top ? position.top - window.scrollY : undefined,

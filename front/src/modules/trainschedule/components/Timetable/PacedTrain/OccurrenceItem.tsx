@@ -85,6 +85,7 @@ const OccurrenceItem = ({
         updateOccurrenceStatus(occurrence, 'disabled');
         closeMenu();
       },
+      dataTestID: 'occurrence-disable-button',
     },
     enable: {
       title: t('occurrenceMenu.enable'),
@@ -93,6 +94,7 @@ const OccurrenceItem = ({
         updateOccurrenceStatus(occurrence, 'enable');
         closeMenu();
       },
+      dataTestID: 'occurrence-enable-button',
     },
     edit: {
       title: t('occurrenceMenu.edit'),
@@ -101,6 +103,7 @@ const OccurrenceItem = ({
         editOccurrence(occurrence);
         closeMenu();
       },
+      dataTestID: 'occurrence-edit-button',
     },
     restore: {
       title: t('occurrenceMenu.restore'),
@@ -109,6 +112,7 @@ const OccurrenceItem = ({
         resetOccurrenceExceptions(occurrence.id);
         closeMenu();
       },
+      dataTestID: 'occurrence-restore-button',
     },
     project: {
       title: t('occurrenceMenu.project'),
@@ -116,6 +120,7 @@ const OccurrenceItem = ({
       onClick: () => {
         closeMenu();
       },
+      dataTestID: 'occurrence-project-button',
     },
     delete: {
       title: t('occurrenceMenu.delete'),
@@ -124,6 +129,7 @@ const OccurrenceItem = ({
         deleteAddedException(occurrence.id);
         closeMenu();
       },
+      dataTestID: 'occurrence-delete-button',
     },
   };
 
@@ -237,6 +243,7 @@ const OccurrenceItem = ({
       <button
         ref={menuButtonRef}
         type="button"
+        data-testid="occurrence-item-menu-btn"
         className={cx('occurrence-item-menu-btn', {
           'show-menu': isMenuOpen,
         })}

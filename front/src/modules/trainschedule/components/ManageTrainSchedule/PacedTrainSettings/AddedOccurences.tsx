@@ -32,10 +32,10 @@ const AddedOccurences = () => {
   }
 
   return (
-    <div className="added-occurences">
-      <h2>{t('pacedTrains.addExtraOccurrences')}</h2>
+    <div className="added-occurrences" data-testid="added-occurrences">
+      <h2 data-testid="added-occurrences-title">{t('pacedTrains.addExtraOccurrences')}</h2>
       <div className="controls">
-        <span className="mr-3">
+        <span data-testid="" className="mr-3">
           <InputSNCF
             type="date"
             label={
@@ -44,7 +44,7 @@ const AddedOccurences = () => {
                 <small className="text-nowrap">{t('pacedTrains.departureDay')}</small>
               </>
             }
-            id="paced-train-exception-date"
+            id="added-occurrences-date"
             value={date}
             onChange={(e) => {
               setDate(e.target.value);
@@ -63,7 +63,7 @@ const AddedOccurences = () => {
                 <small className="text-nowrap">{t('pacedTrains.departureTime')}</small>
               </>
             }
-            id="paced-train-exception-time"
+            id="added-occurrences-time"
             value={time}
             onChange={(e) => {
               setTime(e.target.value);
@@ -73,11 +73,16 @@ const AddedOccurences = () => {
             sm
           />
         </span>
-        <button className="add-button" type="button" onClick={handleAddException}>
+        <button
+          className="add-button"
+          data-testid="added-occurrences-add-button"
+          type="button"
+          onClick={handleAddException}
+        >
           {t('pacedTrains.add')}
         </button>
       </div>
-      <ul className="list">
+      <ul className="list" data-testid="added-occurrences-list">
         {addedExceptions.map(
           ({ startTime, key }) =>
             startTime && (

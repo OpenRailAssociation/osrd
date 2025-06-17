@@ -37,7 +37,9 @@ const RollingStock2Img = ({ rollingStock }: RollingStock2ImgProps) => {
 
   if (!imageUrl) return null;
 
-  return <img src={imageUrl} alt={rollingStock?.name} loading="lazy" />;
+  return (
+    <img data-testid="rolling-stock-image" src={imageUrl} alt={rollingStock?.name} loading="lazy" />
+  );
 };
 
 export default React.memo(RollingStock2Img);
