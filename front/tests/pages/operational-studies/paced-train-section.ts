@@ -38,7 +38,7 @@ class PacedTrainSection extends CommonPage {
 
   private readonly confirmationModalDeleteButton: Locator;
 
-  private readonly portalOsrdMenu: {
+  private readonly portalOccurrenceMenu: {
     disable: Locator;
     enable: Locator;
     edit: Locator;
@@ -64,7 +64,7 @@ class PacedTrainSection extends CommonPage {
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
-    this.portalOsrdMenu = {
+    this.portalOccurrenceMenu = {
       disable: page.getByTestId('occurrence-disable-button'),
       enable: page.getByTestId('occurrence-enable-button'),
       edit: page.getByTestId('occurrence-edit-button'),
@@ -160,7 +160,7 @@ class PacedTrainSection extends CommonPage {
     expect(+occurrencesCount!).toEqual(expectedOccurrencesCount);
   }
 
-  private async verifyOccurrenceName(
+  async verifyOccurrenceName(
     occurrenceIndex: number,
     expectedName: string,
     duplicate?: { copyTranslation?: string }
@@ -273,6 +273,7 @@ class PacedTrainSection extends CommonPage {
 
   async editPacedTrain(index: number = 0) {
     const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
+    await pacedTrainItem.waitFor();
     await pacedTrainItem.click();
     const actionButtons = await this.getActionButtonsLocators(index, 'paced-train');
     await actionButtons.editItem.click();
@@ -332,18 +333,34 @@ class PacedTrainSection extends CommonPage {
     await expect(occurrenceItem.menuIcon).toBeVisible();
   }
 
-  async checkOccurrenceActionMenu(
-    occurrenceIndex: number,
-    expectedButtons: OccurrenceMenuButton[],
-    translations: TimetableFilterTranslations
-  ) {
+  async checkOccurrenceActionMenu({
+    occurrenceIndex,
+    expectedButtons,
+    translations,
+  }: {
+    occurrenceIndex: number;
+    expectedButtons: OccurrenceMenuButton[];
+    translations: TimetableFilterTranslations;
+  }) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
     await occurrenceItem.menuIcon.click();
     for (const buttonName of expectedButtons) {
-      const button = this.portalOsrdMenu[buttonName];
+      const button = this.portalOccurrenceMenu[buttonName];
       await expect(button).toBeVisible();
       await expect(button).toHaveText(translations.occurrenceMenu[buttonName]);
     }
+  }
+
+  async clickOnPacedTrain(index: number) {
+    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
+    await expect(pacedTrainItemClickableZone).toBeVisible();
+    await pacedTrainItemClickableZone.click();
+  }
+
+  async clickOccurrenceMenuButton(buttonToClick: OccurrenceMenuButton) {
+    const portalOccurrenceMenu = this.portalOccurrenceMenu[buttonToClick];
+    await expect(portalOccurrenceMenu).toBeVisible();
+    await portalOccurrenceMenu.click();
   }
 }
 
