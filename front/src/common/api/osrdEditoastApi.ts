@@ -1,5 +1,12 @@
 import { isNil, sortBy } from 'lodash';
 
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  isTrainScheduleId,
+} from 'utils/trainId';
+
 import {
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
@@ -69,6 +76,37 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['timetable'],
+      }),
+      getTimetableItemById: builder.query<TimetableItem, { id: TimetableItemId }>({
+        queryFn: async ({ id: timetableItemId }, { dispatch }) => {
+          let data: TimetableItem;
+          if (isTrainScheduleId(timetableItemId)) {
+            const trainSchedule = await dispatch(
+              generatedEditoastApi.endpoints.getTrainScheduleById.initiate(
+                {
+                  id: extractEditoastIdFromTrainScheduleId(timetableItemId),
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+            data = { ...trainSchedule, id: timetableItemId };
+          } else {
+            const pacedTrain = await dispatch(
+              generatedEditoastApi.endpoints.getPacedTrainById.initiate(
+                {
+                  id: extractEditoastIdFromPacedTrainId(timetableItemId),
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+            data = { ...pacedTrain, id: timetableItemId };
+          }
+          return { data };
+        },
+        providesTags: (_result, _error, arg) => [
+          'timetable',
+          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
+        ],
       }),
     }),
   })
