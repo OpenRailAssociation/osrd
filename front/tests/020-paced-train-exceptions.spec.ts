@@ -1,6 +1,14 @@
 import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import { trainScheduleProjectName, trainScheduleStudyName } from './assets/constants/project-const';
+import {
+  ADDED_EXCEPTION_MENU_BUTTONS,
+  CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
+  DISABLED_OCCURRENCE_MENU_BUTTONS,
+  EDITED_OCCURRENCE_NAME,
+  EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
+  INITIAL_OCCURRENCE_NAME,
+} from './assets/paced-train/const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -129,10 +137,58 @@ test.describe('Edit trains and missions', () => {
     );
 
     await pacedTrainSection.checkOccurrenceMenuIcon(2);
-    await pacedTrainSection.checkOccurrenceActionMenu(
-      2,
-      ['edit', 'project', 'delete'],
-      translations
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: 2,
+      expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
+      translations,
+    });
+  });
+
+  test('Edit an indexed occurrence', async ({ page }) => {
+    await pacedTrainSection.clickOnPacedTrain(0);
+    await pacedTrainSection.checkOccurrenceMenuIcon(0);
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: 0,
+      expectedButtons: CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
+      translations,
+    });
+    await pacedTrainSection.clickOccurrenceMenuButton('edit');
+    await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
+    await operationalStudiesPage.updateTimetableItem(translations.pacedTrains.updatePacedTrain);
+    await operationalStudiesPage.checkToastHasBeenLaunched(
+      translations.timetable.pacedTrainUpdated
     );
+
+    await page.waitForLoadState('networkidle');
+
+    await pacedTrainSection.checkExceptionTooltip(
+      0,
+      translations.timetable.occurrenceType.editedOccurrence +
+        translations.timetable.occurrenceChangeGroup.train_name
+    );
+    await pacedTrainSection.checkOccurrenceMenuIcon(0);
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: 0,
+      expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
+      translations,
+    });
+    await pacedTrainSection.clickOccurrenceMenuButton('disable');
+    await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
+    await pacedTrainSection.checkOccurrenceMenuIcon(0);
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: 0,
+      expectedButtons: DISABLED_OCCURRENCE_MENU_BUTTONS,
+      translations,
+    });
+    await pacedTrainSection.clickOccurrenceMenuButton('enable');
+    await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
+    await pacedTrainSection.checkOccurrenceMenuIcon(0);
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: 0,
+      expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
+      translations,
+    });
+    await pacedTrainSection.clickOccurrenceMenuButton('restore');
+    await pacedTrainSection.verifyOccurrenceName(0, INITIAL_OCCURRENCE_NAME);
   });
 });
