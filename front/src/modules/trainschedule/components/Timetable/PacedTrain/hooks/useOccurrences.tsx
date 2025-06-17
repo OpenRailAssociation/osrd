@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
@@ -16,7 +16,10 @@ import {
 
 import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
-const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
+const useOccurrences = (
+  pacedTrain: PacedTrainWithDetails,
+  rollingStockList: LightRollingStockWithLiveries[] | null
+) => {
   const {
     id,
     paced,
@@ -109,17 +112,13 @@ const useOccurrences = (pacedTrain: PacedTrainWithDetails) => {
       }
 
       // Handle added exceptions
-      exceptions.forEach(async (exception) => {
+      exceptions.forEach((exception) => {
         if (exception.occurrence_index !== undefined) return;
 
         let occurrenceRollingStock = rollingStock;
-        if (exception.rolling_stock) {
-          const promisedRollingStock = getRollingStockByName({
-            rollingStockName: exception.rolling_stock.rolling_stock_name,
-          });
-          occurrenceRollingStock = await promisedRollingStock.unwrap();
-          // we don't want to subscribe to the endpoint to prevent unnecessary calls
-          promisedRollingStock.unsubscribe();
+        if (exception.rolling_stock && rollingStockList) {
+          const rollingStockName = exception.rolling_stock.rolling_stock_name;
+          occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
         }
 
         computedOccurrences.push({

@@ -347,6 +347,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
             }
           : undefined,
       conflicts,
+      // TODO : probably remove this in favor of putting it in the scenario context when refactoring it
+      rollingStockList: rollingStocks,
       removeTimetableItems: removeTimetableItemsWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
@@ -360,6 +362,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       allTrainsProjected,
       timetableItems?.length ?? 0,
       conflicts,
+      rollingStocks,
       removeTimetableItemsWithBroadcast,
       upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTimeWithBroadcast,

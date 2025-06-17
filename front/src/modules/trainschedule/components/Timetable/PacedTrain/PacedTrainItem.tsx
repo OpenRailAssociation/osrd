@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
 import {
   osrdEditoastApi,
+  type LightRollingStockWithLiveries,
   type PacedTrain,
   type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
@@ -57,6 +58,7 @@ type PacedTrainItemProps = {
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
+  rollingStockList: LightRollingStockWithLiveries[] | null;
 };
 
 const PacedTrainItem = ({
@@ -69,6 +71,7 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
+  rollingStockList,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -79,7 +82,7 @@ const PacedTrainItem = ({
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
 
-  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
+  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStockList);
 
   const occurrenceActions = useOccurrenceActions({
     pacedTrain,
