@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
+import type { Infra, PacedTrain, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import {
   ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -72,7 +72,7 @@ const expectedOutputData: StationData[] = readJsonFile(
   './tests/assets/paced-train/output-table-data.json'
 );
 
-const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();

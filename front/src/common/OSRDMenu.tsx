@@ -8,6 +8,7 @@ export type OSRDMenuItem = {
   onClick: () => void;
   disabled?: boolean;
   disabledMessage?: string;
+  dataTestID?: string;
 };
 
 type OSRDMenuProps = {
@@ -18,7 +19,7 @@ type OSRDMenuProps = {
 
 const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
   <div ref={menuRef} className={cx('osrd-menu', className)}>
-    {items.map(({ title, icon, disabled, disabledMessage, onClick }) => (
+    {items.map(({ title, icon, disabled, disabledMessage, onClick, dataTestID }) => (
       <button
         disabled={disabled}
         title={disabled ? disabledMessage : undefined}
@@ -26,6 +27,7 @@ const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
         type="button"
         className="menu-item"
         onClick={onClick}
+        data-testid={dataTestID}
       >
         <span className="icon">{icon}</span>
         <span>{title}</span>

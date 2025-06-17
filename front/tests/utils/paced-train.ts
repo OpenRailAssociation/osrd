@@ -11,9 +11,9 @@ import { getApiContext, handleErrorResponse } from './api-utils';
  * @param body - The request payload containing paced train data.
  * @returns {Promise<PacedTrainResponse[]>} - The API response containing the paced train response.
  */
-export async function sendPacedTrains(
+export async function sendPacedTrains<T>(
   timetableId: number,
-  body: JSON
+  body: T
 ): Promise<PacedTrainResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const pacedTrainsResponse: APIResponse = await apiContext.post(

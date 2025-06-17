@@ -446,6 +446,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.emptyTimetable).toBeVisible();
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }
+
+  async verifyEditTrainScheduleButtonVisibility() {
+    await expect(this.editTrainScheduleButton).toBeVisible();
+  }
 }
 
 export default ScenarioTimetableSection;

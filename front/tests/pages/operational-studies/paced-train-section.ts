@@ -1,7 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import type {
+  ChangeGroup,
   OccurrenceDetails,
+  OccurrenceMenuButton,
   PacedTrainDetails,
   TimetableFilterTranslations,
 } from '../../utils/types';
@@ -36,6 +38,15 @@ class PacedTrainSection extends CommonPage {
 
   private readonly confirmationModalDeleteButton: Locator;
 
+  private readonly portalOsrdMenu: {
+    disable: Locator;
+    enable: Locator;
+    edit: Locator;
+    restore: Locator;
+    project: Locator;
+    delete: Locator;
+  };
+
   constructor(page: Page) {
     super(page);
     this.pacedTrainItem = page.getByTestId('paced-train');
@@ -53,6 +64,25 @@ class PacedTrainSection extends CommonPage {
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
+    this.portalOsrdMenu = {
+      disable: page.getByTestId('occurrence-disable-button'),
+      enable: page.getByTestId('occurrence-enable-button'),
+      edit: page.getByTestId('occurrence-edit-button'),
+      restore: page.getByTestId('occurrence-restore-button'),
+      project: page.getByTestId('occurrence-project-button'),
+      delete: page.getByTestId('occurrence-delete-button'),
+    };
+  }
+
+  private getNthOccurrence(index: number) {
+    const root = this.testedPacedTrainOccurrences.nth(index);
+    return {
+      root,
+      indicator: root.getByTestId('occurrence-indicator'),
+      tooltip: root.getByTestId('exception-info'),
+      image: root.getByTestId('rolling-stock-image'),
+      menuIcon: root.getByTestId('occurrence-item-menu-btn'),
+    };
   }
 
   // Only the zone with the role button opens the occurrence list
@@ -191,14 +221,14 @@ class PacedTrainSection extends CommonPage {
     );
   }
 
-  private async verifyOccurrenceDetails(
+  public async verifyOccurrenceDetails(
     occurrenceData: OccurrenceDetails,
     occurrenceIndex: number,
     duplicate?: {
       copyTranslation?: string;
     }
   ) {
-    const occurrenceItem = this.testedPacedTrainOccurrences.nth(occurrenceIndex);
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
 
     await this.verifyOccurrenceName(occurrenceIndex, occurrenceData.name, {
       copyTranslation: duplicate?.copyTranslation,
@@ -207,7 +237,7 @@ class PacedTrainSection extends CommonPage {
     await this.verifyOccurrenceStartTime(occurrenceIndex, occurrenceData.startTime);
     await this.verifyOccurrenceArrivalTime(occurrenceIndex, occurrenceData.arrivalTime);
 
-    await expect(occurrenceItem.locator('.rolling-stock img')).toBeVisible();
+    await expect(occurrenceItem.image).toBeVisible();
 
     await this.verifyItemsVisibility(occurrenceIndex, 'occurrence');
   }
@@ -282,6 +312,39 @@ class PacedTrainSection extends CommonPage {
     const expectedDeleteToast = `${firstPart}${duplicatedPacedTrainName}${secondPart}`;
     await this.checkToastTitle(expectedDeleteToast);
     await this.closeToastNotification();
+  }
+
+  async checkExceptionTooltip(
+    occurrenceIndex: number,
+    title: string,
+    ...changeGroups: ChangeGroup[]
+  ) {
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await occurrenceItem.indicator.hover();
+
+    const expectedExceptionText = title + changeGroups.join();
+    await expect(occurrenceItem.tooltip).toBeVisible();
+    await expect(occurrenceItem.tooltip).toHaveText(expectedExceptionText);
+  }
+
+  async checkOccurrenceMenuIcon(occurrenceIndex: number) {
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await occurrenceItem.root.hover();
+    await expect(occurrenceItem.menuIcon).toBeVisible();
+  }
+
+  async checkOccurrenceActionMenu(
+    occurrenceIndex: number,
+    expectedButtons: OccurrenceMenuButton[],
+    translations: TimetableFilterTranslations
+  ) {
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await occurrenceItem.menuIcon.click();
+    for (const buttonName of expectedButtons) {
+      const button = this.portalOsrdMenu[buttonName];
+      await expect(button).toBeVisible();
+      await expect(button).toHaveText(translations.occurrenceMenu[buttonName]);
+    }
   }
 }
 
