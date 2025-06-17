@@ -1,18 +1,14 @@
 import { useMemo } from 'react';
 
-import dayjs from 'dayjs';
-import { omit } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
+import useSelectedTrain from 'modules/trainschedule/hooks/useSelectedTrain';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
-import { Duration } from 'utils/duration';
 import {
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
-  extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
   isTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
@@ -37,19 +33,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     return extractEditoastIdFromPacedTrainId(pacedTrainId);
   }, [selectedTrainId]);
 
-  const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
-    {
-      id: editoastSelectedTrainId!,
-    },
-    { skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)) }
-  );
-
-  const { data: selectedPacedTrain } = osrdEditoastApi.endpoints.getPacedTrainById.useQuery(
-    {
-      id: editoastSelectedTrainId!,
-    },
-    { skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)) }
-  );
+  const train = useSelectedTrain();
 
   const { data: rawTrainSchedulePath } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
@@ -101,45 +85,18 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     );
 
   const selectedTimetableItemSimulationData = useMemo(() => {
-    if (!selectedTrainId) return undefined;
-
-    if (isTrainScheduleId(selectedTrainId)) {
-      return selectedTrainSchedule
-        ? {
-            selectedTimetableItem: {
-              ...selectedTrainSchedule,
-              id: formatEditoastIdToTrainScheduleId(selectedTrainSchedule.id),
-            },
-            selectedTimetableItemSimulation: selectedTrainScheduleSimulation,
-          }
-        : undefined;
-    }
-    if (!selectedPacedTrain) return undefined;
-
-    const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
-    const pacedTrainIntervalInMs = Duration.parse(selectedPacedTrain.paced.interval).ms;
-    const selectedOccurrenceStartTime: string = dayjs(selectedPacedTrain.start_time)
-      .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
-      .toISOString();
+    if (!selectedTrainId || !train) return undefined;
 
     return {
-      selectedTimetableItem: {
-        ...omit(selectedPacedTrain, ['id', 'paced', 'exceptions']),
-        id: selectedTrainId,
-        start_time: selectedOccurrenceStartTime,
-      },
-      selectedTimetableItemSimulation: selectedPacedTrainSimulation,
+      train,
+      selectedTimetableItemSimulation: isTrainScheduleId(selectedTrainId)
+        ? selectedTrainScheduleSimulation
+        : selectedPacedTrainSimulation,
     };
-  }, [
-    selectedTrainId,
-    selectedTrainSchedule,
-    selectedPacedTrain,
-    selectedTrainScheduleSimulation,
-    selectedPacedTrainSimulation,
-  ]);
+  }, [selectedTrainId, train, selectedTrainScheduleSimulation, selectedPacedTrainSimulation]);
 
   const speedSpaceChart = useSpeedSpaceChart(
-    selectedTimetableItemSimulationData?.selectedTimetableItem,
+    selectedTimetableItemSimulationData?.train,
     path,
     selectedTimetableItemSimulationData?.selectedTimetableItemSimulation
   );
@@ -152,7 +109,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     return undefined;
 
   return {
-    train: selectedTimetableItemSimulationData.selectedTimetableItem,
+    train: selectedTimetableItemSimulationData.train,
     rollingStock: speedSpaceChart.rollingStock,
     powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
     simulation: selectedTimetableItemSimulationData.selectedTimetableItemSimulation,
