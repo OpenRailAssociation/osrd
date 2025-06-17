@@ -108,12 +108,10 @@ impl NewSchedule {
                     last_segment.push_back(waypoint.clone());
                 }
                 segments.push(VecDeque::from([waypoint]));
+            } else if let Some(last_segment) = segments.last_mut() {
+                last_segment.push_back(waypoint);
             } else {
-                if let Some(last_segment) = segments.last_mut() {
-                    last_segment.push_back(waypoint);
-                } else {
-                    unreachable!("First waypoint is always a stop — checked in `NewSchedule::new`");
-                }
+                unreachable!("First waypoint is always a stop — checked in `NewSchedule::new`");
             }
         }
 

@@ -99,7 +99,7 @@ impl TrainSchedule {
                     || i == n - 1 // the end of the path
                     || scheduled_items // a scheduled stop
                         .get(path_item.id.as_str())
-                        .map_or(false, |item| {
+                        .is_some_and(|item| {
                             item.stop_for
                                 .as_ref()
                                 .is_some_and(|duration| !duration.is_zero())
