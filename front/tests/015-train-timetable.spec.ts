@@ -14,12 +14,15 @@ import {
 import {
   HONORED_ITEMS,
   INVALID_ITEMS,
+  ITEMS_WITH_HLP_SPEED_LIMIT_TAG_EXCEPTION,
   ITEMS_WITH_NO_SPEED_LIMIT_TAG,
   LABEL_FILTERED_ITEMS,
+  LABEL_FILTERED_ITEMS_EXCEPTION,
   NAME_FILTERED_ITEMS,
+  NAME_FILTERED_ITEMS_EXCEPTION,
   NOT_HONORED_ITEMS,
   NOT_HONORED_PACED_TRAINS,
-  ROLLING_STOCK_FILTERED_ITEMS,
+  ROLLING_STOCK_FILTERED_ITEMS_EXCEPTION,
   TOTAL_ITEMS,
   TOTAL_PACED_TRAINS,
   TOTAL_TRAINS,
@@ -119,10 +122,20 @@ test.describe('Verify train schedule elements and filters', () => {
       LABEL_FILTERED_ITEMS
     );
 
+    // Name and label filter for exceptions
+    await scenarioTimetableSection.filterNameAndVerifyTrainCount(
+      'abc',
+      NAME_FILTERED_ITEMS_EXCEPTION
+    );
+    await scenarioTimetableSection.filterNameAndVerifyTrainCount(
+      'exception',
+      LABEL_FILTERED_ITEMS_EXCEPTION
+    );
+
     // Rolling stock name and details filter
     await scenarioTimetableSection.filterRollingStockAndVerifyTrainCount(
       'slow_rolling_stock',
-      ROLLING_STOCK_FILTERED_ITEMS
+      ROLLING_STOCK_FILTERED_ITEMS_EXCEPTION
     );
 
     // Validity filter
@@ -173,6 +186,14 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
       null,
       ITEMS_WITH_NO_SPEED_LIMIT_TAG,
+      translations
+    );
+    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+
+    // Verify train composition filters with predefined filter codes and expected counts for exceptions
+    await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
+      'HLP',
+      ITEMS_WITH_HLP_SPEED_LIMIT_TAG_EXCEPTION,
       translations
     );
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
