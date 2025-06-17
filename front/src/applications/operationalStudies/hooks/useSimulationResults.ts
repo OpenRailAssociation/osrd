@@ -7,13 +7,6 @@ import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceCh
 import useSelectedTrain from 'modules/trainschedule/hooks/useSelectedTrain';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
-import {
-  extractEditoastIdFromTrainScheduleId,
-  isOccurrenceId,
-  isTrainScheduleId,
-  extractEditoastIdFromPacedTrainId,
-  extractPacedTrainIdFromOccurrenceId,
-} from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
 
@@ -23,15 +16,6 @@ import type { SimulationResults } from '../types';
 const useSimulationResults = (infraId: number): SimulationResults | undefined => {
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
-
-  const editoastSelectedTrainId = useMemo(() => {
-    if (!selectedTrainId) return undefined;
-    if (isTrainScheduleId(selectedTrainId)) {
-      return extractEditoastIdFromTrainScheduleId(selectedTrainId);
-    }
-    const pacedTrainId = extractPacedTrainIdFromOccurrenceId(selectedTrainId);
-    return extractEditoastIdFromPacedTrainId(pacedTrainId);
-  }, [selectedTrainId]);
 
   const train = useSelectedTrain();
 
@@ -45,61 +29,46 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     }
   );
 
-  const { data: selectedTrainScheduleSimulation } =
-    osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
-      { id: editoastSelectedTrainId!, infraId, electricalProfileSetId },
-      {
-        skip: !editoastSelectedTrainId || (selectedTrainId && !isTrainScheduleId(selectedTrainId)),
-      }
-    );
-
-  const { data: selectedPacedTrainSimulation } =
-    osrdEditoastApi.endpoints.getPacedTrainByIdSimulation.useQuery(
-      {
-        id: editoastSelectedTrainId!,
-        infraId,
-        electricalProfileSetId,
-      },
-      {
-        skip: !editoastSelectedTrainId || (selectedTrainId && !isOccurrenceId(selectedTrainId)),
-      }
-    );
+  const { data: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
+    {
+      id: selectedTrainId!,
+      infraId,
+      electricalProfileSetId,
+    },
+    {
+      skip: !selectedTrainId,
+    }
+  );
 
   const selectedTimetableItemSimulationData = useMemo(() => {
-    if (!selectedTrainId || !train || pathfinding?.status !== 'success') return undefined;
+    if (
+      !selectedTrainId ||
+      !train ||
+      pathfinding?.status !== 'success' ||
+      simulation?.status !== 'success'
+    )
+      return undefined;
 
     return {
       train,
       path: pathfinding,
-      selectedTimetableItemSimulation: isTrainScheduleId(selectedTrainId)
-        ? selectedTrainScheduleSimulation
-        : selectedPacedTrainSimulation,
+      simulation,
     };
-  }, [
-    selectedTrainId,
-    train,
-    pathfinding,
-    selectedTrainScheduleSimulation,
-    selectedPacedTrainSimulation,
-  ]);
+  }, [selectedTrainId, train, pathfinding, simulation]);
 
   const speedSpaceChart = useSpeedSpaceChart(
     selectedTimetableItemSimulationData?.train,
     selectedTimetableItemSimulationData?.path,
-    selectedTimetableItemSimulationData?.selectedTimetableItemSimulation
+    selectedTimetableItemSimulationData?.simulation
   );
 
-  if (
-    selectedTimetableItemSimulationData?.selectedTimetableItemSimulation?.status !== 'success' ||
-    !speedSpaceChart
-  )
-    return undefined;
+  if (!selectedTimetableItemSimulationData || !speedSpaceChart) return undefined;
 
   return {
     train: selectedTimetableItemSimulationData.train,
     rollingStock: speedSpaceChart.rollingStock,
     powerRestrictions: speedSpaceChart.formattedPowerRestrictions || [],
-    simulation: selectedTimetableItemSimulationData.selectedTimetableItemSimulation,
+    simulation: selectedTimetableItemSimulationData.simulation,
     pathProperties: speedSpaceChart.formattedPathProperties,
     path: selectedTimetableItemSimulationData.path,
   };

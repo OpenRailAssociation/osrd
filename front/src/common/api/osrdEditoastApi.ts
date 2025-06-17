@@ -16,6 +16,7 @@ import {
   type TrainScheduleResponse,
   type PacedTrainResponse,
   type PathfindingResult,
+  type SimulationResponse,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -141,6 +142,41 @@ const osrdEditoastApi = generatedEditoastApi
           'pathfinding',
           isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
         ],
+      }),
+      getTrainSimulation: builder.query<
+        SimulationResponse,
+        { id: TrainId; infraId: number; electricalProfileSetId?: number }
+      >({
+        queryFn: async ({ id: trainId, infraId, electricalProfileSetId }, { dispatch }) => {
+          let simulation: SimulationResponse;
+          if (isTrainScheduleId(trainId)) {
+            simulation = await dispatch(
+              generatedEditoastApi.endpoints.getTrainScheduleByIdSimulation.initiate(
+                {
+                  id: extractEditoastIdFromTrainScheduleId(trainId),
+                  infraId,
+                  electricalProfileSetId,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+          } else {
+            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            simulation = await dispatch(
+              generatedEditoastApi.endpoints.getPacedTrainByIdSimulation.initiate(
+                {
+                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                  infraId,
+                  electricalProfileSetId,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            ).unwrap();
+          }
+          return { data: simulation };
+        },
+        // TODO: fix getPacedTrainByIdSimulation tags (it should be paced_train)
+        providesTags: ['train_schedule'],
       }),
     }),
   })
