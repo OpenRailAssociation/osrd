@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::views::projection::TrainToProjectOnOperationalPoint;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -16,6 +17,7 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationPath;
+
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -31,6 +33,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+
 use crate::error::Result;
 use crate::models;
 use crate::models::OperationalPointModel;
@@ -49,9 +52,12 @@ use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::project_train_path_op;
+
+use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
-use crate::views::projection::interpolate;
+use crate::views::projection::linear_interpolate;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::SimulationResponseSuccess;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
@@ -70,6 +76,7 @@ crate::routes! {
     "/train_schedule" => {
         delete,
         "/project_path" => project_path,
+        "/project_path_op" => project_path_op,
         "/occupancy_blocks" => occupancy_blocks,
         "/track_occupancy" => track_occupancy,
         "/simulation_summary" => simulation_summary,
@@ -716,6 +723,118 @@ async fn project_path(
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
+    request_body = inline(ProjectPathOperationalPointForm),
+    responses(
+        (status = 200, description = "Project train schedules on a list of operational points.", body = HashMap<i64, Vec<SpaceTimeCurve>>),
+    ),
+)]
+async fn project_path_op(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(ProjectPathOperationalPointForm {
+        infra_id,
+        train_ids,
+        electrical_profile_set_id,
+        operational_points_ids,
+        operational_points_distances,
+    }): Json<ProjectPathOperationalPointForm>,
+) -> Result<Json<HashMap<i64, Arc<SpaceTimeCurves>>>> {
+    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    let conn = &mut db_pool.get().await?;
+
+    let trains_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
+
+    let path_item_locations: Vec<&PathItemLocation> = trains_schedules
+        .iter()
+        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
+        .collect();
+
+    let path_item_cache = PathItemCache::load(conn, infra_id, &path_item_locations).await?;
+
+    // 1. Build the projection_op_id_to_positions
+    let projection_op_id_to_positions: HashMap<_, _> = operational_points_ids
+        .into_iter()
+        .zip(
+            std::iter::once(0)
+                .chain(operational_points_distances)
+                .scan(0, |acc, i| {
+                    *acc += i;
+                    Some(*acc)
+                }),
+        )
+        .collect();
+
+    // 2. Simulate trains
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client.clone(),
+        core_client.clone(),
+        &trains_schedules,
+        infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    let mut to_compute = HashMap::new();
+    for (ts, (sim, _)) in trains_schedules.into_iter().zip(simulations.into_iter()) {
+        let train_id = ts.id;
+        to_compute
+            .entry(Arc::as_ptr(&sim))
+            .or_insert((vec![], ts.path, Arc::unwrap_or_clone(sim)))
+            .0
+            .push(train_id);
+    }
+
+    // 3. Each simulated train can be projected using `project_train_path_op`
+    let mut results = HashMap::<i64, _>::new();
+    for (train_ids, path_items, sim) in to_compute.into_values() {
+        let train_to_project = TrainToProjectOnOperationalPoint::new(path_items, sim);
+        let curves = Arc::new(project_train_path_op(
+            &train_to_project,
+            &path_item_cache,
+            &projection_op_id_to_positions,
+        ));
+        for train_id in train_ids {
+            results.insert(train_id, curves.clone());
+        }
+    }
+
+    Ok(Json(results))
+}
+
+#[utoipa::path(
+    post, path = "",
+    tag = "train_schedule",
     request_body = OccupancyBlockForm,
     responses(
         (status = 200, body = HashMap<i64, OccupancyBlocks>),
@@ -994,7 +1113,7 @@ fn interpolate_track_occupancy(
                 let time = if index == 0 {
                     report_train.times[0]
                 } else {
-                    interpolate(
+                    linear_interpolate(
                         report_train.positions[index - 1],
                         report_train.positions[index],
                         report_train.times[index - 1],

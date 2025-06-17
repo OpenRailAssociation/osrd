@@ -8,6 +8,10 @@ use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
+use editoast_schemas::train_schedule::OperationalPointIdentifier;
+use editoast_schemas::train_schedule::PathItem;
+use editoast_schemas::train_schedule::PathItemLocation;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -18,6 +22,7 @@ use std::hash::Hasher;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
+use super::path::path_item_cache::PathItemCache;
 use crate::ValkeyClient;
 use crate::client::get_app_version;
 use crate::models;
@@ -45,6 +50,16 @@ pub struct ProjectPathForm {
     pub track_section_ranges: Vec<TrackRange>,
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct ProjectPathOperationalPointForm {
+    pub infra_id: i64,
+    pub electrical_profile_set_id: Option<i64>,
+    pub train_ids: HashSet<i64>,
+    pub operational_points_ids: Vec<String>,
+    /// Distances between operational points in mm
+    pub operational_points_distances: Vec<u64>,
+}
+
 /// Project path input is described by a list of routes and a list of track range
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathInput {
@@ -59,15 +74,56 @@ pub struct ProjectPathInput {
     pub blocks: Vec<Identifier>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Default, Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SpaceTimeCurve {
-    // List of positions of a train in mm
-    // Both positions and times must have the same length
-    #[schema(min_items = 2)]
+    /// List of positions of a train in mm
+    /// Both positions and times must have the same length
+    #[schema(min_items = 1)]
     positions: Vec<u64>,
-    // List of times in ms since `departure_time` associated to a position
-    #[schema(min_items = 2)]
+    /// List of times in ms since `departure_time` associated to a position
+    #[schema(min_items = 1)]
     times: Vec<u64>,
+}
+
+impl SpaceTimeCurve {
+    /// Push a point to the space time curve
+    fn push_point(&mut self, position: u64, time: u64) {
+        if self.positions.last().zip(self.times.last()) == Some((&position, &time)) {
+            // If the point is already in the curve, do not add it again
+            return;
+        }
+        self.positions.push(position);
+        self.times.push(time);
+    }
+
+    /// Check if the space time curve is empty
+    fn is_empty(&self) -> bool {
+        self.positions.is_empty()
+    }
+
+    /// Find the position at a given time
+    /// Panics if the curve is empty
+    fn linear_interpolate(&self, time: u64) -> u64 {
+        assert!(!self.is_empty(), "Space time curve is empty");
+        if time > self.times[self.times.len() - 1] {
+            // If the time is greater than the last time, return the last position
+            return self.positions[self.positions.len() - 1];
+        }
+        // Find the index of the first time greater than or equal to the given time
+        let index = find_index_upper(&self.times, time);
+        if index == 0 {
+            // If the index is 0, return the first position
+            return self.positions[0];
+        }
+        // Interpolate between the two positions
+        linear_interpolate(
+            self.times[index - 1],
+            self.times[index],
+            self.positions[index - 1],
+            self.positions[index],
+            time,
+        )
+    }
 }
 
 /// Input for the projection of a train schedule on a path
@@ -148,7 +204,7 @@ fn compute_space_time_curves(
         if positions[start_index] > start {
             // Interpolate the first point of the segment
             segment_positions.push(project_pos(start, &train_path, path_projection));
-            segment_times.push(interpolate(
+            segment_times.push(linear_interpolate(
                 positions[start_index - 1],
                 positions[start_index],
                 times[start_index - 1],
@@ -165,7 +221,7 @@ fn compute_space_time_curves(
 
         // Interpolate the last point of the segment
         segment_positions.push(project_pos(end, &train_path, path_projection));
-        segment_times.push(interpolate(
+        segment_times.push(linear_interpolate(
             positions[end_index - 1],
             positions[end_index],
             times[end_index - 1],
@@ -237,18 +293,13 @@ fn project_pos(
 }
 
 /// Interpolate a time value between two positions
-pub fn interpolate(
-    start_pos: u64,
-    end_pos: u64,
-    start_time: u64,
-    end_time: u64,
-    pos_to_interpolate: u64,
-) -> u64 {
-    if start_pos == end_pos {
-        start_time
+pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, a_interpolate: u64) -> u64 {
+    if a_x == b_x {
+        a_y
+    } else if a_y < b_y {
+        a_y + (a_interpolate - a_x) * (b_y - a_y) / (b_x - a_x)
     } else {
-        start_time
-            + (pos_to_interpolate - start_pos) * (end_time - start_time) / (end_pos - start_pos)
+        a_y - (a_interpolate - a_x) * (a_y - b_y) / (b_x - a_x)
     }
 }
 
@@ -356,6 +407,130 @@ pub async fn compute_projected_train_paths(
     Ok(project_path_result)
 }
 
+#[derive(Clone, Debug)]
+pub struct OperationalPointRefAndTime {
+    /// Arrival time of the train at this operational point
+    time: u64,
+    op_ref: OperationalPointIdentifier,
+}
+
+#[derive(Debug, Default)]
+pub struct TrainToProjectOnOperationalPoint {
+    space_time_curve: Option<SpaceTimeCurve>,
+    refs: Vec<OperationalPointRefAndTime>,
+}
+
+impl TrainToProjectOnOperationalPoint {
+    pub fn new(path_items: Vec<PathItem>, sim: simulation::Response) -> Self {
+        let simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) = sim
+        else {
+            // TODO: Handle non-simulated
+            return Default::default();
+        };
+        let CompleteReportTrain { report_train, .. } = final_output;
+        let space_time_curve = Some(SpaceTimeCurve {
+            positions: report_train.positions,
+            times: report_train.times,
+        });
+        let refs = path_items
+            .into_iter()
+            .zip(report_train.path_item_times)
+            .flat_map(|(path_item, time)| match path_item.location {
+                PathItemLocation::OperationalPointReference(op_ref) => {
+                    Some(OperationalPointRefAndTime {
+                        time,
+                        op_ref: op_ref.reference,
+                    })
+                }
+                PathItemLocation::TrackOffset(_) => None,
+            })
+            .collect();
+        Self {
+            space_time_curve,
+            refs,
+        }
+    }
+}
+
+pub fn project_train_path_op(
+    TrainToProjectOnOperationalPoint {
+        space_time_curve,
+        refs,
+    }: &TrainToProjectOnOperationalPoint,
+    path_item_cache: &PathItemCache,
+    projection_op_id_to_positions: &HashMap<String, u64>,
+) -> SpaceTimeCurves {
+    // Build a set of op ids
+    let projection_ops = projection_op_id_to_positions.keys().collect();
+
+    // Match operational point references with operational point ids
+    let matching_ops = refs.iter().map(|op_ref_and_time| {
+        match_op_ref_with_ops(&op_ref_and_time.op_ref, &projection_ops, path_item_cache)
+            .map(|id| (projection_op_id_to_positions[&id], op_ref_and_time.time))
+    });
+    // Add a None at the end to close the last segment
+    let matching_ops = matching_ops.chain(std::iter::once(None));
+
+    // Iterate over the matching operations and build the projection curves
+    let mut projection_curves = vec![];
+    let mut curve = SpaceTimeCurve::default(); // The current curve being built
+    for (a, b) in matching_ops.into_iter().tuple_windows() {
+        match (a, b) {
+            (Some((a_pos, a_time)), Some((b_pos, b_time))) => {
+                curve.push_point(a_pos, a_time);
+                if let Some(space_time_curve) = &space_time_curve {
+                    // Add interpolated points between a and b
+                    let index_begin = find_index_upper(&space_time_curve.times, a_time);
+                    let index_end = find_index_upper(&space_time_curve.times, b_time);
+                    let start = space_time_curve.linear_interpolate(a_time);
+                    let end = space_time_curve.linear_interpolate(b_time);
+                    let range = index_begin..index_end;
+                    for (&time, &position) in space_time_curve.times[range.clone()]
+                        .iter()
+                        .zip(&space_time_curve.positions[range])
+                    {
+                        let inter_pos = linear_interpolate(start, end, a_pos, b_pos, position);
+                        curve.push_point(inter_pos, time);
+                    }
+                }
+                curve.push_point(b_pos, b_time);
+            }
+            (None, Some((b_pos, b_time))) => {
+                if !curve.is_empty() {
+                    // Save and reset the curve for the next segment
+                    projection_curves.push(curve);
+                    curve = SpaceTimeCurve::default();
+                }
+                curve.push_point(b_pos, b_time);
+            }
+            (Some((a_pos, a_time)), None) => {
+                curve.push_point(a_pos, a_time);
+                // Save and reset the curve for the next segment
+                projection_curves.push(curve);
+                curve = SpaceTimeCurve::default();
+            }
+            (None, None) => continue,
+        }
+    }
+    projection_curves
+}
+
+/// Try to match an operational point reference with a list of operational points ids.
+/// If the operational point reference matches an operational point id, it returns the id.
+/// Otherwise, it returns None.
+fn match_op_ref_with_ops(
+    op_ref: &OperationalPointIdentifier,
+    projection_ops: &HashSet<&String>,
+    path_item_cache: &PathItemCache,
+) -> Option<String> {
+    let op_id = path_item_cache.get_op_ref_id(op_ref)?;
+    if projection_ops.contains(&op_id) {
+        Some(op_id)
+    } else {
+        None
+    }
+}
+
 pub async fn extract_train_details(
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
 ) -> Result<Vec<Option<TrainSimulationDetails>>> {
@@ -407,8 +582,12 @@ pub async fn extract_train_details(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::fixtures::create_small_infra;
+    use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::DirectionalTrackRange;
+    use editoast_schemas::train_schedule::OperationalPointReference;
+    use editoast_schemas::train_schedule::PathItemLocation;
     use rstest::rstest;
 
     #[rstest]
@@ -547,5 +726,248 @@ mod tests {
         let curve = &space_time_curves[2];
         assert_eq!(curve.positions, vec![920_000, 850_000]);
         assert_eq!(curve.times, vec![74, 80]);
+    }
+
+    fn create_path_item_from_trigram(trigram: &str) -> OperationalPointIdentifier {
+        OperationalPointIdentifier::OperationalPointDescription {
+            trigram: trigram.into(),
+            secondary_code: None,
+        }
+    }
+
+    fn create_path_items_from_trigrams(trigrams: &[&str]) -> Vec<PathItemLocation> {
+        trigrams
+            .iter()
+            .map(|&trigram| {
+                PathItemLocation::OperationalPointReference(OperationalPointReference {
+                    reference: create_path_item_from_trigram(trigram),
+                    track_reference: None,
+                })
+            })
+            .collect()
+    }
+
+    impl OperationalPointRefAndTime {
+        fn new_trigram(time: u64, trigram: &str) -> Self {
+            OperationalPointRefAndTime {
+                time,
+                op_ref: create_path_item_from_trigram(trigram),
+            }
+        }
+    }
+
+    impl Default for OperationalPointRefAndTime {
+        fn default() -> Self {
+            OperationalPointRefAndTime {
+                time: 0,
+                op_ref: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: Identifier::default(),
+                },
+            }
+        }
+    }
+
+    #[rstest]
+    async fn test_simple_project_train_path_op() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_trigrams(&trigrams);
+        let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
+        let path_item_cache =
+            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+                .await
+                .expect("Failed to load path item cache");
+        // Train
+        let train_to_project_on_op = TrainToProjectOnOperationalPoint {
+            space_time_curve: Some(SpaceTimeCurve {
+                times: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40],
+                positions: vec![
+                    0, 100, 250, 250, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000,
+                ],
+            }),
+            refs: vec![
+                OperationalPointRefAndTime::new_trigram(0, "SWS"),
+                OperationalPointRefAndTime::new_trigram(10, "MWS"),
+                OperationalPointRefAndTime::new_trigram(19, "MES"),
+                OperationalPointRefAndTime::new_trigram(35, "NS"),
+            ],
+        };
+        // Manchette
+        let projection_op_id_to_positions = HashMap::from([
+            ("South_West_station".to_string(), 0),
+            ("Mid_West_station".to_string(), 100_000),
+            ("Mid_East_station".to_string(), 200_000),
+            ("North_station".to_string(), 300_000),
+            ("South_station".to_string(), 400_000),
+        ]);
+
+        // Run tested function
+        let curves = project_train_path_op(
+            &train_to_project_on_op,
+            &path_item_cache,
+            &projection_op_id_to_positions,
+        );
+
+        // Check results
+        assert_eq!(curves.len(), 1);
+        assert_eq!(
+            curves[0].times,
+            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 30, 35]
+        );
+        assert_eq!(
+            curves[0].positions,
+            vec![
+                0, 10000, 25000, 25000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000,
+                206250, 268750, 300000
+            ]
+        );
+    }
+
+    #[rstest]
+    async fn test_simple_reverse_project_train_path_op() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_trigrams(&trigrams);
+        let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
+        let path_item_cache =
+            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+                .await
+                .expect("Failed to load path item cache");
+        // Train
+        let train_to_project_on_op = TrainToProjectOnOperationalPoint {
+            space_time_curve: Some(SpaceTimeCurve {
+                times: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40],
+                positions: vec![
+                    0, 100, 250, 250, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000,
+                ],
+            }),
+            refs: vec![
+                OperationalPointRefAndTime::new_trigram(0, "NS"),
+                OperationalPointRefAndTime::new_trigram(10, "MES"),
+                OperationalPointRefAndTime::new_trigram(19, "MWS"),
+                OperationalPointRefAndTime::new_trigram(35, "SWS"),
+            ],
+        };
+        // Manchette
+        let projection_op_id_to_positions = HashMap::from([
+            ("South_West_station".to_string(), 0),
+            ("Mid_West_station".to_string(), 100_000),
+            ("Mid_East_station".to_string(), 200_000),
+            ("North_station".to_string(), 300_000),
+            ("South_station".to_string(), 400_000),
+        ]);
+
+        // Run tested function
+        let curves = project_train_path_op(
+            &train_to_project_on_op,
+            &path_item_cache,
+            &projection_op_id_to_positions,
+        );
+
+        // Check results
+        assert_eq!(curves.len(), 1);
+        assert_eq!(
+            curves[0].times,
+            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 30, 35]
+        );
+
+        assert_eq!(
+            curves[0].positions,
+            vec![
+                300000, 290000, 275000, 275000, 260000, 250000, 240000, 230000, 220000, 210000,
+                200000, 100000, 93750, 31250, 0
+            ]
+        );
+    }
+
+    #[rstest]
+    async fn test_points_project_train_path_op() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
+        let path_items = create_path_items_from_trigrams(&trigrams);
+        let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
+        let path_item_cache =
+            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+                .await
+                .expect("Failed to load path item cache");
+        // Train
+        let train_to_project_on_op = TrainToProjectOnOperationalPoint {
+            space_time_curve: None,
+            refs: vec![
+                OperationalPointRefAndTime::new_trigram(0, "SWS"),
+                OperationalPointRefAndTime::default(),
+                OperationalPointRefAndTime::new_trigram(10, "MWS"),
+                OperationalPointRefAndTime::new_trigram(21, "MES"),
+                OperationalPointRefAndTime::default(),
+                OperationalPointRefAndTime::new_trigram(28, "NS"),
+                OperationalPointRefAndTime::default(),
+                OperationalPointRefAndTime::new_trigram(35, "SS"),
+            ],
+        };
+        // Manchette
+        let projection_op_id_to_positions = HashMap::from([
+            ("South_West_station".to_string(), 0),
+            ("Mid_West_station".to_string(), 100_000),
+            ("Mid_East_station".to_string(), 200_000),
+            ("North_station".to_string(), 300_000),
+            ("South_station".to_string(), 400_000),
+        ]);
+
+        // Run tested function
+        let curves = project_train_path_op(
+            &train_to_project_on_op,
+            &path_item_cache,
+            &projection_op_id_to_positions,
+        );
+
+        // Check results
+        assert_eq!(curves.len(), 4);
+        assert_eq!(curves[0].times, vec![0]);
+        assert_eq!(curves[0].positions, vec![0]);
+        assert_eq!(curves[1].times, vec![10, 21]);
+        assert_eq!(curves[1].positions, vec![100_000, 200_000]);
+        assert_eq!(curves[2].times, vec![28]);
+        assert_eq!(curves[2].positions, vec![300_000]);
+        assert_eq!(curves[3].times, vec![35]);
+        assert_eq!(curves[3].positions, vec![400_000]);
+    }
+
+    #[rstest]
+    async fn test_no_matching_points_project_train_path_op() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let path_item_cache = PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &[])
+            .await
+            .expect("Failed to load path item cache");
+        // Train
+        let train_to_project_on_op = TrainToProjectOnOperationalPoint {
+            space_time_curve: None,
+            refs: vec![OperationalPointRefAndTime::default(); 4],
+        };
+        // Manchette
+        let projection_op_id_to_positions = HashMap::from([
+            ("South_West_station".to_string(), 0),
+            ("Mid_West_station".to_string(), 100_000),
+            ("Mid_East_station".to_string(), 200_000),
+            ("North_station".to_string(), 300_000),
+            ("South_station".to_string(), 400_000),
+        ]);
+
+        // Run tested function
+        let curves = project_train_path_op(
+            &train_to_project_on_op,
+            &path_item_cache,
+            &projection_op_id_to_positions,
+        );
+
+        // Check results
+        assert_eq!(curves.len(), 0);
     }
 }

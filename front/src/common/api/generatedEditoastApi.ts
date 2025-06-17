@@ -1231,6 +1231,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      postTrainScheduleProjectPathOp: build.mutation<
+        PostTrainScheduleProjectPathOpApiResponse,
+        PostTrainScheduleProjectPathOpApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/project_path_op`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
       postTrainScheduleSimulationSummary: build.query<
         PostTrainScheduleSimulationSummaryApiResponse,
         PostTrainScheduleSimulationSummaryApiArg
@@ -2377,6 +2388,20 @@ export type PostTrainScheduleProjectPathApiResponse = /** status 200 Project Pat
 };
 export type PostTrainScheduleProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
+};
+export type PostTrainScheduleProjectPathOpApiResponse =
+  /** status 200 Project train schedules on a list of operational points. */ {
+    [key: string]: SpaceTimeCurve[];
+  };
+export type PostTrainScheduleProjectPathOpApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    /** Distances between operational points in mm */
+    operational_points_distances: number[];
+    operational_points_ids: string[];
+    train_ids: number[];
+  };
 };
 export type PostTrainScheduleSimulationSummaryApiResponse =
   /** status 200 Associate each train id with its simulation summary */ {
@@ -3552,7 +3577,10 @@ export type OccupancyBlockForm = {
   };
 };
 export type SpaceTimeCurve = {
+  /** List of positions of a train in mm
+    Both positions and times must have the same length */
   positions: number[];
+  /** List of times in ms since `departure_time` associated to a position */
   times: number[];
 };
 export type ProjectPathPacedTrainResult = {
