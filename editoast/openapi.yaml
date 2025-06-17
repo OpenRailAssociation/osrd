@@ -4096,6 +4096,57 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/SpaceTimeCurve'
+  /train_schedule/project_path_op:
+    post:
+      tags:
+      - train_schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - train_ids
+              - operational_points_ids
+              - operational_points_distances
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_points_distances:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                  description: Distances between operational points in mm
+                operational_points_ids:
+                  type: array
+                  items:
+                    type: string
+                train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '200':
+          description: Project train schedules on a list of operational points.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SpaceTimeCurve'
   /train_schedule/simulation_summary:
     post:
       tags:
@@ -12711,14 +12762,18 @@ components:
             type: integer
             format: int64
             minimum: 0
-          minItems: 2
+          description: |-
+            List of positions of a train in mm
+            Both positions and times must have the same length
+          minItems: 1
         times:
           type: array
           items:
             type: integer
             format: int64
             minimum: 0
-          minItems: 2
+          description: List of times in ms since `departure_time` associated to a position
+          minItems: 1
     SpacingRequirement:
       type: object
       required:

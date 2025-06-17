@@ -23,6 +23,7 @@ type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingR
 /// Gather information about several path items, factorizing db calls.
 #[derive(Default)]
 pub struct PathItemCache {
+    // TODO: Should be an u32 instead of i64
     uic_to_ops: HashMap<i64, Vec<OperationalPointModel>>,
     trigram_to_ops: HashMap<String, Vec<OperationalPointModel>>,
     ids_to_ops: HashMap<String, OperationalPointModel>,
@@ -131,6 +132,27 @@ impl PathItemCache {
                 ..
             }) => self.get_from_uic(i64::from(*uic)).map(Vec::as_slice),
         }
+    }
+
+    /// Retrieve the operational point ID given a reference
+    pub fn get_op_ref_id(&self, op_ref: &OperationalPointIdentifier) -> Option<String> {
+        let (ops, secondary_code) = match op_ref {
+            OperationalPointIdentifier::OperationalPointId { operational_point } => {
+                return Some(operational_point.0.clone());
+            }
+            OperationalPointIdentifier::OperationalPointDescription {
+                trigram,
+                secondary_code,
+            } => (self.trigram_to_ops.get(&trigram.0)?, secondary_code),
+            OperationalPointIdentifier::OperationalPointUic {
+                uic,
+                secondary_code,
+            } => (self.uic_to_ops.get(&i64::from(*uic))?, secondary_code),
+        };
+        secondary_code_filter(secondary_code, ops.clone())
+            .into_iter()
+            .next()
+            .map(|op| op.obj_id)
     }
 
     /// Extract locations from path items
