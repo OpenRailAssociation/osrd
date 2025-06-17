@@ -62,10 +62,12 @@ const ScenarioContent = ({
     timetableItems,
     projectionData,
     conflicts,
+    rollingStockList,
     upsertTimetableItems,
     removeTimetableItems,
     updateTrainDepartureTime,
   } = useScenarioData(scenario, infra);
+
   const macroEditorState = useRef<MacroEditorState>();
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
@@ -200,6 +202,7 @@ const ScenarioContent = ({
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 setTimetableItemToEditData={setTimetableItemToEditData}
                 timetableItemToEditData={timetableItemToEditData}
+                rollingStockList={rollingStockList}
               />
             )}
           </div>
