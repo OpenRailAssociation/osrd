@@ -127,6 +127,14 @@ enum SimilarSchedulesError {
     #[error("No STDCM search environment setup — contact your administrator")]
     #[editoast_error(status = 500)]
     NoSearchEnvironment,
+
+    #[error("Rolling stock {rolling_stock_name} does not exist")]
+    #[editoast_error(status = 404)]
+    RollingStockNotFound { rolling_stock_name: String },
+
+    #[error("Speed limit tage {speed_limit_tag} does not exist")]
+    #[editoast_error(status = 404)]
+    SpeedLimitNotFound { speed_limit_tag: String },
 }
 
 #[utoipa::path(
@@ -341,14 +349,20 @@ async fn validate_rolling_stock_input(
     speed_limit_tag_ids: &SpeedLimitTagIds,
 ) -> Result<()> {
     if !RollingStock::exists(conn, name.clone()).await? {
-        panic!("no such rolling stock, ok bye now");
+        return Err(SimilarSchedulesError::RollingStockNotFound {
+            rolling_stock_name: name.clone(),
+        }
+        .into());
     }
 
     if speed_limit_tag
         .as_ref()
         .is_some_and(|tag| !speed_limit_tag_ids.contains(tag))
     {
-        panic!("speed limit tag not found");
+        return Err(SimilarSchedulesError::SpeedLimitNotFound {
+            speed_limit_tag: speed_limit_tag.as_ref().cloned().unwrap(),
+        }
+        .into());
     }
 
     Ok(())
