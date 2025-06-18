@@ -43,7 +43,7 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::ProjectPathForm;
-use crate::views::projection::ProjectPathTrainResult;
+use crate::views::projection::SpaceTimeCurves;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
 use crate::views::projection::interpolate;
@@ -500,7 +500,7 @@ async fn get_path(
     tag = "train_schedule",
     request_body = ProjectPathForm,
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),
+        (status = 200, description = "Project Path Output", body = HashMap<i64, Vec<SpaceTimeCurve>>),
     ),
 )]
 async fn project_path(
@@ -517,7 +517,7 @@ async fn project_path(
         track_section_ranges,
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
-) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+) -> Result<Json<HashMap<i64, SpaceTimeCurves>>> {
     let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
@@ -973,7 +973,7 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::PartialProjectPathTrainResult;
+
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_train_schedule;
     use crate::models::fixtures::create_small_infra;
@@ -1208,7 +1208,7 @@ pub mod tests {
                 },
             ],
         }));
-        let response: HashMap<i64, PartialProjectPathTrainResult> =
+        let response: HashMap<i64, SpaceTimeCurves> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // EXPECT
