@@ -8,7 +8,7 @@ import type {
   PositionData,
 } from 'applications/operationalStudies/types';
 import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
+import type { TrainScheduleId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 
@@ -347,9 +347,8 @@ export const electrificationRangesLarge: ElectrificationRange[] = [
   },
 ];
 
-export const trainScheduleTooFast: TrainScheduleResponseWithTrainId = {
+export const trainScheduleTooFast: TrainScheduleWithTrainId = {
   id: 'trainschedule-98' as TrainScheduleId,
-  timetable_id: 10,
   train_name: 'tooFast',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -414,9 +413,8 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_base: [0, 1444453, 2491479],
 };
 
-export const trainScheduleNotHonored: TrainScheduleResponseWithTrainId = {
+export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
   id: 'trainschedule-96' as TrainScheduleId,
-  timetable_id: 10,
   train_name: 'notHonored',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -481,9 +479,8 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_times_base: [0, 1425534, 2186885],
 };
 
-export const trainScheduleHonored: TrainScheduleResponseWithTrainId = {
+export const trainScheduleHonored: TrainScheduleWithTrainId = {
   id: 'trainschedule-95' as TrainScheduleId,
-  timetable_id: 10,
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -525,12 +522,12 @@ export const trainScheduleHonored: TrainScheduleResponseWithTrainId = {
   },
 };
 
-export const trainScheduleNoSchedule: TrainScheduleResponseWithTrainId = {
+export const trainScheduleNoSchedule: TrainScheduleWithTrainId = {
   ...trainScheduleHonored,
   schedule: undefined,
 };
 
-export const trainScheduleNoMatch: TrainScheduleResponseWithTrainId = {
+export const trainScheduleNoMatch: TrainScheduleWithTrainId = {
   ...trainScheduleHonored,
   schedule: [
     {

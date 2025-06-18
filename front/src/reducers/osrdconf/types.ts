@@ -14,11 +14,11 @@ import type {
   Distribution,
   LoadingGaugeType,
   OperationalPointReference,
-  PacedTrainResponse,
+  PacedTrain,
   PathItemLocation,
   ReceptionSignal,
   TrainCategory,
-  TrainScheduleResponse,
+  TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { InfraState } from 'reducers/infra';
@@ -176,12 +176,12 @@ export type TimetableItemToEditData =
       occurrenceId?: OccurrenceId;
     };
 
-export type TrainScheduleResponseWithTrainId = Omit<TrainScheduleResponse, 'id'> & {
+export type TrainScheduleWithTrainId = TrainSchedule & {
   id: TrainScheduleId;
 };
 
-export type PacedTrainResponseWithPacedTrainId = Omit<PacedTrainResponse, 'id'> & {
+export type PacedTrainWithPacedTrainId = PacedTrain & {
   id: PacedTrainId;
 };
 
-export type TimetableItem = TrainScheduleResponseWithTrainId | PacedTrainResponseWithPacedTrainId;
+export type TimetableItem = TrainScheduleWithTrainId | PacedTrainWithPacedTrainId;

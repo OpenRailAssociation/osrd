@@ -13,7 +13,7 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItemId, TrainScheduleResponseWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
@@ -73,7 +73,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const formattedTrainSchedules: TrainScheduleResponseWithTrainId[] = useMemo(
+  const formattedTrainSchedules: TrainScheduleWithTrainId[] = useMemo(
     () =>
       timetable?.map((trainSchedule) => ({
         ...trainSchedule,
@@ -82,7 +82,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     [timetable]
   );
 
-  const trainSchedulesById: Map<TimetableItemId, TrainScheduleResponseWithTrainId> = useMemo(
+  const trainSchedulesById: Map<TimetableItemId, TrainScheduleWithTrainId> = useMemo(
     () => mapBy(formattedTrainSchedules, 'id'),
     [formattedTrainSchedules]
   );

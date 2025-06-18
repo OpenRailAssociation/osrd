@@ -14,7 +14,7 @@ import {
   storeTrainSchedule,
 } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
 import type {
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
 } from 'reducers/osrdconf/types';
@@ -343,7 +343,7 @@ const handleCreateTimetableItem = async (
   if (newTimetableItems.length === 0) {
     throw new Error('Failed to create paced train');
   }
-  const newPacedTrain: PacedTrainResponseWithPacedTrainId = {
+  const newPacedTrain: PacedTrainWithPacedTrainId = {
     ...newTimetableItems[0],
     id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
   };
@@ -386,7 +386,8 @@ const handleUpdateTimetableItem = async ({
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
 
-  const { id: _id, timetable_id: _timetableId, ...timetableItemBase } = timetableItem;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id, ...timetableItemBase } = timetableItem;
   const timetableItemForUpdate = {
     ...timetableItemBase,
     train_name: trainrun.name,

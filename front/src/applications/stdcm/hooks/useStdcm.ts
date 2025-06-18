@@ -24,11 +24,7 @@ import {
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
-import {
-  getStdcmConf,
-  getStdcmTimetableID,
-  getStdcmInfraID,
-} from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -54,7 +50,6 @@ const useStdcm = ({
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation(['translation', 'stdcm']);
   const osrdconf = useSelector(getStdcmConf);
-  const timetableId = useSelector(getStdcmTimetableID);
   const infraId = useSelector(getStdcmInfraID);
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>();
   const isCancelledRef = useRef(false);
@@ -106,7 +101,6 @@ const useStdcm = ({
     if (formattedResponse.status === 'success') {
       const stdcmTrain: TimetableItem = {
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
-        timetable_id: timetableId,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
         path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),

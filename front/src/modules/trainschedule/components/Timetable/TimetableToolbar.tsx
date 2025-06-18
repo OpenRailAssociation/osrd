@@ -183,11 +183,10 @@ const TimetableToolbar = ({
         paced_trains: PacedTrain[];
       }>(
         (acc, timetableItem) => {
-          const omittedFields = ['id', 'timetable_id'] as const;
           if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-            acc.paced_trains.push(omit(timetableItem, omittedFields));
+            acc.paced_trains.push(omit(timetableItem, ['id']));
           } else {
-            acc.train_schedules.push(omit(timetableItem, omittedFields));
+            acc.train_schedules.push(omit(timetableItem, ['id']));
           }
           return acc;
         },

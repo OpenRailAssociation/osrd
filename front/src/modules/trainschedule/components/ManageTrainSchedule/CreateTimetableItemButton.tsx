@@ -9,9 +9,9 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItem,
-  TrainScheduleResponseWithTrainId,
+  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -70,7 +70,7 @@ const CreateTimetableItemButton = ({
         }).unwrap();
 
         // We can only add one paced train at a time
-        const formattedNewPacedTrain: PacedTrainResponseWithPacedTrainId = {
+        const formattedNewPacedTrain: PacedTrainWithPacedTrainId = {
           ...newPacedTrain.at(0)!,
           id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
         };
@@ -93,7 +93,7 @@ const CreateTimetableItemButton = ({
         }).unwrap();
 
         // We can only add one train schedule at a time
-        const formattedNewTrainSchedule: TrainScheduleResponseWithTrainId = {
+        const formattedNewTrainSchedule: TrainScheduleWithTrainId = {
           ...newTrainSchedule.at(0)!,
           id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
         };
