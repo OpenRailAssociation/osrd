@@ -1727,7 +1727,7 @@ export type PostPacedTrainOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
 export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: ProjectPathTrainResult;
+  [key: string]: SpaceTimeCurve[];
 };
 export type PostPacedTrainProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
@@ -2215,7 +2215,7 @@ export type PostTrainScheduleOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
 export type PostTrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: ProjectPathTrainResult;
+  [key: string]: SpaceTimeCurve[];
 };
 export type PostTrainScheduleProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
@@ -3385,17 +3385,9 @@ export type OccupancyBlockForm = {
     track_section_ranges: TrackRange[];
   };
 };
-export type ProjectPathTrainResult = {
-  /** List of space-time curves sections along the path */
-  space_time_curves: {
-    positions: number[];
-    times: number[];
-  }[];
-} & {
-  /** Departure time of the train */
-  departure_time: string;
-  /** Rolling stock length in mm */
-  rolling_stock_length: number;
+export type SpaceTimeCurve = {
+  positions: number[];
+  times: number[];
 };
 export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;

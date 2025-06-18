@@ -1773,7 +1773,9 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathTrainResult'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SpaceTimeCurve'
   /paced_train/simulation_summary:
     post:
       tags:
@@ -3862,7 +3864,9 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathTrainResult'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SpaceTimeCurve'
   /train_schedule/simulation_summary:
     post:
       tags:
@@ -10245,51 +10249,6 @@ components:
                 type: string
                 maxLength: 255
                 minLength: 1
-    ProjectPathTrainResult:
-      allOf:
-      - type: object
-        description: Project path output is described by time-space points and blocks
-        required:
-        - space_time_curves
-        properties:
-          space_time_curves:
-            type: array
-            items:
-              type: object
-              required:
-              - positions
-              - times
-              properties:
-                positions:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                    minimum: 0
-                  minItems: 2
-                times:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                    minimum: 0
-                  minItems: 2
-            description: List of space-time curves sections along the path
-      - type: object
-        required:
-        - departure_time
-        - rolling_stock_length
-        properties:
-          departure_time:
-            type: string
-            format: date-time
-            description: Departure time of the train
-          rolling_stock_length:
-            type: integer
-            format: int64
-            description: Rolling stock length in mm
-            minimum: 0
-      description: Project path output is described by time-space points and blocks
     ProjectWithStudies:
       allOf:
       - $ref: '#/components/schemas/Project'
@@ -12103,6 +12062,26 @@ components:
           type: number
           format: double
       additionalProperties: false
+    SpaceTimeCurve:
+      type: object
+      required:
+      - positions
+      - times
+      properties:
+        positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          minItems: 2
+        times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          minItems: 2
     SpacingRequirement:
       type: object
       required:
