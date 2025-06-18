@@ -228,7 +228,16 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "ParseError": "Impossible de parser train_id : '{{train_id}}'"
+      "ParseError": "Impossible de parser train_id : '{{train_id}}'",
+
+      "similar_schedules": {
+        "GraphConstructionFailed": "Échec de la construction du graphe",
+        "GraphExplorationFailed": "Échec de l'exploration du graphe : impossible de traiter les points de passage '{{skipped}}' et '{{target_waypoint}}'",
+        "InvalidPath": "Chemin invalide dans la circulation",
+        "NoSearchEnvironment": "Aucun environnement de recherche STDCM configuré — contactez votre administrateur",
+        "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
+        "SpeedLimitNotFound": "Tag de limite de vitesse '{{speed_limit_tag}}' non trouvé"
+      }
     },
     "towedrollingstocks": {
       "Database": "Erreur interne",
