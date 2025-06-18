@@ -12,10 +12,10 @@ import type {
   RollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
+import SimulationReportSheet from 'modules/SimulationReportSheet';
 import type { Train } from 'reducers/osrdconf/types';
 
 import exportTrainCSV from './exportTrainCSV';
-import SimulationReportSheetScenario from './SimulationReportSheetScenario';
 import { useFormattedOperationalPoints } from '../hooks/useFormattedOperationalPoints';
 
 const exportTrainPDF = async (
@@ -28,7 +28,7 @@ const exportTrainPDF = async (
   mapCanvas?: string
 ) => {
   const doc = (
-    <SimulationReportSheetScenario
+    <SimulationReportSheet
       path={path}
       scenarioData={scenarioData}
       trainData={{

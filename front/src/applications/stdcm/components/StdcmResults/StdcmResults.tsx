@@ -7,12 +7,12 @@ import { useSelector } from 'react-redux';
 
 import useConflictsMessages from 'applications/stdcm/hooks/useConflictsMessages';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
+import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
-} from 'applications/stdcm/utils/formatSimulationReportSheet';
-import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import DefaultBaseMap from 'common/Map/DefaultBaseMap';
+} from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
@@ -21,11 +21,11 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
-import SimulationReportSheet from './SimulationReportSheet';
 import StdcmDebugResults from './StdcmDebugResults';
 import StdcmFeedback from './StdcmFeedback';
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
+import StdcmSimulationReportSheet from './StdcmSimulationReportSheet';
 
 type StcdmResultsProps = {
   isCalculationFailed: boolean;
@@ -123,7 +123,7 @@ const StdcmResults = ({
                       <div className="download-simulation">
                         <PDFDownloadLink
                           document={
-                            <SimulationReportSheet
+                            <StdcmSimulationReportSheet
                               stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
                               stdcmData={outputs.results}
                               consist={selectedSimulation.inputs.consist}

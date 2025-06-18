@@ -10,7 +10,7 @@ import type {
   StdcmSimulationInputs,
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
-import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
+import { getStopDurationTime } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
 
 type SimulationTableProps = {

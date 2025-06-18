@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
+import { Duration } from 'utils/duration';
+
 import {
   generateCodeNumber,
   getStopDurationTime,
   getStopDurationAtPosition,
   findAllStops,
   insertMissingStopsInOperationalPointsWithTimes,
-} from 'applications/stdcm/utils/formatSimulationReportSheet';
-import { Duration } from 'utils/duration';
+} from '../formatSimulationReportSheet';
 
 describe('generateCodeNumber', () => {
   it('should return a formatted string', () => {
