@@ -5435,7 +5435,12 @@ components:
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorGraphConstructionFailed'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorGraphExplorationFailed'
       - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorInvalidPath'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorNoSearchEnvironment'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastSimilarSchedulesErrorSpeedLimitNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -6528,6 +6533,52 @@ components:
           type: string
           enum:
           - editoast:search:SearchEngineError
+    EditoastSimilarSchedulesErrorGraphConstructionFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:GraphConstructionFailed
+    EditoastSimilarSchedulesErrorGraphExplorationFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - skipped
+          - target_waypoint
+          properties:
+            skipped:
+              type: object
+            target_waypoint:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:GraphExplorationFailed
     EditoastSimilarSchedulesErrorInvalidPath:
       type: object
       required:
@@ -6547,6 +6598,73 @@ components:
           type: string
           enum:
           - editoast:timetable:similar_schedules:InvalidPath
+    EditoastSimilarSchedulesErrorNoSearchEnvironment:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:NoSearchEnvironment
+    EditoastSimilarSchedulesErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:RollingStockNotFound
+    EditoastSimilarSchedulesErrorSpeedLimitNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - speed_limit_tag
+          properties:
+            speed_limit_tag:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:similar_schedules:SpeedLimitNotFound
     EditoastSpriteErrorsFileNotFound:
       type: object
       required:
