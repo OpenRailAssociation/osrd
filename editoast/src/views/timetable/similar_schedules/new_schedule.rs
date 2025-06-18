@@ -37,6 +37,7 @@ impl Waypoint {
         }
     }
 
+    #[expect(dead_code)]
     pub(super) fn overtake(primary_code: u64, secondary_code: Option<SmolStr>) -> Self {
         Self {
             primary_code,
