@@ -400,7 +400,7 @@ class SpacingRequirementAutomaton(
                     etcsSimulator == null
             ) {
                 TODO(
-                    "Spacing requirements for curve-based signal are only available for " +
+                    "Spacing requirements for curve-based signals are only available for " +
                         "ETCS_LEVEL2 and through StandaloneSimulation"
                 )
             }

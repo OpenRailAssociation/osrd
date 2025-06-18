@@ -11,15 +11,20 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
+import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
+import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
+import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.signaling.SigSystemManager
-import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
@@ -259,25 +264,16 @@ fun runScheduleMetadataExtractor(
     val routingRequirements =
         routingRequirements(
             pathOffsetBuilder,
-            simulator,
+            fullInfra,
             routePath,
             blockPath,
             closedSignalStops,
-            loadedSignalInfra,
-            blockInfra,
             envelopeWithStops,
-            rawInfra,
+            context,
             rollingStock,
         )
     val reportTrain =
-        makeSimpleReportTrain(
-            fullInfra,
-            envelope,
-            trainPath,
-            rollingStock,
-            schedule,
-            pathItemPositions,
-        )
+        makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
     return CompleteReportTrain(
         reportTrain.positions,
         reportTrain.times,
@@ -359,16 +355,18 @@ fun getBlockOffsets(
 
 fun routingRequirements(
     pathOffsetBuilder: PathOffsetBuilder,
-    simulator: SignalingSimulator,
+    fullInfra: FullInfra,
     routePath: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
     sortedClosedSignalStops: List<PathStop>,
-    loadedSignalInfra: LoadedSignalInfra,
-    blockInfra: BlockInfra,
     envelope: EnvelopeInterpolate,
-    rawInfra: RawInfra,
+    // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
+    context: EnvelopeSimContext?,
     rollingStock: RollingStock,
 ): List<RoutingRequirement> {
+    val rawInfra = fullInfra.rawInfra
+    val blockInfra = fullInfra.blockInfra
+
     // count the number of zones in the path
     val zoneCount = routePath.sumOf { rawInfra.getRoutePath(it).size }
 
@@ -436,52 +434,29 @@ fun routingRequirements(
         // find the entry signal for this route. if there is no entry signal,
         // the set deadline is the start of the simulation
         if (blockInfra.blockStartAtBufferStop(firstRouteBlock)) return TimeDelta.ZERO
+        val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
-        // simulate signaling on the train's path with all zones free,
-        // until the start of the route, which is INCOMPATIBLE
-        val zoneStates = mutableListOf<ZoneStatus>()
-        for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
+        val singleEnvelope = envelope.rawEnvelopeIfSingle
+        assert(singleEnvelope != null) {
+            "A single envelope covering whole path is currently expected (used only through standalone simulation)"
+        }
 
-        // TODO: the complexity of finding route set deadlines is currently n^2 of the number of
-        //   blocks in the path. it can be improved upon by only simulating blocks which can
-        //   contain the route's limiting signal
-        val simulatedSignalStates =
-            simulator.evaluate(
-                rawInfra,
-                loadedSignalInfra,
-                blockInfra,
-                blockPath,
-                routePath.toList(),
-                routeStartBlockIndex,
-                zoneStates,
-                ZoneStatus.INCOMPATIBLE,
-            )
-
-        // find the first non-open signal on the path
-        // iterate backwards on blocks from blockIndex to 0, and on signals
-        val limitingSignalSpec =
-            findLimitingSignal(
-                loadedSignalInfra,
-                blockInfra,
-                simulator.sigModuleManager,
-                simulatedSignalStates,
+        val routeCriticalPos =
+            getRouteCriticalPos(
+                fullInfra,
+                routePath,
                 blockPath,
                 blockOffsets,
-                routeStartBlockIndex,
+                zoneCount,
                 signalingTrainStates,
-            ) ?: return null
-        val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
-        val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
-        val limitingSignalOffsetInBlock =
-            blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
+                singleEnvelope!!,
+                etcsSimulator,
+                routeStartBlockIndex,
+                firstRouteBlock,
+            )
 
-        val limitingBlockOffset = blockOffsets[limitingSignalSpec.blockIndex]
-        val signalSightDistance =
-            rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
+        if (routeCriticalPos == null) return null
 
-        // find the location at which establishing the route becomes necessary
-        val routeCriticalPos =
-            limitingBlockOffset + limitingSignalOffsetInBlock - signalSightDistance
         var routeCriticalTime =
             envelope.interpolateArrivalAtClamp(routeCriticalPos.distance.meters).seconds
 
@@ -544,6 +519,140 @@ fun routingRequirements(
         res.add(RoutingRequirement(route, routeSetDeadline.seconds, zoneRequirements))
     }
     return res
+}
+
+private fun getRouteCriticalPos(
+    fullInfra: FullInfra,
+    routePath: StaticIdxList<Route>,
+    blockPath: StaticIdxList<Block>,
+    blockOffsets: OffsetArray<TravelledPath>,
+    zoneCount: Int,
+    signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
+    envelope: Envelope,
+    etcsSimulator: ETCSBrakingSimulator?,
+    routeStartBlockIndex: Int,
+    firstRouteBlock: BlockId,
+): Offset<TravelledPath>? {
+    val blockInfra = fullInfra.blockInfra
+    val simulator = fullInfra.signalingSimulator
+
+    val sigSystemId = blockInfra.getBlockSignalingSystem(firstRouteBlock)
+    val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
+    return if (isCurveBased) {
+        if (
+            simulator.sigModuleManager.getName(sigSystemId) != ETCS_LEVEL2.id ||
+                etcsSimulator == null
+        ) {
+            TODO(
+                "Routing requirements for curve-based signals are only available for " +
+                    "ETCS_LEVEL2 and through StandaloneSimulation"
+            )
+        }
+        getEtcsRouteCriticalPos(
+            blockInfra,
+            blockOffsets,
+            envelope,
+            etcsSimulator,
+            routeStartBlockIndex,
+            firstRouteBlock,
+        )
+    } else {
+        getSightRouteCriticalPos(
+            fullInfra,
+            routePath,
+            blockPath,
+            blockOffsets,
+            signalingTrainStates,
+            zoneCount,
+            routeStartBlockIndex,
+        )
+    }
+}
+
+private fun getEtcsRouteCriticalPos(
+    blockInfra: BlockInfra,
+    blockOffsets: OffsetArray<TravelledPath>,
+    envelope: Envelope,
+    etcsSimulator: ETCSBrakingSimulator,
+    routeStartBlockIndex: Int,
+    firstRouteBlock: BlockId,
+): Offset<TravelledPath> {
+
+    // The braking curve targets the entry signal of the route's first block
+    val signalOffset =
+        blockOffsets[routeStartBlockIndex] +
+            blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+
+    val eoa =
+        etcsSimulator
+            .computeEoaLocations(
+                envelope,
+                listOf(signalOffset),
+                listOf(true), // always routeDelimiter at the start of a route
+                EoaType.ROUTING,
+            )
+            .first()
+    val curvesList = etcsSimulator.computeStopBrakingCurves(envelope, listOf(eoa))
+    val reqPos = curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+    return Offset(reqPos)
+}
+
+private fun getSightRouteCriticalPos(
+    fullInfra: FullInfra,
+    routePath: StaticIdxList<Route>,
+    blockPath: StaticIdxList<Block>,
+    blockOffsets: OffsetArray<TravelledPath>,
+    signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
+    zoneCount: Int,
+    routeStartBlockIndex: Int,
+): Offset<TravelledPath>? {
+    val simulator = fullInfra.signalingSimulator
+    val rawInfra = fullInfra.rawInfra
+    val loadedSignalInfra = fullInfra.loadedSignalInfra
+    val blockInfra = fullInfra.blockInfra
+
+    // simulate signaling on the train's path with all zones free,
+    // until the start of the route, which is INCOMPATIBLE
+    val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
+
+    // TODO: the complexity of finding route set deadlines is currently n^2 of the
+    //   number of blocks in the path. it can be improved upon by only simulating blocks
+    //   which can contain the route's limiting signal
+    val simulatedSignalStates =
+        simulator.evaluate(
+            rawInfra,
+            loadedSignalInfra,
+            blockInfra,
+            blockPath,
+            routePath.toList(),
+            routeStartBlockIndex,
+            zoneStates,
+            ZoneStatus.INCOMPATIBLE,
+        )
+
+    // find the first non-open signal on the path
+    // iterate backwards on blocks from blockIndex to 0, and on signals
+    val limitingSignalSpec =
+        findLimitingSignal(
+            loadedSignalInfra,
+            blockInfra,
+            simulator.sigModuleManager,
+            simulatedSignalStates,
+            blockPath,
+            blockOffsets,
+            routeStartBlockIndex,
+            signalingTrainStates,
+        ) ?: return null
+    val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
+    val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
+    val limitingSignalOffsetInBlock =
+        blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
+
+    val limitingBlockOffset = blockOffsets[limitingSignalSpec.blockIndex]
+    val signalSightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
+
+    // find the location at which establishing the route becomes necessary
+    return limitingBlockOffset + limitingSignalOffsetInBlock - signalSightDistance
 }
 
 /** Create a zone requirement, which embeds all needed properties for conflict detection */
