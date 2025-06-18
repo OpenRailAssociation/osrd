@@ -1,5 +1,3 @@
-use chrono::DateTime;
-use chrono::Utc;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
@@ -7,7 +5,6 @@ use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
-use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use itertools::izip;
@@ -22,15 +19,12 @@ use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
-use super::rolling_stock::RollingStockError;
 use crate::ValkeyClient;
 use crate::ValkeyConnection;
 use crate::client::get_app_version;
 use crate::error::Result;
 use crate::models;
-use crate::models::RollingStock;
 use crate::models::infra::Infra;
-use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
@@ -40,9 +34,11 @@ use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
 
 editoast_common::schemas! {
-    ProjectPathTrainResult,
     ProjectPathForm,
+    SpaceTimeCurve,
 }
+
+pub type SpaceTimeCurves = Vec<SpaceTimeCurve>;
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {
@@ -76,26 +72,6 @@ pub struct SpaceTimeCurve {
     // List of times in ms since `departure_time` associated to a position
     #[schema(min_items = 2)]
     times: Vec<u64>,
-}
-
-/// Project path output is described by time-space points and blocks
-#[derive(Debug, Deserialize, Serialize, ToSchema)]
-pub struct ProjectPathTrainResult {
-    /// Departure time of the train
-    pub departure_time: DateTime<Utc>,
-    /// Rolling stock length in mm
-    pub rolling_stock_length: u64,
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub cached: CachedProjectPathTrainResult,
-}
-
-/// Project path output is described by time-space points and blocks
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-pub struct CachedProjectPathTrainResult {
-    /// List of space-time curves sections along the path
-    #[schema(inline)]
-    pub space_time_curves: Vec<SpaceTimeCurve>,
 }
 
 /// Input for the projection of a train schedule on a path
@@ -153,7 +129,7 @@ impl TrainSimulationDetails {
 pub async fn compute_batch_space_time_curves(
     trains_details: &Vec<TrainSimulationDetails>,
     path_projection: &PathProjection<'_>,
-) -> HashMap<i64, Vec<SpaceTimeCurve>> {
+) -> HashMap<i64, SpaceTimeCurves> {
     let mut space_time_curves = HashMap::new();
 
     for train_detail in trains_details {
@@ -169,7 +145,7 @@ pub async fn compute_batch_space_time_curves(
 fn compute_space_time_curves(
     project_path_input: &TrainSimulationDetails,
     path_projection: &PathProjection,
-) -> Vec<SpaceTimeCurve> {
+) -> SpaceTimeCurves {
     let train_path = PathProjection::new(&project_path_input.train_path);
     let intersections = path_projection.get_intersections(&project_path_input.train_path);
     let positions = &project_path_input.positions;
@@ -305,26 +281,11 @@ pub async fn compute_projected_train_paths(
     infra: &Infra,
     trains_schedules: Vec<models::TrainSchedule>,
     electrical_profile_set_id: Option<i64>,
-) -> Result<HashMap<i64, ProjectPathTrainResult>> {
+) -> Result<HashMap<i64, SpaceTimeCurves>> {
     let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
 
-    let (rolling_stocks, _): (Vec<_>, _) = RollingStock::retrieve_batch(
-        conn,
-        trains_schedules
-            .iter()
-            .map::<String, _>(|t| t.rolling_stock_name.clone()),
-    )
-    .await
-    .map_err(RollingStockError::from)?;
-
-    // 1. Get rolling stock length
-    let rolling_stock_length: HashMap<_, _> = rolling_stocks
-        .into_iter()
-        .map(|rs| (rs.name, rs.length))
-        .collect();
-
-    // 2. Get train simulations
+    // 1. Get train simulations
     let simulations = train_simulation_batch(
         conn,
         valkey_client.clone(),
@@ -335,7 +296,7 @@ pub async fn compute_projected_train_paths(
     )
     .await?;
 
-    // 3. Extracts train simulation details and computes unique hashes for projected train paths.
+    // 2. Extracts train simulation details and computes unique hashes for projected train paths.
     let trains_details = extract_train_details(&trains_schedules, simulations).await?;
 
     let mut trains_hash_values = vec![];
@@ -344,14 +305,14 @@ pub async fn compute_projected_train_paths(
         t.compute_projection_hash_with_versioning(infra.id, infra.version, &track_section_ranges)
     }));
 
-    // 4. Retrieve cached projection
+    // 3. Retrieve cached projection
     let (miss_cache, mut hit_cache) =
         retrieve_cached_projection(&mut valkey_conn, &trains_hash_values, &trains_details).await?;
 
-    // 5. Compute space time curves for all miss cache
+    // 4. Compute space time curves for all miss cache
     let space_time_curves = compute_batch_space_time_curves(&miss_cache, &path_projection).await;
 
-    // 6. Store the projection in the cache (using pipeline)
+    // 5. Store the projection in the cache (using pipeline)
     let trains_hash_values: HashMap<_, _> = trains_details
         .iter()
         .map(|t| t.train_id)
@@ -360,50 +321,28 @@ pub async fn compute_projected_train_paths(
     let mut new_items = vec![];
     for train_id in miss_cache.iter().map(|t| t.train_id) {
         let hash = &trains_hash_values[&train_id];
-        let cached_value: CachedProjectPathTrainResult = CachedProjectPathTrainResult {
-            space_time_curves: space_time_curves
-                .get(&train_id)
-                .expect("Space time curves not available for train")
-                .clone(),
-        };
+        let cached_value = space_time_curves
+            .get(&train_id)
+            .expect("Space time curves not available for train")
+            .clone();
         hit_cache.push((cached_value.clone(), train_id));
         new_items.push((hash, cached_value));
     }
     valkey_conn.json_set_bulk(&new_items).await?;
 
-    let train_map: HashMap<i64, TrainSchedule> =
-        trains_schedules.into_iter().map(|ts| (ts.id, ts)).collect();
-
-    // 7. Build the projection response
-    let mut project_path_result = HashMap::new();
-    for (cached, train_id) in hit_cache {
-        let train = train_map.get(&train_id).expect("Train not found");
-        let length = rolling_stock_length
-            .get(&train.rolling_stock_name)
-            .expect("Rolling stock length not found");
-
-        project_path_result.insert(
-            train_id,
-            ProjectPathTrainResult {
-                departure_time: train.start_time,
-                rolling_stock_length: units::millimeter::from(*length) as u64,
-                cached,
-            },
-        );
-    }
-
-    Ok(project_path_result)
+    // 6. Build the projection response
+    Ok(hit_cache
+        .into_iter()
+        .map(|(cached, train_id)| (train_id, cached))
+        .collect())
 }
 
 async fn retrieve_cached_projection(
     valkey_conn: &mut ValkeyConnection,
     trains_hash_values: &[String],
     trains_details: &[TrainSimulationDetails],
-) -> Result<(
-    Vec<TrainSimulationDetails>,
-    Vec<(CachedProjectPathTrainResult, i64)>,
-)> {
-    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> = valkey_conn
+) -> Result<(Vec<TrainSimulationDetails>, Vec<(SpaceTimeCurves, i64)>)> {
+    let cached_projections: Vec<Option<SpaceTimeCurves>> = valkey_conn
         .json_get_bulk(trains_hash_values)
         .await?
         .collect();

@@ -32,7 +32,7 @@ use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::ProjectPathForm;
-use crate::views::projection::ProjectPathTrainResult;
+use crate::views::projection::SpaceTimeCurves;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
@@ -556,8 +556,7 @@ async fn simulation(
     tag = "paced_train",
     request_body = ProjectPathForm,
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),
-    ),
+        (status = 200, description = "Project Path Output", body = HashMap<i64, Vec<SpaceTimeCurve>>)),
 )]
 async fn project_path(
     State(AppState {
@@ -573,7 +572,7 @@ async fn project_path(
         track_section_ranges,
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
-) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+) -> Result<Json<HashMap<i64, SpaceTimeCurves>>> {
     let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
@@ -713,7 +712,6 @@ mod tests {
 
     use crate::error::InternalError;
     use crate::models;
-    use crate::models::fixtures::PartialProjectPathTrainResult;
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_paced_train_with_exceptions;
@@ -731,6 +729,7 @@ mod tests {
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
+    use crate::views::timetable::paced_train::SpaceTimeCurves;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
@@ -1459,13 +1458,8 @@ mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let train_schedule_base = TrainSchedule {
-            rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
-        };
+        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let paced_train_valid =
             create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
         let paced_train_fail = simple_paced_train_changeset(timetable.id)
@@ -1495,9 +1489,8 @@ mod tests {
                 }
             ],
         }));
-        let response: HashMap<i64, PartialProjectPathTrainResult> =
+        let response: HashMap<i64, SpaceTimeCurves> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-
         // EXPECT
         assert_eq!(response.len(), 1);
         assert_eq!(
