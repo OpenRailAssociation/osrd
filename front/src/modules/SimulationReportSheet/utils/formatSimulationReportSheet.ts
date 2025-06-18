@@ -1,11 +1,14 @@
+import type { TFunction } from 'i18next';
+
+import { type StdcmResultsOperationalPoint, StdcmStopTypes } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
-
-import { type StdcmResultsOperationalPoint, StdcmStopTypes } from '../types';
+import { capitalizeFirstLetter } from 'utils/strings';
 
 function generateRandomString(length: number): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
@@ -296,3 +299,17 @@ export function getOperationalPointsWithTimes(
   );
   return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 }
+
+export const getArrivalTimes = (step: StdcmPathStep, t: TFunction<'stdcm'>) => {
+  if (step.isVia) return '';
+  return step.arrival && step.arrivalType === 'preciseTime'
+    ? dateToHHMMSS(step.arrival, { withoutSeconds: true })
+    : t('reportSheet.asap');
+};
+
+export const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_code;
+
+export const getStopType = (step: StdcmPathStep, t: TFunction<'stdcm'>) =>
+  !step.isVia
+    ? t('reportSheet.serviceStop')
+    : capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`));
