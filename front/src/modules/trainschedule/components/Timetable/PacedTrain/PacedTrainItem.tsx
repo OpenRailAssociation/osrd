@@ -22,7 +22,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainId,
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
   TrainId,
@@ -185,7 +185,7 @@ const PacedTrainItem = ({
       return;
     }
 
-    const formattedPacedTrainResponse: PacedTrainResponseWithPacedTrainId = {
+    const formattedPacedTrainResponse: PacedTrainWithPacedTrainId = {
       ...pacedTrainResult,
       id: formatEditoastIdToPacedTrainId(pacedTrainResult.id),
     };

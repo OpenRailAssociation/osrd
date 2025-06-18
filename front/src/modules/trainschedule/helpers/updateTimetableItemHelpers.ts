@@ -1,11 +1,11 @@
 import { osrdEditoastApi, type TrainSchedule, type PacedTrain } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainId,
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
   TrainScheduleId,
-  TrainScheduleResponseWithTrainId,
+  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import {
@@ -47,7 +47,7 @@ async function createTrainSchedule(
   dispatch: AppDispatch,
   timetableId: number,
   trainSchedule: TrainSchedule
-): Promise<TrainScheduleResponseWithTrainId> {
+): Promise<TrainScheduleWithTrainId> {
   const newTrainSchedules = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.initiate({
       id: timetableId,
@@ -64,7 +64,7 @@ async function createPacedTrain(
   dispatch: AppDispatch,
   timetableId: number,
   pacedTrain: PacedTrain
-): Promise<PacedTrainResponseWithPacedTrainId> {
+): Promise<PacedTrainWithPacedTrainId> {
   const newPacedTrains = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
       id: timetableId,
@@ -119,7 +119,7 @@ export async function storeTrainSchedule(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
-): Promise<TrainScheduleResponseWithTrainId> {
+): Promise<TrainScheduleWithTrainId> {
   if (isTrainScheduleId(timetableItemIdToUpdate)) {
     await updateTrainSchedule(dispatch, timetableItemIdToUpdate, trainSchedule);
     const updatedTrainSchedule = {
@@ -147,7 +147,7 @@ export async function storePacedTrain(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
-): Promise<PacedTrainResponseWithPacedTrainId> {
+): Promise<PacedTrainWithPacedTrainId> {
   if (isPacedTrainId(timetableItemIdToUpdate)) {
     await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
     const updatedPacedTrain = {

@@ -14,7 +14,7 @@ import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/o
 import type {
   TimetableItemId,
   TimetableItem,
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
 } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -232,7 +232,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
           await putPacedTrainById({
             id: editoastPacedTrainId,
             body: {
-              ...(timetableItem as PacedTrainResponseWithPacedTrainId),
+              ...(timetableItem as PacedTrainWithPacedTrainId),
               start_time: newDeparture.toISOString(),
             },
           });

@@ -15,7 +15,7 @@ import type {
   TimetableItemId,
   TrainId,
   TrainScheduleId,
-  TrainScheduleResponseWithTrainId,
+  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
@@ -37,7 +37,7 @@ type TrainScheduleItemProps = {
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: TrainScheduleId) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponseWithTrainId[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleWithTrainId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
@@ -120,7 +120,7 @@ const TrainScheduleItem = ({
           id: trainDetail.timetable_id,
           body: [newTrain],
         }).unwrap();
-        const formattedTrainScheduleResponse: TrainScheduleResponseWithTrainId = {
+        const formattedTrainScheduleResponse: TrainScheduleWithTrainId = {
           ...trainScheduleResponse,
           id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
         };

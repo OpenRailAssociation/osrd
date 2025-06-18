@@ -16,9 +16,9 @@ import { Loader } from 'common/Loaders';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItem,
-  TrainScheduleResponseWithTrainId,
+  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
@@ -103,7 +103,7 @@ const ImportTimetableItemTrainsList = ({
         trainSchedulePayloads = generateTrainSchedulesPayloads(formattedTrainsList);
       }
 
-      let formattedTrainSchedules: TrainScheduleResponseWithTrainId[] = [];
+      let formattedTrainSchedules: TrainScheduleWithTrainId[] = [];
 
       if (trainSchedulePayloads.length) {
         const trainSchedules = await postTrainSchedule({
@@ -117,7 +117,7 @@ const ImportTimetableItemTrainsList = ({
         }));
       }
 
-      let formattedPacedTrains: PacedTrainResponseWithPacedTrainId[] = [];
+      let formattedPacedTrains: PacedTrainWithPacedTrainId[] = [];
       if (pacedTrainPayloads.length) {
         const pacedTrains = await postPacedTrain({
           id: timetableId,

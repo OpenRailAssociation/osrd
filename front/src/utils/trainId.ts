@@ -11,7 +11,7 @@ import type {
   IndexedOccurrenceId,
   OccurrenceId,
   PacedTrainId,
-  PacedTrainResponseWithPacedTrainId,
+  PacedTrainWithPacedTrainId,
   TimetableItem,
   TrainId,
   TrainScheduleId,
@@ -65,7 +65,7 @@ export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occur
 
 export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItem
-): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrainId(timetableItem.id);
+): timetableItem is PacedTrainWithPacedTrainId => isPacedTrainId(timetableItem.id);
 
 export const isPacedTrainWithDetails = (
   timetableItem: TimetableItemWithDetails

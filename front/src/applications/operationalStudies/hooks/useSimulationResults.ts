@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PacedTrainResponseWithPacedTrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
@@ -124,7 +124,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
       .toISOString();
 
-    const updatedSelectedPacedTrain: PacedTrainResponseWithPacedTrainId = {
+    const updatedSelectedPacedTrain: PacedTrainWithPacedTrainId = {
       ...selectedPacedTrain,
       id: formatEditoastIdToPacedTrainId(selectedPacedTrain.id),
       start_time: selectedOccurrenceStartTime,
