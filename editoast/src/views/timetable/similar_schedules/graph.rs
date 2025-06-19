@@ -9,6 +9,8 @@ use crate::views::timetable::similar_schedules::new_schedule;
 use crate::views::timetable::similar_schedules::new_schedule::Segment;
 use crate::views::timetable::similar_schedules::past_schedule;
 
+use super::SimilarSchedulesError;
+
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(super) struct Waypoint {
     pub(super) primary_code: u64,
@@ -107,16 +109,21 @@ impl Graph {
         &self,
         train_location: &new_schedule::Waypoint,
         target_location: &new_schedule::Waypoint,
-    ) -> Option<HashSet<past_schedule::Name>> {
+    ) -> Result<Option<HashSet<past_schedule::Name>>, SimilarSchedulesError> {
         let from = self
             .cich_index
             .get(&train_location.primary_code())
             .and_then(|map| map.get(&train_location.secondary_code()))
-            .expect("graph construction fail");
-        let to = self
+            .ok_or(SimilarSchedulesError::GraphConstructionFailed)?;
+
+        let to = match self
             .cich_index
             .get(&target_location.primary_code())
-            .and_then(|map| map.get(&target_location.secondary_code()))?;
+            .and_then(|map| map.get(&target_location.secondary_code()))
+        {
+            Some(to) => to,
+            None => return Ok(None),
+        };
 
         let aetoile = petgraph::algo::astar(&self.graph, *from, |n| n == *to, |_| 1, |_| 0);
 
@@ -129,9 +136,9 @@ impl Graph {
                     let on_path = &self.graph.node_weight(node).unwrap().schedules;
                     schedules = schedules.intersection(on_path).cloned().collect();
                 }
-                Some(schedules)
+                Ok(Some(schedules))
             }
-            Some(_) | None => None,
+            Some(_) | None => Ok(None),
         }
     }
 
@@ -186,9 +193,9 @@ impl MatchingState {
         !self.path.is_empty()
     }
 
-    pub(super) fn advance(mut self) -> Self {
+    pub(super) fn advance(mut self) -> Result<Self, SimilarSchedulesError> {
         let Some(target_waypoint) = self.path.pop_front() else {
-            return self;
+            return Ok(self);
         };
 
         tracing::debug!(
@@ -201,19 +208,20 @@ impl MatchingState {
 
         let (schedules, current_waypoint, to_skip) = match (
             self.graph
-                .find_successor(&self.current_waypoint, &target_waypoint),
+                .find_successor(&self.current_waypoint, &target_waypoint)?,
             self.skipped,
         ) {
             (Some(schedules), _) => (schedules, target_waypoint, None),
             (None, None) => (HashSet::new(), self.current_waypoint, Some(target_waypoint)),
             (None, Some(skipped)) => {
-                panic!(
-                    "graph exploration failed: having to skip both successive waypoints {skipped:?} and {target_waypoint:?}",
-                );
+                return Err(SimilarSchedulesError::GraphExplorationFailed {
+                    skipped,
+                    target_waypoint,
+                });
             }
         };
 
-        Self {
+        Ok(Self {
             correct_schedules_so_far: if self.correct_schedules_so_far.is_empty() {
                 schedules
             } else if schedules.is_empty() {
@@ -228,6 +236,6 @@ impl MatchingState {
             path: self.path,
             graph: self.graph,
             skipped: to_skip,
-        }
+        })
     }
 }

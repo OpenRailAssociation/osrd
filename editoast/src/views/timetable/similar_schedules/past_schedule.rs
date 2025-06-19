@@ -64,10 +64,13 @@ impl PastSchedule {
     }
 }
 
+type SegmentKey = ((u64, Option<SmolStr>), (u64, Option<SmolStr>));
+type SegmentIndex = HashMap<SegmentKey, HashSet<usize>>;
+
 #[derive(Debug, Default)]
 pub(super) struct Pool {
     schedules: Vec<PastSchedule>,
-    segment_index: HashMap<((u64, Option<SmolStr>), (u64, Option<SmolStr>)), HashSet<usize>>,
+    segment_index: SegmentIndex,
 }
 
 impl Pool {

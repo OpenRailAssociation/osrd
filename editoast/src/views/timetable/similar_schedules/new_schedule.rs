@@ -1,9 +1,10 @@
 use std::collections::VecDeque;
 
 use itertools::Itertools;
+use serde::Serialize;
 use smol_str::SmolStr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub(super) struct Waypoint {
     primary_code: u64,
@@ -11,7 +12,7 @@ pub(super) struct Waypoint {
     kind: Kind,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub(super) enum Kind {
     PassingBy,
@@ -36,6 +37,7 @@ impl Waypoint {
         }
     }
 
+    #[expect(dead_code)]
     pub(super) fn overtake(primary_code: u64, secondary_code: Option<SmolStr>) -> Self {
         Self {
             primary_code,
