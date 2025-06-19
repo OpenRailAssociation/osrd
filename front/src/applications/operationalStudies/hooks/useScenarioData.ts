@@ -110,6 +110,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     simulateTimetableItems,
     allTrainsSimulated,
     removeSimulatedTimetableItems,
+    updateSimulatedTimetableItemDepartureTime,
   } = useLazySimulateTrains({
     infraId: scenario.infra_id,
     electricalProfileSetId,
@@ -258,10 +259,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
 
-      simulateTimetableItems([updateTimetableItem]);
+      updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
       updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
-
-      // fetch conflicts
       refetchConflicts();
     },
     [timetableItems]

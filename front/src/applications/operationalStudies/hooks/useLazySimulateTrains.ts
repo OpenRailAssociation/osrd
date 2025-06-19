@@ -8,6 +8,7 @@ import formatTimetableItemSummaries from 'modules/simulationResult/helpers/forma
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { addDurationToDate } from 'utils/duration';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
@@ -98,10 +99,30 @@ export default function useLazySimulateTrains({
     });
   }, []);
 
+  const updateSimulatedTimetableItemDepartureTime = useCallback(
+    (id: TimetableItemId, newDeparture: Date) => {
+      setSimulatedTrainsById((prev) => {
+        const result = prev.get(id);
+        if (!result) {
+          return prev;
+        }
+        const next = new Map(prev);
+        next.set(id, {
+          ...result,
+          startTime: newDeparture,
+          arrivalTime: result.duration ? addDurationToDate(newDeparture, result.duration) : null,
+        });
+        return next;
+      });
+    },
+    []
+  );
+
   return {
     simulatedTrainsById,
     simulateTimetableItems,
     removeSimulatedTimetableItems,
+    updateSimulatedTimetableItemDepartureTime,
     allTrainsSimulated: loaderRef.current && loaderRef.current.pending.length === 0,
   };
 }
