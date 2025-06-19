@@ -147,6 +147,12 @@ const StdcmViewContent = ({
     }
   }, [isRejected]);
 
+  useEffect(() => {
+    if (completedSimulations.length > 0 && resultSectionRef.current) {
+      resultSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [completedSimulations.length]);
+
   /*
    * After the new content is rendered, this effect adjusts the scroll to compensate for any shift in the stdcmResult section.
    * It compares the stdcmResult section position before the change (stored in previousResultSectionOffsetRef)

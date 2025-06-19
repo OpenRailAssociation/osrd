@@ -1,5 +1,3 @@
-import { useEffect, useRef } from 'react';
-
 import { Button } from '@osrd-project/ui-core';
 import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -21,19 +19,13 @@ const StdcmWarningBox = ({
   removeDestinationArrivalTime,
 }: StdcmWarningBoxProps) => {
   const { t } = useTranslation('stdcm');
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (errorType && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [errorType]);
 
   const hasInvalidFields = (errorDetails?.invalidFields?.length ?? 0) > 0;
   const hasMissingFields = (errorDetails?.missingFields?.length ?? 0) > 0;
   const hasRouteErrors = (errorDetails?.routeErrors?.length ?? 0) > 0;
 
   return (
-    <div ref={ref} data-testid="warning-box" className="warning-box">
+    <div data-testid="warning-box" className="warning-box">
       <span>
         <Alert variant="fill" size="lg" />
       </span>
