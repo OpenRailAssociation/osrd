@@ -23,8 +23,8 @@ const generateRollupBaseConfig = () => ({
   plugins: [
     nodeResolve({ rootDir }),
     eslint({
-      throwOnError: true,
-      throwOnWarning: true,
+      throwOnError: !process.env.ROLLUP_WATCH,
+      throwOnWarning: !process.env.ROLLUP_WATCH,
     }),
     typescript(),
     postcss({
