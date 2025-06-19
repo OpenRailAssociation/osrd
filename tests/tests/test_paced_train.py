@@ -31,10 +31,151 @@ def _update_simulation_with_mareco_allowances(
     return body
 
 
-def test_get_and_update_paced_train_result(
+def test_put_paced_train(
     west_to_south_east_paced_train: Sequence[Any],
-    small_infra: Infra,
     session: Session,
+    small_infra: Infra,
+):
+    paced_train = west_to_south_east_paced_train[0]
+    paced_train_id = paced_train["id"]
+
+    exception = {
+        "key": "exception_key",
+        "disabled": False,
+        "rolling_stock": {
+            "rolling_stock_name": "etcs_rolling_stock",
+            "comfort": "AIR_CONDITIONING",
+        },
+    }
+
+    paced_train["train_name"] = "update_train_name"
+    paced_train["exceptions"] = [exception]
+
+    update_response = session.put(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+    )
+    update_response.raise_for_status()
+
+    updated_paced_train = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}"
+    ).json()
+
+    assert updated_paced_train["train_name"] == "update_train_name"
+    assert updated_paced_train["exceptions"] == [exception]
+
+
+def test_get_paced_train_with_exception_path(
+    west_to_south_east_paced_train: Sequence[Any], small_infra: Infra, session: Session
+):
+    paced_train = west_to_south_east_paced_train[0]
+    paced_train_id = paced_train["id"]
+
+    # Get base paced train path
+    paced_train_path_result = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/path?infra_id={small_infra.id}"
+    ).json()
+
+    # Add exception to the paced train
+    exception = {
+        "key": "exception_key",
+        "disabled": False,
+        "path_and_schedule": {
+            "power_restrictions": [],
+            "schedule": [],
+            "path": [
+                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
+                {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
+            ],
+            "margins": {
+                "boundaries": [],
+                "values": ["5%"],
+            },
+        },
+        "initial_speed": {"value": 20.0},
+    }
+    paced_train["exceptions"] = [exception]
+    update_response = session.put(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+    )
+    assert update_response.status_code == 204
+    # Get exception path
+    exception_path_result = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/path?infra_id={small_infra.id}&exception_key=exception_key"
+    ).json()
+    base_track_sections = [
+        tsr["track_section"] for tsr in paced_train_path_result["track_section_ranges"]
+    ]
+    exception_track_sections = [
+        tsr["track_section"] for tsr in exception_path_result["track_section_ranges"]
+    ]
+
+    # Check if the response is different from paced train
+    assert base_track_sections != exception_track_sections
+    assert base_track_sections == [
+        "TA2",
+        "TA5",
+        "TA7",
+        "TC2",
+        "TD1",
+        "TD3",
+        "TH0",
+        "TH1",
+    ]
+    # Check if the exception path is present in track_sections, the first is TA0 and last is TG4
+    assert exception_track_sections == [
+        "TA0",
+        "TA6",
+        "TC1",
+        "TD0",
+        "TD2",
+        "TG0",
+        "TG1",
+        "TG4",
+    ]
+
+
+def test_get_paced_train_with_exception_simulation(
+    west_to_south_east_paced_train: Sequence[Any], small_infra: Infra, session: Session
+):
+    paced_train = west_to_south_east_paced_train[0]
+    paced_train_id = paced_train["id"]
+
+    # Get base paced train simulation
+    paced_train_simulation_result = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}"
+    ).json()
+
+    # Add exception to the paced train
+    exception = {
+        "key": "exception_key",
+        "disabled": False,
+        "path_and_schedule": {
+            "path": [
+                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
+                {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
+            ],
+            "schedule": [],
+            "margins": {"boundaries": [], "values": ["0%"]},
+            "power_restrictions": [],
+        },
+        "initial_speed": {"value": 20.0},
+    }
+    paced_train["exceptions"] = [exception]
+    update_response = session.put(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
+    )
+    assert update_response.status_code == 204
+    # Get exception path
+    exception_simulation_result = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/simulation?infra_id={small_infra.id}&exception_key=exception_key"
+    ).json()
+
+    # Check if the response is different from paced train
+    assert exception_simulation_result != paced_train_simulation_result
+
+
+def test_get_and_update_paced_train_result(
+    west_to_south_east_paced_train: Sequence[Any], small_infra: Infra, session: Session
 ):
     paced_train = west_to_south_east_paced_train[0]
     paced_train_id = paced_train["id"]
