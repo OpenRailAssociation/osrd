@@ -74,7 +74,7 @@ const useLazyProjectTrains = ({
     });
   }, []);
 
-  const updateTimetableItemDepartureTime = useCallback(
+  const updateProjectedTimetableItemDepartureTime = useCallback(
     (id: TimetableItemId, newDeparture: Date) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
@@ -96,7 +96,7 @@ const useLazyProjectTrains = ({
     projectedTrainsById,
     projectTimetableItems,
     removeProjectedTimetableItems,
-    updateTimetableItemDepartureTime,
+    updateProjectedTimetableItemDepartureTime,
     allTrainsProjected: Boolean(loaderRef.current && loaderRef.current.pending.length === 0),
   };
 };
