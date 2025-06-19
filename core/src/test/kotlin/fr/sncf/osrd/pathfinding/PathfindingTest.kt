@@ -269,94 +269,72 @@ class PathfindingTest : ApiTest() {
         )
     }
 
-    /*
     @Test
-    @Throws(Exception::class)
     fun testMiddleStop() {
-        val waypointStart =
-            PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
-        val waypointMid =
-            PathfindingWaypoint("ne.micro.foo_to_bar", 5000.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints: Array<Array<PathfindingWaypoint>> =
-            Array(3) { makeBidirectionalEndPoint(waypointStart) }
-        waypoints[1] = makeBidirectionalEndPoint(waypointMid)
-        waypoints[2] = makeBidirectionalEndPoint(waypointEnd)
+        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsMid = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(5000.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val requestBody =
-            PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
-            )
-        val result =
-            TakesUtils.readBodyResponse(
-                PathfindingBlocksEndpoint(infraManager)
-                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
-            )
-        val response = PathfindingResult.adapterResult.fromJson(result)!!
-        AssertionsForClassTypes.assertThat(response.length).isEqualTo(10200.0)
-        val expectedRoutePaths =
-            listOf(
-                RJSRoutePath(
-                    "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                    listOf(
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_b",
-                            100.0,
-                            175.0,
-                            EdgeDirection.START_TO_STOP
-                        )
-                    ),
-                    SIGNALING_TYPE
-                ),
-                RJSRoutePath(
-                    "rt.tde.foo_b-switch_foo->buffer_stop_c",
-                    listOf(
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_b",
-                            175.0,
-                            200.0,
-                            EdgeDirection.START_TO_STOP
-                        ),
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_to_bar",
-                            0.0,
-                            10000.0,
-                            EdgeDirection.START_TO_STOP
-                        ),
-                        RJSDirectionalTrackRange(
-                            "ne.micro.bar_a",
-                            0.0,
-                            100.0,
-                            EdgeDirection.START_TO_STOP
-                        )
-                    ),
-                    SIGNALING_TYPE
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsMid, waypointsEnd),
+                    "tiny_infra/infra.json"
                 )
             )
-        AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        val expectedPathWaypoints =
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
+        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10200.meters)
+        assertEquals(
+            listOf(Offset(0.meters), Offset(5100.meters), Offset(parsed.length.distance)),
+            parsed.pathItemPositions
+        )
+        assertEquals(
             listOf(
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.foo_b", 100.0),
-                    0.0,
-                    false,
-                    "op.station_foo"
-                ),
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.foo_to_bar", 5000.0),
-                    5100.0,
-                    false,
-                    null
-                ),
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.bar_a", 100.0),
-                    10200.0,
-                    false,
-                    "op.station_bar"
+                    "[il.sig.C3-BAL];[buffer_stop_b, tde.foo_b-switch_foo];[]",
+                    "[il.sig.C3-BAL, il.sig.S7-BAL];[tde.foo_b-switch_foo, tde.track-bar];[il.switch_foo-A_B1]",
+                    "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"
                 )
-            )
-        AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
+                .map { "block.${md5(it)}" },
+            parsed.blocks
+        )
+
+        assertEquals(
+            listOf(
+                "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                "rt.tde.foo_b-switch_foo->buffer_stop_c"
+            ),
+            parsed.routes
+        )
+        assertEquals(
+            listOf(
+                DirectionalTrackRange(
+                    "ne.micro.foo_b",
+                    Offset(100.meters),
+                    Offset(200.meters),
+                    EdgeDirection.START_TO_STOP
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.foo_to_bar",
+                    Offset(0.meters),
+                    Offset(10_000.meters),
+                    EdgeDirection.START_TO_STOP
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.bar_a",
+                    Offset(0.meters),
+                    Offset(100.meters),
+                    EdgeDirection.START_TO_STOP
+                )
+            ),
+            parsed.trackSectionRanges
+        )
     }
 
+    /*
     @Test
     @DisplayName("If no path exists, throws a generic error message")
     @Throws(Exception::class)
