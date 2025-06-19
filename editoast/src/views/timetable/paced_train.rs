@@ -842,7 +842,36 @@ mod tests {
             .bytes();
         assert_eq!(
             &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: exceptions: Duplicate exception key: duplicated_key_1 at line 1 column 1328"
+            "Failed to deserialize the JSON body into the target type: Duplicate exception key: 'duplicated_key_1'"
+        )
+    }
+
+    #[rstest]
+    async fn update_paced_train_with_invalid_exceptions_occurrence_index() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+
+        let mut paced_train_base = simple_paced_train_base();
+        paced_train_base.paced.time_window = Duration::minutes(60).try_into().unwrap();
+        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
+        paced_train_base.exceptions =
+            vec![simple_modified_exception_with_change_groups("key_1", 5)];
+
+        let request = app
+            .put(format!("/paced_train/{}", paced_train.id).as_str())
+            .json(&json!(&paced_train_base));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .bytes();
+
+        assert_eq!(
+            &String::from_utf8(response).unwrap(),
+            "Failed to deserialize the JSON body into the target type: Modified exception 'key_1' references invalid occurrence index 5"
         )
     }
 
