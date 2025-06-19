@@ -129,7 +129,7 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
         exception_type: ExceptionType::Created {},
         disabled: false,
         train_name: Some(TrainNameChangeGroup {
-            value: "exception_train_name".into(),
+            value: "created_exception_train_name".into(),
         }),
         constraint_distribution: Some(ConstraintDistributionChangeGroup {
             value: Distribution::Mareco,
@@ -213,7 +213,7 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
             value: Some(NonBlankString("GB".into())),
         }),
         start_time: Some(StartTimeChangeGroup {
-            value: DateTime::<Utc>::from_str("2025-05-05T20:05:00+02:00").unwrap(),
+            value: DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
         }),
     }
 }
@@ -224,6 +224,10 @@ pub fn create_modified_exception_with_change_groups(
 ) -> PacedTrainException {
     let mut exception = create_created_exception_with_change_groups(key);
     exception.exception_type = ExceptionType::Modified { occurrence_index };
+    exception.start_time = None;
+    exception.train_name = Some(TrainNameChangeGroup {
+        value: "modified_exception_train_name".to_string(),
+    });
     exception
 }
 

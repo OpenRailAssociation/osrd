@@ -1,4 +1,5 @@
 from typing import Any
+from collections import Counter
 
 import pytest
 from requests import Session
@@ -234,17 +235,6 @@ def test_conflicts_with_reception_on_closed_signal(
     response_project_path.raise_for_status()
 
 
-def _create_paced_train_exception_payload(key: str = "exception_key_1"):
-    return {
-        "key": key,
-        "disabled": False,
-        "start_time": {
-            "value": "2024-05-22T08:16:00.000Z",
-        },
-        "train_name": {"value": "exception_train_name"},
-    }
-
-
 @pytest.mark.parametrize(
     ["paced_train_interval", "expected_conflict_types"],
     [
@@ -288,7 +278,7 @@ def test_paced_train_conflicts(
         "start_time": "2024-05-22T08:00:00.000Z",
         "train_name": "paced train",
         "paced": {"time_window": "PT1H", "interval": paced_train_interval},
-        "exceptions": [_create_paced_train_exception_payload()],
+        "exceptions": [],
     }
 
     paced_train_response = session.post(
@@ -306,6 +296,129 @@ def test_paced_train_conflicts(
         conflict["conflict_type"] for conflict in conflicts_response.json()
     }
     assert actual_conflicts == expected_conflict_types
+
+
+# This test verifies that conflicts between a paced train and its exceptions are correctly detected.
+# It focuses on scenarios where exceptions override the default behavior of paced train occurrences,
+# either by changing the start time or modifying the train name at a specific index.
+#
+# The paced train is scheduled with:
+#   - a base `start_time` of "2024-05-22T08:00:00.000Z"
+#   - a pacing interval of 15 minutes ("PT15M")
+#
+# It defines 3 exceptions:
+# 1. `created_ex_key` creates a new train occurrence at "2024-05-22T08:01:00.000Z"
+# 2. `modified_ex_key` modifies the 3rd occurrence (index=2), normally scheduled at "2024-05-22T08:30:00.000Z"
+# 3. `created_ex_conflict_modified_key` creates a new occurrence also at "2024-05-22T08:30:00.000Z"
+#
+# This results in two expected conflicts:
+# - One between the base occurrence at 08:00 and the new exception at 08:01
+# - Another between the modified occurrence at 08:30 and the newly created conflicting exception at the same time
+def test_paced_train_with_exceptions_conflicts(
+    small_infra: Infra,
+    timetable_id: int,
+    fast_rolling_stock: int,
+    session: Session,
+):
+    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    paced_train_payload = {
+        "comfort": "STANDARD",
+        "constraint_distribution": "STANDARD",
+        "initial_speed": 0,
+        "labels": [],
+        "options": {"use_electrical_profiles": False},
+        "path": [
+            {"id": "start", "track": "TC1", "offset": 185000},
+            {"id": "end", "track": "TD0", "offset": 24820000},
+        ],
+        "power_restrictions": [],
+        "rolling_stock_name": "fast_rolling_stock",
+        "schedule": [
+            {
+                "at": "start",
+            },
+            {
+                "at": "end",
+            },
+        ],
+        "speed_limit_tag": "MA100",
+        "start_time": "2024-05-22T08:00:00.000Z",
+        "train_name": "paced train",
+        "paced": {"time_window": "PT1H", "interval": "PT15M"},
+        "exceptions": [
+            {
+                "key": "created_ex_key",
+                "disabled": False,
+                "start_time": {
+                    "value": "2024-05-22T08:01:00.000Z",
+                },
+                "train_name": {"value": "created_exception_train_name"},
+            },
+            {
+                "key": "modified_ex_key",
+                "occurrence_index": 2,
+                "disabled": False,
+                "train_name": {"value": "modified_exception_train_name"},
+            },
+            {
+                "key": "created_ex_conflict_modified_key",
+                "disabled": False,
+                "start_time": {
+                    "value": "2024-05-22T08:30:00.000Z",
+                },
+                "train_name": {"value": "exception_train_name"},
+            },
+        ],
+    }
+
+    paced_train_response = session.post(
+        f"{EDITOAST_URL}timetable/{timetable_id}/paced_trains",
+        json=[paced_train_payload],
+    )
+    paced_train_response.raise_for_status()
+
+    conflicts_response = session.get(
+        f"{EDITOAST_URL}timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}"
+    )
+    conflicts_response.raise_for_status()
+    conflicts_response_json = conflicts_response.json()
+
+    paced_train_occurrence_ids = [
+        [
+            {
+                "index": c.get("index", None),
+                "exception_key": c.get("exception_key", None),
+            }
+            for c in conflict["paced_train_occurrence_ids"]
+        ]
+        for conflict in conflicts_response_json
+    ]
+
+    expected_conflict_with_created_exception = [
+        {"exception_key": None, "index": 0},
+        {"exception_key": "created_ex_key", "index": None},
+    ]
+
+    expected_conflict_with_modified_exception = [
+        {"exception_key": "modified_ex_key", "index": 2},
+        {"exception_key": "created_ex_conflict_modified_key", "index": None},
+    ]
+
+    assert any(
+        _match_conflict_lists(conflict, expected_conflict_with_created_exception)
+        for conflict in paced_train_occurrence_ids
+    ), "Missing expected_conflict_with_created_exception"
+
+    assert any(
+        _match_conflict_lists(conflict, expected_conflict_with_modified_exception)
+        for conflict in paced_train_occurrence_ids
+    ), "Missing expected_conflict_with_modified_exception"
+
+
+def _match_conflict_lists(a, b):
+    return Counter(frozenset(d.items()) for d in a) == Counter(
+        frozenset(d.items()) for d in b
+    )
 
 
 def test_scheduled_points_with_incompatible_margins(

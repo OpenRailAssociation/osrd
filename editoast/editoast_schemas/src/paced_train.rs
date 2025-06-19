@@ -48,34 +48,63 @@ pub struct Paced {
     pub interval: PositiveDuration,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct PacedTrain {
     #[serde(flatten)]
     pub train_schedule_base: TrainSchedule,
     #[schema(inline)]
     pub paced: Paced,
-    #[serde(default, deserialize_with = "deserialize_exceptions")]
+    #[serde(default)]
     #[schema(required)]
     pub exceptions: Vec<PacedTrainException>,
 }
 
-fn deserialize_exceptions<'de, D>(deserializer: D) -> Result<Vec<PacedTrainException>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let list = Vec::<PacedTrainException>::deserialize(deserializer)?;
-
-    let mut seen = HashSet::with_capacity(list.len());
-    for e in &list {
-        let key = &e.key;
-        if !seen.insert(key) {
-            return Err(serde::de::Error::custom(format!(
-                "Duplicate exception key: {}",
-                key
-            )));
+impl<'de> Deserialize<'de> for PacedTrain {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct PacedTrainJson {
+            #[serde(flatten)]
+            pub train_schedule_base: TrainSchedule,
+            pub paced: Paced,
+            #[serde(default)]
+            pub exceptions: Vec<PacedTrainException>,
         }
+        let raw = PacedTrainJson::deserialize(deserializer)?;
+
+        let mut seen_keys = HashSet::with_capacity(raw.exceptions.len());
+        for e in &raw.exceptions {
+            if !seen_keys.insert(&e.key) {
+                return Err(serde::de::Error::custom(format!(
+                    "Duplicate exception key: '{}'",
+                    e.key
+                )));
+            }
+        }
+
+        let time_window_secs = raw.paced.time_window.num_seconds();
+        let interval_secs = raw.paced.interval.num_seconds();
+        let num_occurrences = (time_window_secs / interval_secs) as usize;
+
+        for ex in &raw.exceptions {
+            if let ExceptionType::Modified { occurrence_index } = ex.exception_type {
+                if occurrence_index as usize > num_occurrences {
+                    return Err(serde::de::Error::custom(format!(
+                        "Modified exception '{}' references invalid occurrence index {}",
+                        ex.key, occurrence_index,
+                    )));
+                }
+            }
+        }
+
+        Ok(PacedTrain {
+            train_schedule_base: raw.train_schedule_base,
+            paced: raw.paced,
+            exceptions: raw.exceptions,
+        })
     }
-    Ok(list)
 }
 
 /// Represents an exception for a paced train occurrence.

@@ -492,7 +492,7 @@ enum PacedTrainOccurrenceRef {
 
 #[derive(Debug, Clone, PartialEq)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
-enum TrainId {
+pub enum TrainId {
     TrainSchedule(i64),
     PacedTrainBaseOccurrence {
         paced_train_id: i64,
@@ -696,6 +696,7 @@ async fn retrieve_simulations(
     let paced_train_to_ts = paced_trains
         .iter()
         .flat_map(|pt| pt.iter_occurrences())
+        .map(|(_, pt)| pt)
         .collect::<Vec<_>>();
     let mut conn_clone = conn.clone();
     let (train_simulations, paced_train_simulations) = tokio::try_join!(
@@ -770,15 +771,12 @@ fn build_conflict_core_request(
                 _ => continue,
             };
 
-            let key = TrainId::PacedTrainBaseOccurrence {
-                paced_train_id: paced_train.id,
-                index: index as u64,
-            }
-            .to_string();
+            let (train_id, occurence) = &occurrences[index];
+
             trains_requirements.insert(
-                key,
+                train_id.to_string(),
                 TrainRequirements {
-                    start_time: occurrences[index].start_time,
+                    start_time: occurence.start_time,
                     spacing_requirements: final_output.spacing_requirements.clone(),
                     routing_requirements: final_output.routing_requirements.clone(),
                 },
@@ -1167,7 +1165,7 @@ mod tests {
             .bytes();
         assert_eq!(
             &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: [0].exceptions: Duplicate exception key: duplicated_key_1 at line 1 column 2448"
+            "Failed to deserialize the JSON body into the target type: [0]: Duplicate exception key: 'duplicated_key_1' at line 1 column 2449"
         )
     }
 
@@ -1316,10 +1314,7 @@ mod tests {
             start_time: paced_start_time,
             time_window: chrono::Duration::try_hours(2).unwrap(),
             interval: paced_interval,
-            exceptions: vec![
-                simple_created_exception_with_change_groups("exception_key_1"),
-                simple_modified_exception_with_change_groups("exception_key_2", 0),
-            ],
+            exceptions: vec![],
             ..Default::default()
         };
         let paced_trains = vec![paced_train.clone()];
