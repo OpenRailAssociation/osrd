@@ -696,6 +696,7 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
     use editoast_schemas::paced_train::InitialSpeedChangeGroup;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
@@ -749,6 +750,44 @@ mod tests {
     }
 
     #[rstest]
+    async fn update_paced_train_exception() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let simple_paced_train = simple_paced_train_changeset(timetable.id).exceptions(vec![]);
+        let mut simple_paced_train = simple_paced_train
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create paced train");
+
+        assert_eq!(simple_paced_train.exceptions.len(), 0);
+
+        simple_paced_train.exceptions = vec![simple_created_exception_with_change_groups(
+            "exception_key_1",
+        )];
+        let paced_train: PacedTrain = simple_paced_train.clone().into();
+
+        let request = app
+            .put(format!("/paced_train/{}", simple_paced_train.id).as_str())
+            .json(&json!(&paced_train));
+
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+
+        let updated_paced_train =
+            models::PacedTrain::retrieve_real(pool.get_ok(), simple_paced_train.id)
+                .await
+                .expect("Failed to retrieve updated paced train")
+                .expect("Updated paced train not found");
+
+        assert_eq!(updated_paced_train.exceptions.len(), 1);
+        assert_eq!(
+            simple_paced_train.exceptions,
+            updated_paced_train.exceptions
+        );
+    }
+
+    #[rstest]
     async fn update_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -766,8 +805,7 @@ mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        #[expect(deprecated)]
-        let updated_paced_train = models::PacedTrain::retrieve(&mut pool.get_ok(), paced_train.id)
+        let updated_paced_train = models::PacedTrain::retrieve_real(pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve updated paced train")
             .expect("Updated paced train not found");
