@@ -301,13 +301,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [updateTrainDepartureTime]
   );
 
-  useEffect(() => {
-    const channel = new BroadcastChannel(`osrd-scenario-${scenario.id}`);
-    broadcastChannel.current = channel;
-
-    channel.addEventListener('message', (event) => {
-      const msg: ScenarioBroadcastMessage = event.data;
-
+  const handleBroadcastChannelMessage = useCallback(
+    (msg: ScenarioBroadcastMessage) => {
       switch (msg.type) {
         case 'upsertTimetableItems':
           upsertTimetableItems(msg.timetableItems);
@@ -331,6 +326,21 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
           'paced_train',
         ])
       );
+    },
+    [upsertTimetableItems, removeTimetableItems, updateTrainDepartureTime, dispatch]
+  );
+
+  // Keep a ref with the freshest callback
+  const handleBroadcastChannelMessageRef = useRef(handleBroadcastChannelMessage);
+  handleBroadcastChannelMessageRef.current = handleBroadcastChannelMessage;
+
+  useEffect(() => {
+    const channel = new BroadcastChannel(`osrd-scenario-${scenario.id}`);
+    broadcastChannel.current = channel;
+
+    channel.addEventListener('message', (event) => {
+      const msg: ScenarioBroadcastMessage = event.data;
+      handleBroadcastChannelMessageRef.current(msg);
     });
 
     return () => {
