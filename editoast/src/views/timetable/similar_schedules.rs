@@ -89,6 +89,8 @@ struct Request {
     rolling_stock: RollingStockCharacteristics,
     #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
     waypoints: Vec<Waypoint>,
+    infra_id: Option<i64>,
+    timetable_id: Option<i64>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -174,6 +176,8 @@ async fn similar_schedules(
     Json(Request {
         rolling_stock,
         waypoints,
+        infra_id,
+        timetable_id,
     }): Json<Request>,
 ) -> Result<Json<Response>> {
     let authorized = auth
@@ -212,14 +216,14 @@ async fn similar_schedules(
     // Step 2: query reference schedules and build the search graph
     // ------------------------------------------------------------
 
-    let Some(StdcmSearchEnvironment {
-        timetable_id,
-        infra_id,
-        ..
-    }) = StdcmSearchEnvironment::retrieve_latest_enabled(&mut conn).await
-    else {
-        return Err(SimilarSchedulesError::NoSearchEnvironment.into());
+    let (infra_id, timetable_id) = match (infra_id, timetable_id) {
+        (Some(infra_id), Some(timetable_id)) => (infra_id, timetable_id),
+        _ => StdcmSearchEnvironment::retrieve_latest_enabled(&mut conn)
+            .await
+            .map(|env| (env.infra_id, env.timetable_id))
+            .ok_or(SimilarSchedulesError::NoSearchEnvironment)?,
     };
+
     let infra = Infra::retrieve_real(conn.clone(), infra_id)
         .await?
         .expect("infra comes from the search environment");
