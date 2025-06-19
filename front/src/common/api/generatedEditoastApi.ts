@@ -1998,10 +1998,12 @@ export type PostSimilarSchedulesApiResponse =
   };
 export type PostSimilarSchedulesApiArg = {
   body: {
+    infra_id?: number | null;
     rolling_stock: {
       name: string;
       speed_limit_tag?: string | null;
     };
+    timetable_id?: number | null;
     waypoints: SimilarScheduleWaypoint[];
   };
 };

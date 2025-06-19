@@ -2974,6 +2974,10 @@ paths:
               - rolling_stock
               - waypoints
               properties:
+                infra_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 rolling_stock:
                   type: object
                   required:
@@ -2984,6 +2988,10 @@ paths:
                     speed_limit_tag:
                       type: string
                       nullable: true
+                timetable_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 waypoints:
                   type: array
                   items:
