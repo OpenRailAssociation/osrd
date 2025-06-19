@@ -1,4 +1,4 @@
-package fr.sncf.osrd.stdcm.graph.VisitedNodeTracking
+package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -6,6 +6,7 @@ import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes.Parameters
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
@@ -126,10 +127,8 @@ data class VisitedNodes(
                                     minTravelTime,
                         )
 
-                if (
-                    mapAtDetector != null &&
-                        mapAtDetector.isVisited(parameters.copy(timeData = newTimeData))
-                ) {
+                val paramsWithLargerRange = parameters.copy(timeData = newTimeData)
+                if (mapAtDetector != null && mapAtDetector.isVisited(paramsWithLargerRange)) {
                     return true
                 }
             }
@@ -148,32 +147,10 @@ data class VisitedNodes(
             minPassedStepsForBlock[parameters.explorer.getCurrentBlock()] =
                 fingerprint.waypointIndex
         }
+
+        val newRangeMap = visitedRangeMapFromParameters(parameters, minDelay)
         val visitedRanges = visitedRangesPerLocation.getOrPut(fingerprint) { VisitedRangeMap() }
-
-        val timeData = parameters.timeData
-        val startTime = timeData.earliestReachableTime
-        val maxDepartureTimeChange =
-            min(
-                timeData.maxDepartureDelayingWithoutConflict,
-                timeData.stopTimeData.minOfOrNull { it.maxDepartureDelayBeforeStop }
-                    ?: Double.POSITIVE_INFINITY
-            )
-
-        // We still add some padding to the end of each range and value, to avoid evaluating trains
-        // that are close to one another separately (`minDelay`)
-        val endRangeDepartureTimeChange = startTime + maxDepartureTimeChange + minDelay
-        val endRangeExtraStopTime =
-            startTime + timeData.maxDepartureDelayingWithoutConflict + minDelay
-        val endRangeExtraTravelTime = endRangeExtraStopTime + parameters.maxMarginDuration
-
-        visitedRanges.markAsVisited(
-            startTime,
-            endRangeDepartureTimeChange,
-            endRangeExtraStopTime,
-            endRangeExtraTravelTime,
-            timeData.totalStopDuration,
-            parameters.nodeCost,
-        )
+        visitedRanges.putAll(newRangeMap)
 
         // Mark the visited time range at the start of the current block
         if (parameters.explorer != null && infra != null && fingerprint.startOffset == 0.meters) {
@@ -182,23 +159,63 @@ data class VisitedNodes(
                 visitedAtDetector.getOrPut(parameters.fingerprint!!.waypointIndex) {
                     mutableMapOf()
                 }
+            val blockEntry =
+                infra.blockInfra.getBlockEntry(
+                    infra.rawInfra,
+                    block,
+                )
             val visitedRangesAtStartOfBlock =
-                mapAtStepIndex.getOrPut(
-                    infra.blockInfra.getBlockEntry(
-                        infra.rawInfra,
-                        block,
-                    )
-                ) {
-                    VisitedRangeMap()
-                }
-            visitedRangesAtStartOfBlock.markAsVisited(
-                startTime,
-                endRangeDepartureTimeChange,
-                endRangeExtraStopTime,
-                endRangeExtraTravelTime,
-                timeData.totalStopDuration,
-                parameters.nodeCost,
-            )
+                mapAtStepIndex.getOrPut(blockEntry) { VisitedRangeMap() }
+            visitedRangesAtStartOfBlock.putAll(newRangeMap)
         }
     }
+}
+
+/**
+ * Create a new VisitedRangeMap from the given `VisitedNodes.Parameters`. Describes all the time
+ * ranges accessible from the current node.
+ */
+private fun visitedRangeMapFromParameters(
+    parameters: Parameters,
+    extraTimePadding: Double
+): VisitedRangeMap {
+    val timeData = parameters.timeData
+    val startTime = timeData.earliestReachableTime
+    val maxDepartureTimeChange =
+        min(
+            timeData.maxDepartureDelayingWithoutConflict,
+            timeData.stopTimeData.minOfOrNull { it.maxDepartureDelayBeforeStop }
+                ?: Double.POSITIVE_INFINITY
+        )
+
+    // We still add some padding to the end of each range and value, to avoid evaluating trains
+    // that are close to one another separately (`minDelay`)
+    val endRangeDepartureTimeChange = startTime + maxDepartureTimeChange + extraTimePadding
+    val endRangeExtraStopTime =
+        startTime + timeData.maxDepartureDelayingWithoutConflict + extraTimePadding
+    val endRangeExtraTravelTime = endRangeExtraStopTime + parameters.maxMarginDuration
+
+    val map = VisitedRangeMap()
+    map.markAsVisited(
+        startTime,
+        endRangeDepartureTimeChange,
+        endRangeExtraStopTime,
+        endRangeExtraTravelTime,
+        timeData.totalStopDuration,
+        parameters.nodeCost
+    )
+    return map
+}
+
+/** Utility function to map `VisitedNodes.Parameters` to `VisitedRangeMap.isVisited`. */
+private fun VisitedRangeMap.isVisited(parameters: Parameters): Boolean {
+    val newMap = visitedRangeMapFromParameters(parameters, 0.0)
+
+    // TODO: better handling of new "visited with travel time" ranges
+    // (this is just to keep identical functionality during the refactoring)
+    val filtered = newMap.asMapOfRanges().filter { it.value !is VisitedWithAddedTravelTime }
+    val filteredMap = VisitedRangeMap()
+    for (range in filtered) filteredMap.put(range.key, range.value)
+
+    return isVisited(filteredMap)
 }
