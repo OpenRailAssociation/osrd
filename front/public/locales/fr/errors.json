@@ -229,7 +229,6 @@
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
-
       "similar_schedules": {
         "GraphConstructionFailed": "Échec de la construction du graphe",
         "GraphExplorationFailed": "Échec de l'exploration du graphe : impossible de traiter les points de passage '{{skipped}}' et '{{target_waypoint}}'",
