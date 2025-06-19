@@ -11,20 +11,15 @@ import {
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import formatBaseTimetableItemWithDetails from 'modules/trainschedule/helpers/formatBaseTimetableItemWithDetails';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  PacedTrainWithPacedTrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
-  isPacedTrainId,
-  isTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
+  isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -232,8 +227,22 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         throw new Error('Item non trouvé');
       }
 
-      if (isTrainScheduleId(timetableItemId)) {
-        const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItemId);
+      if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+        const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
+
+        try {
+          await putPacedTrainById({
+            id: editoastPacedTrainId,
+            body: {
+              ...timetableItem,
+              start_time: newDeparture.toISOString(),
+            },
+          });
+        } catch (error) {
+          console.error('Error updating paced train:', error);
+        }
+      } else {
+        const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItem.id);
 
         await putTrainScheduleById({
           id: editoastTrainId,
@@ -242,22 +251,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
             start_time: newDeparture.toISOString(),
           },
         }).unwrap();
-      }
-
-      if (isPacedTrainId(timetableItemId)) {
-        const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItemId);
-
-        try {
-          await putPacedTrainById({
-            id: editoastPacedTrainId,
-            body: {
-              ...(timetableItem as PacedTrainWithPacedTrainId),
-              start_time: newDeparture.toISOString(),
-            },
-          });
-        } catch (error) {
-          console.error('Error updating paced train:', error);
-        }
       }
 
       setTimetableItemDepartureTime(timetableItemId, newDeparture);
