@@ -1,6 +1,6 @@
 {
   "boards": {
-    "conflicts": "Conflicts",
+    "conflicts": "Conflicts ({{count}})",
     "macro": "Macro",
     "map": "Map",
     "sdd": "SDD",

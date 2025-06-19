@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
+import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -30,6 +31,7 @@ const ScenarioHeader = ({
   const { username } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
+  const { conflicts } = useScenarioData(scenario, infra);
 
   const { t } = useTranslation('operational-studies');
 
@@ -150,7 +152,7 @@ const ScenarioHeader = ({
                     toggleBoard(board);
                   }}
                 >
-                  {t(`boards.${board}`)}
+                  {t(`boards.${board}`, { count: conflicts?.length || 0 })}
                 </button>
                 {index < boards.length - 1 && <div className="inactive-area" />}
               </Fragment>
