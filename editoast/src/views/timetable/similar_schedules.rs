@@ -135,6 +135,19 @@ enum SimilarSchedulesError {
     #[error("Speed limit tage {speed_limit_tag} does not exist")]
     #[editoast_error(status = 404)]
     SpeedLimitNotFound { speed_limit_tag: String },
+
+    #[error("Graph construction failed")]
+    #[editoast_error(status = 500)]
+    GraphConstructionFailed,
+
+    #[error(
+        "Graph exploration failed: having to skip both successive waypoints {skipped:?} and {target_waypoint:?}"
+    )]
+    #[editoast_error(status = 500)]
+    GraphExplorationFailed {
+        skipped: new_schedule::Waypoint,
+        target_waypoint: new_schedule::Waypoint,
+    },
 }
 
 #[utoipa::path(
@@ -272,7 +285,7 @@ async fn similar_schedules(
         std::fs::write("/tmp/dot.txt", graph.to_dot()).unwrap();
         let mut state = graph::MatchingState::new(segment, graph);
         while state.keep_advancing() {
-            state = state.advance();
+            state = state.advance()?;
         }
         tracing::debug!(
             segment_begin = ?begin,
