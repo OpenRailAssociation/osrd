@@ -264,7 +264,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       // fetch conflicts
       refetchConflicts();
     },
-    [timetableItems, rollingStocks]
+    [timetableItems]
   );
 
   const upsertTimetableItemsWithBroadcast = useCallback(
