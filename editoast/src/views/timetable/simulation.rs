@@ -421,52 +421,11 @@ fn build_simulation_request(
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
 ) -> core_client::simulation::Request {
-    assert_eq!(path_item_positions.len(), train_schedule.path.len());
-    // Project path items to path offset
-    let path_items_to_position: HashMap<_, _> = train_schedule
-        .path
-        .iter()
-        .map(|p| &p.id)
-        .zip(path_item_positions.iter().copied())
-        .collect();
-
-    let schedule = train_schedule
-        .schedule
-        .iter()
-        .map(|schedule_item| SimulationScheduleItem {
-            path_offset: path_items_to_position[&schedule_item.at],
-            arrival: schedule_item
-                .arrival
-                .as_ref()
-                .map(|t| t.num_milliseconds() as u64),
-            stop_for: schedule_item
-                .stop_for
-                .as_ref()
-                .map(|t| t.num_milliseconds() as u64),
-            reception_signal: schedule_item.reception_signal,
-        })
-        .collect();
-
-    let margins = SimulationMargins {
-        boundaries: train_schedule
-            .margins
-            .boundaries
-            .iter()
-            .map(|at| path_items_to_position[at])
-            .collect(),
-        values: train_schedule.margins.values.clone(),
-    };
-
-    let power_restrictions = train_schedule
-        .power_restrictions
-        .iter()
-        .map(|item| SimulationPowerRestrictionItem {
-            from: path_items_to_position[&item.from],
-            to: path_items_to_position[&item.to],
-            value: item.value.clone(),
-        })
-        .collect();
-
+    let path_items_to_position = build_path_items_to_position(train_schedule, path_item_positions);
+    let schedule = build_sim_schedule_items(train_schedule, &path_items_to_position);
+    let margins = build_sim_margins(train_schedule, &path_items_to_position);
+    let power_restrictions =
+        build_sim_power_restriction_items(train_schedule, &path_items_to_position);
     core_client::simulation::Request {
         infra: infra.id,
         expected_version: infra.version,
@@ -482,6 +441,72 @@ fn build_simulation_request(
         physics_consist,
         electrical_profile_set_id,
     }
+}
+
+pub fn build_path_items_to_position<'t>(
+    train_schedule: &'t models::TrainSchedule,
+    path_item_positions: &[u64],
+) -> HashMap<&'t editoast_schemas::primitives::NonBlankString, u64> {
+    assert_eq!(path_item_positions.len(), train_schedule.path.len());
+    // Project path items to path offset
+    train_schedule
+        .path
+        .iter()
+        .map(|p| &p.id)
+        .zip(path_item_positions.iter().copied())
+        .collect()
+}
+
+pub fn build_sim_schedule_items(
+    train_schedule: &models::TrainSchedule,
+    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+) -> Vec<SimulationScheduleItem> {
+    train_schedule
+        .schedule
+        .iter()
+        .map(|schedule_item| SimulationScheduleItem {
+            path_offset: path_items_to_position[&schedule_item.at],
+            arrival: schedule_item
+                .arrival
+                .as_ref()
+                .map(|t| t.num_milliseconds() as u64),
+            stop_for: schedule_item
+                .stop_for
+                .as_ref()
+                .map(|t| t.num_milliseconds() as u64),
+            reception_signal: schedule_item.reception_signal,
+        })
+        .collect()
+}
+
+fn build_sim_margins(
+    train_schedule: &models::TrainSchedule,
+    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+) -> SimulationMargins {
+    SimulationMargins {
+        boundaries: train_schedule
+            .margins
+            .boundaries
+            .iter()
+            .map(|at| path_items_to_position[at])
+            .collect(),
+        values: train_schedule.margins.values.clone(),
+    }
+}
+
+pub fn build_sim_power_restriction_items(
+    train_schedule: &models::TrainSchedule,
+    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+) -> Vec<SimulationPowerRestrictionItem> {
+    train_schedule
+        .power_restrictions
+        .iter()
+        .map(|item| SimulationPowerRestrictionItem {
+            from: path_items_to_position[&item.from],
+            to: path_items_to_position[&item.to],
+            value: item.value.clone(),
+        })
+        .collect()
 }
 
 fn compute_train_simulation_hash_with_versioning(

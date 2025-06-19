@@ -11,7 +11,11 @@ use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use core_client::AsCoreRequest;
+use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
+use core_client::simulation::SimulationPath;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -30,6 +34,7 @@ use crate::AppState;
 use crate::error::Result;
 use crate::models;
 use crate::models::OperationalPointModel;
+use crate::models::RollingStock;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainScheduleChangeset;
@@ -47,12 +52,16 @@ use crate::views::projection::SpaceTimeCurves;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
 use crate::views::projection::interpolate;
+use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::SimulationResponseSuccess;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
 use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::Response;
+use crate::views::timetable::simulation::build_path_items_to_position;
+use crate::views::timetable::simulation::build_sim_power_restriction_items;
+use crate::views::timetable::simulation::build_sim_schedule_items;
 
 use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
@@ -69,6 +78,7 @@ crate::routes! {
             put,
             "/simulation" => simulation,
             "/path" => get_path,
+            "/etcs_braking_curves" => etcs_braking_curves,
         },
     },
 }
@@ -98,6 +108,15 @@ pub enum TrainScheduleError {
     #[error("Operational point '{operational_point_id}', could not be found")]
     #[editoast_error(status = 404)]
     OperationalPointNotFound { operational_point_id: String },
+    #[error("Rolling stock '{rolling_stock_name}', could not be found")]
+    #[editoast_error(status = 404)]
+    RollingStockNotFound { rolling_stock_name: String },
+    #[error("Pathfinding failed for train schedule '{train_schedule_id}'")]
+    #[editoast_error(status = 404)]
+    PathfindingFailed { train_schedule_id: i64 },
+    #[error("Simulation failed for train schedule '{train_schedule_id}'")]
+    #[editoast_error(status = 404)]
+    SimulationFailed { train_schedule_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::model::Error),
@@ -345,6 +364,140 @@ async fn simulation(
     .unwrap();
 
     Ok(Json(Arc::unwrap_or_clone(simulation)))
+}
+
+/// Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+#[utoipa::path(
+    get, path = "",
+    tag = "train_schedule,etcs_braking_curves",
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
+    responses(
+        (status = 200, description = "ETCS Braking Curves Output", body = ETCSBrakingCurvesResponse),
+    ),
+)]
+async fn etcs_braking_curves(
+    State(AppState {
+        valkey: valkey_client,
+        core_client,
+        db_pool,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleIdParam {
+        id: train_schedule_id,
+    }): Path<TrainScheduleIdParam>,
+    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
+    Query(ElectricalProfileSetIdQueryParam {
+        electrical_profile_set_id,
+    }): Query<ElectricalProfileSetIdQueryParam>,
+) -> Result<Json<core_client::etcs_braking_curves::Response>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // Retrieve infra or fail
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    // Retrieve train_schedule or fail
+    let train_schedule = models::TrainSchedule::retrieve_real_or_fail(
+        db_pool.get().await?,
+        train_schedule_id,
+        || TrainScheduleError::NotFound { train_schedule_id },
+    )
+    .await?;
+
+    // Compute simulation of a train schedule
+    let (simulation_result, pathfinding_result) = train_simulation_batch(
+        &mut db_pool.get().await?,
+        valkey_client,
+        core_client.clone(),
+        &[train_schedule.clone()],
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?
+    .pop()
+    .unwrap();
+
+    // Extract simulation path
+    let path: SimulationPath = match pathfinding_result.as_ref() {
+        PathfindingResult::Success(PathfindingResultSuccess {
+            blocks,
+            routes,
+            track_section_ranges,
+            path_item_positions,
+            ..
+        }) => SimulationPath {
+            blocks: blocks.clone(),
+            routes: routes.clone(),
+            track_section_ranges: track_section_ranges.clone(),
+            path_item_positions: path_item_positions.clone(),
+        },
+        _ => {
+            return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
+        }
+    };
+
+    // Extract mrsp
+    let mrsp = match simulation_result.as_ref() {
+        simulation::Response::Success(SimulationResponseSuccess { mrsp, .. }) => mrsp.clone(),
+        _ => {
+            return Err(TrainScheduleError::SimulationFailed { train_schedule_id }.into());
+        }
+    };
+
+    // Build physics consist
+    let rs = RollingStock::retrieve_real_or_fail(
+        db_pool.get().await?,
+        train_schedule.rolling_stock_name.clone(),
+        || TrainScheduleError::RollingStockNotFound {
+            rolling_stock_name: train_schedule.rolling_stock_name.clone(),
+        },
+    )
+    .await?;
+    let physics_consist: PhysicsConsist =
+        PhysicsConsistParameters::from_traction_engine(rs.into()).into();
+
+    // Build schedule items and power restrictions
+    let path_items_to_position =
+        build_path_items_to_position(&train_schedule, &path.path_item_positions);
+    let schedule = build_sim_schedule_items(&train_schedule, &path_items_to_position);
+    let power_restrictions =
+        build_sim_power_restriction_items(&train_schedule, &path_items_to_position);
+
+    let etcs_braking_curves_request = core_client::etcs_braking_curves::Request {
+        infra: infra.id,
+        expected_version: infra.version,
+        physics_consist,
+        comfort: train_schedule.comfort,
+        path,
+        schedule,
+        power_restrictions,
+        electrical_profile_set_id,
+        use_electrical_profiles: train_schedule.options.use_electrical_profiles,
+        mrsp,
+    };
+
+    let etcs_braking_curves_response = etcs_braking_curves_request
+        .fetch(core_client.as_ref())
+        .await?;
+
+    Ok(Json(etcs_braking_curves_response))
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]

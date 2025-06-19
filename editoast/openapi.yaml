@@ -4014,6 +4014,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResponse'
+  /train_schedule/{id}/etcs_braking_curves:
+    get:
+      tags:
+      - train_schedule
+      - etcs_braking_curves
+      summary: Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+      parameters:
+      - name: id
+        in: path
+        description: A train schedule ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: ETCS Braking Curves Output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ETCSBrakingCurvesResponse'
   /train_schedule/{id}/path:
     get:
       tags:
@@ -4805,6 +4838,124 @@ components:
       enum:
       - STANDARD
       - MARECO
+    ETCSBrakingCurvesResponse:
+      type: object
+      required:
+      - slowdowns
+      - stops
+      - signals
+      properties:
+        signals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ETCSCurves'
+          description: List of ETCS braking curves associated to the train schedule's ETCS signals
+        slowdowns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ETCSCurves'
+          description: List of ETCS braking curves associated to the train schedule's ETCS slowdowns
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/ETCSCurves'
+          description: List of ETCS braking curves associated to the train schedule's ETCS stops
+    ETCSCurves:
+      type: object
+      properties:
+        guidance:
+          allOf:
+          - type: object
+            required:
+            - positions
+            - times
+            - speeds
+            properties:
+              positions:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of positions of a train
+                  Both positions (in mm) and times (in ms) must have the same length
+              speeds:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of speeds (in m/s) associated to a position
+              times:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: List of times (in ms) associated to a position
+          nullable: true
+        indication:
+          allOf:
+          - type: object
+            required:
+            - positions
+            - times
+            - speeds
+            properties:
+              positions:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of positions of a train
+                  Both positions (in mm) and times (in ms) must have the same length
+              speeds:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of speeds (in m/s) associated to a position
+              times:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: List of times (in ms) associated to a position
+          nullable: true
+        permitted_speed:
+          allOf:
+          - type: object
+            required:
+            - positions
+            - times
+            - speeds
+            properties:
+              positions:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of positions of a train
+                  Both positions (in mm) and times (in ms) must have the same length
+              speeds:
+                type: array
+                items:
+                  type: number
+                  format: double
+                description: List of speeds (in m/s) associated to a position
+              times:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: List of times (in ms) associated to a position
+          nullable: true
     EditoastAppHealthErrorCore:
       type: object
       required:
@@ -5662,6 +5813,9 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorOperationalPointNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathfindingFailed'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorSimulationFailed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -7478,6 +7632,78 @@ components:
           type: string
           enum:
           - editoast:train_schedule:OperationalPointNotFound
+    EditoastTrainScheduleErrorPathfindingFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule:PathfindingFailed
+    EditoastTrainScheduleErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule:RollingStockNotFound
+    EditoastTrainScheduleErrorSimulationFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_id
+          properties:
+            train_schedule_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule:SimulationFailed
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:

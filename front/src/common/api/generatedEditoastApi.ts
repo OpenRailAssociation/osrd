@@ -26,6 +26,7 @@ export const addTagTypes = [
   'stdcm_search_environment',
   'stdcm_log',
   'temporary_speed_limits',
+  'etcs_braking_curves',
   'work_schedules',
 ] as const;
 const injectedRtkApi = api
@@ -1180,6 +1181,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule', 'timetable'],
       }),
+      getTrainScheduleByIdEtcsBrakingCurves: build.query<
+        GetTrainScheduleByIdEtcsBrakingCurvesApiResponse,
+        GetTrainScheduleByIdEtcsBrakingCurvesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/${queryArg.id}/etcs_braking_curves`,
+          params: {
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+          },
+        }),
+        providesTags: ['train_schedule', 'etcs_braking_curves'],
+      }),
       getTrainScheduleByIdPath: build.query<
         GetTrainScheduleByIdPathApiResponse,
         GetTrainScheduleByIdPathApiArg
@@ -2259,6 +2273,14 @@ export type PutTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
   trainScheduleForm: TrainScheduleForm;
+};
+export type GetTrainScheduleByIdEtcsBrakingCurvesApiResponse =
+  /** status 200 ETCS Braking Curves Output */ EtcsBrakingCurvesResponse;
+export type GetTrainScheduleByIdEtcsBrakingCurvesApiArg = {
+  /** A train schedule ID */
+  id: number;
+  infraId: number;
+  electricalProfileSetId?: number;
 };
 export type GetTrainScheduleByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetTrainScheduleByIdPathApiArg = {
@@ -4351,6 +4373,43 @@ export type TowedRollingStockLockedForm = {
 export type TrainScheduleForm = TrainSchedule & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;
+};
+export type EtcsCurves = {
+  guidance?: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  } | null;
+  indication?: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  } | null;
+  permitted_speed?: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  } | null;
+};
+export type EtcsBrakingCurvesResponse = {
+  /** List of ETCS braking curves associated to the train schedule's ETCS signals */
+  signals: EtcsCurves[];
+  /** List of ETCS braking curves associated to the train schedule's ETCS slowdowns */
+  slowdowns: EtcsCurves[];
+  /** List of ETCS braking curves associated to the train schedule's ETCS stops */
+  stops: EtcsCurves[];
 };
 export type Version = {
   git_describe: string | null;
