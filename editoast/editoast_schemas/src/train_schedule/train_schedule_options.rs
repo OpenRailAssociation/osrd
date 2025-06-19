@@ -13,10 +13,10 @@ editoast_common::schemas! {
 pub struct TrainScheduleOptions {
     #[educe(Default = true)]
     #[serde(default = "default_use_electrical_profiles")]
-    use_electrical_profiles: bool,
+    pub use_electrical_profiles: bool,
     #[educe(Default = true)]
     #[serde(default = "default_use_speed_limits_for_simulation")]
-    use_speed_limits_for_simulation: bool,
+    pub use_speed_limits_for_simulation: bool,
 }
 
 fn default_use_electrical_profiles() -> bool {

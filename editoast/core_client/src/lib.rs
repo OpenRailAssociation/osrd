@@ -1,4 +1,5 @@
 pub mod conflict_detection;
+pub mod etcs_braking_curves;
 pub mod infra_loading;
 pub mod mq_client;
 pub mod path_properties;
@@ -30,6 +31,7 @@ editoast_common::schemas! {
     conflict_detection::schemas(),
     stdcm::schemas(),
     signal_projection::schemas(),
+    etcs_braking_curves::schemas(),
 }
 
 #[derive(Debug, Clone)]
