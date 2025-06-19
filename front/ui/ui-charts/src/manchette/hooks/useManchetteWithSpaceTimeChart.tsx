@@ -214,20 +214,16 @@ const useManchetteWithSpaceTimeChart = ({
               maxZoomMillimeterPerPx,
               newSpaceScale
             );
-            if (newSpaceScale !== maxZoomMillimeterPerPx) {
-              const topRectSide = Math.min(prev.rect.spaceStart, prev.rect.spaceEnd);
-              newYOffset = Math.abs(spaceOrigin - topRectSide) / newSpaceScale;
-            } else {
-              newYOffset = Math.abs(
-                sideOffset(
-                  spaceOrigin,
-                  newSpaceScale,
-                  prev.rect.spaceStart,
-                  prev.rect.spaceEnd,
-                  height
-                )
-              );
-            }
+            newYOffset = Math.abs(
+              sideOffset(
+                spaceOrigin,
+                newSpaceScale,
+                prev.rect.spaceStart,
+                prev.rect.spaceEnd,
+                height,
+                verticalPadding
+              )
+            );
           }
         }
 
@@ -251,6 +247,7 @@ const useManchetteWithSpaceTimeChart = ({
       yZoom,
       height,
       spaceTimeChartRef,
+      verticalPadding,
     ]
   );
 

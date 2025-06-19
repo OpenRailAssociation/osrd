@@ -341,14 +341,15 @@ export function sideOffset(
   newScale: number,
   rectStart: number | Date,
   rectEnd: number | Date,
-  chartSidePx: number
+  chartSideSizePx: number,
+  axisPadding: number = 0
 ) {
   const rectCenter = (Number(rectStart) + Number(rectEnd)) / 2;
-  const newChartSize = chartSidePx * newScale;
+  const newChartSize = chartSideSizePx * newScale;
   // newChartBorder is the x or y origin after zoom
   // it’s normally the same as rectStart (the left or top most part of the rectangle)
   // but if we reach max zoom we can’t use rectStart as the chart displayed origin
   // because it doesn’t garentees that the zoom rectangle stays exactly at the center of the chart after the zoom
   const newChartBorder = rectCenter - newChartSize / 2;
-  return (origin - newChartBorder) / newScale;
+  return (origin - newChartBorder) / newScale - axisPadding * 2;
 }
