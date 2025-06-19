@@ -334,37 +334,29 @@ class PathfindingTest : ApiTest() {
         )
     }
 
-    /*
     @Test
-    @DisplayName("If no path exists, throws a generic error message")
-    @Throws(Exception::class)
     fun noPathTest() {
-        val waypointStart = PathfindingWaypoint("ne.micro.foo_b", 12.0, EdgeDirection.STOP_TO_START)
-        val waypointEnd = PathfindingWaypoint("ne.micro.foo_b", 13.0, EdgeDirection.STOP_TO_START)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
+        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.foo_a", Offset(100.meters)))
         val requestBody =
-            PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd),
+                    "tiny_infra/infra.json"
+                )
             )
-        val res =
-            TakesUtils.readHeadResponse(
-                PathfindingBlocksEndpoint(infraManager)
-                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
-            )
-        AssertionsForClassTypes.assertThat(res[0]).contains("400")
-        val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(infra, waypoints, listOf(), null)
-        }
-            .isExactlyInstanceOf(OSRDError::class.java)
-            .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
-                    .isEqualTo(ErrorType.PathfindingGenericError)
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
-                    .isEqualTo(HashMap<Any, Any>())
-            })
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val headers = TakesUtils.readHeadResponse(rawResponse)
+        assert(headers.contains("HTTP/1.1 200 OK"))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? NotFoundInBlocks)!!
+        AssertionsForClassTypes.assertThat(parsed).isNotNull
     }
+
+    /*
 
     @Test
     @Throws(IOException::class)
