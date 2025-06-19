@@ -35,7 +35,7 @@ import usePathProjection from './usePathProjection';
 type ScenarioBroadcastMessage =
   | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
   | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
-  | { type: 'updateTrainDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
+  | { type: 'setTimetableItemDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
 
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const dispatch = useAppDispatch();
@@ -198,6 +198,31 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     removeProjectedTimetableItems(_timetableItemsToRemove);
   }, []);
 
+  const setTimetableItemDepartureTime = useCallback(
+    (timetableItemId: TimetableItemId, newDeparture: Date) => {
+      setTimetableItems((prev) => {
+        const timetableItem = prev?.find((item) => item.id === timetableItemId);
+        if (!timetableItem) {
+          return prev;
+        }
+        const updatedTimetableItem = {
+          ...timetableItem,
+          start_time: newDeparture.toISOString(),
+        };
+        const newTimetableItemsById = {
+          ...keyBy(prev, 'id'),
+          ...keyBy([updatedTimetableItem], 'id'),
+        };
+        return sortBy(Object.values(newTimetableItemsById), 'start_time');
+      });
+
+      updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
+      updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
+      refetchConflicts();
+    },
+    []
+  );
+
   /** Update only departure time of a timetable item */
   const updateTrainDepartureTime = useCallback(
     async (timetableItemId: TimetableItemId, newDeparture: Date) => {
@@ -207,23 +232,16 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         throw new Error('Item non trouvé');
       }
 
-      let updateTimetableItem: TimetableItem | undefined;
-
       if (isTrainScheduleId(timetableItemId)) {
         const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItemId);
 
-        const trainScheduleResponse = await putTrainScheduleById({
+        await putTrainScheduleById({
           id: editoastTrainId,
           trainScheduleForm: {
             ...timetableItem,
             start_time: newDeparture.toISOString(),
           },
         }).unwrap();
-
-        updateTimetableItem = {
-          ...trainScheduleResponse,
-          id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
-        };
       }
 
       if (isPacedTrainId(timetableItemId)) {
@@ -237,31 +255,12 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
               start_time: newDeparture.toISOString(),
             },
           });
-
-          updateTimetableItem = {
-            ...timetableItem,
-            start_time: newDeparture.toISOString(),
-          };
         } catch (error) {
           console.error('Error updating paced train:', error);
         }
       }
 
-      if (!updateTimetableItem) {
-        throw new Error('Item non mis à jour');
-      }
-
-      setTimetableItems((prev) => {
-        const newTrainSchedulesById = {
-          ...keyBy(prev, 'id'),
-          ...keyBy([updateTimetableItem], 'id'),
-        };
-        return sortBy(Object.values(newTrainSchedulesById), 'start_time');
-      });
-
-      updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
-      updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
-      refetchConflicts();
+      setTimetableItemDepartureTime(timetableItemId, newDeparture);
     },
     [timetableItems]
   );
@@ -292,7 +291,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     async (timetableItemId: TimetableItemId, newDeparture: Date) => {
       updateTrainDepartureTime(timetableItemId, newDeparture);
       broadcastScenarioMessage({
-        type: 'updateTrainDepartureTime',
+        type: 'setTimetableItemDepartureTime',
         timetableItemId,
         newDeparture,
       });
@@ -314,8 +313,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         case 'removeTimetableItems':
           removeTimetableItems(msg.timetableItemIds);
           break;
-        case 'updateTrainDepartureTime':
-          updateTrainDepartureTime(msg.timetableItemId, msg.newDeparture);
+        case 'setTimetableItemDepartureTime':
+          setTimetableItemDepartureTime(msg.timetableItemId, msg.newDeparture);
           break;
         default:
           console.error('Unknown scenario broadcast channel message type:', msg);
