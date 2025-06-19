@@ -146,7 +146,7 @@ class ScenarioPage extends CommonPage {
     }
   }
 
-  async toggleConflictsList(isOpen: boolean = true) {
+  async toggleConflictsList(isOpen: boolean = false) {
     await this.conflictsButton.click();
     if (isOpen) {
       await expect(this.conflictsList).not.toBeVisible();

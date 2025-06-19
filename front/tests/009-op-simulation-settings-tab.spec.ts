@@ -183,7 +183,6 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:53');
     await scenarioPage.toggletrainList();
-    await scenarioPage.toggleConflictsList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -233,7 +232,6 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('12:03');
     await scenarioPage.toggletrainList();
-    await scenarioPage.toggleConflictsList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -293,7 +291,6 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:55');
     await scenarioPage.toggletrainList();
-    await scenarioPage.toggleConflictsList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -354,7 +351,6 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioPage.toggletrainList();
-    await scenarioPage.toggleConflictsList();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
