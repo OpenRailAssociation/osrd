@@ -356,36 +356,29 @@ class PathfindingTest : ApiTest() {
         AssertionsForClassTypes.assertThat(parsed).isNotNull
     }
 
-    /*
-
     @Test
-    @Throws(IOException::class)
     fun missingTrackTest() {
-        val waypoint =
-            PathfindingWaypoint("this_track_does_not_exist", 0.0, EdgeDirection.STOP_TO_START)
-        val waypoints = Array(2) { Array(1) { waypoint } }
+        val waypointsStart = listOf(TrackLocation("this_track_does_not_exist", Offset(0.meters)))
         val requestBody =
-            PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart),
+                    "tiny_infra/infra.json"
+                )
             )
-        val response =
+        val rawResponse =
             PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/routes", requestBody))
-        val res = TakesUtils.readHeadResponse(response)
-        AssertionsForClassTypes.assertThat(res[0]).contains("400")
-        val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(infra, waypoints, listOf(), null)
-        }
-            .isExactlyInstanceOf(OSRDError::class.java)
-            .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
-                    .isEqualTo(ErrorType.UnknownTrackSection)
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
-                    .isEqualTo(mapOf(Pair("track_section_id", "this_track_does_not_exist")))
-            })
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val headers = TakesUtils.readHeadResponse(rawResponse)
+        assert(headers.contains("HTTP/1.1 200 OK"))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingFailed)!!
+        AssertionsForClassTypes.assertThat(parsed.coreError.type)
+            .isEqualTo("core:unknown_track_section")
     }
 
+    /*
     @Test
     @Throws(Exception::class)
     fun incompatibleLoadingGaugeTest() {
