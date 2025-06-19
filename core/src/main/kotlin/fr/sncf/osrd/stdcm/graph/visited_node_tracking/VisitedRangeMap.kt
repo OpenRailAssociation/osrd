@@ -1,14 +1,19 @@
-package fr.sncf.osrd.stdcm.graph.VisitedNodeTracking
+package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import com.google.common.collect.TreeRangeSet
-import fr.sncf.osrd.stdcm.graph.VisitedNodeTracking.VisitedNodes.Parameters
 
+/**
+ * This class maps duration ranges to their "visited" values. Some ranges are considered visited if
+ * we add travel time or stop duration compared to their initial costs. See `VisitedRange.kt` for a
+ * detailed description and comparison logic. This map lets us compare each range to test if it
+ * opens new ranges, or old ranges but at a lower cost.
+ */
 data class VisitedRangeMap(
-    private val map: RangeMap<Double, ConditionallyVisitedRange> = TreeRangeMap.create()
-) : RangeMap<Double, ConditionallyVisitedRange> by map {
+    private val map: RangeMap<Double, VisitedRange> = TreeRangeMap.create()
+) : RangeMap<Double, VisitedRange> by map {
     /**
      * Marks the given time ranges as visited in the map. Adds 3 ranges: visited with added
      * departure time, with extra stop duration, and with added travel time.
@@ -21,20 +26,20 @@ data class VisitedRangeMap(
         totalStopDuration: Double,
         nodeCost: Double,
     ) {
-        fun putRange(start: Double, end: Double, value: ConditionallyVisitedRange) {
+        fun putRange(start: Double, end: Double, value: VisitedRange) {
             if (start < end) {
                 val range = Range.closedOpen(start, end)
-                map.merge(range, value) { a, b -> a.mergeWith(b) }
+                map.merge(range, value) { a, b -> a.mergeWith(b, range) }
             }
         }
 
         // Visited with just departure time change, this is always considered as "visited".
         // (The end of all ranges depends on conflicting occupancy along the path)
-        putRange(
-            startTime,
-            endRangeDepartureTimeChange,
-            VisitedWithDepartureTimeChange,
+        map.put(
+            Range.closed(startTime, endRangeDepartureTimeChange),
+            VisitedWithDepartureTimeChange(nodeCost, totalStopDuration)
         )
+
         // Visited with extra stop duration, starting from the end of the previous range
         putRange(
             endRangeDepartureTimeChange,
@@ -48,7 +53,10 @@ data class VisitedRangeMap(
         putRange(
             endRangeExtraStopTime,
             endRangeExtraTravelTime,
-            VisitedWithAddedTravelTime(LinearFunction(nodeCost - endRangeExtraStopTime))
+            VisitedWithAddedTravelTime(
+                LinearFunction(nodeCost - endRangeExtraStopTime),
+                totalStopDuration
+            )
         )
     }
 
@@ -57,29 +65,23 @@ data class VisitedRangeMap(
      * parameters.
      */
     fun isVisited(
-        parameters: Parameters,
+        newValues: VisitedRangeMap,
     ): Boolean {
-        val timeData = parameters.timeData
+        if (newValues.map.asMapOfRanges().isEmpty()) return true
 
-        val visitingRange =
-            Range.closedOpen(
-                timeData.earliestReachableTime,
-                timeData.earliestReachableTime + timeData.maxDepartureDelayingWithoutConflict
-            )
-        if (visitingRange.isEmpty) {
-            // Special case for empty range, `subRangeMap` returns an empty list
-            val value = map.get(timeData.earliestReachableTime) ?: return false
-            return value.isVisited(visitingRange, parameters)
-        }
+        val visitingRange = newValues.span()
         val subMap = map.subRangeMap(visitingRange)
 
         // Keep track of any range that isn't covered by the map
         val uncovered = TreeRangeSet.create<Double>()
         uncovered.add(visitingRange)
-        for (entry in subMap.asMapOfRanges()) {
-            uncovered.remove(entry.key)
-            // Value isn't visited: we can early return "false"
-            if (!entry.value.isVisited(entry.key, parameters)) return false
+        for (visitedEntry in subMap.asMapOfRanges()) {
+            uncovered.remove(visitedEntry.key)
+
+            for (newEntry in newValues.subRangeMap(visitedEntry.key).asMapOfRanges()) {
+                // Value isn't visited: we can early return "false"
+                if (!visitedEntry.value.isVisited(newEntry.key, newEntry.value)) return false
+            }
         }
         // If any area is left uncovered, we still return "false"
         return uncovered.isEmpty

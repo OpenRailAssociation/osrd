@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
-import fr.sncf.osrd.stdcm.graph.VisitedNodeTracking.VisitedNodes
+import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
