@@ -37,7 +37,15 @@ const ScenarioHeader = ({
   const { t } = useTranslation('operational-studies');
 
   const boards: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
-  const [activeBoards, setActiveBoards] = useState<Board[]>([...boards]);
+
+  const [activeBoards, setActiveBoards] = useState<Board[]>([
+    'trains',
+    'map',
+    'macro',
+    'std',
+    'sdd',
+    'tables',
+  ]);
 
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,

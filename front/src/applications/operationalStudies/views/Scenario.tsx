@@ -23,7 +23,7 @@ const Scenario = () => {
   const { infra } = infraData;
 
   const [isTimetableDisplayed, setIsTimeTableDisplayed] = useState(true);
-  const [isConflictsListDisplayed, setIsConflictsListDisplayed] = useState(true);
+  const [isConflictsListDisplayed, setIsConflictsListDisplayed] = useState(false);
   const [isMacroEditorDisplayed, setIsMacroEditorDisplayed] = useState(true);
 
   if (!scenario || !infra) return null;

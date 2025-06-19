@@ -202,7 +202,6 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Click on occurrence to check its simulation results
     await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
     await scenarioPage.toggletrainList();
-    await scenarioPage.toggleConflictsList();
 
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
       'SpeedSpaceChart-InitialInputs.png'
