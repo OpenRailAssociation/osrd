@@ -23,5 +23,3 @@ const DPY_TO_MAS_OPERATIONAL_POINTS: number[] = [
 ];
 
 export default DPY_TO_MAS_OPERATIONAL_POINTS;
-
-
