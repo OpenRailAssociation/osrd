@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
+import { v4 as uuidV4 } from 'uuid';
 
 import {
   STDCM_REQUEST_STATUS,
@@ -103,7 +103,7 @@ const useStdcm = ({
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
+        path: payload.body.steps.map((step) => ({ ...step.location, id: uuidV4() })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',

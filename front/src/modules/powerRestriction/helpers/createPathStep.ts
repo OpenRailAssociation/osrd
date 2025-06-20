@@ -1,5 +1,5 @@
 import { sortBy } from 'lodash';
-import nextId from 'react-id-generator';
+import { v4 as uuidV4 } from 'uuid';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
@@ -80,7 +80,7 @@ const createPathStep = (
   );
 
   return {
-    id: nextId(),
+    id: uuidV4(),
     positionOnPath,
     coordinates,
     ...trackOffset,
@@ -128,7 +128,7 @@ export const createCutAtPathStep = (
     cutAtPosition
   );
   return {
-    id: nextId(),
+    id: uuidV4(),
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
     isFromPowerRestriction: true,
