@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 
+import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainWithDetails } from 'utils/trainId';
 
@@ -10,6 +12,8 @@ import type { TimetableItemWithDetails } from './types';
 export const keepItem = (item: TimetableItemWithDetails, searchString: string): boolean => {
   if (searchString) {
     let hasMatchingExceptions = false;
+    const namesToCheck = [item.name];
+
     if (isPacedTrainWithDetails(item)) {
       hasMatchingExceptions = item.exceptions.some(
         (exception) =>
@@ -18,12 +22,26 @@ export const keepItem = (item: TimetableItemWithDetails, searchString: string): 
             label.toLowerCase().includes(searchString.toLowerCase())
           )
       );
+
+      // handle occurrence names
+      const occurrencesCount = getOccurrencesNb(item.paced);
+      for (let i = 0; i < occurrencesCount; i += 1) {
+        const occurrenceName = computeOccurrenceName(item.name, i);
+        namesToCheck.push(occurrenceName);
+      }
+      const hasAddedExceptionNotRenamed = item.exceptions.some(
+        (exception) => exception.occurrence_index === undefined && !exception.train_name
+      );
+      if (hasAddedExceptionNotRenamed) namesToCheck.push(`${item.name}/+`); // default added exception name
     }
-    const searchStringInName = item.name.toLowerCase().includes(searchString.toLowerCase());
+
+    const isNameFilterInTimetable = namesToCheck.some((n) =>
+      n.toLowerCase().includes(searchString.toLowerCase())
+    );
     const searchStringInTags = item.labels
       ? item.labels.join('').toLowerCase().includes(searchString.toLowerCase())
       : false;
-    return searchStringInName || searchStringInTags || hasMatchingExceptions;
+    return isNameFilterInTimetable || searchStringInTags || hasMatchingExceptions;
   }
   return true;
 };
