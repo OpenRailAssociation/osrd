@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useCallback } from 'react';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
@@ -20,7 +20,7 @@ import { OsrdContextLayout } from 'common/osrdContext';
 import { MODES } from 'main/consts';
 import { editorSlice } from 'reducers/editor';
 import editorSelectors from 'reducers/editor/selectors';
-import { updateLastInterfaceVersion } from 'reducers/main';
+import { setFailure, updateLastInterfaceVersion } from 'reducers/main';
 import { mapViewerSlice } from 'reducers/mapViewer';
 import mapViewerSelectors from 'reducers/mapViewer/selectors';
 import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -28,6 +28,7 @@ import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/se
 import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';
 
@@ -118,12 +119,28 @@ const router = createBrowserRouter([
 
 export default function App() {
   const dispatch = useAppDispatch();
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // Blindly dispatch current front version for storage
     dispatch(updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE));
   }, []);
+
+  const handleError = useCallback((event: ErrorEvent) => {
+    if (event.error instanceof Error) {
+      dispatch(setFailure(castErrorToFailure(event.error)));
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('error', handleError);
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, [handleError]);
+
   const { isLoading } = useAuth();
+
   return (
     <Suspense fallback={<Loader />}>
       <DeploymentContextProvider>
