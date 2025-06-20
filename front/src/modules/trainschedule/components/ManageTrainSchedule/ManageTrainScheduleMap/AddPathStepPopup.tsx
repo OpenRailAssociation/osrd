@@ -4,9 +4,9 @@ import { point } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
 import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
-import nextId from 'react-id-generator';
 import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
+import { v4 as uuidV4 } from 'uuid';
 
 import { editoastToEditorEntity } from 'applications/editor/data/api';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
@@ -86,7 +86,7 @@ const AddPathStepPopup = ({
 
       const { properties } = featureInfoClick.feature;
       setNewPathStep({
-        id: nextId(),
+        id: uuidV4(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
         track: properties.id,
         offset: Math.round(offset),
@@ -133,7 +133,7 @@ const AddPathStepPopup = ({
       });
 
       setClickedOp({
-        id: nextId(),
+        id: uuidV4(),
         secondary_code: operationalPoint.extensions!.sncf!.ch,
         uic: operationalPoint.extensions!.identifier!.uic,
         tracks: trackPartCoordinates,

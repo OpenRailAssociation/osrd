@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
-import nextId from 'react-id-generator';
+import { v4 as uuidV4 } from 'uuid';
 
 import EditorContext from 'applications/editor/context';
 import type {
@@ -41,7 +41,9 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
 
   const [tagSpeedLimits, setTagSpeedLimits] = useState<
     { id: string; tag: string; value?: number }[]
-  >(map(entity.properties.speed_limit_by_tag, (value, tag) => ({ tag, value, id: nextId() })));
+  >(() =>
+    map(entity.properties.speed_limit_by_tag, (value, tag) => ({ tag, value, id: uuidV4() }))
+  );
 
   useEffect(() => {
     const newState: Partial<RangeEditionState<SpeedSectionEntity>> = {};
@@ -152,7 +154,7 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
           onClick={async () => {
             setTagSpeedLimits((state) =>
               state.concat({
-                id: nextId(),
+                id: uuidV4(),
                 tag: getNewSpeedLimitTag(
                   entity.properties.speed_limit_by_tag || {},
                   t('Editor.tools.speed-edition.new-tag')

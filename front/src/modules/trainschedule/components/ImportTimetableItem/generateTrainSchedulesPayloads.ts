@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
-import nextId from 'react-id-generator';
+
+import { v4 as uuidV4 } from 'uuid';
 
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
@@ -12,7 +13,7 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     schedule: NonNullable<TrainSchedule['schedule']>;
   }>(
     (acc, step) => {
-      const stepId = nextId();
+      const stepId = uuidV4();
 
       const validUICNumber = !Number.isNaN(step.uic);
 

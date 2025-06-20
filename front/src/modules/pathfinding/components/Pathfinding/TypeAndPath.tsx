@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, TriangleRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
+import { v4 as uuidV4 } from 'uuid';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
@@ -163,7 +163,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
         .map(({ uic, ch }) => ({
           uic,
           secondary_code: ch,
-          id: nextId(),
+          id: uuidV4(),
         }));
 
       setDisplayTypeAndPath(false);
