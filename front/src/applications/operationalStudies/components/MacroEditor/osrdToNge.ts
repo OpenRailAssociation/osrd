@@ -113,6 +113,74 @@ const executeSearch = async (
   return searchResults;
 };
 
+const distance = (a: [number, number], b: [number, number]): number => {
+  const dx = a[0] - b[0];
+  const dy = a[1] - b[1];
+  return Math.hypot(dx, dy);
+};
+
+type PositionedNodeIndexed = { nodeData: NodeIndexed; x: number; y: number };
+
+const avoidNodesOverlaps = (
+  nodes: PositionedNodeIndexed[],
+  // How close is too close?
+  minDistance: number,
+  // How much to push nodes away from each other?
+  pushFactor: number
+): PositionedNodeIndexed[] => {
+  // Compute the center of the nodes.
+  const xs = nodes.map((m) => m.x);
+  const ys = nodes.map((m) => m.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  // Sort nodes by distance to the center.
+  nodes.sort((a, b) => {
+    const dA = distance([a.x, a.y], [centerX, centerY]);
+    const dB = distance([b.x, b.y], [centerX, centerY]);
+    return dA - dB;
+  });
+
+  const result: PositionedNodeIndexed[] = [];
+  for (const node of nodes) {
+    const { nodeData, x: positionX, y: positionY } = node;
+    let newX = positionX;
+    let newY = positionY;
+    const centerToNewNorm = distance([centerX, centerY], [newX, newY]);
+    const centerToNewX = newX - centerX;
+    const centerToNewY = newY - centerY;
+    const normalizedCenterToNewX = centerToNewNorm ? centerToNewX / centerToNewNorm : 0;
+    const normalizedCenterToNewY = centerToNewNorm ? centerToNewY / centerToNewNorm : 0;
+
+    // Check for overlaps with already placed nodes.
+    // TODO: ideally, we should also consider fixed nodes
+    // TODO: that order is somewhat flawed, we should use a
+    // more efficient data structure to repeatedly check for close neighbors
+    for (const placedNode of result) {
+      const { x: placedX, y: placedY } = placedNode;
+      const d = distance([newX, newY], [placedX, placedY]);
+
+      // If the distance is too small, move the node away.
+      // TODO: ideally this would compute actual overlaps, depending on the node size,
+      // not just distances
+      if (d < minDistance) {
+        newX += minDistance * pushFactor * normalizedCenterToNewX;
+        newY += minDistance * pushFactor * normalizedCenterToNewY;
+      }
+    }
+    result.push({
+      nodeData,
+      x: Math.round(newX),
+      y: Math.round(newY),
+    });
+  }
+  return result;
+};
+
 /**
  * Apply a layout on nodes and save the new position.
  * Nodes that are saved are fixed.
@@ -133,6 +201,7 @@ const applyLayout = (state: MacroEditorState, timetableItems: TimetableItem[]) =
   const minY = Math.min(...yCoords);
   const maxX = Math.max(...xCoords);
   const maxY = Math.max(...yCoords);
+
   const width = maxX - minX;
   const height = maxY - minY;
 
@@ -141,17 +210,35 @@ const applyLayout = (state: MacroEditorState, timetableItems: TimetableItem[]) =
   const scaleY = 500;
   const padding = 0.1;
 
+  // Default positions: based on long/lat.
+  const nodes: PositionedNodeIndexed[] = [];
   for (const n of indexedNodes) {
-    if (!n.dbId && n.geocoord !== undefined) {
+    if (!n.dbId) {
+      if (n.geocoord === undefined) {
+        nodes.push({ nodeData: n, x: n.position_x, y: n.position_y });
+        continue;
+      }
       const normalizedX = (n.geocoord.lng - minX) / (width || 1);
       const normalizedY = 1 - (n.geocoord.lat - minY) / (height || 1);
       const paddedX = normalizedX * (1 - 2 * padding) + padding;
       const paddedY = normalizedY * (1 - 2 * padding) + padding;
-      state.updateNodeDataByKey(n.path_item_key, {
-        position_x: Math.round(scaleX * paddedX),
-        position_y: Math.round(scaleY * paddedY),
-      });
+      const positionX = Math.round(scaleX * paddedX);
+      const positionY = Math.round(scaleY * paddedY);
+      nodes.push({ nodeData: n, x: positionX, y: positionY });
     }
+  }
+
+  // Avoid overlaps.
+  // TODO: fine-tune the parameters
+  const nicerNodes = avoidNodesOverlaps(nodes, 100, 2);
+
+  // Update positions.
+  for (const n of nicerNodes) {
+    const { nodeData, x: positionX, y: positionY } = n;
+    state.updateNodeDataByKey(nodeData.path_item_key, {
+      position_x: positionX,
+      position_y: positionY,
+    });
   }
 };
 
