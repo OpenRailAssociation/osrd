@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   SpeedSpaceChart,
@@ -48,11 +48,20 @@ const SpeedSpaceChartContainer = ({
   const root = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
-  const speedSpaceChartData = formatData(
-    timetableItemSimulation,
-    rollingStock.length,
-    selectedTimetableItemPowerRestrictions,
-    pathProperties
+  const speedSpaceChartData = useMemo(
+    () =>
+      formatData(
+        timetableItemSimulation,
+        rollingStock.length,
+        selectedTimetableItemPowerRestrictions,
+        pathProperties
+      ),
+    [
+      timetableItemSimulation,
+      rollingStock.length,
+      selectedTimetableItemPowerRestrictions,
+      pathProperties,
+    ]
   );
 
   const translations = {
