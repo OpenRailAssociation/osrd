@@ -1,9 +1,8 @@
 import type {
   ElectrificationRange,
   OperationalPointWithTimeAndSpeed,
-  SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { ReportTrain } from 'common/api/osrdEditoastApi';
+import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { dateToHHMMSS } from 'utils/date';

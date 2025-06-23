@@ -8,12 +8,8 @@ import type {
   SpeedLimitTagValues,
 } from '@osrd-project/ui-charts';
 
-import type {
-  PathPropertiesFormatted,
-  PositionData,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
-import type { ReportTrain } from 'common/api/osrdEditoastApi';
+import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
+import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { TAG_COLORS } from 'modules/simulationResult/consts';
 import type { SpeedLimitTagValue } from 'modules/simulationResult/types';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';

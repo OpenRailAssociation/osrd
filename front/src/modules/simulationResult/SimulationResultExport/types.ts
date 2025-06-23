@@ -1,5 +1,7 @@
-import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type {
+  RollingStockWithLiveries,
+  SimulationResponseSuccess,
+} from 'common/api/osrdEditoastApi';
 
 export type SimulationSheetData = {
   trainName?: string;

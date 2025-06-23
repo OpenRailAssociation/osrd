@@ -1,4 +1,4 @@
-import type { SimulationResponse } from 'common/api/osrdEditoastApi';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -270,7 +270,7 @@ export function consolidateOvertakesToSingleSteps(
  */
 export function getOperationalPointsWithTimes(
   operationalPoints: SuggestedOP[],
-  simulation: Extract<SimulationResponse, { status: 'success' }>,
+  simulation: SimulationResponseSuccess,
   simulationPathSteps: StdcmPathStep[],
   departureTime: Date
 ): StdcmResultsOperationalPoint[] {

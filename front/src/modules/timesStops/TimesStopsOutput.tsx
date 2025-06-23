@@ -1,10 +1,10 @@
 import cx from 'classnames';
 
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  PathPropertiesFormatted,
+  PathfindingResultSuccess,
   SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
-import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';

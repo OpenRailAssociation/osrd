@@ -6,6 +6,7 @@ import type {
   PathProperties,
   PathfindingResultSuccess,
   SimulationResponse,
+  SimulationResponseSuccess,
   TrainSchedule,
   MacroNodeForm,
   RollingStockWithLiveries,
@@ -96,8 +97,6 @@ export type PathPropertiesFormatted = {
 };
 
 export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
-
-export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 'success' }>;
 
 export type ElectrificationVoltage = {
   type: string;

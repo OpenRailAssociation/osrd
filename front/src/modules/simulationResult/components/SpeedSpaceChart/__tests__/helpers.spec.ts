@@ -1,11 +1,8 @@
 import type { ElectrificationValues, LayerData } from '@osrd-project/ui-charts';
 import { describe, it, expect } from 'vitest';
 
-import type {
-  PathPropertiesFormatted,
-  PositionData,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 
 import {
   formatSpeeds,

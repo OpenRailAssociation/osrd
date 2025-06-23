@@ -9,11 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { CgLoadbar } from 'react-icons/cg';
 import { Rnd } from 'react-rnd';
 
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
+  RollingStockWithLiveries,
   SimulationResponseSuccess,
-  PathPropertiesFormatted,
-} from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+} from 'common/api/osrdEditoastApi';
 
 import { formatData } from './helpers';
 

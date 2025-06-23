@@ -4,11 +4,11 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  PathPropertiesFormatted,
+  PathfindingResultSuccess,
   SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
-import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+} from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';

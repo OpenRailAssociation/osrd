@@ -5,8 +5,8 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type {
   OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
-  SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
 import { formatOperationalPoints } from '../SimulationResultExport/utils';
