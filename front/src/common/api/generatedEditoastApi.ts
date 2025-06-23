@@ -502,7 +502,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
-      postPacedTrainOccupancyBlocks: build.mutation<
+      postPacedTrainOccupancyBlocks: build.query<
         PostPacedTrainOccupancyBlocksApiResponse,
         PostPacedTrainOccupancyBlocksApiArg
       >({
@@ -511,7 +511,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.occupancyBlockForm,
         }),
-        invalidatesTags: ['paced_train'],
+        providesTags: ['paced_train'],
       }),
       postPacedTrainProjectPath: build.query<
         PostPacedTrainProjectPathApiResponse,
@@ -1118,7 +1118,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'train_schedule'],
       }),
-      postTrainScheduleOccupancyBlocks: build.mutation<
+      postTrainScheduleOccupancyBlocks: build.query<
         PostTrainScheduleOccupancyBlocksApiResponse,
         PostTrainScheduleOccupancyBlocksApiArg
       >({
@@ -1127,7 +1127,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.occupancyBlockForm,
         }),
-        invalidatesTags: ['train_schedule'],
+        providesTags: ['train_schedule'],
       }),
       postTrainScheduleProjectPath: build.query<
         PostTrainScheduleProjectPathApiResponse,
