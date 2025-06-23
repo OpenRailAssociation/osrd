@@ -709,11 +709,17 @@ export const handleOperation = async ({
 
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const macroNodes: MacroNodeForm[] = [];
+  const macroNodeTrigrams = new Set<string>();
+  const macroNodeNames = new Set<string>();
   for (const node of dto.nodes) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
       path_item_key: `trigram:${node.betriebspunktName}`,
     });
+    if (macroNodeTrigrams.has(node.betriebspunktName)) console.log('OOPSIE, betriebspunktName', node.betriebspunktName, `(${node.fullName})`);
+    macroNodeTrigrams.add(node.betriebspunktName);
+    if (macroNodeNames.has(node.fullName)) console.log('EEHHHH, fullName', node.fullName, `(${node.betriebspunktName})`);
+    macroNodeNames.add(node.fullName);
   }
 
   const trainSchedules: TrainSchedule[] = [];
