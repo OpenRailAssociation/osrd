@@ -6,10 +6,15 @@ import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.api.pathfinding.runPathfinding
+import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
@@ -187,5 +192,69 @@ class PathfindingElectrificationTest : ApiTest() {
                 Arguments.of(false, Direction.DECREASING, false)
             )
         }
+    }
+
+    @Test
+    fun differentPathsDueToElectrificationConstraints() {
+        val waypointsStart = listOf(TrackLocation("TA1", Offset(1550.meters)))
+        val waypointsEnd = listOf(TrackLocation("TH0", Offset(103.meters)))
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+
+        // Run a pathfinding with an electric train on an all-electric infra
+        val voltageAllTrackRanges =
+            rjsInfra.trackSections
+                .stream()
+                .map { rjsTrackSection: RJSTrackSection ->
+                    RJSApplicableDirectionsTrackRange(
+                        rjsTrackSection.id,
+                        ApplicableDirection.BOTH,
+                        0.0,
+                        rjsTrackSection.length
+                    )
+                }
+                .toList()
+        val voltageAllElectrification = RJSElectrification("25000V", voltageAllTrackRanges)
+        rjsInfra.electrifications = ArrayList(listOf(voltageAllElectrification))
+        val infraWithAllElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
+
+        val normalPathResp =
+            runPathfinding(
+                infraWithAllElectrifiedTrack,
+                getPathfindingBlockRequest(
+                    TestTrains.FAST_ELECTRIC_TRAIN,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        val normalTracks =
+            (normalPathResp as PathfindingBlockSuccess).trackSectionRanges.map { it.trackSection }
+
+        // Replace with electrifications
+        // Set voltage to 25000V everywhere except for trackSectionToBlock
+        val trackSectionToBlock = normalTracks.first { trackName -> trackName.startsWith("TD") }
+
+        val voltagePartialTrackRanges =
+            voltageAllTrackRanges.filter { it.trackSectionID != trackSectionToBlock }
+        val voltagePartialElectrification = RJSElectrification("25000V", voltagePartialTrackRanges)
+        rjsInfra.electrifications = ArrayList(listOf(voltagePartialElectrification))
+        val infraPartialElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
+
+        // Run another pathfinding with an electric train
+        val partialElectricPathResp =
+            runPathfinding(
+                infraPartialElectrifiedTrack,
+                getPathfindingBlockRequest(
+                    TestTrains.FAST_ELECTRIC_TRAIN,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+
+        // Check that the paths are different, we need to avoid the non-electrified track
+        assertThat(partialElectricPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        val partialElectrifiedTracks =
+            (partialElectricPathResp as PathfindingBlockSuccess).trackSectionRanges.map {
+                it.trackSection
+            }
+        assertThat(normalTracks).usingRecursiveComparison().isNotEqualTo(partialElectrifiedTracks)
     }
 }
