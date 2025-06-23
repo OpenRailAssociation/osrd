@@ -149,10 +149,10 @@ export default class TrainProjectionLazyLoader {
         .unwrap();
     }
 
-    const rawTrainScheduleResults = await trainSchedulePromise;
-    const rawPacedTrainResults = await pacedTrainPromise;
-    const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
-    const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
+    const rawTrainScheduleResults = (await trainSchedulePromise) ?? {};
+    const rawPacedTrainResults = (await pacedTrainPromise) ?? {};
+    const rawTrainScheduleOccupancyBlocks = (await trainScheduleOccupancyBlocksPromise) ?? {};
+    const rawPacedTrainOccupancyBlocks = (await pacedTrainOccupancyBlocksPromise) ?? {};
 
     if (this.cancelled) {
       return;
@@ -164,7 +164,7 @@ export default class TrainProjectionLazyLoader {
       const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));
       rawResults.set(trainScheduleId, {
         ...result,
-        signal_updates: rawTrainScheduleOccupancyBlocks[id].signal_updates,
+        signal_updates: rawTrainScheduleOccupancyBlocks[id]?.signal_updates ?? [],
       });
     }
 
@@ -172,7 +172,7 @@ export default class TrainProjectionLazyLoader {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       rawResults.set(pacedTrainId, {
         ...result,
-        signal_updates: rawPacedTrainOccupancyBlocks[id].signal_updates,
+        signal_updates: rawPacedTrainOccupancyBlocks[id]?.signal_updates ?? [],
       });
     }
 
