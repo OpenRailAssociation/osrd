@@ -697,6 +697,7 @@ mod tests {
     use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
+    use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
     use editoast_schemas::paced_train::InitialSpeedChangeGroup;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrain;
@@ -811,6 +812,36 @@ mod tests {
             .expect("Updated paced train not found");
 
         assert_eq!(paced_train_base, updated_paced_train.into());
+    }
+
+    #[rstest]
+    async fn update_paced_train_with_duplicated_exceptions() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+
+        let mut paced_train_base = simple_paced_train_base();
+        paced_train_base.paced.time_window = Duration::minutes(90).try_into().unwrap();
+        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
+        paced_train_base.exceptions = vec![
+            simple_created_exception_with_change_groups("duplicated_key_1"),
+            simple_modified_exception_with_change_groups("duplicated_key_1", 0),
+        ];
+
+        let request = app
+            .put(format!("/paced_train/{}", paced_train.id).as_str())
+            .json(&json!(&paced_train_base));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .bytes();
+        assert_eq!(
+            &String::from_utf8(response).unwrap(),
+            "Failed to deserialize the JSON body into the target type: exceptions: Duplicate exception key: duplicated_key_1 at line 1 column 1328"
+        )
     }
 
     #[rstest]

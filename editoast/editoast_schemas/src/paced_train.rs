@@ -1,6 +1,9 @@
+use std::collections::HashSet;
+
 use chrono::DateTime;
 use chrono::Utc;
 use serde::Deserialize;
+use serde::Deserializer;
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 use utoipa::ToSchema;
@@ -51,9 +54,28 @@ pub struct PacedTrain {
     pub train_schedule_base: TrainSchedule,
     #[schema(inline)]
     pub paced: Paced,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_exceptions")]
     #[schema(required)]
     pub exceptions: Vec<PacedTrainException>,
+}
+
+fn deserialize_exceptions<'de, D>(deserializer: D) -> Result<Vec<PacedTrainException>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let list = Vec::<PacedTrainException>::deserialize(deserializer)?;
+
+    let mut seen = HashSet::with_capacity(list.len());
+    for e in &list {
+        let key = &e.key;
+        if !seen.insert(key) {
+            return Err(serde::de::Error::custom(format!(
+                "Duplicate exception key: {}",
+                key
+            )));
+        }
+    }
+    Ok(list)
 }
 
 /// Represents an exception for a paced train occurrence.

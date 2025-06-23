@@ -1140,6 +1140,33 @@ mod tests {
     }
 
     #[rstest]
+    async fn create_paced_train_with_duplicated_exceptions() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let mut paced_train_1 = simple_paced_train_base();
+
+        paced_train_1.exceptions = vec![
+            simple_created_exception_with_change_groups("duplicated_key_1"),
+            simple_modified_exception_with_change_groups("duplicated_key_1", 0),
+        ];
+
+        let request = app
+            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .json(&vec![paced_train_1.clone()]);
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .bytes();
+        assert_eq!(
+            &String::from_utf8(response).unwrap(),
+            "Failed to deserialize the JSON body into the target type: [0].exceptions: Duplicate exception key: duplicated_key_1 at line 1 column 2448"
+        )
+    }
+
+    #[rstest]
     async fn create_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
