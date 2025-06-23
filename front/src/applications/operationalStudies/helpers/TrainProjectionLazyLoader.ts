@@ -103,14 +103,17 @@ export default class TrainProjectionLazyLoader {
 
       trainScheduleOccupancyBlocksPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postTrainScheduleOccupancyBlocks.initiate({
-            occupancyBlockForm: {
-              infra_id: infraId,
-              path,
-              ids: rawTrainScheduleIds,
-              electrical_profile_set_id: electricalProfileSetId,
+          osrdEditoastApi.endpoints.postTrainScheduleOccupancyBlocks.initiate(
+            {
+              occupancyBlockForm: {
+                infra_id: infraId,
+                path,
+                ids: rawTrainScheduleIds,
+                electrical_profile_set_id: electricalProfileSetId,
+              },
             },
-          })
+            { subscribe: false }
+          )
         )
         .unwrap();
     }
@@ -137,14 +140,17 @@ export default class TrainProjectionLazyLoader {
 
       pacedTrainOccupancyBlocksPromise = this.options
         .dispatch(
-          osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate({
-            occupancyBlockForm: {
-              infra_id: infraId,
-              path,
-              ids: rawPacedTrainIds,
-              electrical_profile_set_id: electricalProfileSetId,
+          osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate(
+            {
+              occupancyBlockForm: {
+                infra_id: infraId,
+                path,
+                ids: rawPacedTrainIds,
+                electrical_profile_set_id: electricalProfileSetId,
+              },
             },
-          })
+            { subscribe: false }
+          )
         )
         .unwrap();
     }
