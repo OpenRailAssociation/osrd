@@ -125,13 +125,15 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
  * @throws {Error} - Throws an error if the project language is unsupported.
  */
 
-export function getTranslations<T>(translations: { en: T; fr: T }): T {
+export function getTranslations<T>(translations: { en: T; fr: T; de: T }): T {
   const projectLanguage = process.env.PROJECT_LANGUAGE;
   switch (projectLanguage) {
     case 'Français':
       return translations.fr;
     case 'English':
       return translations.en;
+    case 'Deutsch':
+      return translations.de;
     default:
       throw new Error(`Unsupported project language: "${projectLanguage}".`);
   }

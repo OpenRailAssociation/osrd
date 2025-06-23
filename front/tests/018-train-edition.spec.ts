@@ -100,6 +100,11 @@ test.describe('Edit trains and missions', () => {
         ...enScenarioTranslations,
         ...enCommonTranslations,
       },
+      de: {
+        ...enManageTrainScheduleTranslations,
+        ...enScenarioTranslations,
+        ...enCommonTranslations,
+      },
       fr: {
         ...frManageTrainScheduleTranslations,
         ...frScenarioTranslations,

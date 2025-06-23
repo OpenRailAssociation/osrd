@@ -26,6 +26,7 @@ test.describe('Home page OSRD', () => {
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: enTranslations,
     });
 
     // List of expected links on the home page

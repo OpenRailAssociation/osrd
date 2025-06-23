@@ -11,6 +11,7 @@ import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class ViaSection extends STDCMPage {
@@ -95,6 +96,7 @@ class ViaSection extends STDCMPage {
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: deTranslations,
     });
     const warning = this.getViaWarning(viaNumber);
     // Helper function to fill common fields

@@ -132,6 +132,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
     const invalidTrainsMessageText = await this.invalidTrainsMessage.innerText();
@@ -287,6 +288,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   ): Promise<void> {
     const translations = getTranslations({
       en: enTranslations,
+      de: enTranslations,
       fr: frTranslations,
     });
     await this.timetableFilterButton.click();

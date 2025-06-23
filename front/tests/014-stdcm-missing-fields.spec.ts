@@ -20,6 +20,7 @@ import type { StdcmTranslations } from './utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 
 test.describe('Verify stdcm missing fields', () => {
   test.slow(); // Mark test as slow due to multiple steps
@@ -45,7 +46,7 @@ test.describe('Verify stdcm missing fields', () => {
       new DestinationSection(page),
       new SimulationResultPage(page),
     ];
-    translations = getTranslations({ en: enTranslations, fr: frTranslations });
+    translations = getTranslations({ en: enTranslations, fr: frTranslations, de: deTranslations });
 
     await page.goto('/stdcm');
     await page.waitForLoadState('networkidle');

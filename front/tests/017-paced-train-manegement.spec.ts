@@ -112,6 +112,12 @@ test.describe('Verify simulation configuration in operational studies for train 
         ...frScenarioTranslations,
         ...frCommonTranslations,
       },
+      de: {
+        ...enManageTrainScheduleTranslations,
+        ...enTimeStopsTranslations,
+        ...enScenarioTranslations,
+        ...enCommonTranslations,
+      },
     });
   });
 

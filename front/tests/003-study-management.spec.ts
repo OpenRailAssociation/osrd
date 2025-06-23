@@ -40,6 +40,7 @@ test.describe('Validate the Study creation workflow', () => {
     translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: enTranslations,
     });
   });
 

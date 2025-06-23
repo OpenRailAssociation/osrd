@@ -11,6 +11,7 @@ import type { STDCMResultTableRow, StdcmTranslations } from '../../utils/types';
 
 const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
+const deTranslations: StdcmTranslations = readJsonFile('public/locales/de/stdcm.json');
 
 class SimulationResultPage extends STDCMPage {
   private readonly mapResultContainer: Locator;
@@ -183,6 +184,7 @@ class SimulationResultPage extends STDCMPage {
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: deTranslations,
     });
     const noCapacityLengthAndDuration = '— ';
     await this.simulationItem.nth(simulationIndex).click();

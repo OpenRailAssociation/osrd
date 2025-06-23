@@ -96,6 +96,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
+      de: enTranslations,
     });
   });
 

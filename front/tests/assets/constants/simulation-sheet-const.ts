@@ -9,10 +9,14 @@ const enTranslations: FlatTranslations = readJsonFile<Record<string, FlatTransla
 const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/stdcm.json'
 ).reportSheet;
+const deTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
+  'public/locales/en/stdcm.json'
+).reportSheet;
 
 const simulationSheetDetails = (): PdfSimulationContent => {
   const translations = getTranslations({
     en: enTranslations,
+    de: deTranslations,
     fr: frTranslations,
   });
   return {
