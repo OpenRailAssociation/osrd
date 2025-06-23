@@ -70,6 +70,7 @@ use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 crate::routes! {
     "/timetable" => {
@@ -731,7 +732,9 @@ fn build_conflict_core_request(
     // Build train schedule train requirements
     for (train, sim) in trains.iter().zip(train_simulations) {
         let final_output = match sim.as_ref() {
-            simulation::Response::Success { final_output, .. } => final_output,
+            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
+                final_output
+            }
             _ => continue,
         };
         let key = TrainId::TrainSchedule(train.id).to_string();
@@ -761,7 +764,9 @@ fn build_conflict_core_request(
 
         for (index, sim) in simulations.into_iter().enumerate() {
             let final_output = match sim.as_ref() {
-                simulation::Response::Success { final_output, .. } => final_output,
+                simulation::Response::Success(SimulationResponseSuccess {
+                    final_output, ..
+                }) => final_output,
                 _ => continue,
             };
 
@@ -1258,17 +1263,19 @@ mod tests {
                 end_time: 15,
             }],
         };
-        let train_simulations = [Arc::new(simulation::Response::Success {
-            base: ReportTrain::default(),
-            provisional: ReportTrain::default(),
-            final_output: CompleteReportTrain {
-                spacing_requirements: vec![spacing_requirement.clone()],
-                routing_requirements: vec![routing_requirement.clone()],
-                ..Default::default()
+        let train_simulations = [Arc::new(simulation::Response::Success(
+            SimulationResponseSuccess {
+                base: ReportTrain::default(),
+                provisional: ReportTrain::default(),
+                final_output: CompleteReportTrain {
+                    spacing_requirements: vec![spacing_requirement.clone()],
+                    routing_requirements: vec![routing_requirement.clone()],
+                    ..Default::default()
+                },
+                mrsp: SpeedLimitProperties::default(),
+                electrical_profiles: ElectricalProfiles::default(),
             },
-            mrsp: SpeedLimitProperties::default(),
-            electrical_profiles: ElectricalProfiles::default(),
-        })];
+        ))];
         let paced_id = 42;
         let paced_start_time = NaiveDate::from_ymd_opt(2025, 1, 1)
             .unwrap()
@@ -1290,7 +1297,7 @@ mod tests {
         };
         let paced_trains = vec![paced_train.clone()];
         let paced_train_simulations = std::iter::repeat_n(
-            Arc::new(simulation::Response::Success {
+            Arc::new(simulation::Response::Success(SimulationResponseSuccess {
                 base: ReportTrain::default(),
                 provisional: ReportTrain::default(),
                 final_output: CompleteReportTrain {
@@ -1300,7 +1307,7 @@ mod tests {
                 },
                 mrsp: SpeedLimitProperties::default(),
                 electrical_profiles: ElectricalProfiles::default(),
-            }),
+            })),
             2,
         )
         .collect_vec();

@@ -47,6 +47,7 @@ use crate::views::projection::ProjectPathTrainResult;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
 use crate::views::projection::interpolate;
+use crate::views::timetable::SimulationResponseSuccess;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
 use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
@@ -882,7 +883,9 @@ fn find_track_occupancy_for_operational_point(
 
     // Get the positions and the times from the simulation
     let report_train = match simulation {
-        Response::Success { final_output, .. } => &final_output.report_train,
+        Response::Success(SimulationResponseSuccess { final_output, .. }) => {
+            &final_output.report_train
+        }
         _ => {
             tracing::info!(train_schedule.id, "simulation failed");
             return vec![];

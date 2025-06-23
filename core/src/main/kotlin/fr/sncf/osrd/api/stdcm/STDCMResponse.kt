@@ -7,7 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
 import fr.sncf.osrd.api.pathfinding.polymorphicPathfindingResponseAdapter
-import fr.sncf.osrd.api.standalone_sim.SimulationResponse
+import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
@@ -17,7 +17,7 @@ import java.time.ZonedDateTime
 interface STDCMResponse
 
 class STDCMSuccess(
-    var simulation: SimulationResponse,
+    var simulation: SimulationSuccess,
     var path: PathfindingBlockResponse,
     @Json(name = "departure_time") var departureTime: ZonedDateTime
 ) : STDCMResponse

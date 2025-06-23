@@ -57,6 +57,7 @@ use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::timetable::Conflict;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
 use crate::views::timetable::train_simulation_batch;
 
@@ -76,8 +77,7 @@ crate::routes! {
 #[allow(clippy::large_enum_variant)]
 enum StdcmResponse {
     Success {
-        #[schema(value_type = SimulationResponse)]
-        simulation: simulation::Response,
+        simulation: SimulationResponseSuccess,
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
@@ -396,7 +396,9 @@ fn build_train_requirements(
     let mut trains_requirements = HashMap::new();
     for (train, sim) in train_schedules.iter().zip(simulation_responses) {
         let final_output = match sim.as_ref() {
-            simulation::Response::Success { final_output, .. } => final_output,
+            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
+                final_output
+            }
             _ => continue,
         };
 
@@ -559,6 +561,7 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
+    use core_client::simulation::SimulationSuccess;
     use editoast_common::units;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::fixtures::simple_rolling_stock;
@@ -691,7 +694,7 @@ mod tests {
     }
 
     fn simulation_response() -> core_client::simulation::Response {
-        core_client::simulation::Response::Success {
+        core_client::simulation::Response::Success(SimulationSuccess {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],
@@ -727,7 +730,7 @@ mod tests {
                 boundaries: vec![],
                 values: vec![],
             },
-        }
+        })
     }
 
     #[test]
@@ -935,7 +938,7 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response(),
+                simulation: simulation_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -964,7 +967,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response().into(),
+                    simulation: simulation_response().success().unwrap().into(),
                     path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime")
@@ -981,7 +984,7 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response(),
+                simulation: simulation_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -1025,7 +1028,7 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response(),
+                simulation: simulation_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -1071,7 +1074,7 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response(),
+                simulation: simulation_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -1107,7 +1110,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response().into(),
+                    simulation: simulation_response().success().unwrap().into(),
                     path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime")

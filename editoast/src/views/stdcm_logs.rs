@@ -162,6 +162,8 @@ mod tests {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
+    use core_client::simulation::Response;
+    use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_authz as authz;
     use editoast_authz::InfraGrant;
@@ -259,7 +261,7 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response(),
+                simulation: simulation_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -278,8 +280,8 @@ mod tests {
         }
     }
 
-    fn simulation_response() -> core_client::simulation::Response {
-        core_client::simulation::Response::Success {
+    fn simulation_response() -> Response {
+        Response::Success(SimulationSuccess {
             base: ReportTrain {
                 positions: vec![],
                 times: vec![],
@@ -315,7 +317,7 @@ mod tests {
                 boundaries: vec![],
                 values: vec![],
             },
-        }
+        })
     }
 
     async fn execute_stdcm_request(app: &TestApp, user: Option<&authz::subject::User>) -> String {

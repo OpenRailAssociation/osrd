@@ -36,6 +36,7 @@ use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
 
 editoast_common::schemas! {
@@ -448,7 +449,9 @@ pub async fn extract_train_details(
             zone_updates,
             ..
         } = match Arc::unwrap_or_clone(sim) {
-            simulation::Response::Success { final_output, .. } => final_output,
+            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
+                final_output
+            }
             _ => continue,
         };
         let ReportTrain {
