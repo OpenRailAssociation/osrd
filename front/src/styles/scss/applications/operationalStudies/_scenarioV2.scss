@@ -266,6 +266,7 @@
   .scenario-managetrainschedule {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     background-color: var(--coolgray1);
     padding-left: 8px;
     animation: fadein 1s;
