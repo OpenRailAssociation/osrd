@@ -121,6 +121,8 @@ export default class MacroEditorState {
         delete trigramAggreg[trig];
       }
       trigramAggreg[trig] = sortBy(trigramAggreg[trig], (key) => {
+        const node = this.nodes[this.indexByPathKey[key]];
+        if (node?.dbId) return 0;
         if (key.startsWith('op_id:')) return 1;
         if (key.startsWith('trigram:')) return 2;
         if (key.startsWith('uic:')) return 3;
