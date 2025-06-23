@@ -1,4 +1,4 @@
-// shared between scenario-sidemenu and .scenario-timetable-managetrainschedule
+// shared between scenario-sidemenu and .scenario-timetable-manage-timetable-item
 %scenario-timetable-train {
   width: 100%;
   position: relative;
@@ -338,8 +338,8 @@
     background-color: var(--coolgray1);
   }
 
-  .scenario-timetable-managetrainschedule {
-    .scenario-timetable-managetrainschedule-header {
+  .scenario-timetable-manage-timetable-item {
+    .scenario-timetable-manage-timetable-item-header {
       display: flex;
       flex-direction: column;
       padding: 8px 8px 0;
@@ -359,7 +359,7 @@
       }
     }
 
-    .scenario-timetable-managetrainschedule-body {
+    .scenario-timetable-manage-timetable-item-body {
       padding: 8px;
     }
 

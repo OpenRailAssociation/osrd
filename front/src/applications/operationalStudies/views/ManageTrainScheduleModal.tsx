@@ -22,7 +22,7 @@ const ManageTrainScheduleModal = ({
   scenario,
   infraState,
 }: ManageTrainScheduleModalProps) => (
-  <div className="scenario-managetrainschedule-modal">
+  <div className="scenario-manage-timetable-item-modal">
     <TimetableManageTrainSchedule
       displayTrainScheduleManagement={displayTrainScheduleManagement}
       setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
@@ -35,7 +35,7 @@ const ManageTrainScheduleModal = ({
 
     {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
       displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-      <div className="scenario-managetrainschedule" data-testid="manage-train-schedule">
+      <div className="scenario-manage-timetable-item" data-testid="manage-timetable-item">
         <ManageTrainScheduleContextProvider>
           <ManageTrainSchedule />
         </ManageTrainScheduleContextProvider>
@@ -43,7 +43,7 @@ const ManageTrainScheduleModal = ({
     )}
 
     {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
-      <div className="scenario-managetrainschedule">
+      <div className="scenario-manage-timetable-item">
         <ImportTimetableItem scenario={scenario} upsertTimetableItems={upsertTimetableItems} />
       </div>
     )}

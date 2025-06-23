@@ -90,8 +90,8 @@ const TimetableManageTrainSchedule = ({
   };
 
   return (
-    <div className="scenario-timetable-managetrainschedule">
-      <div className="scenario-timetable-managetrainschedule-header">
+    <div className="scenario-timetable-manage-timetable-item">
+      <div className="scenario-timetable-manage-timetable-item-header">
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
           timetableItemToEditData && (
             <>
@@ -182,7 +182,7 @@ const TimetableManageTrainSchedule = ({
         )}
       </div>
       <div
-        className="scenario-timetable-managetrainschedule-body"
+        className="scenario-timetable-manage-timetable-item-body"
         role="button"
         tabIndex={0}
         onClick={leaveManageTrainSchedule}
