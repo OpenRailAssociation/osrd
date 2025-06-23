@@ -5,14 +5,18 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.takes.TakesUtils
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -378,15 +382,11 @@ class PathfindingTest : ApiTest() {
             .isEqualTo("core:unknown_track_section")
     }
 
-    /*
     @Test
-    @Throws(Exception::class)
     fun incompatibleLoadingGaugeTest() {
-        val waypointStart =
-            PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
+        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         for (track in rjsInfra.trackSections) if (track.getID() == "ne.micro.foo_to_bar")
             track.loadingGaugeLimits =
@@ -394,30 +394,59 @@ class PathfindingTest : ApiTest() {
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
 
         // Check that we can go through the infra with a small train
-        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN), null))
-            .isNotNull()
+        val normalPathResp =
+            runPathfinding(
+                infra,
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((normalPathResp as PathfindingBlockSuccess).length.distance)
+            .isEqualTo(10200.meters)
 
         // Check that we can't go through the infra with a large train
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE), null)
-        }
-            .isExactlyInstanceOf(OSRDError::class.java)
-            .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
-                    .isEqualTo(ErrorType.PathfindingGaugeError)
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
-                    .isEqualTo(mapOf<String, Any>())
+        assertThatThrownBy {
+                runPathfinding(
+                    infra,
+                    getPathfindingBlockRequest(
+                        TestTrains.FAST_TRAIN_LARGE_GAUGE,
+                        listOf(waypointsStart, waypointsEnd)
+                    )
+                )
+            }
+            .isExactlyInstanceOf(NoPathFoundException::class.java)
+            .satisfies({ exception: Throwable ->
+                val resp =
+                    (exception as NoPathFoundException).response
+                        as IncompatibleConstraintsPathResponse
+                assert(resp.relaxedConstraintsPath.length.distance == 10200.meters)
+                assert(
+                    resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
+                        RangeValue<String>(
+                            Pathfinding.Range(Offset(1100.meters), Offset(2100.meters)),
+                            null
+                        )
+                )
             })
 
         // Check that we can go until right before the blocked section with a large train
-        waypoints[1][0] =
-            PathfindingWaypoint("ne.micro.foo_to_bar", 999.0, EdgeDirection.START_TO_STOP)
-        assertThat(
-            runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE), null)
-        )
-            .isNotNull()
+        val closerWaypointsEnd = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(1000.meters)))
+        val shorterPathResp =
+            runPathfinding(
+                infra,
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, closerWaypointsEnd)
+                )
+            )
+        assertThat(shorterPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((shorterPathResp as PathfindingBlockSuccess).length.distance)
+            .isEqualTo(1100.meters)
     }
 
+    /*
     @Test
     @Throws(Exception::class)
     fun differentPathsDueToElectrificationConstraints() {
