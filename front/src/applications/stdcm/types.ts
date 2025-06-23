@@ -6,7 +6,6 @@ import type {
   PathfindingResultSuccess,
   PostTimetableByIdStdcmApiResponse,
   RollingStockWithLiveries,
-  SimulationResponse,
   TowedRollingStock,
   PathProperties,
   LoadingGaugeType,
@@ -23,11 +22,10 @@ import type { ValueOf } from 'utils/types';
 
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
 
-export type StdcmSuccessResponse = Omit<
-  Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
-  'simulation'
+export type StdcmSuccessResponse = Extract<
+  PostTimetableByIdStdcmApiResponse,
+  { status: 'success' }
 > & {
-  simulation: Extract<SimulationResponse, { status: 'success' }>;
   rollingStock: LightRollingStock;
   creationDate: Date;
   speedLimitByTag?: string;

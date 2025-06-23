@@ -2098,7 +2098,7 @@ export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation re
   | {
       departure_time: string;
       path: PathfindingResultSuccess;
-      simulation: SimulationResponse;
+      simulation: SimulationResponseSuccess;
       status: 'success';
     }
   | {
@@ -3635,60 +3635,62 @@ export type ZoneUpdate = {
   time: number;
   zone: string;
 };
+export type SimulationResponseSuccess = {
+  base: ReportTrain;
+  electrical_profiles: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: (
+      | {
+          electrical_profile_type: 'no_profile';
+        }
+      | {
+          electrical_profile_type: 'profile';
+          handled: boolean;
+          profile?: string | null;
+        }
+    )[];
+  };
+  final_output: ReportTrain & {
+    routing_requirements: RoutingRequirement[];
+    signal_critical_positions: SignalCriticalPosition[];
+    spacing_requirements: SpacingRequirement[];
+    zone_updates: ZoneUpdate[];
+  };
+  /** A MRSP computation result (Most Restrictive Speed Profile) */
+  mrsp: {
+    /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: {
+      source?:
+        | (
+            | {
+                speed_limit_source_type: 'given_train_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'fallback_tag';
+                tag: string;
+              }
+            | {
+                speed_limit_source_type: 'unknown_tag';
+              }
+          )
+        | null;
+      /** in meters per second */
+      speed: number;
+    }[];
+  };
+  provisional: ReportTrain;
+};
 export type SimulationResponse =
-  | {
-      base: ReportTrain;
-      electrical_profiles: {
-        /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-        boundaries: number[];
-        /** List of `n+1` values associated to the ranges */
-        values: (
-          | {
-              electrical_profile_type: 'no_profile';
-            }
-          | {
-              electrical_profile_type: 'profile';
-              handled: boolean;
-              profile?: string | null;
-            }
-        )[];
-      };
-      final_output: ReportTrain & {
-        routing_requirements: RoutingRequirement[];
-        signal_critical_positions: SignalCriticalPosition[];
-        spacing_requirements: SpacingRequirement[];
-        zone_updates: ZoneUpdate[];
-      };
-      /** A MRSP computation result (Most Restrictive Speed Profile) */
-      mrsp: {
-        /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-        boundaries: number[];
-        /** List of `n+1` values associated to the ranges */
-        values: {
-          source?:
-            | (
-                | {
-                    speed_limit_source_type: 'given_train_tag';
-                    tag: string;
-                  }
-                | {
-                    speed_limit_source_type: 'fallback_tag';
-                    tag: string;
-                  }
-                | {
-                    speed_limit_source_type: 'unknown_tag';
-                  }
-              )
-            | null;
-          /** in meters per second */
-          speed: number;
-        }[];
-      };
-      provisional: ReportTrain;
+  | (SimulationResponseSuccess & {
       status: 'success';
-    }
+    })
   | {
       pathfinding_failed: PathfindingFailure;
       status: 'pathfinding_failed';
@@ -4247,7 +4249,7 @@ export type StdcmResponse =
   | {
       departure_time: string;
       path: PathfindingResultSuccess;
-      simulation: SimulationResponse;
+      simulation: SimulationResponseSuccess;
       status: 'success';
     }
   | {

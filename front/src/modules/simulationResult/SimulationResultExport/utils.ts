@@ -3,9 +3,12 @@ import * as d3 from 'd3';
 import type {
   OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
-  SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import { type ReportTrain, type TrackSection } from 'common/api/osrdEditoastApi';
+import {
+  type ReportTrain,
+  type TrackSection,
+  type SimulationResponseSuccess,
+} from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { Train } from 'reducers/osrdconf/types';
 import type { SpeedRanges } from 'reducers/simulationResults/types';

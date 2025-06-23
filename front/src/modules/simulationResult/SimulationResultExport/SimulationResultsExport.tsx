@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next';
 import type {
   OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
-  SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type {
   PathfindingResultSuccess,
   RollingStockWithLiveries,
+  SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 

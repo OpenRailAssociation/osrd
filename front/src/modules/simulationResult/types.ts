@@ -2,16 +2,14 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 
-import type {
-  PathPropertiesFormatted,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
   OccupancyBlocks,
   PathProperties,
   PathfindingResultSuccess,
   RollingStockWithLiveries,
+  SimulationResponseSuccess,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';

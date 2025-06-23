@@ -4,6 +4,7 @@ import type { Dictionary } from 'lodash';
 import type {
   PathfindingResultSuccess,
   PathProperties,
+  SimulationResponseSuccess,
   SimulationSummaryResult,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
@@ -24,7 +25,6 @@ import type {
   ElectrificationValue,
   PathPropertiesFormatted,
   PositionData,
-  SimulationResponseSuccess,
 } from './types';
 
 /**
