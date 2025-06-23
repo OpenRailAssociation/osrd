@@ -3567,7 +3567,7 @@ paths:
                     path:
                       $ref: '#/components/schemas/PathfindingResultSuccess'
                     simulation:
-                      $ref: '#/components/schemas/SimulationResponse'
+                      $ref: '#/components/schemas/SimulationResponseSuccess'
                     status:
                       type: string
                       enum:
@@ -11815,153 +11815,16 @@ components:
           format: int64
     SimulationResponse:
       oneOf:
-      - type: object
-        required:
-        - base
-        - provisional
-        - final_output
-        - mrsp
-        - electrical_profiles
-        - status
-        properties:
-          base:
-            $ref: '#/components/schemas/ReportTrain'
-          electrical_profiles:
-            type: object
-            required:
-            - boundaries
-            - values
-            properties:
-              boundaries:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of `n` boundaries of the ranges (block path).
-                  A boundary is a distance from the beginning of the path in mm.
-              values:
-                type: array
-                items:
-                  oneOf:
-                  - type: object
-                    required:
-                    - electrical_profile_type
-                    properties:
-                      electrical_profile_type:
-                        type: string
-                        enum:
-                        - no_profile
-                  - type: object
-                    required:
-                    - handled
-                    - electrical_profile_type
-                    properties:
-                      electrical_profile_type:
-                        type: string
-                        enum:
-                        - profile
-                      handled:
-                        type: boolean
-                      profile:
-                        type: string
-                        nullable: true
-                description: List of `n+1` values associated to the ranges
-          final_output:
-            allOf:
-            - $ref: '#/components/schemas/ReportTrain'
-            - type: object
-              required:
-              - signal_critical_positions
-              - zone_updates
-              - spacing_requirements
-              - routing_requirements
-              properties:
-                routing_requirements:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/RoutingRequirement'
-                signal_critical_positions:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SignalCriticalPosition'
-                spacing_requirements:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SpacingRequirement'
-                zone_updates:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ZoneUpdate'
-          mrsp:
-            type: object
-            description: A MRSP computation result (Most Restrictive Speed Profile)
-            required:
-            - boundaries
-            - values
-            properties:
-              boundaries:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of `n` boundaries of the ranges (block path).
-                  A boundary is a distance from the beginning of the path in mm.
-              values:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - speed
-                  properties:
-                    source:
-                      allOf:
-                      - oneOf:
-                        - type: object
-                          required:
-                          - tag
-                          - speed_limit_source_type
-                          properties:
-                            speed_limit_source_type:
-                              type: string
-                              enum:
-                              - given_train_tag
-                            tag:
-                              type: string
-                        - type: object
-                          required:
-                          - tag
-                          - speed_limit_source_type
-                          properties:
-                            speed_limit_source_type:
-                              type: string
-                              enum:
-                              - fallback_tag
-                            tag:
-                              type: string
-                        - type: object
-                          required:
-                          - speed_limit_source_type
-                          properties:
-                            speed_limit_source_type:
-                              type: string
-                              enum:
-                              - unknown_tag
-                      nullable: true
-                    speed:
-                      type: number
-                      format: double
-                      description: in meters per second
-                description: List of `n+1` values associated to the ranges
-          provisional:
-            $ref: '#/components/schemas/ReportTrain'
-          status:
-            type: string
-            enum:
-            - success
+      - allOf:
+        - $ref: '#/components/schemas/SimulationResponseSuccess'
+        - type: object
+          required:
+          - status
+          properties:
+            status:
+              type: string
+              enum:
+              - success
       - type: object
         required:
         - pathfinding_failed
@@ -11984,6 +11847,149 @@ components:
             type: string
             enum:
             - simulation_failed
+    SimulationResponseSuccess:
+      type: object
+      required:
+      - base
+      - provisional
+      - final_output
+      - mrsp
+      - electrical_profiles
+      properties:
+        base:
+          $ref: '#/components/schemas/ReportTrain'
+        electrical_profiles:
+          type: object
+          required:
+          - boundaries
+          - values
+          properties:
+            boundaries:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of `n` boundaries of the ranges (block path).
+                A boundary is a distance from the beginning of the path in mm.
+            values:
+              type: array
+              items:
+                oneOf:
+                - type: object
+                  required:
+                  - electrical_profile_type
+                  properties:
+                    electrical_profile_type:
+                      type: string
+                      enum:
+                      - no_profile
+                - type: object
+                  required:
+                  - handled
+                  - electrical_profile_type
+                  properties:
+                    electrical_profile_type:
+                      type: string
+                      enum:
+                      - profile
+                    handled:
+                      type: boolean
+                    profile:
+                      type: string
+                      nullable: true
+              description: List of `n+1` values associated to the ranges
+        final_output:
+          allOf:
+          - $ref: '#/components/schemas/ReportTrain'
+          - type: object
+            required:
+            - signal_critical_positions
+            - zone_updates
+            - spacing_requirements
+            - routing_requirements
+            properties:
+              routing_requirements:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoutingRequirement'
+              signal_critical_positions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SignalCriticalPosition'
+              spacing_requirements:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpacingRequirement'
+              zone_updates:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ZoneUpdate'
+        mrsp:
+          type: object
+          description: A MRSP computation result (Most Restrictive Speed Profile)
+          required:
+          - boundaries
+          - values
+          properties:
+            boundaries:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of `n` boundaries of the ranges (block path).
+                A boundary is a distance from the beginning of the path in mm.
+            values:
+              type: array
+              items:
+                type: object
+                required:
+                - speed
+                properties:
+                  source:
+                    allOf:
+                    - oneOf:
+                      - type: object
+                        required:
+                        - tag
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - given_train_tag
+                          tag:
+                            type: string
+                      - type: object
+                        required:
+                        - tag
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - fallback_tag
+                          tag:
+                            type: string
+                      - type: object
+                        required:
+                        - speed_limit_source_type
+                        properties:
+                          speed_limit_source_type:
+                            type: string
+                            enum:
+                            - unknown_tag
+                    nullable: true
+                  speed:
+                    type: number
+                    format: double
+                    description: in meters per second
+              description: List of `n+1` values associated to the ranges
+        provisional:
+          $ref: '#/components/schemas/ReportTrain'
     SimulationSummaryResult:
       oneOf:
       - type: object
@@ -12523,7 +12529,7 @@ components:
           path:
             $ref: '#/components/schemas/PathfindingResultSuccess'
           simulation:
-            $ref: '#/components/schemas/SimulationResponse'
+            $ref: '#/components/schemas/SimulationResponseSuccess'
           status:
             type: string
             enum:

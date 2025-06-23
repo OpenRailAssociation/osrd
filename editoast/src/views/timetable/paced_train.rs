@@ -694,6 +694,7 @@ mod tests {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
+    use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
@@ -731,6 +732,7 @@ mod tests {
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::simulation;
+    use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
 
     #[rstest]
@@ -942,7 +944,7 @@ mod tests {
 
         assert_eq!(
             response,
-            core_client::simulation::Response::Success {
+            core_client::simulation::Response::Success(SimulationSuccess {
                 base: ReportTrain {
                     positions: vec![],
                     times: vec![],
@@ -978,7 +980,7 @@ mod tests {
                     boundaries: vec![],
                     values: vec![]
                 }
-            }
+            })
         );
     }
 
@@ -1015,7 +1017,7 @@ mod tests {
 
         assert_eq!(
             response,
-            simulation::Response::Success {
+            simulation::Response::Success(SimulationResponseSuccess {
                 base: ReportTrain {
                     positions: vec![],
                     times: vec![],
@@ -1051,7 +1053,7 @@ mod tests {
                     boundaries: vec![],
                     values: vec![]
                 }
-            }
+            })
         );
     }
 

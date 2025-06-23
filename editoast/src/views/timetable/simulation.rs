@@ -46,6 +46,22 @@ pub const TRAIN_SIZE_BATCH: usize = 100;
 editoast_common::schemas! {
     Response,
     SummaryResponse,
+    SimulationResponseSuccess,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+pub struct SimulationResponseSuccess {
+    /// Simulation without any regularity margins
+    pub base: ReportTrain,
+    /// Simulation that takes into account the regularity margins
+    pub provisional: ReportTrain,
+    #[schema(inline)]
+    /// User-selected simulation: can be base or provisional
+    pub final_output: CompleteReportTrain,
+    #[schema(inline)]
+    pub mrsp: SpeedLimitProperties,
+    #[schema(inline)]
+    pub electrical_profiles: ElectricalProfiles,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
@@ -55,19 +71,7 @@ editoast_common::schemas! {
 #[allow(clippy::large_enum_variant)]
 #[schema(as = SimulationResponse)]
 pub enum Response {
-    Success {
-        /// Simulation without any regularity margins
-        base: ReportTrain,
-        /// Simulation that takes into account the regularity margins
-        provisional: ReportTrain,
-        #[schema(inline)]
-        /// User-selected simulation: can be base or provisional
-        final_output: CompleteReportTrain,
-        #[schema(inline)]
-        mrsp: SpeedLimitProperties,
-        #[schema(inline)]
-        electrical_profiles: ElectricalProfiles,
-    },
+    Success(SimulationResponseSuccess),
     PathfindingFailed {
         pathfinding_failed: PathfindingFailure,
     },
@@ -78,7 +82,7 @@ pub enum Response {
 
 impl Response {
     pub fn simulation_run_time(&self) -> Option<u64> {
-        if let Response::Success { provisional, .. } = self {
+        if let Response::Success(SimulationResponseSuccess { provisional, .. }) = self {
             Some(
                 *provisional
                     .times
@@ -91,22 +95,24 @@ impl Response {
     }
 }
 
+impl From<core_client::simulation::SimulationSuccess> for SimulationResponseSuccess {
+    fn from(response: core_client::simulation::SimulationSuccess) -> Self {
+        SimulationResponseSuccess {
+            base: response.base,
+            provisional: response.provisional,
+            final_output: response.final_output,
+            mrsp: response.mrsp,
+            electrical_profiles: response.electrical_profiles,
+        }
+    }
+}
+
 impl From<core_client::simulation::Response> for Response {
     fn from(response: core_client::simulation::Response) -> Self {
         match response {
-            core_client::simulation::Response::Success {
-                base,
-                provisional,
-                final_output,
-                mrsp,
-                electrical_profiles,
-            } => Self::Success {
-                base,
-                provisional,
-                final_output,
-                mrsp,
-                electrical_profiles,
-            },
+            core_client::simulation::Response::Success(simulation_success) => {
+                Self::Success(simulation_success.into())
+            }
             core_client::simulation::Response::SimulationFailed { core_error } => {
                 Self::SimulationFailed {
                     core_error: core_error.into(),
@@ -152,12 +158,12 @@ pub enum SummaryResponse {
 impl From<simulation::Response> for SummaryResponse {
     fn from(response: simulation::Response) -> Self {
         match response {
-            simulation::Response::Success {
+            simulation::Response::Success(SimulationResponseSuccess {
                 final_output,
                 provisional,
                 base,
                 ..
-            } => {
+            }) => {
                 let report = final_output.report_train;
                 Self::Success {
                     length: *report.positions.last().unwrap(),

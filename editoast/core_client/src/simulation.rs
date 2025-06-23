@@ -288,24 +288,35 @@ pub struct Request {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+pub struct SimulationSuccess {
+    /// Simulation without any regularity margins
+    pub base: ReportTrain,
+    /// Simulation that takes into account the regularity margins
+    pub provisional: ReportTrain,
+    /// User-selected simulation: can be base or provisional
+    pub final_output: CompleteReportTrain,
+    pub mrsp: SpeedLimitProperties,
+    pub electrical_profiles: ElectricalProfiles,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
 pub enum Response {
-    Success {
-        /// Simulation without any regularity margins
-        base: ReportTrain,
-        /// Simulation that takes into account the regularity margins
-        provisional: ReportTrain,
-        /// User-selected simulation: can be base or provisional
-        final_output: CompleteReportTrain,
-        mrsp: SpeedLimitProperties,
-        electrical_profiles: ElectricalProfiles,
-    },
-    SimulationFailed {
-        core_error: RawError,
-    },
+    Success(SimulationSuccess),
+    SimulationFailed { core_error: RawError },
+}
+
+impl Response {
+    #[cfg(feature = "mocking_client")]
+    pub fn success(self) -> Option<SimulationSuccess> {
+        match self {
+            Response::Success(simulation_success) => Some(simulation_success),
+            Response::SimulationFailed { .. } => None,
+        }
+    }
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
