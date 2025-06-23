@@ -80,7 +80,7 @@ class OperationalStudiesPage extends CommonPage {
     };
     this.addTrainButton = page.getByTestId('add-train');
     this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
-    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
+    this.manageTrainSchedulePage = page.getByTestId('manage-timetable-item');
     this.TimetableItemNameInput = page.locator('#timetable-item-name');
     this.initialSpeedInput = page.locator('#initial-speed');
     this.trainTagsInput = page.getByTestId('chips-input');

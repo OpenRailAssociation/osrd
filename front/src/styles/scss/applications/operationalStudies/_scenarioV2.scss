@@ -212,7 +212,7 @@
   }
 }
 
-.scenario-managetrainschedule-modal {
+.scenario-manage-timetable-item-modal {
   position: absolute;
   display: flex;
   flex-direction: row;
@@ -220,7 +220,7 @@
   height: 100%;
   z-index: 3;
 
-  .scenario-timetable-managetrainschedule {
+  .scenario-timetable-manage-timetable-item {
     overflow: auto;
 
     @media screen and (max-width: 2400px) {
@@ -263,7 +263,7 @@
     }
   }
 
-  .scenario-managetrainschedule {
+  .scenario-manage-timetable-item {
     display: flex;
     flex-direction: column;
     background-color: var(--coolgray1);
