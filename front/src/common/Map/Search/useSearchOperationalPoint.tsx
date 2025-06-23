@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import DPY_TO_MAS_OPERATIONAL_POINTS from 'assets/operationStudies/DPYToMASOperationalPoints';
+import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
 import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
@@ -11,7 +11,10 @@ import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
 
 export const MAIN_OP_CH_CODES = ['', '00', 'BV'];
-const DPY_TO_MAS_FILTER = ['or', ...DPY_TO_MAS_OPERATIONAL_POINTS.map((ci) => ['=', ['ci'], ci])];
+const STDCM_PERIMETER_FILTER = [
+  'or',
+  ...STDCM_PERIMETER_OPERATIONAL_POINTS.map((ci) => ['=', ['ci'], ci]),
+];
 
 type SearchOperationalPoint = {
   debounceDelay?: number;
@@ -85,7 +88,8 @@ export default function useSearchOperationalPoint({
 
       if (!shouldSearchByTrigram || !infraID) return [];
 
-      const dpyToMasOperationalpointsFilter = isStdcm && !isSuperUser ? DPY_TO_MAS_FILTER : true;
+      const stdcmPerimeterOperationalpointsFilter =
+        isStdcm && !isSuperUser ? STDCM_PERIMETER_FILTER : true;
 
       const payload = {
         object: 'operationalpoint',
@@ -93,7 +97,7 @@ export default function useSearchOperationalPoint({
           'and',
           ['=i', ['trigram'], searchQuery],
           ['=', ['infra_id'], infraID],
-          dpyToMasOperationalpointsFilter,
+          stdcmPerimeterOperationalpointsFilter,
         ],
       };
       try {
@@ -119,7 +123,8 @@ export default function useSearchOperationalPoint({
 
       const trigramResults = await searchOperationalPointsByTrigram(searchQuery);
 
-      const dpyToMasOperationalpointsFilter = isStdcm && !isSuperUser ? DPY_TO_MAS_FILTER : true;
+      const stdcmPerimeterOperationalpointsFilter =
+        isStdcm && !isSuperUser ? STDCM_PERIMETER_FILTER : true;
 
       try {
         const results = (await postSearch({
@@ -133,7 +138,7 @@ export default function useSearchOperationalPoint({
                 ['like', ['to_string', ['uic']], `%${searchQuery}%`],
               ],
               ['=', ['infra_id'], infraID],
-              dpyToMasOperationalpointsFilter,
+              stdcmPerimeterOperationalpointsFilter,
             ],
           },
           pageSize: 101,
