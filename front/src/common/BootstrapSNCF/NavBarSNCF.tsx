@@ -33,10 +33,9 @@ import { useModal } from './ModalSNCF';
 
 type Props = {
   appName?: string | ReactElement;
-  showLogoWithName?: boolean;
 };
 
-const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
+const LegacyNavBarSNCF = ({ appName }: Props) => {
   const { openModal } = useModal();
   const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
@@ -53,21 +52,17 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
         name: 'Osrd',
       };
     return {
-      logoUrl: showLogoWithName
-        ? deploymentSettings.operationalStudiesLogoWithName
-        : deploymentSettings.operationalStudiesLogo,
+      logoUrl: deploymentSettings.operationalStudiesLogo,
       name: deploymentSettings.operationalStudiesName,
     };
-  }, [deploymentSettings, showLogoWithName]);
+  }, [deploymentSettings]);
 
   return (
     <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : 'mastheader')}>
       <div
         className={cx(
           'flex-grow-0',
-          deploymentSettings?.hasCustomizedLogo && showLogoWithName
-            ? 'mastheader-logo-with-name'
-            : 'mastheader-logo',
+          deploymentSettings?.hasCustomizedLogo ? 'mastheader-logo-with-name' : 'mastheader-logo',
           { 'without-image': logoUrl }
         )}
       >

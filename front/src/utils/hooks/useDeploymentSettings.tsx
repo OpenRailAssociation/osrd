@@ -1,11 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import defaultLogo from 'assets/logo-color.svg';
-import defaultOsrdLogo from 'assets/logo-osrd-color-white.svg';
+import defaultLogo from 'assets/logo.svg';
 import proudLogo from 'assets/proud-logo-color.svg';
-import proudOsrdLogo from 'assets/proud-logo-osrd-color-white.svg';
+import stdcm from 'assets/stdcm.svg';
 import xmasLogo from 'assets/xmas-logo-color.svg';
-import xmasOsrdLogo from 'assets/xmas-logo-osrd-color-white.svg';
 
 const MONTH_VALUES = {
   JUNE: 5,
@@ -15,9 +13,8 @@ const MONTH_VALUES = {
 const defaultSettings = {
   operationalStudiesName: 'Osrd',
   operationalStudiesLogo: defaultLogo,
-  operationalStudiesLogoWithName: defaultOsrdLogo,
   stdcmName: 'Stdcm',
-  stdcmLogo: undefined,
+  stdcmLogo: stdcm,
   stdcmSimulationSheetLogo: undefined,
   hasCustomizedLogo: false,
   stdcmFeedbackMail: 'support_LMR@default.org',
@@ -27,9 +24,8 @@ const defaultSettings = {
 export type DeploymentSettings = {
   operationalStudiesName: string;
   operationalStudiesLogo: string;
-  operationalStudiesLogoWithName: string;
   stdcmName: string;
-  stdcmLogo?: string;
+  stdcmLogo: string;
   stdcmSimulationSheetLogo?: string;
   hasCustomizedLogo: boolean;
   stdcmFeedbackMail?: string;
@@ -57,15 +53,12 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
         const response = await fetch('/overrides/overrides.json');
         if (!response.ok || response.headers.get('Content-Type') !== 'application/json') {
           let operationalStudiesLogo = defaultLogo;
-          let operationalStudiesLogoWithName = defaultOsrdLogo;
           const currentMonth = new Date().getMonth();
 
           if (currentMonth === MONTH_VALUES.JUNE) {
             operationalStudiesLogo = proudLogo;
-            operationalStudiesLogoWithName = proudOsrdLogo;
           } else if (currentMonth === MONTH_VALUES.DECEMBER) {
             operationalStudiesLogo = xmasLogo;
-            operationalStudiesLogoWithName = xmasOsrdLogo;
           }
 
           setCustomizedDeploymentSetting({
@@ -73,7 +66,6 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
             deploymentSettings: {
               ...defaultSettings,
               operationalStudiesLogo,
-              operationalStudiesLogoWithName,
             },
           });
         } else {
@@ -98,7 +90,6 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
 
             if (icons.operational_studies) {
               deploySettings.operationalStudiesLogo = `/overrides/${icons.operational_studies.logo}`;
-              deploySettings.operationalStudiesLogoWithName = `/overrides/${icons.operational_studies.logo_with_name}`;
             }
 
             if (icons.stdcm) {
