@@ -176,6 +176,7 @@ test.describe('Times and Stops Tab Verification', () => {
 
     // Add train schedule, verify results and output table data
     await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioPage.toggleConflictsList();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();

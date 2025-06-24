@@ -187,6 +187,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.checkMarecoMargin();
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:53');
     await scenarioPage.toggletrainList();
@@ -236,6 +237,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('12:03');
     await scenarioPage.toggletrainList();
@@ -295,6 +297,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.activateLinearMargin();
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:55');
     await scenarioPage.toggletrainList();
@@ -356,6 +359,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioPage.toggletrainList();
     await scenarioPage.toggleConflictsList();

@@ -60,7 +60,7 @@ class CommonPage {
 
   // Close all visible toast notifications safely
   async closeToastNotification(): Promise<void> {
-    await this.closeToastButton.waitFor();
+    await this.closeToastButton.last().waitFor();
     const closeToastElements = await this.closeToastButton.all();
     await Promise.all(
       closeToastElements.map(async (closeToastElement) => {
