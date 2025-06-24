@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.sim_infra.api.NeutralSection
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
@@ -256,5 +257,36 @@ class PathfindingElectrificationTest : ApiTest() {
                 it.trackSection
             }
         assertThat(normalTracks).usingRecursiveComparison().isNotEqualTo(partialElectrifiedTracks)
+    }
+
+    @Test
+    fun noElectrificationNoPathForElectricTrain() {
+        val waypointsStart = listOf(TrackLocation("TA1", Offset(1550.meters)))
+        val waypointsEnd = listOf(TrackLocation("TH0", Offset(103.meters)))
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        rjsInfra.electrifications = ArrayList()
+        rjsInfra.neutralSections = ArrayList()
+
+        assertThatThrownBy {
+                runPathfinding(
+                    Helpers.fullInfraFromRJS(rjsInfra),
+                    getPathfindingBlockRequest(
+                        TestTrains.FAST_ELECTRIC_TRAIN,
+                        listOf(waypointsStart, waypointsEnd)
+                    )
+                )
+            }
+            .isExactlyInstanceOf(NoPathFoundException::class.java)
+            .satisfies({ exception: Throwable ->
+                val resp =
+                    (exception as NoPathFoundException).response
+                        as IncompatibleConstraintsPathResponse
+                assert(resp.relaxedConstraintsPath.length.distance == 39_553.meters)
+                val incompElec =
+                    resp.incompatibleConstraints.incompatibleElectrificationRanges.single()
+                assert(incompElec.range.start == Offset<TravelledPath>(0.meters))
+                assert(incompElec.range.end == Offset<TravelledPath>(39_553.meters))
+                assert(incompElec.value == "")
+            })
     }
 }

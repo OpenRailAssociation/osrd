@@ -448,32 +448,6 @@ class PathfindingTest : ApiTest() {
 
     /*
     @Test
-    @Throws(IOException::class, URISyntaxException::class)
-    fun noElectrificationThrowsForElectricTrain() {
-        val waypointStart = PathfindingWaypoint("TA1", 1550.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("TH0", 103.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications = ArrayList()
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(
-                Helpers.fullInfraFromRJS(rjsInfra),
-                waypoints,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN),
-                null
-            )
-        }
-            .isExactlyInstanceOf(OSRDError::class.java)
-            .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
-                    .isEqualTo(ErrorType.PathfindingElectrificationError)
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
-                    .isEqualTo(mapOf<String, Any>())
-            })
-    }
-
-    @Test
     @Throws(Exception::class)
     fun simpleRoutesInverted() {
         val waypointStart =
