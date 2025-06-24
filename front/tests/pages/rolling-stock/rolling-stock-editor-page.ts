@@ -109,10 +109,12 @@ class RollingstockEditorPage extends CommonPage {
 
   async searchRollingStock(rollingStockName: string) {
     await this.rollingStockSearchInput.fill(rollingStockName);
+    await this.waitForLoaderToDisappear();
   }
 
   async clearSearchRollingStock() {
     await this.rollingStockSearchInput.clear();
+    await this.waitForLoaderToDisappear();
   }
 
   async selectRollingStock(rollingStockName: string) {

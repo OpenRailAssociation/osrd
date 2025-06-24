@@ -98,8 +98,8 @@ test.describe('Rolling stock Tab Verification', () => {
 
     // Reopen the rolling stock selector and apply filters
     await rollingStockSelector.openRollingstockModal();
-    await rollingStockSelector.setThermalRollingStockFilter();
-    await rollingStockSelector.setElectricRollingStockFilter();
+    await rollingStockSelector.toggleThermalRollingStockFilter();
+    await rollingStockSelector.toggleElectricRollingStockFilter();
 
     // Select the dual-mode rolling stock and confirm the selection
     await rollingStockSelector.selectRollingStockCard({

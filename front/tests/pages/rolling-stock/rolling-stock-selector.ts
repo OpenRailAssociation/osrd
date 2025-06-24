@@ -44,7 +44,7 @@ class RollingStockSelector extends CommonPage {
     super(page);
     this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
     this.rollingStockSelectorModal = page.locator('.modal-dialog');
-    this.rollingStockList = page.locator('.rollingstock-editor-list .rollingstock-title');
+    this.rollingStockList = page.getByTestId('rollingstock-title');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.rollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
     this.rollingStockMiniCards = page.locator('.rollingstock-selector-minicard');
@@ -113,12 +113,14 @@ class RollingStockSelector extends CommonPage {
     return this.rollingStockMiniCards.getByTestId('rollingstock-info-comfort');
   }
 
-  async setThermalRollingStockFilter() {
+  async toggleThermalRollingStockFilter() {
     await this.thermalRollingStockFilter.click();
+    await this.waitForLoaderToDisappear();
   }
 
-  async setElectricRollingStockFilter() {
+  async toggleElectricRollingStockFilter() {
     await this.electricRollingStockFilter.click();
+    await this.waitForLoaderToDisappear();
   }
 
   async getRollingStockSearchNumber(): Promise<number> {

@@ -74,7 +74,7 @@ export const Loader = ({
   childClass = '',
   className = '',
 }: LoaderProps) => (
-  <div className={`loader ${position} ${className}`}>
+  <div data-testid="loader" className={`loader ${position} ${className}`}>
     <Spinner />
     <div className={childClass}>{msg}</div>
   </div>

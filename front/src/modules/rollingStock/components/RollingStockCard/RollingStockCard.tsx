@@ -84,7 +84,7 @@ const RollingStockCard = ({
         tabIndex={0}
         ref={isOpen && !isOnEditMode ? ref2scrollWhenOpened : undefined}
       >
-        <div className="rollingstock-title">
+        <div data-testid="rollingstock-title" className="rollingstock-title">
           <RollingStockInfo rollingStock={rollingStock} />
           <div className="sr-only">
             <small className="text-primary mr-1">ID</small>
