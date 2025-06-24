@@ -66,6 +66,10 @@ data class VisitedNodes(
         val explorer: InfraExplorer? = null, // nullable for tests
     ) {
         val nodeCost = timeData.totalRunningTime + remainingTimeEstimation
+
+        fun withClippedMarginDuration(maxMarginDurationUpperBound: Double): Parameters {
+            return copy(maxMarginDuration = min(maxMarginDurationUpperBound, maxMarginDuration))
+        }
     }
 
     /** Any class that implements this interface may be added to the visited ranges. */
@@ -111,30 +115,25 @@ data class VisitedNodes(
                     parameters.explorer.getRemainingBlocks().sumOf {
                         mrspBuilder!!.getBlockTime(it, null)
                     }
-                // We only check after adding the fastest travel time, and then add some extra
-                // margin at the end (in case engineering allowances are impossible there).
-                // TODO: we should compare possible "engineering allowances" in `isMapVisited`,
-                // with a large max allowance value here.
-                // The current margin (travel time) is a heuristic. Lowering it has a very large
-                // impact on the performance gain, but may block valid solutions when engineering
-                // allowances are impossible.
-                val newTimeData =
-                    parameters.timeData
-                        .withAddedTime(minTravelTime, null, null)
-                        .copy(
-                            maxDepartureDelayingWithoutConflict =
-                                parameters.timeData.maxDepartureDelayingWithoutConflict +
-                                    minTravelTime,
-                        )
 
-                val paramsWithLargerRange = parameters.copy(timeData = newTimeData)
+                // We compare it to a scenario with the minimum amount of added travel time, and
+                // then an infinite amount of possible "engineering allowance" added time. We don't
+                // actually know how much travel time we'd take to get there, nor if the extra
+                // travel enables more allowances. This is very conservative, we could gain
+                // performance by lowering the allowance time (but we'd miss out on some solutions).
+                val newTimeData = parameters.timeData.withAddedTime(minTravelTime, null, null)
+                val paramsWithLargerRange =
+                    parameters.copy(
+                        timeData = newTimeData,
+                        maxMarginDuration = Double.POSITIVE_INFINITY,
+                    )
                 if (mapAtDetector != null && mapAtDetector.isVisited(paramsWithLargerRange)) {
                     return true
                 }
             }
         }
         val visitedRanges = visitedRangesPerLocation[parameters.fingerprint] ?: return false
-        return visitedRanges.isVisited(parameters)
+        return visitedRanges.isVisited(parameters.withClippedMarginDuration(0.0))
     }
 
     /** Marks the input as visited */
@@ -210,12 +209,5 @@ private fun visitedRangeMapFromParameters(
 /** Utility function to map `VisitedNodes.Parameters` to `VisitedRangeMap.isVisited`. */
 private fun VisitedRangeMap.isVisited(parameters: Parameters): Boolean {
     val newMap = visitedRangeMapFromParameters(parameters, 0.0)
-
-    // TODO: better handling of new "visited with travel time" ranges
-    // (this is just to keep identical functionality during the refactoring)
-    val filtered = newMap.asMapOfRanges().filter { it.value !is VisitedWithAddedTravelTime }
-    val filteredMap = VisitedRangeMap()
-    for (range in filtered) filteredMap.put(range.key, range.value)
-
-    return isVisited(filteredMap)
+    return isVisited(newMap)
 }
