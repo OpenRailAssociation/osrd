@@ -13,8 +13,7 @@
 # Of course:
 # * the regular stack and "single-worker" stack should still work alone
 
-
-set -e
+set -eu
 
 # For Macos ARM chip users set a postgis image compiled to run on ARM, it makes their DB runs faster as their computer don't have to emulate x86_64's architecture.
 case "$(uname -s)" in

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
 BASE_PATH="$(realpath "$(dirname "$0")")"
 STATE_FILE="${BASE_PATH}/.osrd-compose-state"
 BASE_COMPOSE="${BASE_PATH}/docker-compose.yml"

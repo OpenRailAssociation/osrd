@@ -1,7 +1,6 @@
 #!/bin/sh
 
-set -e
-
+set -eu
 # This script changes the user and group of the dev server
 # process to match the owner of the project's files.
 # The development server would otherwise create cache files

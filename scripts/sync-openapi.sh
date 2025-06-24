@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 root_path="$(realpath "$(dirname "$0")"/..)"
 

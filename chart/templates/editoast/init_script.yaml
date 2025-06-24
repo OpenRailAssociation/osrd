@@ -6,7 +6,7 @@ metadata:
 data:
   script.sh: |
     #!/bin/sh
-    set -e
+    set -euo pipefail
     
     {{- with .Values.services.editoast.init.extend }}
     {{ . | nindent 4 }}

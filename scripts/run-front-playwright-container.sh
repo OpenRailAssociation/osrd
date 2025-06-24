@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # Open the base osrd folder, assuming the script is located in osrd/scripts
 cd "$(realpath "$(dirname "$0")"/..)"
