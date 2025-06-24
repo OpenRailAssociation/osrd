@@ -185,28 +185,28 @@ test.describe('Rollingstock editor page tests', () => {
     const initialRollingStockFoundNumber = await rollingStockSelector.getRollingStockSearchNumber();
 
     // Filter electric rolling stocks and verify count
-    await rollingStockSelector.setElectricRollingStockFilter();
+    await rollingStockSelector.toggleElectricRollingStockFilter();
     expect(await rollingStockSelector.electricRollingStockIcons.count()).toEqual(
       await rollingStockSelector.getRollingStockSearchNumber()
     );
     // Clear electric filter
-    await rollingStockSelector.setElectricRollingStockFilter();
+    await rollingStockSelector.toggleElectricRollingStockFilter();
 
     // Filter thermal rolling stocks and verify count
-    await rollingStockSelector.setThermalRollingStockFilter();
+    await rollingStockSelector.toggleThermalRollingStockFilter();
     expect(await rollingStockSelector.thermalRollingStockIcons.count()).toEqual(
       await rollingStockSelector.getRollingStockSearchNumber()
     );
 
     // Filter both electric and thermal rolling stocks (dual-mode) and verify count
-    await rollingStockSelector.setElectricRollingStockFilter();
+    await rollingStockSelector.toggleElectricRollingStockFilter();
     expect(await rollingStockSelector.dualModeRollingStockIcons.count()).toEqual(
       await rollingStockSelector.getRollingStockSearchNumber()
     );
 
     // Clear filters and verify the count returns to the initial number
-    await rollingStockSelector.setElectricRollingStockFilter();
-    await rollingStockSelector.setThermalRollingStockFilter();
+    await rollingStockSelector.toggleElectricRollingStockFilter();
+    await rollingStockSelector.toggleThermalRollingStockFilter();
     expect(await rollingStockSelector.rollingStockList.count()).toEqual(
       initialRollingStockFoundNumber
     );

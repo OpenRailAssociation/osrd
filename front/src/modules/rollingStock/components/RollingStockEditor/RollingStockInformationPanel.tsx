@@ -39,7 +39,7 @@ export default function RollingStockInformationPanel({
     <div className={cx('rollingstock-editor-form', { borders: !isEditing })}>
       <div>
         <div className="rollingstock-card-header">
-          <div className="rollingstock-title">
+          <div data-testid="rollingstock-title" className="rollingstock-title">
             <RollingStockInfo rollingStock={rollingStock} />
           </div>
         </div>
