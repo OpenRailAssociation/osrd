@@ -6,7 +6,7 @@
 # On windows, docker cp does not like leading double / on the container path.
 # As a workaround, use relative paths: container:tmp/foo instead of container://tmp/foo
 
-set -e
+set -eu
 
 infra_name="${1:?missing infrastructure name}"
 infra_path="${2:?missing path to RailJSON infrastructure}"

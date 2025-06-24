@@ -5,6 +5,8 @@
 # output an error message when titles are deemed invalid,
 # and exits accordingly
 
+set -e
+
 if [ -z "$NOCOLOR" ]; then
     RED=$(tput setaf 1 2>/dev/null)
     BLUE=$(tput setaf 4 2>/dev/null)
