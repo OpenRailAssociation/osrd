@@ -520,8 +520,8 @@ async fn simulate_past_schedules(
         paths
             .into_iter()
             .zip(candidate_schedules.iter())
-            .filter_map(|(path, ts)| match path {
-                PathfindingResult::Success(path) => Some(path),
+            .filter_map(|(path, ts)| match path.as_ref() {
+                PathfindingResult::Success(path) => Some(path.clone()),
                 PathfindingResult::Failure(failure) => {
                     tracing::warn!(
                         ?failure,
