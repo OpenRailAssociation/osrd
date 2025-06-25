@@ -25,7 +25,7 @@ abstract class VisitedRange {
      * overlapping ranges in the range map.
      */
     fun mergeWith(other: VisitedRange, timeRange: Range<Double>): VisitedRange {
-        return sequenceOf(this, other).minBy { getLowestCostOnRange(timeRange) }
+        return sequenceOf(this, other).minBy { it.getLowestCostOnRange(timeRange) }
     }
 
     /** The method to be defined in each subclass. Evaluated the detailed cost at the given time. */
