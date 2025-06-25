@@ -120,7 +120,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Get the button locator of a paced train element.
   static getPacedTrainButton(pacedTrainSelector: Locator): Locator {
-    return pacedTrainSelector.getByTestId('paced-train');
+    return pacedTrainSelector.getByTestId('paced-train-name');
   }
 
   // Get the locator of occurrences.
