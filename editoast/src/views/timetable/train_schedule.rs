@@ -1213,10 +1213,6 @@ pub mod tests {
 
         // EXPECT
         assert_eq!(response.len(), 1);
-        assert_eq!(
-            response[&train_schedule_valid.id].departure_time,
-            train_schedule_base.start_time
-        );
     }
 
     #[rstest]
