@@ -1,12 +1,24 @@
 import { expect } from '@playwright/test';
 
-import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
+import type {
+  ElectricalProfileSet,
+  Infra,
+  Project,
+  Scenario,
+  Study,
+} from 'common/api/osrdEditoastApi';
 
 import { infrastructureName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import ScenarioPage from './pages/operational-studies/scenario-page';
 import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
-import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-utils';
+import {
+  deleteApiRequest,
+  getInfra,
+  getProject,
+  getStudy,
+  setElectricalProfile,
+} from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
@@ -20,11 +32,13 @@ test.describe('Validate the Scenario creation workflow', () => {
   let project: Project;
   let study: Study;
   let scenario: Scenario;
+  let infra: Infra;
   let electricalProfileSet: ElectricalProfileSet;
 
   test.beforeAll('Fetch a project, study and add electrical profile ', async () => {
     project = await getProject();
     study = await getStudy(project.id);
+    infra = await getInfra();
     electricalProfileSet = await setElectricalProfile();
   });
 
@@ -51,6 +65,7 @@ test.describe('Validate the Scenario creation workflow', () => {
       tags: scenarioData.tags,
       electricProfileName: electricalProfileSet.name,
     });
+    await waitForInfraStateToBeCached(infra.id);
 
     // Validate that the scenario was created with the correct data
     await scenarioPage.validateScenarioData({
@@ -116,7 +131,7 @@ test.describe('Validate the Scenario creation workflow', () => {
     // Navigate to the specific scenario page
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
     await scenarioPage.openScenarioByName(scenario.name);
-
+    await waitForInfraStateToBeCached(infra.id);
     // Initiate the deletion of the scenario
     await scenarioPage.openScenarioEditForm();
     await scenarioPage.deleteScenario();
