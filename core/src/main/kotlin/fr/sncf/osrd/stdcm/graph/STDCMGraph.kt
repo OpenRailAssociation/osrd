@@ -132,7 +132,7 @@ class STDCMGraph(
                         0.meters
                     )
                 visitedNodesParameters = visitedNodesParameters.copy(explorer = newPath)
-                if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
+                if (visitedNodes.isVisited(visitedNodesParameters)) continue
                 visitedNodes.markAsVisited(visitedNodesParameters)
                 res.addAll(
                     STDCMEdgeBuilder.fromNode(this, node, newPath as InfraExplorerWithEnvelope)
