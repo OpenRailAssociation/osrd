@@ -2816,9 +2816,9 @@ dependencies = [
 
 [[package]]
 name = "mvt"
-version = "0.10.1"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0200b3a3fe5ed337dd7ffb674fb7c9e7ee0ff14bec48cdb39c5cc2b60c4a066c"
+checksum = "aaadb348ad72c56b8b4bf59fd1f7a09afdbdc05789c461cfda1b8e367d853be1"
 dependencies = [
  "log",
  "num-traits",
