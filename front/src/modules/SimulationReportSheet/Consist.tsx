@@ -1,27 +1,26 @@
 import { Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import type { StdcmSimulationInputs } from 'applications/stdcm/types';
-import type { LightRollingStock, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-
 import styles from './styles/SimulationReportStyleSheet';
 
 type ConsistProps = {
+  rollingStockName: string;
+  mass: number;
+  maxSpeed: number;
+  length: number;
   speedLimitByTag?: string | null;
-  rollingStock: RollingStockWithLiveries | LightRollingStock;
-  consist?: StdcmSimulationInputs['consist'];
-  consistMass: number;
-  consistMaxSpeed: number;
-  consistLength: number;
+  loadingGauge?: string;
+  towedRollingStockName?: string;
 };
 
 const Consist = ({
+  rollingStockName,
+  mass,
+  maxSpeed,
+  length,
   speedLimitByTag,
-  rollingStock,
-  consist,
-  consistMass,
-  consistMaxSpeed,
-  consistLength,
+  loadingGauge,
+  towedRollingStockName,
 }: ConsistProps) => {
   const { t } = useTranslation('stdcm');
 
@@ -38,20 +37,18 @@ const Consist = ({
           <Text style={styles.consistAndRoute.consistInfoTitles}>
             {t('reportSheet.towedMaterial')}
           </Text>
-          <Text style={styles.consistAndRoute.consistInfoData}>
-            {consist?.towedRollingStock?.name ?? '-'}
-          </Text>
+          <Text style={styles.consistAndRoute.consistInfoData}>{towedRollingStockName ?? '-'}</Text>
 
           <Text style={styles.consistAndRoute.consistInfoTitles}>{t('reportSheet.maxSpeed')}</Text>
           <Text style={styles.consistAndRoute.consistInfoData}>
-            {consistMaxSpeed != null ? `${consistMaxSpeed} km/h` : '-'}
+            {maxSpeed != null ? `${maxSpeed} km/h` : '-'}
           </Text>
-          {consist?.loadingGauge && (
+          {loadingGauge && (
             <>
               <Text style={styles.consistAndRoute.consistInfoTitles}>
                 {t('reportSheet.loadingGauge')}
               </Text>
-              <Text style={styles.consistAndRoute.consistInfoData}>{consist?.loadingGauge}</Text>
+              <Text style={styles.consistAndRoute.consistInfoData}>{loadingGauge}</Text>
             </>
           )}
         </View>
@@ -59,17 +56,17 @@ const Consist = ({
         <View style={styles.consistAndRoute.consistInfoBox2}>
           <Text style={styles.consistAndRoute.consistInfoTitles}>{t('reportSheet.maxWeight')}</Text>
           <Text style={styles.consistAndRoute.consistInfoData}>
-            {consistMass != null ? `${consistMass} t` : '-'}
+            {mass != null ? `${mass} t` : '-'}
           </Text>
 
           <Text style={styles.consistAndRoute.consistInfoTitles}>
             {t('reportSheet.referenceEngine')}
           </Text>
-          <Text style={styles.consistAndRoute.consistInfoData}>{rollingStock.name || '-'}</Text>
+          <Text style={styles.consistAndRoute.consistInfoData}>{rollingStockName || '-'}</Text>
 
           <Text style={styles.consistAndRoute.consistInfoTitles}>{t('reportSheet.maxLength')}</Text>
           <Text style={styles.consistAndRoute.consistInfoData}>
-            {consistLength != null ? `${consistLength} m` : '-'}
+            {length != null ? `${length} m` : '-'}
           </Text>
         </View>
       </View>

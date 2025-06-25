@@ -2,39 +2,32 @@ import { Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type {
-  LinkedTrains,
-  StdcmSimulationInputs,
-  StdcmSuccessResponse,
-} from 'applications/stdcm/types';
-import type { RollingStockWithLiveries, LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { LinkedTrains, StdcmSuccessResponse } from 'applications/stdcm/types';
 
 import Consist from './Consist';
 import Route from './Route';
 import styles from './styles/SimulationReportStyleSheet';
 
 type ConsistAndRouteProps = {
-  speedLimitByTag?: string;
-  consist?: StdcmSimulationInputs['consist'];
-  rollingStock: LightRollingStock | RollingStockWithLiveries;
   stdcmLinkedTrains?: LinkedTrains;
   stdcmData?: StdcmSuccessResponse;
   operationalPointsList?: OperationalPointWithTimeAndSpeed[];
-  consistMass: number;
-  consistLength: number;
-  consistMaxSpeed: number;
+  consist: {
+    rollingStockName: string;
+    mass: number;
+    maxSpeed: number;
+    length: number;
+    speedLimitByTag?: string | null;
+    loadingGauge?: string;
+    towedRollingStockName?: string;
+  };
 };
 
 const ConsistAndRoute = ({
-  speedLimitByTag,
   consist,
-  rollingStock,
   stdcmLinkedTrains,
   stdcmData,
   operationalPointsList,
-  consistMass,
-  consistLength,
-  consistMaxSpeed,
 }: ConsistAndRouteProps) => {
   const { t } = useTranslation('stdcm');
 
@@ -42,14 +35,7 @@ const ConsistAndRoute = ({
 
   return (
     <View style={styles.consistAndRoute.consistAndRoute}>
-      <Consist
-        speedLimitByTag={speedLimitByTag}
-        rollingStock={rollingStock}
-        consist={consist}
-        consistMass={consistMass}
-        consistMaxSpeed={consistMaxSpeed}
-        consistLength={consistLength}
-      />
+      <Consist {...consist} />
       <View style={styles.consistAndRoute.route}>
         <Text style={styles.consistAndRoute.routeTitle}>{t('reportSheet.requestedRoute')}</Text>
 
