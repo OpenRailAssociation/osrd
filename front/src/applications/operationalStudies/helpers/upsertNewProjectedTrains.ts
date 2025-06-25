@@ -25,7 +25,7 @@ const upsertNewProjectedTrains = (
     }
     const projectedTrain = {
       name: matchingTrain?.train_name || 'Train name not found',
-      departureTime: new Date(trainData.departure_time),
+      departureTime: new Date(matchingTrain?.start_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates,
       ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)

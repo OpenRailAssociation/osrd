@@ -1493,9 +1493,5 @@ mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         // EXPECT
         assert_eq!(response.len(), 1);
-        assert_eq!(
-            response[&paced_train_valid.id].departure_time,
-            train_schedule_base.start_time
-        );
     }
 }

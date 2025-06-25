@@ -1,12 +1,12 @@
 import {
   osrdEditoastApi,
-  type ProjectPathTrainResult,
   type PostTrainScheduleProjectPathApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathApiResponse,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type OccupancyBlockForm,
   type OccupancyBlocks,
+  type SpaceTimeCurve,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -20,7 +20,8 @@ import {
 
 const BATCH_SIZE = 20;
 
-export type ProjectionResult = ProjectPathTrainResult & {
+export type ProjectionResult = {
+  space_time_curves: SpaceTimeCurve[];
   signal_updates: OccupancyBlocks['signal_updates'];
 };
 
@@ -169,7 +170,7 @@ export default class TrainProjectionLazyLoader {
     for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
       const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));
       rawResults.set(trainScheduleId, {
-        ...result,
+        space_time_curves: result,
         signal_updates: rawTrainScheduleOccupancyBlocks[id].signal_updates,
       });
     }
@@ -177,7 +178,7 @@ export default class TrainProjectionLazyLoader {
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
       rawResults.set(pacedTrainId, {
-        ...result,
+        space_time_curves: result,
         signal_updates: rawPacedTrainOccupancyBlocks[id].signal_updates,
       });
     }
