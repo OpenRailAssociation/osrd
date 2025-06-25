@@ -127,6 +127,7 @@ test.describe('Edit trains and missions', () => {
         labels: [],
         timeWindow: TIME_WINDOW,
         interval: INTERVAL,
+        expectedOccurrencesCount: 12,
       },
       0,
       { pacedTrainCardAlreadyOpen: true }

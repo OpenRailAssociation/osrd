@@ -16,6 +16,7 @@ export const NEW_PACED_TRAIN_SETTINGS: PacedTrainDetails = {
   labels: ['Valid'],
   timeWindow: '90',
   interval: '30',
+  expectedOccurrencesCount: 3,
 };
 
 export const ADD_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
@@ -45,6 +46,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
     timeWindow: '120',
     interval: '60',
+    expectedOccurrencesCount: 2,
   },
   {
     name: 'Paced Train 2',
@@ -52,6 +54,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     labels: ['Paced-Train-Tag-2', 'SS-NS', 'Valid'],
     timeWindow: '120',
     interval: '30',
+    expectedOccurrencesCount: 4,
   },
   {
     name: 'PacedTrain3',
@@ -59,6 +62,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     labels: ['Paced-Train-Tag-2', 'MWS-NES', 'Not-honored'],
     timeWindow: '120',
     interval: '50',
+    expectedOccurrencesCount: 3,
   },
   {
     name: 'PacedTrain4',
@@ -66,6 +70,15 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     labels: ['Invalid'],
     timeWindow: '120',
     interval: '60',
+    expectedOccurrencesCount: 3,
+  },
+  {
+    name: 'paced train with exceptions',
+    startTime: '02:00',
+    labels: ['Valid'],
+    timeWindow: '120',
+    interval: '60',
+    expectedOccurrencesCount: 3,
   },
 ];
 
@@ -133,6 +146,23 @@ export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
       arrivalTime: '12:51',
     },
   ],
+  [
+    {
+      name: 'paced train with exceptions 1',
+      startTime: '02:00',
+      arrivalTime: '02:07',
+    },
+    {
+      name: 'paced train with exceptions/+',
+      startTime: '02:30',
+      arrivalTime: '02:37',
+    },
+    {
+      name: 'paced train with exceptions 3',
+      startTime: '03:00',
+      arrivalTime: '03:07',
+    },
+  ],
 ];
 
 // This duplicated paced train has a startTime/arrivalTime increased by 5min
@@ -142,6 +172,7 @@ export const DUPLICATED_PACED_TRAIN_DETAILS: PacedTrainDetails = {
   labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
   timeWindow: '120',
   interval: '60',
+  expectedOccurrencesCount: 2,
 };
 
 // These duplicated occurrences have a startTime/arrivalTime increased by 5min and the name doesn't evolve
