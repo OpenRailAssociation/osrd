@@ -2,7 +2,6 @@ import { sortBy } from 'lodash';
 
 import type {
   MacroNodeResponse,
-  ScenarioResponse,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -17,9 +16,24 @@ export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
 
 export default class MacroEditorState {
   /**
-   * Scenario data
+   * Infra id
    */
-  scenario: ScenarioResponse;
+  infraId: number;
+
+  /**
+   * Scenario id
+   */
+  scenarioId: number;
+
+  /**
+   * Study id
+   */
+  studyId: number;
+
+  /**
+   * Project id
+   */
+  projectId: number;
 
   /**
    * Nodes storage
@@ -71,13 +85,16 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse) {
+  constructor(infraId: number, scenarioId: number, studyId: number, projectId: number) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.nodes = [];
     this.indexByPathKey = {};
     this.indexByNgeId = {};
-    this.scenario = scenario;
+    this.infraId = infraId;
+    this.scenarioId = scenarioId;
+    this.studyId = studyId;
+    this.projectId = projectId;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };
