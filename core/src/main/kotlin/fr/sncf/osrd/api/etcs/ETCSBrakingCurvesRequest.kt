@@ -5,16 +5,13 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
-import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
-import fr.sncf.osrd.api.standalone_sim.SimulationPath
-import fr.sncf.osrd.api.standalone_sim.SimulationPowerRestrictionItem
-import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.standalone_sim.*
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 
-class ETCSBrakingCurvesRequest(
+data class ETCSBrakingCurvesRequest(
     val infra: String,
     @Json(name = "expected_version") val expectedVersion: Int?,
 
@@ -33,6 +30,7 @@ class ETCSBrakingCurvesRequest(
 
 val etcsBrakingCurvesRequestAdapter: JsonAdapter<ETCSBrakingCurvesRequest> =
     Moshi.Builder()
+        .add(polymorphicSpeedLimitSourceAdapter)
         .add(RJSRollingResistance.adapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
