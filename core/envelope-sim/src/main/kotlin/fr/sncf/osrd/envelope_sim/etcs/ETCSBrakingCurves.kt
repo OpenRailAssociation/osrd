@@ -71,6 +71,7 @@ fun computeBrakingCurvesAtEOA(
     val targetSpeed = 0.0
     val eoaBrakingCurves =
         computeSbdBrakingCurves(context, targetPosition, maxSpeedEnvelope, beginPos)
+    if (endOfAuthority.usedCurveType == PS) eoaBrakingCurves[IND] = null
     val svlBrakingCurves: BrakingCurves =
         if (endOfAuthority.offsetSVL == null) EnumMap(BrakingType::class.java)
         else
