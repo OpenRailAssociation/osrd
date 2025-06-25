@@ -126,6 +126,7 @@ class ScenarioPage extends CommonPage {
     tags?: string[];
     isUpdating?: boolean;
   }) {
+    await this.page.waitForLoadState('networkidle');
     await expect(this.scenarioName).toBeVisible();
     expect(await this.scenarioName.textContent()).toContain(name);
     // Wait for the scenario name to be clickable if not updating
