@@ -31,7 +31,6 @@ import {
   getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { getIsSuperUser } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
@@ -68,8 +67,6 @@ const StdcmConsist = ({
   setConsistErrors,
 }: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
-
-  const isSuperUser = useSelector(getIsSuperUser);
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
@@ -257,23 +254,21 @@ const StdcmConsist = ({
           narrow
         />
       </div>
-      {isSuperUser && (
-        <div className="loading-gauge">
-          <Select
-            id="loading-gauge-selector"
-            value={loadingGauge}
-            label={t('consist.loadingGauge')}
-            onChange={(e) => {
-              if (e) {
-                onLoadingGaugeChange(e);
-              }
-            }}
-            {...createStandardSelectOptions(GAUGE_LIST)}
-            disabled={disabled}
-            narrow
-          />
-        </div>
-      )}
+      <div className="loading-gauge">
+        <Select
+          id="loading-gauge-selector"
+          value={loadingGauge}
+          label={t('consist.loadingGauge')}
+          onChange={(e) => {
+            if (e) {
+              onLoadingGaugeChange(e);
+            }
+          }}
+          {...createStandardSelectOptions(GAUGE_LIST)}
+          disabled={disabled}
+          narrow
+        />
+      </div>
       <div className="stdcm-consist__properties">
         <Input
           id="tonnage"
