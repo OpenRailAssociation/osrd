@@ -1,0 +1,38 @@
+.board-wrapper {
+  box-shadow:
+    0 1px 2px 0 rgba(0, 0, 0, 0.16),
+    0 2px 2px -1px rgba(255, 171, 88, 0.27);
+  border-radius: 8px;
+
+  .board-header {
+    height: 22px;
+    box-shadow: 0 1px 0 0 inset white;
+    border-radius: 8px 8px 0 0;
+    background-color: var(--ambientB5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--ambientB15);
+
+    .board-header-name {
+      color: var(--grey50);
+      font-size: 10px;
+      font-weight: 600;
+      font-style: semibold;
+      letter-spacing: 1.5px;
+      line-height: 1;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+
+    .board-header-button {
+      color: var(--grey30);
+    }
+  }
+
+  .board-body {
+    width: 100%;
+    border-top: 1px solid white;
+  }
+}
