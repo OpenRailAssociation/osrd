@@ -29,8 +29,8 @@ import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import MacroEditorState from '../MacroEditor/MacroEditorState';
-import MicroMacroSwitch from '../MicroMacroSwitch';
 import NGE from '../NGE';
+import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 
 type ScenarioContentProps = {
@@ -39,7 +39,10 @@ type ScenarioContentProps = {
   infraMetadata: { isInfraLoaded: boolean; reloadCount: number };
   isTimetableDisplayed?: boolean;
   isConflictsListDisplayed?: boolean;
+  isMacroEditorDisplayed?: boolean;
 };
+
+const MACRO_EDITOR_HEIGHT = 776; // px
 
 const ScenarioContent = ({
   scenario,
@@ -47,6 +50,7 @@ const ScenarioContent = ({
   infraMetadata: { isInfraLoaded },
   isTimetableDisplayed,
   isConflictsListDisplayed,
+  isMacroEditorDisplayed,
 }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -57,7 +61,6 @@ const ScenarioContent = ({
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
-  const [isMacro, setIsMacro] = useState(false);
   const {
     timetableItemsWithDetails,
     timetableItems,
@@ -98,57 +101,59 @@ const ScenarioContent = ({
         ...pacedTrain,
         id: formatEditoastIdToPacedTrainId(pacedTrain.id),
       }));
-    const state = new MacroEditorState(scenario);
+    const state = new MacroEditorState(
+      infra.id,
+      scenario.id,
+      scenario.study_id,
+      scenario.project.id
+    );
     const ngeTimetableItems = [...trainSchedules, ...pacedTrains];
     await loadAndIndexNge(state, ngeTimetableItems, dispatch, t);
     const dto = getNgeDto(state, ngeTimetableItems);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [dispatch, scenario, scenario.timetable_id]);
+  }, [
+    dispatch,
+    infra.id,
+    scenario.study_id,
+    scenario.project.id,
+    scenario.id,
+    scenario.timetable_id,
+  ]);
 
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItem[]) => {
       upsertTimetableItems(updatedTimetableItems);
-      if (isMacro) {
+      if (isMacroEditorDisplayed) {
         refreshNge();
       }
     },
-    [upsertTimetableItems, refreshNge, isMacro]
+    [upsertTimetableItems, refreshNge, isMacroEditorDisplayed]
   );
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      if (isMacro) {
+      if (isMacroEditorDisplayed) {
         refreshNge();
       }
     },
-    [removeTimetableItems, refreshNge, isMacro]
+    [removeTimetableItems, refreshNge, isMacroEditorDisplayed]
   );
 
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
-    if (isMacro) {
+    if (isMacroEditorDisplayed) {
       refreshNge();
     }
   }, [i18n.language]);
 
-  const toggleMicroMacroButton = useCallback(
-    (isMacroMode: boolean) => {
-      setIsMacro(isMacroMode);
-      if (!isMacroMode && collapsedTimetable) {
-        setCollapsedTimetable(false);
-      }
-      if (!isMacroMode && collapsedTimetableEdit) {
-        setCollapsedTimetableEdit(false);
-      }
-      if (!isMacro && isMacroMode) {
-        setNGEIsLoading(true);
-        refreshNge();
-      }
-    },
-    [isMacro, setIsMacro, collapsedTimetable, collapsedTimetableEdit]
-  );
+  useEffect(() => {
+    if (isMacroEditorDisplayed) {
+      setNGEIsLoading(true);
+      refreshNge();
+    }
+  }, [isMacroEditorDisplayed]);
 
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
     handleOperation({
@@ -174,6 +179,7 @@ const ScenarioContent = ({
       dispatch(updateSelectedTrainId(formattedFirstTrainId));
     }
   };
+
   return (
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
@@ -197,8 +203,6 @@ const ScenarioContent = ({
           style={{ display: isTimetableDisplayed ? 'block' : 'none' }}
         >
           <div className="scenario-sidemenu">
-            <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
-
             {infra && (
               <Timetable
                 setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
@@ -227,34 +231,39 @@ const ScenarioContent = ({
             </button>
           )}
           {!isInfraLoaded &&
-            !isMacro &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.add &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.edit && (
               <ScenarioLoaderMessage infraState={infra?.state} />
             )}
-          {isMacro && (!ngeDto || ngeIsLoading) && (
-            <Loader
-              msg={t('main.loadingMacroEditor')}
-              className="scenario-loader"
-              childClass="scenario-loader-msg"
-            />
-          )}
           <div className="scenario-results">
-            {isMacro ? (
-              <div className="h-100 p-1">
-                <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
-              </div>
-            ) : (
-              isInfraLoaded && (
-                <SimulationResults
-                  scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
-                  projectionData={projectionData}
-                  conflicts={conflicts}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
-                  updateTrainDepartureTime={updateTrainDepartureTime}
-                />
-              )
+            {isInfraLoaded && infra && (
+              <SimulationResults
+                scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
+                projectionData={projectionData}
+                conflicts={conflicts}
+                timetableItemsWithDetails={timetableItemsWithDetails}
+                updateTrainDepartureTime={updateTrainDepartureTime}
+              />
             )}
+            <BoardWrapper visible={isMacroEditorDisplayed!} name="MACRO">
+              <div className="osrd-simulation-container speedspacechart-container">
+                <div
+                  className="chart-container"
+                  style={{
+                    height: `${MACRO_EDITOR_HEIGHT}px`,
+                  }}
+                >
+                  {isMacroEditorDisplayed && (!ngeDto || ngeIsLoading) && (
+                    <Loader
+                      msg={t('main.loadingMacroEditor')}
+                      className="scenario-loader"
+                      childClass="scenario-loader-msg"
+                    />
+                  )}
+                  <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
+                </div>
+              </div>
+            </BoardWrapper>
           </div>
         </div>
         <div

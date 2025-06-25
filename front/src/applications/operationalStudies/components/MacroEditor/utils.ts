@@ -67,9 +67,9 @@ export const createMacroNode = async (
     const createPromise = dispatch(
       osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
         {
-          projectId: state.scenario.project.id,
-          studyId: state.scenario.study_id,
-          scenarioId: state.scenario.id,
+          projectId: state.projectId,
+          studyId: state.studyId,
+          scenarioId: state.scenarioId,
           macroNodeBatchForm: { macro_nodes: [node] },
         }
       )
@@ -99,9 +99,9 @@ export const updateMacroNode = async (
     await dispatch(
       osrdEditoastApi.endpoints.putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
         {
-          projectId: state.scenario.project.id,
-          studyId: state.scenario.study_id,
-          scenarioId: state.scenario.id,
+          projectId: state.projectId,
+          studyId: state.studyId,
+          scenarioId: state.scenarioId,
           nodeId: indexedNode.dbId,
           macroNodeForm: node,
         }
@@ -122,9 +122,9 @@ export const deleteMacroNodeByDbId = async (
     await dispatch(
       osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
         {
-          projectId: state.scenario.project.id,
-          studyId: state.scenario.study_id,
-          scenarioId: state.scenario.id,
+          projectId: state.projectId,
+          studyId: state.studyId,
+          scenarioId: state.scenarioId,
           nodeId: dbId,
         }
       )
@@ -163,9 +163,9 @@ export const getSavedMacroNodes = async (
     const promise = dispatch(
       osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
         {
-          projectId: state.scenario.project.id,
-          studyId: state.scenario.study_id,
-          scenarioId: state.scenario.id,
+          projectId: state.projectId,
+          studyId: state.studyId,
+          scenarioId: state.scenarioId,
           pageSize,
           page,
         },

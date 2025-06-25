@@ -1,6 +1,6 @@
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
-export type BoardWrapperProps = {
+type BoardWrapperProps = {
   children: React.ReactNode;
   visible: boolean;
   name: string;

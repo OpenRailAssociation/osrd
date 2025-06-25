@@ -88,7 +88,7 @@ const executeSearch = async (
   const pathSteps: TrainSchedule['path'] = timetableItems.flatMap(
     (timetableItem) => timetableItem.path
   );
-  const searchPayload = buildOpSearchQuery(state.scenario.infra_id, pathSteps);
+  const searchPayload = buildOpSearchQuery(state.infraId, pathSteps);
   if (!searchPayload) {
     return [];
   }

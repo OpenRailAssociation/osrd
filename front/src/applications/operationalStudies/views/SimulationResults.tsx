@@ -39,7 +39,6 @@ type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
   projectionData?: ProjectionData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
-
   conflicts?: Conflict[];
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => void;
 };

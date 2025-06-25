@@ -24,6 +24,7 @@ const Scenario = () => {
 
   const [isTimetableDisplayed, setIsTimeTableDisplayed] = useState(true);
   const [isConflictsListDisplayed, setIsConflictsListDisplayed] = useState(true);
+  const [isMacroEditorDisplayed, setIsMacroEditorDisplayed] = useState(true);
 
   if (!scenario || !infra) return null;
 
@@ -33,6 +34,9 @@ const Scenario = () => {
   const toggleConflictsList = () => {
     setIsConflictsListDisplayed((prev) => !prev);
   };
+  const toggleMacroEditor = () => {
+    setIsMacroEditorDisplayed((prev) => !prev);
+  };
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
@@ -41,6 +45,7 @@ const Scenario = () => {
         infra={infra}
         toggleTimetable={toggleTimetable}
         toggleConflictsList={toggleConflictsList}
+        toggleMacroEditor={toggleMacroEditor}
       />
 
       <ScenarioContent
@@ -49,6 +54,7 @@ const Scenario = () => {
         infraMetadata={infraData}
         isTimetableDisplayed={isTimetableDisplayed}
         isConflictsListDisplayed={isConflictsListDisplayed}
+        isMacroEditorDisplayed={isMacroEditorDisplayed}
       />
     </ScenarioContextProvider>
   );
