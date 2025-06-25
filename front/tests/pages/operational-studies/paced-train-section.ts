@@ -103,16 +103,13 @@ class PacedTrainSection extends CommonPage {
       pacedTrainCardAlreadyOpen?: boolean;
     } = {}
   ) {
-    const { name, labels, timeWindow, interval } = pacedTrainData;
+    const { name, labels, interval, expectedOccurrencesCount } = pacedTrainData;
 
     const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
 
     // In paced_trains.json, invalid paced trains are marked with an `Invalid` label
     // An invalid paced train won't have any details
     if (labels?.includes('Invalid')) return;
-
-    const totalOccurrences = Math.ceil(+timeWindow / +interval);
-    await this.verifyOccurrencesCount(totalOccurrences, index);
 
     // Open the occurrences list to be able to have a unique
     // paced train locator for the tested one
@@ -121,7 +118,10 @@ class PacedTrainSection extends CommonPage {
 
     await expect(this.testedPacedTrainShowOccurrencesButton).not.toBeVisible();
     await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
-    await expect(this.testedPacedTrainOccurrences).toHaveCount(totalOccurrences);
+    if (expectedOccurrencesCount !== undefined) {
+      await expect(this.testedPacedTrainOccurrences).toHaveCount(expectedOccurrencesCount);
+      await this.verifyOccurrencesCount(expectedOccurrencesCount, index);
+    }
 
     let expectedName = name;
     if (copyTranslation) {
@@ -142,7 +142,7 @@ class PacedTrainSection extends CommonPage {
     await this.verifyItemsVisibility(index, 'paced-train');
 
     if (occurrenceData) {
-      for (let occurrenceIndex = 0; occurrenceIndex < totalOccurrences; occurrenceIndex += 1) {
+      for (let occurrenceIndex = 0; occurrenceIndex < occurrenceData.length; occurrenceIndex += 1) {
         await this.verifyOccurrenceDetails(occurrenceData[occurrenceIndex], occurrenceIndex, {
           copyTranslation,
         });
@@ -209,7 +209,7 @@ class PacedTrainSection extends CommonPage {
     itemIndex: number,
     itemType: 'paced-train' | 'occurrence'
   ): Promise<void> {
-    const actionButtonsLocators = this.getActionButtonsLocators(itemIndex, itemType);
+    const actionButtonsLocators = await this.getActionButtonsLocators(itemIndex, itemType);
 
     // Actions buttons should be visible when hovering a paced train but not for an occurrence
     await Promise.all(
@@ -322,7 +322,7 @@ class PacedTrainSection extends CommonPage {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
     await occurrenceItem.indicator.hover();
 
-    const expectedExceptionText = title + changeGroups.join();
+    const expectedExceptionText = title + changeGroups.join('');
     await expect(occurrenceItem.tooltip).toBeVisible();
     await expect(occurrenceItem.tooltip).toHaveText(expectedExceptionText);
   }
@@ -361,6 +361,10 @@ class PacedTrainSection extends CommonPage {
     const portalOccurrenceMenu = this.portalOccurrenceMenu[buttonToClick];
     await expect(portalOccurrenceMenu).toBeVisible();
     await portalOccurrenceMenu.click();
+  }
+
+  async expectOccurrencesListLength(length: number) {
+    await expect(this.testedPacedTrainOccurrences).toHaveCount(length);
   }
 }
 

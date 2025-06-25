@@ -249,6 +249,7 @@ export type PacedTrainDetails = {
   labels: string[];
   timeWindow: string;
   interval: string;
+  expectedOccurrencesCount: number;
 };
 
 export type OccurrenceDetails = {
@@ -334,6 +335,7 @@ export type TimetableFilterTranslations = FlatTranslations & {
 
 export type CommonTranslations = FlatTranslations & {
   common: FlatTranslations;
+  timeStopTable: FlatTranslations;
 };
 
 export type ChangeGroup =

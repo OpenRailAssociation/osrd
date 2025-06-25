@@ -66,7 +66,7 @@
   },
   {
     "train_name": "PacedTrain3",
-    "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored"],
+    "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored", "Valid"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-15T05:00:00Z",
     "path": [
@@ -140,6 +140,43 @@
         "key": "e05qs3b19-d957-47ac-9a96-834f44ab842a",
         "occurrence_index": 0,
         "speed_limit_tag": { "value": "HLP" }
+      }
+    ]
+  },
+  {
+    "train_name": "paced train with exceptions",
+    "labels": ["Valid"],
+    "rolling_stock_name": "SLOW_RS_E2E",
+    "start_time": "2024-10-16T00:00:00Z",
+    "path": [
+      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id228",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true },
+    "paced": { "time_window": "PT2H", "interval": "PT1H" },
+    "category": "FREIGHT_TRAIN",
+    "exceptions": [
+      {
+        "key": "e0f2d454-ccaa-4df6-8a57-39c28c904976",
+        "disabled": false,
+        "start_time": {
+          "value": "2024-10-16T00:30:00Z"
+        }
       }
     ]
   }

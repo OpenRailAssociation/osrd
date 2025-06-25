@@ -120,8 +120,8 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.routeTab).not.toHaveClass(/warning/);
   }
 
-  async setTrainStartTime(departureTime: string) {
-    const currentDate = new Date().toISOString().split('T')[0];
+  async setTrainStartTime(departureTime: string, departureDate?: string) {
+    const currentDate = departureDate || new Date().toISOString().split('T')[0];
     const startTime = `${currentDate}T${departureTime}`;
     await expect(this.startTimeField).toBeVisible();
     await this.startTimeField.fill(startTime);
@@ -307,6 +307,11 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.pacedTrainAddException.dateInput).toBeVisible();
     await expect(this.pacedTrainAddException.timeInput).toBeVisible();
     await expect(this.pacedTrainAddException.button).toBeVisible();
+    await expect(this.returnSimulationResultButton).toBeVisible();
+  }
+
+  async checkEditOccurrenceButtonsVisibility() {
+    await expect(this.editTrainButton).toBeVisible();
     await expect(this.returnSimulationResultButton).toBeVisible();
   }
 
