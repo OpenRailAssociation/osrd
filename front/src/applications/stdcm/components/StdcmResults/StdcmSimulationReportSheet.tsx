@@ -13,7 +13,7 @@ import Header from 'modules/SimulationReportSheet/Header';
 import RCInfo from 'modules/SimulationReportSheet/RCInfo';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
-import { msToKmh } from 'utils/physics';
+import { msToKmh, tToKg } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
   stdcmLinkedTrains: LinkedTrains;
@@ -36,9 +36,15 @@ const StdcmSimulationReportSheet = ({
 
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
 
-  const consistMass = consist?.totalMass ?? Math.floor(rollingStock.mass / 1000);
-  const consistLength = consist?.totalLength ?? Math.floor(rollingStock.length);
-  const consistMaxSpeed = consist?.maxSpeed ?? Math.floor(msToKmh(rollingStock.max_speed));
+  const consistData = {
+    rollingStockName: rollingStock.name,
+    mass: consist?.totalMass ?? Math.floor(tToKg(rollingStock.mass)),
+    length: consist?.totalLength ?? Math.floor(rollingStock.length),
+    maxSpeed: consist?.maxSpeed ?? Math.floor(msToKmh(rollingStock.max_speed)),
+    speedLimitByTag,
+    loadingGauge: consist?.loadingGauge,
+    towedRollingStockName: consist?.towedRollingStock?.name,
+  };
 
   return (
     <Document>
@@ -55,22 +61,17 @@ const StdcmSimulationReportSheet = ({
         />
         <RCInfo departureTime={departureTime} />
         <ConsistAndRoute
-          speedLimitByTag={speedLimitByTag}
-          consist={consist}
-          rollingStock={rollingStock}
+          consist={consistData}
           stdcmLinkedTrains={stdcmLinkedTrains}
           stdcmData={stdcmData}
-          consistMass={consistMass}
-          consistLength={consistLength}
-          consistMaxSpeed={consistMaxSpeed}
         />
         <SimulationTable
           mode="stdcm"
           stdcmData={stdcmData}
           operationalPointsList={operationalPointsList}
           rollingStock={rollingStock}
-          consistMass={consistMass}
-          consistLength={consistLength}
+          consistMass={consistData.mass}
+          consistLength={consistData.length}
         />
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>

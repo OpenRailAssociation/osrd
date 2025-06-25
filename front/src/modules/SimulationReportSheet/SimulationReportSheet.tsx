@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { formatDateToString } from 'utils/date';
+import { msToKmh, tToKg } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
 import Header from './Header';
@@ -30,22 +31,19 @@ const SimulationReportSheet = ({
 
   const { rollingStock, speedLimitByTag, creationDate, trainName } = trainData;
 
-  const consistMass = Math.floor(rollingStock.mass / 1000);
-  const consistLength = Math.floor(rollingStock.length);
-  const consistMaxSpeed = Math.floor(rollingStock.max_speed * 3.6);
+  const consistData = {
+    rollingStockName: rollingStock.name,
+    mass: Math.floor(tToKg(rollingStock.mass)),
+    length: Math.floor(rollingStock.length),
+    maxSpeed: Math.floor(msToKmh(rollingStock.max_speed)),
+    speedLimitByTag,
+  };
 
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
         <Header trainName={trainName} scenarioData={scenarioData} />
-        <ConsistAndRoute
-          speedLimitByTag={speedLimitByTag ?? undefined}
-          rollingStock={rollingStock}
-          operationalPointsList={operationalPointsList}
-          consistMass={consistMass}
-          consistLength={consistLength}
-          consistMaxSpeed={consistMaxSpeed}
-        />
+        <ConsistAndRoute consist={consistData} operationalPointsList={operationalPointsList} />
         <SimulationTable
           mode="operationalStudies"
           path={path}
