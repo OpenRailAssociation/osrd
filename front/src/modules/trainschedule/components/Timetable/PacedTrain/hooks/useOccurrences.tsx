@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
-import { osrdEditoastApi, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
@@ -46,9 +46,6 @@ const useOccurrences = (
     return acc;
   }, occurrences.length);
 
-  const [getRollingStockByName] =
-    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
-
   useEffect(() => {
     const buildOccurrences = async () => {
       const computedOccurrences: Occurrence[] = [];
@@ -66,13 +63,9 @@ const useOccurrences = (
         const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
         let occurrenceRollingStock = rollingStock;
-        if (correspondingException?.rolling_stock) {
-          const promisedRollingStock = getRollingStockByName({
-            rollingStockName: correspondingException.rolling_stock.rolling_stock_name,
-          });
-          occurrenceRollingStock = await promisedRollingStock.unwrap();
-          // we don't want to subscribe to the endpoint to prevent unnecessary calls
-          promisedRollingStock.unsubscribe();
+        if (correspondingException?.rolling_stock && rollingStockList) {
+          const rollingStockName = correspondingException.rolling_stock.rolling_stock_name;
+          occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
         }
 
         computedOccurrences.push({
