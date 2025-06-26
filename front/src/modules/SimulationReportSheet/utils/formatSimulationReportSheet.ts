@@ -30,7 +30,8 @@ export function generateCodeNumber(): string {
  * @param duration Duration object representing the total duration
  * @returns The duration formatted as a string in "X min" format
  */
-export function getStopDurationTime(duration: Duration): string {
+export function getStopDurationTime(duration?: Duration): string {
+  if (!duration) return '';
   return `${Math.round(duration.total('minute'))} min`;
 }
 
@@ -309,7 +310,7 @@ export const getArrivalTimes = (step: StdcmPathStep, t: TFunction<'stdcm'>) => {
 
 export const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_code;
 
-export const getStopType = (step: StdcmPathStep, t: TFunction<'stdcm'>) =>
-  !step.isVia
+export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'stdcm'>) =>
+  !stopType
     ? t('reportSheet.serviceStop')
-    : capitalizeFirstLetter(t(`trainPath.stopType.${step.stopType}`));
+    : capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`));
