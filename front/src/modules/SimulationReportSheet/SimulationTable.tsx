@@ -86,9 +86,9 @@ const SimulationTable = (props: SimulationTableProps) => {
             )}
           </TH>
 
-          {rows.map((row) => (
-            <TR key={row.index} style={row.rowStyle}>
-              <TD style={row.stylesByColumn.index}>{row.index + 1}</TD>
+          {rows.map((row, index) => (
+            <TR key={index} style={row.rowStyle}>
+              <TD style={row.stylesByColumn.index}>{index + 1}</TD>
               <View style={styles.simulation.opWidth}>
                 <TD style={row.stylesByColumn.name}>{row.name}</TD>
               </View>
@@ -120,7 +120,7 @@ const SimulationTable = (props: SimulationTableProps) => {
               </View>
               {isStdcm ? (
                 <View style={styles.simulation.stopType}>
-                  {(row.isFirstStep || row.isLastStep || row.stopType) && (
+                  {(index === 0 || index === rows.length - 1 || row.stopType) && (
                     <TD style={row.stylesByColumn.others}>{row.stopTypeLabel}</TD>
                   )}
                 </View>
