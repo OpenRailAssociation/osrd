@@ -39,7 +39,7 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTrainSchedule/helpers/formatTimetableItemPayload';
-import { TRAIN_CATEGORY_CLASS } from '../consts';
+import { TIMETABLE_ITEM_DELTA, TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
@@ -150,7 +150,6 @@ const PacedTrainItem = ({
   const duplicatePacedTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
     const pacedTrainName = `${pacedTrain.name} (${t('timetable.copy')})`;
-    const pacedTrainDelta = 5;
 
     const editoastTrainId = extractEditoastIdFromPacedTrainId(pacedTrain.id);
 
@@ -166,14 +165,13 @@ const PacedTrainItem = ({
       return;
     }
 
-    const startTime = new Date(pacedTrainDetail.start_time);
-    const newStartTimeString = addDurationToDate(
-      startTime,
-      new Duration({ minutes: pacedTrainDelta })
+    const startTime = addDurationToDate(
+      new Date(pacedTrainDetail.start_time),
+      new Duration({ minutes: TIMETABLE_ITEM_DELTA })
     );
     const newPacedTrain: PacedTrain = {
       ...omit(pacedTrainDetail, ['id', 'timetable_id']),
-      start_time: newStartTimeString.toISOString(),
+      start_time: startTime.toISOString(),
       train_name: pacedTrainName,
     };
 
