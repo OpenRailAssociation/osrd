@@ -2,23 +2,14 @@ import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
 import { View, Text } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { StdcmSuccessResponse } from 'applications/stdcm/types';
-
 import styles from './styles/SimulationReportStyleSheet';
-import formatRouteTable from './utils/formatRouteTable';
+import type { RouteTableRow } from './types';
 import { getStopDurationTime, getStopType } from './utils/formatSimulationReportSheet';
 
-type RouteProps =
-  | { mode: 'stdcm'; stdcmData: StdcmSuccessResponse }
-  | { mode: 'operationalStudies'; operationalPointsList: OperationalPointWithTimeAndSpeed[] };
+type RouteProps = { isStdcm?: boolean; operationalPointList: RouteTableRow[] };
 
-const RouteTable = (props: RouteProps) => {
+const RouteTable = ({ isStdcm = false, operationalPointList }: RouteProps) => {
   const { t } = useTranslation('stdcm');
-  const { mode } = props;
-  const isStdcm = mode === 'stdcm';
-
-  const rows = formatRouteTable(props);
 
   return (
     <View style={styles.consistAndRoute.stopTableContainer}>
@@ -49,7 +40,7 @@ const RouteTable = (props: RouteProps) => {
           </View>
         </TH>
 
-        {rows.map((row, index) => (
+        {operationalPointList.map((row, index) => (
           <TR key={index + 1} style={styles.consistAndRoute.stopTableTbody}>
             <View style={styles.consistAndRoute.stopTableIndexWidth}>
               <TD style={styles.consistAndRoute.stopTableIndexColumn}>{index + 1}</TD>

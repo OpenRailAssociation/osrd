@@ -1,11 +1,16 @@
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { StdcmResultsOperationalPoint, StdcmSuccessResponse } from 'applications/stdcm/types';
+import type {
+  StdcmResultsOperationalPoint,
+  StdcmStopTypes,
+  StdcmSuccessResponse,
+} from 'applications/stdcm/types';
 import type {
   LightRollingStock,
   PathfindingResultSuccess,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
+import type { Duration } from 'utils/duration';
 
 export type SimulationSheetData = {
   trainName?: string;
@@ -28,4 +33,15 @@ export type SimulationTableScenarioProps = {
   path: PathfindingResultSuccess;
   operationalPointsList: OperationalPointWithTimeAndSpeed[];
   rollingStock: RollingStockWithLiveries;
+};
+
+export type RouteTableRow = {
+  name: string;
+  secondaryCode: string;
+  arrivesAt?: string;
+  passageStop?: Duration;
+  leavesAt?: string;
+  stopType?: StdcmStopTypes;
+  tolerances?: { before: Duration; after: Duration };
+  italic?: boolean;
 };

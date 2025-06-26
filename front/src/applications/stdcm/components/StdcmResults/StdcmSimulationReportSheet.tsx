@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { Page, Text, Document, View, Image } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +15,11 @@ import Header from 'modules/SimulationReportSheet/Header';
 import RCInfo from 'modules/SimulationReportSheet/RCInfo';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
+import type { RouteTableRow } from 'modules/SimulationReportSheet/types';
+import {
+  getArrivalTimes,
+  getSecondaryCode,
+} from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { msToKmh, tToKg } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
@@ -46,6 +53,32 @@ const StdcmSimulationReportSheet = ({
     towedRollingStockName: consist?.towedRollingStock?.name,
   };
 
+  const routeOperationalPoints = useMemo(() => {
+    const rows: RouteTableRow[] = [];
+    stdcmData.simulationPathSteps.forEach((step, index) => {
+      const row: RouteTableRow = {
+        name: step.location?.name || '',
+        secondaryCode: getSecondaryCode(step),
+        italic: true,
+      };
+      if (step.isVia) {
+        row.passageStop = step.stopFor;
+        row.stopType = step.stopType;
+      } else {
+        const isFirst = index === 0;
+        const isLast = index === stdcmData.simulationPathSteps.length - 1;
+        row.arrivesAt = isLast ? getArrivalTimes(step, t) : '';
+        row.leavesAt = isFirst ? getArrivalTimes(step, t) : '';
+        if (step.arrivalType === 'preciseTime') {
+          row.tolerances = step.tolerances;
+          row.italic = false;
+        }
+      }
+      rows.push(row);
+    });
+    return rows;
+  }, [stdcmData.simulationPathSteps]);
+
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
@@ -61,9 +94,10 @@ const StdcmSimulationReportSheet = ({
         />
         <RCInfo departureTime={departureTime} />
         <ConsistAndRoute
+          isStdcm
           consist={consistData}
           stdcmLinkedTrains={stdcmLinkedTrains}
-          stdcmData={stdcmData}
+          routeTableRows={routeOperationalPoints}
         />
         <SimulationTable
           mode="stdcm"

@@ -1,16 +1,19 @@
+import { useMemo } from 'react';
+
 import { Page, Text, Image, Document, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { formatDateToString } from 'utils/date';
+import { dateToHHMMSS, formatDateToString } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { msToKmh, tToKg } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
 import Header from './Header';
 import SimulationTable from './SimulationTable';
 import styles from './styles/SimulationReportStyleSheet';
-import type { SimulationSheetData } from './types';
+import type { RouteTableRow, SimulationSheetData } from './types';
 
 type SimulationReportSheetProps = {
   path: PathfindingResultSuccess;
@@ -39,11 +42,29 @@ const SimulationReportSheet = ({
     speedLimitByTag,
   };
 
+  const routeOperationalPoints = useMemo(() => {
+    const rows: RouteTableRow[] = [];
+
+    operationalPointsList.forEach((step, index) => {
+      const isFirst = index === 0;
+      const isLast = index === operationalPointsList.length - 1;
+      if (!isFirst && !isLast && step.duration === Duration.zero) return;
+
+      rows.push({
+        name: step.name || t('reportSheet.unknown'),
+        secondaryCode: step.ch ?? '',
+        arrivesAt: isLast ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
+        leavesAt: isFirst ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
+      });
+    });
+    return rows;
+  }, [operationalPointsList]);
+
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
         <Header trainName={trainName} scenarioData={scenarioData} />
-        <ConsistAndRoute consist={consistData} operationalPointsList={operationalPointsList} />
+        <ConsistAndRoute consist={consistData} routeTableRows={routeOperationalPoints} />
         <SimulationTable
           mode="operationalStudies"
           path={path}
