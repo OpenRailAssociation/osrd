@@ -517,10 +517,11 @@ private fun computeMinETCSBrakingCurves(
  * with it or with begin position. If the braking curve has no intersection, return null.
  */
 private fun keepBrakingCurveUnderOverlay(
-    etcsBrakingCurve: BrakingCurve,
+    etcsBrakingCurve: BrakingCurve?,
     overlay: Envelope,
     beginPos: Double
 ): BrakingCurve? {
+    if (etcsBrakingCurve == null) return null
     var brakingCurve = etcsBrakingCurve.brakingCurve
     if (brakingCurve.beginPos >= overlay.endPos || brakingCurve.endPos <= beginPos) {
         etcsBrakingCurvesLogger.warn(
@@ -532,24 +533,27 @@ private fun keepBrakingCurveUnderOverlay(
         // Slice envelope to remove the braking curve part which is after the overlay.
         brakingCurve = Envelope.make(*brakingCurve.slice(brakingCurve.beginPos, overlay.endPos))
     }
-    if (
-        brakingCurve.minSpeed >
-            Envelope.make(
-                    *overlay.slice(
-                        max(brakingCurve.beginPos, beginPos),
-                        min(brakingCurve.endPos, overlay.endPos)
-                    )
-                )
-                .maxSpeed
-    ) {
-        // The full braking curve is above the overlay envelope: nothing to do here.
-        return null
-    }
 
     val points = brakingCurve.iteratePoints().distinct()
     val positions = points.map { it.position }
     val speeds = points.map { it.speed }
     val timeDeltas = brakingCurve.flatMap { it.getTimeDeltas() }
+    val isAboveOverlay =
+        // If the last point is strictly above the overlay, the lowest part of the braking curve is
+        // above
+        // as well.
+        brakingCurve.endSpeed > overlay.interpolateSpeedLeftDir(brakingCurve.endPos, 1.0) ||
+            // If the last point is on the overlay, if the second to last is above the overlay, then
+            // the lowest part of the braking curve is above as well.
+            (brakingCurve.endSpeed == overlay.interpolateSpeedLeftDir(brakingCurve.endPos, 1.0) &&
+                speeds[speeds.size - 2] >=
+                    overlay.interpolateSpeedLeftDir(positions[positions.size - 2], 1.0))
+    if (isAboveOverlay) {
+        // The lowest part of the braking curve is above the overlay envelope: dismiss it entirely
+        // (currently considering that higher parts of the curve which would end up under the
+        // overlay would actually be irrelevant when compared to other slowdown braking curves).
+        return null
+    }
 
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
@@ -559,40 +563,12 @@ private fun keepBrakingCurveUnderOverlay(
             PositionConstraint(max(beginPos, brakingCurve.beginPos), overlay.endPos),
             EnvelopeConstraint(overlay, EnvelopePartConstraintType.CEILING)
         )
-    val lastIndex = getIndexOfLastPointBeneathOverlay(positions, speeds, overlay)
-    // To create a braking curve with overlay builder, we need at least 2 positions.
-    if (lastIndex <= 0) return null
+    val lastIndex = positions.lastIndex
     overlayBuilder.initEnvelopePart(positions[lastIndex], speeds[lastIndex], -1.0)
     for (i in lastIndex - 1 downTo 0) {
         if (!overlayBuilder.addStep(positions[i], speeds[i], timeDeltas[i])) break
     }
     return BrakingCurve(etcsBrakingCurve.brakingType, Envelope.make(partBuilder.build()))
-}
-
-/**
- * Find the index of the last point which is located beneath the overlay envelope, -1 if none exist.
- */
-private fun getIndexOfLastPointBeneathOverlay(
-    positions: List<Double>,
-    speeds: List<Double>,
-    overlay: Envelope
-): Int {
-    if (positions.first() > overlay.endPos || positions.last() < overlay.beginPos) {
-        return -1
-    }
-    for (index in positions.size - 1 downTo 0) {
-        if (positions[index] > overlay.endPos) continue // ignore positions after overlay
-        if (positions[index] < overlay.beginPos) break // stop if reached positions before overlay
-        if (
-            speeds[index] <=
-                overlay
-                    .get(overlay.findRightDir(positions[index], -1.0))
-                    .interpolateSpeed(positions[index])
-        ) {
-            return index
-        }
-    }
-    return -1
 }
 
 private data class BecParams(val dBec: Double, val vBec: Double, val speed: Double) {
