@@ -189,7 +189,7 @@
 
         .warning-box {
           width: calc(100% + 16px);
-          transform: translateX(-8px);
+          margin-left: -8px;
           border-radius: 8px;
           box-shadow:
             0 3px 5px -2px var(--black10),
@@ -225,7 +225,7 @@
             transform: rotate(1deg);
           }
           24% {
-            transform: rotate(0eg);
+            transform: rotate(0deg);
           }
           36% {
             transform: rotate(-1deg);
@@ -237,7 +237,7 @@
             transform: rotate(1deg);
           }
           70% {
-            transform: rotate(0eg);
+            transform: rotate(0deg);
           }
           85% {
             transform: rotate(-1deg);
