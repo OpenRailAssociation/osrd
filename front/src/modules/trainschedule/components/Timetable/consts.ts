@@ -17,3 +17,5 @@ export const TRAIN_CATEGORY_CLASS: Record<TrainCategory | 'None', string> = {
   WORK_TRAIN: 'work',
   None: 'none',
 };
+
+export const TIMETABLE_ITEM_DELTA = 5;

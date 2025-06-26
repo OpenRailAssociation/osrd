@@ -19,6 +19,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
@@ -26,7 +27,7 @@ import {
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
-import { TRAIN_CATEGORY_CLASS } from './consts';
+import { TIMETABLE_ITEM_DELTA, TRAIN_CATEGORY_CLASS } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
@@ -108,7 +109,11 @@ const TrainScheduleItem = ({
       });
 
     if (trainDetail) {
-      const startTime = new Date(trainDetail.start_time);
+      const startTime = addDurationToDate(
+        new Date(trainDetail.start_time),
+        new Duration({ minutes: TIMETABLE_ITEM_DELTA })
+      );
+
       const newTrain: TrainSchedule = {
         ...omit(trainDetail, ['id', 'timetable_id']),
         start_time: startTime.toISOString(),
