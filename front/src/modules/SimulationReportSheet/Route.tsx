@@ -7,6 +7,7 @@ import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 
 import styles from './styles/SimulationReportStyleSheet';
 import formatRouteTable from './utils/formatRouteTable';
+import { getStopDurationTime, getStopType } from './utils/formatSimulationReportSheet';
 
 type RouteProps =
   | { mode: 'stdcm'; stdcmData: StdcmSuccessResponse }
@@ -48,10 +49,10 @@ const RouteTable = (props: RouteProps) => {
           </View>
         </TH>
 
-        {rows.map((row) => (
-          <TR key={row.index} style={styles.consistAndRoute.stopTableTbody}>
+        {rows.map((row, index) => (
+          <TR key={index + 1} style={styles.consistAndRoute.stopTableTbody}>
             <View style={styles.consistAndRoute.stopTableIndexWidth}>
-              <TD style={styles.consistAndRoute.stopTableIndexColumn}>{row.index}</TD>
+              <TD style={styles.consistAndRoute.stopTableIndexColumn}>{index + 1}</TD>
             </View>
             <View style={styles.consistAndRoute.stopTableOpWidth}>
               <TD style={styles.consistAndRoute.stopTableOpColumn}>{row.name}</TD>
@@ -67,21 +68,28 @@ const RouteTable = (props: RouteProps) => {
                     : styles.consistAndRoute.stopTableStartColumn
                 }
               >
-                {row.arrivesAt}
-                {row.tolerances && row.arrivesAt && (
-                  <View style={styles.consistAndRoute.tolerancesWidth}>
-                    {row.tolerances.map((tolerances, i) => (
-                      <Text key={i} style={styles.consistAndRoute.tolerancesText}>
-                        {tolerances}
-                      </Text>
-                    ))}
-                  </View>
+                {row.arrivesAt && (
+                  <>
+                    {row.arrivesAt}{' '}
+                    {row.tolerances && (
+                      <View style={styles.consistAndRoute.tolerancesWidth}>
+                        <Text style={styles.consistAndRoute.tolerancesText}>
+                          {`+${row.tolerances.after.total('minute')}`}
+                        </Text>
+                        <Text style={styles.consistAndRoute.tolerancesText}>
+                          {`-${row.tolerances.before.total('minute')}`}
+                        </Text>
+                      </View>
+                    )}
+                  </>
                 )}
               </TD>
             </View>
             {isStdcm && (
               <View style={styles.consistAndRoute.stopForWidth}>
-                <TD style={styles.consistAndRoute.stopForText}>{row.passageStop}</TD>
+                <TD style={styles.consistAndRoute.stopForText}>
+                  {getStopDurationTime(row.passageStop)}
+                </TD>
               </View>
             )}
             <View style={styles.consistAndRoute.stopTableStartWidth}>
@@ -92,21 +100,28 @@ const RouteTable = (props: RouteProps) => {
                     : styles.consistAndRoute.stopTableStartColumn
                 }
               >
-                {row.leavesAt}
-                {row.tolerances && row.leavesAt && (
-                  <View style={styles.consistAndRoute.tolerancesWidth}>
-                    {row.tolerances.map((tolerances, i) => (
-                      <Text key={i} style={styles.consistAndRoute.tolerancesText}>
-                        {tolerances}
-                      </Text>
-                    ))}
-                  </View>
+                {row.leavesAt && (
+                  <>
+                    {row.leavesAt}
+                    {row.tolerances && (
+                      <View style={styles.consistAndRoute.tolerancesWidth}>
+                        <Text style={styles.consistAndRoute.tolerancesText}>
+                          {`+${row.tolerances.after.total('minute')}`}
+                        </Text>
+                        <Text style={styles.consistAndRoute.tolerancesText}>
+                          {`-${row.tolerances.before.total('minute')}`}
+                        </Text>
+                      </View>
+                    )}
+                  </>
                 )}
               </TD>
             </View>
             {isStdcm && (
               <View style={styles.consistAndRoute.stopTableStopTypeWidth}>
-                <TD style={styles.consistAndRoute.stopTableItalicColumn}>{row.stopType}</TD>
+                <TD style={styles.consistAndRoute.stopTableItalicColumn}>
+                  {getStopType(row.stopType, t)}
+                </TD>
               </View>
             )}
           </TR>

@@ -1,26 +1,20 @@
 import { useTranslation } from 'react-i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import type { StdcmSuccessResponse } from 'applications/stdcm/types';
+import type { StdcmStopTypes, StdcmSuccessResponse } from 'applications/stdcm/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
 
-import {
-  getArrivalTimes,
-  getSecondaryCode,
-  getStopDurationTime,
-  getStopType,
-} from './formatSimulationReportSheet';
+import { getArrivalTimes, getSecondaryCode } from './formatSimulationReportSheet';
 
 type RouteTableRow = {
-  index: number;
   name: string;
   secondaryCode: string;
   arrivesAt?: string;
-  passageStop?: string;
+  passageStop?: Duration;
   leavesAt?: string;
-  stopType?: string;
-  tolerances?: string[];
+  stopType?: StdcmStopTypes;
+  tolerances?: { before: Duration; after: Duration };
   italic?: boolean;
 };
 
@@ -43,7 +37,6 @@ const formatRouteTable = (options: FormatRouteTableOptions): RouteTableRow[] => 
       if (!isFirst && !isLast && step.duration === Duration.zero) return;
 
       rows.push({
-        index: rows.length + 1,
         name: step.name || t('reportSheet.unknown'),
         secondaryCode: step.ch ?? '',
         arrivesAt: isLast ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
@@ -60,19 +53,15 @@ const formatRouteTable = (options: FormatRouteTableOptions): RouteTableRow[] => 
     const isLast = index === options.stdcmData.simulationPathSteps.length - 1;
 
     rows.push({
-      index: rows.length + 1,
       name: step.location?.name || '',
       secondaryCode: getSecondaryCode(step),
       arrivesAt: isLast ? getArrivalTimes(step, t) : '',
       leavesAt: isFirst ? getArrivalTimes(step, t) : '',
-      passageStop: step.isVia && step.stopFor ? getStopDurationTime(step.stopFor) : '',
-      stopType: getStopType(step, t),
+      passageStop: step.isVia ? step.stopFor : undefined,
+      stopType: step.isVia ? step.stopType : undefined,
       tolerances:
         !step.isVia && step.tolerances && step.arrivalType === 'preciseTime'
-          ? [
-              `+${step.tolerances.after.total('minute')}`,
-              `-${step.tolerances.before.total('minute')}`,
-            ]
+          ? step.tolerances
           : undefined,
       italic: step.isVia || step.arrivalType !== 'preciseTime',
     });
