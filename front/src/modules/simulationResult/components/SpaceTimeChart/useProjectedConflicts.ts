@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 
 import type {
   Conflict,
+  ConflictRequirement,
   PathProperties,
   PathfindingResultSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -36,7 +37,15 @@ const useProjectedConflicts = (
 
   const conflictReqsByZone = useMemo(() => {
     const reqs = conflicts.flatMap((conflict) => conflict.requirements);
-    return new Map(reqs.map((req) => [req.zone, req]));
+    const reqsMap = new Map<string, ConflictRequirement[]>();
+    // With paced trains, one zone can appear multiple times so we need to handle that.
+    reqs.forEach((req) => {
+      if (!reqsMap.has(req.zone)) {
+        reqsMap.set(req.zone, []);
+      }
+      reqsMap.get(req.zone)!.push(req);
+    });
+    return reqsMap;
   }, [conflicts]);
 
   const conflictZones = useMemo(() => {
@@ -46,19 +55,17 @@ const useProjectedConflicts = (
 
     const boundaries = [0, ...projectedZones.boundaries, path.length];
     return projectedZones.values.flatMap((zone, index) => {
-      const req = conflictReqsByZone.get(zone);
-      if (!req) {
+      const reqs = conflictReqsByZone.get(zone);
+      if (!reqs || reqs.length === 0) {
         return [];
       }
 
-      return [
-        {
-          timeStart: +new Date(req.start_time),
-          timeEnd: +new Date(req.end_time),
-          spaceStart: boundaries[index],
-          spaceEnd: boundaries[index + 1],
-        },
-      ];
+      return reqs.map((req) => ({
+        timeStart: +new Date(req.start_time),
+        timeEnd: +new Date(req.end_time),
+        spaceStart: boundaries[index],
+        spaceEnd: boundaries[index + 1],
+      }));
     });
   }, [conflictReqsByZone, projectedZones, path]);
 
