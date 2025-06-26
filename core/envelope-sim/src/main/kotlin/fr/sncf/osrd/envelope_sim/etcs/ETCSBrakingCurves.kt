@@ -52,8 +52,12 @@ fun computeBrakingCurvesAtLOA(
     val targetSpeed = limitOfAuthority.speed
     assert(targetSpeed > 0.0)
     val ebdBrakingCurves =
-        computeEbdBrakingCurves(context, targetPosition, targetSpeed, maxSpeedEnvelope, beginPos)
-    return ebdBrakingCurves
+        computeEbdBrakingCurves(context, targetPosition, targetSpeed, maxSpeedEnvelope)
+    return EnumMap(
+        ebdBrakingCurves.mapValues {
+            keepBrakingCurveUnderOverlay(it.value, maxSpeedEnvelope, beginPos)
+        }
+    )
 }
 
 /**
@@ -69,8 +73,7 @@ fun computeBrakingCurvesAtEOA(
     val targetPosition = endOfAuthority.offsetEOA.distance.meters
     assert(targetPosition > 0.0)
     val targetSpeed = 0.0
-    val eoaBrakingCurves =
-        computeSbdBrakingCurves(context, targetPosition, maxSpeedEnvelope, beginPos)
+    val eoaBrakingCurves = computeSbdBrakingCurves(context, targetPosition, maxSpeedEnvelope)
     if (endOfAuthority.usedCurveType == PS) eoaBrakingCurves[IND] = null
     val svlBrakingCurves: BrakingCurves =
         if (endOfAuthority.offsetSVL == null) EnumMap(BrakingType::class.java)
@@ -80,7 +83,6 @@ fun computeBrakingCurvesAtEOA(
                 endOfAuthority.offsetSVL.distance.meters,
                 targetSpeed,
                 maxSpeedEnvelope,
-                beginPos
             )
     val brakingCurves: BrakingCurves =
         EnumMap<BrakingType, BrakingCurve?>(BrakingType::class.java).apply {
@@ -98,7 +100,11 @@ fun computeBrakingCurvesAtEOA(
             brakingCurves[IND] =
                 computeMinETCSBrakingCurves(eoaBrakingCurves[IND], svlBrakingCurves[IND])
     }
-    return brakingCurves
+    return EnumMap(
+        brakingCurves.mapValues {
+            keepBrakingCurveUnderOverlay(it.value, maxSpeedEnvelope, beginPos)
+        }
+    )
 }
 
 /**
@@ -109,7 +115,6 @@ private fun computeSbdBrakingCurves(
     context: EnvelopeSimContext,
     targetPosition: Double,
     maxSpeedEnvelope: Envelope,
-    beginPos: Double
 ): BrakingCurves {
     val targetSpeed = 0.0
     val maxSpeed = maxSpeedEnvelope.maxSpeed
@@ -136,10 +141,6 @@ private fun computeSbdBrakingCurves(
     assert(fullIndicationCurve.brakingCurve.endSpeed == targetSpeed)
     sbdBrakingCurves[sbdCurve.brakingType] = sbdCurve
     sbdBrakingCurves[guiCurve.brakingType] = guiCurve
-    // Keep all the braking curves under the max speed envelope.
-    for (entry in sbdBrakingCurves.entries) {
-        entry.setValue(keepBrakingCurveUnderOverlay(entry.value!!, maxSpeedEnvelope, beginPos))
-    }
     return sbdBrakingCurves
 }
 
@@ -149,7 +150,6 @@ private fun computeEbdBrakingCurves(
     targetPosition: Double,
     targetSpeed: Double,
     maxSpeedEnvelope: Envelope,
-    beginPos: Double
 ): BrakingCurves {
     val maxSpeed = maxSpeedEnvelope.maxSpeed
     // Add maxBecDeltaSpeed to EBD curve overhead so it reaches a sufficiently high speed to
@@ -191,10 +191,6 @@ private fun computeEbdBrakingCurves(
     ebdBrakingCurves[PS] = maintainSpeedUntil(ebdBrakingCurves[PS]!!, maintainSpeed, targetPosition)
     ebdBrakingCurves[IND] =
         maintainSpeedUntil(ebdBrakingCurves[IND]!!, maintainSpeed, targetPosition)
-    // Keep all the braking curves under the max speed envelope.
-    for (entry in ebdBrakingCurves.entries) {
-        entry.setValue(keepBrakingCurveUnderOverlay(entry.value!!, maxSpeedEnvelope, beginPos))
-    }
     return ebdBrakingCurves
 }
 
