@@ -475,7 +475,7 @@ private fun computeMinETCSBrakingCurves(
     val endPos2 = brakingCurve2.brakingCurve.endPos
     val beginPos1 = brakingCurve1.brakingCurve.beginPos
     val beginPos2 = brakingCurve2.brakingCurve.beginPos
-    if (brakingCurveType1 == GUI) return if (endPos2 >= endPos1) brakingCurve1 else brakingCurve2
+    if (brakingCurveType == GUI) return if (endPos2 >= endPos1) brakingCurve1 else brakingCurve2
     else if (beginPos2 >= endPos1) return brakingCurve1
     else if (beginPos1 >= endPos2) return brakingCurve2
 
