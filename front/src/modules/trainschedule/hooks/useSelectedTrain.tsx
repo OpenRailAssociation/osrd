@@ -23,7 +23,7 @@ const useSelectedTrain = (): Train | undefined => {
     return isOccurrenceId(trainId) ? extractPacedTrainIdFromOccurrenceId(trainId) : trainId;
   }, [trainId]);
 
-  const { data: timetableItem } = osrdEditoastApi.endpoints.getTimetableItemById.useQuery(
+  const { currentData: timetableItem } = osrdEditoastApi.endpoints.getTimetableItemById.useQuery(
     {
       id: timetableItemId!,
     },
@@ -32,17 +32,13 @@ const useSelectedTrain = (): Train | undefined => {
 
   return useMemo(() => {
     if (!trainId || !timetableItem) return undefined;
-    if (isTrainScheduleId(trainId)) {
-      if (isPacedTrainResponseWithPacedTrainId(timetableItem) || trainId !== timetableItem.id)
-        return undefined;
+    if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
       return timetableItem;
     }
 
-    if (
-      !isPacedTrainResponseWithPacedTrainId(timetableItem) ||
-      extractPacedTrainIdFromOccurrenceId(trainId) !== timetableItem.id
-    )
-      return undefined;
+    if (isTrainScheduleId(trainId)) {
+      throw new Error(`trainId ${trainId} should be a occurrence id`);
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, exceptions, paced, ...trainProps } = timetableItem;
