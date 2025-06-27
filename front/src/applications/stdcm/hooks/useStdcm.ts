@@ -28,6 +28,7 @@ import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selec
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
@@ -48,7 +49,8 @@ const useStdcm = ({
   );
 
   const dispatch = useAppDispatch();
-  const { t, i18n } = useTranslation(['translation', 'stdcm']);
+  const { t } = useTranslation(['translation', 'stdcm']);
+  const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>();
@@ -212,7 +214,7 @@ const useStdcm = ({
     resetStdcmState();
     isCancelledRef.current = false;
 
-    const validConfig = checkStdcmConf(dispatch, t, i18n.language, osrdconf);
+    const validConfig = checkStdcmConf(dispatch, t, dateTimeLocale, osrdconf);
     if (!validConfig) return;
 
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);

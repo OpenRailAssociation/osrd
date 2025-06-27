@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { getDocument } from 'common/api/documentApi';
 import type { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import { dateTimeFormatting } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -19,7 +19,8 @@ type Props = {
 };
 
 export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
-  const { t, i18n } = useTranslation('operational-studies');
+  const { t } = useTranslation('operational-studies');
+  const dateTimeLocale = useDateTimeLocale();
   const [imageUrl, setImageUrl] = useState<string>();
   const safeWord = useSelector(getUserSafeWord);
 
@@ -72,7 +73,9 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           <span className="mr-1">
             <Calendar />
           </span>
-          {dateTimeFormatting(new Date(project.last_modification), i18n.language)}
+          {new Date(project.last_modification).toLocaleString(dateTimeLocale, {
+            dateStyle: 'medium',
+          })}
         </div>
         <div>
           <span className="mr-1">

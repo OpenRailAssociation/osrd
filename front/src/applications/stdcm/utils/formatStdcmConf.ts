@@ -10,7 +10,6 @@ import type {
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
-import { dateTimeFormatting } from 'utils/date';
 import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 
@@ -39,7 +38,7 @@ type ValidStdcmConfig = {
 export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
-  i18nLanguage: string,
+  dateTimeLocale: Intl.Locale,
   osrdconf: OsrdStdcmConfState
 ): ValidStdcmConfig | null => {
   const {
@@ -136,8 +135,8 @@ export const checkStdcmConf = (
         message: t(
           'operational-studies:manageTimetableItem.errorMessages.originTimeOutsideWindow',
           {
-            low: dateTimeFormatting(searchDatetimeWindow.begin, i18nLanguage, false),
-            high: dateTimeFormatting(searchDatetimeWindow.end, i18nLanguage, false),
+            low: searchDatetimeWindow.begin.toLocaleString(dateTimeLocale, { dateStyle: 'medium' }),
+            high: searchDatetimeWindow.end.toLocaleString(dateTimeLocale, { dateStyle: 'medium' }),
           }
         ),
       })

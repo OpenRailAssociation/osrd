@@ -7,7 +7,7 @@ import studyLogo from 'assets/pictures/views/study.svg';
 import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
-import { dateTimeFormatting } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 import { budgetFormat } from 'utils/numbers';
 
 type StudyCardProps = {
@@ -23,7 +23,8 @@ export default function StudyCard({
   isSelected,
   toggleSelect,
 }: StudyCardProps) {
-  const { t, i18n } = useTranslation('operational-studies');
+  const { t } = useTranslation('operational-studies');
+  const dateTimeLocale = useDateTimeLocale();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();
@@ -122,7 +123,9 @@ export default function StudyCard({
           </span>
           <span className="mr-1">{t('study.updatedOn')}</span>
           {study.last_modification &&
-            dateTimeFormatting(new Date(study.last_modification), i18n.language)}
+            new Date(study.last_modification).toLocaleString(dateTimeLocale, {
+              dateStyle: 'medium',
+            })}
         </div>
       </div>
     </div>

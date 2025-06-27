@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { dateTimeFormatting } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 
 type Props = {
   date?: Date | null;
@@ -9,13 +9,17 @@ type Props = {
 };
 
 export default function DateBox({ date, type, withoutTime }: Props) {
-  const { t, i18n } = useTranslation('operational-studies');
+  const { t } = useTranslation('operational-studies');
+  const dateTimeLocale = useDateTimeLocale();
   return (
     <div className={`study-details-dates-date ${type}`}>
       <span className="study-details-dates-date-label">{t(`study.date-${type}`)}</span>
       <span className="study-details-dates-date-value">
         {date ? (
-          dateTimeFormatting(date, i18n.language, withoutTime)
+          date.toLocaleString(dateTimeLocale, {
+            dateStyle: 'medium',
+            timeStyle: withoutTime ? undefined : 'short',
+          })
         ) : (
           <small className="text-muted">{t('study.noDateFound')}</small>
         )}
