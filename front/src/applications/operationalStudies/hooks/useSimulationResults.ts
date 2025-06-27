@@ -21,7 +21,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
 
   const train = useSelectedTrain();
 
-  const { data: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
+  const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
     {
       id: selectedTrainId!,
       infraId,
@@ -31,7 +31,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     }
   );
 
-  const { data: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
+  const { currentData: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
     {
       id: selectedTrainId!,
       infraId,
@@ -44,7 +44,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
 
   // TODO: replace this API call by extracting the rolling stock from the rolling
   // stocks list
-  const { data: rollingStock } =
+  const { currentData: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
       {
         rollingStockName: train?.rolling_stock_name || '',
@@ -54,7 +54,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       }
     );
 
-  const { data: rawPathProperties } =
+  const { currentData: rawPathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       {
         infraId,
