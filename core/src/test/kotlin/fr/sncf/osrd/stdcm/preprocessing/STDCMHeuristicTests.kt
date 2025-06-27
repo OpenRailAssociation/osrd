@@ -2,6 +2,8 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.envelope.Envelope.Companion.make
+import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
@@ -10,7 +12,9 @@ import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.TimeData
-import fr.sncf.osrd.stdcm.infra_exploration.*
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelopeImpl
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -258,6 +262,12 @@ class STDCMHeuristicTests {
                 Length(0.meters),
                 0.0,
                 null,
+                make(
+                    EnvelopeTestUtils.generateTimes(
+                        doubleArrayOf(0.0, 1.0),
+                        doubleArrayOf(1.0, 1.0)
+                    )
+                ),
             )
 
         val stepTracker = infraExplorer.getStepTracker().clone()

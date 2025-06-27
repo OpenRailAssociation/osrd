@@ -148,11 +148,13 @@ test.describe('Verify stdcm simulation page', () => {
     });
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 1,
+      simulationLengthAndDuration: '51 km — 2h 35min',
+      validSimulationNumber: 1,
     });
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 2,
-      simulationLengthAndDuration: '51 km — 2h 35min',
-      validSimulationNumber: 1,
+      simulationLengthAndDuration: '51 km — 3h 29min',
+      validSimulationNumber: 2,
     });
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'

@@ -103,6 +103,6 @@ data class PathPropertiesView(
     }
 
     override fun withRoutes(routes: List<RouteId>): PathProperties {
-        return PathPropertiesView(base.withRoutes(routes), startOffset, endOffset)
+        return copy(base = base.withRoutes(routes))
     }
 }

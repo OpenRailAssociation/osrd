@@ -259,7 +259,7 @@ data class PathPropertiesImpl(
     }
 
     override fun withRoutes(routes: List<RouteId>): PathProperties {
-        return PathPropertiesImpl(infra, chunkPath, routes)
+        return copy(pathRoutes = routes)
     }
 
     /**

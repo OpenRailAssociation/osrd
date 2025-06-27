@@ -404,10 +404,15 @@ class StopTests {
                 infra.addBlock("b", "c"),
                 infra.addBlock("c", "d", 1.meters)
             )
+        val occupancySegment = OccupancySegment(300.0, 600.0, 0.meters, 100.meters)
         val occupancy =
             ImmutableMultimap.of(
+                blocks[0],
+                occupancySegment,
                 blocks[1],
-                OccupancySegment(300.0, 600.0, 0.meters, 100.meters),
+                occupancySegment,
+                blocks[2],
+                occupancySegment,
             )
         val res =
             STDCMPathfindingBuilder()
