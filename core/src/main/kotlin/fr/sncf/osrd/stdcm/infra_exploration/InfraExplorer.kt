@@ -184,15 +184,17 @@ private class InfraExplorerImpl(
         // So we have to correct that here now that we now which route we're on.
         val path =
             pathPropertiesCache.getOrElse(getCurrentBlock()) {
-                makePathProps(
-                    blockInfra,
-                    rawInfra,
-                    getCurrentBlock(),
-                )
+                val res =
+                    makePathProps(
+                        blockInfra,
+                        rawInfra,
+                        getCurrentBlock(),
+                    )
+                pathPropertiesCache[getCurrentBlock()] = res
+                res
             }
         val route = blockRoutes[getCurrentBlock()]!!
         val blockPathProperties = path.withRoutes(listOf(route))
-        pathPropertiesCache[getCurrentBlock()] = blockPathProperties
 
         val blockLength = blockInfra.getBlockLength(getCurrentBlock())
         val endOffset: Offset<Block> = if (length == null) blockLength else offset.plus(length)

@@ -10,6 +10,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.engineering_allowance.EngineeringAllowanceManager
 import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -46,7 +47,7 @@ class STDCMGraph(
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val delayManager: DelayManager =
         DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
-    val allowanceManager: EngineeringAllowanceManager = EngineeringAllowanceManager(this)
+    val allowanceManager = EngineeringAllowanceManager(rollingStock.constGamma, this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
     val mrspBuilder =
         CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock, temporarySpeedLimitManager)
@@ -151,6 +152,10 @@ class STDCMGraph(
         // We look for the 20km before the node (very rough estimation of a distance that lets the
         // train slow down to a stop and speed up). We return the max delay that can be added after
         // the train in all of those edges, on top of maximum start time delay
+
+        // TODO: use new EngineeringAllowanceManager?
+        // We'd need to use a const acceleration sim, and we may add some caching
+
         var node = inputNode
         var remainingDistance = 20_000.meters
         var maxTime = Double.POSITIVE_INFINITY

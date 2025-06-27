@@ -394,7 +394,7 @@ class DepartureTimeShiftTests {
                 firstBlock,
                 OccupancySegment(0.0, 200.0, 0.meters, 100.meters),
                 firstBlock,
-                OccupancySegment(500.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
+                OccupancySegment(400.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
                 secondBlock,
                 OccupancySegment(0.0, 400.0, 0.meters, 100.meters),
                 thirdBlock,

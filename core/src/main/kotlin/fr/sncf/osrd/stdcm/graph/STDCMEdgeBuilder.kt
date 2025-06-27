@@ -227,6 +227,7 @@ internal constructor(
                 Length(fromMeters(envelope!!.endPos)),
                 envelope!!.totalTime / standardAllowanceSpeedRatio,
                 allowanceData,
+                envelope!!,
             )
         res = graph.backtrackingManager.backtrack(res!!, envelope!!)
         return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res

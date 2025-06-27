@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
@@ -37,6 +38,9 @@ data class STDCMEdge(
     // some data like its length and extra time. Null if there's no engineering allowance
     // ending here. Overrides any allowance spanning part of the range from previous edges.
     val engineeringAllowance: EngineeringAllowanceData?,
+    // Original envelope, not scaled for standard allowance. Needs to be scaled to interpolate times
+    // or expected speed.
+    val originalEnvelope: Envelope,
 ) {
     val block = infraExplorer.getCurrentBlock()
 
