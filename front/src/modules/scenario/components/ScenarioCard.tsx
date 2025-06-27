@@ -10,7 +10,7 @@ import type { ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { dateTimeFormatting } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 
 type ScenarioCardProps = {
   setFilterChips: (filterChips: string) => void;
@@ -25,7 +25,8 @@ export default function ScenarioCard({
   isSelected,
   toggleSelect,
 }: ScenarioCardProps) {
-  const { t, i18n } = useTranslation('operational-studies');
+  const { t } = useTranslation('operational-studies');
+  const dateTimeLocale = useDateTimeLocale();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { updateScenarioID } = useOsrdConfActions();
@@ -98,7 +99,9 @@ export default function ScenarioCard({
           </span>
           <span className="mr-1">{t('scenario.updatedOn')}</span>
           {scenario.last_modification &&
-            dateTimeFormatting(new Date(scenario.last_modification), i18n.language)}
+            new Date(scenario.last_modification).toLocaleString(dateTimeLocale, {
+              dateStyle: 'medium',
+            })}
         </div>
       </div>
     </div>

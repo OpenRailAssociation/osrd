@@ -39,10 +39,9 @@ export const createDateInSpecialTimeZone = (dateString: string, timeZone: string
  */
 export function formatDateToDayMonthYear(dateString: string): string {
   const date = new Date(dateString);
-  const formattedDate = date.toLocaleDateString('fr-FR', {
+  return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
-  return formattedDate.replace('.', '');
 }
