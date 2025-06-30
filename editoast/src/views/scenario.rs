@@ -91,8 +91,8 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
         Scenario::changeset()
             .name(scenario.name)
             .description(scenario.description)
-            .creation_date(Utc::now().naive_utc())
-            .last_modification(Utc::now().naive_utc())
+            .creation_date(Utc::now())
+            .last_modification(Utc::now())
             .infra_id(scenario.infra_id)
             .timetable_id(scenario.timetable_id)
             .tags(scenario.tags)
@@ -304,7 +304,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
             .flat_tags(scenario.tags)
             .flat_infra_id(scenario.infra_id)
             .flat_electrical_profile_set_id(scenario.electrical_profile_set_id)
-            .last_modification(Utc::now().naive_utc())
+            .last_modification(Utc::now())
     }
 }
 

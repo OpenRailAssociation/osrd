@@ -1,4 +1,5 @@
-use chrono::NaiveDateTime;
+use chrono::DateTime;
+use chrono::Utc;
 use editoast_derive::Model;
 use editoast_models::model;
 use editoast_models::tables::temporary_speed_limit;
@@ -11,7 +12,7 @@ use serde::Serialize;
 #[model(gen(ops = crd, batch_ops = c, list))]
 pub struct TemporarySpeedLimitGroup {
     pub id: i64,
-    pub creation_date: NaiveDateTime,
+    pub creation_date: DateTime<Utc>,
     pub name: String,
 }
 
@@ -43,8 +44,8 @@ impl From<model::Error> for TslGroupError {
 #[model(gen(ops = cr, batch_ops = c, list))]
 pub struct TemporarySpeedLimit {
     pub id: i64,
-    pub start_date_time: NaiveDateTime,
-    pub end_date_time: NaiveDateTime,
+    pub start_date_time: DateTime<Utc>,
+    pub end_date_time: DateTime<Utc>,
     pub speed_limit: f64,
     #[model(json)]
     pub track_ranges: Vec<DirectionalTrackRange>,

@@ -1,6 +1,6 @@
 use std::ops::DerefMut;
 
-use chrono::NaiveDateTime;
+use chrono::DateTime;
 use chrono::Utc;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -32,8 +32,8 @@ pub struct Scenario {
     pub infra_id: i64,
     pub name: String,
     pub description: String,
-    pub creation_date: NaiveDateTime,
-    pub last_modification: NaiveDateTime,
+    pub creation_date: DateTime<Utc>,
+    pub last_modification: DateTime<Utc>,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     pub timetable_id: i64,
@@ -63,7 +63,7 @@ impl Scenario {
     }
 
     pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
-        self.last_modification = Utc::now().naive_utc();
+        self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
@@ -113,7 +113,7 @@ impl Scenario {
 
                 scenario
                     .patch()
-                    .last_modification(Utc::now().naive_utc())
+                    .last_modification(Utc::now())
                     .apply(&mut conn)
                     .await?;
 

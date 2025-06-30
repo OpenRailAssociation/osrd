@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::DateTime;
 use chrono::Utc;
 use diesel_async::scoped_futures::ScopedBoxFuture;
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -31,8 +31,8 @@ pub struct Project {
     pub description: Option<String>,
     pub funders: Option<String>,
     pub budget: Option<i32>,
-    pub creation_date: NaiveDateTime,
-    pub last_modification: NaiveDateTime,
+    pub creation_date: DateTime<Utc>,
+    pub last_modification: DateTime<Utc>,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     #[model(column = editoast_models::tables::project::image_id)]
@@ -79,7 +79,7 @@ impl Project {
         &mut self,
         conn: &mut DbConnection,
     ) -> Result<(), model::Error> {
-        self.last_modification = Utc::now().naive_utc();
+        self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
@@ -169,7 +169,7 @@ impl Project {
 
                 project
                     .patch()
-                    .last_modification(Utc::now().naive_utc())
+                    .last_modification(Utc::now())
                     .apply(&mut conn)
                     .await?;
 
