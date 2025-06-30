@@ -17,6 +17,7 @@ import {
   isTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
+  isAddedExceptionId,
 } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
@@ -115,6 +116,10 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
         : undefined;
     }
     if (!selectedPacedTrain) return undefined;
+
+    if (isAddedExceptionId(selectedTrainId)) {
+      return undefined;
+    }
 
     const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
     const pacedTrainIntervalInMs = Duration.parse(selectedPacedTrain.paced.interval).ms;
