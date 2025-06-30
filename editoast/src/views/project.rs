@@ -103,8 +103,8 @@ impl From<ProjectCreateForm> for Changeset<Project> {
             .budget(project.budget)
             .image(project.image)
             .tags(project.tags)
-            .creation_date(Utc::now().naive_utc())
-            .last_modification(Utc::now().naive_utc())
+            .creation_date(Utc::now())
+            .last_modification(Utc::now())
     }
 }
 
@@ -341,7 +341,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
             .flat_budget(project.budget)
             .flat_image(project.image)
             .flat_tags(project.tags)
-            .last_modification(Utc::now().naive_utc())
+            .last_modification(Utc::now())
     }
 }
 

@@ -80,8 +80,8 @@ pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
         .name(name.to_owned())
         .budget(Some(0))
-        .creation_date(Utc::now().naive_utc())
-        .last_modification(Utc::now().naive_utc())
+        .creation_date(Utc::now())
+        .last_modification(Utc::now())
         .tags(Tags::default())
 }
 
@@ -95,9 +95,8 @@ pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
 pub fn study_changeset(name: &str, project_id: i64) -> Changeset<Study> {
     Study::changeset()
         .name(name.to_owned())
-        .creation_date(Utc::now().naive_utc())
-        .creation_date(Utc::now().naive_utc())
-        .last_modification(Utc::now().naive_utc())
+        .creation_date(Utc::now())
+        .last_modification(Utc::now())
         .budget(Some(0))
         .tags(Tags::default())
         .state("some_state".into())
@@ -298,8 +297,8 @@ pub fn scenario_changeset(
     Scenario::changeset()
         .name(name.to_string())
         .description("test_scenario description".to_string())
-        .creation_date(Utc::now().naive_utc())
-        .last_modification(Utc::now().naive_utc())
+        .creation_date(Utc::now())
+        .last_modification(Utc::now())
         .tags(Tags::default())
         .timetable_id(timetable_id)
         .study_id(study_id)
@@ -500,7 +499,7 @@ pub async fn create_temporary_speed_limit_group(
 ) -> TemporarySpeedLimitGroup {
     TemporarySpeedLimitGroup::changeset()
         .name("Empty temporary speed limit group".to_string())
-        .creation_date(Utc::now().naive_utc())
+        .creation_date(Utc::now())
         .create(conn)
         .await
         .expect("Failed to create empty temporary speed limit group")

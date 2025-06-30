@@ -1,5 +1,5 @@
+use chrono::DateTime;
 use chrono::NaiveDate;
-use chrono::NaiveDateTime;
 use chrono::Utc;
 
 use diesel_async::scoped_futures::ScopedBoxFuture;
@@ -28,8 +28,8 @@ pub struct Study {
     pub description: Option<String>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
-    pub creation_date: NaiveDateTime,
-    pub last_modification: NaiveDateTime,
+    pub creation_date: DateTime<Utc>,
+    pub last_modification: DateTime<Utc>,
     pub start_date: Option<NaiveDate>,
     pub expected_end_date: Option<NaiveDate>,
     pub actual_end_date: Option<NaiveDate>,
@@ -43,7 +43,7 @@ pub struct Study {
 
 impl Study {
     pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
-        self.last_modification = Utc::now().naive_utc();
+        self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
@@ -113,7 +113,7 @@ impl Study {
 
                 study
                     .patch()
-                    .last_modification(Utc::now().naive_utc())
+                    .last_modification(Utc::now())
                     .apply(&mut conn)
                     .await?;
 

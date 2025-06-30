@@ -204,7 +204,7 @@ use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
 use chrono::DateTime;
-use chrono::NaiveDateTime;
+
 use chrono::Utc;
 use diesel::QueryableByName;
 use diesel::pg::Pg;
@@ -617,7 +617,7 @@ pub(super) struct SearchResultItemProject {
     #[search(sql = "project.description")]
     description: String,
     #[search(sql = "project.last_modification")]
-    last_modification: NaiveDateTime,
+    last_modification: DateTime<Utc>,
     #[search(sql = "project.tags")]
     tags: Vec<String>,
 }
@@ -681,7 +681,7 @@ pub(super) struct SearchResultItemStudy {
     #[schema(required)]
     description: Option<String>,
     #[search(sql = "study.last_modification")]
-    last_modification: NaiveDateTime,
+    last_modification: DateTime<Utc>,
     #[search(sql = "study.tags")]
     tags: Vec<String>,
     #[search(sql = "study.budget")]
@@ -738,7 +738,7 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = "scenario.description")]
     description: String,
     #[search(sql = "scenario.last_modification")]
-    last_modification: NaiveDateTime,
+    last_modification: DateTime<Utc>,
     #[search(sql = "scenario.tags")]
     tags: Vec<String>,
 }

@@ -1,7 +1,7 @@
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use chrono::NaiveDateTime;
+use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
@@ -34,8 +34,8 @@ crate::routes! {
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
 struct TemporarySpeedLimitItemForm {
-    start_date_time: NaiveDateTime,
-    end_date_time: NaiveDateTime,
+    start_date_time: DateTime<Utc>,
+    end_date_time: DateTime<Utc>,
     track_ranges: Vec<DirectionalTrackRange>,
     speed_limit: f64,
     obj_id: String,
@@ -152,7 +152,7 @@ async fn create_temporary_speed_limit_group(
     // Create the speed limits group
     let TemporarySpeedLimitGroup { id: group_id, .. } = TemporarySpeedLimitGroup::changeset()
         .name(speed_limit_group_name.clone())
-        .creation_date(Utc::now().naive_utc())
+        .creation_date(Utc::now())
         .create(conn)
         .await
         .map_err(TemporarySpeedLimitError::from)?;
@@ -178,8 +178,8 @@ mod tests {
     use crate::views::test_app::TestApp;
     use axum::http::StatusCode;
     use axum_test::TestRequest;
+    use chrono::DateTime;
     use chrono::Duration;
-    use chrono::NaiveDateTime;
     use chrono::Utc;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::DirectionalTrackRange;
@@ -192,8 +192,8 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
 
     struct TimePeriod {
-        start_date_time: NaiveDateTime,
-        end_date_time: NaiveDateTime,
+        start_date_time: DateTime<Utc>,
+        end_date_time: DateTime<Utc>,
     }
 
     impl TestApp {
@@ -238,8 +238,8 @@ mod tests {
                 group_name: Uuid::new_v4().to_string(),
                 obj_id: Uuid::new_v4().to_string(),
                 time_period: TimePeriod {
-                    start_date_time: Utc::now().naive_utc(),
-                    end_date_time: Utc::now().naive_utc() + Duration::days(1),
+                    start_date_time: Utc::now(),
+                    end_date_time: Utc::now() + Duration::days(1),
                 },
                 track_ranges: vec![
                     DirectionalTrackRange {
@@ -343,8 +343,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let time_period = TimePeriod {
-            start_date_time: Utc::now().naive_utc() + Duration::days(1),
-            end_date_time: Utc::now().naive_utc(),
+            start_date_time: Utc::now() + Duration::days(1),
+            end_date_time: Utc::now(),
         };
 
         let request = app.create_temporary_speed_limit_group_request(

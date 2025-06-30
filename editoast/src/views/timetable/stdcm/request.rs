@@ -222,8 +222,8 @@ impl Request {
             .await?
             .into_iter()
             .filter(|speed_limit| {
-                !(end_date_time <= speed_limit.start_date_time.and_utc()
-                    || speed_limit.end_date_time.and_utc() <= start_date_time)
+                !(end_date_time <= speed_limit.start_date_time
+                    || speed_limit.end_date_time <= start_date_time)
             })
             .map_into()
             .collect();
