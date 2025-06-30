@@ -137,7 +137,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config, valkey_config, openfga_config)
+        Commands::Runserver(args) => runserver(*args, pg_config, valkey_config, openfga_config)
             .await
             .map_err(Into::into),
         Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,

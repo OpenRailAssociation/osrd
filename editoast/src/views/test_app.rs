@@ -88,6 +88,7 @@ pub(crate) struct TestAppBuilder {
     enable_stdcm_logging: bool,
     enable_telemetry: bool,
     telemetry_directives: Vec<Directive>,
+    root_url: Option<Url>,
 }
 
 impl TestAppBuilder {
@@ -101,6 +102,7 @@ impl TestAppBuilder {
             enable_stdcm_logging: false,
             enable_telemetry: true,
             telemetry_directives: vec![],
+            root_url: None,
         }
     }
 
@@ -143,6 +145,11 @@ impl TestAppBuilder {
         self
     }
 
+    pub fn root_url(mut self, root_url: Url) -> Self {
+        self.root_url = Some(root_url);
+        self
+    }
+
     pub fn with_rust_log_directive(mut self, directive: Directive) -> Self {
         self.telemetry_directives.push(directive);
         self
@@ -179,6 +186,9 @@ impl TestAppBuilder {
                 no_cache: true,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),
             },
+            root_url: self
+                .root_url
+                .unwrap_or_else(|| Url::parse("http://localhost:8090/").unwrap()),
             openfga_config: OpenfgaConfig {
                 url: Url::parse("http://localhost:8091").unwrap(),
                 store: self.test_name.clone(),

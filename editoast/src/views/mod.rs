@@ -513,6 +513,7 @@ pub struct ServerConfig {
     pub osrdyne_config: OsrdyneConfig,
     pub valkey_config: ValkeyConfig,
     pub openfga_config: OpenfgaConfig,
+    pub root_url: Url,
 }
 
 pub struct Server {

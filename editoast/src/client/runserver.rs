@@ -31,6 +31,8 @@ pub struct CoreArgs {
 #[derive(Args, Debug)]
 #[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
+    #[clap(long, env = "ROOT_URL", default_value_t = Url::parse("http://localhost:8090").unwrap())]
+    root_url: Url,
     #[command(flatten)]
     map_layers_config: MapLayersConfig,
     #[arg(long, env = "EDITOAST_PORT", default_value_t = 8090)]
@@ -72,6 +74,7 @@ pub async fn runserver(
         enable_stdcm_logging,
         osrdyne_api_url,
         health_check_timeout_ms,
+        root_url,
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey: ValkeyConfig,
@@ -97,6 +100,7 @@ pub async fn runserver(
         },
         valkey_config: valkey.into(),
         openfga_config: openfga.into(),
+        root_url,
     };
 
     let server = views::Server::new(config).await?;
