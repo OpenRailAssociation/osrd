@@ -20,7 +20,6 @@ use std::path::PathBuf;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
-use editoast_derive::EditoastError;
 use group::GroupCommand;
 use import_rolling_stock::ImportRollingStockArgs;
 use infra_commands::InfraCommands;
@@ -33,13 +32,10 @@ use search_commands::SearchCommands;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
-use thiserror::Error;
 use timetables_commands::TimetablesCommands;
-use url::Url;
 use user::UserCommand;
 pub use valkey_config::ValkeyConfig;
 
-use crate::error::Result;
 use crate::views::OpenApiRoot;
 
 #[derive(Parser, Debug)]
@@ -69,7 +65,7 @@ pub enum Color {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    Runserver(RunserverArgs),
+    Runserver(Box<RunserverArgs>), // suppresses clippy lint about variant size
     #[command(
         subcommand,
         about,
@@ -108,13 +104,6 @@ pub fn print_openapi() {
     print!("{}", serde_yaml::to_string(&openapi).unwrap());
 }
 
-/// Retrieve the ROOT_URL env var. If not found returns default local url.
-pub fn get_root_url() -> Result<Url> {
-    let url = env::var("ROOT_URL").unwrap_or(String::from("http://localhost:8090"));
-    let parsed_url = Url::parse(&url).map_err(|_| EditoastUrlError::InvalidUrl { url })?;
-    Ok(parsed_url)
-}
-
 /// Retrieve the app version (git describe)
 pub fn get_app_version() -> Option<String> {
     env::var("OSRD_GIT_DESCRIBE").ok()
@@ -125,14 +114,6 @@ pub fn get_dynamic_assets_path() -> PathBuf {
     env::var("DYNAMIC_ASSETS_PATH")
         .unwrap_or(String::from("./assets"))
         .into()
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "url")]
-pub enum EditoastUrlError {
-    #[error("Invalid url '{url}'")]
-    #[editoast_error(status = 500)]
-    InvalidUrl { url: String },
 }
 
 #[cfg(test)]

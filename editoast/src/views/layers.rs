@@ -17,7 +17,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::client::get_root_url;
 use crate::error::Result;
 use crate::map::Layer;
 use crate::map::MapLayers;
@@ -136,7 +135,7 @@ async fn layer_view(
         return Err(LayersError::new_view_not_found(view_slug, layer).into());
     }
 
-    let mut root_url = get_root_url()?;
+    let mut root_url = config.root_url.clone();
     if !root_url.path().ends_with('/') {
         root_url.path_segments_mut().unwrap().push(""); // Add a trailing slash
     }
@@ -231,84 +230,58 @@ async fn cache_and_get_mvt_tile(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use axum::http::StatusCode;
     use rstest::rstest;
-    use serde::de::DeserializeOwned;
-    use serde_json::to_value;
+    use std::collections::HashMap;
+    use url::Url;
 
     use super::LayersError;
+    use super::ViewMetadata;
     use crate::error::InternalError;
     use crate::map::MapLayers;
-    use crate::views::layers::ViewMetadata;
-    use crate::views::test_app::TestAppBuilder;
-
-    /// Run a simple get query on `uri` and check the status code and json body
-    async fn test_get_query<T: DeserializeOwned + PartialEq + std::fmt::Debug>(
-        uri: &str,
-        expected_status: StatusCode,
-        expected_body: T,
-    ) {
-        let app = TestAppBuilder::default_app();
-        let request = app.get(uri);
-        let body: T = app
-            .fetch(request)
-            .assert_status(expected_status)
-            .json_into();
-        assert_eq!(expected_body, body)
-    }
-
-    async fn test_get_query_with_preset_values(root_url: &str) {
-        let tiles = root_url.to_string() + "layers/tile/track_sections/geo/{z}/{x}/{y}/?infra=2";
-        test_get_query(
-            "/layers/layer/track_sections/mvt/geo?infra=2",
-            StatusCode::OK,
-            ViewMetadata {
-                data_type: "vector".to_string(),
-                name: "track_sections".to_string(),
-                promote_id: HashMap::from([("track_sections".to_string(), "id".to_string())]),
-                scheme: "xyz".to_string(),
-                tiles: vec![tiles],
-                attribution: "".to_string(),
-                minzoom: 5,
-                maxzoom: 18,
-            },
-        )
-        .await;
-    }
+    use crate::views::test_app;
 
     #[rstest]
-    async fn layer_view_ko() {
+    async fn layer_error_view_not_found() {
         let map_layers = MapLayers::default();
         let error: InternalError =
             LayersError::new_view_not_found("does_not_exist", &map_layers.layers["track_sections"])
                 .into();
-        test_get_query(
-            "/layers/layer/track_sections/mvt/does_not_exist?infra=2",
-            StatusCode::NOT_FOUND,
-            to_value(error).unwrap(),
-        )
-        .await;
+
+        let app = test_app!().build();
+        let request = app.get("/layers/layer/track_sections/mvt/does_not_exist?infra=2");
+        let body: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+        assert_eq!(body, error);
     }
 
     #[rstest]
-    async fn layer_view_ok() {
-        // We can't use #[case] here, for these cases can't run in parallel.
-        for (root_url, expected_root_url) in [
-            ("http://localhost:8090", "http://localhost:8090/"),
-            ("http://localhost:8090/", "http://localhost:8090/"),
-            ("http://localhost:8090/test", "http://localhost:8090/test/"),
-            ("http://localhost:8090/test/", "http://localhost:8090/test/"),
-        ] {
-            // `env::set_var` became an unsafe function in Rust edition 2024.
-            // TODO: Get rid of this unsafe code:
-            // - This code will fail if other tests start using `env::set_var` (run in parallel).
-            // - To remove it the app should not call `get_root_url` directly, but rather use a configuration that is loaded at startup.
-            unsafe {
-                std::env::set_var("ROOT_URL", root_url);
-            }
-            test_get_query_with_preset_values(expected_root_url).await;
-        }
+    #[case("http://localhost:8090", "http://localhost:8090/")]
+    #[case("http://localhost:8090/", "http://localhost:8090/")]
+    #[case("http://localhost:8090/test", "http://localhost:8090/test/")]
+    #[case("http://localhost:8090/test/", "http://localhost:8090/test/")]
+    async fn layer_success(#[case] root_url: &str, #[case] expected_root_url: &str) {
+        let root_url = Url::parse(root_url).unwrap();
+        let expected_root_url = Url::parse(expected_root_url).unwrap();
+
+        let tiles =
+            format!("{expected_root_url}layers/tile/track_sections/geo/{{z}}/{{x}}/{{y}}/?infra=2");
+        let expected_body = ViewMetadata {
+            data_type: "vector".to_string(),
+            name: "track_sections".to_string(),
+            promote_id: HashMap::from([("track_sections".to_string(), "id".to_string())]),
+            scheme: "xyz".to_string(),
+            tiles: vec![tiles],
+            attribution: "".to_string(),
+            minzoom: 5,
+            maxzoom: 18,
+        };
+
+        let app = test_app!().root_url(root_url).build();
+        let request = app.get("/layers/layer/track_sections/mvt/geo?infra=2");
+        let body: ViewMetadata = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(expected_body, body);
     }
 }
