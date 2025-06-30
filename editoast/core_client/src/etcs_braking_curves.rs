@@ -1,13 +1,15 @@
 use editoast_schemas::train_schedule::Comfort;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
-use crate::simulation::{
-    PhysicsConsist, SimulationPath, SimulationPowerRestrictionItem, SimulationScheduleItem,
-    SpeedLimitProperties,
-};
+use crate::simulation::PhysicsConsist;
+use crate::simulation::SimulationPath;
+use crate::simulation::SimulationPowerRestrictionItem;
+use crate::simulation::SimulationScheduleItem;
+use crate::simulation::SpeedLimitProperties;
 
 editoast_common::schemas! {
     Response,

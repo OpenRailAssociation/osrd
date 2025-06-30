@@ -1118,9 +1118,10 @@ pub mod tests {
     use core_client::pathfinding::TrackRange;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::train_schedule::{
-        OperationalPointReference, PathItem, ReceptionSignal, ScheduleItem,
-    };
+    use editoast_schemas::train_schedule::OperationalPointReference;
+    use editoast_schemas::train_schedule::PathItem;
+    use editoast_schemas::train_schedule::ReceptionSignal;
+    use editoast_schemas::train_schedule::ScheduleItem;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
