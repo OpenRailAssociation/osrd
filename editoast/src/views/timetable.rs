@@ -771,12 +771,12 @@ fn build_conflict_core_request(
                 _ => continue,
             };
 
-            let (train_id, occurence) = &occurrences[index];
+            let (train_id, occurrence) = &occurrences[index];
 
             trains_requirements.insert(
                 train_id.to_string(),
                 TrainRequirements {
-                    start_time: occurence.start_time,
+                    start_time: occurrence.start_time,
                     spacing_requirements: final_output.spacing_requirements.clone(),
                     routing_requirements: final_output.routing_requirements.clone(),
                 },

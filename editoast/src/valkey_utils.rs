@@ -218,7 +218,7 @@ impl ValkeyConnection {
                     let compressed_value = encoder.finish().map_err(|_| {
                         RedisError::from((
                             ErrorKind::IoError,
-                            "An error occured compressing the value",
+                            "An error occurred compressing the value",
                         ))
                     })?;
                     Ok((key, compressed_value))
