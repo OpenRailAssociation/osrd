@@ -1194,6 +1194,152 @@ def test_etcs_spacing_req(
     assert spacing_req_zone_final["end_time"] == 1035083
 
 
+def test_etcs_schedule_braking_curves_endpoint(
+    etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
+):
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "3 brakes + 2 slowdowns + 29 signals",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "first", "track": "TD0", "offset": 1_7156_000},
+                    {"id": "second", "track": "TH1", "offset": 1_177_000},
+                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    etcs_braking_curves_response = session.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
+    )
+    slowdowns = etcs_braking_curves_response.json()["slowdowns"]
+    stops = etcs_braking_curves_response.json()["stops"]
+    signals = etcs_braking_curves_response.json()["signals"]
+
+    # Check that the correct stop curves (EoAs = stops) are present
+    first_stop_offset = 29_294_000
+    second_stop_offset = 42_315_000
+    final_stop_offset = 45_060_000
+    stop_offsets = [
+        first_stop_offset,
+        second_stop_offset,
+        final_stop_offset,
+    ]
+    start_braking_curves_offsets = [
+        [21_467_192, MAX_SPEED_288],
+        [40_663_497, SPEED_LIMIT_142],
+        [43_763_476, SPEED_LIMIT_142],
+    ]
+    assert len(stops) == len(stop_offsets)
+    for i in range(len(stops)):
+        used_curve_type = "indication"
+        if i == len(stops) - 1:
+            # The last stop is on an open signal: the indication is null and the used curve is the permitted speed
+            used_curve_type = "permitted_speed"
+            assert stops[i]["indication"] is None
+        used_curve = stops[i][used_curve_type]
+        indication = stops[i]["indication"]
+        permitted_speed = stops[i]["permitted_speed"]
+        guidance = stops[i]["guidance"]
+        assert used_curve["positions"][0] == start_braking_curves_offsets[i][0]
+        assert used_curve["speeds"][0] == start_braking_curves_offsets[i][1]
+        assert used_curve["positions"][-1] == stop_offsets[i]
+        assert used_curve["speeds"][-1] == 0
+        assert permitted_speed["positions"][-1] == stop_offsets[i]
+        assert permitted_speed["speeds"][-1] == 0
+        assert guidance["positions"][-1] == stop_offsets[i]
+        assert guidance["speeds"][-1] == 0
+        if indication is not None:
+            assert indication["positions"][0] < permitted_speed["positions"][0] or (
+                indication["positions"][0] == permitted_speed["positions"][0]
+                and indication["speeds"][0] < permitted_speed["speeds"][0]
+            )
+        assert (
+            permitted_speed["positions"][0] <= guidance["positions"][0]
+            and permitted_speed["speeds"][0] <= guidance["speeds"][0]
+        )
+
+    # Check that the correct slowdown curves (LoAs = slowdowns) are present
+    first_slowdown_offset = 40_638_000
+    second_slowdown_offset = 44_638_000
+    slowdown_offsets = [
+        [first_slowdown_offset, SPEED_LIMIT_142],
+        [second_slowdown_offset, SPEED_LIMIT_112],
+    ]
+    start_braking_curves_offsets = [
+        [34_289_913, MAX_SPEED_288],
+        [43_551_825, SPEED_LIMIT_142],
+    ]
+    assert len(slowdowns) == len(slowdown_offsets)
+    for i in range(len(slowdowns)):
+        indication = slowdowns[i]["indication"]
+        permitted_speed = slowdowns[i]["permitted_speed"]
+        guidance = slowdowns[i]["guidance"]
+        assert indication["positions"][0] == start_braking_curves_offsets[i][0]
+        assert indication["speeds"][0] == start_braking_curves_offsets[i][1]
+        assert indication["positions"][-1] == slowdown_offsets[i][0]
+        assert indication["speeds"][-1] == slowdown_offsets[i][1]
+        assert permitted_speed["positions"][-1] == slowdown_offsets[i][0]
+        assert permitted_speed["speeds"][-1] == slowdown_offsets[i][1]
+        assert guidance["positions"][-1] == slowdown_offsets[i][0]
+        assert guidance["speeds"][-1] == slowdown_offsets[i][1]
+        assert indication["positions"][0] < permitted_speed["positions"][0] or (
+            indication["positions"][0] == permitted_speed["positions"][0]
+            and indication["speeds"][0] < permitted_speed["speeds"][0]
+        )
+        assert (
+            permitted_speed["positions"][0] <= guidance["positions"][0]
+            and permitted_speed["speeds"][0] <= guidance["speeds"][0]
+        )
+
+    # Check that the correct signal curves are present
+    assert len(signals) == 29
+    for i in range(len(signals)):
+        indication = signals[i]["indication"]
+        permitted_speed = signals[i]["permitted_speed"]
+        guidance = signals[i]["guidance"]
+        assert indication["speeds"][-1] == 0
+        assert permitted_speed["speeds"][-1] == 0
+        assert guidance["speeds"][-1] == 0
+        assert indication["positions"][0] < permitted_speed["positions"][0] or (
+            indication["positions"][0] == permitted_speed["positions"][0]
+            and indication["speeds"][0] < permitted_speed["speeds"][0]
+        )
+        assert (
+            permitted_speed["positions"][0] <= guidance["positions"][0]
+            and permitted_speed["speeds"][0] <= guidance["speeds"][0]
+        )
+    last_signal_curves = signals[-1]
+    assert last_signal_curves["indication"]["positions"][0] == 42_866_497
+    assert last_signal_curves["indication"]["positions"][-1] == 44_518_000
+
+
 def _assert_equal_speeds(left, right):
     assert abs(left - right) < 1e-2
 
