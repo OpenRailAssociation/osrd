@@ -266,6 +266,7 @@
     },
     "anyTrack": "Toutes voies",
     "category": "Catégorie",
+    "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
     "deleteRoute": "Supprimer l'itinéraire",
     "deleteVias": "Supprimer les étapes",
     "destination": "Destination",

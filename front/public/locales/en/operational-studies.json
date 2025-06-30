@@ -266,6 +266,7 @@
     },
     "anyTrack": "Any track",
     "category": "Category",
+    "categoryMismatch": "The combination of the rolling stock and the category is unusual",
     "deleteRoute": "Delete the route",
     "deleteVias": "Delete steps",
     "destination": "Destination",
