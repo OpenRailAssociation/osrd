@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 
 import type {
@@ -93,8 +94,13 @@ export const getPathfindingQuery = ({
   return null;
 };
 
-export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
+export const upsertPathStepsInOPs = (
+  ops: SuggestedOP[],
+  pathSteps: PathStep[],
+  t: TFunction<'operational-studies'>
+): SuggestedOP[] => {
   let updatedOPs = [...ops];
+  let waypointCounter = 1;
   pathSteps.forEach((step) => {
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
@@ -109,7 +115,9 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
         arrival,
         receptionSignal,
         theoreticalMargin,
+        name: t('main.requestedPoint', { count: waypointCounter }),
       };
+      waypointCounter += 1;
       // If it hasn't an uic, the step has been added by map click,
       // we know we have its position on path so we can insert it
       // at the good index in the existing operational points

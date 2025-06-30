@@ -5,8 +5,11 @@ import type { PathProperties } from 'common/api/osrdEditoastApi';
 
 import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
 
-const prefix = 'simulationResults.';
-const tMock = ((key: string) => key.slice(prefix.length)) as TFunction;
+/**
+Mocks the translation t function by stripping the namespace prefixes of the passed translation key and prefixing it with t_
+Example: tMock('main.requestedPoint') => 't_requestedPoint'
+*/
+const tMock = ((key: string, _options?: unknown) => `t_${key.split('.').at(-1)}`) as TFunction;
 
 type Op = {
   name: string;
@@ -106,7 +109,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '2',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },
@@ -191,7 +194,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '1',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },
@@ -221,7 +224,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '2',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },
@@ -236,7 +239,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '3',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },
@@ -278,7 +281,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '1',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },
@@ -293,7 +296,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '2',
         extensions: {
           identifier: {
-            name: 'requestedPoint',
+            name: 't_requestedPoint',
             uic: 0,
           },
         },

@@ -149,6 +149,7 @@
     "pacedTrain_one": "1 service",
     "pacedTrain_other": "{{count}} services",
     "pacedTrain_zero": "0 service",
+    "requestedPoint": "requested point ({{ count }})",
     "scenarioCancel": "Cancel",
     "scenarioCreateButton": "Create a scenario",
     "scenarioCreationTitle": "Create a scenario",
@@ -495,7 +496,6 @@
       "used": "used"
     },
     "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
-    "requestedPoint": "requested point ({{ count }})",
     "simulationSheet": "Simulation sheet",
     "speedSpaceChart": "Speed Space Chart",
     "speedSpaceSettings": {
