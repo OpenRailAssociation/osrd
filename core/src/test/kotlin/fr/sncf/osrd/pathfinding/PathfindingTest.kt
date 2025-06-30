@@ -446,99 +446,74 @@ class PathfindingTest : ApiTest() {
             .isEqualTo(1100.meters)
     }
 
-    /*
     @Test
-    @Throws(Exception::class)
     fun simpleRoutesInverted() {
-        val waypointStart =
-            PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
-        val waypointsStart = makeBidirectionalEndPoint(waypointStart)
-        val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
-        val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
-        waypoints[1] = waypointsEnd
+        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
         val requestBody =
-            PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf(), null)
-            )
-        val result =
-            TakesUtils.readBodyResponse(
-                PathfindingBlocksEndpoint(infraManager)
-                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
-            )
-        val response = PathfindingResult.adapterResult.fromJson(result)!!
-        val expectedRoutePaths =
-            listOf(
-                RJSRoutePath(
-                    "rt.buffer_stop_c->tde.track-bar",
-                    listOf(
-                        RJSDirectionalTrackRange(
-                            "ne.micro.bar_a",
-                            25.0,
-                            100.0,
-                            EdgeDirection.STOP_TO_START
-                        )
-                    ),
-                    SIGNALING_TYPE
-                ),
-                RJSRoutePath(
-                    "rt.tde.track-bar->tde.switch_foo-track",
-                    listOf(
-                        RJSDirectionalTrackRange(
-                            "ne.micro.bar_a",
-                            0.0,
-                            25.0,
-                            EdgeDirection.STOP_TO_START
-                        ),
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_to_bar",
-                            25.0,
-                            10000.0,
-                            EdgeDirection.STOP_TO_START
-                        )
-                    ),
-                    SIGNALING_TYPE
-                ),
-                RJSRoutePath(
-                    "rt.tde.switch_foo-track->buffer_stop_b",
-                    listOf(
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_to_bar",
-                            0.0,
-                            25.0,
-                            EdgeDirection.STOP_TO_START
-                        ),
-                        RJSDirectionalTrackRange(
-                            "ne.micro.foo_b",
-                            100.0,
-                            200.0,
-                            EdgeDirection.STOP_TO_START
-                        )
-                    ),
-                    SIGNALING_TYPE
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd),
+                    "tiny_infra/infra.json"
                 )
             )
-        AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        val expectedPathWaypoints =
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
+
+        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10200.meters)
+        assertEquals(
+            listOf(Offset(0.meters), Offset(parsed.length.distance)),
+            parsed.pathItemPositions
+        )
+
+        assertEquals(
             listOf(
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.bar_a", 100.0),
-                    0.0,
-                    false,
-                    "op.station_bar"
-                ),
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.foo_b", 100.0),
-                    10200.0,
-                    false,
-                    "op.station_foo"
+                    "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
+                    "[il.sig.C2-BAL, il.sig.C6-BAL];[tde.track-bar, tde.switch_foo-track];[]",
+                    "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_b];[il.switch_foo-A_B1]"
                 )
-            )
-        AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
-        expectWaypointInPathResult(response, waypointStart)
-        expectWaypointInPathResult(response, waypointEnd)
+                .map { "block.${md5(it)}" },
+            parsed.blocks
+        )
+
+        assertEquals(
+            listOf(
+                "rt.buffer_stop_c->tde.track-bar",
+                "rt.tde.track-bar->tde.switch_foo-track",
+                "rt.tde.switch_foo-track->buffer_stop_b"
+            ),
+            parsed.routes
+        )
+        assertEquals(
+            listOf(
+                DirectionalTrackRange(
+                    "ne.micro.bar_a",
+                    Offset(0.meters),
+                    Offset(100.meters),
+                    EdgeDirection.STOP_TO_START
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.foo_to_bar",
+                    Offset(0.meters),
+                    Offset(10_000.meters),
+                    EdgeDirection.STOP_TO_START
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.foo_b",
+                    Offset(100.meters),
+                    Offset(200.meters),
+                    EdgeDirection.STOP_TO_START
+                )
+            ),
+            parsed.trackSectionRanges
+        )
     }
 
+    /*
     /** Tests that we find a route path between two points on the same edge */
     @ParameterizedTest
     @MethodSource("simpleRoutesSameEdgeArgs")
