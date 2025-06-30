@@ -32,6 +32,7 @@ import {
   updateRollingStockComfort,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import {
+  getCategory,
   getConstraintDistribution,
   getDestination,
   getOperationalStudiesRollingStockID,
@@ -62,6 +63,7 @@ const ManageTrainSchedule = () => {
   const pathSteps = useSelector(getPathSteps);
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const currentCategory = useSelector(getCategory);
 
   const markersInformation = useMemo(
     () =>
@@ -221,6 +223,13 @@ const ManageTrainSchedule = () => {
     []
   );
 
+  const showCategoryWarning =
+    rollingStock &&
+    currentCategory &&
+    currentCategory !== rollingStock.primary_category &&
+    !rollingStock.other_categories.includes(currentCategory);
+  const categoryWarning = showCategoryWarning ? t('categoryMismatch') : undefined;
+
   return (
     <>
       <div className="osrd-config-item-container mb-3">
@@ -232,6 +241,7 @@ const ManageTrainSchedule = () => {
         fullWidth
         fullHeight
         tabs={[tabRollingStock, tabPathFinding, tabTimesStops, tabSimulationSettings]}
+        warning={categoryWarning}
       />
     </>
   );
