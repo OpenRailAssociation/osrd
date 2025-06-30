@@ -22,11 +22,6 @@ export default class MacroEditorState {
   scenario: ScenarioResponse;
 
   /**
-   * TimetableItems (`TrainSchedule` or `PacedTrain`)
-   */
-  timetableItems: TimetableItem[];
-
-  /**
    * Nodes storage
    * Type null is here due to deletion, to avoid recomputing indices.
    * We are not building a db engine, so we can afford to have some null values.
@@ -76,18 +71,16 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, timetableItems: TimetableItem[]) {
-    // Empty
+  constructor(scenario: ScenarioResponse) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.nodes = [];
     this.indexByPathKey = {};
     this.indexByNgeId = {};
     this.scenario = scenario;
-    this.timetableItems = timetableItems;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
-    this.ngeResource = { id: 1, capacity: this.timetableItems.length };
+    this.ngeResource = { id: 1, capacity: 0 };
     this.timetableItemIdByNgeId = new Map<number, TimetableItemId>();
   }
 
