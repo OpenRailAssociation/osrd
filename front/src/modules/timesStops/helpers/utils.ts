@@ -72,7 +72,7 @@ export const formatSuggestedViasToRowVias = (
 
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOpWithKP(step, op));
-    const { name } = pathStep || op;
+    const name = pathStep?.name || op.name;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
 
     const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse || {};

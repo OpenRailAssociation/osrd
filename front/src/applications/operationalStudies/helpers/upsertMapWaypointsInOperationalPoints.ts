@@ -66,7 +66,7 @@ export function upsertMapWaypointsInOperationalPoints(
         const baseFormattedStep = {
           extensions: {
             identifier: {
-              name: t('simulationResults.requestedPoint', { count: waypointCounter }),
+              name: t('main.requestedPoint', { count: waypointCounter }),
               uic: 0,
             },
           },

@@ -149,6 +149,7 @@
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "",
+    "requestedPoint": "point demandé ({{ count }})",
     "scenarioCancel": "Annuler",
     "scenarioCreateButton": "Créer le scénario",
     "scenarioCreationTitle": "Créer un scénario",
@@ -493,7 +494,6 @@
       "used": "utilisée"
     },
     "projectionInProgress": "Projection en cours: {{ count }}/{{ total }} trains",
-    "requestedPoint": "point demandé ({{ count }})",
     "simulationSheet": "Fiche de simulation",
     "speedSpaceChart": "Graphique Espace Vitesse",
     "speedSpaceSettings": {

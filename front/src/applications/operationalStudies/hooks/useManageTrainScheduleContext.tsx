@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import { compact } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
@@ -40,6 +41,7 @@ export const ManageTrainScheduleContextProvider = ({
   children,
 }: ManageTrainScheduleContextProviderProps) => {
   const pathSteps = useSelector(getPathSteps);
+  const { t, i18n } = useTranslation('operational-studies');
 
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const { launchPathfinding, pathfindingState, infraInfo, pathProperties } = usePathfinding({
@@ -53,8 +55,8 @@ export const ManageTrainScheduleContextProvider = ({
 
   const pathStepsAndSuggestedOPs = useMemo(() => {
     if (!pathProperties) return undefined;
-    return upsertPathStepsInOPs(pathProperties.suggestedOperationalPoints, compact(pathSteps));
-  }, [pathProperties?.suggestedOperationalPoints, pathSteps]);
+    return upsertPathStepsInOPs(pathProperties.suggestedOperationalPoints, compact(pathSteps), t);
+  }, [pathProperties?.suggestedOperationalPoints, pathSteps, i18n.language]);
 
   const providedContext = useMemo(
     () => ({
