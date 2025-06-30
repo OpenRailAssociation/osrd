@@ -97,9 +97,10 @@ const ScenarioContent = ({
         ...pacedTrain,
         id: formatEditoastIdToPacedTrainId(pacedTrain.id),
       }));
-    const state = new MacroEditorState(scenario, [...trainSchedules, ...pacedTrains]);
-    await loadAndIndexNge(state, dispatch, t);
-    const dto = getNgeDto(state);
+    const state = new MacroEditorState(scenario);
+    const ngeTimetableItems = [...trainSchedules, ...pacedTrains];
+    await loadAndIndexNge(state, ngeTimetableItems, dispatch, t);
+    const dto = getNgeDto(state, ngeTimetableItems);
     macroEditorState.current = state;
     setNgeDto(dto);
   }, [dispatch, scenario, scenario.timetable_id]);
