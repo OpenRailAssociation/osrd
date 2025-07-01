@@ -13,7 +13,7 @@ import OperationalStudiesPage from './pages/operational-studies/operational-stud
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import StudyPage from './pages/operational-studies/study-page';
-import { generateUniqueName, getTranslations, waitForInfraStateToBeCached } from './utils';
+import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
@@ -25,22 +25,21 @@ import type {
   TimetableFilterTranslations,
 } from './utils/types';
 
-const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/en/operational-studies.json').manageTrainSchedule;
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
   manageTrainSchedule: ManageTrainScheduleTranslations;
 }>('public/locales/fr/operational-studies.json').manageTrainSchedule;
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+
+const frTranslations = {
+  ...frManageTrainScheduleTranslations,
+  ...frScenarioTranslations,
+  ...frCommonTranslations,
+};
 
 const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
   './tests/assets/train-schedule/train_schedules.json'
@@ -50,9 +49,6 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  let translations: ManageTrainScheduleTranslations &
-    TimetableFilterTranslations &
-    CommonTranslations;
   let project: Project;
   let study: Study;
   let scenarioItems: Scenario;
@@ -78,18 +74,6 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
       scenarioItems.timetable_id,
       JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
     );
-    translations = getTranslations({
-      en: {
-        ...enManageTrainScheduleTranslations,
-        ...enScenarioTranslations,
-        ...enCommonTranslations,
-      },
-      fr: {
-        ...frManageTrainScheduleTranslations,
-        ...frScenarioTranslations,
-        ...frCommonTranslations,
-      },
-    });
   });
 
   test('Reflects updates across tabs ', async ({ context }) => {
@@ -112,16 +96,16 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
 
     // Delete a paced train in the first tab and verify the update
     await firstPage.bringToFront();
-    await pacedTrainSection.deletePacedTrain(1, translations);
+    await pacedTrainSection.deletePacedTrain(1, frTranslations);
     await firstPage.waitForLoadState('networkidle');
-    await firstTimetableSection.verifyTotalItemsLabel(translations, {
+    await firstTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: 1,
       totalTrainScheduleCount: 2,
     });
 
     // Switch to the second tab and verify that the deletion is reflected
     await secondPage.bringToFront();
-    await secondTimetableSection.verifyTotalItemsLabel(translations, {
+    await secondTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: 1,
       totalTrainScheduleCount: 2,
     });

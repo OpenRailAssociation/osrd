@@ -13,12 +13,11 @@ import DestinationSection from './pages/stdcm/destination-section';
 import OriginSection from './pages/stdcm/origin-section';
 import SimulationResultPage from './pages/stdcm/simulation-results-page';
 import STDCMPage from './pages/stdcm/stdcm-page';
-import { getTranslations, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import type { StdcmTranslations } from './utils/types';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 test.describe('Verify stdcm missing fields', () => {
@@ -30,7 +29,6 @@ test.describe('Verify stdcm missing fields', () => {
   let originSection: OriginSection;
   let destinationSection: DestinationSection;
   let simulationResultPage: SimulationResultPage;
-  let translations: StdcmTranslations;
   let infra: Infra;
 
   test.beforeAll('Fetch infrastructure', async () => {
@@ -45,7 +43,6 @@ test.describe('Verify stdcm missing fields', () => {
       new DestinationSection(page),
       new SimulationResultPage(page),
     ];
-    translations = getTranslations({ en: enTranslations, fr: frTranslations });
 
     await page.goto('/stdcm');
     await page.waitForLoadState('networkidle');
@@ -58,7 +55,7 @@ test.describe('Verify stdcm missing fields', () => {
   /** *************** Test 1 **************** */
   test('Verify missing fields warnings when launching simulation', async () => {
     // Step 1 — Launch simulation with all fields empty and expect all missing field warnings
-    const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, translations);
+    const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, frTranslations);
     await stdcmPage.verifyInvalidSimulationLaunch();
     await stdcmPage.expectWarningBoxVisible();
     await stdcmPage.expectWarningBoxContains(allMissingLabels);
@@ -68,8 +65,8 @@ test.describe('Verify stdcm missing fields', () => {
     await destinationSection.fillDestinationDetailsLight();
     await stdcmPage.verifyInvalidSimulationLaunch();
     await stdcmPage.expectWarningBoxVisible();
-    const partialMissingLabels = getFieldsLabel(PARTIAL_MISSING_FIELDS_KEYS, translations);
-    const nonMissingLabels = getFieldsLabel(REMOVED_MISSING_FIELDS_KEYS, translations);
+    const partialMissingLabels = getFieldsLabel(PARTIAL_MISSING_FIELDS_KEYS, frTranslations);
+    const nonMissingLabels = getFieldsLabel(REMOVED_MISSING_FIELDS_KEYS, frTranslations);
     await stdcmPage.expectWarningBoxContains(partialMissingLabels, nonMissingLabels);
 
     // Step 3 — Launch simulation with all mandatory fields filled
@@ -93,9 +90,9 @@ test.describe('Verify stdcm missing fields', () => {
     await stdcmPage.verifyInvalidSimulationLaunch();
     await stdcmPage.expectWarningBoxVisible();
     await stdcmPage.expectWarningBoxContains([
-      translations.stdcmErrors.invalidFields.totalMass,
-      translations.stdcmErrors.invalidFields.totalLength,
-      translations.stdcmErrors.invalidFields.maxSpeed,
+      frTranslations.stdcmErrors.invalidFields.totalMass,
+      frTranslations.stdcmErrors.invalidFields.totalLength,
+      frTranslations.stdcmErrors.invalidFields.maxSpeed,
     ]);
 
     // Step 5 — Fix tonnage, clear length and destination and expect both missing and invalid field warnings
@@ -106,9 +103,9 @@ test.describe('Verify stdcm missing fields', () => {
     await stdcmPage.expectWarningBoxVisible();
 
     await stdcmPage.expectWarningBoxContains([
-      translations.stdcmErrors.missingFields.destination,
-      translations.stdcmErrors.missingFields.totalLength,
-      translations.stdcmErrors.invalidFields.maxSpeed,
+      frTranslations.stdcmErrors.missingFields.destination,
+      frTranslations.stdcmErrors.missingFields.totalLength,
+      frTranslations.stdcmErrors.invalidFields.maxSpeed,
     ]);
 
     // Step 6 — Fill all fields with valid values and verify simulation

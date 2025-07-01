@@ -1,11 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 import HomePage from '../home-page';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class STDCMPage extends HomePage {
@@ -140,13 +138,9 @@ class STDCMPage extends HomePage {
   }
 
   async verifyValidSimulationLaunch(): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     await this.launchSimulation();
     expect(await this.simulationStatus.textContent()).toEqual(
-      translations.simulation.results.status.completed
+      frTranslations.simulation.results.status.completed
     );
   }
 

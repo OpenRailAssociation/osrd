@@ -6,11 +6,9 @@ import {
   VIA_STOP_TIMES,
   VIA_STOP_TYPES,
 } from '../../assets/constants/stdcm-const';
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class ViaSection extends STDCMPage {
@@ -92,10 +90,6 @@ class ViaSection extends STDCMPage {
   }): Promise<void> {
     const { PASSAGE_TIME, SERVICE_STOP, DRIVER_SWITCH } = VIA_STOP_TYPES;
     const { serviceStop, driverSwitch } = VIA_STOP_TIMES;
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     const warning = this.getViaWarning(viaNumber);
     // Helper function to fill common fields
     const fillVia = async (selectedSuggestion: Locator) => {
@@ -131,7 +125,7 @@ class ViaSection extends STDCMPage {
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.invalidInput);
         await expect(warning).toBeVisible();
         expect(await warning.textContent()).toEqual(
-          translations.stdcmErrors.routeErrors.viaStopDurationTooShort
+          frTranslations.stdcmErrors.routeErrors.viaStopDurationTooShort
         );
         await this.getViaStopTime(viaNumber).fill(driverSwitch.validInput);
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.validInput);

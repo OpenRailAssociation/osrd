@@ -5,11 +5,9 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import STDCMPage from './stdcm-page';
 import { logger } from '../../logging-fixture';
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { STDCMResultTableRow, StdcmTranslations } from '../../utils/types';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class SimulationResultPage extends STDCMPage {
@@ -180,17 +178,13 @@ class SimulationResultPage extends STDCMPage {
     simulationLengthAndDuration?: string | null;
     validSimulationNumber?: number;
   }): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     const noCapacityLengthAndDuration = '— ';
     await this.simulationItem.nth(simulationIndex).click();
     // Determine expected simulation name
     const isResultTableVisible = await this.simulationResultTable.isVisible();
     const expectedSimulationName = isResultTableVisible
       ? `Simulation n°${validSimulationNumber}`
-      : translations.simulation.results.simulationName.withoutOutputs;
+      : frTranslations.simulation.results.simulationName.withoutOutputs;
     // Validate simulation name
     const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
     expect(actualSimulationName).toEqual(expectedSimulationName);

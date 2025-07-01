@@ -1,7 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import OpSimulationResultPage from './simulation-results-page';
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type {
   CommonTranslations,
@@ -13,9 +12,6 @@ type ScenarioTranslations = {
   timetable: FlatTranslations;
 };
 
-const enTranslations: ScenarioTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frTranslations: ScenarioTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
@@ -133,12 +129,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Verify that the message "The timetable contains invalid trains" is visible
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     const invalidTrainsMessageText = await this.invalidTrainsMessage.innerText();
-    expect(invalidTrainsMessageText).toEqual(translations.timetable.invalidTrains);
+    expect(invalidTrainsMessageText).toEqual(frTranslations.timetable.invalidTrains);
   }
 
   async checkTimetableFilterVisibilityLabelDefaultValue(
@@ -291,16 +283,12 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     trainTypeFilter: 'Service' | 'Unique train' | 'All',
     expectedTrainCount: number
   ): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     await this.timetableFilterButton.click();
 
     const trainTypeFilters = {
-      Service: translations.timetable.pacedTrain,
-      'Unique train': translations.timetable.trainSchedule,
-      All: translations.timetable.showAllTrains,
+      Service: frTranslations.timetable.pacedTrain,
+      'Unique train': frTranslations.timetable.trainSchedule,
+      All: frTranslations.timetable.showAllTrains,
     };
 
     await this.selectTrainTypeFilter(trainTypeFilters[trainTypeFilter]);

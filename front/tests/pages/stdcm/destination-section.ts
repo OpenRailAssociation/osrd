@@ -6,11 +6,9 @@ import {
   DESTINATION_DETAILS,
   LIGHT_DESTINATION_DETAILS,
 } from '../../assets/constants/stdcm-const';
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 class DestinationSection extends STDCMPage {
@@ -83,10 +81,7 @@ class DestinationSection extends STDCMPage {
       arrivalType,
       updatedDetails,
     } = DESTINATION_DETAILS;
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
+
     // Fill destination input and verify suggestions
     await this.dynamicDestinationCi.fill(input);
     await this.verifyDestinationSouthSuggestions();
@@ -98,7 +93,7 @@ class DestinationSection extends STDCMPage {
     await expect(this.destinationArrival).toHaveValue(arrivalType.default);
     await this.launchSimulationButton.click();
     await expect(this.warningBox).toContainText(
-      translations.stdcmErrors.routeErrors.noScheduledPoint
+      frTranslations.stdcmErrors.routeErrors.noScheduledPoint
     );
     await expect(this.dateDestinationArrival).not.toBeVisible();
     await expect(this.timeDestinationArrival).not.toBeVisible();

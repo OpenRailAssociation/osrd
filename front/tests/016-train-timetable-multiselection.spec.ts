@@ -8,7 +8,7 @@ import {
 } from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
-import { generateUniqueName, getTranslations, waitForInfraStateToBeCached } from './utils';
+import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
@@ -17,15 +17,15 @@ import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type { CommonTranslations, TimetableFilterTranslations } from './utils/types';
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+const frTranslations = {
+  ...frScenarioTranslations,
+  ...frCommonTranslations,
+};
 
 const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/train_schedules.json');
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
@@ -40,7 +40,6 @@ test.describe('Verify train schedule elements and filters', () => {
   let study: Study;
   let scenarioItems: Scenario;
   let infra: Infra;
-  let translations: TimetableFilterTranslations & CommonTranslations;
 
   test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
     project = await getProject(trainScheduleProjectName);
@@ -57,11 +56,6 @@ test.describe('Verify train schedule elements and filters', () => {
     await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson);
     await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
 
-    translations = getTranslations({
-      en: { ...enScenarioTranslations, ...enCommonTranslations },
-      fr: { ...frScenarioTranslations, ...frCommonTranslations },
-    });
-
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
@@ -77,12 +71,12 @@ test.describe('Verify train schedule elements and filters', () => {
     scenarioTimetableSection = new ScenarioTimetableSection(page);
 
     // Verify total items count
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
     });
     // Select all remaining items
-    await scenarioTimetableSection.selectAllTimetableItems(translations, {
+    await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
     });
@@ -92,10 +86,10 @@ test.describe('Verify train schedule elements and filters', () => {
     // otherwise the received message of the last notification is empty
     await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
       TOTAL_ITEMS,
-      translations
+      frTranslations
     );
     await page.waitForLoadState('networkidle');
     // Verify timetable is empty and total label is empty
-    await scenarioTimetableSection.verifyTimetableIsEmpty(translations.timetable.noTrain);
+    await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
   });
 });
