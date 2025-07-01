@@ -8,26 +8,14 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 /**
- * Get a localized date string formatted according to the specified language.
+ * Get a localized date string formatted to French.
  *
  * @param dateString - The date string to format (ISO format recommended)
  * @returns A formatted date string
  */
 export function getLocalizedDateString(dateString: string): string {
-  const projectLanguage = process.env.PROJECT_LANGUAGE;
-  let locale: string;
-  switch (projectLanguage) {
-    case 'Français':
-      locale = 'fr-FR';
-      break;
-    case 'English':
-      locale = 'en-GB';
-      break;
-    default:
-      throw new Error(`Unsupported project language: "${projectLanguage}".`);
-  }
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat('fr-FR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -50,20 +38,8 @@ export const createDateInSpecialTimeZone = (dateString: string, timeZone: string
  * @returns The formatted date string in "DD mmm YYYY" format.
  */
 export function formatDateToDayMonthYear(dateString: string): string {
-  const projectLanguage = process.env.PROJECT_LANGUAGE;
-  let locale: string;
-  switch (projectLanguage) {
-    case 'Français':
-      locale = 'fr-FR';
-      break;
-    case 'English':
-      locale = 'en-GB';
-      break;
-    default:
-      throw new Error(`Unsupported project language: "${projectLanguage}".`);
-  }
   const date = new Date(dateString);
-  const formattedDate = date.toLocaleDateString(locale, {
+  const formattedDate = date.toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
