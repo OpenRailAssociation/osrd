@@ -2,6 +2,8 @@ import { ArrowLeft } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
+
 import SectionContentManager from './SectionContentManager';
 import type { Section } from './types';
 
@@ -13,7 +15,11 @@ type HelpSectionProps = {
 
 const HelpSection = ({ section, isActive, closeHelpSection }: HelpSectionProps) => {
   const { t } = useTranslation('stdcm-help-section');
-  const currentSection = t(`sections.${section}`, { returnObjects: true }) as Section;
+  const stdcmFeedbackMail = useDeploymentSettings()?.stdcmFeedbackMail;
+  const currentSection = t(`sections.${section}`, {
+    returnObjects: true,
+    stdcmFeedbackMail,
+  }) as Section;
 
   return (
     <div className={cx('stdcm__help-section', { active: isActive })}>

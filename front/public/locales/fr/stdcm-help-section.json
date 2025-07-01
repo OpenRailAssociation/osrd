@@ -65,7 +65,7 @@
             },
             {
               "type": "text",
-              "value": "<a href='mailto:supportclients.SI@sncf.fr' target=\"_blank\">Contactez-nous</a>"
+              "value": "<a href='mailto:{{stdcmFeedbackMail}}' target=\"_blank\">Contactez-nous</a>"
             }
           ],
           "title": "Améliorations"
