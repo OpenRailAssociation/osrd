@@ -53,6 +53,7 @@ editoast_common::schemas! {
     rolling_stock::schemas(),
     stdcm_log::schemas(),
     tags::schemas(),
+    towed_rolling_stock::schemas(),
 }
 
 #[cfg(test)]

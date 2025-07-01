@@ -4340,12 +4340,13 @@ export type TowedRollingStock = {
   /** Mass in kg */
   mass: number;
   /** Velocity in m·s⁻¹ */
-  max_speed: number | null;
+  max_speed?: number | null;
   name: string;
   railjson_version: string;
   rolling_resistance: RollingResistancePerWeight;
   /** Acceleration in m·s⁻² */
   startup_acceleration: number;
+  version: number;
 };
 export type TowedRollingStockForm = {
   /** Acceleration in m·s⁻² */
