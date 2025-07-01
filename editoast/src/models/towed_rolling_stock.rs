@@ -11,7 +11,12 @@ use serde::Serialize;
 
 use crate::models::prelude::*;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model)]
+editoast_common::schemas! {
+    TowedRollingStock,
+}
+
+#[editoast_derive::annotate_units]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, utoipa::ToSchema)]
 #[model(table = editoast_models::tables::towed_rolling_stock)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(public))]

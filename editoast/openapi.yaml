@@ -13145,7 +13145,7 @@ components:
       - inertia_coefficient
       - rolling_resistance
       - const_gamma
-      - max_speed
+      - version
       properties:
         comfort_acceleration:
           type: number
@@ -13188,6 +13188,9 @@ components:
           type: number
           format: double
           description: Acceleration in m·s⁻²
+        version:
+          type: integer
+          format: int64
     TowedRollingStockCountList:
       allOf:
       - $ref: '#/components/schemas/PaginationStats'

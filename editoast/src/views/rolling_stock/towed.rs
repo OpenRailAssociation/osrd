@@ -45,59 +45,11 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    TowedRollingStockResponse,
     TowedRollingStockCountList,
     TowedRollingStockForm,
     TowedRollingStockLockedForm,
 }
 
-#[editoast_derive::annotate_units]
-#[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
-#[schema(as = TowedRollingStock)]
-struct TowedRollingStockResponse {
-    id: i64,
-    name: String,
-    label: String,
-    railjson_version: String,
-    locked: bool,
-
-    #[serde(with = "units::kilogram")]
-    mass: Mass,
-    #[serde(with = "units::meter")]
-    length: Length,
-    #[serde(with = "units::meter_per_second_squared")]
-    comfort_acceleration: Acceleration,
-    #[serde(with = "units::meter_per_second_squared")]
-    startup_acceleration: Acceleration,
-    inertia_coefficient: f64,
-    rolling_resistance: RollingResistancePerWeight,
-    #[serde(with = "units::meter_per_second_squared")]
-    const_gamma: Deceleration,
-    #[schema(required)]
-    #[serde(default, with = "units::meter_per_second::option")]
-    max_speed: Option<Velocity>,
-}
-
-impl From<TowedRollingStock> for TowedRollingStockResponse {
-    fn from(towed_rolling_stock: TowedRollingStock) -> Self {
-        Self {
-            id: towed_rolling_stock.id,
-            label: towed_rolling_stock.label,
-            name: towed_rolling_stock.name,
-            railjson_version: towed_rolling_stock.railjson_version,
-            locked: towed_rolling_stock.locked,
-            mass: towed_rolling_stock.mass,
-            length: towed_rolling_stock.length,
-            comfort_acceleration: towed_rolling_stock.comfort_acceleration,
-            startup_acceleration: towed_rolling_stock.startup_acceleration,
-            inertia_coefficient: towed_rolling_stock.inertia_coefficient,
-            rolling_resistance: towed_rolling_stock.rolling_resistance,
-            const_gamma: towed_rolling_stock.const_gamma,
-            max_speed: towed_rolling_stock.max_speed,
-        }
-    }
-}
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "towedrollingstocks")]
 pub enum TowedRollingStockError {
@@ -168,7 +120,7 @@ async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
-) -> Result<Json<TowedRollingStockResponse>> {
+) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -181,14 +133,13 @@ async fn post(
 
     let rolling_stock = rolling_stock_changeset.version(0).create(conn).await?;
 
-    Ok(Json(TowedRollingStockResponse::from(rolling_stock)))
+    Ok(Json(rolling_stock))
 }
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct TowedRollingStockCountList {
-    #[schema(value_type = Vec<TowedRollingStock>)]
-    results: Vec<TowedRollingStockResponse>,
+    results: Vec<TowedRollingStock>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -220,10 +171,7 @@ async fn get_list(
         TowedRollingStock::list_paginated(&mut db_pool.get().await?, settings).await?;
 
     Ok(Json(TowedRollingStockCountList {
-        results: towed_rolling_stocks
-            .into_iter()
-            .map(TowedRollingStockResponse::from)
-            .collect(),
+        results: towed_rolling_stocks,
         stats,
     }))
 }
@@ -247,7 +195,7 @@ async fn get_by_id(
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
-) -> Result<Json<TowedRollingStockResponse>> {
+) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
@@ -265,7 +213,7 @@ async fn get_by_id(
         },
     )
     .await?;
-    Ok(Json(TowedRollingStockResponse::from(towed_rolling_stock)))
+    Ok(Json(towed_rolling_stock))
 }
 
 #[utoipa::path(
@@ -284,7 +232,7 @@ async fn patch_by_id(
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
-) -> Result<Json<TowedRollingStockResponse>> {
+) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -327,7 +275,7 @@ async fn patch_by_id(
                     new_towed_rolling_stock.version += 1;
                     new_towed_rolling_stock.save(&mut conn.clone()).await?;
                 }
-                Ok(TowedRollingStockResponse::from(new_towed_rolling_stock))
+                Ok(new_towed_rolling_stock)
             }
             .scope_boxed()
         })
@@ -383,7 +331,7 @@ async fn patch_by_id_locked(
 #[cfg(test)]
 mod tests {
     use super::TowedRollingStockCountList;
-    use super::TowedRollingStockResponse;
+    use crate::models::towed_rolling_stock::TowedRollingStock;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
@@ -395,11 +343,7 @@ mod tests {
     const LOCKED: bool = true;
     const UNLOCKED: bool = false;
 
-    fn create_towed_rolling_stock(
-        app: &TestApp,
-        name: &str,
-        locked: bool,
-    ) -> TowedRollingStockResponse {
+    fn create_towed_rolling_stock(app: &TestApp, name: &str, locked: bool) -> TowedRollingStock {
         let towed_rolling_stock_json = json!({
             "name": name,
             "label": name,
@@ -469,7 +413,7 @@ mod tests {
 
         let id = created_towed_rolling_stock.id;
 
-        let get_towed_rolling_stock: TowedRollingStockResponse = app
+        let get_towed_rolling_stock: TowedRollingStock = app
             .fetch(app.get(&format!("/towed_rolling_stock/{id}")))
             .assert_status(StatusCode::OK)
             .json_into();
@@ -501,7 +445,7 @@ mod tests {
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
-        let updated_towed_rolling_stock: TowedRollingStockResponse = app
+        let updated_towed_rolling_stock: TowedRollingStock = app
             .fetch(
                 app.patch(&format!("/towed_rolling_stock/{id}"))
                     .json(&towed_rolling_stock),
