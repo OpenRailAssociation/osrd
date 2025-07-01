@@ -3,11 +3,7 @@ import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
-import type {
-  LightRollingStock,
-  PathfindingResultSuccess,
-  RollingStockWithLiveries,
-} from 'common/api/osrdEditoastApi';
+import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { dateToHHMMSS } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
@@ -65,10 +61,8 @@ const getRowStyle = (
 
 const formatStdcmDataForSimulationTable = (
   operationalPointsList: StdcmResultsOperationalPoint[],
-  stdcmData: StdcmSuccessResponse,
-  rollingStock: LightRollingStock,
-  consistMass: number,
-  consistLength: number,
+  stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
+  consist: { mass: number; length: number; rollingStockName: string },
   t: TFunction<'stdcm'>
 ) =>
   operationalPointsList.map((step, index) => {
@@ -77,7 +71,7 @@ const formatStdcmDataForSimulationTable = (
     const previousStep = operationalPointsList[index - 1];
 
     const isStop = step.duration !== null && !isLast;
-    const isVia = stdcmData.simulationPathSteps
+    const isVia = stdcmPathSteps
       .slice(1, -1)
       .some((s) => s.location!.name === step.name && s.location!.secondary_code === step.ch);
     const isPathStep = isFirst || isVia || isLast;
@@ -107,9 +101,9 @@ const formatStdcmDataForSimulationTable = (
       startTime,
       ...(isFirst
         ? {
-            weight: `${Math.floor(consistMass)} t`,
-            length: `${consistLength} m`,
-            referenceEngine: rollingStock.name,
+            weight: `${Math.floor(consist.mass)} t`,
+            length: `${consist.length} m`,
+            referenceEngine: consist.rollingStockName,
           }
         : { weight: '=', length: '=', referenceEngine: '=' }),
       stopTypeLabel,
@@ -120,8 +114,8 @@ const formatStdcmDataForSimulationTable = (
 
 const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
-  path: PathfindingResultSuccess,
-  rollingStock: RollingStockWithLiveries,
+  pathItemPositions: PathfindingResultSuccess['path_item_positions'],
+  rollingStock: { mass: number; name: string },
   t: TFunction<'stdcm'>
 ) =>
   operationalPointsList.map((step, index) => {
@@ -130,7 +124,7 @@ const formatOperationalStudiesDataForSimulationTable = (
     const previousStep = operationalPointsList[index - 1];
 
     const isStop = !isFirst && !isLast && !!step.duration;
-    const isVia = path.path_item_positions.slice(1, -1).some((p) => p / 1000 === step.position);
+    const isVia = pathItemPositions.slice(1, -1).some((p) => p / 1000 === step.position);
     const isPathStep = isFirst || isVia || isLast;
 
     const startTime =
@@ -204,16 +198,18 @@ const formatSimulationTable = (
   if (options.mode === 'stdcm') {
     return formatStdcmDataForSimulationTable(
       options.operationalPointsList,
-      options.stdcmData,
-      options.rollingStock,
-      options.consistMass,
-      options.consistLength,
+      options.stdcmData.simulationPathSteps,
+      {
+        rollingStockName: options.rollingStock.name,
+        mass: options.consistMass,
+        length: options.consistLength,
+      },
       t
     );
   }
   return formatOperationalStudiesDataForSimulationTable(
     options.operationalPointsList,
-    options.path,
+    options.path.path_item_positions,
     options.rollingStock,
     t
   );
