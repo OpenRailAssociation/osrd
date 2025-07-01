@@ -1,12 +1,13 @@
 use axum::extract::Path;
 use axum::extract::Request;
+use axum::extract::State;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 use tower::ServiceExt;
 use tower_http::services::ServeFile;
 
-use crate::client::get_dynamic_assets_path;
+use crate::AppState;
 use crate::error::Result;
 
 crate::routes! {
@@ -36,9 +37,12 @@ enum FontErrors {
 )]
 async fn fonts(
     Path((font, file_name)): Path<(String, String)>,
+    State(AppState { config, .. }): State<AppState>,
     request: Request,
 ) -> Result<impl IntoResponse> {
-    let path = get_dynamic_assets_path().join(format!("fonts/glyphs/{font}/{file_name}"));
+    let path = config
+        .dynamic_assets_path
+        .join(format!("fonts/glyphs/{font}/{file_name}"));
 
     if !path.is_file() {
         return Err(FontErrors::FileNotFound { file: file_name }.into());
@@ -51,7 +55,6 @@ async fn fonts(
 mod tests {
     use crate::views::test_app::TestAppBuilder;
 
-    use super::*;
     use axum::http::StatusCode;
     use rstest::rstest;
 
@@ -62,9 +65,12 @@ mod tests {
         let response = app.fetch(request).assert_status(StatusCode::OK);
         assert_eq!("application/octet-stream", response.content_type());
         let response = response.bytes();
-        let expected =
-            std::fs::read(get_dynamic_assets_path().join("fonts/glyphs/Roboto Bold/0-255.pbf"))
-                .unwrap();
+        let expected = std::fs::read(
+            app.config()
+                .dynamic_assets_path
+                .join("fonts/glyphs/Roboto Bold/0-255.pbf"),
+        )
+        .unwrap();
         assert_eq!(response, expected);
     }
 

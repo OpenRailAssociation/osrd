@@ -35,6 +35,7 @@ pub(crate) use test_app::test_app;
 use ::core::str;
 use std::collections::HashSet;
 use std::env;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use axum::Router;
@@ -514,6 +515,7 @@ pub struct ServerConfig {
     pub valkey_config: ValkeyConfig,
     pub openfga_config: OpenfgaConfig,
     pub root_url: Url,
+    pub dynamic_assets_path: PathBuf,
 }
 
 pub struct Server {

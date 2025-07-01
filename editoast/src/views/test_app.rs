@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use axum::Router;
@@ -189,6 +190,7 @@ impl TestAppBuilder {
             root_url: self
                 .root_url
                 .unwrap_or_else(|| Url::parse("http://localhost:8090/").unwrap()),
+            dynamic_assets_path: PathBuf::from("./assets"),
             openfga_config: OpenfgaConfig {
                 url: Url::parse("http://localhost:8091").unwrap(),
                 store: self.test_name.clone(),
@@ -357,6 +359,10 @@ impl TestApp {
 
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {
         self.app_state.speed_limit_tag_ids.clone()
+    }
+
+    pub fn config(&self) -> &ServerConfig {
+        &self.app_state.config
     }
 
     pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder {
