@@ -5,7 +5,7 @@ import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import test from './logging-fixture';
 import StudyPage from './pages/operational-studies/study-page';
-import { generateUniqueName, getTranslations } from './utils';
+import { generateUniqueName } from './utils';
 import { getProject } from './utils/api-utils';
 import { formatDateToDayMonthYear } from './utils/date-utils';
 import readJsonFile from './utils/file-utils';
@@ -13,7 +13,7 @@ import { createStudy } from './utils/setup-utils';
 import { deleteStudy } from './utils/teardown-utils';
 import type { FlatTranslations, StudyData } from './utils/types';
 
-type StudyTranslations = {
+type StudyfrTranslations = {
   study: {
     studyCategories: FlatTranslations;
     studyStates: FlatTranslations;
@@ -21,10 +21,7 @@ type StudyTranslations = {
 };
 
 const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
-const enTranslations: StudyTranslations = readJsonFile(
-  'public/locales/en/operational-studies.json'
-);
-const frTranslations: StudyTranslations = readJsonFile(
+const frTranslations: StudyfrTranslations = readJsonFile(
   'public/locales/fr/operational-studies.json'
 );
 
@@ -33,14 +30,9 @@ test.describe('Validate the Study creation workflow', () => {
 
   let project: Project;
   let study: Study;
-  let translations: typeof enTranslations | typeof frTranslations;
 
   test.beforeAll(' Retrieve a project and the translation', async () => {
     project = await getProject();
-    translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
   });
 
   test.beforeEach(async ({ page }) => {
@@ -58,8 +50,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.createStudy({
       name: studyName,
       description: studyData.description,
-      type: translations.study.studyCategories.flowRate, // Translated study type
-      status: translations.study.studyStates.started, // Translated study status
+      type: frTranslations.study.studyCategories.flowRate, // Translated study type
+      status: frTranslations.study.studyStates.started, // Translated study status
       startDate: todayDateISO,
       expectedEndDate: todayDateISO,
       endDate: todayDateISO,
@@ -73,8 +65,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.validateStudyData({
       name: studyName,
       description: studyData.description,
-      type: translations.study.studyCategories.flowRate,
-      status: translations.study.studyStates.started,
+      type: frTranslations.study.studyCategories.flowRate,
+      status: frTranslations.study.studyStates.started,
       startDate: expectedDate,
       expectedEndDate: expectedDate,
       endDate: expectedDate,
@@ -98,8 +90,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.updateStudy({
       name: `${study.name} (updated)`,
       description: `${study.description} (updated)`,
-      type: translations.study.studyCategories.operability,
-      status: translations.study.studyStates.inProgress,
+      type: frTranslations.study.studyCategories.operability,
+      status: frTranslations.study.studyStates.inProgress,
       startDate: tomorrowDateISO,
       expectedEndDate: tomorrowDateISO,
       endDate: tomorrowDateISO,
@@ -112,8 +104,8 @@ test.describe('Validate the Study creation workflow', () => {
     await studyPage.validateStudyData({
       name: `${study.name} (updated)`,
       description: `${study.description} (updated)`,
-      type: translations.study.studyCategories.operability,
-      status: translations.study.studyStates.inProgress,
+      type: frTranslations.study.studyCategories.operability,
+      status: frTranslations.study.studyStates.inProgress,
       startDate: expectedDate,
       expectedEndDate: expectedDate,
       endDate: expectedDate,

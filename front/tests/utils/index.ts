@@ -115,24 +115,3 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
 
   throw new Error("Infrastructure state did not reach 'CACHED' within the allotted 3 minutes.");
 };
-
-/**
- * Utility function to get translations based on the project language.
- *
- * @param {string} projectLanguage - The language of the project
- * @param {{ en: T; fr: T }} translations - An object containing translations for English and French.
- * @returns {T} - The translation object corresponding to the specified project language.
- * @throws {Error} - Throws an error if the project language is unsupported.
- */
-
-export function getTranslations<T>(translations: { en: T; fr: T }): T {
-  const projectLanguage = process.env.PROJECT_LANGUAGE;
-  switch (projectLanguage) {
-    case 'Français':
-      return translations.fr;
-    case 'English':
-      return translations.en;
-    default:
-      throw new Error(`Unsupported project language: "${projectLanguage}".`);
-  }
-}

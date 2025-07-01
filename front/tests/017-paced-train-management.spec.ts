@@ -24,7 +24,7 @@ import OpSimulationResultPage from './pages/operational-studies/simulation-resul
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
-import { getTranslations, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
@@ -41,29 +41,26 @@ import type {
   TimetableFilterTranslations,
 } from './utils/types';
 
-const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/en/operational-studies.json').manageTrainSchedule;
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
   manageTrainSchedule: ManageTrainScheduleTranslations;
 }>('public/locales/fr/operational-studies.json').manageTrainSchedule;
 
-const enTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/en/translation.json'
-).timeStopTable;
 const frTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+
+const frTranslations = {
+  ...frManageTrainScheduleTranslations,
+  ...frTimeStopsTranslations,
+  ...frScenarioTranslations,
+  ...frCommonTranslations,
+};
 
 const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
@@ -93,26 +90,9 @@ test.describe('Verify simulation configuration in operational studies for train 
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: ManageTrainScheduleTranslations &
-    TimetableFilterTranslations &
-    CommonTranslations;
 
   test.beforeAll('Fetch infrastructure and get translations', async () => {
     infra = await getInfra();
-    translations = getTranslations({
-      en: {
-        ...enManageTrainScheduleTranslations,
-        ...enTimeStopsTranslations,
-        ...enScenarioTranslations,
-        ...enCommonTranslations,
-      },
-      fr: {
-        ...frManageTrainScheduleTranslations,
-        ...frTimeStopsTranslations,
-        ...frScenarioTranslations,
-        ...frCommonTranslations,
-      },
-    });
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
@@ -161,16 +141,16 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.openTimetableItemForm();
 
     // Verify that all configuration buttons and inputs are visible and have their proper default values
-    await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
+    await operationalStudiesPage.checkInputsAndButtons(frTranslations, scenario.creation_date);
 
     // Verify that all tabs are visible and their default behavior is correct
     await operationalStudiesPage.checkTabs();
 
     // Check the define paced train checkbox
-    await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(translations);
+    await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(frTranslations);
 
     // Test the paced train mode behavior
-    await operationalStudiesPage.testPacedTrainMode(translations);
+    await operationalStudiesPage.testPacedTrainMode(frTranslations);
   });
 
   /** *************** Test 2 **************** */
@@ -197,7 +177,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     await timesAndStopsTab.verifyActiveRowsCount(2);
     for (const cell of initialInputsData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
@@ -210,7 +190,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.addTimetableItem();
 
     // Verify the paced train has been added and return to the simulation results and timetable
-    await operationalStudiesPage.checkToastHasBeenLaunched(translations.pacedTrains.added);
+    await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
     await operationalStudiesPage.returnSimulationResult();
 
     // Confirm that the number of paced trains added matches the expected number
@@ -239,7 +219,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     // to trigger list of train initialization for this e2e test, which isn't needed locally
     await page.reload();
 
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: 0,
     });
@@ -248,10 +228,12 @@ test.describe('Verify simulation configuration in operational studies for train 
     await pacedTrainSection.duplicatePacedTrain();
 
     // Verify that a toast is displayed
-    await operationalStudiesPage.checkToastHasBeenLaunched(translations.timetable.pacedTrainAdded);
+    await operationalStudiesPage.checkToastHasBeenLaunched(
+      frTranslations.timetable.pacedTrainAdded
+    );
 
     // Verify that there is one more paced train in the list
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
       totalTrainScheduleCount: 0,
     });
@@ -259,11 +241,11 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Verify that the duplicated paced train has the proper details
     await pacedTrainSection.verifyPacedTrainItemDetails(DUPLICATED_PACED_TRAIN_DETAILS, 1, {
       occurrenceData: DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
-      copyTranslation: translations.timetable.copy,
+      copyTranslation: frTranslations.timetable.copy,
     });
 
     // Verify global item counter has one more paced train
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
       totalTrainScheduleCount: 0,
     });
@@ -271,12 +253,12 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Delete the duplicated paced train
     await pacedTrainSection.deletePacedTrain(
       DUPLICATED_PACED_TRAIN_INDEX,
-      translations,
+      frTranslations,
       DUPLICATED_PACED_TRAIN_DETAILS
     );
 
     // Verify global item counter has one less paced train
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: 0,
     });

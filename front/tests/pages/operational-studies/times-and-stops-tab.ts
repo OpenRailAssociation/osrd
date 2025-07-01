@@ -1,13 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { getTranslations } from '../../utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 
-const enTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/en/translation.json'
-).timeStopTable;
 const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
@@ -45,11 +41,6 @@ class TimesAndStopsTab {
     fillValue: string,
     inputPlaceholder?: string
   ) {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
-
     const expectedColumnHeader = cleanWhitespace(header);
 
     const headersCount = await this.columnHeaders.count();
@@ -80,7 +71,7 @@ class TimesAndStopsTab {
     } else {
       await cell.locator('.dsg-input').fill(fillValue);
 
-      if (cleanWhitespace(header) === cleanWhitespace(translations.stopTime)) {
+      if (cleanWhitespace(header) === cleanWhitespace(frTranslations.stopTime)) {
         await cell.locator('.dsg-input').press('Enter');
 
         if (stationName === 'Mid_West_station') {

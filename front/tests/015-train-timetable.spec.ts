@@ -33,20 +33,20 @@ import {
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
-import { getTranslations, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getScenario, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import type { CommonTranslations, TimetableFilterTranslations } from './utils/types';
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+const frTranslations = {
+  ...frScenarioTranslations,
+  ...frCommonTranslations,
+};
 
 test.describe('Verify train schedule elements and filters', () => {
   test.slow();
@@ -60,17 +60,12 @@ test.describe('Verify train schedule elements and filters', () => {
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: TimetableFilterTranslations & CommonTranslations;
 
   test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
     project = await getProject(trainScheduleProjectName);
     study = await getStudy(project.id, trainScheduleStudyName);
     scenario = await getScenario(project.id, study.id, trainScheduleScenarioName);
     infra = await getInfra();
-    translations = getTranslations({
-      en: { ...enScenarioTranslations, ...enCommonTranslations },
-      fr: { ...frScenarioTranslations, ...frCommonTranslations },
-    });
   });
 
   test.beforeEach('Navigate to scenario page before each test', async ({ page }) => {
@@ -94,7 +89,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
       VALID_ITEMS,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.verifyEachTrainSimulation(VALID_TRAINS);
   });
@@ -107,20 +102,20 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
       VALID_ITEMS,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
   });
 
   /** *************** Test 3 **************** */
   test('Filtering imported trains and paced trains', async () => {
-    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
     });
 
     await scenarioTimetableSection.checkTimetableFilterVisibilityLabelDefaultValue(
-      translations.timetable,
+      frTranslations.timetable,
       { inputDefaultValue: '', selectDefaultValue: 'both' }
     );
 
@@ -154,24 +149,24 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Invalid',
       INVALID_ITEMS,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
       VALID_ITEMS,
-      translations
+      frTranslations
     );
 
     // Punctuality filter
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'Honored',
       HONORED_ITEMS,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'Not honored',
       NOT_HONORED_ITEMS,
-      translations
+      frTranslations
     );
 
     // Train type filter
@@ -182,12 +177,12 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'All',
       VALID_PACED_TRAINS,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'All',
       TOTAL_PACED_TRAINS,
-      translations
+      frTranslations
     );
 
     await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount('Unique train', TOTAL_TRAINS);
@@ -198,7 +193,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
       null,
       ITEMS_WITH_NO_SPEED_LIMIT_TAG,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
 
@@ -206,7 +201,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
       'HLP',
       ITEMS_WITH_HLP_SPEED_LIMIT_TAG_EXCEPTION,
-      translations
+      frTranslations
     );
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
   });

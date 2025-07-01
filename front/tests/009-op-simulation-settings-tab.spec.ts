@@ -19,7 +19,7 @@ import SimulationSettingsTab from './pages/operational-studies/simulation-settin
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
-import { getTranslations, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { deleteApiRequest, getInfra, setElectricalProfile } from './utils/api-utils';
 import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
@@ -28,9 +28,6 @@ import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 
-const enTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/en/translation.json'
-).timeStopTable;
 const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
@@ -54,7 +51,6 @@ test.describe('Simulation Settings Tab Verification', () => {
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: typeof enTranslations | typeof frTranslations;
 
   const expectedCellDataElectricalProfileON: StationData[] = readJsonFile(
     './tests/assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-on.json'
@@ -80,7 +76,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     './tests/assets/operation-studies/simulation-settings/all-settings.json'
   );
 
-  type TranslationKeys = keyof typeof enTranslations;
+  type TranslationKeys = keyof typeof frTranslations;
 
   // Define CellData interface for table cell data
   interface CellData {
@@ -93,10 +89,6 @@ test.describe('Simulation Settings Tab Verification', () => {
   test.beforeAll('Add electrical profile via API and fetch infrastructure', async () => {
     electricalProfileSet = await setElectricalProfile();
     infra = await getInfra();
-    translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
   });
 
   test.afterAll('Delete the electrical profile', async () => {
@@ -174,7 +166,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       value: '124',
     };
 
-    const translatedHeader = cleanWhitespace(translations[cell.header]);
+    const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
     await timesAndStopsTab.fillTableCellByStationAndHeader(
       cell.stationName,
@@ -223,7 +215,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       header: 'stopTime',
       value: '124',
     };
-    const translatedHeader = cleanWhitespace(translations[cell.header]);
+    const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
     await timesAndStopsTab.fillTableCellByStationAndHeader(
       cell.stationName,
@@ -282,7 +274,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       },
     ];
     for (const cell of inputTableData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
@@ -343,7 +335,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       },
     ];
     for (const cell of inputTableData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,

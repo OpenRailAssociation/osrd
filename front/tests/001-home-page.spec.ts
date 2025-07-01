@@ -2,11 +2,9 @@ import { expect } from '@playwright/test';
 
 import test from './logging-fixture';
 import HomePage from './pages/home-page';
-import { getTranslations } from './utils';
 import readJsonFile from './utils/file-utils';
 import type { FlatTranslations } from './utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/translation.json');
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/translation.json');
 
 test.describe('Home page OSRD', () => {
@@ -23,18 +21,13 @@ test.describe('Home page OSRD', () => {
 
   /** *************** Test 1 **************** */
   test('Verify the links for different pages in Home Page', async () => {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
-
     // List of expected links on the home page
     const expectedLinks = [
-      translations.operationalStudies,
-      translations.stdcm,
-      translations.editor,
-      translations.rollingStockEditor,
-      translations.map,
+      frTranslations.operationalStudies,
+      frTranslations.stdcm,
+      frTranslations.editor,
+      frTranslations.rollingStockEditor,
+      frTranslations.map,
     ];
 
     // Verify that the displayed links match the expected ones

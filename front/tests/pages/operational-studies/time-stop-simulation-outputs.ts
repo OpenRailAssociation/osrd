@@ -1,14 +1,10 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import OpSimulationResultPage from './simulation-results-page';
-import { getTranslations } from '../../utils';
 import { normalizeStationData } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';
 
-const enTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/en/translation.json'
-).timeStopTable;
 const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
@@ -46,10 +42,7 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
 
   async getOutputTableData(expectedTableData: StationData[]) {
     const actualTableData: StationData[] = [];
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
+
     const headerIndexMap = await this.getHeaderIndexMap();
     const rowCount = await this.tableRows.count();
 
@@ -78,49 +71,51 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
         calculatedDeparture,
       ] = await Promise.all([
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.name]),
+          cells.nth(headerIndexMap[frTranslations.name]),
           false
         ),
-        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[translations.ch])),
+        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[frTranslations.ch])),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.trackName]),
-          false
-        ),
-        TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.arrivalTime]),
+          cells.nth(headerIndexMap[frTranslations.trackName]),
           false
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.departureTime]),
+          cells.nth(headerIndexMap[frTranslations.arrivalTime]),
           false
         ),
-        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[translations.stopTime])),
+        TimeAndStopSimulationOutputs.getCellValue(
+          cells.nth(headerIndexMap[frTranslations.departureTime]),
+          false
+        ),
+        TimeAndStopSimulationOutputs.getCellValue(
+          cells.nth(headerIndexMap[frTranslations.stopTime])
+        ),
         cells
-          .nth(headerIndexMap[translations.receptionOnClosedSignal])
+          .nth(headerIndexMap[frTranslations.receptionOnClosedSignal])
           .locator('input.dsg-checkbox')
           .isChecked(),
         cells
-          .nth(headerIndexMap[translations.shortSlipDistance])
+          .nth(headerIndexMap[frTranslations.shortSlipDistance])
           .locator('input.dsg-checkbox')
           .isChecked(),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.theoreticalMargin]),
+          cells.nth(headerIndexMap[frTranslations.theoreticalMargin]),
           false
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.theoreticalMarginSeconds])
+          cells.nth(headerIndexMap[frTranslations.theoreticalMarginSeconds])
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.realMargin])
+          cells.nth(headerIndexMap[frTranslations.realMargin])
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.diffMargins])
+          cells.nth(headerIndexMap[frTranslations.diffMargins])
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.calculatedArrivalTime])
+          cells.nth(headerIndexMap[frTranslations.calculatedArrivalTime])
         ),
         TimeAndStopSimulationOutputs.getCellValue(
-          cells.nth(headerIndexMap[translations.calculatedDepartureTime])
+          cells.nth(headerIndexMap[frTranslations.calculatedDepartureTime])
         ),
       ]);
 

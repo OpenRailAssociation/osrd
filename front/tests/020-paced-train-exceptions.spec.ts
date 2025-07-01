@@ -13,7 +13,7 @@ import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
-import { generateUniqueName, getTranslations, waitForInfraStateToBeCached } from './utils';
+import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
@@ -25,19 +25,18 @@ import type {
   TimetableFilterTranslations,
 } from './utils/types';
 
-const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/en/operational-studies.json').manageTrainSchedule;
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
   manageTrainSchedule: ManageTrainScheduleTranslations;
 }>('public/locales/fr/operational-studies.json').manageTrainSchedule;
 
-const enScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
-  main: TimetableFilterTranslations;
-}>('public/locales/en/operational-studies.json').main;
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
+
+const frTranslations = {
+  ...frManageTrainScheduleTranslations,
+  ...frScenarioTranslations,
+};
 
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
@@ -53,7 +52,6 @@ test.describe('Edit trains and missions', () => {
   let study: Study;
   let scenarioItems: Scenario;
   let infra: Infra;
-  let translations: ManageTrainScheduleTranslations & TimetableFilterTranslations;
 
   test.beforeAll('Load paced trains JSON', async () => {
     project = await getProject(trainScheduleProjectName);
@@ -68,17 +66,6 @@ test.describe('Edit trains and missions', () => {
       )
     ).scenario;
     await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
-
-    translations = getTranslations({
-      en: {
-        ...enManageTrainScheduleTranslations,
-        ...enScenarioTranslations,
-      },
-      fr: {
-        ...frManageTrainScheduleTranslations,
-        ...frScenarioTranslations,
-      },
-    });
   });
 
   test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
@@ -107,7 +94,7 @@ test.describe('Edit trains and missions', () => {
     await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
 
     await operationalStudiesPage.checkInputsBeforeEditingAPacedTrain(
-      translations,
+      frTranslations,
       editedPacedTrainData.paced.time_window,
       editedPacedTrainData.paced.interval
     );
@@ -117,7 +104,7 @@ test.describe('Edit trains and missions', () => {
     await operationalStudiesPage.validateAndCloseTrainEdition();
 
     await operationalStudiesPage.checkToastHasBeenLaunched(
-      translations.timetable.pacedTrainUpdated
+      frTranslations.timetable.pacedTrainUpdated
     );
 
     await pacedTrainSection.verifyOccurrenceDetails(
@@ -131,15 +118,15 @@ test.describe('Edit trains and missions', () => {
 
     await pacedTrainSection.checkExceptionTooltip(
       4,
-      translations.timetable.occurrenceType.addedOccurrence,
-      translations.timetable.occurrenceChangeGroup.start_time as ChangeGroup
+      frTranslations.timetable.occurrenceType.addedOccurrence,
+      frTranslations.timetable.occurrenceChangeGroup.start_time as ChangeGroup
     );
 
     await pacedTrainSection.checkOccurrenceMenuIcon(4);
     await pacedTrainSection.checkOccurrenceActionMenu({
       occurrenceIndex: 4,
       expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
-      translations,
+      translations: frTranslations,
     });
   });
 
@@ -149,27 +136,27 @@ test.describe('Edit trains and missions', () => {
     await pacedTrainSection.checkOccurrenceActionMenu({
       occurrenceIndex: 0,
       expectedButtons: CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
-      translations,
+      translations: frTranslations,
     });
     await pacedTrainSection.clickOccurrenceMenuButton('edit');
     await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
-    await operationalStudiesPage.updateTimetableItem(translations.pacedTrains.updatePacedTrain);
+    await operationalStudiesPage.updateTimetableItem(frTranslations.pacedTrains.updatePacedTrain);
     await operationalStudiesPage.checkToastHasBeenLaunched(
-      translations.timetable.pacedTrainUpdated
+      frTranslations.timetable.pacedTrainUpdated
     );
 
     await page.waitForLoadState('networkidle');
 
     await pacedTrainSection.checkExceptionTooltip(
       0,
-      translations.timetable.occurrenceType.editedOccurrence +
-        translations.timetable.occurrenceChangeGroup.train_name
+      frTranslations.timetable.occurrenceType.editedOccurrence +
+        frTranslations.timetable.occurrenceChangeGroup.train_name
     );
     await pacedTrainSection.checkOccurrenceMenuIcon(0);
     await pacedTrainSection.checkOccurrenceActionMenu({
       occurrenceIndex: 0,
       expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
-      translations,
+      translations: frTranslations,
     });
     await pacedTrainSection.clickOccurrenceMenuButton('disable');
     await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
@@ -177,7 +164,7 @@ test.describe('Edit trains and missions', () => {
     await pacedTrainSection.checkOccurrenceActionMenu({
       occurrenceIndex: 0,
       expectedButtons: DISABLED_OCCURRENCE_MENU_BUTTONS,
-      translations,
+      translations: frTranslations,
     });
     await pacedTrainSection.clickOccurrenceMenuButton('enable');
     await pacedTrainSection.verifyOccurrenceName(0, EDITED_OCCURRENCE_NAME);
@@ -185,7 +172,7 @@ test.describe('Edit trains and missions', () => {
     await pacedTrainSection.checkOccurrenceActionMenu({
       occurrenceIndex: 0,
       expectedButtons: EXCEPTION_ACTIVE_OCCURRENCE_MENU_BUTTONS,
-      translations,
+      translations: frTranslations,
     });
     await pacedTrainSection.clickOccurrenceMenuButton('restore');
     await pacedTrainSection.verifyOccurrenceName(0, INITIAL_OCCURRENCE_NAME);

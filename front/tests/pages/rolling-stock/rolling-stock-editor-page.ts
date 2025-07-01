@@ -3,23 +3,18 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import type { TrainCategory } from 'common/api/osrdEditoastApi';
 import { TrainCategoryDict } from 'modules/rollingStock/consts';
 
-import { fillAndCheckInputById, getTranslations } from '../../utils';
+import { fillAndCheckInputById } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 import CommonPage from '../common-page';
 
 type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
 
-const enTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
-  'public/locales/en/translation.json'
-).rollingStock;
 const frTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
   'public/locales/fr/translation.json'
 ).rollingStock;
 
 class RollingstockEditorPage extends CommonPage {
-  private readonly translations: RollingStockTranslations;
-
   private readonly newRollingstockButton: Locator;
 
   private readonly submitRollingstockButton: Locator;
@@ -62,10 +57,6 @@ class RollingstockEditorPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
-    this.translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     this.newRollingstockButton = page.getByTestId('new-rollingstock-button');
     this.submitRollingstockButton = page.getByTestId('submit-rollingstock-button');
     this.rollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
@@ -332,15 +323,15 @@ class RollingstockEditorPage extends CommonPage {
       if (isTranslated) {
         if (Array.isArray(value)) {
           expectedValue = value.map(
-            (v) => this.translations.categoriesOptions[v] || this.translations[v]
+            (v) => frTranslations.categoriesOptions[v] || frTranslations[v]
           );
         } else {
-          expectedValue = this.translations.categoriesOptions[value] || this.translations[value];
+          expectedValue = frTranslations.categoriesOptions[value] || frTranslations[value];
         }
       }
 
       // Locate and verify values
-      const row = this.page.getByRole('row', { name: this.translations[id] }).first();
+      const row = this.page.getByRole('row', { name: frTranslations[id] }).first();
       await expect(row).toBeVisible();
 
       const valueCell = row.getByRole('cell').nth(1);

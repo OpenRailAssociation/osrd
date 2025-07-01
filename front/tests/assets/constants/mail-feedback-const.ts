@@ -1,8 +1,6 @@
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { StdcmTranslations } from '../../utils/types';
 
-const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 const tractionEngineName = 'ELECTRIC_RS_E2E';
@@ -17,33 +15,28 @@ const destination = 'South_station';
 const departureTime = '20:21';
 
 const getMailFeedbackData = () => {
-  const translations = getTranslations({
-    en: enTranslations,
-    fr: frTranslations,
-  });
-
-  const expectedSubject = translations.mailFeedback.subject.replace('{{stdcmName}}', 'Stdcm');
+  const expectedSubject = frTranslations.mailFeedback.subject.replace('{{stdcmName}}', 'Stdcm');
 
   const expectedBody = `
 ********
 
-${translations.mailFeedback.simulationDetails}:
+${frTranslations.mailFeedback.simulationDetails}:
 
-${translations.consist.tractionEngine}: ${tractionEngineName}
-${translations.consist.towedRollingStock}: ${towedRollingStockName}
-${translations.consist.compositionCode}: ${compositionCode}
-${translations.consist.loadingGauge}: ${loadingGauge}
-${translations.consist.tonnage}: ${tonnage}
-${translations.consist.length}: ${length}
-${translations.consist.maxSpeed}: ${maxSpeed}
+${frTranslations.consist.tractionEngine}: ${tractionEngineName}
+${frTranslations.consist.towedRollingStock}: ${towedRollingStockName}
+${frTranslations.consist.compositionCode}: ${compositionCode}
+${frTranslations.consist.loadingGauge}: ${loadingGauge}
+${frTranslations.consist.tonnage}: ${tonnage}
+${frTranslations.consist.length}: ${length}
+${frTranslations.consist.maxSpeed}: ${maxSpeed}
 
-${translations.trainPath.origin}: ${origin}
-${translations.trainPath.destination}: ${destination}
-${translations.departureTime}: ${departureTime}
+${frTranslations.trainPath.origin}: ${origin}
+${frTranslations.trainPath.destination}: ${destination}
+${frTranslations.departureTime}: ${departureTime}
 
 ********
 
-${translations.mailFeedback.body.replace('{{stdcmName}}', 'Stdcm')}
+${frTranslations.mailFeedback.body.replace('{{stdcmName}}', 'Stdcm')}
 
 ********
 `;

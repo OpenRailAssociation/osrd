@@ -10,7 +10,7 @@ import ScenarioPage from './pages/operational-studies/scenario-page';
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
-import { getTranslations, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import { cleanWhitespace, cleanWhitespaceInArray } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
@@ -19,9 +19,6 @@ import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { CellData, FlatTranslations, StationData } from './utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
-  'public/locales/en/translation.json'
-).timeStopTable;
 const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
@@ -40,7 +37,6 @@ test.describe('Times and Stops Tab Verification', () => {
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: FlatTranslations;
 
   // Load test data for table inputs and expected results
   const initialInputsData: CellData[] = readJsonFile(
@@ -67,10 +63,6 @@ test.describe('Times and Stops Tab Verification', () => {
 
   test.beforeAll('Fetch infrastructure and get translation', async () => {
     infra = await getInfra();
-    translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
   });
 
   test.beforeEach(
@@ -128,15 +120,15 @@ test.describe('Times and Stops Tab Verification', () => {
 
   test('should correctly set and display times and stops tables', async ({ page }) => {
     const expectedColumnNames = cleanWhitespaceInArray([
-      translations.name,
-      translations.ch,
-      translations.trackName,
-      translations.arrivalTime,
-      translations.stopTime,
-      translations.departureTime,
-      translations.receptionOnClosedSignal,
-      translations.shortSlipDistance,
-      translations.theoreticalMargin,
+      frTranslations.name,
+      frTranslations.ch,
+      frTranslations.trackName,
+      frTranslations.arrivalTime,
+      frTranslations.stopTime,
+      frTranslations.departureTime,
+      frTranslations.receptionOnClosedSignal,
+      frTranslations.shortSlipDistance,
+      frTranslations.theoreticalMargin,
     ]);
 
     // Verify table headers match the expected headers
@@ -148,7 +140,7 @@ test.describe('Times and Stops Tab Verification', () => {
     // Verify initial row count and fill table with input data
     await timesAndStopsTab.verifyActiveRowsCount(2);
     for (const cell of initialInputsData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
@@ -189,7 +181,7 @@ test.describe('Times and Stops Tab Verification', () => {
   test('should correctly update and clear input table row', async () => {
     // Fill table cells with initial input data
     for (const cell of initialInputsData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
@@ -203,7 +195,7 @@ test.describe('Times and Stops Tab Verification', () => {
     // Update table inputs with new data
     await timesAndStopsTab.verifyActiveRowsCount(4);
     for (const cell of updatedInputsData) {
-      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
       await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,

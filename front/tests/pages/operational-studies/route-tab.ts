@@ -1,12 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile<{ manageTrainSchedule: FlatTranslations }>(
-  'public/locales/en/operational-studies.json'
-).manageTrainSchedule;
 const frTranslations: FlatTranslations = readJsonFile<{ manageTrainSchedule: FlatTranslations }>(
   'public/locales/fr/operational-studies.json'
 ).manageTrainSchedule;
@@ -159,20 +155,16 @@ class RouteTab {
 
   // Verify that no route is selected and displays appropriate messages.
   async verifyNoSelectedRoute() {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     const isNoOriginChosenVisible = await this.noOriginChosen.isVisible();
     const isNoDestinationChosenVisible = await this.noDestinationChosen.isVisible();
 
     if (isNoOriginChosenVisible) {
       const noOriginChosenText = await this.noOriginChosen.innerText();
-      expect(noOriginChosenText).toEqual(translations.noOriginChosen);
+      expect(noOriginChosenText).toEqual(frTranslations.noOriginChosen);
     }
     if (isNoDestinationChosenVisible) {
       const noDestinationChosenText = await this.noDestinationChosen.innerText();
-      expect(noDestinationChosenText).toEqual(translations.noDestinationChosen);
+      expect(noDestinationChosenText).toEqual(frTranslations.noDestinationChosen);
     }
   }
 
@@ -236,12 +228,8 @@ class RouteTab {
     await expect(this.pathfindingInProgressMessage).toBeHidden();
     await this.destinationDeleteButton.click();
     await expect(this.pathfindingInProgressMessage).toBeHidden();
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
 
-    const expectedMessage = translations.pathfindingMissingParams.replace(
+    const expectedMessage = frTranslations.pathfindingMissingParams.replace(
       ': {{missingElements}}.',
       ''
     );
