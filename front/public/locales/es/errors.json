@@ -1,0 +1,125 @@
+{
+  "401": "Usuario no autenticado",
+  "403": "Acceso denegado",
+  "404": "Recurso no encontrado",
+  "500": "Errores del servidor",
+  "502": "Errores del servidor",
+  "503": "Errores del servidor",
+  "504": "El servidor no respondió.",
+  "core": {
+    "missing_last_stdcm_stop": "No se admiten actualmente las solicitudes STDCM que no terminan en punto"
+  },
+  "default": "Se produjo un error.",
+  "editoast": {
+    "DatabaseAccessError": "Error grave de acceso a la base de datos",
+    "app_health": {
+      "Core": "Error del núcleo",
+      "Database": "Error en la base de datos",
+      "Openfga": "Error de OpenFGA",
+      "Timeout": "El servicio no respondió a tiempo",
+      "Valkey": "Error de Valkey"
+    },
+    "authz": {
+      "AuthError": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
+      "Authorizer": "Error interno",
+      "Authz": "Error interno de autenticación o de autorización; vuelva a intentarlo o contacte al personal de asistencia",
+      "DbError": "Error grave de acceso a la base de datos",
+      "GrantsApiMisuse": "Uso impropio de la API",
+      "NoSuchUser": "Usuario desconocido",
+      "Unauthorized": "Usuario no autenticado",
+      "UnknownResource": "Recurso desconocido",
+      "UnknownResourceType": "Tipo de recurso desconocido"
+    },
+    "auto_fixes": {
+      "MissingErrorObject": "No se pudo encontrar el objeto del error"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}: ya existe un duplicado"
+    },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "La longitud de una ruta no puede ser nula."
+      }
+    },
+    "coreclient": {
+      "UnparsableErrorOutput": "El núcleo devolvió un error en un formato desconocido"
+    },
+    "delimited_area": {
+      "InvalidLocations": "Determinadas ubicaciones no son válidas"
+    },
+    "document": {
+      "Database": "Error interno (de la base de datos)",
+      "NotFound": "No se encontró el documento «{{document_key}}»"
+    },
+    "infra": {
+      "Database": "Error interno",
+      "NotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»",
+      "edition": {
+        "InfraIsLocked": "Infraestructura bloqueada"
+      }
+    },
+    "paced_train": {
+      "Database": "Error interno (de la base de datos)",
+      "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»"
+    },
+    "pathfinding": {
+      "InfraNotFound": "No existe la infraestructura «{{infra_id}}»"
+    },
+    "postgres": {
+      "Host": "Anfitrión «{{hostname}}» no válido",
+      "Password": "Contraseña no válida",
+      "Port": "Puerto «{{port}}» no válido",
+      "Username": "Nombre de usuario no válido"
+    },
+    "project": {
+      "Database": "Error interno",
+      "ImageError": "La imagen provista no es válida",
+      "ImageNotFound": "No se encontró la imagen de documento «{{document_key}}»",
+      "NotFound": "No se pudo encontrar el proyecto «{{project_id}}»"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Versión de railjson no admitida"
+    },
+    "rollingstocks": {
+      "Database": "Error interno (base de datos)"
+    },
+    "search": {
+      "InvalidSyntax": "Sintaxis no válida",
+      "UndefinedFunction": "Función no definida",
+      "UnexpectedColumn": "Columna inesperada"
+    },
+    "single_simulation": {
+      "PathNotFound": "No se pudo encontrar la ruta «{{path_id}}»"
+    },
+    "sprites": {
+      "FileNotFound": "Archivo no encontrado"
+    },
+    "stdcm_search_env": {
+      "Database": "Error interno (base de datos)"
+    },
+    "study": {
+      "Database": "Error interno (base de datos)",
+      "NotFound": "No se pudo encontar el estudio «{{study_id}}»"
+    },
+    "temporary_speed_limit": {
+      "Database": "Error interno (base de datos)",
+      "NameAlreadyUsed": "Ya existe un grupo de límites de velocidad temporales con el nombre «{{name}}»"
+    },
+    "timetable": {
+      "Database": "Error interno (base de datos)"
+    },
+    "towedrollingstocks": {
+      "Database": "Error interno"
+    },
+    "train_schedule": {
+      "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»"
+    },
+    "url": {
+      "InvalidUrl": "URL «{{url}}» no válido"
+    },
+    "valkey": {
+      "Url": "URL «{{url}}» no válido"
+    }
+  },
+  "pageNotFound": "La página que busca no existe."
+}
