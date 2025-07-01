@@ -16,7 +16,7 @@ const SimulationTable = (props: SimulationTableProps) => {
   const { t } = useTranslation('stdcm');
   const { mode } = props;
   const isStdcm = mode === 'stdcm';
-  const rows = formatSimulationTable(props);
+  const rows = formatSimulationTable(props, t);
 
   // eslint-disable-next-line react/destructuring-assignment
   const path = isStdcm ? props.stdcmData.path : props.path;
