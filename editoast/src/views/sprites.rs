@@ -1,13 +1,14 @@
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Request;
+use axum::extract::State;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 use tower::ServiceExt;
 use tower_http::services::ServeFile;
 
-use crate::client::get_dynamic_assets_path;
+use crate::AppState;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 
@@ -58,13 +59,16 @@ async fn signaling_systems() -> Result<Json<Vec<String>>> {
 )]
 async fn sprites(
     Path((signaling_system, file_name)): Path<(String, String)>,
+    State(AppState { config, .. }): State<AppState>,
     request: Request,
 ) -> Result<impl IntoResponse> {
     let sprite_configs = SpriteConfig::load();
     if signaling_system != "default" && !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
     }
-    let path = get_dynamic_assets_path().join(format!("sprites/{signaling_system}/{file_name}"));
+    let path = config
+        .dynamic_assets_path
+        .join(format!("sprites/{signaling_system}/{file_name}"));
 
     if !path.is_file() {
         return Err(SpriteErrors::FileNotFound { file: file_name }.into());
@@ -77,7 +81,6 @@ async fn sprites(
 mod tests {
     use crate::views::test_app::TestAppBuilder;
 
-    use super::*;
     use axum::http::StatusCode;
     use rstest::rstest;
 
@@ -101,8 +104,12 @@ mod tests {
         let response = app.fetch(request).assert_status(StatusCode::OK);
         assert_eq!("image/svg+xml", response.content_type());
         let response = response.bytes();
-        let expected =
-            std::fs::read(get_dynamic_assets_path().join("sprites/TVM300/REP TGV.svg")).unwrap();
+        let expected = std::fs::read(
+            app.config()
+                .dynamic_assets_path
+                .join("sprites/TVM300/REP TGV.svg"),
+        )
+        .unwrap();
         assert_eq!(response, expected);
     }
 

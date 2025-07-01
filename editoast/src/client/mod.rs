@@ -15,7 +15,6 @@ pub mod user;
 mod valkey_config;
 
 use std::env;
-use std::path::PathBuf;
 
 use clap::Parser;
 use clap::Subcommand;
@@ -107,13 +106,6 @@ pub fn print_openapi() {
 /// Retrieve the app version (git describe)
 pub fn get_app_version() -> Option<String> {
     env::var("OSRD_GIT_DESCRIBE").ok()
-}
-
-/// Retrieve the assets path
-pub fn get_dynamic_assets_path() -> PathBuf {
-    env::var("DYNAMIC_ASSETS_PATH")
-        .unwrap_or(String::from("./assets"))
-        .into()
 }
 
 #[cfg(test)]

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use chrono::Duration;
 use clap::Args;
 use url::Url;
@@ -33,6 +35,8 @@ pub struct CoreArgs {
 pub struct RunserverArgs {
     #[clap(long, env = "ROOT_URL", default_value_t = Url::parse("http://localhost:8090").unwrap())]
     root_url: Url,
+    #[clap(long, env = "DYNAMIC_ASSETS_PATH", default_value = "./assets")]
+    dynamic_assets_path: PathBuf,
     #[command(flatten)]
     map_layers_config: MapLayersConfig,
     #[arg(long, env = "EDITOAST_PORT", default_value_t = 8090)]
@@ -75,6 +79,7 @@ pub async fn runserver(
         osrdyne_api_url,
         health_check_timeout_ms,
         root_url,
+        dynamic_assets_path,
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey: ValkeyConfig,
@@ -101,6 +106,7 @@ pub async fn runserver(
         valkey_config: valkey.into(),
         openfga_config: openfga.into(),
         root_url,
+        dynamic_assets_path,
     };
 
     let server = views::Server::new(config).await?;
