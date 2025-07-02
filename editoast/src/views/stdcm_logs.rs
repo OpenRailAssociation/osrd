@@ -163,6 +163,7 @@ mod tests {
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::Response;
+    use core_client::simulation::SimpleEnvelope;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_authz as authz;
@@ -283,24 +284,30 @@ mod tests {
     fn simulation_response() -> Response {
         Response::Success(SimulationSuccess {
             base: ReportTrain {
-                positions: vec![],
-                times: vec![],
-                speeds: vec![],
+                envelope: SimpleEnvelope {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                },
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 10],
             },
             provisional: ReportTrain {
-                positions: vec![],
-                times: vec![0, 10],
-                speeds: vec![],
+                envelope: SimpleEnvelope {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                },
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 10],
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 10],
                 },

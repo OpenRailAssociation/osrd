@@ -215,9 +215,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
         // Lighter description of the same simulation result
         val simpleReportTrain =
             ReportTrain(
-                reportTrain.positions,
-                reportTrain.times,
-                reportTrain.speeds,
+                reportTrain.envelope,
                 reportTrain.energyConsumption,
                 reportTrain.pathItemTimes
             )

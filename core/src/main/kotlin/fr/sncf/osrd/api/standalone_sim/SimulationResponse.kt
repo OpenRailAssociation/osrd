@@ -9,9 +9,7 @@ import fr.sncf.osrd.api.*
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 
 interface SimulationResponse
@@ -40,9 +38,7 @@ sealed class ElectricalProfileValue {
 }
 
 class CompleteReportTrain(
-    positions: List<Offset<TravelledPath>>,
-    times: List<TimeDelta>, // Times are compared to the departure time
-    speeds: List<Double>,
+    envelope: SimpleEnvelope,
     @Json(name = "energy_consumption") energyConsumption: Double,
     @Json(name = "path_item_times") pathItemTimes: List<TimeDelta>,
     @Json(name = "signal_critical_positions")
@@ -50,12 +46,10 @@ class CompleteReportTrain(
     @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
     @Json(name = "spacing_requirements") val spacingRequirements: List<RJSSpacingRequirement>,
     @Json(name = "routing_requirements") val routingRequirements: List<RJSRoutingRequirement>
-) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes)
+) : ReportTrain(envelope, energyConsumption, pathItemTimes)
 
 open class ReportTrain(
-    val positions: List<Offset<TravelledPath>>,
-    val times: List<TimeDelta>, // Times are compared to the departure time
-    val speeds: List<Double>,
+    val envelope: SimpleEnvelope,
     @Json(name = "energy_consumption") val energyConsumption: Double,
     @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
 )

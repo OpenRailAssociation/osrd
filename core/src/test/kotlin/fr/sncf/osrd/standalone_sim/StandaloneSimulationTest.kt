@@ -252,15 +252,15 @@ class StandaloneSimulationTest {
             val arrival =
                 getTimeAt(
                     scheduledPoint.pathOffset,
-                    res.finalOutput.positions,
-                    res.finalOutput.times,
+                    res.finalOutput.envelope.positions,
+                    res.finalOutput.envelope.times,
                     false
                 )
             val departure =
                 getTimeAt(
                     scheduledPoint.pathOffset,
-                    res.finalOutput.positions,
-                    res.finalOutput.times,
+                    res.finalOutput.envelope.positions,
+                    res.finalOutput.envelope.times,
                     true
                 )
             if (scheduledPoint.arrival != null) {
@@ -438,7 +438,7 @@ class StandaloneSimulationTest {
         train: ReportTrain,
         interpolateRight: Boolean
     ): Double {
-        return getTimeAt(offset, train.positions, train.times, interpolateRight)
+        return getTimeAt(offset, train.envelope.positions, train.envelope.times, interpolateRight)
     }
 
     /**

@@ -95,3 +95,9 @@ data class WorkSchedule(
     @Json(name = "start_time") val startTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
 )
+
+data class SimpleEnvelope(
+    val positions: List<Offset<TravelledPath>>,
+    val times: List<TimeDelta>, // Times are compared to the departure time
+    val speeds: List<Double>,
+)

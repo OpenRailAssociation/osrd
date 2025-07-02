@@ -393,14 +393,12 @@ pub async fn extract_train_details(
             }
             _ => continue,
         };
-        let ReportTrain {
-            times, positions, ..
-        } = report_train;
+        let ReportTrain { envelope, .. } = report_train;
 
         let train_details = TrainSimulationDetails {
             train_id: train.id,
-            positions,
-            times,
+            positions: envelope.positions,
+            times: envelope.times,
             signal_critical_positions,
             zone_updates,
             train_path: track_ranges.clone(),

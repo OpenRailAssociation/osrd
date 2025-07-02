@@ -85,6 +85,7 @@ impl Response {
         if let Response::Success(SimulationResponseSuccess { provisional, .. }) = self {
             Some(
                 *provisional
+                    .envelope
                     .times
                     .last()
                     .expect("core error: empty simulation result"),
@@ -166,8 +167,8 @@ impl From<simulation::Response> for SummaryResponse {
             }) => {
                 let report = final_output.report_train;
                 Self::Success {
-                    length: *report.positions.last().unwrap(),
-                    time: *report.times.last().unwrap(),
+                    length: *report.envelope.positions.last().unwrap(),
+                    time: *report.envelope.times.last().unwrap(),
                     energy_consumption: report.energy_consumption,
                     path_item_times_final: report.path_item_times.clone(),
                     path_item_times_provisional: provisional.path_item_times.clone(),

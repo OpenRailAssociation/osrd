@@ -4,6 +4,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::simulation::SimpleEnvelope;
 use crate::simulation::{
     PhysicsConsist, SimulationPath, SimulationPowerRestrictionItem, SimulationScheduleItem,
     SpeedLimitProperties,
@@ -47,17 +48,6 @@ pub struct ETCSCurves {
     pub permitted_speed: Option<SimpleEnvelope>,
     #[schema(inline)]
     pub guidance: Option<SimpleEnvelope>,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
-pub struct SimpleEnvelope {
-    /// List of positions of a train
-    /// Both positions (in mm) and times (in ms) must have the same length
-    pub positions: Vec<u64>,
-    /// List of times (in ms) associated to a position
-    pub times: Vec<u64>,
-    /// List of speeds (in m/s) associated to a position
-    pub speeds: Vec<f64>,
 }
 
 impl AsCoreRequest<Json<Response>> for Request {

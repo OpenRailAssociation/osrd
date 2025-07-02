@@ -693,6 +693,7 @@ mod tests {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
+    use core_client::simulation::SimpleEnvelope;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
@@ -974,24 +975,30 @@ mod tests {
             response,
             core_client::simulation::Response::Success(SimulationSuccess {
                 base: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 1000, 2000, 3000]
                 },
                 provisional: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 1000, 2000, 3000]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
-                        positions: vec![0],
-                        times: vec![0],
-                        speeds: vec![],
+                        envelope: SimpleEnvelope {
+                            positions: vec![],
+                            times: vec![],
+                            speeds: vec![],
+                        },
                         energy_consumption: 0.0,
                         path_item_times: vec![0, 1000, 2000, 3000]
                     },
@@ -1047,24 +1054,30 @@ mod tests {
             response,
             simulation::Response::Success(SimulationResponseSuccess {
                 base: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 1000, 2000, 3000]
                 },
                 provisional: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 1000, 2000, 3000]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
-                        positions: vec![0],
-                        times: vec![0],
-                        speeds: vec![],
+                        envelope: SimpleEnvelope {
+                            positions: vec![],
+                            times: vec![],
+                            speeds: vec![],
+                        },
                         energy_consumption: 0.0,
                         path_item_times: vec![0, 1000, 2000, 3000]
                     },

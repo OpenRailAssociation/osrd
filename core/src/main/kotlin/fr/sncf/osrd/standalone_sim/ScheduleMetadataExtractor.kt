@@ -285,9 +285,7 @@ fun runScheduleMetadataExtractor(
             pathItemPositions
         )
     return CompleteReportTrain(
-        reportTrain.positions,
-        reportTrain.times,
-        reportTrain.speeds,
+        reportTrain.envelope,
         reportTrain.energyConsumption,
         reportTrain.pathItemTimes,
         signalCriticalPositions,
@@ -342,9 +340,11 @@ fun makeSimpleReportTrain(
     assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
     return ReportTrain(
-        simplified.map { Offset(it.position.meters) },
-        simplified.map { it.time.seconds },
-        simplified.map { it.speed },
+        SimpleEnvelope(
+            simplified.map { Offset(it.position.meters) },
+            simplified.map { it.time.seconds },
+            simplified.map { it.speed },
+        ),
         mechanicalEnergyConsumed,
         pathItemTimes,
     )

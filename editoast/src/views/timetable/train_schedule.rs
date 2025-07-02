@@ -977,15 +977,15 @@ fn interpolate_track_occupancy(
         .iter()
         .filter_map(|track_offset| {
             path_projection.get_position(track_offset).map(|position| {
-                let index = find_index_upper(&report_train.positions, position);
+                let index = find_index_upper(&report_train.envelope.positions, position);
                 let time = if index == 0 {
-                    report_train.times[0]
+                    report_train.envelope.times[0]
                 } else {
                     interpolate(
-                        report_train.positions[index - 1],
-                        report_train.positions[index],
-                        report_train.times[index - 1],
-                        report_train.times[index],
+                        report_train.envelope.positions[index - 1],
+                        report_train.envelope.positions[index],
+                        report_train.envelope.times[index - 1],
+                        report_train.envelope.times[index],
                         position,
                     )
                 };
@@ -1116,6 +1116,7 @@ pub mod tests {
     #[cfg(test)]
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrackRange;
+    use core_client::simulation::SimpleEnvelope;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::primitives::Identifier;
     use editoast_schemas::train_schedule::{
@@ -1486,9 +1487,11 @@ pub mod tests {
             offset,
         }];
         let report_train = ReportTrain {
-            positions: positions.clone(),
-            times: times.clone(),
-            speeds: vec![10.0; positions.len()],
+            envelope: SimpleEnvelope {
+                positions: positions.clone(),
+                times: times.clone(),
+                speeds: vec![10.0; positions.len()],
+            },
             energy_consumption: 0.0,
             path_item_times: vec![0, 1000],
         };
@@ -1536,9 +1539,11 @@ pub mod tests {
         }];
 
         let report_train = ReportTrain {
-            positions: vec![0, 50, 100, 150],
-            times: vec![0, expected_time, 2000, 3000],
-            speeds: vec![10.0; 4],
+            envelope: SimpleEnvelope {
+                positions: vec![0, 50, 100, 150],
+                times: vec![0, expected_time, 2000, 3000],
+                speeds: vec![10.0; 4],
+            },
             energy_consumption: 0.0,
             path_item_times: vec![0, expected_time, 2000],
         };

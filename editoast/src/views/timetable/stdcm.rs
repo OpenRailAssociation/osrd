@@ -404,7 +404,12 @@ fn build_train_requirements(
 
         // First check that the train overlaps with the simulation range
         let start_time = train.start_time;
-        let train_duration_ms = *final_output.report_train.times.last().unwrap_or(&0);
+        let train_duration_ms = *final_output
+            .report_train
+            .envelope
+            .times
+            .last()
+            .unwrap_or(&0);
         if !is_resource_in_range(
             departure_time,
             latest_simulation_end,
@@ -561,6 +566,7 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
+    use core_client::simulation::SimpleEnvelope;
     use core_client::simulation::SimulationSuccess;
     use editoast_common::units;
     use editoast_models::DbConnectionPoolV2;
@@ -696,24 +702,30 @@ mod tests {
     fn simulation_response() -> core_client::simulation::Response {
         core_client::simulation::Response::Success(SimulationSuccess {
             base: ReportTrain {
-                positions: vec![],
-                times: vec![],
-                speeds: vec![],
+                envelope: SimpleEnvelope {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                },
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 10],
             },
             provisional: ReportTrain {
-                positions: vec![],
-                times: vec![0, 10],
-                speeds: vec![],
+                envelope: SimpleEnvelope {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                },
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 10],
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
+                    envelope: SimpleEnvelope {
+                        positions: vec![],
+                        times: vec![],
+                        speeds: vec![],
+                    },
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 10],
                 },

@@ -4879,7 +4879,7 @@ components:
                   minimum: 0
                 description: |-
                   List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
+                  Positions (in mm), speeds (in m/s) and times (in ms) must have the same length
               speeds:
                 type: array
                 items:
@@ -4910,7 +4910,7 @@ components:
                   minimum: 0
                 description: |-
                   List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
+                  Positions (in mm), speeds (in m/s) and times (in ms) must have the same length
               speeds:
                 type: array
                 items:
@@ -4941,7 +4941,7 @@ components:
                   minimum: 0
                 description: |-
                   List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
+                  Positions (in mm), speeds (in m/s) and times (in ms) must have the same length
               speeds:
                 type: array
                 items:
@@ -10639,48 +10639,26 @@ components:
         value:
           description: Value to replace with.
     ReportTrain:
-      type: object
-      required:
-      - positions
-      - times
-      - speeds
-      - energy_consumption
-      - path_item_times
-      properties:
-        energy_consumption:
-          type: number
-          format: double
-          description: Total energy consumption
-        path_item_times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            Time in ms of each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        positions:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            List of positions of a train
-            Both positions (in mm) and times (in ms) must have the same length
-        speeds:
-          type: array
-          items:
+      allOf:
+      - $ref: '#/components/schemas/SimpleEnvelope'
+      - type: object
+        required:
+        - energy_consumption
+        - path_item_times
+        properties:
+          energy_consumption:
             type: number
             format: double
-          description: List of speeds associated to a position
-        times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
+            description: Total energy consumption
+          path_item_times:
+            type: array
+            items:
+              type: integer
+              format: int64
+              minimum: 0
+            description: |-
+              Time in ms of each path item given as input of the pathfinding
+              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     ResourceType:
       type: string
       enum:
@@ -11998,6 +11976,35 @@ components:
         ci:
           type: integer
           format: int64
+    SimpleEnvelope:
+      type: object
+      required:
+      - positions
+      - times
+      - speeds
+      properties:
+        positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of positions of a train
+            Positions (in mm), speeds (in m/s) and times (in ms) must have the same length
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+          description: List of speeds (in m/s) associated to a position
+        times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: List of times (in ms) associated to a position
     SimulationResponse:
       oneOf:
       - allOf:

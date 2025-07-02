@@ -3601,18 +3601,21 @@ export type PacedTrainResponse = PacedTrain & {
   id: number;
   timetable_id: number;
 };
-export type ReportTrain = {
+export type SimpleEnvelope = {
+  /** List of positions of a train
+    Positions (in mm), speeds (in m/s) and times (in ms) must have the same length */
+  positions: number[];
+  /** List of speeds (in m/s) associated to a position */
+  speeds: number[];
+  /** List of times (in ms) associated to a position */
+  times: number[];
+};
+export type ReportTrain = SimpleEnvelope & {
   /** Total energy consumption */
   energy_consumption: number;
   /** Time in ms of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
   path_item_times: number[];
-  /** List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length */
-  positions: number[];
-  /** List of speeds associated to a position */
-  speeds: number[];
-  times: number[];
 };
 export type RoutingZoneRequirement = {
   /** Time in ms */
@@ -4377,7 +4380,7 @@ export type TrainScheduleForm = TrainSchedule & {
 export type EtcsCurves = {
   guidance?: {
     /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
+        Positions (in mm), speeds (in m/s) and times (in ms) must have the same length */
     positions: number[];
     /** List of speeds (in m/s) associated to a position */
     speeds: number[];
@@ -4386,7 +4389,7 @@ export type EtcsCurves = {
   } | null;
   indication?: {
     /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
+        Positions (in mm), speeds (in m/s) and times (in ms) must have the same length */
     positions: number[];
     /** List of speeds (in m/s) associated to a position */
     speeds: number[];
@@ -4395,7 +4398,7 @@ export type EtcsCurves = {
   } | null;
   permitted_speed?: {
     /** List of positions of a train
-        Both positions (in mm) and times (in ms) must have the same length */
+        Positions (in mm), speeds (in m/s) and times (in ms) must have the same length */
     positions: number[];
     /** List of speeds (in m/s) associated to a position */
     speeds: number[];

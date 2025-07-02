@@ -36,6 +36,7 @@ editoast_common::schemas! {
     RoutingZoneRequirement,
     ZoneUpdate,
     ReportTrain,
+    SimpleEnvelope,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
@@ -144,14 +145,21 @@ pub struct SimulationPath {
     pub path_item_positions: Vec<u64>,
 }
 
+#[derive(Serialize, Deserialize, Default, PartialEq, Clone, Debug, ToSchema)]
+pub struct SimpleEnvelope {
+    /// List of positions of a train
+    /// Positions (in mm), speeds (in m/s) and times (in ms) must have the same length
+    pub positions: Vec<u64>,
+    /// List of times (in ms) associated to a position
+    pub times: Vec<u64>,
+    /// List of speeds (in m/s) associated to a position
+    pub speeds: Vec<f64>,
+}
+
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct ReportTrain {
-    /// List of positions of a train
-    /// Both positions (in mm) and times (in ms) must have the same length
-    pub positions: Vec<u64>,
-    pub times: Vec<u64>,
-    /// List of speeds associated to a position
-    pub speeds: Vec<f64>,
+    #[serde(flatten)]
+    pub envelope: SimpleEnvelope,
     /// Total energy consumption
     pub energy_consumption: f64,
     /// Time in ms of each path item given as input of the pathfinding
