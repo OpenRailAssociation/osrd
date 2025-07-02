@@ -5,34 +5,29 @@ import { useTranslation } from 'react-i18next';
 import { mmToKm } from 'utils/physics';
 
 import styles from './styles/SimulationReportStyleSheet';
-import type { SimulationTableScenarioProps, SimulationTableStdcmProps } from './types';
-import formatSimulationTable from './utils/formatSimulationTable';
+import type { SimulationTableRow } from './types';
 
-type SimulationTableProps =
-  | (SimulationTableStdcmProps & { mode: 'stdcm' })
-  | (SimulationTableScenarioProps & { mode: 'operationalStudies' });
+type SimulationTableProps = {
+  rows: SimulationTableRow[];
+  pathLength: number; // mm
+  isStdcm?: boolean;
+};
 
-const SimulationTable = (props: SimulationTableProps) => {
+const SimulationTable = ({ rows, pathLength, isStdcm = false }: SimulationTableProps) => {
   const { t } = useTranslation('stdcm');
-  const { mode } = props;
-  const isStdcm = mode === 'stdcm';
-  const rows = formatSimulationTable(props, t);
-
-  // eslint-disable-next-line react/destructuring-assignment
-  const path = isStdcm ? props.stdcmData.path : props.path;
 
   return (
     <View style={styles.simulation.simulation}>
       <View style={styles.simulation.simulationContainer}>
         <Text style={styles.simulation.simulationUppercase}>{t('reportSheet.simulation')}</Text>
-        {mode === 'operationalStudies' && (
+        {!isStdcm && (
           <Link href="#simulationMap" src="#simulationMap" style={styles.simulation.viewSimulation}>
             {t('reportSheet.viewSimulation')}
           </Link>
         )}
         <Text
           style={styles.simulation.simulationLength}
-        >{`${Math.round(mmToKm(path.length))} km`}</Text>
+        >{`${Math.round(mmToKm(pathLength))} km`}</Text>
       </View>
 
       <View style={styles.simulation.tableContainer}>

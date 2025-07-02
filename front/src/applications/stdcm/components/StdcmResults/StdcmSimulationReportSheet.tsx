@@ -20,6 +20,7 @@ import {
   getArrivalTimes,
   getSecondaryCode,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
+import { formatStdcmDataForSimulationTable } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
 import { msToKmh, tToKg } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
@@ -79,6 +80,21 @@ const StdcmSimulationReportSheet = ({
     return rows;
   }, [stdcmData.simulationPathSteps]);
 
+  const simulationTableRows = useMemo(
+    () =>
+      formatStdcmDataForSimulationTable(
+        operationalPointsList,
+        stdcmData.simulationPathSteps,
+        {
+          rollingStockName: rollingStock.name,
+          mass: consistData.mass,
+          length: consistData.length,
+        },
+        t
+      ),
+    [operationalPointsList, rollingStock, stdcmData, consistData]
+  );
+
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
@@ -99,14 +115,7 @@ const StdcmSimulationReportSheet = ({
           stdcmLinkedTrains={stdcmLinkedTrains}
           routeTableRows={routeOperationalPoints}
         />
-        <SimulationTable
-          mode="stdcm"
-          stdcmData={stdcmData}
-          operationalPointsList={operationalPointsList}
-          rollingStock={rollingStock}
-          consistMass={consistData.mass}
-          consistLength={consistData.length}
-        />
+        <SimulationTable isStdcm rows={simulationTableRows} pathLength={stdcmData.path.length} />
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>
         </View>
