@@ -13,6 +13,7 @@ import Header from './Header';
 import SimulationTable from './SimulationTable';
 import styles from './styles/SimulationReportStyleSheet';
 import type { RouteTableRow, SimulationSheetData } from './types';
+import { formatOperationalStudiesDataForSimulationTable } from './utils/formatSimulationTable';
 
 type SimulationReportSheetProps = {
   path: PathfindingResultSuccess;
@@ -60,17 +61,23 @@ const SimulationReportSheet = ({
     return rows;
   }, [operationalPointsList]);
 
+  const simulationTableRows = useMemo(
+    () =>
+      formatOperationalStudiesDataForSimulationTable(
+        operationalPointsList,
+        path.path_item_positions,
+        rollingStock,
+        t
+      ),
+    [operationalPointsList, path, rollingStock]
+  );
+
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
         <Header trainName={trainName} scenarioData={scenarioData} />
         <ConsistAndRoute consist={consistData} routeTableRows={routeOperationalPoints} />
-        <SimulationTable
-          mode="operationalStudies"
-          path={path}
-          operationalPointsList={operationalPointsList}
-          rollingStock={rollingStock}
-        />
+        <SimulationTable pathLength={path.length} rows={simulationTableRows} />
         {mapCanvas && (
           <View style={styles.map.map} id="simulationMap">
             <Image src={mapCanvas} />

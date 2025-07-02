@@ -11,7 +11,6 @@ import { capitalizeFirstLetter } from 'utils/strings';
 
 import { getStopDurationTime } from './formatSimulationReportSheet';
 import styles from '../styles/SimulationReportStyleSheet';
-import type { SimulationTableScenarioProps, SimulationTableStdcmProps } from '../types';
 
 const getRowStyle = (
   stepDuration: Duration | null | undefined,
@@ -59,7 +58,7 @@ const getRowStyle = (
   };
 };
 
-const formatStdcmDataForSimulationTable = (
+export const formatStdcmDataForSimulationTable = (
   operationalPointsList: StdcmResultsOperationalPoint[],
   stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
   consist: { mass: number; length: number; rollingStockName: string },
@@ -112,7 +111,7 @@ const formatStdcmDataForSimulationTable = (
     };
   });
 
-const formatOperationalStudiesDataForSimulationTable = (
+export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
   pathItemPositions: PathfindingResultSuccess['path_item_positions'],
   rollingStock: { mass: number; name: string },
@@ -163,56 +162,3 @@ const formatOperationalStudiesDataForSimulationTable = (
       ...getRowStyle(step.duration, isPathStep, isFirst, isLast),
     };
   });
-
-type SimulationTableRow = {
-  name: string;
-  ch?: string | null;
-  trackName?: string;
-  endTime: string | Date | null;
-  passageStop: string | Date | null;
-  startTime: string | Date | null;
-  weight: string;
-  length: string;
-  referenceEngine: string;
-  stopTypeLabel?: string;
-  stopType?: string;
-  rowStyle: Style;
-  stylesByColumn: {
-    index: Style;
-    name: Style;
-    ch: Style;
-    trackName?: Style;
-    passageStop: Style;
-    others: Style;
-  };
-};
-
-type FormatSimulationTableProps =
-  | (SimulationTableStdcmProps & { mode: 'stdcm' })
-  | (SimulationTableScenarioProps & { mode: 'operationalStudies' });
-
-const formatSimulationTable = (
-  options: FormatSimulationTableProps,
-  t: TFunction<'stdcm'>
-): SimulationTableRow[] => {
-  if (options.mode === 'stdcm') {
-    return formatStdcmDataForSimulationTable(
-      options.operationalPointsList,
-      options.stdcmData.simulationPathSteps,
-      {
-        rollingStockName: options.rollingStock.name,
-        mass: options.consistMass,
-        length: options.consistLength,
-      },
-      t
-    );
-  }
-  return formatOperationalStudiesDataForSimulationTable(
-    options.operationalPointsList,
-    options.path.path_item_positions,
-    options.rollingStock,
-    t
-  );
-};
-
-export default formatSimulationTable;

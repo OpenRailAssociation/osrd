@@ -1,12 +1,7 @@
-import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
+import type { Style } from '@react-pdf/types';
+
+import type { StdcmStopTypes } from 'applications/stdcm/types';
 import type {
-  StdcmResultsOperationalPoint,
-  StdcmStopTypes,
-  StdcmSuccessResponse,
-} from 'applications/stdcm/types';
-import type {
-  LightRollingStock,
-  PathfindingResultSuccess,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -21,20 +16,6 @@ export type SimulationSheetData = {
   simulation: SimulationResponseSuccess;
 };
 
-export type SimulationTableStdcmProps = {
-  stdcmData: StdcmSuccessResponse;
-  operationalPointsList: StdcmResultsOperationalPoint[];
-  rollingStock: LightRollingStock;
-  consistMass: number;
-  consistLength: number;
-};
-
-export type SimulationTableScenarioProps = {
-  path: PathfindingResultSuccess;
-  operationalPointsList: OperationalPointWithTimeAndSpeed[];
-  rollingStock: RollingStockWithLiveries;
-};
-
 export type RouteTableRow = {
   name: string;
   secondaryCode: string;
@@ -44,4 +25,27 @@ export type RouteTableRow = {
   stopType?: StdcmStopTypes;
   tolerances?: { before: Duration; after: Duration };
   italic?: boolean;
+};
+
+export type SimulationTableRow = {
+  name: string;
+  ch?: string | null;
+  trackName?: string;
+  endTime: string | Date | null;
+  passageStop: string | Date | null;
+  startTime: string | Date | null;
+  weight: string;
+  length: string;
+  referenceEngine: string;
+  stopTypeLabel?: string;
+  stopType?: string;
+  rowStyle: Style;
+  stylesByColumn: {
+    index: Style;
+    name: Style;
+    ch: Style;
+    trackName?: Style;
+    passageStop: Style;
+    others: Style;
+  };
 };
