@@ -40,7 +40,7 @@ sha2 = "0.10.8"
 smallvec = { version = "1.14.0", features = ["serde"] }
 thiserror = "2.0.12"
 thunderdome = "0.6.1"
-tokio = { version = "1.45.1", features = ["full"] }
+tokio = { version = "1.46.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-opentelemetry = "0.31.0"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
