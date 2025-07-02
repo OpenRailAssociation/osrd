@@ -4375,7 +4375,7 @@ export type TrainScheduleForm = TrainSchedule & {
   timetable_id?: number | null;
 };
 export type EtcsCurves = {
-  guidance?: {
+  guidance: {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */
     positions: number[];
@@ -4383,7 +4383,7 @@ export type EtcsCurves = {
     speeds: number[];
     /** List of times (in ms) associated to a position */
     times: number[];
-  } | null;
+  };
   indication?: {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */
@@ -4393,7 +4393,7 @@ export type EtcsCurves = {
     /** List of times (in ms) associated to a position */
     times: number[];
   } | null;
-  permitted_speed?: {
+  permitted_speed: {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */
     positions: number[];
@@ -4401,7 +4401,7 @@ export type EtcsCurves = {
     speeds: number[];
     /** List of times (in ms) associated to a position */
     times: number[];
-  } | null;
+  };
 };
 export type EtcsBrakingCurvesResponse = {
   /** List of ETCS braking curves associated to the train schedule's ETCS signals */

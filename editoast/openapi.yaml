@@ -4862,38 +4862,39 @@ components:
           description: List of ETCS braking curves associated to the train schedule's ETCS stops
     ETCSCurves:
       type: object
+      required:
+      - permitted_speed
+      - guidance
       properties:
         guidance:
-          allOf:
-          - type: object
-            required:
-            - positions
-            - times
-            - speeds
-            properties:
-              positions:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
-              speeds:
-                type: array
-                items:
-                  type: number
-                  format: double
-                description: List of speeds (in m/s) associated to a position
-              times:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: List of times (in ms) associated to a position
-          nullable: true
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
         indication:
           allOf:
           - type: object
@@ -4926,36 +4927,34 @@ components:
                 description: List of times (in ms) associated to a position
           nullable: true
         permitted_speed:
-          allOf:
-          - type: object
-            required:
-            - positions
-            - times
-            - speeds
-            properties:
-              positions:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: |-
-                  List of positions of a train
-                  Both positions (in mm) and times (in ms) must have the same length
-              speeds:
-                type: array
-                items:
-                  type: number
-                  format: double
-                description: List of speeds (in m/s) associated to a position
-              times:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  minimum: 0
-                description: List of times (in ms) associated to a position
-          nullable: true
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
     EditoastAppHealthErrorCore:
       type: object
       required:

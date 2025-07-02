@@ -44,9 +44,9 @@ pub struct ETCSCurves {
     #[schema(inline)]
     pub indication: Option<SimpleEnvelope>,
     #[schema(inline)]
-    pub permitted_speed: Option<SimpleEnvelope>,
+    pub permitted_speed: SimpleEnvelope,
     #[schema(inline)]
-    pub guidance: Option<SimpleEnvelope>,
+    pub guidance: SimpleEnvelope,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
