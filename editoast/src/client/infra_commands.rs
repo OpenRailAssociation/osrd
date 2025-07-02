@@ -66,6 +66,9 @@ pub struct ImportRailjsonArgs {
     /// Whether the import should refresh generated data
     #[arg(short = 'g', long)]
     generate: bool,
+    /// Only print the generated infra id (useful when scripting)
+    #[arg(short = 'q', long)]
+    quiet: bool,
 }
 
 pub async fn clone_infra(
@@ -120,7 +123,9 @@ pub async fn import_railjson(
         .last_railjson_version();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
-    println!("🍞 Importing infra {infra_name}");
+    if !args.quiet {
+        println!("🍞 Importing infra {infra_name}");
+    }
     let mut infra = infra.persist(railjson, &mut db_pool.get().await?).await?;
 
     infra
@@ -128,24 +133,32 @@ pub async fn import_railjson(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
 
-    println!("✅ Infra {infra_name}[{}] saved!", infra.id);
+    if !args.quiet {
+        println!("✅ Infra {infra_name}[{}] saved!", infra.id);
+    }
+
     // Generate only if the flag was set
     if args.generate {
         let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
         infra.refresh(db_pool.clone(), true, &infra_cache).await?;
-        println!(
-            "✅ Infra {infra_name}[{}] generated data refreshed!",
-            infra.id
-        );
+        if !args.quiet {
+            println!(
+                "✅ Infra {infra_name}[{}] generated data refreshed!",
+                infra.id
+            );
+        }
 
         let error_counts = infra.get_error_summary(&mut db_pool.get().await?).await?;
-        if !error_counts.is_empty() {
+        if !error_counts.is_empty() && !args.quiet {
             println!("🚨 Infra {infra_name}[{}] has errors:", infra.id);
             for ((error_type, object_type), count) in error_counts {
                 println!("  - {:<15} {} {}", object_type.bold(), count, error_type);
             }
         }
     };
+    if args.quiet {
+        println!("{}", infra.id);
+    }
     Ok(())
 }
 
@@ -285,6 +298,7 @@ mod tests {
             infra_name: "test".into(),
             railjson_path: railjson_path.into(),
             generate: false,
+            quiet: false,
         };
 
         // WHEN
@@ -318,6 +332,7 @@ mod tests {
             infra_name: infra_name.clone(),
             railjson_path: file.path().into(),
             generate: false,
+            quiet: false,
         };
 
         // WHEN
