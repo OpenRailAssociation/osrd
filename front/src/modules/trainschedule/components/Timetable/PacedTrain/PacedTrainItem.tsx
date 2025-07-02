@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -47,6 +47,8 @@ import useOccurrenceActions from './hooks/useOccurrenceActions';
 type PacedTrainItemProps = {
   isInSelection: boolean;
   handleSelectPacedTrain: (pacedTrainId: PacedTrainId) => void;
+  isOccurrencesListOpen: boolean;
+  handleOpenOccurrencesList: (pacedTrainId: PacedTrainId) => void;
   pacedTrain: PacedTrainWithDetails;
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
@@ -64,6 +66,8 @@ type PacedTrainItemProps = {
 const PacedTrainItem = ({
   isInSelection,
   handleSelectPacedTrain,
+  isOccurrencesListOpen,
+  handleOpenOccurrencesList,
   pacedTrain,
   isOnEdit,
   isProjectionPathUsed,
@@ -80,8 +84,6 @@ const PacedTrainItem = ({
   const { closeModal } = useContext(ModalContext);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
 
-  const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
-
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStockList);
 
   const occurrenceActions = useOccurrenceActions({
@@ -95,8 +97,6 @@ const PacedTrainItem = ({
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
-
-  const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
@@ -229,7 +229,7 @@ const PacedTrainItem = ({
           data-testid="paced-train-main-info"
           title={pacedTrain.name}
           className="paced-train-main-info"
-          onClick={toggleOccurrencesList}
+          onClick={() => handleOpenOccurrencesList(pacedTrain.id)}
           role="button"
           tabIndex={0}
         >

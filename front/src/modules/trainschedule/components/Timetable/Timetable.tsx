@@ -63,6 +63,9 @@ const Timetable = ({
   const { t, i18n } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
+  const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
+    new Set()
+  );
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -98,6 +101,18 @@ const Timetable = ({
     },
     [selectedTimetableItemIds]
   );
+
+  const handleExpandTimetableItem = useCallback((id: TimetableItemId) => {
+    setExpandedTimetableItemIds((prevExpandedIds) => {
+      const newExpandedIds = new Set(prevExpandedIds);
+      if (newExpandedIds.has(id)) {
+        newExpandedIds.delete(id);
+      } else {
+        newExpandedIds.add(id);
+      }
+      return newExpandedIds;
+    });
+  }, []);
 
   const currentDepartureDates = useMemo(
     () =>
@@ -202,6 +217,8 @@ const Timetable = ({
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
+                  isOccurrencesListOpen={expandedTimetableItemIds.has(timetableItem.id)}
+                  handleOpenOccurrencesList={handleExpandTimetableItem}
                   isOnEdit={timetableItem.id === timetableItemToEditData?.timetableItemId}
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
