@@ -60,24 +60,24 @@ pub struct PathPropertiesInput {
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
-struct PathProperties {
+pub struct PathProperties {
     #[schema(inline)]
     /// Slopes along the path
-    slopes: Option<PropertyValuesF64>,
+    pub slopes: Option<PropertyValuesF64>,
     #[schema(inline)]
     /// Curves along the path
-    curves: Option<PropertyValuesF64>,
+    pub curves: Option<PropertyValuesF64>,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
-    electrifications: Option<PropertyElectrificationValues>,
+    pub electrifications: Option<PropertyElectrificationValues>,
     /// Geometry of the path
-    geometry: Option<GeoJsonLineString>,
+    pub geometry: Option<GeoJsonLineString>,
     /// Operational points along the path
     #[schema(inline)]
-    operational_points: Option<Vec<OperationalPointOnPath>>,
+    pub operational_points: Option<Vec<OperationalPointOnPath>>,
     /// Zones along the path
     #[schema(inline)]
-    zones: Option<PropertyZoneValues>,
+    pub zones: Option<PropertyZoneValues>,
 }
 
 impl PathProperties {
@@ -116,7 +116,7 @@ impl From<Props> for Properties {
 /// Enum representing the various associated properties that can be returned
 #[derive(Debug, Serialize, Deserialize, ToSchema, EnumSetType)]
 #[serde(rename_all = "snake_case")]
-enum Property {
+pub enum Property {
     Slopes,
     Curves,
     Electrifications,
@@ -221,7 +221,7 @@ fn path_properties_input_hash(path_properties_request: &PathPropertiesRequest<'_
     )
 }
 
-async fn compute_path_properties_batch(
+pub async fn compute_path_properties_batch(
     core_client: Arc<CoreClient>,
     valkey_conn: &mut ValkeyConnection,
     path_properties_requests: &[PathPropertiesRequest<'_>],
