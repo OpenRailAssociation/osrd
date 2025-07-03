@@ -34,7 +34,7 @@ const TimeInput = ({ focus, rowData, active, setRowData }: TimeInputProps) => {
       type="time"
       tabIndex={-1}
       ref={ref}
-      step={2}
+      step={1}
       style={{
         pointerEvents: focus ? 'auto' : 'none',
         opacity: rowData || active ? undefined : 0,
