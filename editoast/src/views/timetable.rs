@@ -70,6 +70,7 @@ use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::round_trips::timetable_routes as round_trip_timetable_routes;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
 crate::routes! {
@@ -87,6 +88,7 @@ crate::routes! {
                 post_paced_train,
             },
             &stdcm,
+            &round_trip_timetable_routes,
         },
     },
     &paced_train,
@@ -138,9 +140,9 @@ impl From<Timetable> for TimetableResult {
 }
 
 #[derive(IntoParams, Deserialize)]
-struct TimetableIdParam {
+pub struct TimetableIdParam {
     /// A timetable ID
-    id: i64,
+    pub id: i64,
 }
 
 #[derive(Serialize, ToSchema, Debug)]

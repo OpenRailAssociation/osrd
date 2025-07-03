@@ -12,6 +12,7 @@ pub mod path;
 pub mod project;
 pub mod projection;
 pub mod rolling_stock;
+pub mod round_trips;
 pub mod scenario;
 pub mod search;
 pub mod sprites;
@@ -116,6 +117,7 @@ crate::routes! {
     &path,
     &stdcm_logs,
     &scenario,
+    &round_trips,
 }
 
 editoast_common::schemas! {
@@ -143,6 +145,7 @@ editoast_common::schemas! {
     timetable::schemas(),
     work_schedules::schemas(),
     stdcm_logs::schemas(),
+    round_trips::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request

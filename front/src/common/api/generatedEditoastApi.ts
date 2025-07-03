@@ -18,6 +18,7 @@ export const addTagTypes = [
   'studies',
   'scenarios',
   'rolling_stock_livery',
+  'round_trips',
   'search',
   'similar_schedules',
   'stdcm',
@@ -868,6 +869,50 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/usage` }),
         providesTags: ['rolling_stock'],
       }),
+      postRoundTripsPacedTrains: build.mutation<
+        PostRoundTripsPacedTrainsApiResponse,
+        PostRoundTripsPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/round_trips/paced_trains`,
+          method: 'POST',
+          body: queryArg.roundTrips,
+        }),
+        invalidatesTags: ['round_trips'],
+      }),
+      postRoundTripsPacedTrainsDelete: build.mutation<
+        PostRoundTripsPacedTrainsDeleteApiResponse,
+        PostRoundTripsPacedTrainsDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/round_trips/paced_trains/delete`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['round_trips'],
+      }),
+      postRoundTripsTrainSchedules: build.mutation<
+        PostRoundTripsTrainSchedulesApiResponse,
+        PostRoundTripsTrainSchedulesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/round_trips/train_schedules`,
+          method: 'POST',
+          body: queryArg.roundTrips,
+        }),
+        invalidatesTags: ['round_trips'],
+      }),
+      postRoundTripsTrainSchedulesDelete: build.mutation<
+        PostRoundTripsTrainSchedulesDeleteApiResponse,
+        PostRoundTripsTrainSchedulesDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/round_trips/train_schedules/delete`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['round_trips'],
+      }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
@@ -1020,6 +1065,32 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['timetable', 'paced_train'],
+      }),
+      getTimetableByIdRoundTripsPacedTrains: build.query<
+        GetTimetableByIdRoundTripsPacedTrainsApiResponse,
+        GetTimetableByIdRoundTripsPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/round_trips/paced_trains`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable', 'round_trips'],
+      }),
+      getTimetableByIdRoundTripsTrainSchedules: build.query<
+        GetTimetableByIdRoundTripsTrainSchedulesApiResponse,
+        GetTimetableByIdRoundTripsTrainSchedulesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/round_trips/train_schedules`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable', 'round_trips'],
       }),
       postTimetableByIdStdcm: build.mutation<
         PostTimetableByIdStdcmApiResponse,
@@ -1995,6 +2066,24 @@ export type GetRollingStockByRollingStockIdUsageApiResponse =
 export type GetRollingStockByRollingStockIdUsageApiArg = {
   rollingStockId: number;
 };
+export type PostRoundTripsPacedTrainsApiResponse = unknown;
+export type PostRoundTripsPacedTrainsApiArg = {
+  roundTrips: RoundTrips;
+};
+export type PostRoundTripsPacedTrainsDeleteApiResponse = unknown;
+export type PostRoundTripsPacedTrainsDeleteApiArg = {
+  /** IDs of paced trains to remove from round trips or one-way. */
+  body: number[];
+};
+export type PostRoundTripsTrainSchedulesApiResponse = unknown;
+export type PostRoundTripsTrainSchedulesApiArg = {
+  roundTrips: RoundTrips;
+};
+export type PostRoundTripsTrainSchedulesDeleteApiResponse = unknown;
+export type PostRoundTripsTrainSchedulesDeleteApiArg = {
+  /** IDs of train schedules to remove from round trips or one-way. */
+  body: number[];
+};
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
   page?: number;
@@ -2107,6 +2196,26 @@ export type PostTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
   id: number;
   body: PacedTrain[];
+};
+export type GetTimetableByIdRoundTripsPacedTrainsApiResponse =
+  /** status 200  */ PaginationStats & {
+    results: RoundTrips;
+  };
+export type GetTimetableByIdRoundTripsPacedTrainsApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number | null;
+};
+export type GetTimetableByIdRoundTripsTrainSchedulesApiResponse =
+  /** status 200  */ PaginationStats & {
+    results: RoundTrips;
+  };
+export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number | null;
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
@@ -3995,6 +4104,12 @@ export type ScenarioReference = {
   scenario_name: string;
   study_id: number;
   study_name: string;
+};
+export type RoundTrips = {
+  /** List of one-way trains */
+  one_ways?: number[];
+  /** List of round trips, each represented by a tuple */
+  round_trips?: number[][];
 };
 export type SearchResultItemTrack = {
   infra_id: number;
