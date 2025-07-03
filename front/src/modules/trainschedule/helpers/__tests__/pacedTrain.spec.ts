@@ -5,7 +5,7 @@ import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Tim
 import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import { formatPacedTrainWithOccurenceDetails, getOccurrencesNb } from '../pacedTrain';
+import { formatPacedTrainWithOccurrenceDetails, getOccurrencesNb } from '../pacedTrain';
 
 describe('getOccurrencesNb', () => {
   it('should properly compute occurrence nb for time window of 2h and interval of 30min', () => {
@@ -39,7 +39,7 @@ describe('getOccurrencesNb', () => {
   });
 });
 
-describe('formatPacedTrainWithOccurenceDetails', () => {
+describe('formatPacedTrainWithOccurrenceDetails', () => {
   const pacedTrain: PacedTrainWithDetails = {
     id: 'paced_123' as PacedTrainId,
     name: '8608',
@@ -80,7 +80,7 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
       key: '123123',
       train_name: { value: '8608 updated' },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       name: '8608 updated',
@@ -92,7 +92,7 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
       key: '123123',
       speed_limit_tag: { value: null },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       speedLimitTag: null,
@@ -104,7 +104,7 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
       key: '123123',
       options: { value: { use_electrical_profiles: true } },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       options: {
@@ -134,7 +134,7 @@ describe('formatPacedTrainWithOccurenceDetails', () => {
         power_restrictions: [],
       },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       path: exception.path_and_schedule!.path,

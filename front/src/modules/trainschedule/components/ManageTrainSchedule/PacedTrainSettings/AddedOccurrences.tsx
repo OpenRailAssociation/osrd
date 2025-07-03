@@ -10,7 +10,7 @@ import { getAddedExceptions } from 'reducers/osrdconf/operationalStudiesConf/sel
 import { useAppDispatch } from 'store';
 import { formatLocalDate, formatLocalTime } from 'utils/date';
 
-const AddedOccurences = () => {
+const AddedOccurrences = () => {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const addedExceptions = useSelector(getAddedExceptions);
@@ -105,4 +105,4 @@ const AddedOccurences = () => {
   );
 };
 
-export default AddedOccurences;
+export default AddedOccurrences;

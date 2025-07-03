@@ -126,20 +126,20 @@ describe('formatPacedTrainIdToExceptionId', () => {
 
 describe('extractPacedTrainIdFromOccurrenceId', () => {
   it('should return the pacedTrainId for a regular occurrence', () => {
-    const occurenceId = 'indexedoccurrence_123_0' as OccurrenceId;
-    const result = extractPacedTrainIdFromOccurrenceId(occurenceId);
+    const occurrenceId = 'indexedoccurrence_123_0' as OccurrenceId;
+    const result = extractPacedTrainIdFromOccurrenceId(occurrenceId);
     expect(result).toBe('paced_123');
   });
 
   it('should return the pacedTrainId for an added exception', () => {
-    const occurenceId = 'exception_123_0' as OccurrenceId;
-    const result = extractPacedTrainIdFromOccurrenceId(occurenceId);
+    const occurrenceId = 'exception_123_0' as OccurrenceId;
+    const result = extractPacedTrainIdFromOccurrenceId(occurrenceId);
     expect(result).toBe('paced_123');
   });
 
   it('should throw if the key is invalid', () => {
-    const occurenceId = 'exception-indexedoccurrence_123_0' as OccurrenceId;
-    expect(() => extractPacedTrainIdFromOccurrenceId(occurenceId)).toThrow(
+    const occurrenceId = 'exception-indexedoccurrence_123_0' as OccurrenceId;
+    expect(() => extractPacedTrainIdFromOccurrenceId(occurrenceId)).toThrow(
       'The occurrence id should match the format "indexedoccurrence_{pacedTrainId}_{occurrenceIndex}" or "exception_{pacedTrainId}_{exceptionId}"'
     );
   });
