@@ -8,7 +8,6 @@ import {
   type InfraWithState,
   type PathfindingResult,
 } from 'common/api/osrdEditoastApi';
-import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
@@ -50,12 +49,6 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
     });
   }, [pathSteps]);
 
-  const pathProperties = usePathProperties(
-    infra?.id,
-    pathfinding?.status === 'success' ? pathfinding : undefined,
-    ['geometry']
-  );
-
   useEffect(() => {
     const launchPathfinding = async () => {
       setPathfinding(undefined);
@@ -93,11 +86,8 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
   }, [pathStepsLocations, rollingStock, loadingGauge, infra]);
 
   const result = useMemo(
-    () =>
-      pathfinding
-        ? { status: pathfinding.status, geometry: pathProperties?.geometry ?? undefined }
-        : null,
-    [pathfinding, pathProperties]
+    () => (pathfinding ? { status: pathfinding.status } : null),
+    [pathfinding]
   );
 
   return { pathfinding: result, isPathFindingLoading: isFetching };
