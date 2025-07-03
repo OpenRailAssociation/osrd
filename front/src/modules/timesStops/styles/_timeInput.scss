@@ -1,20 +1,10 @@
 .time-input-container {
-  position: relative;
-  width: 100%;
+  padding-left: 11px;
 
   input.dsg-input {
-    width: 100%;
-  }
-
-  span.extra-text {
-    position: absolute;
-    left: 88px;
-    top: 1.2px;
-    pointer-events: none;
-  }
-
-  span.extra-text-firefox {
-    top: 0.48px;
-    left: 97.6px;
+    display: inline;
+    padding-left: 0;
+    padding-right: 4px;
+    margin-left: -3px;
   }
 }
