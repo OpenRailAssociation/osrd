@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 
-import { X, ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
+import { X, ChevronDown, ChevronUp, Hubot, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -28,7 +28,7 @@ const ScenarioHeader = ({
   toggleConflictsList,
   toggleTimetable,
 }: ScenarioHeaderProps) => {
-  const { username } = useAuth();
+  const { username, impersonatedUser, logout } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
 
@@ -101,7 +101,7 @@ const ScenarioHeader = ({
 
   return (
     <header className="scenario-header-container">
-      <div className="scenario-header">
+      <div className={cx('scenario-header', { 'mastheader-impersonated': impersonatedUser })}>
         {/* scenario info */}
         <div className="scenario-info">
           <button className="close-btn" type="button" onClick={closeScenario}>
@@ -170,7 +170,13 @@ const ScenarioHeader = ({
         {/* user informations */}
         <div className="user-info">
           <div className="spacer" />
+          {impersonatedUser && <Hubot size="lg" className="mr-2 text-black" />}
           <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
+          {impersonatedUser && (
+            <button type="button" onClick={logout}>
+              <SignOut className="ml-2 text-black" />
+            </button>
+          )}
         </div>
       </div>
 
