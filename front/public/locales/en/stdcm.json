@@ -178,6 +178,17 @@
   "simulationSheet": "Simulation sheet",
   "spaceTimeGraphic": "Space-Time graph",
   "stdcmErrors": {
+    "incompatibleConstraintsDetails": {
+      "incompatibleElectrical_one": "- {{count}} electrification error",
+      "incompatibleElectrical_other": "- {{count}} electrification errors",
+      "incompatibleLoadingGauge_one": "- {{count}} loading gauge incompatibility",
+      "incompatibleLoadingGauge_other": "- {{count}} loading gauge incompatibilities",
+      "incompatibleSignalingSystem_one": "- {{count}} signaling system error",
+      "incompatibleSignalingSystem_other": "- {{count}} signaling system errors"
+    },
+    "incompatibleConstraints_one": "The requested path contains the following error:",
+    "incompatibleConstraints_other": "The requested path contains the following errors:",
+    "incompatibleConstraints_zero": "Constraint error on the requested path",
     "infraNotLoaded": "Infrastructure is loading",
     "invalidFields": {
       "maxSpeed": "the maximum speed of the consist",
