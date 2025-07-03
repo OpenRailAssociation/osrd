@@ -2,6 +2,11 @@
   .time-settings {
     display: flex;
     margin: 15px 12px;
+    flex-wrap: wrap;
+
+    .time-settings-item {
+      flex: 0 1 180px;
+    }
 
     .cadence-icon {
       transform: rotate(90deg);
@@ -17,9 +22,12 @@
 
     .controls {
       display: flex;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
 
       .add-button {
-        margin: 32px 16px;
+        margin: 16px 0 5px 16px;
       }
     }
 

@@ -19,7 +19,7 @@ const PacedTrainSettings = () => {
   return (
     <div className="paced-train-settings">
       <div className="time-settings">
-        <span className="mr-3">
+        <span className="mr-3 time-settings-item">
           <InputSNCF
             type="number"
             label={
@@ -42,7 +42,7 @@ const PacedTrainSettings = () => {
             sm
           />
         </span>
-        <span>
+        <span className="time-settings-item">
           <InputSNCF
             type="number"
             label={
