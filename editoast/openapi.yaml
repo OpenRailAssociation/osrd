@@ -2882,6 +2882,72 @@ paths:
                   $ref: '#/components/schemas/ScenarioReference'
         '404':
           description: The requested rolling stock was not found
+  /round_trips/paced_trains:
+    post:
+      tags:
+      - round_trips
+      summary: Upsert a list of round trips / one-way of paced trains
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoundTrips'
+        required: true
+      responses:
+        '204':
+          description: Round trips were successfully upserted
+  /round_trips/paced_trains/delete:
+    post:
+      tags:
+      - round_trips
+      summary: Delete a list of round trips / one-way of paced trains
+      requestBody:
+        description: IDs of paced trains to remove from round trips or one-way.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+        required: true
+      responses:
+        '204':
+          description: Round trips were successfully deleted
+  /round_trips/train_schedules:
+    post:
+      tags:
+      - round_trips
+      summary: Upsert a list of round trips / one-way of train schedules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoundTrips'
+        required: true
+      responses:
+        '204':
+          description: Round trips were successfully upserted
+  /round_trips/train_schedules/delete:
+    post:
+      tags:
+      - round_trips
+      summary: Delete a list of round trips / one-way of train schedules
+      requestBody:
+        description: IDs of train schedules to remove from round trips or one-way.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+        required: true
+      responses:
+        '204':
+          description: Round trips were successfully deleted
   /search:
     post:
       tags:
@@ -3408,6 +3474,100 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PacedTrainResponse'
+  /timetable/{id}/round_trips/paced_trains:
+    get:
+      tags:
+      - timetable
+      - round_trips
+      summary: Upsert a list of round trips / one-way of paced trains
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1000
+          nullable: true
+          maximum: 1000
+          minimum: 1
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      $ref: '#/components/schemas/RoundTrips'
+                description: Paginated list of round trips / one-way
+  /timetable/{id}/round_trips/train_schedules:
+    get:
+      tags:
+      - timetable
+      - round_trips
+      summary: Upsert a list of round trips / one-way of train schedules
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1000
+          nullable: true
+          maximum: 1000
+          minimum: 1
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      $ref: '#/components/schemas/RoundTrips'
+                description: Paginated list of round trips / one-way
   /timetable/{id}/stdcm:
     post:
       tags:
@@ -11103,6 +11263,28 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RollingStockLivery'
+    RoundTrips:
+      type: object
+      description: Represents a collection of round trips and one-way
+      properties:
+        one_ways:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: List of one-way trains
+        round_trips:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+              format: int64
+              minimum: 0
+            maxItems: 2
+            minItems: 2
+          description: List of round trips, each represented by a tuple
     Route:
       type: object
       required:
