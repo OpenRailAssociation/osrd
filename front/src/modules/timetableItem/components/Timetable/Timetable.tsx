@@ -13,6 +13,8 @@ import type {
   TimetableItem,
   OccurrenceId,
   TimetableItemToEditData,
+  TrainScheduleId,
+  PacedTrainId,
 } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
@@ -38,9 +40,13 @@ type TimetableProps = {
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
+  selectedTimetableItemIds: TimetableItemId[];
+  selectedTrainScheduleIds: TrainScheduleId[];
+  selectedPacedTrainIds: PacedTrainId[];
 };
 
 const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
@@ -52,17 +58,21 @@ const Timetable = ({
   upsertTimetableItems,
   removeTimetableItems,
   setTimetableItemToEditData,
+  setSelectedTimetableItemIds,
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
+  selectedTimetableItemIds,
+  selectedTrainScheduleIds,
+  selectedPacedTrainIds,
 }: TimetableProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
 
-  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
     new Set()
   );
+
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -185,6 +195,8 @@ const Timetable = ({
           removeTrains={removeAndUnselectTrains}
           timetableItems={timetableItems}
           isInSelection={selectedTimetableItemIds.length > 0}
+          selectedPacedTrainIds={selectedPacedTrainIds}
+          selectedTrainScheduleIds={selectedTrainScheduleIds}
         />
         <Virtualizer overscan={15}>
           {filteredTimetableItems.map((timetableItem, index) => (

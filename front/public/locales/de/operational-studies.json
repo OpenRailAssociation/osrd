@@ -41,7 +41,6 @@
     "Routing": "Reiserouten",
     "Spacing": "Abstand",
     "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
-    "and": "und",
     "conflictsCount_one": "1 Konflikt",
     "conflictsCount_other": "{{count}} Konflikte",
     "conflictsCount_zero": "Keine Konflikte",
@@ -117,7 +116,7 @@
     "pacedTrain": {
       "pacedTrain": "Taktleistung"
     },
-    "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(main.pacedTrain, { 'count': {{totalPacedTrainCount}} }) und {{trainCount}}/$t(main.train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
+    "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(main.pacedTrain, { 'count': {{totalPacedTrainCount}} }), {{trainCount}}/$t(main.train, { 'count': {{totalTrainScheduleCount}} }) ausgewählt",
     "pacedTrainCount_one": "1/$t(main.pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
     "pacedTrainCount_other": "{{count}}/$t(main.pacedTrain, { 'count': {{totalCount}} }) ausgewählt",
     "pacedTrainCount_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",

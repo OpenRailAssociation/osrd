@@ -53,7 +53,6 @@
   "main": {
     "Routing": "Itinéraires",
     "Spacing": "Espacement",
-    "and": "et",
     "conflictsCount_one": "1 conflit",
     "conflictsCount_other": "{{count}} conflits",
     "conflictsCount_zero": "Aucun conflit",
@@ -136,7 +135,7 @@
       "project": "Projeter",
       "restore": "Rétablir sur le modèle"
     },
-    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }) et $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
+    "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
     "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",
     "pacedTrainCountSelected_zero": "$t(main.pacedTrain, { 'count': {{totalCount}} })",

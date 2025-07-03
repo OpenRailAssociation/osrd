@@ -19,7 +19,7 @@ import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrd
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import Timetable from 'modules/timetableItem/components/Timetable';
+import TimetableBoardWrapper from 'modules/timetableItem/components/Timetable/TimetableBoardWrapper';
 import type {
   TimetableItemId,
   TimetableItem,
@@ -199,18 +199,16 @@ const ScenarioContent = ({
           style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
         >
           <div className="scenario-sidemenu">
-            {infra && (
-              <Timetable
-                setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-                infraState={infra.state}
-                upsertTimetableItems={upsertTimetableItemsWithNge}
-                removeTimetableItems={removeTimetableItemsWithNge}
-                timetableItems={timetableItems}
-                timetableItemsWithDetails={timetableItemsWithDetails}
-                setTimetableItemToEditData={setTimetableItemToEditData}
-                timetableItemToEditData={timetableItemToEditData}
-              />
-            )}
+            <TimetableBoardWrapper
+              setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+              infraState={infra.state}
+              upsertTimetableItems={upsertTimetableItemsWithNge}
+              removeTimetableItems={removeTimetableItemsWithNge}
+              timetableItems={timetableItems}
+              timetableItemsWithDetails={timetableItemsWithDetails}
+              setTimetableItemToEditData={setTimetableItemToEditData}
+              timetableItemToEditData={timetableItemToEditData}
+            />
           </div>
         </div>
         <div className="center-column">

@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { Button, Checkbox } from '@osrd-project/ui-core';
 import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
@@ -46,6 +46,8 @@ type TimetableToolbarProps = {
   removeTrains: (trainIds: TimetableItemId[]) => void;
   timetableItems: TimetableItem[];
   isInSelection: boolean;
+  selectedTrainScheduleIds: TrainScheduleId[];
+  selectedPacedTrainIds: PacedTrainId[];
 };
 
 const TimetableToolbar = ({
@@ -59,6 +61,8 @@ const TimetableToolbar = ({
   removeTrains,
   timetableItems,
   isInSelection,
+  selectedTrainScheduleIds,
+  selectedPacedTrainIds,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
@@ -69,41 +73,6 @@ const TimetableToolbar = ({
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
-
-  const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(
-    () =>
-      selectedTimetableItemIds.reduce(
-        (acc, timetableItemId) => {
-          if (isTrainScheduleId(timetableItemId)) {
-            acc.selectedTrainScheduleIds.push(timetableItemId);
-          } else {
-            acc.selectedPacedTrainIds.push(timetableItemId);
-          }
-          return acc;
-        },
-        { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
-          selectedTrainScheduleIds: TrainScheduleId[];
-          selectedPacedTrainIds: PacedTrainId[];
-        }
-      ),
-    [selectedTimetableItemIds]
-  );
-
-  const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
-    () =>
-      timetableItemsWithDetails.reduce(
-        (acc, { id }) => {
-          if (isTrainScheduleId(id)) {
-            acc.totalTrainScheduleCount += 1;
-          } else {
-            acc.totalPacedTrainCount += 1;
-          }
-          return acc;
-        },
-        { totalPacedTrainCount: 0, totalTrainScheduleCount: 0 }
-      ),
-    [timetableItemsWithDetails]
-  );
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
@@ -205,39 +174,6 @@ const TimetableToolbar = ({
     a.click();
   };
 
-  const computedItemLabel = () => {
-    if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0) return t('timetable.noItem');
-
-    const pacedTrainLabel = t('pacedTrainCountSelected', {
-      count: selectedPacedTrainIds.length,
-      totalCount: totalPacedTrainCount,
-    });
-
-    const trainScheduleLabel = t('trainCountSelected', {
-      count: selectedTrainScheduleIds.length,
-      totalCount: totalTrainScheduleCount,
-    });
-
-    if (totalTrainScheduleCount === 0) {
-      return pacedTrainLabel;
-    }
-
-    if (totalPacedTrainCount === 0) {
-      return trainScheduleLabel;
-    }
-
-    if (selectedTrainScheduleIds.length > 0 || selectedPacedTrainIds.length > 0) {
-      return t('pacedTrainAndTrainCount', {
-        pacedTrainCount: selectedPacedTrainIds.length,
-        totalPacedTrainCount,
-        trainCount: selectedTrainScheduleIds.length,
-        totalTrainScheduleCount,
-      });
-    }
-
-    return `${pacedTrainLabel}\u00A0${t('and')}\u00A0${trainScheduleLabel}`;
-  };
-
   return (
     <>
       <div
@@ -252,7 +188,6 @@ const TimetableToolbar = ({
         >
           <div className="train-count" data-testid="timetable-item-count">
             <Checkbox
-              label={timetableItems.length > 0 ? computedItemLabel() : t('timetable.noTrain')}
               small
               readOnly={timetableItems.length === 0}
               checked={
