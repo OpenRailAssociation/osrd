@@ -11,9 +11,11 @@ use axum::Json;
 use axum::extract::State;
 use chrono::DateTime;
 use chrono::Utc;
+use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
+use core_client::path_properties::PathPropertiesResponse;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
@@ -35,8 +37,6 @@ use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
-use crate::views::path::properties::PathProperties;
-use crate::views::path::properties::compute_path_properties_batch;
 
 use super::AppState;
 use super::AuthenticationExt;
@@ -535,21 +535,23 @@ async fn simulate_past_schedules(
             .collect_vec()
     };
 
-    let path_properties_requests = paths
-        .iter()
-        .map(|path| PathPropertiesRequest {
-            track_section_ranges: &path.track_section_ranges,
-            infra: infra.id,
-            expected_version: infra.version,
-        })
-        .collect::<Vec<_>>();
-
-    let path_properties = compute_path_properties_batch(
-        core_client,
-        &mut valkey.get_connection().await?,
-        &path_properties_requests,
-    )
-    .await?;
+    let path_properties = {
+        let futures = paths
+            .into_iter()
+            .zip(candidate_schedules.into_iter())
+            .zip(std::iter::repeat(&core_client))
+            .map(|((path, ts), core)| async move {
+                let response = PathPropertiesRequest {
+                    track_section_ranges: &path.track_section_ranges,
+                    infra: infra.id,
+                    expected_version: infra.version,
+                }
+                .fetch(core)
+                .await;
+                response.map(|properties| (ts, properties))
+            });
+        futures::future::try_join_all(futures).await?
+    };
 
     let stop_waypoints = new_schedule
         .stops()
@@ -557,15 +559,14 @@ async fn simulate_past_schedules(
         .collect::<HashSet<_>>();
     let selected_past_schedules = path_properties
         .into_iter()
-        .zip(candidate_schedules.into_iter())
         .map(
             |(
-                PathProperties {
+                ts,
+                PathPropertiesResponse {
                     operational_points, ..
                 },
-                ts,
             )| {
-                let ops = operational_points.unwrap().into_iter().filter_map(
+                let ops = operational_points.into_iter().filter_map(
                     |OperationalPointOnPath { extensions, .. }| {
                         let sncf = extensions.sncf.as_ref()?;
                         let key = (sncf.ci as u64, Some(sncf.ch.to_smolstr()));
