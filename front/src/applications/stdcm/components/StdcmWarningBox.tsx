@@ -4,7 +4,12 @@ import { Button } from '@osrd-project/ui-core';
 import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
+import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
+import { getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
+
+import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
 
 const SHORT_TEXT_ERRORS = [StdcmConfigErrorTypes.INFRA_NOT_LOADED];
@@ -31,6 +36,40 @@ const StdcmWarningBox = ({
   const hasInvalidFields = (errorDetails?.invalidFields?.length ?? 0) > 0;
   const hasMissingFields = (errorDetails?.missingFields?.length ?? 0) > 0;
   const hasRouteErrors = (errorDetails?.routeErrors?.length ?? 0) > 0;
+
+  const infraId = useSelector(getStdcmInfraID);
+  const { infra } = useInfraStatus({ infraId });
+  const { pathfinding, isPathFindingLoading: _ } = useStaticPathfinding(infra);
+  const hasIncompatibleConstraints =
+    pathfinding?.status === 'failure' &&
+    pathfinding.failed_status === 'pathfinding_not_found' &&
+    pathfinding.error_type === 'incompatible_constraints';
+
+  const electricalConstraintCount = hasIncompatibleConstraints
+    ? pathfinding?.incompatible_constraints.incompatible_electrification_ranges.length
+    : 0;
+  const loadingGaugeConstraintCount = hasIncompatibleConstraints
+    ? pathfinding?.incompatible_constraints.incompatible_gauge_ranges.length
+    : 0;
+  const signalingSystemConstraintCount = hasIncompatibleConstraints
+    ? pathfinding?.incompatible_constraints.incompatible_signaling_system_ranges.length
+    : 0;
+  const errorConstraintCount =
+    electricalConstraintCount + loadingGaugeConstraintCount + signalingSystemConstraintCount;
+
+  const renderIncompatibleConstraintWarning = (
+    constraintType:
+      | 'incompatibleElectrical'
+      | 'incompatibleLoadingGauge'
+      | 'incompatibleSignalingSystem',
+    count: number
+  ) => {
+    if (count === 0) return null;
+
+    return (
+      <div>{t(`stdcmErrors.incompatibleConstraintsDetails.${constraintType}`, { count })}</div>
+    );
+  };
 
   return (
     <div ref={ref} data-testid="warning-box" className="warning-box">
@@ -67,14 +106,31 @@ const StdcmWarningBox = ({
       )}
 
       {!hasInvalidFields && !hasMissingFields && !hasRouteErrors && (
-        <p
-          className={cx('mb-0', {
+        <div
+          className={cx({
             'text-center': SHORT_TEXT_ERRORS.includes(errorType),
             'text-justify': !SHORT_TEXT_ERRORS.includes(errorType),
           })}
         >
-          {t(`stdcmErrors.${errorType}`)}
-        </p>
+          {!hasIncompatibleConstraints && t(`stdcmErrors.${errorType}`)}
+          {hasIncompatibleConstraints && (
+            <div>
+              {t(`stdcmErrors.incompatibleConstraints`, { count: errorConstraintCount })}
+              {renderIncompatibleConstraintWarning(
+                'incompatibleElectrical',
+                electricalConstraintCount
+              )}
+              {renderIncompatibleConstraintWarning(
+                'incompatibleLoadingGauge',
+                loadingGaugeConstraintCount
+              )}
+              {renderIncompatibleConstraintWarning(
+                'incompatibleSignalingSystem',
+                signalingSystemConstraintCount
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {hasInvalidFields && (

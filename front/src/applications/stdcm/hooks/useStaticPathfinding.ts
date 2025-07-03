@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { compact, isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -85,12 +85,7 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
     launchPathfinding();
   }, [pathStepsLocations, rollingStock, loadingGauge, infra]);
 
-  const result = useMemo(
-    () => (pathfinding ? { status: pathfinding.status } : null),
-    [pathfinding]
-  );
-
-  return { pathfinding: result, isPathFindingLoading: isFetching };
+  return { pathfinding, isPathFindingLoading: isFetching };
 };
 
 export default useStaticPathfinding;

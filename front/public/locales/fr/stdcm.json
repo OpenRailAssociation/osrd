@@ -178,6 +178,17 @@
   "simulationSheet": "Fiche de simulation",
   "spaceTimeGraphic": "Graphique Espace-Temps",
   "stdcmErrors": {
+    "incompatibleConstraintsDetails": {
+      "incompatibleElectrical_one": "- {{count}} erreur d'électrification",
+      "incompatibleElectrical_other": "- {{count}} erreurs d'électrification",
+      "incompatibleLoadingGauge_one": "- {{count}} incompatibilité du gabarit",
+      "incompatibleLoadingGauge_other": "- {{count}} incompatibilités du gabarit",
+      "incompatibleSignalingSystem_one": "- {{count}} erreur de signalisation",
+      "incompatibleSignalingSystem_other": "- {{count}} erreurs de signalisation"
+    },
+    "incompatibleConstraints_one": "Le parcours demandé contient l'erreur suivante :",
+    "incompatibleConstraints_other": "Le parcours demandé contient les erreurs suivantes :",
+    "incompatibleConstraints_zero": "Erreur de contrainte sur le chemin demandé",
     "infraNotLoaded": "Infrastructure en cours de chargement",
     "invalidFields": {
       "maxSpeed": "la vitesse maximale du convoi",
