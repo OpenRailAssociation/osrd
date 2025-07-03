@@ -1,6 +1,8 @@
 mod graph;
 mod new_schedule;
 mod past_schedule;
+mod request;
+mod response;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -9,8 +11,6 @@ use std::sync::Arc;
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
-use chrono::DateTime;
-use chrono::Utc;
 use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
@@ -18,11 +18,11 @@ use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use itertools::Itertools;
-use serde::Deserialize;
-use serde::Serialize;
-use smol_str::SmolStr;
+use request::Request;
+use request::RollingStockCharacteristics;
+use response::Response;
+use response::SimilarScheduleItem;
 use smol_str::ToSmolStr;
-use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::error::Result;
@@ -43,80 +43,14 @@ use super::AuthenticationExt;
 use super::AuthorizationError;
 
 editoast_common::schemas! {
-    Waypoint,
-    WaypointResponse,
+    request::schemas(),
+    response::schemas(),
 }
 
 crate::routes! {
     "/similar_schedules" => {
         similar_schedules,
     },
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-
-struct RollingStockCharacteristics {
-    name: String,
-    speed_limit_tag: Option<String>,
-}
-
-#[derive(Clone, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypoint)]
-struct Waypoint {
-    ci: u64,
-    #[schema(value_type = String)]
-    ch: SmolStr,
-    stop: bool,
-}
-
-impl std::fmt::Debug for Waypoint {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}:{}{}",
-            self.ci,
-            self.ch,
-            if self.stop { "[STOP]" } else { "" },
-        )
-    }
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-
-struct Request {
-    #[schema(inline)]
-    rolling_stock: RollingStockCharacteristics,
-    #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
-    waypoints: Vec<Waypoint>,
-    infra_id: Option<i64>,
-    timetable_id: Option<i64>,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypointResponse)]
-struct WaypointResponse {
-    ci: i64,
-    #[schema(value_type = String)]
-    ch: SmolStr,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-struct SimilarScheduleItem {
-    #[schema(value_type = String)]
-    schedule_id: past_schedule::Name,
-    start_time: DateTime<Utc>,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
-    begin: WaypointResponse,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
-    end: WaypointResponse,
-}
-
-#[derive(Debug, Serialize, ToSchema)]
-struct Response {
-    #[schema(inline)]
-    similar_schedules: Vec<SimilarScheduleItem>,
 }
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -195,15 +129,17 @@ async fn similar_schedules(
 
     validate_rolling_stock_input(&mut conn, &rolling_stock, &speed_limit_tag_ids).await?;
 
-    let waypoints = squash_successive_waypoints(waypoints);
+    let waypoints = request::Waypoint::squash_successive_waypoints(waypoints);
     let wp_count = waypoints.len();
-    let new_schedule_waypoints = waypoints.into_iter().map(|Waypoint { ci, ch, stop }| {
-        if stop {
-            new_schedule::Waypoint::stop(ci, Some(ch))
-        } else {
-            new_schedule::Waypoint::passing_by(ci, Some(ch))
-        }
-    });
+    let new_schedule_waypoints = waypoints
+        .into_iter()
+        .map(|request::Waypoint { ci, ch, stop }| {
+            if stop {
+                new_schedule::Waypoint::stop(ci, Some(ch))
+            } else {
+                new_schedule::Waypoint::passing_by(ci, Some(ch))
+            }
+        });
     let new_schedule = new_schedule::NewSchedule::new(new_schedule_waypoints)
         .map_err(SimilarSchedulesError::from)?;
 
@@ -340,11 +276,11 @@ async fn similar_schedules(
                 .get(&train_name)
                 .expect("retained similar trains are in the candidate schedules pool"),
             schedule_id: train_name,
-            begin: WaypointResponse {
+            begin: response::Waypoint {
                 ci: begin.primary_code() as i64,
                 ch: begin.secondary_code().unwrap_or_default(),
             },
-            end: WaypointResponse {
+            end: response::Waypoint {
                 ci: end.primary_code() as i64,
                 ch: end.secondary_code().unwrap_or_default(),
             },
@@ -383,20 +319,6 @@ async fn validate_rolling_stock_input(
     }
 
     Ok(())
-}
-
-fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
-    let mut result = Vec::<Waypoint>::with_capacity(waypoints.len());
-    for waypoint in waypoints {
-        if let Some(prev) = result.last_mut() {
-            if prev.ci == waypoint.ci && prev.ch == waypoint.ch {
-                prev.stop |= waypoint.stop;
-                continue;
-            }
-        }
-        result.push(waypoint);
-    }
-    result
 }
 
 #[tracing::instrument(skip(conn, new_schedule), err)]
@@ -613,107 +535,4 @@ fn decide_best_schedule_combination(
     }
 
     schedules
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use pretty_assertions::assert_eq;
-    use smol_str::ToSmolStr;
-
-    #[test]
-    fn test_squash_waypoints() {
-        let waypoints = Vec::new();
-        assert_eq!(squash_successive_waypoints(waypoints), Vec::new());
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 2,
-                ch: "b".to_smolstr(),
-                stop: false,
-            },
-        ];
-        assert_eq!(squash_successive_waypoints(waypoints.clone()), waypoints);
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            }]
-        );
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: true,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: true,
-            }]
-        );
-
-        let waypoints = vec![
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
-                stop: false,
-            },
-            Waypoint {
-                ci: 2,
-                ch: "b".to_smolstr(),
-                stop: false,
-            },
-        ];
-        assert_eq!(
-            squash_successive_waypoints(waypoints),
-            vec![
-                Waypoint {
-                    ci: 1,
-                    ch: "a".to_smolstr(),
-                    stop: false,
-                },
-                Waypoint {
-                    ci: 2,
-                    ch: "b".to_smolstr(),
-                    stop: false,
-                },
-            ]
-        );
-    }
 }
