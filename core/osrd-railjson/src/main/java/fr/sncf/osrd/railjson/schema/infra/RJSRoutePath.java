@@ -11,27 +11,21 @@ public class RJSRoutePath {
     @Json(name = "track_sections")
     public final List<RJSDirectionalTrackRange> trackSections;
 
-    @Json(name = "signaling_type")
-    public final String signalingType;
-
     /** Constructor */
-    public RJSRoutePath(String route, List<RJSDirectionalTrackRange> trackSections, String signalingType) {
+    public RJSRoutePath(String route, List<RJSDirectionalTrackRange> trackSections) {
         this.route = route;
         this.trackSections = trackSections;
-        this.signalingType = signalingType;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof RJSRoutePath that)) return false;
-        return Objects.equals(route, that.route)
-                && Objects.equals(trackSections, that.trackSections)
-                && Objects.equals(signalingType, that.signalingType);
+        return Objects.equals(route, that.route) && Objects.equals(trackSections, that.trackSections);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(route, trackSections, signalingType);
+        return Objects.hash(route, trackSections);
     }
 }

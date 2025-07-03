@@ -820,8 +820,6 @@ class PathfindingTest : ApiTest() {
     }
 
     companion object {
-        private const val SIGNALING_TYPE = "BAL3"
-
         private fun makeBidirectionalEndPoint(
             point: PathfindingWaypoint
         ): Array<PathfindingWaypoint> {

@@ -13,9 +13,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.sim_infra.utils.chunksOnBlocks
 import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.utils.Direction
@@ -201,8 +198,7 @@ private fun convertRouteToRJS(
     if (mutEndOffset == null) mutEndOffset = rawInfra.getRouteLength(route)
     return RJSRoutePath(
         rawInfra.getRouteName(route),
-        makeRJSTrackRanges(rawInfra, route, mutStartOffset, mutEndOffset),
-        "BAL3"
+        makeRJSTrackRanges(rawInfra, route, mutStartOffset, mutEndOffset)
     )
 }
 
