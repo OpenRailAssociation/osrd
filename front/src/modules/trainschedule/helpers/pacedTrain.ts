@@ -31,7 +31,7 @@ export const findExceptionWithOccurrenceId = (
   return exceptions.find(({ key }) => addedExceptionId === key);
 };
 
-export const formatPacedTrainWithOccurenceDetails = (
+export const formatPacedTrainWithOccurrenceDetails = (
   pacedTrain: PacedTrainWithDetails,
   exceptionChangeGroups: ExceptionChangeGroups
 ) => {

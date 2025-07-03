@@ -81,7 +81,7 @@ async function readJsonFile<T extends { [key: string]: unknown }>(filePath: stri
     const data = await readFile(filePath, 'utf-8');
     return JSON.parse(data) as T;
   } catch (e) {
-    console.error(`Problem occured while reading ${filePath}`);
+    console.error(`Problem occurred while reading ${filePath}`);
     throw e;
   }
 }

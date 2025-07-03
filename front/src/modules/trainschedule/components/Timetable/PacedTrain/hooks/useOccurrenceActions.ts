@@ -8,7 +8,7 @@ import { updatePacedTrainExceptionsList } from 'modules/trainschedule/components
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatTimetableItemPayload';
 import {
   findExceptionWithOccurrenceId,
-  formatPacedTrainWithOccurenceDetails,
+  formatPacedTrainWithOccurrenceDetails,
 } from 'modules/trainschedule/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -65,7 +65,7 @@ const useOccurrenceActions = ({
       );
 
       if (occurrenceToUpdateException) {
-        const pacedTrainWithOccurrenceDetails = formatPacedTrainWithOccurenceDetails(
+        const pacedTrainWithOccurrenceDetails = formatPacedTrainWithOccurrenceDetails(
           updatedPacedtrain,
           occurrenceToUpdateException
         );

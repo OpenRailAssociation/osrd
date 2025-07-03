@@ -8,7 +8,7 @@ import { getTimeWindow, getInterval } from 'reducers/osrdconf/operationalStudies
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
-import AddedOccurences from './AddedOccurences';
+import AddedOccurrences from './AddedOccurrences';
 
 const PacedTrainSettings = () => {
   const timeWindow = useSelector(getTimeWindow).total('minute');
@@ -66,7 +66,7 @@ const PacedTrainSettings = () => {
           />
         </span>
       </div>
-      <AddedOccurences />
+      <AddedOccurrences />
     </div>
   );
 };

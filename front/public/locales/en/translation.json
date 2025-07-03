@@ -268,7 +268,7 @@
         "end": "Arrival",
         "endpoint": "Endpoint:",
         "from": "from",
-        "geometry-error": "An exception occured during calculation of this route",
+        "geometry-error": "An exception occurred during calculation of this route",
         "help": {
           "actions-on-edit-route": "You can delete the route, edit it or create a new one.",
           "select-endpoints": "The route must have a starting and ending point.",
@@ -422,7 +422,7 @@
         "attached-electrifications": "electrifications",
         "attached-speed-sections": "Speed limits",
         "default-electrifications-error": "An error occurred when loading the electrifications linked to this track section.",
-        "default-speed-sections-error": "An exception occured when loading speed limits related to this track section.",
+        "default-speed-sections-error": "An exception occurred when loading speed limits related to this track section.",
         "help": {
           "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",
           "add-point": "Click to add a point at the end of the track section.",
