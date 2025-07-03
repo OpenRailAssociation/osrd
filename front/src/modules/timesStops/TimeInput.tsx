@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 
-import cx from 'classnames';
 import type { CellProps } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
@@ -53,21 +52,14 @@ const TimeInput = ({ focus, rowData, active, setRowData }: TimeInputProps) => {
     />
   );
 
-  if (tempTimeValue?.daySinceDeparture && tempTimeValue.dayDisplayed) {
-    return (
-      <div className="time-input-container">
-        {input}
-        <span
-          className={cx('extra-text', {
-            'extra-text-firefox': navigator.userAgent.search('Firefox') !== -1,
-          })}
-        >
-          {t('timeStopTable.dayCounter', { count: tempTimeValue.daySinceDeparture })}
-        </span>
-      </div>
-    );
-  }
-  return input;
+  return (
+    <div className="time-input-container">
+      {input}
+      {!!tempTimeValue?.daySinceDeparture &&
+        tempTimeValue.dayDisplayed &&
+        t('timeStopTable.dayCounter', { count: tempTimeValue.daySinceDeparture })}
+    </div>
+  );
 };
 
 export default TimeInput;
