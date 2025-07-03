@@ -513,44 +513,100 @@ class PathfindingTest : ApiTest() {
         )
     }
 
-    /*
-    /** Tests that we find a route path between two points on the same edge */
-    @ParameterizedTest
-    @MethodSource("simpleRoutesSameEdgeArgs")
-    @Throws(Exception::class)
-    fun simpleRoutesSameEdge(
-        inverted: Boolean,
-        expectedRoutePaths: List<RJSRoutePath?>?,
-        expectedPathWaypoints: List<PathWaypointResult?>?
-    ) {
-        var waypointStart =
-            PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
-        var waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 110.0, EdgeDirection.START_TO_STOP)
-        if (inverted) {
-            val tmp = waypointEnd
-            waypointEnd = waypointStart
-            waypointStart = tmp
-        }
-        val waypointsStart = makeBidirectionalEndPoint(waypointStart)
-        val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
-        val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
-        waypoints[1] = waypointsEnd
+    @Test
+    fun simpleRoutesSameEdge() {
+        // Tests that we find a route path between two points on the same edge
+        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
         val requestBody =
-            PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf(), null)
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd),
+                    "tiny_infra/infra.json"
+                )
             )
-        val result =
-            TakesUtils.readBodyResponse(
-                PathfindingBlocksEndpoint(infraManager)
-                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
-            )
-        val response = PathfindingResult.adapterResult.fromJson(result)!!
-        AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
-        expectWaypointInPathResult(response, waypointStart)
-        expectWaypointInPathResult(response, waypointEnd)
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
+        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10.meters)
+        assertEquals(
+            listOf(Offset(0.meters), Offset(parsed.length.distance)),
+            parsed.pathItemPositions
+        )
+        assertEquals(
+            listOf("[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]").map { "block.${md5(it)}" },
+            parsed.blocks
+        )
+
+        assertEquals(listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"), parsed.routes)
+        assertEquals(
+            listOf(
+                DirectionalTrackRange(
+                    "ne.micro.bar_a",
+                    Offset(100.meters),
+                    Offset(110.meters),
+                    EdgeDirection.START_TO_STOP
+                )
+            ),
+            parsed.trackSectionRanges
+        )
     }
 
+    @Test
+    fun simpleRoutesSameEdgeInverted() {
+        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val requestBody =
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd),
+                    "tiny_infra/infra.json"
+                )
+            )
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
+
+        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10.meters)
+        assertEquals(
+            listOf(Offset(0.meters), Offset(parsed.length.distance)),
+            parsed.pathItemPositions
+        )
+
+        assertEquals(
+            listOf(
+                    "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
+                )
+                .map { "block.${md5(it)}" },
+            parsed.blocks
+        )
+
+        assertEquals(
+            listOf(
+                "rt.buffer_stop_c->tde.track-bar",
+            ),
+            parsed.routes
+        )
+        assertEquals(
+            listOf(
+                DirectionalTrackRange(
+                    "ne.micro.bar_a",
+                    Offset(100.meters),
+                    Offset(110.meters),
+                    EdgeDirection.STOP_TO_START
+                ),
+            ),
+            parsed.trackSectionRanges
+        )
+    }
+
+    /*
     @Test
     @Throws(IOException::class)
     fun testCurveGraph() {
@@ -787,74 +843,6 @@ class PathfindingTest : ApiTest() {
                 }
             }
             Assertions.fail<Any>("Expected path result to contain a location but not found")
-        }
-
-        @JvmStatic
-        fun simpleRoutesSameEdgeArgs(): Stream<Arguments> {
-            return Stream.of(
-                Arguments.of(
-                    true,
-                    listOf(
-                        RJSRoutePath(
-                            "rt.buffer_stop_c->tde.track-bar",
-                            listOf(
-                                RJSDirectionalTrackRange(
-                                    "ne.micro.bar_a",
-                                    100.0,
-                                    110.0,
-                                    EdgeDirection.STOP_TO_START
-                                )
-                            ),
-                            SIGNALING_TYPE
-                        )
-                    ),
-                    listOf(
-                        PathWaypointResult(
-                            PathWaypointLocation("ne.micro.bar_a", 110.0),
-                            0.0,
-                            false,
-                            null
-                        ),
-                        PathWaypointResult(
-                            PathWaypointLocation("ne.micro.bar_a", 100.0),
-                            10.0,
-                            false,
-                            "op.station_bar"
-                        )
-                    )
-                ),
-                Arguments.of(
-                    false,
-                    listOf(
-                        RJSRoutePath(
-                            "rt.tde.foo_a-switch_foo->buffer_stop_c",
-                            listOf(
-                                RJSDirectionalTrackRange(
-                                    "ne.micro.bar_a",
-                                    100.0,
-                                    110.0,
-                                    EdgeDirection.START_TO_STOP
-                                )
-                            ),
-                            SIGNALING_TYPE
-                        )
-                    ),
-                    listOf(
-                        PathWaypointResult(
-                            PathWaypointLocation("ne.micro.bar_a", 100.0),
-                            0.0,
-                            false,
-                            "op.station_bar"
-                        ),
-                        PathWaypointResult(
-                            PathWaypointLocation("ne.micro.bar_a", 110.0),
-                            10.0,
-                            false,
-                            null
-                        )
-                    )
-                )
-            )
         }
 
         @JvmStatic
