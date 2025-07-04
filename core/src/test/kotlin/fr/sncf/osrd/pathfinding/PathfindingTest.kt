@@ -606,6 +606,69 @@ class PathfindingTest : ApiTest() {
         )
     }
 
+    @Test
+    fun pathStartingAtTrackEdge() {
+        /*
+        foo_a   foo_to_bar   bar_a
+        ------>|----------->|------>
+              ^             ^
+            start          end
+        */
+        val waypointsStart = listOf(TrackLocation("ne.micro.foo_a", Offset(200.meters)))
+        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(0.meters)))
+
+        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
+        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+
+        // Check that we can go through the infra with a small train
+        val normalPathResp =
+            runPathfinding(
+                infra,
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((normalPathResp as PathfindingBlockSuccess).length.distance)
+            .isEqualTo(10000.meters)
+        assertEquals(
+            listOf(Offset(0.meters), Offset(normalPathResp.length.distance)),
+            normalPathResp.pathItemPositions
+        )
+        assertEquals(
+            listOf(
+                    "[il.sig.C1-BAL, il.sig.S7-BAL];[tde.foo_a-switch_foo, tde.track-bar];[il.switch_foo-A_B2]"
+                )
+                .map { "block.${md5(it)}" },
+            normalPathResp.blocks
+        )
+        assertEquals(listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"), normalPathResp.routes)
+        assertEquals(
+            listOf(
+                DirectionalTrackRange(
+                    "ne.micro.foo_a",
+                    Offset(200.meters),
+                    Offset(200.meters),
+                    EdgeDirection.START_TO_STOP
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.foo_to_bar",
+                    Offset(0.meters),
+                    Offset(10_000.meters),
+                    EdgeDirection.START_TO_STOP
+                ),
+                DirectionalTrackRange(
+                    "ne.micro.bar_a",
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    EdgeDirection.START_TO_STOP
+                )
+            ),
+            normalPathResp.trackSectionRanges
+        )
+    }
+
     /*
     @Test
     @Throws(IOException::class)
@@ -759,65 +822,6 @@ class PathfindingTest : ApiTest() {
         )
     }
 
-    @Test
-    fun pathStartingAtTrackEdge() {
-        /*
-        foo_a   foo_to_bar   bar_a
-        ------>|----------->|------>
-              ^             ^
-           new_op_1      new_op_2
-         */
-        val waypointStart =
-            PathfindingWaypoint("ne.micro.foo_a", 200.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 0.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
-        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        rjsInfra.operationalPoints.add(
-            RJSOperationalPoint(
-                "new_op_1",
-                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, null)),
-                null,
-                null
-            )
-        )
-        rjsInfra.operationalPoints.add(
-            RJSOperationalPoint(
-                "new_op_2",
-                listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, null)),
-                null,
-                null
-            )
-        )
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
-
-        val path = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN), null)
-        val res =
-            convertPathfindingResult(
-                infra.blockInfra,
-                infra.rawInfra,
-                path,
-                DiagnosticRecorderImpl(true)
-            )
-        validatePathfindingResult(path, res, infra.rawInfra, infra.blockInfra)
-        assertEquals(
-            listOf(
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.foo_a", 200.0),
-                    0.0,
-                    false,
-                    "new_op_1"
-                ),
-                PathWaypointResult(
-                    PathWaypointLocation("ne.micro.bar_a", 0.0),
-                    10_000.0,
-                    false,
-                    "new_op_2"
-                ),
-            ),
-            res.pathWaypoints
-        )
-    }
 
     companion object {
         private fun makeBidirectionalEndPoint(
