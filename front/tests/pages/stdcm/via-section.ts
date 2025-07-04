@@ -103,7 +103,7 @@ class ViaSection extends STDCMPage {
       expect(await this.addViaButton.count()).toBe(viaNumber + 1);
       await expect(this.getViaCI(viaNumber)).toBeVisible();
       await this.getViaCI(viaNumber).fill(ciSearchText);
-      await selectedSuggestion.waitFor();
+      await expect(selectedSuggestion).toBeVisible();
       await selectedSuggestion.click();
       await this.getViaCH(viaNumber).click({ trial: true });
       await expect(this.getViaCH(viaNumber)).toHaveValue(DEFAULT_DETAILS.chValue);

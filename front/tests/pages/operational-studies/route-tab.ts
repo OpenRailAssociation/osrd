@@ -210,8 +210,7 @@ class RouteTab {
     const expectedDestinationTrigram = await destinationLocator.innerText();
 
     await this.submitSearchByTrigram();
-    await this.pathfindingLoader.waitFor({ state: 'hidden' });
-
+    await expect(this.pathfindingLoader).toBeHidden();
     await expect(this.searchByTrigramContainer).not.toBeVisible();
     await expect(this.resultPathfindingDone).toBeVisible();
 
@@ -227,16 +226,16 @@ class RouteTab {
   async deleteOperationPoints() {
     // Ensure all buttons are rendered and visible before proceeding
     await Promise.all([
-      this.viaDeleteButton.waitFor(),
-      this.originDeleteButton.waitFor(),
-      this.destinationDeleteButton.waitFor(),
+      expect(this.viaDeleteButton).toBeVisible(),
+      expect(this.originDeleteButton).toBeVisible(),
+      expect(this.destinationDeleteButton).toBeVisible(),
     ]);
 
     await this.viaDeleteButton.click();
     await this.originDeleteButton.click();
-    await this.pathfindingInProgressMessage.waitFor({ state: 'hidden' });
+    await expect(this.pathfindingInProgressMessage).toBeHidden();
     await this.destinationDeleteButton.click();
-    await this.pathfindingInProgressMessage.waitFor({ state: 'hidden' });
+    await expect(this.pathfindingInProgressMessage).toBeHidden();
     const translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
@@ -246,7 +245,7 @@ class RouteTab {
       ': {{missingElements}}.',
       ''
     );
-    await this.missingParamMessage.waitFor();
+    await expect(this.missingParamMessage).toBeVisible();
     const actualMessage = await this.missingParamMessage.innerText();
     expect(actualMessage).toContain(expectedMessage);
   }

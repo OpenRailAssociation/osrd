@@ -80,7 +80,7 @@ class SimulationResultPage extends STDCMPage {
     // Load expected data from JSON file
     const jsonData: STDCMResultTableRow[] = readJsonFile(tableDataPath);
     // Extract rows from the HTML table and map each row's data to match JSON structure
-    await this.simulationTableRows.first().waitFor();
+    await expect(this.simulationTableRows.first()).toBeVisible();
     const tableRows = await this.simulationTableRows.evaluateAll((rows) =>
       rows.map((row) => {
         const cells = row.querySelectorAll('td');

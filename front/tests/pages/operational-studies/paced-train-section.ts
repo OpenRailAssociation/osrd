@@ -273,7 +273,7 @@ class PacedTrainSection extends CommonPage {
 
   async editPacedTrain(index: number = 0) {
     const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
-    await pacedTrainItem.waitFor();
+    await expect(pacedTrainItem).toBeVisible();
     await pacedTrainItem.click();
     const actionButtons = await this.getActionButtonsLocators(index, 'paced-train');
     await actionButtons.editItem.click();

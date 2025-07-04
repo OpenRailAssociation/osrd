@@ -352,7 +352,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       const trainButton = ScenarioTimetableSection.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
-      await trainButton.waitFor();
+      await expect(trainButton).toBeVisible();
       await trainButton.click();
       await this.projectTrain();
       await this.verifySimulationResultsVisibility();
@@ -366,7 +366,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private async projectTrain() {
     await this.selectedTimetableTrain.hover();
-    await this.projectItemButton.waitFor();
+    await expect(this.projectItemButton).toBeVisible();
     await this.projectItemButton.click();
   }
 
@@ -378,7 +378,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async getTrainArrivalTime(expectedArrivalTime: string, index = 0) {
     await expect(this.trainArrivalTime.nth(index)).toBeVisible();
     const actualArrivalTime = await this.trainArrivalTime.nth(index).textContent();
-    await this.trainArrivalTimeLoader.waitFor({ state: 'hidden' });
+    await expect(this.trainArrivalTimeLoader).toBeHidden();
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
   }
 

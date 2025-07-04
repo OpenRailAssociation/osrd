@@ -35,7 +35,7 @@ class CommonPage {
 
   // Set the tag of project, study or scenario
   async setTag(tag: string): Promise<void> {
-    await this.tagField.waitFor();
+    await expect(this.tagField).toBeVisible();
     await this.tagField.fill(tag);
     await this.tagField.press('Enter');
   }
