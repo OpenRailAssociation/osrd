@@ -109,7 +109,6 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/chroma-js": "^3.1.1",
     "@types/d3-scale": "^4.0.9",
-    "@types/d3-selection": "^3.0.11",
     "@types/lodash": "^4.17.17",
     "@types/node": "^24",
     "@types/react": "^18.2.53",
