@@ -247,7 +247,7 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          <div className="train-count">
+          <div className="train-count" data-testid="timetable-train-count">
             <Checkbox
               label={timetableItems.length > 0 ? computedItemLabel() : t('timetable.noTrain')}
               small

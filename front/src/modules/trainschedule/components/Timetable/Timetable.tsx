@@ -219,6 +219,7 @@ const Timetable = ({
           className={cx('bottom-timetables-trains', {
             'empty-list': timetableItemsWithDetails.length === 0,
           })}
+          data-testid={timetableItemsWithDetails.length === 0 ? 'empty-timetable-list' : undefined}
         />
       </div>
     </div>

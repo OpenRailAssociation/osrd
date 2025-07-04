@@ -73,13 +73,16 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly emptyTimetable: Locator;
 
+  private readonly timetableTrainCount: Locator;
+
   constructor(page: Page) {
     super(page);
     this.invalidTrainsMessage = page.getByTestId('invalid-trains-message');
     this.timetableTrains = page.getByTestId('scenario-timetable-train');
     this.selectedTimetableTrain = page.locator('[data-testid="scenario-timetable-train"].selected');
-    this.timetableAllItemCheckbox = page.locator('.train-count .checkmark');
-    this.timetableTotalItemLabel = page.locator('.toolbar-header .label');
+    this.timetableTrainCount = page.getByTestId('timetable-train-count');
+    this.timetableAllItemCheckbox = this.timetableTrainCount.locator('.checkmark');
+    this.timetableTotalItemLabel = this.timetableTrainCount.locator('.label');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
@@ -102,15 +105,15 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       'label[for="timetable-train-type-filter"]'
     );
     this.timetableTrainTypeFilterSelect = page.locator('#timetable-train-type-filter');
-    this.timetableSpeedLimitTagFilterLabel = page.locator(
-      'label[for="timetable-speed-limit-tag-filter"]'
+    this.timetableSpeedLimitTagFilterLabel = page.getByTestId(
+      'timetable-speed-limit-tag-filter-label'
     );
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
-    this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
-    this.trainArrivalTimeLoader = this.trainArrivalTime.locator('.arrival-time-loader');
-    this.emptyTimetable = page.locator('.empty-list');
+    this.trainArrivalTime = page.getByTestId('train-arrival-time');
+    this.trainArrivalTimeLoader = page.getByTestId('arrival-time-loader');
+    this.emptyTimetable = page.getByTestId('empty-timetable-list');
   }
 
   // Get the button locator of a train element.
@@ -193,6 +196,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   // Click the train type filter button based on the provided translation
   private async selectTrainTypeFilter(filterTranslation: string): Promise<void> {
     await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
+  }
+
+  private static async togglePacedTrainOccurrences(pacedTrainButton: Locator): Promise<void> {
+    await pacedTrainButton.click();
   }
 
   // Verify that the imported train number is correct
@@ -328,7 +335,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       const pacedTrain = this.timetableTrains.nth(pacedTrainIndex);
       const pacedTrainButton = ScenarioTimetableSection.getPacedTrainButton(pacedTrain);
 
-      await pacedTrainButton.click(); // opens the paced train to display its occurrences
+      await ScenarioTimetableSection.togglePacedTrainOccurrences(pacedTrainButton); // opens
 
       const occurrences = ScenarioTimetableSection.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
 
@@ -338,6 +345,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
         await occurrenceButton.click({ force: true });
         await this.verifySimulationResultsVisibility();
       }
+      await ScenarioTimetableSection.togglePacedTrainOccurrences(pacedTrainButton); // closes
     }
   }
 
