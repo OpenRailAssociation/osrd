@@ -81,4 +81,72 @@ class PathPropEndpointTest : ApiTest() {
             )
         assertEquals(parsed.operationalPoints, oPs)
     }
+
+    @Test
+    fun testCurveGraph() {
+        val trackSectionRanges =
+            listOf(
+                DirectionalTrackRange(
+                    "TF1",
+                    Offset(0.meters),
+                    Offset(6_500.meters),
+                    EdgeDirection.START_TO_STOP
+                )
+            )
+        val requestBody =
+            pathPropRequestAdapter.toJson(
+                PathPropRequest(
+                    trackSectionRanges = trackSectionRanges,
+                    infra = "small_infra/infra.json",
+                    expectedVersion = 1
+                )
+            )
+        val rawResponse =
+            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = pathPropResponseAdapter.fromJson(response)!!
+
+        assertNotNull(parsed)
+        assertEquals(
+            parsed.curves,
+            RangeValues(
+                listOf(Offset(3_100.meters), Offset(4_400.meters)),
+                listOf(0.0, 9_500.0, 0.0)
+            )
+        )
+    }
+
+    @Test
+    fun testInvertedCurveGraph() {
+        val trackSectionRanges =
+            listOf(
+                DirectionalTrackRange(
+                    "TF1",
+                    Offset(0.meters),
+                    Offset(6_500.meters),
+                    EdgeDirection.STOP_TO_START
+                )
+            )
+        val requestBody =
+            pathPropRequestAdapter.toJson(
+                PathPropRequest(
+                    trackSectionRanges = trackSectionRanges,
+                    infra = "small_infra/infra.json",
+                    expectedVersion = 1
+                )
+            )
+        val rawResponse =
+            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = pathPropResponseAdapter.fromJson(response)!!
+
+        assertNotNull(parsed)
+        assertEquals(
+            parsed.curves,
+            RangeValues(
+                listOf(Offset(2_100.meters), Offset(3_400.meters)),
+                listOf(0.0, -9_500.0, 0.0)
+            )
+        )
+    }
 }
