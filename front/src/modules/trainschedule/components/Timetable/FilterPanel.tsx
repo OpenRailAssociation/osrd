@@ -107,7 +107,6 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             value={nameLabelFilter}
             onChange={(e) => setNameLabelFilter(e.target.value)}
             placeholder={t('filterPlaceholder')}
-            data-testid="timetable-label-filter"
             title={t('filterPlaceholder')}
           />
 
@@ -203,7 +202,12 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
         </div>
       </div>
       <div className="speed-limit-tag">
-        <label htmlFor="timetable-speed-limit-tag-filter">{t('timetable.speedLimitTags')}</label>
+        <label
+          htmlFor="timetable-speed-limit-tag-filter"
+          data-testid="timetable-speed-limit-tag-filter-label"
+        >
+          {t('timetable.speedLimitTags')}
+        </label>
         <div className="speed-limit-tag-filter" id="timetable-speed-limit-tag-filter">
           {uniqueTags.map((tag) => {
             const displayTag = tag !== 'NO CODE' ? tag : t('timetable.noSpeedLimitTagsShort');
