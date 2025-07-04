@@ -1,6 +1,9 @@
+import type { ScaleTime, ScaleLinear } from 'd3-scale';
+import type { Selection } from 'd3-selection';
+
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 
-type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
+type SimulationD3Scale = ScaleTime<number, number> | ScaleLinear<number, number>;
 
 export interface Chart {
   width: number;
@@ -12,16 +15,16 @@ export interface Chart {
     left: number;
   };
   x: SimulationD3Scale;
-  xAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
-  xAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  xAxis: Selection<SVGGElement, unknown, null, undefined>;
+  xAxisGrid: Selection<SVGGElement, unknown, null, undefined>;
   y: SimulationD3Scale;
-  yAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
-  yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  yAxis: Selection<SVGGElement, unknown, null, undefined>;
+  yAxisGrid: Selection<SVGGElement, unknown, null, undefined>;
   y2?: SimulationD3Scale;
-  y2Axis?: d3.Selection<SVGGElement, unknown, null, undefined>;
-  y2AxisGrid?: d3.Selection<SVGGElement, unknown, null, undefined>;
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
+  y2Axis?: Selection<SVGGElement, unknown, null, undefined>;
+  y2AxisGrid?: Selection<SVGGElement, unknown, null, undefined>;
+  svg: Selection<SVGGElement, unknown, null, undefined>;
+  drawZone: Selection<SVGGElement, unknown, null, undefined>;
   originalScaleX?: SimulationD3Scale;
   originalScaleY?: SimulationD3Scale;
   originalScaleY2?: SimulationD3Scale;
