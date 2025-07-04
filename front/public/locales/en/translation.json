@@ -75,8 +75,8 @@
           "name": "Invalid value"
         },
         "overlapping_electrifications": {
-          "description": "Electrification « {{obj_id}} » overlaps electrification « {{reference.obj_id}} »",
-          "name": "Overlapping of electrifications"
+          "description": "Electrification « {{obj_id}} » overlaps electrification « {{reference.obj_id}} » on the same track and with the same voltage",
+          "name": "Overlapping of electrification zones"
         },
         "overlapping_speed_sections": {
           "description": "Speed limit « {{obj_id}} » overlaps « {{reference.obj_id}} »",

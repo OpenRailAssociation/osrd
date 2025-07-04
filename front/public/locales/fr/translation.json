@@ -75,8 +75,8 @@
           "name": "Valeur invalide"
         },
         "overlapping_electrifications": {
-          "description": "La caténaire « {{obj_id}} » se superpose à la caténaire « {{reference.obj_id}} »",
-          "name": "Superposition de caténaires"
+          "description": "La caténaire « {{obj_id}} » se superpose à la caténaire « {{reference.obj_id}} » sur la même voie et au même voltage",
+          "name": "Superposition de caténaires sur la zone"
         },
         "overlapping_speed_sections": {
           "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »",
