@@ -29,6 +29,27 @@ describe('findActualVmax', () => {
     const result = findActualVmaxs(5300, vMax);
     expect(result).toEqual([200, 100]);
   });
+
+  it('should return the last 2 speed values when givenPosition is equal to the last boundary', () => {
+    const result = findActualVmaxs(6000, vMax);
+    expect(result).toEqual([100, 150]);
+  });
+
+  it('should return the first 2 speed values when givenPosition is equal to the first boundary', () => {
+    const result = findActualVmaxs(2000, vMax);
+    expect(result).toEqual([10, 100]);
+  });
+
+  it('should return the [0] when the speeds list is shorter than it should', () => {
+    const incorrectVMaxs = {
+      internalBoundaries: [2000, 3400, 5300, 6000],
+      speeds: [10, 100, 200, 100],
+    };
+    const result1 = findActualVmaxs(6000, incorrectVMaxs);
+    expect(result1).toEqual([0]);
+    const result2 = findActualVmaxs(6100, incorrectVMaxs);
+    expect(result2).toEqual([0]);
+  });
 });
 
 describe('interpolateValue', () => {
@@ -68,6 +89,15 @@ describe('interpolateValue', () => {
 
     const interpolatedTimeMiddle = interpolateValue(reportTrain, 2500, 'times');
     expect(interpolatedTimeMiddle).toBe(17);
+  });
+
+  it('should throw an error if trying to interpolate a position out of bonds of the positions list', () => {
+    expect(() => interpolateValue(reportTrain, -1, 'speeds')).toThrow(
+      'Can not interpolate speeds value with position -1 out of range for 0,1200,2500,4100,7000'
+    );
+    expect(() => interpolateValue(reportTrain, 7001, 'speeds')).toThrow(
+      'Can not interpolate speeds value with position 7001 out of range for 0,1200,2500,4100,7000'
+    );
   });
 });
 

@@ -1,5 +1,3 @@
-import * as d3 from 'd3';
-
 import type {
   OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
@@ -56,11 +54,16 @@ export function fastFindFirstGreater(list: number[], threshold: number, enforceB
  */
 export function findActualVmaxs(givenPosition: number, vmax: SpeedRanges): number[] {
   // givenPosition is in meters
-  const vmaxUpperBoundIndex = d3.bisectRight(vmax.internalBoundaries, givenPosition);
+  const vmaxUpperBoundIndex = fastFindFirstGreater(vmax.internalBoundaries, givenPosition);
   // Error case: vmax doesn't respect the SpeedRanges specifications on the lists' lengths
-  if (vmaxUpperBoundIndex > vmax.speeds.length - 1) return [0];
-  if (vmaxUpperBoundIndex > 0 && vmax.internalBoundaries[vmaxUpperBoundIndex - 1] === givenPosition)
-    return [vmax.speeds[vmaxUpperBoundIndex - 1], vmax.speeds[vmaxUpperBoundIndex]];
+  if (
+    vmaxUpperBoundIndex > vmax.speeds.length - 1 ||
+    (vmaxUpperBoundIndex === vmax.speeds.length - 1 &&
+      vmax.internalBoundaries[vmaxUpperBoundIndex] === givenPosition)
+  )
+    return [0];
+  if (vmax.internalBoundaries[vmaxUpperBoundIndex] === givenPosition)
+    return [vmax.speeds[vmaxUpperBoundIndex], vmax.speeds[vmaxUpperBoundIndex + 1]];
   return [vmax.speeds[vmaxUpperBoundIndex]];
 }
 
@@ -83,13 +86,17 @@ export const interpolateValue = (
   value: 'speeds' | 'times'
 ) => {
   // Get the index of the first report train position greater than the operational point position
-  const bisector = d3.bisectLeft(reportTrain.positions, opPosition);
-  if (bisector === 0) return reportTrain[value][bisector];
+  const indexGreater = fastFindFirstGreater(reportTrain.positions, opPosition, true);
+  if (indexGreater === 0) return reportTrain[value][indexGreater];
+  if (indexGreater === undefined)
+    throw new Error(
+      `Can not interpolate ${value} value with position ${opPosition} out of range for ${reportTrain.positions}`
+    );
 
-  const leftPosition = reportTrain.positions[bisector - 1];
-  const rightPosition = reportTrain.positions[bisector];
-  const leftValue = reportTrain[value][bisector - 1];
-  const rightValue = reportTrain[value][bisector];
+  const leftPosition = reportTrain.positions[indexGreater - 1];
+  const rightPosition = reportTrain.positions[indexGreater];
+  const leftValue = reportTrain[value][indexGreater - 1];
+  const rightValue = reportTrain[value][indexGreater];
   const totalDistance = rightPosition - leftPosition;
   const distance = opPosition - leftPosition;
   const totalDifference = rightValue - leftValue;
