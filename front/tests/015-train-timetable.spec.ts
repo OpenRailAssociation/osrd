@@ -28,6 +28,7 @@ import {
   TOTAL_TRAINS,
   VALID_ITEMS,
   VALID_PACED_TRAINS,
+  VALID_TRAINS,
 } from './assets/constants/timetable-items-count';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -87,7 +88,19 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Loading trains and verifying simulation result', async () => {
+  test('Loading trains and verifying simulation result for trainSchedule', async () => {
+    // Verify train count, invalid train messages, and train simulation results
+    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
+      'Valid',
+      VALID_ITEMS,
+      translations
+    );
+    await scenarioTimetableSection.verifyEachTrainSimulation(VALID_TRAINS);
+  });
+
+  /** *************** Test 2 **************** */
+  test('Loading trains and verifying simulation result for paced trains', async () => {
     // Verify train count, invalid train messages, and train simulation results
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
     await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
@@ -97,10 +110,9 @@ test.describe('Verify train schedule elements and filters', () => {
       translations
     );
     await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
-    await scenarioTimetableSection.verifyEachTrainSimulation(VALID_PACED_TRAINS);
   });
 
-  /** *************** Test 2 **************** */
+  /** *************** Test 3 **************** */
   test('Filtering imported trains and paced trains', async () => {
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
@@ -199,7 +211,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
   });
 
-  /** *************** Test 3 **************** */
+  /** *************** Test 4 **************** */
   test('Loading timetable items and verifying paced trains display', async () => {
     // Paced train data used in global setup
     const pacedTrainsData: PacedTrain[] = readJsonFile(
