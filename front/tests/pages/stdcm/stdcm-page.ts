@@ -130,7 +130,7 @@ class STDCMPage extends HomePage {
 
   // Launch the simulation and check if simulation-related elements are visible
   private async launchSimulation(): Promise<void> {
-    await this.launchSimulationButton.waitFor();
+    await expect(this.launchSimulationButton).toBeVisible();
     await expect(this.launchSimulationButton).toBeEnabled();
     await this.launchSimulationButton.click({ force: true });
   }

@@ -56,7 +56,7 @@ class TimeAndStopSimulationOutputs extends OpSimulationResultPage {
     // Iterate through each active row and extract data based on header mappings
     for (let rowIndex = 1; rowIndex < rowCount; rowIndex += 1) {
       const row = this.tableRows.nth(rowIndex);
-      await row.waitFor();
+      await expect(row).toBeVisible();
 
       // Extract cells from the current row
       const cells = row.locator('.dsg-cell.dsg-cell-disabled');

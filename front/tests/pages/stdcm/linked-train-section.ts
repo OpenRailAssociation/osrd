@@ -86,7 +86,7 @@ class LinkedTrainSection extends STDCMPage {
     const trainResultInfosButton = isAnterior
       ? this.posteriorLinkedTrainResultInfosButton
       : this.anteriorLinkedTrainResultInfosButton;
-    await trainResultInfosButton.waitFor();
+    await expect(trainResultInfosButton).toBeVisible();
 
     // Extract and process train details
     return trainResultInfosButton.evaluateAll((buttons) =>

@@ -69,9 +69,9 @@ class TimesAndStopsTab {
         has: this.page.locator(`input.dsg-input[value="${stationName}"]`),
       })
       .first();
-    await rowLocator.waitFor({ state: 'attached' });
+    await expect(rowLocator).toBeAttached();
     const cell = rowLocator.locator('.dsg-cell').nth(columnIndex);
-    await cell.waitFor();
+    await expect(cell).toBeVisible();
     await cell.dblclick();
 
     // Fill the input field based on the presence of a placeholder
@@ -117,7 +117,7 @@ class TimesAndStopsTab {
 
     for (let rowIndex = 1; rowIndex < rowCount; rowIndex += 1) {
       const rowCells = this.tableRows.nth(rowIndex).locator('.dsg-cell .dsg-input');
-      await rowCells.first().waitFor();
+      await expect(rowCells.first()).toBeVisible();
       const rowValues = await rowCells.evaluateAll((cells) =>
         cells.map((cell) => cell.getAttribute('value'))
       );
