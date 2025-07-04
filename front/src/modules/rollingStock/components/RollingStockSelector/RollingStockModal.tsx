@@ -61,7 +61,7 @@ function RollingStockModal({
 
   return (
     <ModalBodySNCF style={{ paddingBottom: 0 }}>
-      <div className="rollingstock-selector p-2">
+      <div data-testid="rollingstock-selector-modal" className="rollingstock-selector p-2">
         <div className="rollingstock-search-filters">
           <button type="button" className="close" aria-label="Close" onClick={closeModal}>
             <span aria-hidden="true">&times;</span>

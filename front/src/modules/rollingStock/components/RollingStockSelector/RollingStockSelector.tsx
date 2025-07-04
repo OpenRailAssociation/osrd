@@ -76,7 +76,10 @@ const RollingStockSelector = ({
         tabIndex={0}
       >
         {rollingStockSelected !== undefined && rollingStockSelected !== null ? (
-          <div className="rollingstock-selector-minicard">
+          <div
+            className="rollingstock-selector-minicard"
+            data-testid="rollingstock-selector-minicard"
+          >
             {condensed ? (
               <div className="d-flex align-items-center font-weight-bold">
                 <RollingStockInfo
