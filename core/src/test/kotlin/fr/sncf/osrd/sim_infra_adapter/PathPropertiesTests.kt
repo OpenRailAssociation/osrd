@@ -98,6 +98,53 @@ class PathPropertiesTests {
     }
 
     @Test
+    fun pathStartingAtTrackEdge() {
+        /*
+        foo_a   foo_to_bar   bar_a
+        ------>|----------->|------>
+              ^             ^
+           new_op_1      new_op_2
+        */
+        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
+        rjsInfra.operationalPoints.add(
+            RJSOperationalPoint(
+                "new_op_1",
+                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, null)),
+                null,
+                null
+            )
+        )
+        rjsInfra.operationalPoints.add(
+            RJSOperationalPoint(
+                "new_op_2",
+                listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, null)),
+                null,
+                null
+            )
+        )
+        val infra = parseRJSInfra(rjsInfra)
+        val path =
+            pathFromTracks(
+                infra,
+                listOf("ne.micro.foo_a", "ne.micro.foo_to_bar", "ne.micro.bar_a"),
+                Direction.INCREASING,
+                200.meters,
+                10_200.meters
+            )
+        val opIdsIdxWithOffset =
+            path.getOperationalPointParts().map { op ->
+                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
+            }
+        assertEquals(
+            listOf(
+                Pair("new_op_1", Offset(0.meters)),
+                Pair("new_op_2", Offset(10_000.meters)),
+            ),
+            opIdsIdxWithOffset
+        )
+    }
+
+    @Test
     fun testOperationalPoints() {
         /*
                 TA0                 TA1
