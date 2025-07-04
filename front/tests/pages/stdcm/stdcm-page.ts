@@ -55,6 +55,8 @@ class STDCMPage extends HomePage {
 
   private readonly helpButton: Locator;
 
+  private readonly pathfindingStatusMessage: Locator;
+
   constructor(page: Page) {
     super(page);
     this.notificationHeader = page.locator('#notification');
@@ -91,6 +93,7 @@ class STDCMPage extends HomePage {
     this.closeTimePickerButton = page.locator('.time-picker .close-button');
     this.warningBox = page.getByTestId('warning-box');
     this.incrementButton = page.locator('.minute-button', { hasText: '+1mn' });
+    this.pathfindingStatusMessage = page.getByTestId('pathfinding-status-message');
   }
 
   async verifySuggestions(expectedSuggestions: string[]) {
@@ -130,6 +133,7 @@ class STDCMPage extends HomePage {
 
   // Launch the simulation and check if simulation-related elements are visible
   private async launchSimulation(): Promise<void> {
+    await expect(this.pathfindingStatusMessage).toBeHidden();
     await expect(this.launchSimulationButton).toBeVisible();
     await expect(this.launchSimulationButton).toBeEnabled();
     await this.launchSimulationButton.click({ force: true });
