@@ -263,9 +263,6 @@ pub async fn compute_projected_train_paths(
 ) -> Result<Vec<Arc<SpaceTimeCurves>>> {
     let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
-    let mut projection_request_map: HashMap<String, TrainSimulationDetails> = HashMap::new();
-    let mut project_path_result: Vec<Arc<SpaceTimeCurves>> =
-        vec![Arc::default(); train_schedules.len()];
 
     // 1. Get train simulations
     let simulations = train_simulation_batch(
@@ -343,8 +340,8 @@ pub async fn compute_projected_train_paths(
             )
         })
         .collect::<Vec<_>>();
-    // 5. Store the projection in the cache (using pipeline)
 
+    // 5. Store the projection in the cache
     valkey_conn.json_set_bulk(&space_time_curves).await?;
 
     // 6. Build the projection response

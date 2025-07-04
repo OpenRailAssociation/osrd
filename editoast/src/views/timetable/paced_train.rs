@@ -723,6 +723,7 @@ async fn occupancy_blocks(
         .await?;
 
     let first_occurrences = paced_trains
+        .clone()
         .into_iter()
         .map(|p| p.into_train_schedule())
         .collect_vec();
@@ -738,7 +739,16 @@ async fn occupancy_blocks(
     )
     .await?;
 
-    Ok(Json(occupancy_blocks_result))
+    let mut results = HashMap::new();
+
+    occupancy_blocks_result
+        .into_iter()
+        .zip(paced_trains)
+        .for_each(|(occupancy_blocks, paced_train)| {
+            results.insert(paced_train.id, occupancy_blocks);
+        });
+
+    Ok(Json(results))
 }
 
 #[cfg(test)]
