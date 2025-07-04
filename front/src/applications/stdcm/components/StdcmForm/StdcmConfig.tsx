@@ -304,6 +304,7 @@ const StdcmConfig = ({
                   <div className="banner-content">
                     <div
                       ref={pathfindingBannerRef}
+                      data-testid="pathfinding-status-message"
                       className={cx('pathfinding-status', {
                         'pathfinding-status-success': pathfinding?.status === 'success',
                       })}
