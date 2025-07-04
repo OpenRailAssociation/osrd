@@ -9,7 +9,7 @@ import { dateToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
-import { getActualVmax, interpolateValue } from './utils';
+import { getActualVmaxs, interpolateValue } from './utils';
 
 /**
  * CSV Export of trainschedule
@@ -223,7 +223,7 @@ export default function exportTrainCSV(
 
   const steps: CSVData[] = [];
   speedsWithOPsAndSpeedLimits.forEach((speed, index) => {
-    const actualVmaxs = getActualVmax(speed.position, formattedMrsp);
+    const actualVmaxs = getActualVmaxs(speed.position, formattedMrsp);
     const newStep = {
       op: speed.op || '',
       ch: speed.ch || '',
