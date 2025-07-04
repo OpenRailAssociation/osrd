@@ -204,7 +204,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Verify that the imported train number is correct
   async verifyTrainCount(trainCount: number): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
     await expect(this.timetableTrains).toHaveCount(trainCount);
   }
 

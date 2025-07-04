@@ -45,12 +45,13 @@ class OpSimulationResultPage extends CommonPage {
   }
 
   async verifySimulationResultsVisibility(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
-    await expect(this.manchetteSpaceTimeChart).toBeVisible();
-    await expect(this.speedSpaceChart).toBeVisible();
-    await expect(this.spaceTimeChart).toBeVisible();
-    await expect(this.simulationMap).toBeVisible();
-    await expect(this.timesStopsDataSheet).toBeVisible();
+    await Promise.all([
+      expect(this.manchetteSpaceTimeChart).toBeVisible(),
+      expect(this.speedSpaceChart).toBeVisible(),
+      expect(this.spaceTimeChart).toBeVisible(),
+      expect(this.simulationMap).toBeVisible(),
+      expect(this.timesStopsDataSheet).toBeVisible(),
+    ]);
   }
 
   async verifyTimesStopsDataSheetVisibility(): Promise<void> {
