@@ -5,25 +5,16 @@ use core_client::pathfinding::TrackRange;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
-use core_client::simulation::SignalCriticalPosition;
-use core_client::simulation::ZoneUpdate;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
-use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::DefaultHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
 use std::sync::Arc;
-use tracing::info;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
-use crate::ValkeyConnection;
-use crate::client::get_app_version;
 use crate::error::Result;
 use crate::models;
 use crate::models::infra::Infra;
@@ -36,8 +27,9 @@ editoast_common::schemas! {
     OccupancyBlocks,
 }
 
+// TODO: Remove this struct and replace it with a `type OccupancyBlocks = Vec<SignalUpdate>;`
 /// Occupancy block output is described by time-space points and blocks
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
 pub(super) struct OccupancyBlocks {
     /// list of signal updates along the path
     pub(super) signal_updates: Vec<SignalUpdate>,
@@ -60,9 +52,9 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     path_routes: &'a [Identifier],
     path_blocks: &'a [Identifier],
     trains_details: &'a [TrainSimulationDetails],
-) -> Result<HashMap<i64, Vec<SignalUpdate>>> {
+) -> Result<Vec<Vec<SignalUpdate>>> {
     if trains_details.is_empty() {
-        return Ok(HashMap::new());
+        return Ok(vec![]);
     }
     let request = SignalUpdatesRequest {
         infra: infra.id,
@@ -72,20 +64,30 @@ pub(super) async fn compute_batch_signal_updates<'a>(
         blocks: path_blocks,
         train_simulations: trains_details
             .iter()
-            .map(|detail| {
+            .enumerate()
+            .map(|(index, train_details)| {
                 (
-                    detail.train_id,
+                    index as i64,
                     TrainSimulation {
-                        signal_critical_positions: &detail.signal_critical_positions,
-                        zone_updates: &detail.zone_updates,
-                        simulation_end_time: detail.times[detail.times.len() - 1],
+                        signal_critical_positions: &train_details.signal_critical_positions,
+                        zone_updates: &train_details.zone_updates,
+                        simulation_end_time: train_details.times[train_details.times.len() - 1],
                     },
                 )
             })
             .collect(),
     };
+
+    // TODO: Make core use indexes instead of ids
     let response = request.fetch(&core).await?;
-    Ok(response.signal_updates)
+
+    let mut results = vec![vec![]; trains_details.len()];
+    response
+        .signal_updates
+        .into_iter()
+        .for_each(|(index, signal_updates)| results[index as usize] = signal_updates);
+
+    Ok(results)
 }
 
 pub(super) async fn compute_occupancy_blocks(
@@ -96,7 +98,8 @@ pub(super) async fn compute_occupancy_blocks(
     infra: &Infra,
     trains_schedules: Vec<models::TrainSchedule>,
     electrical_profile_set_id: Option<i64>,
-) -> Result<HashMap<i64, OccupancyBlocks>> {
+) -> Result<Vec<OccupancyBlocks>> // TODO: Use schemas::TrainSchedule instead
+{
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     // 1. Get train simulations
@@ -113,94 +116,89 @@ pub(super) async fn compute_occupancy_blocks(
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
     let trains_details = extract_train_details(simulations).await?;
 
-    let mut trains_hash_values = vec![];
+    let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
+        .iter()
+        .enumerate()
+        .filter_map(|(index, train_details)| {
+            train_details.as_ref().map(|train_details| {
+                (
+                    index,
+                    train_details.compute_occupancy_block_hash_with_versioning(
+                        infra.id,
+                        infra.version,
+                        &path.track_section_ranges,
+                        &path.routes,
+                        &path.blocks,
+                    ),
+                )
+            })
+        })
+        .fold(HashMap::new(), |mut map, (index, hash)| {
+            map.entry(hash).or_default().push(index);
+            map
+        });
 
-    trains_hash_values.extend(trains_details.iter().map(|t| {
-        t.compute_occupancy_block_hash_with_versioning(
-            infra.id,
-            infra.version,
-            &path.track_section_ranges,
-            &path.routes,
-            &path.blocks,
-        )
-    }));
+    let train_hashes: Vec<_> = train_hashes_to_idx.keys().cloned().collect();
 
-    // 3. Retrieve cached projection
-    let (miss_cache, mut hit_cache) =
-        retrieve_cached_occupancy_blocks(&mut valkey_conn, &trains_hash_values, &trains_details)
-            .await?;
+    // 3. Retrieve cached occupancy blocks
+    let cached_projections = valkey_conn
+        .json_get_bulk(&train_hashes)
+        .await?
+        .collect::<Vec<Option<OccupancyBlocks>>>();
+
+    let mut occupancy_blocks_result = vec![Default::default(); trains_schedules.len()];
+    let mut occupancy_block_requests = vec![];
+    for (hash, occupancy_block) in train_hashes.into_iter().zip(cached_projections) {
+        if let Some(occupancy_block) = occupancy_block {
+            let indexes = &train_hashes_to_idx[&hash];
+            for index in indexes {
+                occupancy_blocks_result[*index] = occupancy_block.clone();
+            }
+        } else {
+            let index = train_hashes_to_idx[&hash]
+                .first()
+                .expect("indexes should not be empty");
+            occupancy_block_requests.push((
+                hash,
+                trains_details[*index]
+                    .clone()
+                    .expect("train_details must exist if hash is computed"),
+            ));
+        }
+    }
 
     // 4. Compute space time curves and signal updates for all miss cache
+    let train_details_to_requests: Vec<_> = occupancy_block_requests
+        .iter()
+        .map(|(_, train_details)| train_details.clone())
+        .collect();
     let signal_updates = compute_batch_signal_updates(
         core_client.clone(),
         infra,
         &path.track_section_ranges,
         &path.routes,
         &path.blocks,
-        &miss_cache,
+        &train_details_to_requests,
     )
     .await?;
 
-    // 5. Store occupancy blocks in the cache (using pipeline)
-    let trains_hash_values: HashMap<_, _> = trains_details
+    // 5. Store block occupancies in the cache
+    let occupancy_blocks: Vec<_> = occupancy_block_requests
         .iter()
-        .map(|t| t.train_id)
-        .zip(trains_hash_values)
+        .map(|(hash, _)| hash)
+        .zip(signal_updates.clone())
         .collect();
-    let mut new_items = vec![];
-    for train_id in miss_cache.iter().map(|t| t.train_id) {
-        let hash = &trains_hash_values[&train_id];
-        let cached_value: OccupancyBlocks = OccupancyBlocks {
-            signal_updates: signal_updates
-                .get(&train_id)
-                .expect("Signal update not available for train")
-                .clone(),
-        };
-        hit_cache.push((cached_value.clone(), train_id));
-        new_items.push((hash, cached_value));
-    }
-    valkey_conn.json_set_bulk(&new_items).await?;
+    valkey_conn.json_set_bulk(&occupancy_blocks).await?;
 
-    // 6. Build the projection response
-    let mut occupancy_blocks_result = HashMap::new();
-    for (cached, train_id) in hit_cache {
-        occupancy_blocks_result.insert(
-            train_id,
-            OccupancyBlocks {
-                signal_updates: cached.signal_updates,
-            },
-        );
-    }
-
-    Ok(occupancy_blocks_result)
-}
-
-async fn retrieve_cached_occupancy_blocks(
-    valkey_conn: &mut ValkeyConnection,
-    trains_hash_values: &[String],
-    trains_details: &[TrainSimulationDetails],
-) -> Result<(Vec<TrainSimulationDetails>, Vec<(OccupancyBlocks, i64)>)> {
-    let cached_projections: Vec<Option<OccupancyBlocks>> = valkey_conn
-        .json_get_bulk(trains_hash_values)
-        .await?
-        .collect();
-
-    let mut hit_cache = vec![];
-    let mut miss_cache = vec![];
-
-    for (train_details, projection) in izip!(trains_details, cached_projections) {
-        if let Some(cached) = projection {
-            hit_cache.push((cached, train_details.train_id));
-        } else {
-            miss_cache.push(train_details.clone());
+    // 6. Build block occupancy response
+    for (hash, occupancy_blocks) in occupancy_blocks.into_iter() {
+        let indexes = &train_hashes_to_idx[hash];
+        for index in indexes {
+            occupancy_blocks_result[*index] = OccupancyBlocks {
+                signal_updates: occupancy_blocks.clone(),
+            };
         }
     }
 
-    info!(
-        nb_hit = hit_cache.len(),
-        nb_miss = miss_cache.len(),
-        "Hit cache"
-    );
-
-    Ok((miss_cache, hit_cache))
+    Ok(occupancy_blocks_result)
 }

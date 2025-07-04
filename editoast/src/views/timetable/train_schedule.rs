@@ -765,12 +765,20 @@ async fn occupancy_blocks(
         valkey_client,
         path,
         infra,
-        trains_schedules,
+        trains_schedules.clone(),
         electrical_profile_set_id,
     )
     .await?;
 
-    Ok(Json(occupancy_blocks_result))
+    let mut results = HashMap::new();
+
+    occupancy_blocks_result
+        .into_iter()
+        .zip(trains_schedules)
+        .for_each(|(occupancy_blocks, train_schedule)| {
+            results.insert(train_schedule.id, occupancy_blocks);
+        });
+    Ok(Json(results))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
