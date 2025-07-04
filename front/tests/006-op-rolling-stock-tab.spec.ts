@@ -89,7 +89,6 @@ test.describe('Rolling stock Tab Verification', () => {
     await rollingStockSelector.searchRollingstock(electricRollingStockName);
     await rollingStockSelector.selectRollingStockCard({
       name: rollingStock.name,
-      selectComfort: false,
       confirmSelection: true,
     });
     expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
@@ -104,7 +103,6 @@ test.describe('Rolling stock Tab Verification', () => {
     // Select the dual-mode rolling stock and confirm the selection
     await rollingStockSelector.selectRollingStockCard({
       name: dualModeRollingStockName,
-      selectComfort: false,
       confirmSelection: true,
     });
 

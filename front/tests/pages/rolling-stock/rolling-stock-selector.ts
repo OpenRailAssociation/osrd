@@ -40,14 +40,16 @@ class RollingStockSelector extends CommonPage {
 
   readonly selectedRollingStockName: Locator;
 
+  readonly rollingStockNameTab: Locator;
+
   constructor(page: Page) {
     super(page);
     this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
-    this.rollingStockSelectorModal = page.locator('.modal-dialog');
+    this.rollingStockSelectorModal = page.getByTestId('rollingstock-selector-modal');
     this.rollingStockList = page.getByTestId('rollingstock-title');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.rollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
-    this.rollingStockMiniCards = page.locator('.rollingstock-selector-minicard');
+    this.rollingStockMiniCards = page.getByTestId('rollingstock-selector-minicard');
     this.electricRollingStockFilter = page.locator('label[for="elec"]');
     this.thermalRollingStockFilter = page.locator('label[for="thermal"]');
     this.rollingStockSearchResult = page.getByTestId('search-results-text');
@@ -60,10 +62,11 @@ class RollingStockSelector extends CommonPage {
       });
     this.electricRollingStockFirstIcon = this.electricRollingStockIcons.first();
     this.thermalRollingStockFirstIcon = this.thermalRollingStockIcons.first();
-    this.noRollingStockResult = page.locator('.rollingstock-empty');
+    this.noRollingStockResult = page.getByTestId('rollingstock-empty-result');
     this.comfortACButton = page.getByTestId('comfort-ac-button');
     this.selectedComfortType = page.getByTestId('selected-comfort-type-info');
     this.selectedRollingStockName = page.getByTestId('selected-rolling-stock-info');
+    this.rollingStockNameTab = page.getByTestId('rolling-stock-name-tab');
   }
 
   async openRollingstockModal() {
@@ -92,7 +95,10 @@ class RollingStockSelector extends CommonPage {
     await rollingstockCard.click();
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
     if (selectComfort) await this.comfortACButton.click();
-    if (confirmSelection) await rollingstockCard.getByTestId('select-rolling-stock-button').click();
+    if (confirmSelection) {
+      await rollingstockCard.getByTestId('select-rolling-stock-button').click();
+      await expect(this.rollingStockSelectorModal).toBeHidden();
+    }
   }
 
   async verifyRollingStockIsInactive(rollingstockName: string): Promise<void> {
@@ -132,15 +138,16 @@ class RollingStockSelector extends CommonPage {
   }
 
   // Open Rolling Stock Selector, search for the added train, and select it
-  async selectRollingStock(rollingStockName: string) {
+  async selectRollingStock(rollingStockName: string): Promise<void> {
     await this.openEmptyRollingStockSelector();
     await this.searchRollingstock(rollingStockName);
     await this.selectRollingStockCard({
       name: rollingStockName,
-      selectComfort: false,
       confirmSelection: true,
     });
-    expect(await this.selectedRollingStockName.first().innerText()).toEqual(rollingStockName);
+
+    await expect(this.selectedRollingStockName).toHaveText(rollingStockName);
+    await expect(this.rollingStockNameTab).toHaveText(rollingStockName);
   }
 }
 export default RollingStockSelector;

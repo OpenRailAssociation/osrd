@@ -112,7 +112,9 @@ const ManageTrainSchedule = () => {
         <span className="rolling-stock-img">
           <RollingStock2Img rollingStock={rollingStock} />
         </span>
-        <span className="rolling-stock-name">{rollingStock.name}</span>
+        <span data-testid="rolling-stock-name-tab" className="rolling-stock-name">
+          {rollingStock.name}{' '}
+        </span>
       </div>
     ) : (
       <div className="manage-timetable-item-tab">

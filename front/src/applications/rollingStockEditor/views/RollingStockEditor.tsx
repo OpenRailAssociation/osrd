@@ -104,7 +104,9 @@ const RollingStockEditor = () => {
     }
     if (filteredRollingStockList.length === 0) {
       return (
-        <div className="rollingstock-empty">{t('rollingStock.resultFound', { count: 0 })}</div>
+        <div data-testid="rollingstock-empty-result" className="rollingstock-empty">
+          {t('rollingStock.resultFound', { count: 0 })}
+        </div>
       );
     }
     return rollingStocksList;
