@@ -1,0 +1,113 @@
+.round-trips-modal {
+  --header-height: 80px;
+  --footer-height: 100px;
+
+  margin: 16px;
+  width: 100%;
+  height: calc(100vh - 16px);
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  &::backdrop {
+    background: var(--modal-osrd-overlay);
+  }
+
+  .round-trips-modal-header {
+    height: var(--header-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 56px;
+
+    .title {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      line-height: 24px;
+      margin-bottom: 0;
+    }
+  }
+
+  .round-trips-modal-body {
+    height: calc(100% - var(--header-height) - var(--footer-height));
+    display: flex;
+    gap: 24px;
+    background-color: var(--ambientB5);
+    padding-top: 17px;
+    padding-inline: 56px;
+
+    .round-trips-modal-column {
+      // TODO : remove this hard coded width after item cards are integrated
+      width: 344px;
+
+      &.round-trips-column {
+        width: 664px;
+      }
+
+      .column-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        line-height: 24px;
+        color: var(--black100);
+        margin-bottom: 9px;
+
+        .item-count {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 19px;
+          height: 20px;
+          border: 0.5px solid var(--grey40);
+          border-radius: 3px;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 1) 0%,
+            rgba(255, 255, 255, 0.75) 100%
+          );
+        }
+      }
+
+      .column-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        width: 100%;
+        padding: 16px;
+        background-color: var(--white100);
+        border: 1px solid var(--grey10);
+        border-radius: 12px;
+
+        // TODO : replace this by card styles
+        div {
+          width: 100%;
+        }
+
+        .card-placeholder {
+          height: 67px;
+          background-color: var(--grey5);
+          border-radius: 8px;
+        }
+
+        .separator {
+          width: 4px;
+          height: 38px;
+          border-radius: 2px;
+          background-color: var(--grey5);
+        }
+      }
+    }
+  }
+
+  .round-trips-modal-footer {
+    height: var(--footer-height);
+    border-top: 1px solid var(--grey30);
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 24px;
+    padding-right: 34px;
+  }
+}

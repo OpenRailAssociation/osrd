@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 
 import { Button, Checkbox } from '@osrd-project/ui-core';
-import { Alert, Filter } from '@osrd-project/ui-icons';
+import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ import {
 } from 'utils/trainId';
 
 import FilterPanel from './FilterPanel';
+import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import type { TimetableFilters, TimetableItemWithDetails } from './types';
 import { timetableHasInvalidItem } from './utils';
 
@@ -66,6 +67,7 @@ const TimetableToolbar = ({
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(
     () =>
@@ -275,6 +277,19 @@ const TimetableToolbar = ({
                 {showTrainDetails ? t('lessDetails') : t('moreDetails')}
               </button>
             </div>
+          )}
+          <button
+            type="button"
+            title={t('roundTripsModal.manageRoundTrips')}
+            onClick={() => setRoundTripsModalIsOpen(true)}
+          >
+            <ArrowSwitch />
+          </button>
+          {roundTripsModalIsOpen && (
+            <RoundTripsModal
+              roundTripsModalIsOpen={roundTripsModalIsOpen}
+              setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
+            />
           )}
         </div>
 
