@@ -121,7 +121,8 @@ export const formatTimeDifference = (_start: Date, _end: Date, t: TFunction): st
   return parts.join(' ');
 };
 
-export const dateToHHMMSS = (date: Date, { withoutSeconds } = { withoutSeconds: false }) => {
-  const format = withoutSeconds ? 'HH:mm' : 'HH:mm:ss';
+export const dateToHHMMSS = (date: Date, options?: { withoutSeconds?: boolean; utc?: boolean }) => {
+  const format = options?.withoutSeconds ? 'HH:mm' : 'HH:mm:ss';
+  if (options?.utc) return dayjs(date).utc().format(format);
   return dayjs(date).local().format(format);
 };

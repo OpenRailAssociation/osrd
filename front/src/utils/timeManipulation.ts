@@ -1,8 +1,9 @@
-import * as d3 from 'd3';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 
 import type { TimeString } from 'common/types';
+
+import { dateToHHMMSS } from './date';
 
 dayjs.extend(duration);
 
@@ -50,6 +51,5 @@ export function secToHoursString(sec: number | null, { withSeconds = false } = {
   if (!sec) {
     return '';
   }
-  const format = withSeconds ? '%H:%M:%S' : '%H:%M';
-  return d3.utcFormat(format)(new Date(sec * 1000));
+  return dateToHHMMSS(new Date(sec * 1000), { withoutSeconds: !withSeconds, utc: true });
 }
