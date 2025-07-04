@@ -150,6 +150,13 @@
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "",
     "requestedPoint": "point demandé ({{ count }})",
+    "roundTripsModal": {
+      "manageRoundTrips": "Gérer les aller-retours",
+      "oneWays": "Aller simples",
+      "roundTrips": "Aller-retours",
+      "roundTripsManagement": "Gestion des aller-retours",
+      "todo": "À traiter"
+    },
     "scenarioCancel": "Annuler",
     "scenarioCreateButton": "Créer le scénario",
     "scenarioCreationTitle": "Créer un scénario",

@@ -150,6 +150,13 @@
     "pacedTrain_other": "{{count}} services",
     "pacedTrain_zero": "0 service",
     "requestedPoint": "requested point ({{ count }})",
+    "roundTripsModal": {
+      "manageRoundTrips": "Manage round trips",
+      "oneWays": "One-ways",
+      "roundTrips": "Round trips",
+      "roundTripsManagement": "Round trips management",
+      "todo": "Todo"
+    },
     "scenarioCancel": "Cancel",
     "scenarioCreateButton": "Create a scenario",
     "scenarioCreationTitle": "Create a scenario",
