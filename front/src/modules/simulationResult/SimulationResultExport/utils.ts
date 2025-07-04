@@ -65,10 +65,10 @@ export function findActualVmaxs(givenPosition: number, vmax: SpeedRanges): numbe
 }
 
 /**
- * Given the position in m and the vmax in m/s (boundaries in m too),
- * return the actual vmax at the givenPosition in km/h
+ * Given the position in m and the Vmax in m/s (boundaries in m too),
+ * return the actual Vmax at the givenPosition in km/h (or the Vmaxs before and after if exactly at a bound).
  */
-export function getActualVmax(givenPosition: number, vmax: SpeedRanges) {
+export function getActualVmaxs(givenPosition: number, vmax: SpeedRanges) {
   const actualVMaxs = findActualVmaxs(givenPosition, vmax);
   return actualVMaxs.map((actualVMax) => msToKmhRounded(actualVMax));
 }
