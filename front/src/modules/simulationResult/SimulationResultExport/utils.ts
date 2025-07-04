@@ -19,6 +19,33 @@ export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
 }
 
+/**
+ * Find the index of the first element of a sorted list greater than a threshold using binary search.
+ * It optionally returns undefined if the threshold is smaller than the first element or greater than the last element of the list.
+ */
+export function fastFindFirstGreater(
+  list: number[],
+  threshold: number,
+  enforceBounding: true
+): number | undefined;
+export function fastFindFirstGreater(
+  list: number[],
+  threshold: number,
+  enforceBounding?: false
+): number;
+export function fastFindFirstGreater(list: number[], threshold: number, enforceBounding?: boolean) {
+  if (!list.length) return undefined;
+  let [low, high] = [0, list.length - 1];
+  if (enforceBounding && (list[low] > threshold || list[high] < threshold)) return undefined;
+
+  while (list[low] < threshold) {
+    const middle = Math.floor((low + high) / 2);
+    if (list[middle] >= threshold) high = middle;
+    else low = middle + 1;
+  }
+  return low;
+}
+
 // On the next function, we need to check if the found index is included in the array
 // to prevent a white screen when datas are computing and synchronizing when switching the selected timetable item
 
