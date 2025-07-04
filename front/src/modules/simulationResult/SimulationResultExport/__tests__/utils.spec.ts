@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { findActualVmaxs, interpolateValue } from '../utils';
+import { fastFindFirstGreater, findActualVmaxs, interpolateValue } from '../utils';
 
 describe('findActualVmax', () => {
   const vMax = { internalBoundaries: [2000, 3400, 5300, 6000], speeds: [10, 100, 200, 100, 150] };
@@ -60,10 +60,50 @@ describe('interpolateValue', () => {
     const interpolatedSpeedStart = interpolateValue(reportTrain, 0, 'speeds');
     expect(interpolatedSpeedStart).toBe(1);
 
-    const interpolatedTime = interpolateValue(reportTrain, 2500, 'times');
-    expect(interpolatedTime).toBe(17);
+    const interpolatedTimeStart = interpolateValue(reportTrain, 0, 'times');
+    expect(interpolatedTimeStart).toBe(0);
 
     const interpolatedSpeedEnd = interpolateValue(reportTrain, 7000, 'speeds');
     expect(interpolatedSpeedEnd).toBe(45);
+
+    const interpolatedTimeMiddle = interpolateValue(reportTrain, 2500, 'times');
+    expect(interpolatedTimeMiddle).toBe(17);
+  });
+});
+
+describe('fastFindFirstGreater', () => {
+  const sorted = [10, 20, 30, 40, 50];
+
+  it('should return the index of the first element greater than threshold', () => {
+    expect(fastFindFirstGreater(sorted, 11)).toBe(1);
+    expect(fastFindFirstGreater(sorted, 25, true)).toBe(2);
+    expect(fastFindFirstGreater(sorted, 47.5, false)).toBe(4);
+  });
+
+  it('should return index of equal element if threshold matches exactly', () => {
+    expect(fastFindFirstGreater(sorted, 10)).toBe(0);
+    expect(fastFindFirstGreater(sorted, 10, true)).toBe(0);
+    expect(fastFindFirstGreater(sorted, 30)).toBe(2);
+    expect(fastFindFirstGreater(sorted, 50)).toBe(4);
+    expect(fastFindFirstGreater(sorted, 50, true)).toBe(4);
+  });
+
+  it('should return 0 when threshold is lower than the first element and enforceBounding is not true', () => {
+    expect(fastFindFirstGreater(sorted, 5)).toBe(0);
+    expect(fastFindFirstGreater(sorted, 5, false)).toBe(0);
+  });
+
+  it('should return the length when threshold is greater than the last element and enforceBounding is not true', () => {
+    expect(fastFindFirstGreater(sorted, 55)).toBe(5);
+    expect(fastFindFirstGreater(sorted, 55, false)).toBe(5);
+  });
+
+  it('should return undefined when threshold is out of bounds and enforceBounding is true', () => {
+    expect(fastFindFirstGreater(sorted, 5, true)).toBeUndefined();
+    expect(fastFindFirstGreater(sorted, 55, true)).toBeUndefined();
+  });
+
+  it('should return undefined for an empty list', () => {
+    expect(fastFindFirstGreater([], 10)).toBeUndefined();
   });
 });
