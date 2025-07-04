@@ -149,4 +149,90 @@ class PathPropEndpointTest : ApiTest() {
             )
         )
     }
+
+    @Test
+    fun testSlopeGraph() {
+        val trackSectionRanges =
+            listOf(
+                DirectionalTrackRange(
+                    "TD0",
+                    Offset(1_000.meters),
+                    Offset(23_000.meters),
+                    EdgeDirection.START_TO_STOP
+                )
+            )
+        val requestBody =
+            pathPropRequestAdapter.toJson(
+                PathPropRequest(
+                    trackSectionRanges = trackSectionRanges,
+                    infra = "small_infra/infra.json",
+                    expectedVersion = 1
+                )
+            )
+        val rawResponse =
+            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = pathPropResponseAdapter.fromJson(response)!!
+
+        assertNotNull(parsed)
+        assertEquals(
+            parsed.slopes,
+            RangeValues(
+                listOf(
+                    Offset(5_000.meters),
+                    Offset(6_000.meters),
+                    Offset(7_000.meters),
+                    Offset(8_000.meters),
+                    Offset(13_000.meters),
+                    Offset(14_000.meters),
+                    Offset(15_000.meters),
+                    Offset(16_000.meters)
+                ),
+                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0)
+            )
+        )
+    }
+
+    @Test
+    fun testInvertedSlopeGraph() {
+        val trackSectionRanges =
+            listOf(
+                DirectionalTrackRange(
+                    "TD0",
+                    Offset(1_000.meters),
+                    Offset(23_000.meters),
+                    EdgeDirection.STOP_TO_START
+                )
+            )
+        val requestBody =
+            pathPropRequestAdapter.toJson(
+                PathPropRequest(
+                    trackSectionRanges = trackSectionRanges,
+                    infra = "small_infra/infra.json",
+                    expectedVersion = 1
+                )
+            )
+        val rawResponse =
+            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = pathPropResponseAdapter.fromJson(response)!!
+
+        assertNotNull(parsed)
+        assertEquals(
+            parsed.slopes,
+            RangeValues(
+                listOf(
+                    Offset(6_000.meters),
+                    Offset(7_000.meters),
+                    Offset(8_000.meters),
+                    Offset(9_000.meters),
+                    Offset(14_000.meters),
+                    Offset(15_000.meters),
+                    Offset(16_000.meters),
+                    Offset(17_000.meters)
+                ),
+                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0)
+            )
+        )
+    }
 }
