@@ -1,5 +1,4 @@
 import type { ScaleTime, ScaleLinear } from 'd3-scale';
-import type { Selection } from 'd3-selection';
 
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 
@@ -8,26 +7,8 @@ type SimulationD3Scale = ScaleTime<number, number> | ScaleLinear<number, number>
 export interface Chart {
   width: number;
   height: number;
-  margin: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
   x: SimulationD3Scale;
-  xAxis: Selection<SVGGElement, unknown, null, undefined>;
-  xAxisGrid: Selection<SVGGElement, unknown, null, undefined>;
   y: SimulationD3Scale;
-  yAxis: Selection<SVGGElement, unknown, null, undefined>;
-  yAxisGrid: Selection<SVGGElement, unknown, null, undefined>;
-  y2?: SimulationD3Scale;
-  y2Axis?: Selection<SVGGElement, unknown, null, undefined>;
-  y2AxisGrid?: Selection<SVGGElement, unknown, null, undefined>;
-  svg: Selection<SVGGElement, unknown, null, undefined>;
-  drawZone: Selection<SVGGElement, unknown, null, undefined>;
-  originalScaleX?: SimulationD3Scale;
-  originalScaleY?: SimulationD3Scale;
-  originalScaleY2?: SimulationD3Scale;
   rotate?: boolean;
 }
 
