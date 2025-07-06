@@ -1,8 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { Download, PlusCircle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainId,
@@ -31,7 +33,11 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const { t } = useTranslation('operational-studies');
 
-  const { timetableItemsWithDetails, timetableItems = [] } = props;
+  const {
+    timetableItemsWithDetails,
+    timetableItems = [],
+    setDisplayTimetableItemManagement,
+  } = props;
 
   const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
     () =>
@@ -108,8 +114,22 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
   ]);
   return (
     <BoardWrapper
-      name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
       visible
+      name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
+      items={[
+        {
+          title: t('main.timetable.addTimetableItem'),
+          icon: <PlusCircle />,
+          dataTestID: 'scenarios-add-timetable-item-button',
+          onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add),
+        },
+        {
+          title: t('main.timetable.importTimetableItem'),
+          icon: <Download />,
+          dataTestID: 'scenarios-import-timetable-item-button',
+          onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+        },
+      ]}
     >
       <Timetable
         selectedTrainScheduleIds={selectedTrainScheduleIds}

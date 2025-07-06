@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 
 import cx from 'classnames';
-import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
@@ -66,7 +65,6 @@ const Timetable = ({
   selectedTrainScheduleIds,
   selectedPacedTrainIds,
 }: TimetableProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
 
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
@@ -161,24 +159,6 @@ const Timetable = ({
 
   return (
     <div className="scenario-timetable">
-      <div className="scenario-timetable-addtrains-buttons">
-        <button
-          type="button"
-          data-testid="scenarios-add-timetable-item-button"
-          onClick={() => {
-            setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add);
-          }}
-        >
-          {t('timetable.addTimetableItem')}
-        </button>
-        <button
-          type="button"
-          data-testid="scenarios-import-timetable-item-button"
-          onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import)}
-        >
-          {t('timetable.importTimetableItem')}
-        </button>
-      </div>
       <div
         className={cx('scenario-timetable-trains', {
           'with-details': showTrainDetails,

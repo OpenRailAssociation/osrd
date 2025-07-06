@@ -140,7 +140,7 @@
     "scenarioUpdated": "Änderung erfolgreich!",
     "scenarioUpdatedDetails": "Szenario {{ name }} ist geändert worden.",
     "timetable": {
-      "addTimetableItem": "Hinzufügen",
+      "addTimetableItem": "Zug / Dienstleistung hinzufügen",
       "advancedFilterLabel": "Schienenfahrzeug",
       "choosePath": "Diesen Pfad wählen",
       "closeFilter": "Filter schließen",
@@ -152,7 +152,7 @@
       "export": "Exportieren",
       "exportSelection": "Ausgewählte Züge exportieren",
       "filterLabel": "Name, Label",
-      "importTrainSchedule": "Importieren",
+      "importTimetableItem": "Züge importieren",
       "invalid": {
         "incompatible_constraints": "Beschränkungen nicht kompatibel",
         "invalid_path_items": "Pfaditems ungültig",

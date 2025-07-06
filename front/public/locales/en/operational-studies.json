@@ -176,7 +176,7 @@
     "scenarioUpdated": "Successful update!",
     "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
     "timetable": {
-      "addTimetableItem": "Add",
+      "addTimetableItem": "Add a train / service",
       "advancedFilterLabel": "Rolling stock",
       "choosePath": "Use this path",
       "closeFilter": "Close filter",
@@ -190,7 +190,7 @@
       "export": "Export",
       "exportSelection": "Export selected trains",
       "filterLabel": "Name, label",
-      "importTimetableItem": "Import",
+      "importTimetableItem": "Import trains",
       "invalid": {
         "incompatible_constraints": "Incompatible constraints",
         "invalid_path_items": "Invalid path items",
