@@ -176,7 +176,7 @@
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {
-      "addTimetableItem": "Ajouter",
+      "addTimetableItem": "Ajouter un train / service",
       "advancedFilterLabel": "Engin moteur",
       "choosePath": "Utiliser ce chemin",
       "closeFilter": "Fermer le filtre",
@@ -190,7 +190,7 @@
       "export": "Exporter",
       "exportSelection": "Exporter les trains sélectionnés",
       "filterLabel": "Nom, étiquette",
-      "importTimetableItem": "Importer",
+      "importTimetableItem": "Importer des trains",
       "invalid": {
         "incompatible_constraints": "Contraintes incompatibles",
         "invalid_path_items": "Point(s) de passage(s) invalide(s)",
