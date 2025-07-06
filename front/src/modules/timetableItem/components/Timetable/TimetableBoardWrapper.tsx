@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Download, PlusCircle } from '@osrd-project/ui-icons';
+import { Check, Download, PlusCircle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
@@ -17,6 +17,7 @@ import { isTrainScheduleId } from 'utils/trainId';
 
 import Timetable from './Timetable';
 import type { TimetableItemWithDetails } from './types';
+import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -112,11 +113,35 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
     selectedTrainScheduleIds,
     selectedPacedTrainIds,
   ]);
+
+  const { filteredTimetableItems, ...timetableFilters } =
+    useFilterTimetableItems(timetableItemsWithDetails);
+
+  const toggleAllTrainsSelecton = () => {
+    if (filteredTimetableItems.length === selectedTimetableItemIds.length) {
+      setSelectedTimetableItemIds([]);
+    } else {
+      const timetableItemsDisplayed = filteredTimetableItems.map(({ id }) => id);
+      setSelectedTimetableItemIds(timetableItemsDisplayed);
+    }
+  };
+
   return (
     <BoardWrapper
       visible
       name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
       items={[
+        {
+          title:
+            selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
+            selectedTimetableItemIds.length > 0
+              ? t('main.timetable.unselectAll')
+              : t('main.timetable.selectAll'),
+          icon: <Check />,
+          dataTestID: 'scenarios-select-all-button',
+          disabled: timetableItemsWithDetails.length === 0,
+          onClick: () => toggleAllTrainsSelecton(),
+        },
         {
           title: t('main.timetable.addTimetableItem'),
           icon: <PlusCircle />,
@@ -135,6 +160,8 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
         selectedTrainScheduleIds={selectedTrainScheduleIds}
         selectedPacedTrainIds={selectedPacedTrainIds}
         selectedTimetableItemIds={selectedTimetableItemIds}
+        filteredTimetableItems={filteredTimetableItems}
+        timetableFilters={timetableFilters}
         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
         {...props}
       />

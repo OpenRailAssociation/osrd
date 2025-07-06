@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 
-import { Button, Checkbox } from '@osrd-project/ui-core';
+import { Button } from '@osrd-project/ui-core';
 import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
@@ -38,11 +38,9 @@ import { timetableHasInvalidItem } from './utils';
 type TimetableToolbarProps = {
   showTrainDetails: boolean;
   toggleShowTrainDetails: () => void;
-  timetableItemsWithDetails: TimetableItemWithDetails[];
   filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
   selectedTimetableItemIds: TimetableItemId[];
-  setSelectedTimetableItemIds: (selectedTimetableIds: TimetableItemId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   timetableItems: TimetableItem[];
   isInSelection: boolean;
@@ -53,11 +51,9 @@ type TimetableToolbarProps = {
 const TimetableToolbar = ({
   showTrainDetails,
   toggleShowTrainDetails,
-  timetableItemsWithDetails,
   filteredTimetableItems,
   timetableFilters,
   selectedTimetableItemIds,
-  setSelectedTimetableItemIds,
   removeTrains,
   timetableItems,
   isInSelection,
@@ -79,15 +75,6 @@ const TimetableToolbar = ({
 
   const toggleFilterPanel = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
-  };
-
-  const toggleAllTrainsSelecton = () => {
-    if (filteredTimetableItems.length === selectedTimetableItemIds.length) {
-      setSelectedTimetableItemIds([]);
-    } else {
-      const timetableItemsDisplayed = filteredTimetableItems.map(({ id }) => id);
-      setSelectedTimetableItemIds(timetableItemsDisplayed);
-    }
   };
 
   const handleTrainsDelete = async (currentSelectedTrainId?: TrainId) => {
@@ -186,22 +173,6 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          <div className="train-count" data-testid="timetable-item-count">
-            <Checkbox
-              small
-              readOnly={timetableItems.length === 0}
-              checked={
-                selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
-                selectedTimetableItemIds.length > 0
-              }
-              isIndeterminate={
-                selectedTimetableItemIds.length !== timetableItemsWithDetails.length &&
-                selectedTimetableItemIds.length > 0
-              }
-              onChange={() => toggleAllTrainsSelecton()}
-            />
-          </div>
-
           {timetableItems.length > 0 && (
             <div>
               <button
