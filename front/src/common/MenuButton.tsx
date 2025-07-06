@@ -1,0 +1,88 @@
+import React, { useRef, useState } from 'react';
+
+import { KebabHorizontal } from '@osrd-project/ui-icons';
+
+import AnchoredMenu from './AnchoredMenu';
+import type { OSRDMenuItem } from './OSRDMenu';
+import OSRDMenu from './OSRDMenu';
+
+export type ButtonProps = {
+  icon?: React.ReactNode;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+export type MenuProps = {
+  items: OSRDMenuItem[];
+  className?: string;
+  onMenuClose?: () => void;
+  onMenuOpen?: () => void;
+};
+
+export type MenuButtonProps = {
+  buttonProps: ButtonProps;
+  menuProps: MenuProps;
+};
+
+const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const { items, className: menuClassName, onMenuClose, onMenuOpen } = menuProps;
+  const {
+    icon = <KebabHorizontal />,
+    onClick,
+    className: buttonClassName = '',
+    ...restButtonProps
+  } = buttonProps;
+
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    onMenuClose?.();
+  };
+
+  const toggleMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const newState = !isMenuOpen;
+    setIsMenuOpen(newState);
+
+    if (newState && onMenuOpen) onMenuOpen();
+    if (!newState && onMenuClose) onMenuClose();
+
+    onClick?.(e);
+  };
+
+  const menu = AnchoredMenu({
+    children: isMenuOpen && (
+      <OSRDMenu
+        menuRef={menuRef}
+        items={items.map((item) => ({
+          ...item,
+          onClick: () => {
+            item.onClick();
+            closeMenu();
+          },
+        }))}
+        className={menuClassName}
+      />
+    ),
+    anchorRef: menuButtonRef,
+    onDismiss: closeMenu,
+  });
+
+  return (
+    <>
+      <button
+        ref={menuButtonRef}
+        type="button"
+        onClick={toggleMenu}
+        className={buttonClassName}
+        {...restButtonProps}
+      >
+        {icon}
+      </button>
+      {menu}
+    </>
+  );
+};
+
+export default MenuButton;
