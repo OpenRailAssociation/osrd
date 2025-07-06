@@ -171,6 +171,7 @@
       "noTrain": "Kein Zug",
       "punctuality": "Pünktlichkeit",
       "rollingStockFilterPlaceholder": "Baureihe, Serie, Detail",
+      "selectAll": "Alles auswählen",
       "showAllTrains": "Alle",
       "showHonoredTrains": "Honored",
       "showInvalidTrains": "Ungültig",
@@ -181,6 +182,7 @@
       "toggleFilters": "Filteranzeige umschalten",
       "trainAdded": "Zug hinzugefügt",
       "trainDeleted": "Zug „{{ name }}“ ist gelöscht worden.",
+      "unselectAll": "Alles abwählen",
       "update": "Ändern",
       "validityFilter": "Gültigkeit der Züge"
     },

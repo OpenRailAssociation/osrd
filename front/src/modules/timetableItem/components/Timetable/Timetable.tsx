@@ -28,10 +28,10 @@ import TimetableToolbar from './TimetableToolbar';
 import TrainScheduleItem from './TrainScheduleItem';
 import type {
   PacedTrainWithDetails,
+  TimetableFilters,
   TimetableItemWithDetails,
   TrainScheduleWithDetails,
 } from './types';
-import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -40,6 +40,8 @@ type TimetableProps = {
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
   setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
+  filteredTimetableItems: TimetableItemWithDetails[];
+  timetableFilters: TimetableFilters;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
@@ -58,6 +60,8 @@ const Timetable = ({
   removeTimetableItems,
   setTimetableItemToEditData,
   setSelectedTimetableItemIds,
+  filteredTimetableItems,
+  timetableFilters,
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
@@ -87,9 +91,6 @@ const Timetable = ({
     },
     [removeTimetableItems, setSelectedTimetableItemIds]
   );
-
-  const { filteredTimetableItems, ...timetableFilters } =
-    useFilterTimetableItems(timetableItemsWithDetails);
 
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
@@ -167,11 +168,9 @@ const Timetable = ({
         <TimetableToolbar
           showTrainDetails={showTrainDetails}
           toggleShowTrainDetails={toggleShowTrainDetails}
-          timetableItemsWithDetails={timetableItemsWithDetails}
           filteredTimetableItems={filteredTimetableItems}
           timetableFilters={timetableFilters}
           selectedTimetableItemIds={selectedTimetableItemIds}
-          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           removeTrains={removeAndUnselectTrains}
           timetableItems={timetableItems}
           isInSelection={selectedTimetableItemIds.length > 0}
