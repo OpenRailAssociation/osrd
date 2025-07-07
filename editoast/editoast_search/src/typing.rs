@@ -1,4 +1,4 @@
-//! Defines the low-level structures used by typecheking operations
+//! Defines the low-level structures used by typechecking operations
 use std::collections::hash_map::DefaultHasher;
 use std::collections::VecDeque;
 use std::fmt::Display;
@@ -237,7 +237,7 @@ impl TypeSpec {
         }
     }
 
-    /// Returns an iterator over tha flattened alternatives of a union
+    /// Returns an iterator over the flattened alternatives of a union
     pub fn iter_union_alternatives(&self) -> Alternatives<'_> {
         if matches!(self, Self::Union(_, _)) {
             Alternatives {
@@ -435,7 +435,7 @@ mod tests {
         assert!((AstType::Integer >> AstType::Boolean >> AstType::String)
             .typecheck_args(&[AstType::Boolean.into(), AstType::Integer.into()])
             .is_err());
-        // No coersion from missing to null
+        // No coercion from missing to null
         assert!((AstType::Integer >> AstType::String >> AstType::String)
             .typecheck_args(&[AstType::String.into()])
             .is_err());
