@@ -10,7 +10,7 @@ import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingState } from 'modules/pathfinding/types';
 import { upsertPathStepsInOPs } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
 import {
   getOperationalStudiesRollingStockID,
   getPathSteps,

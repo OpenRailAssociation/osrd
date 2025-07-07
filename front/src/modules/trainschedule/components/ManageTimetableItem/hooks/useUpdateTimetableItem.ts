@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import checkCurrentConfig from 'modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig';
+import checkCurrentConfig from 'modules/trainschedule/components/ManageTimetableItem/helpers/checkCurrentConfig';
 import {
   storePacedTrain,
   storeTrainSchedule,

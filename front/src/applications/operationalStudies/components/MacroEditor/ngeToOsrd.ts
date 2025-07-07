@@ -7,7 +7,7 @@ import {
   type TrainSchedule,
   type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
-import { checkChangeGroups } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/buildPacedTrainException';
+import { checkChangeGroups } from 'modules/trainschedule/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
   fetchTimetableItem,
   storePacedTrain,

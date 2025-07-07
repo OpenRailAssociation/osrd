@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
 
 import { findClosestOperationalPoint } from '../formatConflicts';
 

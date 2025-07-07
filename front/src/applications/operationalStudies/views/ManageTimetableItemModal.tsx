@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import TimetableManageItem, {
   type TimetableManageItemProps,
-} from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageItem';
+} from 'modules/trainschedule/components/ManageTimetableItem/TimetableManageItem';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import ImportTimetableItem from './ImportTimetableItem';

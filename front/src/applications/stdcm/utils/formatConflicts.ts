@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { StdcmPathProperties } from 'applications/stdcm/types';
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
 
 type ConflictWithInterval = {
   trainIds?: number[];

@@ -18,7 +18,7 @@ import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
-import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/ItineraryMarkers';
+import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';

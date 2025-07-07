@@ -157,7 +157,7 @@ infrastructure.
 
 - **components/**
   - **Helpers/**
-  - **ManageTrainSchedule/**
+  - **ManageTimetableItem/**
   - **Project/**
   - **Scenario/**
   - **SimulationResults/**
