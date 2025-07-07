@@ -139,7 +139,7 @@ const useDeploymentSettings = () => {
   const context = useContext(deploymentSettingsContext);
   if (!context) {
     throw new Error(
-      'useManageTrainScheduleContext must be used within a ManageTrainScheduleContext'
+      'useManageTimetableItemContext must be used within a ManageTimetableItemContext'
     );
   }
   return context.deploymentSettings;

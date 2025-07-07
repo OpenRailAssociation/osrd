@@ -4,7 +4,7 @@ import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import { getPathSteps, getVias } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { removeElementAtIndex } from 'utils/array';
@@ -18,7 +18,7 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const vias = useSelector(getVias());
   const pathSteps = useSelector(getPathSteps);
-  const { launchPathfinding } = useManageTrainScheduleContext();
+  const { launchPathfinding } = useManageTimetableItemContext();
 
   return (
     <>

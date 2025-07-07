@@ -8,7 +8,7 @@ import TimetableManageItem, {
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import ImportTimetableItem from './ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
-import { ManageTrainScheduleContextProvider } from '../hooks/useManageTrainScheduleContext';
+import { ManageTimetableItemContextProvider } from '../hooks/useManageTimetableItemContext';
 
 type ManageTimetableItemModalProps = TimetableManageItemProps & {
   scenario: ScenarioResponse;
@@ -46,9 +46,9 @@ const ManageTimetableItemModal = ({
         data-testid="manage-timetable-item"
       >
         <div className="scenario-manage-timetable-item-content">
-          <ManageTrainScheduleContextProvider>
+          <ManageTimetableItemContextProvider>
             <ManageTimetableItem />
-          </ManageTrainScheduleContextProvider>
+          </ManageTimetableItemContextProvider>
         </div>
         <button
           className="timetable-edit-collapse-button"

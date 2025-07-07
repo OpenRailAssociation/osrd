@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
@@ -30,7 +30,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
     pathProperties,
     pathfindingState,
     infraInfo: { infra, reloadCount },
-  } = useManageTrainScheduleContext();
+  } = useManageTimetableItemContext();
 
   const missingElements = conditionalStringConcat([
     [!origin, t('origin')],

@@ -11,7 +11,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { editoastToEditorEntity } from 'applications/editor/data/api';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
@@ -36,7 +36,7 @@ const AddPathStepPopup = ({
   featureInfoClick,
   resetFeatureInfoClick,
 }: AddPathStepPopupProps) => {
-  const { launchPathfinding } = useManageTrainScheduleContext();
+  const { launchPathfinding } = useManageTimetableItemContext();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
