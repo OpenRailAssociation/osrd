@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { RangedValue } from 'common/types';
@@ -22,7 +22,7 @@ const usePowerRestrictionSelector = (
   voltageRanges: RangedValue[],
   rollingStockPowerRestrictions: RollingStock['power_restrictions'],
   rollingStockModes: RollingStock['effort_curves']['modes'],
-  pathProperties: ManageTrainSchedulePathProperties
+  pathProperties: ManageTimetableItemPathProperties
 ) => {
   const powerRestrictionRanges = useSelector(getPowerRestrictions);
   const pathSteps = compact(useSelector(getPathSteps));

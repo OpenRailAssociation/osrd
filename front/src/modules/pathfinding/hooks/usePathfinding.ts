@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import type {
   IncompatibleConstraints,
   PathfindingInputError,
@@ -57,7 +57,7 @@ const usePathfinding = ({
   const { infra, reloadCount, setIsInfraError } = useInfraStatus({ infraId });
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
-  const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
+  const [pathProperties, setPathProperties] = useState<ManageTimetableItemPathProperties>();
 
   const [getRollingStockById] =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useLazyQuery();
