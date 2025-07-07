@@ -23,6 +23,7 @@ use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 use enumset::EnumSet;
 use enumset::EnumSetType;
+use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -78,6 +79,19 @@ struct PathProperties {
     /// Zones along the path
     #[schema(inline)]
     zones: Option<PropertyZoneValues>,
+}
+
+impl From<core_client::path_properties::PathPropertiesResponse> for PathProperties {
+    fn from(response: core_client::path_properties::PathPropertiesResponse) -> Self {
+        PathProperties {
+            slopes: Some(response.slopes),
+            curves: Some(response.curves),
+            electrifications: Some(response.electrifications),
+            geometry: Some(response.geometry),
+            operational_points: Some(response.operational_points),
+            zones: Some(response.zones),
+        }
+    }
 }
 
 impl PathProperties {
@@ -172,38 +186,54 @@ async fn post(
         infra: infra_id,
         expected_version: infra_version,
     };
-    let filtered_path_properties =
-        compute_path_properties_batch(core_client, &mut valkey_conn, &[request])
-            .await?
-            .pop()
-            .unwrap()
-            .filter_properties(query_props);
+    let path_properties = compute_path_properties_batch(core_client, &mut valkey_conn, &[request])
+        .await?
+        .next()
+        .unwrap();
 
-    Ok(Json(filtered_path_properties))
+    Ok(Json(
+        PathProperties::from(path_properties).filter_properties(query_props),
+    ))
 }
 
 /// Retrieves path properties from cache.
-async fn retrieve_path_properties_from_cache(
-    valkey_conn: &mut ValkeyConnection,
-    path_properties_request: &PathPropertiesRequest<'_>,
-) -> Result<Option<PathProperties>> {
-    let hash = path_properties_input_hash(path_properties_request);
-    valkey_conn.json_get(&hash).await
+#[tracing::instrument(skip_all, err)]
+async fn retrieve_path_properties_from_cache<'a>(
+    conn: &mut ValkeyConnection,
+    requests: &'a [PathPropertiesRequest<'a>],
+) -> Result<
+    impl Iterator<
+        Item = (
+            &'a PathPropertiesRequest<'a>,
+            Option<core_client::path_properties::PathPropertiesResponse>,
+        ),
+    >,
+> {
+    let keys = requests
+        .iter()
+        .map(path_properties_input_hash)
+        .collect_vec();
+    // required to collect because json_get_bulk takes a slice...
+    let cached = conn.json_get_bulk(&keys).await?.collect_vec();
+    Ok(requests.iter().zip(cached.into_iter()))
 }
 
 /// Set the cache of path properties.
-async fn cache_path_properties(
-    valkey_conn: &mut ValkeyConnection,
-    path_properties_request: &PathPropertiesRequest<'_>,
-    path_properties: &PathProperties,
+#[tracing::instrument(skip_all, err)]
+async fn cache_path_properties<'a>(
+    conn: &mut ValkeyConnection,
+    properties: impl IntoIterator<
+        Item = (
+            &'a PathPropertiesRequest<'a>,
+            &'a core_client::path_properties::PathPropertiesResponse,
+        ),
+    >,
 ) -> Result<()> {
-    // Compute hash
-    let hash = path_properties_input_hash(path_properties_request);
-
-    // Cache all properties except electrifications
-    valkey_conn.json_set(&hash, &path_properties).await?;
-
-    Ok(())
+    let data = properties
+        .into_iter()
+        .map(|(req, resp)| (path_properties_input_hash(req), resp))
+        .collect_vec();
+    conn.json_set_bulk(&data).await
 }
 
 /// Compute path properties input hash without supported electrifications
@@ -221,39 +251,36 @@ fn path_properties_input_hash(path_properties_request: &PathPropertiesRequest<'_
     )
 }
 
+#[tracing::instrument(skip_all, err)]
 async fn compute_path_properties_batch(
     core_client: Arc<CoreClient>,
-    valkey_conn: &mut ValkeyConnection,
-    path_properties_requests: &[PathPropertiesRequest<'_>],
-) -> Result<Vec<PathProperties>> {
-    let mut path_properties_result = Vec::with_capacity(path_properties_requests.len());
+    conn: &mut ValkeyConnection,
+    requests: &[PathPropertiesRequest<'_>],
+) -> Result<impl Iterator<Item = core_client::path_properties::PathPropertiesResponse>> {
+    let (cached, to_compute): (Vec<_>, Vec<_>) =
+        retrieve_path_properties_from_cache(conn, requests)
+            .await?
+            .partition_map(|(req, res)| match res {
+                Some(res) => Either::Left(res),
+                None => Either::Right(req),
+            });
 
-    for request in path_properties_requests {
-        match retrieve_path_properties_from_cache(valkey_conn, request).await? {
-            Some(path_properties) => {
-                tracing::debug!("Hit cache");
-                path_properties_result.push(path_properties);
-            }
-            None => {
-                let computed_path_properties = request.fetch(&core_client).await?;
+    tracing::debug!(
+        hit = cached.len(),
+        miss = to_compute.len(),
+        "retrieved path properties from cache"
+    );
 
-                let path_properties = PathProperties {
-                    slopes: Some(computed_path_properties.slopes),
-                    curves: Some(computed_path_properties.curves),
-                    electrifications: Some(computed_path_properties.electrifications),
-                    geometry: Some(computed_path_properties.geometry),
-                    operational_points: Some(computed_path_properties.operational_points),
-                    zones: Some(computed_path_properties.zones),
-                };
+    let futures = to_compute.iter().map(|req| req.fetch(&core_client));
+    let computed = futures::future::try_join_all(futures).await?;
 
-                cache_path_properties(valkey_conn, request, &path_properties).await?;
+    tracing::debug!(computed = computed.len(), "computed path properties");
 
-                path_properties_result.push(path_properties)
-            }
-        }
-    }
+    cache_path_properties(conn, to_compute.into_iter().zip(computed.iter())).await?;
 
-    Ok(path_properties_result)
+    tracing::debug!("cached path properties");
+
+    Ok(cached.into_iter().chain(computed.into_iter()))
 }
 
 #[cfg(test)]
@@ -261,7 +288,6 @@ mod tests {
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
     use core_client::path_properties::OperationalPointOnPath;
-    use core_client::path_properties::PathPropertiesResponse;
     use core_client::path_properties::PropertyElectrificationValue;
     use core_client::path_properties::PropertyElectrificationValues;
     use core_client::path_properties::PropertyValuesF64;
@@ -279,8 +305,8 @@ mod tests {
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
-    fn path_properties_response() -> PathPropertiesResponse {
-        PathPropertiesResponse {
+    fn path_properties_response() -> core_client::path_properties::PathPropertiesResponse {
+        core_client::path_properties::PathPropertiesResponse {
             slopes: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
             curves: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
             electrifications: PropertyElectrificationValues::new(
