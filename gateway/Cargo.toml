@@ -53,7 +53,7 @@ regex = "1.11.1"
 # actix_auth
 actix-web-httpauth = "0.8"
 
-openidconnect = "4.0.0-rc.1"
+openidconnect = "4.0.1"
 reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
