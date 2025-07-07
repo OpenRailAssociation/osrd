@@ -45,7 +45,7 @@ import {
 import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
-import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from '../hooks/useManageTimetableItemContext';
 
 const ManageTimetableItem = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
@@ -57,7 +57,7 @@ const ManageTimetableItem = () => {
     pathStepsAndSuggestedOPs,
     launchPathfinding,
     pathfindingState,
-  } = useManageTrainScheduleContext();
+  } = useManageTimetableItemContext();
   const { updateRollingStockID } = useOsrdConfActions();
 
   const origin = useSelector(getOrigin);

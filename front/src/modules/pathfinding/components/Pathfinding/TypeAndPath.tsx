@@ -6,7 +6,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidV4 } from 'uuid';
 
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import type {
   PostSearchApiArg,
   SearchResultItemOperationalPoint,
@@ -59,7 +59,7 @@ type TypeAndPathProps = {
 };
 
 const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps) => {
-  const { launchPathfinding } = useManageTrainScheduleContext();
+  const { launchPathfinding } = useManageTimetableItemContext();
 
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);

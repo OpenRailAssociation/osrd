@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
 import { useSelector } from 'react-redux';
 
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import { getDestination, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
@@ -14,7 +14,7 @@ type DestinationProps = {
 };
 
 const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
-  const { launchPathfinding } = useManageTrainScheduleContext();
+  const { launchPathfinding } = useManageTimetableItemContext();
 
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
