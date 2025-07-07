@@ -47,7 +47,7 @@ import { formatKmValue } from 'utils/strings';
 
 import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
 
-const ManageTrainSchedule = () => {
+const ManageTimetableItem = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -261,4 +261,4 @@ const ManageTrainSchedule = () => {
   );
 };
 
-export default ManageTrainSchedule;
+export default ManageTimetableItem;

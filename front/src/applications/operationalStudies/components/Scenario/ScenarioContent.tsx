@@ -11,7 +11,7 @@ import {
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
-import ManageTrainScheduleModal from 'applications/operationalStudies/views/ManageTrainScheduleModal';
+import ManageTimetableItemModal from 'applications/operationalStudies/views/ManageTimetableItemModal';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
@@ -178,9 +178,9 @@ const ScenarioContent = ({
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
         {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
-          <ManageTrainScheduleModal
-            displayTrainScheduleManagement={displayTrainScheduleManagement}
-            setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+          <ManageTimetableItemModal
+            displayTimetableItemManagement={displayTrainScheduleManagement}
+            setDisplayTimetableItemManagement={setDisplayTrainScheduleManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}
             removeTimetableItems={removeTimetableItemsWithNge}
             infraState={infra.state}
