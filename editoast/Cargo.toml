@@ -106,7 +106,7 @@ strum = { version = "0.26.3", features = ["derive"] }
 syn = "2.0"
 tempfile = "3.20.0"
 thiserror = "2.0.12"
-tokio = { version = "1.45.1", features = ["fs", "macros", "rt-multi-thread"] }
+tokio = { version = "1.46.1", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.13"
 tracing = { version = "0.1.41", default-features = false, features = [
   "attributes",
