@@ -41,30 +41,35 @@ test.describe('Verify train schedule elements and filters', () => {
   let scenarioItems: Scenario;
   let infra: Infra;
 
-  test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('timetable-item-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson);
-    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
+  test.beforeAll(
+    'Setup project, study, infra and create scenario with timetableItems',
+    async () => {
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
+      infra = await getInfra();
+      scenarioItems = (
+        await createScenario(
+          generateUniqueName('timetable-item-scenario'),
+          project.id,
+          study.id,
+          infra.id
+        )
+      ).scenario;
+      await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson);
+      await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
+    }
+  );
 
+  test.afterAll('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenarioItems.name);
+  });
+
+  test.beforeEach('Go to scenario page', async ({ page }) => {
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
     await waitForInfraStateToBeCached(infra.id);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
   test('Duplicate and delete a paced train', async ({ page }) => {

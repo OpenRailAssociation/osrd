@@ -53,22 +53,29 @@ test.describe('Edit trains and missions', () => {
   let scenarioItems: Scenario;
   let infra: Infra;
 
-  test.beforeAll('Load paced trains JSON', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('edit-train-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
+  test.beforeAll(
+    'Setup project, study, infra and create scenario with timetableItems',
+    async () => {
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
+      infra = await getInfra();
+      scenarioItems = (
+        await createScenario(
+          generateUniqueName('edit-train-scenario'),
+          project.id,
+          study.id,
+          infra.id
+        )
+      ).scenario;
+      await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
+    }
+  );
+
+  test.afterAll('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
-  test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
+  test.beforeEach('Go to scenario page', async ({ page }) => {
     [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
       new PacedTrainSection(page),
       new ScenarioTimetableSection(page),
@@ -80,10 +87,6 @@ test.describe('Edit trains and missions', () => {
     );
     await waitForInfraStateToBeCached(infra.id);
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
   test('Modify a paced train and create added exception', async () => {

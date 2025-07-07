@@ -91,11 +91,16 @@ test.describe('Verify simulation configuration in operational studies for train 
   let scenario: Scenario;
   let infra: Infra;
 
-  test.beforeAll('Fetch infrastructure and get translations', async () => {
+  test.beforeAll('Fetch infrastructure and set up the scenario', async () => {
     infra = await getInfra();
+    ({ project, study, scenario } = await createScenario());
   });
 
-  test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
+  test.afterAll('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenario.name);
+  });
+
+  test.beforeEach('Go to scenario page', async ({ page }) => {
     [
       rollingstockSelector,
       operationalStudiesPage,
@@ -118,8 +123,6 @@ test.describe('Verify simulation configuration in operational studies for train 
       new ScenarioPage(page),
     ];
 
-    ({ project, study, scenario } = await createScenario());
-
     // Navigate to the scenario page for the given project and study
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
@@ -130,10 +133,6 @@ test.describe('Verify simulation configuration in operational studies for train 
     await waitForInfraStateToBeCached(infra.id);
 
     await page.waitForLoadState('networkidle');
-  });
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
   });
 
   /** *************** Test 1 **************** */

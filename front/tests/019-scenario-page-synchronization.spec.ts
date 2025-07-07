@@ -18,6 +18,7 @@ import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
 import createScenario from './utils/scenario';
+import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type {
   CommonTranslations,
@@ -54,26 +55,33 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
   let scenarioItems: Scenario;
   let infra: Infra;
 
-  test.beforeEach('Fetch project, study and scenario with train schedule', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('scenario-page-synchronization'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendTrainSchedules(
-      scenarioItems.timetable_id,
-      JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
-    );
-    await sendPacedTrains(
-      scenarioItems.timetable_id,
-      JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
-    );
+  test.beforeAll(
+    'Setup project, study, infra and create scenario with timetableItems',
+    async () => {
+      project = await getProject(trainScheduleProjectName);
+      study = await getStudy(project.id, trainScheduleStudyName);
+      infra = await getInfra();
+      scenarioItems = (
+        await createScenario(
+          generateUniqueName('scenario-page-synchronization'),
+          project.id,
+          study.id,
+          infra.id
+        )
+      ).scenario;
+      await sendTrainSchedules(
+        scenarioItems.timetable_id,
+        JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
+      );
+      await sendPacedTrains(
+        scenarioItems.timetable_id,
+        JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
+      );
+    }
+  );
+
+  test.afterAll('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
   test('Reflects updates across tabs ', async ({ context }) => {
