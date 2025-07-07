@@ -379,9 +379,12 @@ jobs:
           enable-cache: true
       - name: Check infra_schema.json sync
         run: |
-          uv --directory python/osrd_schemas/ sync
-          uv --directory python/osrd_schemas/ run python -m osrd_schemas.infra_editor > current_infra_schema.json
+          cp front/src/reducers/osrdconf/infra_schema.json current_infra_schema.json
+          cp front/public/locales/en/infraEditor.json current_infra_en_translations.json
+          ./scripts/sync-infra-schema.sh
           diff current_infra_schema.json front/src/reducers/osrdconf/infra_schema.json
+      - name: Check locales/en/infraEditor.json sync
+        run: diff current_infra_en_translations.json front/public/locales/en/infraEditor.json
 
   check_front_rtk_sync:
     runs-on: ubuntu-latest

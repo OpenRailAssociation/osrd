@@ -1,147 +1,830 @@
 {
   "ApplicableDirections": {
-    "description": "Used to determine the direction of application of certain objects.",
+    "description": "This is used to know the direction of application of certain objects",
     "title": "Applicable directions"
   },
   "ApplicableDirectionsTrackRange": {
-    "description": "Track Route Section interval with associated directions.",
+    "description": "An applicable directions track range is a track range with associated directions.",
     "properties": {
       "applicable_directions": {
-        "description": "Direction in which the corresponding object is applied."
+        "description": "Direction where the corresponding object is applied"
       },
       "begin": {
-        "description": "Distance from start of corresponding Track Route Section (in metres).",
-        "title": "Started"
+        "description": "Begin offset in meters of the corresponding track section",
+        "title": "Begin"
       },
       "end": {
-        "description": "Offset from the end of the corresponding Track Route Section (in meters).",
+        "description": "End offset in meters of the corresponding track section",
         "title": "End"
       },
       "track": {
-        "description": "Track Route Section id",
+        "description": "Identifier of the track section",
         "title": "Track"
       }
     },
-    "title": "ApplicableDirectionsTrackRange"
+    "title": "Applicable directions track range"
   },
   "BalSystem": {
     "properties": {
       "conditional_parameters": {
         "description": "BAL signal parameters for specific routes",
-        "title": "Conditional Parameters"
+        "title": "Conditional parameters"
       },
       "default_parameters": {
         "description": "BAL signal parameters"
       },
       "next_signaling_systems": {
-        "description": "List of authorized entry signalling systems.",
-        "title": "Following signaling systems"
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
       },
       "settings": {
-        "description": "Automatic colour-light block parameters"
+        "description": "BAL signal settings"
+      },
+      "signaling_system": {
+        "title": "Signaling system"
       }
     },
-    "title": "Automatic colour-light block signaling system"
+    "title": "Bal system"
   },
   "BaprSystem": {
     "properties": {
+      "conditional_parameters": {
+        "description": "BAPR signal parameters for specific routes",
+        "title": "Conditional parameters"
+      },
       "next_signaling_systems": {
-        "description": "List of authorized entry signalling systems.",
-        "title": "Following signaling systems"
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
+      },
+      "parameters": {
+        "description": "BAPR signal parameters"
       },
       "settings": {
-        "description": "Partly permissive automatic block parameters"
+        "description": "BAPR signal settings"
+      },
+      "signaling_system": {
+        "title": "Signaling system"
       }
     },
-    "title": "Partly permissive automatic block signaling system"
+    "title": "Bapr system"
   },
   "BufferStop": {
-    "description": "A buffer stop is a device placed at the end of a dead-end track to prevent running trains from continuing on their way. It is characterized by its identifier and corresponding track.",
+    "description": "This class defines the buffer stop object.\nA buffer stop is a device placed at the end of a dead-end road\nto stop any drifting trains from continuing off the road.\nA buffer stop is characterized by its id and its corresponding track.",
     "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
       "position": {
-        "description": "Distance from start of corresponding Track Route Section (in metres).",
+        "description": "Offset of the point in meters to the beginning of the track section",
         "title": "Position"
       },
       "track": {
-        "description": "Reference to the section on which the object is located",
+        "description": "Reference to the track section on which the object is located",
         "title": "Track"
       }
     },
     "title": "Buffer stop"
   },
+  "BufferStopExtensions": {
+    "title": "Buffer stop extensions"
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "Identifier of the buffer stop",
+        "title": "Id"
+      },
+      "type": {
+        "title": "Type"
+      }
+    },
+    "title": "Buffer stop reference"
+  },
   "BufferStopSncfExtension": {
     "properties": {
       "kp": {
-        "description": "Kilometre point at which the buffer stop is located.",
-        "title": "KP"
+        "description": "Kilometric point of the buffer stop",
+        "title": "Kp"
       }
-    }
+    },
+    "title": "Buffer stop sncf extension"
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "Route on which the parameters are applied",
+        "title": "On route"
+      },
+      "parameters": {
+        "description": "List of key value parameters, which are defined per signaling system",
+        "title": "Parameters"
+      }
+    },
+    "title": "Conditional parameter"
+  },
+  "Curve": {
+    "description": "This class is used to define the curve object.\nA curve correspond at radius of curvature in the part of corresponding track section.",
+    "properties": {
+      "begin": {
+        "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
+        "title": "Begin"
+      },
+      "end": {
+        "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
+        "title": "End"
+      },
+      "radius": {
+        "description": "Corresponding radius of curvature measured in meters",
+        "title": "Radius"
+      }
+    },
+    "title": "Curve"
+  },
+  "Detector": {
+    "description": "This class defines detector object.\nA detector is characterized by its id and its corresponding track.\nA detector is used to locate a train\nin order to consider the section as occupied when there is a train.",
+    "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "position": {
+        "description": "Offset of the point in meters to the beginning of the track section",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Reference to the track section on which the object is located",
+        "title": "Track"
+      }
+    },
+    "title": "Detector"
+  },
+  "DetectorExtensions": {
+    "title": "Detector extensions"
+  },
+  "DetectorReference": {
+    "properties": {
+      "id": {
+        "description": "Identifier of the detector",
+        "title": "Id"
+      },
+      "type": {
+        "title": "Type"
+      }
+    },
+    "title": "Detector reference"
+  },
+  "DetectorSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometric point of the detector",
+        "title": "Kp"
+      }
+    },
+    "title": "Detector sncf extension"
+  },
+  "Direction": {
+    "description": "This is the description of the direction (increasing or decreasing profile).",
+    "title": "Direction"
+  },
+  "DirectionalTrackRange": {
+    "description": "A directional track range is a track range with an associated direction.",
+    "properties": {
+      "begin": {
+        "description": "Begin offset in meters of the corresponding track section",
+        "title": "Begin"
+      },
+      "direction": {
+        "description": "Description of the direction"
+      },
+      "end": {
+        "description": "End offset in meters of the corresponding track section",
+        "title": "End"
+      },
+      "track": {
+        "description": "Identifier of the track section",
+        "title": "Track"
+      }
+    },
+    "title": "Directional track range"
   },
   "Electrification": {
-    "description": "An electrification is a set of cables used to power trains using a pantograph. The electrification is identified by an id",
+    "description": "An electrification corresponds to a set of cables designed to power\nelectric trains by capturing the current through the use\nof a pantograph. Electrification is identified by its identifier.",
+    "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "track_ranges": {
+        "description": "List of locations where the voltage is applied",
+        "title": "Track ranges"
+      },
+      "voltage": {
+        "description": "Type of power supply (in Volts) used for electrification",
+        "title": "Voltage"
+      }
+    },
     "title": "Electrification"
+  },
+  "Endpoint": {
+    "title": "Endpoint"
+  },
+  "EtcsLevel2System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "ETCS_LEVEL2 signal parameters for specific routes",
+        "title": "Conditional parameters"
+      },
+      "default_parameters": {
+        "description": "ETCS_LEVEL2 signal parameters"
+      },
+      "next_signaling_systems": {
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
+      },
+      "settings": {
+        "description": "ETCS_LEVEL2 signal settings"
+      },
+      "signaling_system": {
+        "title": "Signaling system"
+      }
+    },
+    "title": "Etcs level2 system"
+  },
+  "FlagSignalParameter": {
+    "title": "Flag signal parameter"
+  },
+  "LimitedLogicalSignal": {
+    "description": "Limited list of logical signals. Used to generate a usable schema for the front editor",
+    "title": "Limited logical signal"
   },
   "LineString": {
     "description": "LineString Model",
     "properties": {
       "bbox": {
         "title": "Bbox"
+      },
+      "coordinates": {
+        "title": "Coordinates"
+      },
+      "type": {
+        "title": "Type"
       }
     },
-    "title": "Séquence de points"
+    "title": "Line string"
+  },
+  "LoadingGaugeLimit": {
+    "description": "This class is used to define loading gauge limit.\nIt represents a restriction on the trains according to their categories of loading gauge\nand the type of the corresponding rolling stock.",
+    "properties": {
+      "begin": {
+        "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
+        "title": "Begin"
+      },
+      "category": {
+        "description": "Category of loading gauge for the corresponding rolling stock"
+      },
+      "end": {
+        "description": "Offset in meters corresponding at the end of the corresponding loading gauge limit",
+        "title": "End"
+      }
+    },
+    "title": "Loading gauge limit"
+  },
+  "LoadingGaugeType": {
+    "description": "This class allows to know the category of the loading gauge.",
+    "title": "Loading gauge type"
+  },
+  "LogicalSignal": {
+    "description": "A logical signal is what displays something, whereas a physical signal is a group of logical signals",
+    "properties": {
+      "conditional_parameters": {
+        "description": "A list of conditional parameters, which are defined per signaling system",
+        "title": "Conditional parameters"
+      },
+      "default_parameters": {
+        "description": "A list of default parameters (in regards to routes), which are defined per signaling system",
+        "title": "Default parameters"
+      },
+      "next_signaling_systems": {
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
+      },
+      "settings": {
+        "description": "A list of key value parameters, which are defined per signaling system",
+        "title": "Settings"
+      },
+      "signaling_system": {
+        "description": "The signal's output signaling system",
+        "title": "Signaling system"
+      }
+    },
+    "title": "Logical signal"
+  },
+  "NeutralSection": {
+    "description": "Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.\nThey have to rely on inertia to cross such sections.\n\nIn practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\nto allow accounting for different sign placement depending on the direction.\n\nFor more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).",
+    "properties": {
+      "announcement_track_ranges": {
+        "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
+        "title": "Announcement track ranges"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "lower_pantograph": {
+        "description": "Whether or not trains need to lower their pantograph in the section",
+        "title": "Lower pantograph"
+      },
+      "track_ranges": {
+        "description": "List of locations where the train cannot pull power from electrifications",
+        "title": "Track ranges"
+      }
+    },
+    "title": "Neutral section"
+  },
+  "NeutralSectionExtensions": {
+    "title": "Neutral section extensions"
+  },
+  "NeutralSectionNeutralSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "Precise that there is bp/cc neutral section",
+        "title": "Announcement"
+      },
+      "end": {
+        "description": "End of the bp/cc neutral section",
+        "title": "End"
+      },
+      "exe": {
+        "description": "Beginning of the bp/cc neutral section"
+      },
+      "rev": {
+        "description": "REV of the bp/cc neutral section",
+        "title": "Rev"
+      }
+    },
+    "title": "Neutral section neutral sncf extension"
+  },
+  "OperationalPoint": {
+    "description": "This class describes the operational points of the corresponding infra.",
+    "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "parts": {
+        "title": "Parts"
+      },
+      "weight": {
+        "description": "represents the significance of a PR",
+        "title": "Weight"
+      }
+    },
+    "title": "Operational point"
+  },
+  "OperationalPointExtensions": {
+    "title": "Operational point extensions"
+  },
+  "OperationalPointIdentifierExtension": {
+    "properties": {
+      "name": {
+        "description": "Name of the operational point",
+        "title": "Name"
+      },
+      "uic": {
+        "description": "International Union of Railways code of the operational point",
+        "title": "Uic"
+      }
+    },
+    "title": "Operational point identifier extension"
+  },
+  "OperationalPointPart": {
+    "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
+    "properties": {
+      "position": {
+        "description": "Offset of the point in meters to the beginning of the track section",
+        "title": "Position"
+      },
+      "track": {
+        "description": "Reference to the track section on which the object is located",
+        "title": "Track"
+      }
+    },
+    "title": "Operational point part"
+  },
+  "OperationalPointPartExtensions": {
+    "title": "Operational point part extensions"
+  },
+  "OperationalPointPartSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometric point of the operational point part",
+        "title": "Kp"
+      }
+    },
+    "title": "Operational point part sncf extension"
   },
   "OperationalPointSncfExtension": {
     "properties": {
       "ch": {
-        "description": " // THOR site code of the operational point",
+        "description": "THOR site code of the operational point",
         "title": "Ch"
       },
       "ch_long_label": {
-        "description": " // THOR site code long label of the operational point",
-        "title": "Ch Long Label"
+        "description": "THOR site code long label of the operational point",
+        "title": "Ch long label"
       },
       "ch_short_label": {
-        "description": " // THOR site code short label of the operational point",
-        "title": "Ch Short Label"
+        "description": "THOR site code short label of the operational point",
+        "title": "Ch short label"
       },
       "ci": {
-        "description": " // THOR immutable code of the operational point",
+        "description": "THOR immutable code of the operational point",
         "title": "Ci"
+      },
+      "trigram": {
+        "description": "Unique SNCF trigram of the operational point",
+        "title": "Trigram"
       }
-    }
+    },
+    "title": "Operational point sncf extension"
+  },
+  "Route": {
+    "description": "This class is used to describe routes on the infrastructure.",
+    "properties": {
+      "entry_point": {
+        "title": "Entry point"
+      },
+      "entry_point_direction": {
+        "description": "Direction of the route at the entry point"
+      },
+      "exit_point": {
+        "title": "Exit point"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "release_detectors": {
+        "description": "Detector allowing the release of resources reserved from the beginning of the route until this one",
+        "title": "Release detectors"
+      },
+      "switches_directions": {
+        "description": "Switches position part of the route",
+        "title": "Switches directions"
+      }
+    },
+    "title": "Route"
+  },
+  "Side": {
+    "description": "This class describes the side of the track where the signal is located.",
+    "title": "Side"
+  },
+  "Sign": {
+    "description": "This class is used to define signs.\nThis is a physical, punctual, cosmetic object.",
+    "properties": {
+      "direction": {
+        "description": "Direction of the sign on the track"
+      },
+      "kp": {
+        "description": "Kilometric point of the sign",
+        "title": "Kp"
+      },
+      "position": {
+        "description": "Offset of the point in meters to the beginning of the track section",
+        "title": "Position"
+      },
+      "side": {
+        "description": "Side of the sign on the track"
+      },
+      "track": {
+        "description": "Reference to the track section on which the object is located",
+        "title": "Track"
+      },
+      "type": {
+        "description": "Precise the type of the sign",
+        "title": "Type"
+      },
+      "value": {
+        "description": "If the sign is an announcement, precise the value(s)",
+        "title": "Value"
+      }
+    },
+    "title": "Sign"
+  },
+  "Signal": {
+    "description": "This class is used to describe the signal.\nA signal is characterized by its id and its corresponding track.\nBy default, the signal is located at the center of the track.",
+    "properties": {
+      "direction": {
+        "description": "Direction of use of the signal"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "logical_signals": {
+        "description": "Logical signals bundled into this physical signal",
+        "title": "Logical signals"
+      },
+      "position": {
+        "description": "Offset of the point in meters to the beginning of the track section",
+        "title": "Position"
+      },
+      "sight_distance": {
+        "description": "Visibility distance of the signal in meters",
+        "title": "Sight distance"
+      },
+      "track": {
+        "description": "Reference to the track section on which the object is located",
+        "title": "Track"
+      }
+    },
+    "title": "Signal"
+  },
+  "SignalExtensions": {
+    "title": "Signal extensions"
+  },
+  "SignalSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "Kilometric point of the signal",
+        "title": "Kp"
+      },
+      "label": {
+        "title": "Label"
+      },
+      "side": {
+        "description": "Side of the signal on the track"
+      }
+    },
+    "title": "Signal sncf extension"
+  },
+  "SignalingSystem": {
+    "title": "Signaling system"
+  },
+  "Slope": {
+    "description": "This class is used to define the slope object.\nA slope correspond at the gradient in the part of corresponding track section.\nThe gradient can be positive (case of ramp) or negative (slope case)",
+    "properties": {
+      "begin": {
+        "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
+        "title": "Begin"
+      },
+      "end": {
+        "description": "Offset in meters corresponding at the end of the corresponding gradient in a track section",
+        "title": "End"
+      },
+      "gradient": {
+        "description": "Corresponding gradient, measured in meters per kilometers",
+        "title": "Gradient"
+      }
+    },
+    "title": "Slope"
+  },
+  "SpeedSection": {
+    "description": "Speed sections are recognized by their identifiers and are in meters per second.",
+    "properties": {
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "on_routes": {
+        "description": "A list of routes the speed limit is enforced on.\nWhen empty or None, the speed limit is enforced regardless of the route.",
+        "title": "On routes"
+      },
+      "speed_limit": {
+        "description": "Speed limit (m/s) applied by default to trains that aren't in any specified category",
+        "title": "Speed limit"
+      },
+      "speed_limit_by_tag": {
+        "description": "Speed limit (m/s) applied to trains with a given tag",
+        "title": "Speed limit by tag"
+      },
+      "track_ranges": {
+        "description": "List of locations where speed section is applied",
+        "title": "Track ranges"
+      }
+    },
+    "title": "Speed section"
+  },
+  "SpeedSectionExtensions": {
+    "title": "Speed section extensions"
+  },
+  "SpeedSectionPslSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "Precise the value(s) of the speed",
+        "title": "Announcement"
+      },
+      "r": {
+        "description": "End of the psl speed section",
+        "title": "R"
+      },
+      "z": {
+        "description": "Beginning of the psl speed section"
+      }
+    },
+    "title": "Speed section psl sncf extension"
+  },
+  "Switch": {
+    "description": "Switches are devices used for track changes.",
+    "properties": {
+      "group_change_delay": {
+        "description": "Time it takes to change which group of the switch is activated",
+        "title": "Group change delay"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "ports": {
+        "description": "Location of different ports according to track sections",
+        "title": "Ports"
+      },
+      "switch_type": {
+        "description": "Identifier and type of the switch type",
+        "title": "Switch type"
+      }
+    },
+    "title": "Switch"
+  },
+  "SwitchExtensions": {
+    "title": "Switch extensions"
+  },
+  "SwitchPortConnection": {
+    "description": "This class allows to know the connection between each port in switch type.\nThe connection is always bidirectional.",
+    "properties": {
+      "dst": {
+        "description": "Port name that is destination of the connection",
+        "title": "Dst"
+      },
+      "src": {
+        "description": "Port name that is source of the connection",
+        "title": "Src"
+      }
+    },
+    "title": "Switch port connection"
+  },
+  "SwitchSncfExtension": {
+    "properties": {
+      "label": {
+        "description": "Identifier of the switch",
+        "title": "Label"
+      }
+    },
+    "title": "Switch sncf extension"
+  },
+  "SwitchType": {
+    "description": "Switch types are used to define what kind of switch is used in the infrastructure.\nA switch type is defined by a list of ports and groups which are the possible configurations of the switch.",
+    "properties": {
+      "groups": {
+        "description": "Connection between and according ports",
+        "title": "Groups"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
+      "ports": {
+        "description": "List of ports. Ports map to the ends of switches",
+        "title": "Ports"
+      }
+    },
+    "title": "Switch type"
+  },
+  "TrackEndpoint": {
+    "description": "This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.",
+    "properties": {
+      "endpoint": {
+        "description": "Relative position of the considered end point"
+      },
+      "track": {
+        "description": "Identifier and type of the track",
+        "title": "Track"
+      }
+    },
+    "title": "Track endpoint"
   },
   "TrackSection": {
+    "description": "A track section is a piece of track and is the tracking system used in OSRD to locate a point.\nA track section is identified by his unique id and its coordinates (geographic).",
     "properties": {
+      "curves": {
+        "description": "List of curves of corresponding track section",
+        "title": "Curves"
+      },
+      "geo": {
+        "description": "Geographic coordinates of the corresponding object"
+      },
+      "id": {
+        "description": "Unique identifier of the object",
+        "title": "Id"
+      },
       "length": {
-        "description": "Length of the track section (in meters)",
+        "description": "Value of the length of the track section in meters",
         "title": "Length"
+      },
+      "loading_gauge_limits": {
+        "description": "List of loading gauge limits of corresponding track section",
+        "title": "Loading gauge limits"
+      },
+      "slopes": {
+        "description": "List of slopes of corresponding track section",
+        "title": "Slopes"
       }
     },
     "title": "Track section"
   },
+  "TrackSectionExtensions": {
+    "title": "Track section extensions"
+  },
+  "TrackSectionSncfExtension": {
+    "properties": {
+      "line_code": {
+        "description": "Code of the line used by the corresponding track section",
+        "title": "Line code"
+      },
+      "line_name": {
+        "description": "Name of the line used by the corresponding track section",
+        "title": "Line name"
+      },
+      "track_name": {
+        "description": "Name corresponding to the track used",
+        "title": "Track name"
+      },
+      "track_number": {
+        "description": "Number corresponding to the track used",
+        "title": "Track number"
+      }
+    },
+    "title": "Track section sncf extension"
+  },
   "TrackSectionSourceExtension": {
     "properties": {
       "id": {
-        "description": "ID of the element within the source",
-        "title": "Source ID"
+        "description": "ID used for the line in the source",
+        "title": "Id"
       },
       "name": {
         "description": "Name of the source",
-        "title": "Source"
+        "title": "Name"
       }
-    }
+    },
+    "title": "Track section source extension"
+  },
+  "Tvm300System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "TVM signal parameters for specific routes",
+        "title": "Conditional parameters"
+      },
+      "default_parameters": {
+        "description": "TVM signal parameters"
+      },
+      "next_signaling_systems": {
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
+      },
+      "settings": {
+        "description": "TVM signal settings"
+      },
+      "signaling_system": {
+        "title": "Signaling system"
+      }
+    },
+    "title": "Tvm300 system"
+  },
+  "Tvm430System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "TVM signal parameters for specific routes",
+        "title": "Conditional parameters"
+      },
+      "default_parameters": {
+        "description": "TVM signal parameters"
+      },
+      "next_signaling_systems": {
+        "description": "The list of allowed input signaling systems",
+        "title": "Next signaling systems"
+      },
+      "settings": {
+        "description": "TVM signal settings"
+      },
+      "signaling_system": {
+        "title": "Signaling system"
+      }
+    },
+    "title": "Tvm430 system"
   },
   "__main____BalSystem__ConditionalParameters": {
     "properties": {
       "on_route": {
         "description": "Route for which those parameters are active",
-        "title": "On Route"
+        "title": "On route"
       },
       "parameters": {
         "description": "BAL signal parameters"
       }
     },
-    "title": "Conditional Parameters"
+    "title": "Conditional parameters"
   },
   "__main____BalSystem__Parameters": {
     "properties": {
@@ -151,12 +834,157 @@
     },
     "title": "Parameters"
   },
-  "__main____TvmSystem__Settings": {
+  "__main____BalSystem__Settings": {
     "properties": {
-      "is_430": {
-        "description": "TVM-430"
+      "Nf": {
+        "description": "Is the signal non-passable"
       }
     },
-    "title": "Paramètres TVM"
+    "title": "Settings"
+  },
+  "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On route"
+      },
+      "parameters": {
+        "description": "BAPR signal parameters"
+      }
+    },
+    "title": "Conditional parameters"
+  },
+  "__main____BaprSystem__Parameters": {
+    "title": "Parameters"
+  },
+  "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Is the signal non-passable"
+      },
+      "distant": {
+        "description": "Is it a distant signal"
+      }
+    },
+    "title": "Settings"
+  },
+  "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On route"
+      },
+      "parameters": {
+        "description": "ETCS_LEVEL2 signal parameters"
+      }
+    },
+    "title": "Conditional parameters"
+  },
+  "__main____EtcsLevel2System__Parameters": {
+    "title": "Parameters"
+  },
+  "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Is the signal non-passable"
+      }
+    },
+    "title": "Settings"
+  },
+  "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On route"
+      },
+      "parameters": {
+        "description": "TVM300 signal parameters"
+      }
+    },
+    "title": "Conditional parameters"
+  },
+  "__main____Tvm300System__Parameters": {
+    "title": "Parameters"
+  },
+  "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Is the signal non-passable"
+      }
+    },
+    "title": "Settings"
+  },
+  "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On route"
+      },
+      "parameters": {
+        "description": "TVM430 signal parameters"
+      }
+    },
+    "title": "Conditional parameters"
+  },
+  "__main____Tvm430System__Parameters": {
+    "title": "Parameters"
+  },
+  "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Is the signal non-passable"
+      }
+    },
+    "title": "Settings"
+  },
+  "properties": {
+    "buffer_stops": {
+      "description": "Buffer stops of the infra",
+      "title": "Buffer stops"
+    },
+    "detectors": {
+      "description": "Detectors of the infra",
+      "title": "Detectors"
+    },
+    "electrifications": {
+      "description": "Electrifications of the infra",
+      "title": "Electrifications"
+    },
+    "extended_switch_types": {
+      "description": "Switch types of the infra that can be added by the user",
+      "title": "Extended switch types"
+    },
+    "neutral_sections": {
+      "description": "Neutral sections of the infra",
+      "title": "Neutral sections"
+    },
+    "operational_points": {
+      "description": "List of operational points of the corresponding infra",
+      "title": "Operational points"
+    },
+    "routes": {
+      "description": "Routes of the infra",
+      "title": "Routes"
+    },
+    "signals": {
+      "description": "Signals of the infra",
+      "title": "Signals"
+    },
+    "speed_sections": {
+      "description": "Speed sections of the infra",
+      "title": "Speed sections"
+    },
+    "switches": {
+      "description": "Switches of the infra",
+      "title": "Switches"
+    },
+    "track_sections": {
+      "description": "Track sections of the infra",
+      "title": "Track sections"
+    },
+    "version": {
+      "description": "Version of the schema",
+      "title": "Version"
+    }
   }
 }
