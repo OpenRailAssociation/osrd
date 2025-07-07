@@ -151,6 +151,7 @@
     "pacedTrain_zero": "0 service",
     "requestedPoint": "requested point ({{ count }})",
     "roundTripsModal": {
+      "cadence": "Cadence",
       "manageRoundTrips": "Manage round trips",
       "oneWays": "One-ways",
       "roundTrips": "Round trips",

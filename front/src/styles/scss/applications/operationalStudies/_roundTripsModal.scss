@@ -36,8 +36,8 @@
     padding-inline: 56px;
 
     .round-trips-modal-column {
-      // TODO : remove this hard coded width after item cards are integrated
       width: 344px;
+      min-width: 0;
 
       &.round-trips-column {
         width: 664px;
@@ -72,30 +72,160 @@
 
       .column-wrapper {
         display: flex;
-        align-items: center;
-        gap: 2px;
+        flex-direction: column;
+        gap: 17px;
         width: 100%;
         padding: 16px;
         background-color: var(--white100);
         border: 1px solid var(--grey10);
         border-radius: 12px;
 
-        // TODO : replace this by card styles
-        div {
-          width: 100%;
+        .round-trip-pair {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+
+          .separator {
+            width: 4px;
+            height: 38px;
+            border-radius: 2px;
+            background-color: var(--grey5);
+
+            &.valid {
+              background-color: var(--info30);
+            }
+            &.invalid {
+              background-color: var(--warning30);
+            }
+          }
+        }
+
+        .round-trips-card {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-width: 0;
+          min-height: 67px;
+          border-radius: 8px;
+          border: 1px solid var(--grey30);
+
+          &:hover {
+            border: 1px solid var(--grey60);
+          }
+
+          .round-trips-card-header {
+            display: flex;
+            align-items: center;
+            height: 26px;
+            color: var(--black100);
+            background-color: var(--white100);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom: 1px solid var(--grey30);
+
+            .name {
+              flex: 1;
+              font-size: 14px;
+              font-weight: 600;
+              margin-bottom: 0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              padding-inline: 12px 4px;
+            }
+
+            .interval {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 28px;
+              height: 100%;
+              font-size: 12px;
+              color: var(--info60);
+              border-left: 1px solid var(--grey30);
+              border-right: 1px solid var(--grey30);
+            }
+
+            .status {
+              width: 32px;
+              height: 100%;
+              padding-inline: 8px;
+              color: var(--info30);
+              border-right: 1px solid var(--grey30);
+            }
+
+            .card-menu {
+              width: 32px;
+              padding-inline: 8px;
+              color: var(--grey40);
+            }
+          }
+          .round-trips-card-body {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex: 1;
+            font-size: 14px;
+            color: var(--black60);
+            background-color: var(--ambientB10);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding-right: 4px;
+
+            .stops {
+              display: flex;
+              justify-content: end;
+              align-items: center;
+              min-width: 36px;
+              font-size: 14px;
+              font-weight: 600;
+              text-align: end;
+
+              span:first-child {
+                color: var(--primary60);
+                margin-top: 2px; // Vertical alignment with icon
+
+                &.no-stops {
+                  color: var(--grey30);
+                }
+              }
+
+              .stops-icon svg {
+                color: var(--purple50);
+                margin-left: -2px;
+              }
+            }
+
+            .od-infos {
+              min-width: 0;
+
+              .extremity {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .times {
+                  font-size: 10px;
+                  color: var(--info60);
+                }
+
+                .location {
+                  font-size: 12px;
+                  color: var(--grey80);
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+              }
+            }
+          }
         }
 
         .card-placeholder {
+          width: 100%;
           height: 67px;
           background-color: var(--grey5);
           border-radius: 8px;
-        }
-
-        .separator {
-          width: 4px;
-          height: 38px;
-          border-radius: 2px;
-          background-color: var(--grey5);
         }
       }
     }
