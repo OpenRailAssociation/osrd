@@ -1,12 +1,12 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type {
   PacedTrainWithDetails,
   TrainScheduleWithDetails,
-} from 'modules/trainschedule/components/Timetable/types';
-import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
+} from 'modules/timetableItem/components/Timetable/types';
+import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';

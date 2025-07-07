@@ -1,5 +1,5 @@
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';

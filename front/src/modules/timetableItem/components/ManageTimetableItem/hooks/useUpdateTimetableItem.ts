@@ -3,11 +3,11 @@ import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import checkCurrentConfig from 'modules/trainschedule/components/ManageTimetableItem/helpers/checkCurrentConfig';
+import checkCurrentConfig from 'modules/timetableItem/components/ManageTimetableItem/helpers/checkCurrentConfig';
 import {
   storePacedTrain,
   storeTrainSchedule,
-} from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import {

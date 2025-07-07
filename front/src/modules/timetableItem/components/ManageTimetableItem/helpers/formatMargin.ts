@@ -1,4 +1,4 @@
-import type { Margin } from 'modules/trainschedule/components/ManageTimetableItem/types';
+import type { Margin } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 const formatMargin = (pathSteps: PathStep[]): Margin | undefined => {

@@ -20,7 +20,7 @@ import type {
   TrainCategory,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { InfraState } from 'reducers/infra';
 import type { LayersSettings } from 'reducers/map';
 import type { Duration } from 'utils/duration';

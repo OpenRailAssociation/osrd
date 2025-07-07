@@ -9,10 +9,10 @@ import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import ItineraryLayer from 'modules/trainschedule/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryLayer';
+import ItineraryLayer from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryLayer';
 import ItineraryMarkers, {
   type MarkerInformation,
-} from 'modules/trainschedule/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
+} from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import { mapInitialState } from 'reducers/map';
 import type { Viewport, LayersSettings } from 'reducers/map';
 

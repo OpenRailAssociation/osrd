@@ -4,13 +4,13 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
-import { updatePacedTrainExceptionsList } from 'modules/trainschedule/components/ManageTimetableItem/helpers/buildPacedTrainException';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/trainschedule/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
+import { updatePacedTrainExceptionsList } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
   findExceptionWithOccurrenceId,
   formatPacedTrainWithOccurrenceDetails,
-} from 'modules/trainschedule/helpers/pacedTrain';
-import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/pacedTrain';
+import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';

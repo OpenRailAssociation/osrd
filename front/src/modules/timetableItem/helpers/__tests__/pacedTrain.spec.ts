@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 

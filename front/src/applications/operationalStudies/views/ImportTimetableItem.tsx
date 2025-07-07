@@ -9,7 +9,7 @@ import { Loader } from 'common/Loaders';
 import {
   ImportTimetableItemConfig,
   ImportTimetableItemTrainsList,
-} from 'modules/trainschedule/components/ImportTimetableItem';
+} from 'modules/timetableItem/components/ImportTimetableItem';
 import { setFailure } from 'reducers/main';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';

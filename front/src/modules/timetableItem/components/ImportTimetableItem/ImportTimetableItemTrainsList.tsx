@@ -13,7 +13,7 @@ import {
   type ScenarioResponse,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
+import rollingstockOpenData2OSRD from 'modules/timetableItem/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainWithPacedTrainId,

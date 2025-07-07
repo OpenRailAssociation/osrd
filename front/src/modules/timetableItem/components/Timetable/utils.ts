@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
-import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
-import { getOccurrencesNb } from 'modules/trainschedule/helpers/pacedTrain';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import { getOccurrencesNb } from 'modules/timetableItem/helpers/pacedTrain';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainWithDetails } from 'utils/trainId';
 

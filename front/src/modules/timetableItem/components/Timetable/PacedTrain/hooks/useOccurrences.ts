@@ -4,11 +4,11 @@ import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
-} from 'modules/trainschedule/helpers/pacedTrain';
+} from 'modules/timetableItem/helpers/pacedTrain';
 import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,

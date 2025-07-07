@@ -3,9 +3,9 @@ import { isEmpty, isEqual, omit, pick } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
-import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
-import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
-import { findExceptionWithOccurrenceId } from 'modules/trainschedule/helpers/pacedTrain';
+import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
