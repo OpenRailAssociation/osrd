@@ -174,7 +174,7 @@ const ScenarioHeader = ({
           <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
           {impersonatedUser && (
             <button type="button" onClick={logout}>
-              <SignOut className="ml-2 text-black" />
+              <SignOut className="ml-3 text-black" />
             </button>
           )}
         </div>
