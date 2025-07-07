@@ -145,7 +145,7 @@
     "typescript": "~5.8",
     "vinyl-fs": "^4.0.2",
     "vite": "^6.3.5",
-    "vite-plugin-checker": "^0.9.3",
+    "vite-plugin-checker": "^0.10.0",
     "vite-plugin-static-copy": "^3.0.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.3"
