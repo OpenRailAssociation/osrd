@@ -18,7 +18,7 @@ import {
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { storePacedTrain } from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
+import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {

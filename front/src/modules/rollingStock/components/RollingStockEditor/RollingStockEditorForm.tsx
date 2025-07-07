@@ -30,7 +30,7 @@ import {
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
-import { handleFileReadingError } from 'modules/trainschedule/components/ManageTimetableItem/helpers/handleParseFiles';
+import { handleFileReadingError } from 'modules/timetableItem/components/ManageTimetableItem/helpers/handleParseFiles';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

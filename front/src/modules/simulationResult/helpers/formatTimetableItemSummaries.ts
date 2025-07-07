@@ -3,8 +3,8 @@ import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import formatBaseTimetableItemWithDetails from 'modules/trainschedule/helpers/formatBaseTimetableItemWithDetails';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import formatBaseTimetableItemWithDetails from 'modules/timetableItem/helpers/formatBaseTimetableItemWithDetails';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';

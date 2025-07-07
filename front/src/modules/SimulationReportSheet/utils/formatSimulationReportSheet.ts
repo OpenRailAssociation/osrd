@@ -4,7 +4,7 @@ import { type StdcmResultsOperationalPoint, StdcmStopTypes } from 'applications/
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';

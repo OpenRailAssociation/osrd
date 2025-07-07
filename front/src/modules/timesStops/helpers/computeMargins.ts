@@ -1,4 +1,4 @@
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 

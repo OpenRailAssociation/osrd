@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {

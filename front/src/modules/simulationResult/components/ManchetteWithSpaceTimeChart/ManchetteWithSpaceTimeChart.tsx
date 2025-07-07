@@ -36,12 +36,12 @@ import type {
   TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
-} from 'modules/trainschedule/helpers/pacedTrain';
+} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';

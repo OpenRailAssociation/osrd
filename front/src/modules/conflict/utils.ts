@@ -1,6 +1,6 @@
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import computeOccurrenceName from 'modules/trainschedule/helpers/computeOccurrenceName';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
   formatEditoastIdToTrainScheduleId,

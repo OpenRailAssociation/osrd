@@ -16,7 +16,7 @@ import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import AddPathStepPopup from 'modules/trainschedule/components/ManageTimetableItem/ManageTimetableItemMap/AddPathStepPopup';
+import AddPathStepPopup from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/AddPathStepPopup';
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';

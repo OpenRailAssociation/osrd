@@ -18,7 +18,7 @@ import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrd
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import Timetable from 'modules/trainschedule/components/Timetable';
+import Timetable from 'modules/timetableItem/components/Timetable';
 import type {
   TimetableItemId,
   TimetableItem,

@@ -1,4 +1,4 @@
-import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
+import rollingstockOpenData2OSRD from 'modules/timetableItem/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 
 import type { RollingstockOpenData2OSRDKeys } from '../../ImportTimetableItem/types';
 

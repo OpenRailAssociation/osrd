@@ -13,7 +13,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';

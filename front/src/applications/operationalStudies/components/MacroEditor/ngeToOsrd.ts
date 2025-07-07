@@ -7,12 +7,12 @@ import {
   type TrainSchedule,
   type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
-import { checkChangeGroups } from 'modules/trainschedule/components/ManageTimetableItem/helpers/buildPacedTrainException';
+import { checkChangeGroups } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
   fetchTimetableItem,
   storePacedTrain,
   storeTrainSchedule,
-} from 'modules/trainschedule/helpers/updateTimetableItemHelpers';
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type {
   PacedTrainWithPacedTrainId,
   TimetableItemId,

@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 
 import ConflictCard from './ConflictCard';
 import type { ConflictWithTrainNames } from '../types';

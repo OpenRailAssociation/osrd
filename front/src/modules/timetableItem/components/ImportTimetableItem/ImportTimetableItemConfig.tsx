@@ -15,7 +15,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
-import StationSelector from 'modules/trainschedule/components/ImportTimetableItem/ImportTimetableItemStationSelector';
+import StationSelector from 'modules/timetableItem/components/ImportTimetableItem/ImportTimetableItemStationSelector';
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';

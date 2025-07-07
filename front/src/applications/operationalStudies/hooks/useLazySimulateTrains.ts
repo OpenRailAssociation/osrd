@@ -5,7 +5,7 @@ import type {
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addDurationToDate } from 'utils/duration';

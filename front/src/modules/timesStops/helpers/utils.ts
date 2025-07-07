@@ -7,7 +7,7 @@ import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { msToS } from 'utils/physics';

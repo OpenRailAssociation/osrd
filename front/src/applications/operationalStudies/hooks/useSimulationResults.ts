@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
-import useSelectedTrain from 'modules/trainschedule/hooks/useSelectedTrain';
+import useSelectedTrain from 'modules/timetableItem/hooks/useSelectedTrain';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 

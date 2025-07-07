@@ -10,7 +10,7 @@ import type {
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
