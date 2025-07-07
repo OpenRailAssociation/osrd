@@ -38,7 +38,7 @@ import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } fro
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTrainSchedule/helpers/formatTimetableItemPayload';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTimetableItem/helpers/formatTimetableItemPayload';
 import { TIMETABLE_ITEM_DELTA, TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';

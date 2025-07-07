@@ -25,7 +25,7 @@ import parseXML from './helpers/parseXML';
 import {
   handleFileReadingError,
   processJsonFile,
-} from '../ManageTrainSchedule/helpers/handleParseFiles';
+} from '../ManageTimetableItem/helpers/handleParseFiles';
 
 interface ImportTimetableItemConfigProps {
   setTrainsList: (trainsList: GraouTrainSchedule[]) => void;

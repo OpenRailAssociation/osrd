@@ -1,7 +1,7 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTimetableItem/types';
 import type {
   PacedTrainWithDetails,
   TrainScheduleWithDetails,

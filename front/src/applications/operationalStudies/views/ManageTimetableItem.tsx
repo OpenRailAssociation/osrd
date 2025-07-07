@@ -21,13 +21,13 @@ import { RollingStockSelector } from 'modules/rollingStock/components/RollingSto
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
-import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { Map } from 'modules/trainschedule/components/ManageTimetableItem';
 import {
   MARKER_TYPE,
   type MarkerInformation,
-} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/ItineraryMarkers';
-import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
-import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
+} from 'modules/trainschedule/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
+import SimulationSettings from 'modules/trainschedule/components/ManageTimetableItem/SimulationSettings';
+import TrainSettings from 'modules/trainschedule/components/ManageTimetableItem/TrainSettings';
 import {
   resetUsingSpeedLimits,
   updateRollingStockComfort,
