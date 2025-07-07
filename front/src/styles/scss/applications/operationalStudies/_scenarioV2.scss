@@ -245,7 +245,7 @@
     animation: fadein 1s;
     backdrop-filter: blur(4px);
 
-    .scenario-timetable-managetrainschedule-header {
+    .scenario-timetable-manage-timetable-item-header {
       display: flex;
       flex-direction: column;
       padding: 8px 8px 0;
@@ -259,7 +259,7 @@
       }
     }
 
-    .scenario-timetable-managetrainschedule-body {
+    .scenario-timetable-manage-timetable-item-body {
       padding: 8px;
     }
   }
