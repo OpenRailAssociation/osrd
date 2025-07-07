@@ -41,7 +41,7 @@ pub struct TrainSchedule {
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[model(json)]
     pub options: TrainScheduleOptions,
-    pub category: Option<TrainCategory>,
+    pub main_category: Option<TrainCategory>,
 }
 
 impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
@@ -77,6 +77,6 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .start_time(start_time)
             .train_name(train_name)
             .options(options)
-            .category(category.map(TrainCategory))
+            .main_category(category.map(TrainCategory))
     }
 }
