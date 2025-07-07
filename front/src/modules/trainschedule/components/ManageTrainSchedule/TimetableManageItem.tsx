@@ -29,10 +29,10 @@ import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
-export type TimetableManageTrainScheduleProps = {
-  displayTrainScheduleManagement: string;
+export type TimetableManageItemProps = {
+  displayTimetableItemManagement: string;
   timetableItemToEditData?: TimetableItemToEditData;
-  setDisplayTrainScheduleManagement: (type: string) => void;
+  setDisplayTimetableItemManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
   infraState?: InfraState;
@@ -42,15 +42,15 @@ export type TimetableManageTrainScheduleProps = {
 /**
  * Create/edit train schedules and paced trains
  */
-const TimetableManageTrainSchedule = ({
-  displayTrainScheduleManagement,
-  setDisplayTrainScheduleManagement,
+const TimetableManageItem = ({
+  displayTimetableItemManagement,
+  setDisplayTimetableItemManagement,
   upsertTimetableItems,
   removeTimetableItems,
   infraState,
   timetableItemToEditData,
   setTimetableItemToEditData,
-}: TimetableManageTrainScheduleProps) => {
+}: TimetableManageItemProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
@@ -62,14 +62,14 @@ const TimetableManageTrainSchedule = ({
 
   const [isWorking, setIsWorking] = useState(false);
 
-  const leaveManageTrainSchedule = () => {
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+  const leaveManageTimetableItem = () => {
+    setDisplayTimetableItemManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     setTimetableItemToEditData(undefined);
   };
 
   const updateTimetable = useUpdateTimetableItem(
     setIsWorking,
-    setDisplayTrainScheduleManagement,
+    setDisplayTimetableItemManagement,
     upsertTimetableItems,
     removeTimetableItems,
     setTimetableItemToEditData,
@@ -92,7 +92,7 @@ const TimetableManageTrainSchedule = ({
   return (
     <div className="scenario-timetable-manage-timetable-item">
       <div className="scenario-timetable-manage-timetable-item-header">
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
+        {displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
           timetableItemToEditData && (
             <>
               <button
@@ -147,7 +147,7 @@ const TimetableManageTrainSchedule = ({
             </>
           )}
 
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+        {displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
           <>
             {isWorking ? (
               <button
@@ -185,7 +185,7 @@ const TimetableManageTrainSchedule = ({
         className="scenario-timetable-manage-timetable-item-body"
         role="button"
         tabIndex={0}
-        onClick={leaveManageTrainSchedule}
+        onClick={leaveManageTimetableItem}
       >
         <button
           className="btn btn-secondary btn-block"
@@ -203,4 +203,4 @@ const TimetableManageTrainSchedule = ({
   );
 };
 
-export default TimetableManageTrainSchedule;
+export default TimetableManageItem;
