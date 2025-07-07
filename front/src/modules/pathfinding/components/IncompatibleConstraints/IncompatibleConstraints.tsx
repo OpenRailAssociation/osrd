@@ -10,7 +10,7 @@ import { isArray } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import Collapsable from 'common/Collapsable';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -26,7 +26,7 @@ import {
 import { getSegmentsConstraints, getSizeOfEnabledFilters } from './utils';
 
 interface IncompatibleConstraintsProps {
-  pathProperties?: ManageTrainSchedulePathProperties;
+  pathProperties?: ManageTimetableItemPathProperties;
 }
 
 const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProps) => {

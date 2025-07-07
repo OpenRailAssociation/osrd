@@ -1,4 +1,4 @@
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 export default function commonConfBuilder() {
@@ -39,7 +39,7 @@ export default function commonConfBuilder() {
       },
     ],
 
-    buildPathProperties: (): ManageTrainSchedulePathProperties => ({
+    buildPathProperties: (): ManageTimetableItemPathProperties => ({
       manchetteOperationalPoints: [],
       electrifications: {
         boundaries: [84015000],

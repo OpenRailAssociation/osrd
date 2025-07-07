@@ -1,7 +1,7 @@
 import { sortBy } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
@@ -54,7 +54,7 @@ export const cutRange = (
 const createPathStep = (
   positionOnPathInM: number, // in meters
   tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTrainSchedulePathProperties,
+  pathProperties: ManageTimetableItemPathProperties,
   pathSteps: PathStep[],
   tracksById: Record<string, TrackSection>
 ): PathStep => {
@@ -92,7 +92,7 @@ const createPathStep = (
 
 export const createCutAtPathStep = (
   cutAtPositionInM: number,
-  pathProperties: ManageTrainSchedulePathProperties,
+  pathProperties: ManageTimetableItemPathProperties,
   rangesData: IntervalItem[],
   customRanges: IntervalItem[],
   tracksLengthCumulativeSums: number[],
