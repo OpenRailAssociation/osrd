@@ -273,6 +273,62 @@ impl ValkeyConnection {
         });
         Ok(cached_values)
     }
+
+    /// Add one serializable member to a sorted set, or update its score if it already exists.
+    pub async fn json_zadd<
+        K: Debug + ToRedisArgs + Send + Sync,
+        S: ToRedisArgs + Send + Sync,
+        M: Serialize,
+    >(
+        &mut self,
+        key: K,
+        member: &M,
+        score: S,
+    ) -> Result<()> {
+        let str_member = match serde_json::to_string(member) {
+            Ok(member) => member,
+            Err(_) => {
+                return Err(RedisError::from((
+                    ErrorKind::IoError,
+                    "An error occurred serializing to json",
+                ))
+                .into());
+            }
+        };
+        self.zadd::<_, _, _, ()>(key, str_member, score).await?;
+        Ok(())
+    }
+
+    /// Return a range of members in a sorted set, by score.
+    pub async fn json_zrangebyscore<
+        T: DeserializeOwned,
+        K: ToRedisArgs + Send + Sync,
+        M: ToRedisArgs + Send + Sync,
+        MM: ToRedisArgs + Send + Sync,
+    >(
+        &mut self,
+        key: K,
+        min: M,
+        max: MM,
+    ) -> Result<impl Iterator<Item = Option<T>>> {
+        let serialized_members = self
+            .zrangebyscore::<_, _, _, Vec<String>>(key, min, max)
+            .await?;
+        let deserialized_members =
+            serialized_members
+                .into_iter()
+                .filter_map(|value| match serde_json::from_str(&value) {
+                    Ok(value) => Some(value),
+                    Err(e) => {
+                        tracing::warn!(
+                            "the cached value is not a valid JSON for type '{}': {e}",
+                            std::any::type_name::<T>()
+                        );
+                        None
+                    }
+                });
+        Ok(deserialized_members)
+    }
 }
 
 #[derive(Clone)]
