@@ -1,4 +1,5 @@
 *.md
+public/locales/en/infraEditor.json
 src/assets/mapstyles/*.json
 src/common/ReleaseInformations/json/licenses.json
 src/common/api/generatedEditoastApi.ts

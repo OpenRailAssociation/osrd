@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Union
+from typing import Any, List, Literal, Union
 
 from pydantic import BaseModel, Field, RootModel
 
@@ -175,7 +175,19 @@ def make_extensions_non_nullable(schema: dict):
 
 
 if __name__ == "__main__":
+    import argparse
+    import re
     from json import dumps
+
+    parser = argparse.ArgumentParser(
+        description="Generate the infra editor railjson schema."
+    )
+    parser.add_argument(
+        "--translation",
+        action="store_true",
+        help="Generate the infra editor English translation json instead.",
+    )
+    args = parser.parse_args()
 
     railjson_schema = infra.RailJsonInfra.model_json_schema()
     tmp_signal_schema = _TmpSignal.model_json_schema()
@@ -186,5 +198,52 @@ if __name__ == "__main__":
 
     make_extensions_non_nullable(railjson_schema)
 
-    # sort keys in order to diff correctly in the CI
-    print(dumps(railjson_schema, indent=4, sort_keys=True))
+    if not args.translation:
+        # sort keys in order to diff correctly in the CI
+        print(dumps(railjson_schema, indent=4, sort_keys=True))
+
+    else:
+
+        def normalize_title_case(title: str):
+            """
+            Convert PascalCase, camelCase or Multi Capital Case to Displayable single capital case.
+            Keep acronyms as is.
+            """
+            words = re.sub(
+                r"(?:(?<=[a-z])(?=[A-Z])|(?<=[^\s])(?=[A-Z][a-z]))", " ", title
+            ).split()
+            return " ".join(
+                [words[0]]
+                + [
+                    word[0].lower() + word[1:]
+                    if len(word) > 1 and word[1].islower()
+                    else word
+                    for word in words[1:]
+                ]
+            )
+
+        def to_translation_schema(json_node: dict[str, Any]):
+            """
+            Recursively walk, filter and format railjson to adapt it to translations.
+
+            Only title and description fields need translation.
+            All other fields, as well as all arrays and empty objects, can be dropped.
+            """
+            new_node = {}
+            for key, value in json_node.items():
+                if key == "description" and isinstance(value, str):
+                    new_node[key] = value
+                elif key == "title" and isinstance(value, str):
+                    new_node[key] = normalize_title_case(value)
+                elif isinstance(value, dict) and len(value) > 0:
+                    processed_value = to_translation_schema(value)
+                    if processed_value:
+                        new_node[key] = processed_value
+            return new_node if new_node else None
+
+        # Keep the properties field and merge $defs subfields into the top level to match expected structure,
+        # discard all other top level fields
+        translation_json = {"properties": railjson_schema.get("properties", {})}
+        translation_json.update(railjson_schema.get("$defs", {}))
+
+        print(dumps(to_translation_schema(translation_json), indent=2, sort_keys=True))
