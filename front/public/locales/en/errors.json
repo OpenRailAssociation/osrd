@@ -224,6 +224,9 @@
       "NotFound": "Study '{{study_id}}' could not be found",
       "StartDateAfterEndDate": "The study start date must be before the end date"
     },
+    "sub_categories": {
+      "Database": "Internal error (database)"
+    },
     "temporary_speed_limit": {
       "Database": "Internal error (database)",
       "NameAlreadyUsed": "A group of temporary speed limits with '{{name}}' already exists"

@@ -19,6 +19,7 @@ pub mod sprites;
 pub mod stdcm_logs;
 pub mod stdcm_search_environment;
 pub mod study;
+pub mod sub_categories;
 pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod work_schedules;
@@ -118,6 +119,7 @@ crate::routes! {
     &stdcm_logs,
     &scenario,
     &round_trips,
+    &sub_categories,
 }
 
 editoast_common::schemas! {
@@ -146,6 +148,7 @@ editoast_common::schemas! {
     work_schedules::schemas(),
     stdcm_logs::schemas(),
     round_trips::schemas(),
+    sub_categories::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request

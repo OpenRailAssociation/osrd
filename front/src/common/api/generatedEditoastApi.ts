@@ -26,6 +26,7 @@ export const addTagTypes = [
   'sprites',
   'stdcm_search_environment',
   'stdcm_log',
+  'sub_categories',
   'temporary_speed_limits',
   'etcs_braking_curves',
   'work_schedules',
@@ -1003,6 +1004,27 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['stdcm_log'],
+      }),
+      getSubCategory: build.query<GetSubCategoryApiResponse, GetSubCategoryApiArg>({
+        query: (queryArg) => ({
+          url: `/sub_category`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['sub_categories'],
+      }),
+      postSubCategory: build.mutation<PostSubCategoryApiResponse, PostSubCategoryApiArg>({
+        query: (queryArg) => ({ url: `/sub_category`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['sub_categories'],
+      }),
+      deleteSubCategoryByCode: build.mutation<
+        DeleteSubCategoryByCodeApiResponse,
+        DeleteSubCategoryByCodeApiArg
+      >({
+        query: (queryArg) => ({ url: `/sub_category/${queryArg.code}`, method: 'DELETE' }),
+        invalidatesTags: ['sub_categories'],
       }),
       postTemporarySpeedLimitGroup: build.mutation<
         PostTemporarySpeedLimitGroupApiResponse,
@@ -2147,6 +2169,20 @@ export type GetStdcmLogsApiResponse = /** status 200 The list of STDCM Logs */ P
 export type GetStdcmLogsApiArg = {
   page?: number;
   pageSize?: number | null;
+};
+export type GetSubCategoryApiResponse =
+  /** status 200 The list of sub categories */ SubCategoryPage;
+export type GetSubCategoryApiArg = {
+  page?: number;
+  pageSize?: number | null;
+};
+export type PostSubCategoryApiResponse = /** status 200 Create sub categories */ SubCategory[];
+export type PostSubCategoryApiArg = {
+  body: SubCategory[];
+};
+export type DeleteSubCategoryByCodeApiResponse = unknown;
+export type DeleteSubCategoryByCodeApiArg = {
+  code: string;
 };
 export type PostTemporarySpeedLimitGroupApiResponse =
   /** status 201 The id of the created temporary speed limit group. */ {
@@ -4415,6 +4451,16 @@ export type StdcmLog = {
 export type StdcmLogListItem = {
   id: number;
   trace_id?: string | null;
+};
+export type SubCategoryColor = string;
+export type SubCategory = {
+  code: string;
+  color: SubCategoryColor;
+  main_category: TrainCategory;
+  name: string;
+};
+export type SubCategoryPage = PaginationStats & {
+  results: SubCategory[];
 };
 export type TimetableResult = {
   timetable_id: number;

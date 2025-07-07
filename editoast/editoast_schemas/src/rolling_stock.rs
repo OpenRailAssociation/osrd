@@ -37,6 +37,7 @@ mod towed_rolling_stock;
 pub use towed_rolling_stock::TowedRollingStock;
 
 mod train_category;
+pub use train_category::SubCategory;
 pub use train_category::TrainCategories;
 pub use train_category::TrainCategory;
 
