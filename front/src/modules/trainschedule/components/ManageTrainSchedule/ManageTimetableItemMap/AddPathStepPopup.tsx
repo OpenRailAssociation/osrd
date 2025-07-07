@@ -15,7 +15,7 @@ import { useManageTimetableItemContext } from 'applications/operationalStudies/h
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
-import { setPointIti } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
+import { setPointIti } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/setPointIti';
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';

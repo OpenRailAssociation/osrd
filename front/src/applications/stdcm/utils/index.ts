@@ -1,7 +1,7 @@
 import {
   MARKER_TYPE,
   type MarkerInformation,
-} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
+} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 

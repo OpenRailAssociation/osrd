@@ -25,7 +25,7 @@ import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import {
   MARKER_TYPE,
   type MarkerInformation,
-} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
+} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/ItineraryMarkers';
 import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
 import {

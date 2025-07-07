@@ -31,7 +31,7 @@ export type SuggestedOP = {
   calculatedArrival?: string | null;
   calculatedDeparture?: string | null;
   receptionSignal?: ReceptionSignal;
-  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
+  // Metadatas given by ManageTimetableItemMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;
     lineName: string;
