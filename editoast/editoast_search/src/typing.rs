@@ -238,7 +238,7 @@ impl TypeSpec {
     }
 
     /// Returns an iterator over tha flattened alternatives of a union
-    pub fn iter_union_alternatives(&self) -> Alternatives {
+    pub fn iter_union_alternatives(&self) -> Alternatives<'_> {
         if matches!(self, Self::Union(_, _)) {
             Alternatives {
                 stack: VecDeque::from([self]),

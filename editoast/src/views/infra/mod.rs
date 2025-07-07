@@ -995,13 +995,17 @@ async fn match_operational_points(
         let mut related_operational_points = match operational_point_reference.reference {
             OperationalPointIdentifier::OperationalPointId {
                 ref operational_point,
-            } => retrieve_op_from_ids(&mut conn, infra_id, &[operational_point.0.clone()])
-                .await?
-                .into_values()
-                .map(|op_model| op_model.schema)
-                .collect::<Vec<_>>(),
+            } => retrieve_op_from_ids(
+                &mut conn,
+                infra_id,
+                std::slice::from_ref(&operational_point.0),
+            )
+            .await?
+            .into_values()
+            .map(|op_model| op_model.schema)
+            .collect::<Vec<_>>(),
             OperationalPointIdentifier::OperationalPointDescription { ref trigram, .. } => {
-                retrieve_op_from_trigrams(&mut conn, infra_id, &[trigram.0.clone()])
+                retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
                     .await?
                     .into_iter()
                     .flat_map(|(_, op_models)| op_models)

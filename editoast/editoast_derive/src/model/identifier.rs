@@ -103,7 +103,7 @@ impl Ord for RawIdentifier {
 
 impl PartialOrd for Identifier {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.raw.cmp(&other.raw))
+        Some(self.cmp(other))
     }
 }
 

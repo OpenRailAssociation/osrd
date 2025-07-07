@@ -365,7 +365,7 @@ impl TestApp {
         &self.app_state.config
     }
 
-    pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder {
+    pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder<'_> {
         UserBuilder::new(
             self,
             UserInfo {

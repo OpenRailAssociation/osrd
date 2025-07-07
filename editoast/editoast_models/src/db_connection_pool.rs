@@ -447,7 +447,7 @@ fn create_connection_pool(
     Ok(Pool::builder(manager).max_size(max_size).build()?)
 }
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+fn establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
     let fut = async {
         let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
         connector_builder.set_verify(SslVerifyMode::NONE);

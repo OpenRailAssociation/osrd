@@ -426,7 +426,7 @@ async fn etcs_braking_curves(
         &mut db_pool.get().await?,
         valkey_client,
         core_client.clone(),
-        &[train_schedule.clone()],
+        std::slice::from_ref(&train_schedule),
         &infra,
         electrical_profile_set_id,
     )
