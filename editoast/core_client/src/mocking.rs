@@ -34,7 +34,7 @@ impl MockingClient {
 
     /// Creates a stub request
     #[must_use = "call .finish() to register the stub request"]
-    pub fn stub<U: AsRef<str>>(&mut self, path: U) -> StubRequestBuilder {
+    pub fn stub<U: AsRef<str>>(&mut self, path: U) -> StubRequestBuilder<'_> {
         StubRequestBuilder::new(path.as_ref().into(), self)
     }
 
