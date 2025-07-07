@@ -55,13 +55,7 @@ test.describe('Edit trains and missions', () => {
   let infra: Infra;
   let translations: ManageTrainScheduleTranslations & TimetableFilterTranslations;
 
-  test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
-    [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
-      new PacedTrainSection(page),
-      new ScenarioTimetableSection(page),
-      new OperationalStudiesPage(page),
-    ];
-
+  test.beforeAll('Load paced trains JSON', async () => {
     project = await getProject(trainScheduleProjectName);
     study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
@@ -73,10 +67,7 @@ test.describe('Edit trains and missions', () => {
         infra.id
       )
     ).scenario;
-    await sendPacedTrains(
-      scenarioItems.timetable_id,
-      JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
-    );
+    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
 
     translations = getTranslations({
       en: {
@@ -88,6 +79,14 @@ test.describe('Edit trains and missions', () => {
         ...frScenarioTranslations,
       },
     });
+  });
+
+  test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
+    [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
+      new PacedTrainSection(page),
+      new ScenarioTimetableSection(page),
+      new OperationalStudiesPage(page),
+    ];
 
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
@@ -96,14 +95,14 @@ test.describe('Edit trains and missions', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test.afterEach('Delete the created scenario', async () => {
+  test.afterAll('Delete the created scenario', async () => {
     await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
   test('Modify a paced train and create added exception', async () => {
-    const editedPacedTrainData = pacedTrainsJson[0];
+    const editedPacedTrainData = pacedTrainsJson[1];
 
-    await pacedTrainSection.editPacedTrain();
+    await pacedTrainSection.editPacedTrain(1);
 
     await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
 
@@ -127,18 +126,18 @@ test.describe('Edit trains and missions', () => {
         startTime: '12:00',
         arrivalTime: '12:07',
       },
-      2
+      4
     );
 
     await pacedTrainSection.checkExceptionTooltip(
-      2,
+      4,
       translations.timetable.occurrenceType.addedOccurrence,
       translations.timetable.occurrenceChangeGroup.start_time as ChangeGroup
     );
 
-    await pacedTrainSection.checkOccurrenceMenuIcon(2);
+    await pacedTrainSection.checkOccurrenceMenuIcon(4);
     await pacedTrainSection.checkOccurrenceActionMenu({
-      occurrenceIndex: 2,
+      occurrenceIndex: 4,
       expectedButtons: ADDED_EXCEPTION_MENU_BUTTONS,
       translations,
     });
