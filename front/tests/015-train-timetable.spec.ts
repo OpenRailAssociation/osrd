@@ -69,9 +69,11 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   test.beforeEach('Navigate to scenario page before each test', async ({ page }) => {
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-    pacedTrainSection = new PacedTrainSection(page);
-    operationalStudiesPage = new OperationalStudiesPage(page);
+    [operationalStudiesPage, scenarioTimetableSection, pacedTrainSection] = [
+      new OperationalStudiesPage(page),
+      new ScenarioTimetableSection(page),
+      new PacedTrainSection(page),
+    ];
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );

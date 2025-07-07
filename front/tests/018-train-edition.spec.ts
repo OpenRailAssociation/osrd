@@ -62,39 +62,44 @@ test.describe('Edit trains and missions', () => {
   let scenarioItems: Scenario;
   let infra: Infra;
 
-  test.beforeEach('Fetch project, study and scenario with train schedule', async ({ page }) => {
-    [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
-      new PacedTrainSection(page),
-      new ScenarioTimetableSection(page),
-      new OperationalStudiesPage(page),
-    ];
-
+  test.beforeAll('Fetch project, study and infrastructure', async () => {
     project = await getProject(trainScheduleProjectName);
     study = await getStudy(project.id, trainScheduleStudyName);
     infra = await getInfra();
-    scenarioItems = (
-      await createScenario(
-        generateUniqueName('edit-train-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      )
-    ).scenario;
-    await sendTrainSchedules(
-      scenarioItems.timetable_id,
-      JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 1)))
-    );
-    await sendPacedTrains(
-      scenarioItems.timetable_id,
-      JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
-    );
-
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-    );
-    await waitForInfraStateToBeCached(infra.id);
-    await page.waitForLoadState('networkidle');
   });
+
+  test.beforeEach(
+    'Setup project, study, infra and create scenario with timetableItems',
+    async ({ page }) => {
+      [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
+        new PacedTrainSection(page),
+        new ScenarioTimetableSection(page),
+        new OperationalStudiesPage(page),
+      ];
+      scenarioItems = (
+        await createScenario(
+          generateUniqueName('edit-train-scenario'),
+          project.id,
+          study.id,
+          infra.id
+        )
+      ).scenario;
+      await sendTrainSchedules(
+        scenarioItems.timetable_id,
+        JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 1)))
+      );
+      await sendPacedTrains(
+        scenarioItems.timetable_id,
+        JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
+      );
+
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
+      );
+      await waitForInfraStateToBeCached(infra.id);
+      await page.waitForLoadState('networkidle');
+    }
+  );
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(project.id, study.id, scenarioItems.name);
