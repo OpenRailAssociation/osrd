@@ -3279,6 +3279,69 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/StdcmLogListItem'
+  /sub_category:
+    get:
+      tags:
+      - sub_categories
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1000
+          nullable: true
+          maximum: 1000
+          minimum: 1
+      responses:
+        '200':
+          description: The list of sub categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubCategoryPage'
+    post:
+      tags:
+      - sub_categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SubCategory'
+        required: true
+      responses:
+        '200':
+          description: Create sub categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubCategory'
+  /sub_category/{code}:
+    delete:
+      tags:
+      - sub_categories
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Delete a sub category
   /temporary_speed_limit_group:
     post:
       tags:
@@ -5939,6 +6002,7 @@ components:
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastSubCategoryErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
@@ -7456,6 +7520,25 @@ components:
           type: string
           enum:
           - editoast:study:StartDateAfterEndDate
+    EditoastSubCategoryErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:sub_categories:Database
     EditoastTemporarySpeedLimitErrorDatabase:
       type: object
       required:
@@ -13214,6 +13297,36 @@ components:
             type: integer
             format: int64
             minimum: 0
+    SubCategory:
+      type: object
+      required:
+      - name
+      - code
+      - main_category
+      - color
+      properties:
+        code:
+          type: string
+        color:
+          $ref: '#/components/schemas/SubCategoryColor'
+        main_category:
+          $ref: '#/components/schemas/TrainCategory'
+        name:
+          type: string
+    SubCategoryColor:
+      type: string
+      description: 'Represents a color for a sub-category in hexadecimal format #RRGGBB.'
+    SubCategoryPage:
+      allOf:
+      - $ref: '#/components/schemas/PaginationStats'
+      - type: object
+        required:
+        - results
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/SubCategory'
     SubjectType:
       type: string
       enum:

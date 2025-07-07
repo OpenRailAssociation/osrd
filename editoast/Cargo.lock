@@ -1453,6 +1453,8 @@ dependencies = [
  "geojson",
  "iso8601",
  "rand 0.9.1",
+ "regex",
+ "rstest",
  "serde",
  "serde_json",
  "serde_with",
