@@ -16,7 +16,7 @@ import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import AddPathStepPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/AddPathStepPopup';
+import AddPathStepPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/AddPathStepPopup';
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
@@ -24,10 +24,10 @@ import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import OPERATIONAL_POINT_LAYERS from './consts';
-import ItineraryLayer from './ManageTrainScheduleMap/ItineraryLayer';
+import ItineraryLayer from './ManageTimetableItemMap/ItineraryLayer';
 import ItineraryMarkers, {
   type MarkerInformation,
-} from './ManageTrainScheduleMap/ItineraryMarkers';
+} from './ManageTimetableItemMap/ItineraryMarkers';
 import type { FeatureInfoClick, SuggestedOP } from './types';
 
 type MapProps = {

@@ -5,7 +5,7 @@ import { Marker } from 'react-map-gl/maplibre';
 import destinationIcon from 'assets/pictures/mapMarkers/destination.svg';
 import viaIcon from 'assets/pictures/mapMarkers/intermediate-point.svg';
 import originIcon from 'assets/pictures/mapMarkers/start.svg';
-import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
+import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTimetableItemMap/ItineraryMarkers';
 
 const MARKER_OFFSET: [number, number] = [0, 8];
 

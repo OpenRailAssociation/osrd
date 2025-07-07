@@ -100,7 +100,7 @@ export type PathStep = PathItemLocation & {
   coordinates?: Position;
   // Metadatas given by the search endpoint in TypeAndPath (name)
   name?: string;
-  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
+  // Metadatas given by ManageTimetableItemMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;
     lineName: string;
