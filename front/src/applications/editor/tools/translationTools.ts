@@ -1,12 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
-function getI18nTranslation(key: string, defaultTranslation: string, t: TFunction) {
-  // The infraEditor schema is provided in English by default, and thus most of its keys are absent from locales/en.
-  // We thus want to fallback to defaultTranslation (the content of the provided schema) rather than French.
-  return t(key, { defaultValue: defaultTranslation, fallbackLng: 'en' });
-}
-
 export function translateProperties(
   propertiesList: {
     [key: string]: JSONSchema7Definition;
@@ -26,14 +20,10 @@ export function translateProperties(
       [property]: {
         ...currentProperty,
         ...(currentProperty.description && {
-          description: getI18nTranslation(
-            `infraEditor:${currentDescriptionKey}`,
-            currentProperty.description,
-            t
-          ),
+          description: t(`infraEditor:${currentDescriptionKey}`),
         }),
         ...(currentProperty.title && {
-          title: getI18nTranslation(`infraEditor:${currentTitleKey}`, currentProperty.title, t),
+          title: t(`infraEditor:${currentTitleKey}`),
         }),
       },
     };
@@ -58,18 +48,10 @@ export function translateDefinitions(
       [defName]: {
         ...currentEntity,
         ...(currentEntity.description && {
-          description: hideText
-            ? ''
-            : getI18nTranslation(
-                `infraEditor:${defName}.description`,
-                currentEntity.description,
-                t
-              ),
+          description: hideText ? '' : t(`infraEditor:${defName}.description`),
         }),
         ...(currentEntity.title && {
-          title: hideText
-            ? ''
-            : getI18nTranslation(`infraEditor:${defName}.title`, currentEntity.title, t),
+          title: hideText ? '' : t(`infraEditor:${defName}.title`),
         }),
         ...(currentEntity.properties && { properties }),
       },
