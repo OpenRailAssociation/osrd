@@ -453,7 +453,7 @@ diesel::table! {
         options -> Jsonb,
         time_window -> Interval,
         interval -> Interval,
-        category -> Nullable<TrainCategory>,
+        main_category -> Nullable<TrainCategory>,
         exceptions -> Jsonb,
     }
 }
@@ -808,7 +808,7 @@ diesel::table! {
         speed_limit_tag -> Nullable<Varchar>,
         power_restrictions -> Jsonb,
         options -> Jsonb,
-        category -> Nullable<TrainCategory>,
+        main_category -> Nullable<TrainCategory>,
     }
 }
 

@@ -155,7 +155,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
                 speed_limit_tag: value.speed_limit_tag.map(Into::into),
                 power_restrictions: value.power_restrictions,
                 options: value.options,
-                category: value.category.as_deref().cloned(),
+                category: value.main_category.as_deref().cloned(),
             },
         }
     }

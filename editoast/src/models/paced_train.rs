@@ -54,7 +54,7 @@ pub struct PacedTrain {
     pub time_window: ChronoDuration,
     /// Time between two occurrences
     pub interval: ChronoDuration,
-    pub category: Option<TrainCategory>,
+    pub main_category: Option<TrainCategory>,
     #[model(json)]
     pub exceptions: Vec<PacedTrainException>,
 }
@@ -71,7 +71,7 @@ impl PacedTrain {
             train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
         }
         if let Some(change_group) = &exception.rolling_stock_category {
-            train_schedule.category = change_group.value.clone().map(TrainCategory);
+            train_schedule.main_category = change_group.value.clone().map(TrainCategory);
         }
         if let Some(change_group) = &exception.labels {
             train_schedule.labels = change_group.value.iter().cloned().map(Some).collect();
@@ -123,7 +123,7 @@ impl PacedTrain {
             speed_limit_tag: self.speed_limit_tag,
             power_restrictions: self.power_restrictions,
             options: self.options,
-            category: self.category,
+            main_category: self.main_category,
         }
     }
 
@@ -233,7 +233,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
-            .category(train_schedule_base.category.map(TrainCategory))
+            .main_category(train_schedule_base.category.map(TrainCategory))
             .exceptions(exceptions)
     }
 }
@@ -255,7 +255,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
                 power_restrictions: paced_train.power_restrictions,
                 options: paced_train.options,
-                category: paced_train.category.as_deref().cloned(),
+                category: paced_train.main_category.as_deref().cloned(),
             },
             exceptions: paced_train.exceptions,
             paced: Paced {
@@ -297,7 +297,7 @@ mod tests {
             rolling_stock_name: "R2D2".to_string(),
             comfort: Comfort::Standard,
             initial_speed: 25.0,
-            category: Some(TrainCategory(
+            main_category: Some(TrainCategory(
                 editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain,
             )),
             constraint_distribution: Distribution::Standard,
@@ -342,7 +342,7 @@ mod tests {
             exception.initial_speed.unwrap().value
         );
         assert_eq!(
-            paced_train_exception.category,
+            paced_train_exception.main_category,
             exception
                 .rolling_stock_category
                 .unwrap()
