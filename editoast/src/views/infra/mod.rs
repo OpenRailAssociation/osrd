@@ -407,7 +407,7 @@ async fn create(
     let infra: Changeset<Infra> = infra_form.into();
     let infra = infra.create(&mut db_pool.get().await?).await?;
 
-    // Assing OWNER to the user on the infra if authz is enabled
+    // Assign OWNER to the user on the infra if authz is enabled
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
     if let Authentication::Authenticated(authorizer) = auth {
         regulator
@@ -473,7 +473,7 @@ async fn clone(
 
     let cloned_infra = infra.clone(conn, name).await?;
 
-    // Assing OWNER to the user on the infra if authz is enabled
+    // Assign OWNER to the user on the infra if authz is enabled
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
     if let Authentication::Authenticated(authorizer) = auth {
         regulator

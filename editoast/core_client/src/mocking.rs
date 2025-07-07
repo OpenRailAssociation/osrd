@@ -62,7 +62,7 @@ impl MockingClient {
             None
         };
         let Some(stub) = stub else {
-            panic!("could not find stub for {method} resquest at PATH {req_path}")
+            panic!("could not find stub for {method} request at PATH {req_path}")
         };
         match (
             body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
