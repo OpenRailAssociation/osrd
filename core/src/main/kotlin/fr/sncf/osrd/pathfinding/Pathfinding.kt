@@ -34,22 +34,26 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     private val graph: Graph<NodeT, EdgeT, OffsetType>
 ) {
     /** Pathfinding step */
-    @JvmRecord
-    private data class Step<EdgeT, OffsetType>(
+    private data class Step<EdgeT : Any, OffsetType>(
         val range: EdgeRange<EdgeT, OffsetType>, // Range covered by this step
         val prev: Step<EdgeT, OffsetType>?, // Previous step (to construct the result)
         val totalDistance: Double, // Total distance from the start
         val weight:
             Double, // Priority queue weight (could be different from totalDistance to allow for A*)
         val nReachedTargets: Int, // How many targets we found by this path
-        val targets: List<EdgeLocation<EdgeT, OffsetType>>
+        val targets: List<EdgeLocation<EdgeT, OffsetType>>,
+        val comparisonFallback: ((EdgeT, EdgeT) -> Int)?,
     ) : Comparable<Step<EdgeT, OffsetType>> {
         override fun compareTo(other: Step<EdgeT, OffsetType>): Int {
-            return if (weight != other.weight) weight.compareTo(other.weight)
-            else {
+            if (weight != other.weight) return weight.compareTo(other.weight)
+            else if (nReachedTargets != other.nReachedTargets) {
                 // If the weights are equal, we prioritize the highest number of reached targets
-                other.nReachedTargets - nReachedTargets
+                return other.nReachedTargets - nReachedTargets
+            } else if (comparisonFallback != null) {
+                // Having *some* comparison fallback is required to have a deterministic result
+                return comparisonFallback.invoke(range.edge, other.range.edge)
             }
+            return 0
         }
     }
 
@@ -80,6 +84,12 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
 
     /** Function to call to get edge length */
     private var edgeToLength: EdgeToLength<EdgeT, OffsetType>? = null
+
+    /**
+     * Comparison function to use to pick between edges of identical costs. Optional, but helps to
+     * make the result deterministic (when different solutions exist with strictly identical cost).
+     */
+    private var comparisonFallback: ((EdgeT, EdgeT) -> Int)? = null
 
     /** Function to call to get the blocked ranges on an edge */
     private val blockedRangesOnEdge = ConstraintCombiner<EdgeT, OffsetType>()
@@ -113,6 +123,11 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         f: EdgeToLength<EdgeT, OffsetType>?
     ): Pathfinding<NodeT, EdgeT, OffsetType> {
         edgeToLength = f
+        return this
+    }
+
+    fun setComparisonFallback(f: (EdgeT, EdgeT) -> Int): Pathfinding<NodeT, EdgeT, OffsetType> {
+        comparisonFallback = f
         return this
     }
 
@@ -376,7 +391,8 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                 totalDistance,
                 totalDistance + distanceLeftEstimation,
                 nPassedTargets,
-                targets
+                targets,
+                comparisonFallback,
             )
         if (newStep.weight.isFinite()) queue.add(newStep)
     }
