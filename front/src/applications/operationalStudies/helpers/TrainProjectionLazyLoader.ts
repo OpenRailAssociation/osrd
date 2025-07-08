@@ -177,8 +177,9 @@ export default class TrainProjectionLazyLoader {
 
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
+      const { paced_train } = result;
       rawResults.set(pacedTrainId, {
-        space_time_curves: result,
+        space_time_curves: paced_train,
         signal_updates: rawPacedTrainOccupancyBlocks[id].signal_updates,
       });
     }
