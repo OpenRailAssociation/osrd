@@ -80,16 +80,14 @@ pub fn check_overlapping(infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError>
     let mut overlapping_cat = HashSet::new();
     // Key: (Track, Voltage)
     // Value: RangeMap<Range, ElectrificationId>
-    // One RangeMap per (track, voltage) to allow overlaps with different voltages
 
-    let mut range_maps: HashMap<(String, Option<String>), RangeMap<u64, String>> =
-        Default::default();
+    let mut range_maps: HashMap<(String, String), RangeMap<u64, String>> = Default::default();
 
     // Iterate over all the electrifications ensure we don't report duplicated errors
     for electrification in infra_cache.electrifications().values() {
         let electrification = electrification.unwrap_electrification();
 
-        let voltage = Some(electrification.voltage.0.clone());
+        let voltage = electrification.voltage.0.clone();
 
         for track_range in electrification.track_ranges.iter() {
             let range = (track_range.begin * 100.) as u64..(track_range.end * 100.) as u64;
@@ -127,6 +125,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
+    use rstest::rstest;
 
     #[test]
     fn invalid_ref() {
@@ -163,49 +162,48 @@ mod tests {
         assert_eq!(infra_error, errors[0]);
     }
 
-    #[test]
-    fn overlapping_different_voltage() {
+    /// Test overlapping electrifications with different voltages should not raise warnings.
+    #[rstest]
+    #[case::subset(100., 150.)]
+    #[case::overlap_at_boundary(200., 480.)]
+    fn overlapping_different_voltage(#[case] start: f64, #[case] end: f64) {
         let mut infra_cache = create_small_infra_cache();
+
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut electrification_1 = create_electrification_cache("Cat_error_1", track_ranges_1);
         electrification_1.voltage = "1500V".into();
         infra_cache.add(electrification_1).unwrap();
 
-        let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
+        let track_ranges_2 = vec![("A", start, end)];
         let mut electrification_2 = create_electrification_cache("Cat_error_2", track_ranges_2);
         electrification_2.voltage = "25000V".into();
         infra_cache.add(electrification_2).unwrap();
 
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
-        assert_eq!(
-            0,
-            errors.len(),
-            "No error expected for overlapping with different voltages"
-        );
+        assert_eq!(0, errors.len());
     }
 
-    #[test]
-    fn overlapping_same_voltage() {
+    /// Test overlapping electrifications with same voltage should raise a warning.
+    #[rstest]
+    #[case::subset(100., 150.)]
+    #[case::overlap_at_boundary(200., 480.)]
+    fn overlapping_same_voltage(#[case] start: f64, #[case] end: f64) {
         let mut infra_cache = create_small_infra_cache();
+
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut electrification_1 = create_electrification_cache("Cat_error_1", track_ranges_1);
         electrification_1.voltage = "1500V".into();
         infra_cache.add(electrification_1).unwrap();
 
-        let track_ranges_2 = vec![("A", 100., 150.), ("A", 200., 480.)];
+        let track_ranges_2 = vec![("A", start, end)];
         let mut electrification_2 = create_electrification_cache("Cat_error_2", track_ranges_2);
         electrification_2.voltage = "1500V".into();
         infra_cache.add(electrification_2).unwrap();
 
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
-        assert_eq!(
-            1,
-            errors.len(),
-            "Error expected for overlapping with same voltages"
-        );
+        let expected = InfraError::new_overlapping_electrifications("Cat_error_1", "Cat_error_2");
 
-        let expected_error =
-            InfraError::new_overlapping_electrifications("Cat_error_1", "Cat_error_2");
-        assert_eq!(expected_error, errors[0]);
+        assert_eq!(1, errors.len());
+        assert_eq!(expected, errors[0]);
     }
 }
