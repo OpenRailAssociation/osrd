@@ -33,6 +33,7 @@ const TimetableItemActions = ({
           aria-label={t('timetable.resetExceptions')}
           title={t('timetable.resetExceptions')}
           onClick={resetAllExceptions}
+          data-testid="reset-exceptions"
         >
           <Iterations />
         </button>

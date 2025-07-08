@@ -191,6 +191,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   private static async togglePacedTrainOccurrences(pacedTrainButton: Locator): Promise<void> {
+    await expect(pacedTrainButton).toBeVisible();
     await pacedTrainButton.click();
   }
 
@@ -318,6 +319,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Iterate over each paced train occurrences and verify the visibility of simulation results
   async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
+    // filter paced trains
+    await this.filterTrainTypeAndVerifyTrainCount('Service', pacedTrainCount);
     for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
       const pacedTrain = this.timetableTrains.nth(pacedTrainIndex);
       const pacedTrainButton = ScenarioTimetableSection.getPacedTrainButton(pacedTrain);

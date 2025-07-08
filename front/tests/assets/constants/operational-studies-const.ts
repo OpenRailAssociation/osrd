@@ -80,6 +80,14 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     interval: '60',
     expectedOccurrencesCount: 3,
   },
+  {
+    name: 'Paced Train with added and updated exceptions',
+    startTime: '11:00',
+    labels: ['Paced-Train-Tag-5', 'SS-NS', 'Valid'],
+    timeWindow: '180',
+    interval: '60',
+    expectedOccurrencesCount: 4,
+  },
 ];
 
 export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [

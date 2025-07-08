@@ -256,6 +256,7 @@ export type OccurrenceDetails = {
   name: string;
   startTime: string;
   arrivalTime: string;
+  rollingStock?: string;
 };
 
 export type OccurrenceMenuButton = 'delete' | 'disable' | 'edit' | 'enable' | 'project' | 'restore';
