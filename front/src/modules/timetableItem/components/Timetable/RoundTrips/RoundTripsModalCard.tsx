@@ -1,6 +1,13 @@
+import { useMemo, useRef, useState } from 'react';
+
 import { ArrowRight, ArrowSwitch, KebabHorizontal, Services, Square } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { BsXCircleFill } from 'react-icons/bs';
+
+import AnchoredMenu from 'common/AnchoredMenu';
+import type { OSRDMenuItem } from 'common/OSRDMenu';
+import OSRDMenu from 'common/OSRDMenu';
 
 import { TRAIN_CATEGORY_CLASS } from '../consts';
 import type { PairingItem } from '../types';
@@ -23,6 +30,10 @@ const RoundTripsModalCard = ({
   },
 }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrip') => {
     if (itemStatus === 'todo') {
@@ -33,6 +44,54 @@ const RoundTripsModalCard = ({
     }
     return <ArrowSwitch />;
   };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  // TODO : add actions for each menu item
+  const menuItems: Record<string, OSRDMenuItem> = {
+    restore: {
+      title: t('restore'),
+      icon: <BsXCircleFill />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    setOneWay: {
+      title: t('setOneWay'),
+      icon: <ArrowRight />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+    pickReturn: {
+      title: t('pickReturn'),
+      icon: <ArrowSwitch />,
+      onClick: () => {
+        closeMenu();
+      },
+    },
+  };
+
+  const filteredMenuItems = useMemo(() => {
+    const { restore, setOneWay, pickReturn } = menuItems;
+
+    if (status === 'todo') {
+      return [setOneWay, pickReturn];
+    }
+
+    return [restore];
+  }, [menuItems, status]);
+
+  const menu = AnchoredMenu({
+    children: isMenuOpen && (
+      <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="round-trips-menu" />
+    ),
+    anchorRef: menuButtonRef,
+    onDismiss: closeMenu,
+    container: document.querySelector('.round-trips-modal'),
+  });
 
   return (
     <div className="round-trips-card">
@@ -46,9 +105,19 @@ const RoundTripsModalCard = ({
           {interval ? `${interval.total('minute')}\u2019` : '\u2013'}
         </div>
         <div className="status">{getStatusIcon(status)}</div>
-        <div className="card-menu">
+        <button
+          ref={menuButtonRef}
+          type="button"
+          className="card-menu"
+          title={t('openRoundTripsMenu')}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(true);
+          }}
+        >
           <KebabHorizontal />
-        </div>
+        </button>
+        {menu}
       </div>
       <div className="round-trips-card-body">
         <div className="stops">
