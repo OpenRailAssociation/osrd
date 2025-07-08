@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
@@ -35,7 +35,7 @@ import type {
 import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
+  setDisplayTimetableItemManagement: (mode: string) => void;
   infraState: InfraState;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
@@ -50,7 +50,7 @@ const formatDepartureDate = (d: Date, locale: string) =>
   dayjs(d).locale(locale).format('dddd D MMMM YYYY');
 
 const Timetable = ({
-  setDisplayTrainScheduleManagement,
+  setDisplayTimetableItemManagement,
   infraState,
   upsertTimetableItems,
   removeTimetableItems,
@@ -147,7 +147,7 @@ const Timetable = ({
             timetableItemId: itemToEdit.id,
           };
       setTimetableItemToEditData(editData);
-      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+      setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.edit);
     },
     []
   );
@@ -159,7 +159,7 @@ const Timetable = ({
           type="button"
           data-testid="scenarios-add-timetable-item-button"
           onClick={() => {
-            setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
+            setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add);
           }}
         >
           {t('timetable.addTimetableItem')}
@@ -167,7 +167,7 @@ const Timetable = ({
         <button
           type="button"
           data-testid="scenarios-import-timetable-item-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
+          onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import)}
         >
           {t('timetable.importTimetableItem')}
         </button>

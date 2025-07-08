@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -63,7 +63,7 @@ const TimetableManageItem = ({
   const [isWorking, setIsWorking] = useState(false);
 
   const leaveManageTimetableItem = () => {
-    setDisplayTimetableItemManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
     setTimetableItemToEditData(undefined);
   };
 
@@ -92,7 +92,7 @@ const TimetableManageItem = ({
   return (
     <div className="scenario-timetable-manage-timetable-item">
       <div className="scenario-timetable-manage-timetable-item-header">
-        {displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
+        {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit &&
           timetableItemToEditData && (
             <>
               <button
@@ -147,7 +147,7 @@ const TimetableManageItem = ({
             </>
           )}
 
-        {displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+        {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add && (
           <>
             {isWorking ? (
               <button
