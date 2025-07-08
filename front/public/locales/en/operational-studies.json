@@ -154,8 +154,12 @@
       "cadence": "Cadence",
       "manageRoundTrips": "Manage round trips",
       "oneWays": "One-ways",
+      "openRoundTripsMenu": "Open round trips management menu",
+      "pickReturn": "Pick a return",
+      "restore": "Move to todo",
       "roundTrips": "Round trips",
       "roundTripsManagement": "Round trips management",
+      "setOneWay": "Set as one way",
       "todo": "Todo"
     },
     "scenarioCancel": "Cancel",

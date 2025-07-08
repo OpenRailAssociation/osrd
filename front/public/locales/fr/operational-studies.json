@@ -154,8 +154,12 @@
       "cadence": "Cadence",
       "manageRoundTrips": "Gérer les aller-retours",
       "oneWays": "Aller simples",
+      "openRoundTripsMenu": "Ouvrir le menu de gestion des aller-retours",
+      "pickReturn": "Sélectionner un retour",
+      "restore": "Remettre à traiter",
       "roundTrips": "Aller-retours",
       "roundTripsManagement": "Gestion des aller-retours",
+      "setOneWay": "Forcer un aller simple",
       "todo": "À traiter"
     },
     "scenarioCancel": "Annuler",
