@@ -11,13 +11,13 @@ import { useSelector } from 'react-redux';
 import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
 import {
   osrdEditoastApi,
-  type LightRollingStockWithLiveries,
   type PacedTrain,
   type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useRollingStockContext } from 'common/RollingStockContext';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -60,7 +60,6 @@ type PacedTrainItemProps = {
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
-  rollingStockList: LightRollingStockWithLiveries[] | null;
 };
 
 const PacedTrainItem = ({
@@ -75,7 +74,6 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
-  rollingStockList,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -83,8 +81,8 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
-
-  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStockList);
+  const { rollingStocks } = useRollingStockContext();
+  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);
 
   const occurrenceActions = useOccurrenceActions({
     pacedTrain,

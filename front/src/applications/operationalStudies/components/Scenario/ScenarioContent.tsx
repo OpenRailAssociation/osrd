@@ -66,7 +66,6 @@ const ScenarioContent = ({
     timetableItems,
     projectionData,
     conflicts,
-    rollingStockList,
     upsertTimetableItems,
     removeTimetableItems,
     updateTrainDepartureTime,
@@ -213,7 +212,6 @@ const ScenarioContent = ({
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 setTimetableItemToEditData={setTimetableItemToEditData}
                 timetableItemToEditData={timetableItemToEditData}
-                rollingStockList={rollingStockList}
               />
             )}
           </div>

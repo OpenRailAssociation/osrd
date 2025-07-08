@@ -8,6 +8,7 @@ import {
   type InfraWithState,
   type ScenarioResponse,
 } from 'common/api/osrdEditoastApi';
+import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import formatBaseTimetableItemWithDetails from 'modules/timetableItem/helpers/formatBaseTimetableItemWithDetails';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -42,8 +43,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
-  const { data: { results: rollingStocks } = { results: null } } =
-    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
+  const { rollingStocks } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infra);
 
@@ -347,8 +347,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
             }
           : undefined,
       conflicts,
-      // TODO : probably remove this in favor of putting it in the scenario context when refactoring it
-      rollingStockList: rollingStocks,
       removeTimetableItems: removeTimetableItemsWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,

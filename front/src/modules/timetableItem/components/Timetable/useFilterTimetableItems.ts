@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { uniq } from 'lodash';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useRollingStockContext } from 'common/RollingStockContext';
 import { useDebounce } from 'utils/helpers';
 import { isPacedTrainId, isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 
@@ -36,9 +36,7 @@ const useFilterTimetableItems = (
   const debouncedNameLabelFilter = useDebounce(nameLabelFilter, 500);
   const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
 
-  // TODO : might be relevant to move this call in the scenario context in a refacto
-  const { data: { results: rollingStocks } = { results: null } } =
-    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
+  const { rollingStocks } = useRollingStockContext();
 
   const uniqueTags = useMemo(
     () =>
