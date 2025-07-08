@@ -15,7 +15,7 @@ const mapTrainNames = (trainSchedules: TrainSchedule[], trains: Element[]): Trai
 
   trains.forEach((train) => {
     const trainPartRef = train.getElementsByTagName('trainPartRef')[0]?.getAttribute('ref');
-    const trainName = train.getAttribute('name') || '';
+    const trainName = train.getAttribute('description') || train.getAttribute('name') || '';
     if (trainPartRef) {
       trainPartToTrainMap[trainPartRef] = trainName;
     }
