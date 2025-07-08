@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 
 import { KebabHorizontal } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 
 import AnchoredMenu from './AnchoredMenu';
 import type { OSRDMenuItem } from './OSRDMenu';
@@ -75,7 +76,7 @@ const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
         ref={menuButtonRef}
         type="button"
         onClick={toggleMenu}
-        className={buttonClassName}
+        className={cx(buttonClassName, { 'menu-is-opened': isMenuOpen })}
         {...restButtonProps}
       >
         {icon}
