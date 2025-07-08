@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { Check, Download, PlusCircle } from '@osrd-project/ui-icons';
+import { Check, Download, PlusCircle, Upload } from '@osrd-project/ui-icons';
+import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState } from 'common/api/osrdEditoastApi';
+import type { InfraState, PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainId,
   TimetableItem,
@@ -13,7 +14,7 @@ import type {
   TimetableItemToEditData,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
-import { isTrainScheduleId } from 'utils/trainId';
+import { isPacedTrainResponseWithPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 import Timetable from './Timetable';
 import type { TimetableItemWithDetails } from './types';
@@ -126,6 +127,35 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
     }
   };
 
+  const exportTimetableItems = (selectedTimeTableIdsFromClick: TimetableItemId[]) => {
+    if (!timetableItems) return;
+
+    const formattedTimetableItems = timetableItems
+      .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
+      .reduce<{
+        train_schedules: TrainSchedule[];
+        paced_trains: PacedTrain[];
+      }>(
+        (acc, timetableItem) => {
+          if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+            acc.paced_trains.push(omit(timetableItem, ['id']));
+          } else {
+            acc.train_schedules.push(omit(timetableItem, ['id']));
+          }
+          return acc;
+        },
+        { train_schedules: [], paced_trains: [] }
+      );
+
+    const jsonString = JSON.stringify(formattedTimetableItems);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timetable.json';
+    a.click();
+  };
+
   return (
     <BoardWrapper
       visible
@@ -153,6 +183,13 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
           icon: <Download />,
           dataTestID: 'scenarios-import-timetable-item-button',
           onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+        },
+        {
+          title: t('main.timetable.exportSelection'),
+          icon: <Upload />,
+          dataTestID: 'scenarios-export-timetable-item-button',
+          disabled: selectedTimetableItemIds.length === 0,
+          onClick: () => exportTimetableItems(selectedTimetableItemIds),
         },
       ]}
     >

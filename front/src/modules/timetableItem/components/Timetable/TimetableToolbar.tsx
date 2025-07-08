@@ -3,12 +3,11 @@ import { useContext, useState } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -26,7 +25,6 @@ import { castErrorToFailure } from 'utils/error';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
-  isPacedTrainResponseWithPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -132,35 +130,6 @@ const TimetableToolbar = ({
     }
   };
 
-  const exportTimetableItems = (selectedTimeTableIdsFromClick: TimetableItemId[]) => {
-    if (!timetableItems) return;
-
-    const formattedTimetableItems = timetableItems
-      .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
-      .reduce<{
-        train_schedules: TrainSchedule[];
-        paced_trains: PacedTrain[];
-      }>(
-        (acc, timetableItem) => {
-          if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-            acc.paced_trains.push(omit(timetableItem, ['id']));
-          } else {
-            acc.train_schedules.push(omit(timetableItem, ['id']));
-          }
-          return acc;
-        },
-        { train_schedules: [], paced_trains: [] }
-      );
-
-    const jsonString = JSON.stringify(formattedTimetableItems);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'timetable.json';
-    a.click();
-  };
-
   return (
     <>
       <div
@@ -220,13 +189,6 @@ const TimetableToolbar = ({
                   'sm'
                 )
               }
-            />
-            <Button
-              size="small"
-              label={t('timetable.export')}
-              title={t('timetable.exportSelection')}
-              type="button"
-              onClick={() => exportTimetableItems(selectedTimetableItemIds)}
             />
           </div>
         )}

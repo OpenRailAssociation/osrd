@@ -187,7 +187,6 @@
       "deleteSelection": "Delete selected trains",
       "deleteTrainSelectionConfirmation": "Do you confirm the deletion of $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
       "duplicate": "Clone",
-      "export": "Export",
       "exportSelection": "Export selected trains",
       "filterLabel": "Name, label",
       "importTimetableItem": "Import trains",
