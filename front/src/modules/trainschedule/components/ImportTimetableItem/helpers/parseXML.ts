@@ -91,7 +91,8 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     ocps.forEach((ocp) => {
       const id = ocp.getAttribute('id');
-      const code = isSiph ? ocp.getAttribute('abbreviation') : ocp.getAttribute('code');
+      // "abbrevation" is a typing error in SIPH file
+      const code = isSiph ? ocp.getAttribute('abbrevation') : ocp.getAttribute('code');
 
       if (id && code) {
         const { ciCode, chCode } = extractCiChCode(code);
@@ -122,13 +123,14 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     const formationTT = train.getElementsByTagName('formationTT')[0];
     const formationRef = formationTT?.getAttribute('formationRef');
 
-    function extractSiphRollingStock(): string {
+    function extractSiphRollingStockName(): string {
       let vehicleName = '';
       if (formationRef !== null) {
         const formation = xmlDoc.getElementById(formationRef);
         const trainOrder = formation?.getElementsByTagName('trainOrder')[0];
-        const vehiculRef = trainOrder?.getAttribute('vehiculRef');
-        const vehicle = xmlDoc.getElementById(vehiculRef || '');
+        const vehicleRef = trainOrder?.getElementsByTagName('vehicleRef')[0];
+        const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
+        const vehicle = xmlDoc.getElementById(vehicleRefAttribute || '');
         vehicleName = vehicle?.getAttribute('name') || '';
       }
       return vehicleName;
@@ -146,7 +148,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     const trainSchedule: TrainSchedule = {
       train_name: trainNumber,
-      rolling_stock_name: isSiph ? extractSiphRollingStock() : formationRef || '', // RollingStocks in xml files rarely have the correct format
+      rolling_stock_name: isSiph ? extractSiphRollingStockName() : formationRef || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
       constraint_distribution: isSiph ? 'STANDARD' : 'MARECO',
       path,
