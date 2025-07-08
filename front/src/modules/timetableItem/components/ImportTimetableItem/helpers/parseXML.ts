@@ -85,7 +85,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     ocps.forEach((ocp) => {
       const id = ocp.getAttribute('id');
-      const code = ocp.getAttribute('code');
+      const code = ocp.getAttribute('code') || ocp.getAttribute('abbrevation');
 
       if (id && code) {
         const { ciCode, chCode } = extractCiChCode(code);
@@ -108,11 +108,22 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   }
 
   trainParts.forEach((train) => {
-    const trainNumber = train.getAttribute('id') || '';
+    const trainNumber = train.getAttribute('trainNumber') || train.getAttribute('id') || '';
     const trainPartId = train.getAttribute('id') || '';
     const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
     const formationTT = train.getElementsByTagName('formationTT')[0];
-    const rollingStockXml = formationTT?.getAttribute('formationRef');
+    const formationRef = formationTT?.getAttribute('formationRef');
+
+    let rollingStockName = null;
+    if (formationRef !== null) {
+      const formation = xmlDoc.getElementById(formationRef);
+      const vehicleRef = formation?.querySelector('trainOrder vehicleRef');
+      const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
+      const vehicle = vehicleRefAttribute ? xmlDoc.getElementById(vehicleRefAttribute) : null;
+
+      rollingStockName = vehicle?.getAttribute('name') || null;
+    }
+
     const firstOcpTT = ocpSteps[0];
     const firstDepartureTime = firstOcpTT
       .getElementsByTagName('times')[0]
@@ -125,9 +136,11 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     const trainSchedule: TrainSchedule = {
       train_name: trainNumber,
-      rolling_stock_name: rollingStockXml || '', // RollingStocks in xml files rarely have the correct format
+      rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
-      constraint_distribution: 'MARECO',
+      constraint_distribution: xmlDoc.documentElement.hasAttribute('xmlns:tps')
+        ? 'STANDARD'
+        : 'MARECO',
       path,
       schedule,
     };
