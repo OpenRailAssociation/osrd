@@ -4,6 +4,7 @@
     0 2px 2px -1px rgba(255, 171, 88, 0.27);
   border-radius: 8px;
   margin-bottom: 16px;
+  position: relative;
 
   .board-header {
     height: 22px;
@@ -35,5 +36,16 @@
   .board-body {
     width: 100%;
     border-top: 1px solid white;
+  }
+
+  .board-footer {
+    position: absolute;
+    height: 16px;
+    width: 100%;
+    background-color: var(--ambientB15);
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid var(--black10);
+    box-shadow: inset 0 1px 0 0 white;
+    bottom: 0;
   }
 }

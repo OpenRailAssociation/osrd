@@ -8,9 +8,16 @@ type BoardWrapperProps = {
   visible: boolean;
   name: string;
   items?: OSRDMenuItem[];
+  withFooter?: boolean;
 };
 
-const BoardWrapper = ({ children, visible, name, items = [] }: BoardWrapperProps) => {
+const BoardWrapper = ({
+  children,
+  visible,
+  name,
+  items = [],
+  withFooter = false,
+}: BoardWrapperProps) => {
   if (!visible) {
     return null;
   }
@@ -27,6 +34,7 @@ const BoardWrapper = ({ children, visible, name, items = [] }: BoardWrapperProps
         />
       </div>
       <div className="board-body">{children}</div>
+      {withFooter && <div className="board-footer" />}
     </div>
   );
 };
