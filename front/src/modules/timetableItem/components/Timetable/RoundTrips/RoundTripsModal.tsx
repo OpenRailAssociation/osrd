@@ -48,9 +48,9 @@ const RoundTripsModal = ({
         <h1 className="title">{t('roundTripsModal.roundTripsManagement')}</h1>
       </div>
       <div className="round-trips-modal-body">
-        <RoundTripsModalColumn columnType="todo" pairingItems={[]} />
-        <RoundTripsModalColumn columnType="oneWays" pairingItems={[]} />
-        <RoundTripsModalColumn columnType="roundTrips" pairingItems={[]} />
+        <RoundTripsModalColumn type="todo" pairingItems={[]} />
+        <RoundTripsModalColumn type="oneWays" pairingItems={[]} />
+        <RoundTripsModalColumn type="roundTrips" pairingItems={[]} />
       </div>
       <div className="round-trips-modal-footer">
         <Button label={commonT('cancel')} variant="Cancel" onClick={closeModal} />

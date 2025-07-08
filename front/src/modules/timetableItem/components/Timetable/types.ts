@@ -120,20 +120,12 @@ export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 export type PairingItem = {
   id: number;
   name: string;
-  interval: Duration;
+  category: TrainCategory | null;
+  interval: Duration | null;
   origin: string;
   stops: string[];
   destination: string;
   startTime: Date;
   arrivalTime: Date;
-  status:
-    | {
-        type: 'todo' | 'oneWays';
-      }
-    | {
-        type: 'roundTrip';
-        matchId: number;
-        // Match is valid if the pairing results in one line in macro mode
-        validMatch: boolean;
-      };
+  status: 'todo' | 'oneWays' | 'roundTrip';
 };
