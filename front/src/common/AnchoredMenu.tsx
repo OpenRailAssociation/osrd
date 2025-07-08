@@ -8,6 +8,7 @@ type AnchoreMenuParams = {
   children?: React.ReactNode;
   anchorRef: React.RefObject<HTMLElement>;
   onDismiss: () => void;
+  container?: Element | null;
 };
 
 /**
@@ -21,7 +22,7 @@ type AnchoreMenuParams = {
  *
  * It handles the space needed by the menu to know if the children should be positioned above or below the anchor element.
  */
-const AnchoredMenu = ({ children, anchorRef, onDismiss }: AnchoreMenuParams) => {
+const AnchoredMenu = ({ children, anchorRef, onDismiss, container }: AnchoreMenuParams) => {
   const [menuPosition, setMenuPosition] = useState<{
     top?: number;
     left: number;
@@ -71,7 +72,7 @@ const AnchoredMenu = ({ children, anchorRef, onDismiss }: AnchoreMenuParams) => 
         {children}
       </div>
     </div>,
-    document.body
+    container || document.body
   );
 };
 
