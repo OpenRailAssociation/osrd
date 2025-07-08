@@ -77,6 +77,7 @@ export const ConfirmModal = ({
           className="btn btn-primary flex-grow-1 ml-2"
           onClick={() => confirm()}
           disabled={confirmDisabled || disabled}
+          data-testid="confirmation-modal-button"
         >
           {confirmLabel || t('common.confirm')}
         </button>

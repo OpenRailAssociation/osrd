@@ -179,5 +179,47 @@
         }
       }
     ]
+  },
+  {
+    "train_name": "Paced Train with added and updated exceptions",
+    "labels": ["Paced-Train-Tag-5", "SS-NS", "Valid"],
+    "rolling_stock_name": "DUAL-MODE_RS_E2E",
+    "start_time": "2024-10-17T11:00:00Z",
+    "path": [
+      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id228",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true },
+    "paced": { "time_window": "PT3H", "interval": "PT1H" },
+    "exceptions": [
+      {
+        "disabled": false,
+        "key": "e0573b19-d957-47ac-9a96-224d44ab842b",
+        "occurrence_index": 0,
+        "rolling_stock": { "rolling_stock_name": "SLOW_RS_E2E", "comfort": "STANDARD" }
+      },
+      {
+        "disabled": false,
+        "key": "e0573b22-d222-47ac-9a96-224d44ab842b",
+        "start_time": {
+          "value": "2024-10-17T19:00:00Z"
+        }
+      }
+    ]
   }
 ]
