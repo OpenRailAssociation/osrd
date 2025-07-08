@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/timetableItem/components/ManageTimetableItem/helpers/checkCurrentConfig';
 import {
@@ -38,7 +38,7 @@ import {
 
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,
-  setDisplayTrainScheduleManagement: (type: string) => void,
+  setDisplayTimetableItemManagement: (type: string) => void,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void,
   setTimetableItemIdToEdit: (timetableItemToEditData?: TimetableItemToEditData) => void,
@@ -110,7 +110,7 @@ const useUpdateTimetableItem = (
     );
     dispatch(clearAddedExceptionsList());
     dispatch(updateSelectedTrainId(trainIdToSelect));
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
     setTimetableItemIdToEdit(undefined);
   };
 };

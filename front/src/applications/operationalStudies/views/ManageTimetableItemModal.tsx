@@ -5,7 +5,7 @@ import TimetableManageItem, {
   type TimetableManageItemProps,
 } from 'modules/timetableItem/components/ManageTimetableItem/TimetableManageItem';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 import ImportTimetableItem from './ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
 import { ManageTimetableItemContextProvider } from '../hooks/useManageTimetableItemContext';
@@ -39,8 +39,8 @@ const ManageTimetableItemModal = ({
       infraState={infraState}
     />
 
-    {(displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-      displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
+    {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||
+      displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit) && (
       <div
         className={`scenario-manage-timetable-item${collapsedTimetableEdit ? ' collapsed' : ''}`}
         data-testid="manage-timetable-item"
@@ -60,7 +60,7 @@ const ManageTimetableItemModal = ({
       </div>
     )}
 
-    {displayTimetableItemManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
+    {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.import && (
       <div className="scenario-manage-timetable-item">
         <ImportTimetableItem scenario={scenario} upsertTimetableItems={upsertTimetableItems} />
       </div>

@@ -9,7 +9,7 @@ import {
   getNgeDto,
 } from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/ManageTimetableItemModal';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
@@ -51,8 +51,8 @@ const ScenarioContent = ({
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
 
-  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
-    MANAGE_TRAIN_SCHEDULE_TYPES.none
+  const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
+    MANAGE_TIMETABLE_ITEM_TYPES.none
   );
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
@@ -177,10 +177,10 @@ const ScenarioContent = ({
   return (
     <EditedElementContainerProvider>
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-        {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+        {displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.none && (
           <ManageTimetableItemModal
-            displayTimetableItemManagement={displayTrainScheduleManagement}
-            setDisplayTimetableItemManagement={setDisplayTrainScheduleManagement}
+            displayTimetableItemManagement={displayTimetableItemManagement}
+            setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}
             removeTimetableItems={removeTimetableItemsWithNge}
             infraState={infra.state}
@@ -201,7 +201,7 @@ const ScenarioContent = ({
 
             {infra && (
               <Timetable
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
                 infraState={infra.state}
                 upsertTimetableItems={upsertTimetableItemsWithNge}
                 removeTimetableItems={removeTimetableItemsWithNge}
@@ -228,8 +228,8 @@ const ScenarioContent = ({
           )}
           {!isInfraLoaded &&
             !isMacro &&
-            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
-            displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+            displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.add &&
+            displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.edit && (
               <ScenarioLoaderMessage infraState={infra?.state} />
             )}
           {isMacro && (!ngeDto || ngeIsLoading) && (
