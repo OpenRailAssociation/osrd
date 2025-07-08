@@ -6,6 +6,7 @@ import ScenarioContent from 'applications/operationalStudies/components/Scenario
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
+import { RollingStockContextProvider } from 'common/RollingStockContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
@@ -47,15 +48,16 @@ const Scenario = () => {
         toggleConflictsList={toggleConflictsList}
         toggleMacroEditor={toggleMacroEditor}
       />
-
-      <ScenarioContent
-        scenario={scenario}
-        infra={infra}
-        infraMetadata={infraData}
-        isTimetableDisplayed={isTimetableDisplayed}
-        isConflictsListDisplayed={isConflictsListDisplayed}
-        isMacroEditorDisplayed={isMacroEditorDisplayed}
-      />
+      <RollingStockContextProvider>
+        <ScenarioContent
+          scenario={scenario}
+          infra={infra}
+          infraMetadata={infraData}
+          isTimetableDisplayed={isTimetableDisplayed}
+          isConflictsListDisplayed={isConflictsListDisplayed}
+          isMacroEditorDisplayed={isMacroEditorDisplayed}
+        />
+      </RollingStockContextProvider>
     </ScenarioContextProvider>
   );
 };

@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
@@ -43,7 +43,6 @@ type TimetableProps = {
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
-  rollingStockList: LightRollingStockWithLiveries[] | null;
 };
 
 const formatDepartureDate = (d: Date, locale: string) =>
@@ -58,7 +57,6 @@ const Timetable = ({
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
-  rollingStockList,
 }: TimetableProps) => {
   const { t, i18n } = useTranslation('operational-studies', { keyPrefix: 'main' });
 
@@ -226,7 +224,6 @@ const Timetable = ({
                   isProjectionPathUsed={
                     infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
                   }
-                  rollingStockList={rollingStockList}
                 />
               )}
             </div>
