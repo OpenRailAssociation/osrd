@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -38,11 +38,11 @@ type TimetableProps = {
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
   removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
+  showTrainDetails: boolean;
   filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
-  timetableItemsWithDetails: TimetableItemWithDetails[];
   selectedTimetableItemIds: TimetableItemId[];
 };
 
@@ -56,11 +56,11 @@ const Timetable = ({
   setTimetableItemToEditData,
   setSelectedTimetableItemIds,
   removeAndUnselectTrains,
+  showTrainDetails,
   filteredTimetableItems,
   timetableFilters,
   timetableItemToEditData,
   timetableItems = [],
-  timetableItemsWithDetails,
   selectedTimetableItemIds,
 }: TimetableProps) => {
   const dateTimeLocale = useDateTimeLocale();
@@ -69,14 +69,9 @@ const Timetable = ({
     new Set()
   );
 
-  const [showTrainDetails, setShowTrainDetails] = useState(false);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
-
-  const toggleShowTrainDetails = () => {
-    setShowTrainDetails(!showTrainDetails);
-  };
 
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
@@ -152,8 +147,6 @@ const Timetable = ({
         })}
       >
         <TimetableToolbar
-          showTrainDetails={showTrainDetails}
-          toggleShowTrainDetails={toggleShowTrainDetails}
           filteredTimetableItems={filteredTimetableItems}
           timetableFilters={timetableFilters}
           timetableItems={timetableItems}
@@ -201,12 +194,6 @@ const Timetable = ({
             </div>
           ))}
         </Virtualizer>
-        <div
-          className={cx('bottom-timetables-trains', {
-            'empty-list': timetableItemsWithDetails.length === 0,
-          })}
-          data-testid={timetableItemsWithDetails.length === 0 ? 'empty-timetable-list' : undefined}
-        />
       </div>
     </div>
   );
