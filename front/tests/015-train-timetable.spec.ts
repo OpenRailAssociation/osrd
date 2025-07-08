@@ -216,11 +216,11 @@ test.describe('Verify train schedule elements and filters', () => {
     );
 
     // Verify paced train item
-    for (let paceTrainIndex = 0; paceTrainIndex < pacedTrainsData.length; paceTrainIndex += 1) {
+    for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainsData.length; pacedTrainIndex += 1) {
       await pacedTrainSection.verifyPacedTrainItemDetails(
-        IMPORTED_PACED_TRAIN_DETAILS[paceTrainIndex],
-        paceTrainIndex,
-        { occurrenceData: IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[paceTrainIndex] }
+        IMPORTED_PACED_TRAIN_DETAILS[pacedTrainIndex],
+        pacedTrainIndex,
+        { occurrenceData: IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[pacedTrainIndex] }
       );
     }
   });
