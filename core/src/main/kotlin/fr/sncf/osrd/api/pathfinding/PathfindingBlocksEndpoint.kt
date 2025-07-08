@@ -183,6 +183,7 @@ private fun computePaths(
             .setEdgeToLength { Offset(it.length.distance) }
             .setRangeCost { getRangeCost(it, mrspBuilder, infra) }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
+            .setComparisonFallback { a, b -> a.block.index.compareTo(b.block.index) }
             .runPathfinding(
                 getStartLocations(
                     infra.rawInfra,
