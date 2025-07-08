@@ -34,7 +34,7 @@ import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 const TrainSettings = () => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { t: tRollingStock } = useTranslation();
   const dispatch = useAppDispatch();
   const categoryOptions = useCategoryOptions();
@@ -77,7 +77,7 @@ const TrainSettings = () => {
     }
   }, [categoryFromStore, tRollingStock]);
 
-  const isInvalidTrainScheduleName = isInvalidName(name);
+  const isInvalidTimetableItemName = isInvalidName(name);
 
   return (
     <div className="row no-gutters">
@@ -87,13 +87,13 @@ const TrainSettings = () => {
           label={
             <>
               <MdOutlineDriveFileRenameOutline />
-              <span className="text-nowrap">{t('trainScheduleName')}</span>
+              <span className="text-nowrap">{t('timetableItemName')}</span>
             </>
           }
           id="timetable-item-name"
           onChange={(e) => dispatch(updateName(e.target.value))}
           value={name}
-          isInvalid={isInvalidTrainScheduleName}
+          isInvalid={isInvalidTimetableItemName}
           errorMsg={!name ? t('errorMessages.requiredField') : t('errorMessages.nameLengthLimit')}
           noMargin
           inputProps={{
@@ -107,8 +107,8 @@ const TrainSettings = () => {
           label={
             <>
               <MdOutlineAccessTime />
-              {/* TODO TS2 : rename trainScheduleDepartureTime key to trainScheduleStartTime everywhere */}
-              <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
+              {/* TODO TS2 : rename timetableItemDepartureTime key to timetableItemStartTime everywhere */}
+              <small className="text-nowrap">{t('timetableItemDepartureTime')}</small>
             </>
           }
           id="start-time"
@@ -142,7 +142,7 @@ const TrainSettings = () => {
           label={
             <>
               <SlSpeedometer />
-              <small className="text-nowrap">{t('trainScheduleInitialSpeed')}</small>
+              <small className="text-nowrap">{t('timetableItemInitialSpeed')}</small>
             </>
           }
           id="initial-speed"

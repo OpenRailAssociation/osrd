@@ -19,7 +19,7 @@ import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { InfraHardError, InfraSoftError } from './InfraError';
 
 const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined }) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const pathSteps = useSelector(getPathSteps);
   const hasInvalidPathStep = pathSteps.some((pathStep) => isPathStepInvalid(pathStep));
@@ -95,7 +95,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
               <span className="flex-grow-1">
                 {pathfindingState.error
                   ? t('pathfindingError', { errorMessage: pathfindingState.error })
-                  : t('InvalidTrainScheduleStep')}
+                  : t('invalidTimetableItemStep')}
               </span>
             </div>
           )}

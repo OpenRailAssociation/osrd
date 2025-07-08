@@ -45,7 +45,7 @@ const useUpdateTimetableItem = (
   timetableItemToEditData?: TimetableItemToEditData,
   selectedTrainId?: TrainId
 ) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const dispatch = useAppDispatch();
   const confName = useSelector(getName);
   const timetableId = useSelector(getOperationalStudiesTimetableID);

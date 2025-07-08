@@ -154,7 +154,7 @@ const ImportTimetableItemTrainsList = ({
       dispatch(
         setFailure({
           name: t('failure'),
-          message: t('status.invalidTrainSchedules', {
+          message: t('status.invalidTimetableItems', {
             trainsList,
             count: trainsList.length || [...trainSchedulesJsonData, ...pacedTrainsJsonData].length,
           }),

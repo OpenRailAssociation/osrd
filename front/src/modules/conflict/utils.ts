@@ -14,7 +14,7 @@ function getConflictTrainNames(
   conflict: Conflict,
   trainMap: Map<TimetableItemId, TimetableItemWithDetails>
 ): string[] {
-  const trainScheduleNames = conflict.train_schedule_ids.map(
+  const timetableItemNames = conflict.train_schedule_ids.map(
     (id) => trainMap.get(formatEditoastIdToTrainScheduleId(id))?.name
   );
 
@@ -53,7 +53,7 @@ function getConflictTrainNames(
     return `${pacedTrain.name}/+`;
   });
 
-  const trainNames = [...trainScheduleNames, ...occurrenceNames];
+  const trainNames = [...timetableItemNames, ...occurrenceNames];
   return trainNames.filter((name): name is string => name !== undefined);
 }
 

@@ -40,7 +40,7 @@ const CreateTimetableItemButton = ({
   isPacedTrainMode,
 }: CreateTimetableItemButtonProps) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 

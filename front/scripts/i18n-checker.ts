@@ -34,10 +34,10 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:mapKey.directCurrent/,
   /translation:mapSettings.layers\..*/,
 
-  // Manage train schedule
-  /operational-studies:manageTrainSchedule.errorMessages\..*/,
-  /operational-studies:manageTrainSchedule.pathfindingErrors\.pathfinding_failure/,
-  /operational-studies:manageTrainSchedule.tabs\..*/,
+  // Manage timetable item
+  /operational-studies:manageTimetableItem.errorMessages\..*/,
+  /operational-studies:manageTimetableItem.pathfindingErrors\.pathfinding_failure/,
+  /operational-studies:manageTimetableItem.tabs\..*/,
 
   // Project
   /operational-studies:main\.pacedTrain/,

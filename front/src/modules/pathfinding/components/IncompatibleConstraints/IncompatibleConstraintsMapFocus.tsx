@@ -16,7 +16,7 @@ interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
   const { smoothTravel } = useSelector(getMap);
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { geojson, ...attrs } = props;
 
   const mapFocusOnPath = useCallback(() => {

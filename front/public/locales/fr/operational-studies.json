@@ -35,8 +35,8 @@
     "selectStation": "Sélectionner cette station",
     "startTime": "DÉBUT",
     "status": {
-      "invalidTrainSchedules_one": "La circulation à importer n'est pas au bon format.",
-      "invalidTrainSchedules_other": "Les circulations à importer ne sont pas au bon format.",
+      "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",
+      "invalidTimetableItems_other": "Les circulations à importer ne sont pas au bon format.",
       "successfulImport": "Tous les items ont été importés.",
       "successfulImport_one": "L'item a été importé."
     },
@@ -174,7 +174,7 @@
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {
-      "addTrainScheduleOrPacedTrain": "Ajouter",
+      "addTimetableItem": "Ajouter",
       "advancedFilterLabel": "Engin moteur",
       "choosePath": "Utiliser ce chemin",
       "closeFilter": "Fermer le filtre",
@@ -261,8 +261,7 @@
     "train_other": "{{count}} trains",
     "train_zero": ""
   },
-  "manageTrainSchedule": {
-    "InvalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
+  "manageTimetableItem": {
     "addPacedTrain": "Ajouter une mission",
     "addTrainSchedule": "Ajouter un train",
     "addVia": "Ajouter ce point de passage",
@@ -299,9 +298,9 @@
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
       "requiredField": "Champ obligatoire.",
       "softErrorInfra": "L'application est indisponible, une erreur serveur est survenue, veuillez réessayer ultérieurement.",
+      "timetableItemTitle": "Une erreur est survenue",
       "tooLowInput": "Doit être > 0",
       "tooLowValue": "La {{value}} doit être supérieure à 0",
-      "trainScheduleTitle": "Une erreur est survenue",
       "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
@@ -327,6 +326,7 @@
     "infraLoading": "Infra en cours de chargement…",
     "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
     "inputOPTrigramsExample": "Ex : LSN CIG CCS",
+    "invalidTimetableItemStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
     "launchPathFinding": "Lancer la recherche d'itinéraire",
     "manageVias": "Gestion des étapes",
@@ -383,12 +383,12 @@
       "simulationSettings": "Paramètres de simulation",
       "timesStops": "Horaires et arrêts"
     },
+    "timetableItemDepartureTime": "Heure de départ",
+    "timetableItemInitialSpeed": "Vitesse initiale",
+    "timetableItemName": "Numéro, nom",
     "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
     "trainLabels": "Étiquettes",
-    "trainScheduleDepartureTime": "Heure de départ",
-    "trainScheduleInitialSpeed": "Vitesse initiale",
-    "trainScheduleName": "Numéro, nom",
     "trainScheduleUpdated": "Train unique modifié",
     "turnPacedTrainIntoTrainSchedule": "Transformer cette mission en train",
     "turnTrainScheduleIntoPacedTrain": "Transformer ce train en mission",

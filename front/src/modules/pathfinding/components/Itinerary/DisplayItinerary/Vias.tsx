@@ -15,7 +15,7 @@ type ViasProps = {
 };
 
 const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const vias = useSelector(getVias());
   const pathSteps = useSelector(getPathSteps);
   const { launchPathfinding } = useManageTimetableItemContext();

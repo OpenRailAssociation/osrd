@@ -7,7 +7,7 @@ import { isInvalidFloatNumber } from 'utils/numbers';
 
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
-  t: TFunction<'operational-studies', 'manageTrainSchedule'>,
+  t: TFunction<'operational-studies', 'manageTimetableItem'>,
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string
@@ -27,7 +27,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noOrigin'),
       })
     );
@@ -36,7 +36,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noDepartureTime'),
       })
     );
@@ -45,7 +45,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noDestination'),
       })
     );
@@ -54,7 +54,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noRollingStock'),
       })
     );
@@ -63,7 +63,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noName'),
       })
     );
@@ -72,7 +72,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noTimetable'),
       })
     );
@@ -82,7 +82,7 @@ const checkCurrentConfig = (
     error = true;
     dispatch(
       setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
+        name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.invalidInitialSpeed'),
       })
     );
@@ -94,7 +94,7 @@ const checkCurrentConfig = (
       error = true;
       dispatch(
         setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
+          name: t('errorMessages.timetableItemTitle'),
           message: t('errorMessages.tooLowValue', {
             value: t('pacedTrains.interval').toLowerCase(),
           }),
@@ -105,7 +105,7 @@ const checkCurrentConfig = (
       error = true;
       dispatch(
         setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
+          name: t('errorMessages.timetableItemTitle'),
           message: t('errorMessages.tooLowValue', {
             value: t('pacedTrains.timeWindow').toLowerCase(),
           }),
