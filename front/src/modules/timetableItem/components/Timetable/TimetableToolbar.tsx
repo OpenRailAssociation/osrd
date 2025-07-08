@@ -13,8 +13,6 @@ import type { TimetableFilters, TimetableItemWithDetails } from './types';
 import { timetableHasInvalidItem } from './utils';
 
 type TimetableToolbarProps = {
-  showTrainDetails: boolean;
-  toggleShowTrainDetails: () => void;
   filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
   timetableItems: TimetableItem[];
@@ -22,8 +20,6 @@ type TimetableToolbarProps = {
 };
 
 const TimetableToolbar = ({
-  showTrainDetails,
-  toggleShowTrainDetails,
   filteredTimetableItems,
   timetableFilters,
   timetableItems,
@@ -51,18 +47,6 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          {timetableItems.length > 0 && (
-            <div>
-              <button
-                type="button"
-                className="more-details-button"
-                onClick={toggleShowTrainDetails}
-                title={t('displayTrainsWithDetails')}
-              >
-                {showTrainDetails ? t('lessDetails') : t('moreDetails')}
-              </button>
-            </div>
-          )}
           <button
             type="button"
             title={t('roundTripsModal.manageRoundTrips')}

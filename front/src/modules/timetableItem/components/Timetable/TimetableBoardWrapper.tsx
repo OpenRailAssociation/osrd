@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
 
-import { Check, Download, PlusCircle, Trash, Upload } from '@osrd-project/ui-icons';
+import { Check, Download, Note, PlusCircle, Trash, Upload } from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -61,6 +61,7 @@ const TimetableBoardWrapper = ({
   timetableItemsWithDetails,
 }: TimetableBoardWrapperProps) => {
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
+  const [showTrainDetails, setShowTrainDetails] = useState(false);
   const { t } = useTranslation('operational-studies');
 
   const dispatch = useAppDispatch();
@@ -250,11 +251,23 @@ const TimetableBoardWrapper = ({
     }
   };
 
+  const toggleShowTrainDetails = () => {
+    setShowTrainDetails(!showTrainDetails);
+  };
+
   return (
     <BoardWrapper
       visible
+      withFooter
       name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
       items={[
+        {
+          title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
+          icon: <Note />,
+          dataTestID: 'scenarios-show-train-details-button',
+          disabled: timetableItemsWithDetails.length === 0,
+          onClick: () => toggleShowTrainDetails(),
+        },
         {
           title:
             selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
@@ -314,7 +327,7 @@ const TimetableBoardWrapper = ({
         removeAndUnselectTrains={removeAndUnselectTrains}
         timetableItemToEditData={timetableItemToEditData}
         timetableItems={timetableItems}
-        timetableItemsWithDetails={timetableItemsWithDetails}
+        showTrainDetails={showTrainDetails}
       />
     </BoardWrapper>
   );

@@ -60,7 +60,6 @@
       "electricalProfileWithId": "Profils électriques : ID{{id}}",
       "electricalProfileWithName": "Profils électriques : {{name}} | ID{{id}}"
     },
-    "displayTrainsWithDetails": "Afficher/masquer le détail des trains",
     "editScenario": "Modifier le scénario",
     "electricalProfileSet": "Set de profils électriques",
     "errorMessages": {
@@ -70,7 +69,7 @@
     "filterPlaceholder": "Filtre, étiquettes",
     "infraLoadingState": "{{step}}/3",
     "infrastructure": "Infrastructure",
-    "lessDetails": "moins de détails",
+    "lessDetails": "Afficher moins de détails",
     "loadingMacroEditor": "Chargement de l'éditeur macroscopique…",
     "macroEditor": {
       "intervalXmin": "Intervalle {{minutes}}min",
@@ -124,7 +123,7 @@
     },
     "macroscopic": "MACRO",
     "microscopic": "MICRO",
-    "moreDetails": "plus de détails",
+    "moreDetails": "Afficher plus de détails",
     "noElectricalProfileSet": "Pas de profil électrique",
     "occurrenceMenu": {
       "delete": "Supprimer",

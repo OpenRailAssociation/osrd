@@ -48,7 +48,6 @@
       "electricalProfileWithId": "Bahnstromprofile: ID{{id}}",
       "electricalProfileWithName": "Bahnstromprofile: {{name}} | ID{{id}}"
     },
-    "displayTrainsWithDetails": "Zugdetails anzeigen/verbergen",
     "editScenario": "Szenario bearbeiten",
     "electricalProfileSet": "Bahnstromprofil-Satz",
     "errorMessages": {
@@ -58,7 +57,7 @@
     "filterPlaceholder": "Filter, Tags",
     "infraLoadingState": "{{step}}/3",
     "infrastructure": "Netz",
-    "lessDetails": "Weniger Details",
+    "lessDetails": "Weniger Details anzeigen",
     "macroEditor": {
       "intervalXmin": "Intervall {{minutes}}min",
       "trainCategory": {
@@ -111,7 +110,7 @@
     },
     "macroscopic": "MAKRO",
     "microscopic": "MIKRO",
-    "moreDetails": "Mehr Details",
+    "moreDetails": "Mehr Details anzeigen",
     "noElectricalProfileSet": "Kein Bahnstromprofil",
     "pacedTrain": {
       "pacedTrain": "Taktleistung"
