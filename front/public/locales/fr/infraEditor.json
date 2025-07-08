@@ -39,18 +39,31 @@
       },
       "settings": {
         "description": "Paramètres du BAL"
+      },
+      "signaling_system": {
+        "title": "Système de signalisation"
       }
     },
     "title": "Signalisation BAL"
   },
   "BaprSystem": {
     "properties": {
+      "conditional_parameters": {
+        "description": "Paramètres de signal BAPR pour des itinéraires spécifiques",
+        "title": "Paramètres conditionnels"
+      },
       "next_signaling_systems": {
         "description": "La liste des systèmes de signalisation d'entrée autorisés.",
         "title": "Systèmes de signalisation suivants"
       },
+      "parameters": {
+        "description": "Paramètre de signal BAPR"
+      },
       "settings": {
         "description": "Paramètres du BAPR"
+      },
+      "signaling_system": {
+        "title": "Système de signalisation"
       }
     },
     "title": "Signalisation BAPR"
@@ -58,6 +71,10 @@
   "BufferStop": {
     "description": "Un heurtoir est un dispositif placé à l'extrémité d'une route en cul-de-sac pour empêcher les trains en dérive de poursuivre leur route. Il est caractérisé par son identifiant et sa voie correspondante.",
     "properties": {
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "position": {
         "description": "Distance par rapport au début de la section de voie correspondante (en mètres).",
         "title": "Position"
@@ -69,13 +86,42 @@
     },
     "title": "Heurtoir"
   },
+  "BufferStopExtensions": {
+    "title": "Extensions du heurtoir"
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "Identifiant du heurtoir",
+        "title": "Identifiant"
+      },
+      "type": {
+        "title": "Type"
+      }
+    },
+    "title": "Référence du heurtoir"
+  },
   "BufferStopSncfExtension": {
     "properties": {
       "kp": {
         "description": "Point kilométrique auquel se situe le heurtoir.",
         "title": "PK"
       }
-    }
+    },
+    "title": "extension sncf du heurtoir"
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire sur lequel les paramètres sont appliqués",
+        "title": "Sur l'itinéraire"
+      },
+      "parameters": {
+        "description": "Liste des paramètres clé valeur qui sont définis par système de signalisation",
+        "title": "Paramètres"
+      }
+    },
+    "title": "Paramètre conditionnel"
   },
   "Curve": {
     "description": "Une courbe définit le rayon de courbure d'une partie spécifique de la section de voie correspondante.",
@@ -101,6 +147,10 @@
       "applicable_directions": {
         "description": "Direction d’application du détecteur"
       },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "position": {
         "description": "Distance depuis le début de la section de voie (en mètres)",
         "title": "Position"
@@ -112,13 +162,29 @@
     },
     "title": "Détecteur"
   },
+  "DetectorExtensions": {
+    "title": "Extensions du détecteur"
+  },
+  "DetectorReference": {
+    "properties": {
+      "id": {
+        "description": "Identifiant du détecteur",
+        "title": "Identifiant"
+      },
+      "type": {
+        "title": "Type"
+      }
+    },
+    "title": "Référence du détecteur"
+  },
   "DetectorSncfExtension": {
     "properties": {
       "kp": {
         "description": "Point kilométrique du détecteur",
         "title": "PK"
       }
-    }
+    },
+    "title": "Extension sncf du détecteur"
   },
   "Direction": {
     "description": "Direction (profil croissant ou décroissant).",
@@ -148,6 +214,10 @@
   "Electrification": {
     "description": "Une caténaire est un ensemble de câbles permettant d’alimenter les trains en utilisant un pantographe. La caténaire est repérable par son identifiant",
     "properties": {
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "track_ranges": {
         "description": "Liste des intervalles de section de voie où la tension est appliquée.",
         "title": "Intervalles de section de voie"
@@ -161,6 +231,28 @@
   },
   "Endpoint": {
     "title": "Point de fin"
+  },
+  "EtcsLevel2System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "Paramètres du signal ETCS_LEVEL2 pour des itinéraires spécifiques",
+        "title": "Paramètres conditionnels"
+      },
+      "default_parameters": {
+        "description": "Paramètres du signal ETCS_LEVEL2"
+      },
+      "next_signaling_systems": {
+        "description": "La liste des systèmes de signalisation autorisés",
+        "title": "Prochains systèmes de signalisation"
+      },
+      "settings": {
+        "description": "Réglages du signal ETCS_LEVEL2"
+      },
+      "signaling_system": {
+        "title": "Système de signalisation"
+      }
+    },
+    "title": "Système de signalisation ETCS niveau 2"
   },
   "FlagSignalParameter": {
     "title": "Paramètres du signal"
@@ -177,6 +269,9 @@
       },
       "coordinates": {
         "title": "Coordonnées"
+      },
+      "type": {
+        "title": "Type"
       }
     },
     "title": "Séquence de points"
@@ -205,6 +300,14 @@
   "LogicalSignal": {
     "description": "Un signal logique correspond à ce qui est affiché. Un signal physique comprend un ensemble de signaux logiques.",
     "properties": {
+      "conditional_parameters": {
+        "description": "Une liste de paramètres conditionnels qui sont définis par système de signalisation",
+        "title": "Paramètres conditionnels"
+      },
+      "default_parameters": {
+        "description": "Une liste de paramètres par défaut (en ce qui concerne les itinéraires), qui sont définis par système de signalisation",
+        "title": "Paramètres par défaut"
+      },
       "next_signaling_systems": {
         "description": "Liste de systèmes de signalisation autorisés en amont.",
         "title": "Systèmes de signalisations suivants"
@@ -227,6 +330,10 @@
         "description": "Liste des intervalles de section de voie où la NEUTRAL SECTION à venir est annoncée.",
         "title": "Intervalles de section de voie à venir"
       },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "lower_pantograph": {
         "description": "S’il faut que le train baisse ou non son pantographe sur cette section.",
         "title": "Baisser pantographe"
@@ -237,6 +344,20 @@
       }
     },
     "title": "Zone neutre"
+  },
+  "NeutralSectionExtensions": {
+    "title": "Extensions de la section neutre"
+  },
+  "NeutralSectionNeutralSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "Préciser qu'il existe une section neutre pb/cc",
+        "title": "Annonce"
+      },
+      "end": {
+        "description": "Fin de la section neutre pb/cc"
+      }
+    }
   },
   "OperationalPoint": {
     "description": "Décrit les points remarquables de l’infrastructure correspondante.",
