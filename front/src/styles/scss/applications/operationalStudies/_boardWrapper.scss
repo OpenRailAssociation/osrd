@@ -3,8 +3,9 @@
     0 1px 2px 0 rgba(0, 0, 0, 0.16),
     0 2px 2px -1px rgba(255, 171, 88, 0.27);
   border-radius: 8px;
-  margin-bottom: 16px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   .board-header {
     height: 22px;
@@ -15,7 +16,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 3px 8px;
-    border-bottom: 1px solid var(--ambientB15);
+    border-bottom: 1px solid var(--black10);
+    flex-shrink: 0;
 
     .board-header-name {
       color: var(--grey50);
@@ -30,22 +32,44 @@
 
     .board-header-button {
       color: var(--grey30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 16px;
+
+      &:focus {
+        outline: none;
+      }
+
+      &.menu-is-opened {
+        color: var(--grey50);
+        outline: none;
+        box-shadow:
+          0 1px 2px 0 rgba(0, 0, 0, 0.16),
+          0 2px 2px -1px rgba(255, 171, 88, 0.27);
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 1);
+      }
     }
   }
 
   .board-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     width: 100%;
     border-top: 1px solid white;
+    overflow: hidden;
   }
 
   .board-footer {
-    position: absolute;
     height: 16px;
     width: 100%;
     background-color: var(--ambientB15);
     border-radius: 0 0 8px 8px;
     border-top: 1px solid var(--black10);
     box-shadow: inset 0 1px 0 0 white;
-    bottom: 0;
+    flex-shrink: 0;
   }
 }
