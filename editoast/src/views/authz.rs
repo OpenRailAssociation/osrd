@@ -5,6 +5,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::prelude::*;
+use crate::views::Authentication;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -156,13 +157,41 @@ async fn user_privileges(
     Extension(auth): AuthenticationExt,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    let authorizer = auth.authorizer()?;
-
     let resources = body
         .into_iter()
         .flat_map(|(rtype, ids)| std::iter::repeat(rtype).zip(ids.into_iter()));
 
     let mut result = HashMap::<_, Vec<_>>::new();
+
+    // Disabled authorization bypass — needs to be implemented more properly
+    if matches!(auth, Authentication::SkipAuthorization { .. }) {
+        for (resource_type, resource_id) in resources {
+            match resource_type {
+                ResourceType::Infra => {
+                    // If the infra exists, we return all privileges
+                    if Infra::exists(&mut db_pool.get().await?, resource_id).await? {
+                        result
+                            .entry(ResourceType::Infra)
+                            .or_default()
+                            .push(ResourcePrivileges {
+                                resource_id,
+                                privileges: HashSet::from([
+                                    InfraPrivilege::CanRead,
+                                    InfraPrivilege::CanShareRead,
+                                    InfraPrivilege::CanWrite,
+                                    InfraPrivilege::CanShareWrite,
+                                    InfraPrivilege::CanDelete,
+                                    InfraPrivilege::CanShareOwnership,
+                                ]),
+                            });
+                    }
+                }
+            }
+        }
+        return Ok(Json(result));
+    }
+
+    let authorizer = auth.authorizer()?;
     for (resource_type, resource_id) in resources {
         match resource_type {
             ResourceType::Infra => {
@@ -678,6 +707,39 @@ mod tests {
             ])
         );
         assert!(!privileges.contains_key(&infra_unused));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn me_privileges_authz_disabled() {
+        let app = test_app!().enable_authorization(false).build();
+        let Infra { id: infra, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
+        let mut privileges = app
+            .fetch(app.post("/authz/me/privileges").json(&json!({
+               "infra": [infra]
+            })))
+            .assert_status(StatusCode::OK)
+            .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
+            .remove(&ResourceType::Infra)
+            .unwrap()
+            .into_iter()
+            .map(
+                |ResourcePrivileges {
+                     resource_id,
+                     privileges,
+                 }| (resource_id, privileges),
+            )
+            .collect::<HashMap<_, _>>();
+        assert_eq!(
+            privileges.remove(&infra).unwrap(),
+            HashSet::from([
+                InfraPrivilege::CanRead,
+                InfraPrivilege::CanShareRead,
+                InfraPrivilege::CanWrite,
+                InfraPrivilege::CanShareWrite,
+                InfraPrivilege::CanDelete,
+                InfraPrivilege::CanShareOwnership,
+            ])
+        );
     }
 
     #[rstest]
