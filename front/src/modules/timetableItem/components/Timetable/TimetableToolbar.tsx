@@ -1,32 +1,11 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 
-import { Button } from '@osrd-project/ui-core';
 import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { setFailure, setSuccess } from 'reducers/main';
-import type {
-  PacedTrainId,
-  TimetableItemId,
-  TimetableItem,
-  TrainId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
-import {
-  extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
 import RoundTripsModal from './RoundTrips/RoundTripsModal';
@@ -38,12 +17,8 @@ type TimetableToolbarProps = {
   toggleShowTrainDetails: () => void;
   filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
-  selectedTimetableItemIds: TimetableItemId[];
-  removeTrains: (trainIds: TimetableItemId[]) => void;
   timetableItems: TimetableItem[];
   isInSelection: boolean;
-  selectedTrainScheduleIds: TrainScheduleId[];
-  selectedPacedTrainIds: PacedTrainId[];
 };
 
 const TimetableToolbar = ({
@@ -51,83 +26,17 @@ const TimetableToolbar = ({
   toggleShowTrainDetails,
   filteredTimetableItems,
   timetableFilters,
-  selectedTimetableItemIds,
-  removeTrains,
   timetableItems,
   isInSelection,
-  selectedTrainScheduleIds,
-  selectedPacedTrainIds,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
-  const dispatch = useAppDispatch();
-  const { openModal } = useContext(ModalContext);
   const { infraId } = useScenarioContext();
-
-  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
-  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
-  const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
-
   const toggleFilterPanel = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
-  };
-
-  const handleTrainsDelete = async (currentSelectedTrainId?: TrainId) => {
-    const itemsCount = selectedTimetableItemIds.length;
-
-    const isSelectedTimetableItemInSelection =
-      currentSelectedTrainId !== undefined &&
-      selectedTimetableItemIds.some((timetableItemId) =>
-        isTrainScheduleId(timetableItemId)
-          ? timetableItemId === currentSelectedTrainId
-          : currentSelectedTrainId.includes(timetableItemId)
-      );
-
-    if (isSelectedTimetableItemInSelection) {
-      // we need to set selectedTrainId to undefined, otherwise just after the delete,
-      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrainId(undefined));
-    }
-
-    const editoastSelectedTrainScheduleIds = selectedTrainScheduleIds.map((id) =>
-      extractEditoastIdFromTrainScheduleId(id)
-    );
-    const editoastSelectedPacedTrainIds = selectedPacedTrainIds.map((id) =>
-      extractEditoastIdFromPacedTrainId(id)
-    );
-
-    try {
-      let deletingTrainSchedulesPromise;
-      let deletingPacedTrainsPromise;
-      if (editoastSelectedTrainScheduleIds.length > 0) {
-        deletingTrainSchedulesPromise = deleteTrainSchedules({
-          body: { ids: editoastSelectedTrainScheduleIds },
-        }).unwrap();
-      }
-      if (editoastSelectedPacedTrainIds.length > 0) {
-        deletingPacedTrainsPromise = deletePacedTrains({
-          body: { ids: editoastSelectedPacedTrainIds },
-        }).unwrap();
-      }
-      await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
-
-      removeTrains(selectedTimetableItemIds);
-      dispatch(
-        setSuccess({
-          title: t('timetable.itemsSelectionDeletedCount', { count: itemsCount }),
-          text: '',
-        })
-      );
-    } catch (e) {
-      if (isSelectedTimetableItemInSelection) {
-        dispatch(updateSelectedTrainId(currentSelectedTrainId));
-      } else {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
-    }
   };
 
   return (
@@ -170,28 +79,6 @@ const TimetableToolbar = ({
             />
           )}
         </div>
-
-        {selectedTimetableItemIds.length > 0 && (
-          <div className="action-buttons">
-            <Button
-              data-testid="delete-all-items-button"
-              size="small"
-              variant="Destructive"
-              label={t('timetable.delete')}
-              title={t('timetable.deleteSelection')}
-              onClick={() =>
-                openModal(
-                  <DeleteModal
-                    handleDelete={() => handleTrainsDelete(selectedTrainId)}
-                    selectedPacedTrainIds={selectedPacedTrainIds}
-                    selectedTrainScheduleIds={selectedTrainScheduleIds}
-                  />,
-                  'sm'
-                )
-              }
-            />
-          </div>
-        )}
       </div>
       {timetableHasInvalidItem(filteredTimetableItems) && (
         <div className="invalid-trains">

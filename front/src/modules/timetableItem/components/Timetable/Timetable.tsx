@@ -12,8 +12,6 @@ import type {
   TimetableItem,
   OccurrenceId,
   TimetableItemToEditData,
-  TrainScheduleId,
-  PacedTrainId,
 } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
@@ -38,16 +36,14 @@ type TimetableProps = {
   infraState: InfraState;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
   setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
+  removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
   filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
   selectedTimetableItemIds: TimetableItemId[];
-  selectedTrainScheduleIds: TrainScheduleId[];
-  selectedPacedTrainIds: PacedTrainId[];
 };
 
 const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
@@ -57,17 +53,15 @@ const Timetable = ({
   setDisplayTimetableItemManagement,
   infraState,
   upsertTimetableItems,
-  removeTimetableItems,
   setTimetableItemToEditData,
   setSelectedTimetableItemIds,
+  removeAndUnselectTrains,
   filteredTimetableItems,
   timetableFilters,
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
   selectedTimetableItemIds,
-  selectedTrainScheduleIds,
-  selectedPacedTrainIds,
 }: TimetableProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
@@ -83,14 +77,6 @@ const Timetable = ({
   const toggleShowTrainDetails = () => {
     setShowTrainDetails(!showTrainDetails);
   };
-
-  const removeAndUnselectTrains = useCallback(
-    (timetableItemIds: TimetableItemId[]) => {
-      removeTimetableItems(timetableItemIds);
-      setSelectedTimetableItemIds([]);
-    },
-    [removeTimetableItems, setSelectedTimetableItemIds]
-  );
 
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
@@ -170,12 +156,8 @@ const Timetable = ({
           toggleShowTrainDetails={toggleShowTrainDetails}
           filteredTimetableItems={filteredTimetableItems}
           timetableFilters={timetableFilters}
-          selectedTimetableItemIds={selectedTimetableItemIds}
-          removeTrains={removeAndUnselectTrains}
           timetableItems={timetableItems}
           isInSelection={selectedTimetableItemIds.length > 0}
-          selectedPacedTrainIds={selectedPacedTrainIds}
-          selectedTrainScheduleIds={selectedTrainScheduleIds}
         />
         <Virtualizer overscan={15}>
           {filteredTimetableItems.map((timetableItem, index) => (

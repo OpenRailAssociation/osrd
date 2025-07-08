@@ -1,20 +1,39 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
-import { Check, Download, PlusCircle, Upload } from '@osrd-project/ui-icons';
+import { Check, Download, PlusCircle, Trash, Upload } from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState, PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type InfraState,
+  type PacedTrain,
+  type TrainSchedule,
+} from 'common/api/osrdEditoastApi';
+import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
   TimetableItem,
   TimetableItemId,
   TimetableItemToEditData,
+  TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
-import { isPacedTrainResponseWithPacedTrainId, isTrainScheduleId } from 'utils/trainId';
+import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  isPacedTrainResponseWithPacedTrainId,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import Timetable from './Timetable';
 import type { TimetableItemWithDetails } from './types';
@@ -31,15 +50,25 @@ type TimetableBoardWrapperProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
 };
 
-const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
+const TimetableBoardWrapper = ({
+  setDisplayTimetableItemManagement,
+  infraState,
+  upsertTimetableItems,
+  setTimetableItemToEditData,
+  removeTimetableItems,
+  timetableItemToEditData,
+  timetableItems = [],
+  timetableItemsWithDetails,
+}: TimetableBoardWrapperProps) => {
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const { t } = useTranslation('operational-studies');
 
-  const {
-    timetableItemsWithDetails,
-    timetableItems = [],
-    setDisplayTimetableItemManagement,
-  } = props;
+  const dispatch = useAppDispatch();
+
+  const selectedTrainId = useSelector(getSelectedTrainId);
+
+  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
+  const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
     () =>
@@ -75,6 +104,8 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
       ),
     [selectedTimetableItemIds]
   );
+
+  const { openModal } = useContext(ModalContext);
 
   const computedItemLabel = useCallback(() => {
     if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0)
@@ -156,6 +187,69 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
     a.click();
   };
 
+  const removeAndUnselectTrains = useCallback(
+    (timetableItemIds: TimetableItemId[]) => {
+      removeTimetableItems(timetableItemIds);
+      setSelectedTimetableItemIds([]);
+    },
+    [removeTimetableItems, setSelectedTimetableItemIds]
+  );
+
+  const handleTrainsDelete = async (currentSelectedTrainId?: TrainId) => {
+    const itemsCount = selectedTimetableItemIds.length;
+
+    const isSelectedTimetableItemInSelection =
+      currentSelectedTrainId !== undefined &&
+      selectedTimetableItemIds.some((timetableItemId) =>
+        isTrainScheduleId(timetableItemId)
+          ? timetableItemId === currentSelectedTrainId
+          : currentSelectedTrainId.includes(timetableItemId)
+      );
+
+    if (isSelectedTimetableItemInSelection) {
+      // we need to set selectedTrainId to undefined, otherwise just after the delete,
+      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
+      dispatch(updateSelectedTrainId(undefined));
+    }
+
+    const editoastSelectedTrainScheduleIds = selectedTrainScheduleIds.map((id) =>
+      extractEditoastIdFromTrainScheduleId(id)
+    );
+    const editoastSelectedPacedTrainIds = selectedPacedTrainIds.map((id) =>
+      extractEditoastIdFromPacedTrainId(id)
+    );
+
+    try {
+      let deletingTrainSchedulesPromise;
+      let deletingPacedTrainsPromise;
+      if (editoastSelectedTrainScheduleIds.length > 0) {
+        deletingTrainSchedulesPromise = deleteTrainSchedules({
+          body: { ids: editoastSelectedTrainScheduleIds },
+        }).unwrap();
+      }
+      if (editoastSelectedPacedTrainIds.length > 0) {
+        deletingPacedTrainsPromise = deletePacedTrains({
+          body: { ids: editoastSelectedPacedTrainIds },
+        }).unwrap();
+      }
+      await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
+
+      removeAndUnselectTrains(selectedTimetableItemIds);
+      dispatch(
+        setSuccess({
+          title: t('main.timetable.itemsSelectionDeletedCount', { count: itemsCount }),
+          text: '',
+        })
+      );
+    } catch (e) {
+      if (isSelectedTimetableItemInSelection) {
+        dispatch(updateSelectedTrainId(currentSelectedTrainId));
+      } else {
+        dispatch(setFailure(castErrorToFailure(e)));
+      }
+    }
+  };
+
   return (
     <BoardWrapper
       visible
@@ -191,16 +285,36 @@ const TimetableBoardWrapper = (props: TimetableBoardWrapperProps) => {
           disabled: selectedTimetableItemIds.length === 0,
           onClick: () => exportTimetableItems(selectedTimetableItemIds),
         },
+        {
+          title: t('main.timetable.deleteSelection'),
+          icon: <Trash />,
+          dataTestID: 'delete-all-items-button',
+          disabled: selectedTimetableItemIds.length === 0,
+          onClick: () =>
+            openModal(
+              <DeleteModal
+                handleDelete={() => handleTrainsDelete(selectedTrainId)}
+                selectedPacedTrainIds={selectedPacedTrainIds}
+                selectedTrainScheduleIds={selectedTrainScheduleIds}
+              />,
+              'sm'
+            ),
+        },
       ]}
     >
       <Timetable
-        selectedTrainScheduleIds={selectedTrainScheduleIds}
-        selectedPacedTrainIds={selectedPacedTrainIds}
         selectedTimetableItemIds={selectedTimetableItemIds}
         filteredTimetableItems={filteredTimetableItems}
         timetableFilters={timetableFilters}
         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-        {...props}
+        setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+        infraState={infraState}
+        upsertTimetableItems={upsertTimetableItems}
+        setTimetableItemToEditData={setTimetableItemToEditData}
+        removeAndUnselectTrains={removeAndUnselectTrains}
+        timetableItemToEditData={timetableItemToEditData}
+        timetableItems={timetableItems}
+        timetableItemsWithDetails={timetableItemsWithDetails}
       />
     </BoardWrapper>
   );
