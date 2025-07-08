@@ -13,7 +13,7 @@ interface IncompatibleConstraintsFiltersProps extends HTMLAttributes<unknown> {
 }
 
 const IncompatibleConstraintsFilters = (props: IncompatibleConstraintsFiltersProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { data, toggleFilter, ...htmlAttrs } = props;
 
   const getTitle = useCallback(

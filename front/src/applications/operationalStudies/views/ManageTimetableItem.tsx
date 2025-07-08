@@ -50,7 +50,7 @@ import { useManageTimetableItemContext } from '../hooks/useManageTimetableItemCo
 const ManageTimetableItem = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const {
     pathProperties,
     voltageRanges,

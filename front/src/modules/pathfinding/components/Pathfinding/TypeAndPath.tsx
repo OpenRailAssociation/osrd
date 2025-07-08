@@ -66,7 +66,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   const infraId = useInfraID();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');

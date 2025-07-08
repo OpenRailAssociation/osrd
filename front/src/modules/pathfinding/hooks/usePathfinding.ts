@@ -49,7 +49,7 @@ const usePathfinding = ({
 }: {
   rollingStockId: number | undefined;
 }) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);

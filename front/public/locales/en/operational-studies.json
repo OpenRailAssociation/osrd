@@ -35,8 +35,8 @@
     "selectStation": "Select this station",
     "startTime": "START",
     "status": {
-      "invalidTrainSchedules_one": "Invalid train schedule.",
-      "invalidTrainSchedules_other": "Invalid train schedules.",
+      "invalidTimetableItems_one": "Invalid timetable item.",
+      "invalidTimetableItems_other": "Invalid timetable items.",
       "successfulImport": "All items are imported.",
       "successfulImport_one": "An item is imported."
     },
@@ -174,7 +174,7 @@
     "scenarioUpdated": "Successful update!",
     "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
     "timetable": {
-      "addTrainScheduleOrPacedTrain": "Add",
+      "addTimetableItem": "Add",
       "advancedFilterLabel": "Rolling stock",
       "choosePath": "Use this path",
       "closeFilter": "Close filter",
@@ -261,8 +261,7 @@
     "train_other": "{{count}} trains",
     "train_zero": "0 train"
   },
-  "manageTrainSchedule": {
-    "InvalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
+  "manageTimetableItem": {
     "addPacedTrain": "Add a service",
     "addTrainSchedule": "Add a train",
     "addVia": "Add this waypoint",
@@ -299,9 +298,9 @@
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
       "requiredField": "Required field.",
       "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
+      "timetableItemTitle": "An error has occurred",
       "tooLowInput": "Must be > 0",
       "tooLowValue": "The {{value}} must be greater than 0",
-      "trainScheduleTitle": "An error has occurred",
       "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
       "unableToRetrieveTags": "Impossible to get tags"
     },
@@ -327,6 +326,7 @@
     "infraLoading": "Infrastructure is loading…",
     "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
     "inputOPTrigramsExample": "Ex: LSN CIG CCS",
+    "invalidTimetableItemStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
     "launchPathFinding": "Launch pathfinding",
     "manageVias": "Steps management",
@@ -383,12 +383,12 @@
       "simulationSettings": "Simulation settings",
       "timesStops": "Times and stops"
     },
+    "timetableItemDepartureTime": "Departure time",
+    "timetableItemInitialSpeed": "Initial velocity",
+    "timetableItemName": "Number, name",
     "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
     "trainLabels": "Tags",
-    "trainScheduleDepartureTime": "Departure time",
-    "trainScheduleInitialSpeed": "Initial velocity",
-    "trainScheduleName": "Number, name",
     "trainScheduleUpdated": "Train schedule updated",
     "turnPacedTrainIntoTrainSchedule": "Turn this service into a train schedule",
     "turnTrainScheduleIntoPacedTrain": "Turn this train schedule into a service",

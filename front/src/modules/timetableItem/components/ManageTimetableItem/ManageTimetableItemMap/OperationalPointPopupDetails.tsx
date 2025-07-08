@@ -30,7 +30,7 @@ const OperationalPointPopupDetails = ({
   selectedTrack,
   setSelectedTrack,
 }: OperationalPointPopupDetailsProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   return (
     <>

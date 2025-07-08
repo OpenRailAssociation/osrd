@@ -28,7 +28,7 @@ export default function SpeedLimitByTagSelector({
   showPlaceHolder = false,
   narrow = false,
 }: SpeedLimitByTagSelectorProps) {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const speedLimitsTagsList = useMemo(
     () => (!isEmpty(speedLimitsByTags) ? speedLimitsByTags : []),

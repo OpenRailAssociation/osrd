@@ -74,8 +74,8 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
-        message: t('operational-studies:manageTrainSchedule.errorMessages.noOrigin'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
+        message: t('operational-studies:manageTimetableItem.errorMessages.noOrigin'),
       })
     );
   }
@@ -83,8 +83,8 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
-        message: t('operational-studies:manageTrainSchedule.errorMessages.noDestination'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
+        message: t('operational-studies:manageTimetableItem.errorMessages.noDestination'),
       })
     );
   }
@@ -92,8 +92,8 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
-        message: t('operational-studies:manageTrainSchedule.errorMessages.noRollingStock'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
+        message: t('operational-studies:manageTimetableItem.errorMessages.noRollingStock'),
       })
     );
   }
@@ -101,8 +101,8 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
-        message: t('operational-studies:manageTrainSchedule.errorMessages.noName'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
+        message: t('operational-studies:manageTimetableItem.errorMessages.noName'),
       })
     );
   }
@@ -110,8 +110,8 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
-        message: t('operational-studies:manageTrainSchedule.errorMessages.noTimetable'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
+        message: t('operational-studies:manageTimetableItem.errorMessages.noTimetable'),
       })
     );
   }
@@ -132,9 +132,9 @@ export const checkStdcmConf = (
     error = true;
     dispatch(
       setFailure({
-        name: t('operational-studies:manageTrainSchedule.errorMessages.trainScheduleTitle'),
+        name: t('operational-studies:manageTimetableItem.errorMessages.timetableItemTitle'),
         message: t(
-          'operational-studies:manageTrainSchedule.errorMessages.originTimeOutsideWindow',
+          'operational-studies:manageTimetableItem.errorMessages.originTimeOutsideWindow',
           {
             low: dateTimeFormatting(searchDatetimeWindow.begin, i18nLanguage, false),
             high: dateTimeFormatting(searchDatetimeWindow.end, i18nLanguage, false),
