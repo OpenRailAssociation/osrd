@@ -5,7 +5,7 @@ import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts'
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
-  OccupancyBlocks,
+  SignalUpdate,
   PathProperties,
   PathfindingResultSuccess,
   RollingStockWithLiveries,
@@ -41,7 +41,7 @@ export type TrainSpaceTimeData = {
     times: number[];
   }[];
   departureTime: Date;
-  signalUpdates: OccupancyBlocks['signal_updates'];
+  signalUpdates: SignalUpdate[];
 } & (
   | { id: TrainScheduleId }
   | { id: OccurrenceId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
