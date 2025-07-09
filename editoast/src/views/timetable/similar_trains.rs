@@ -20,9 +20,7 @@ editoast_common::schemas! {
 }
 
 crate::routes! {
-    "/similar_schedules" => {
-        similar_schedules,
-    },
+    "/similar_trains" => similar_trains,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -34,7 +32,7 @@ struct RollingStockCharacteristics {
 
 #[derive(Clone, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypoint)]
+#[schema(as = SimilarTrainWaypoint)]
 struct Waypoint {
     ci: i64,
     ch: String,
@@ -58,7 +56,7 @@ impl std::fmt::Debug for Waypoint {
 struct Request {
     #[schema(inline)]
     rolling_stock: RollingStockCharacteristics,
-    #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
+    #[schema(value_type = Vec<SimilarTrainWaypoint>)]
     waypoints: Vec<Waypoint>,
     infra_id: i64,
     timetable_id: i64,
@@ -66,41 +64,41 @@ struct Request {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
-#[schema(as = SimilarScheduleWaypointResponse)]
+#[schema(as = SimilarTrainWaypointResponse)]
 struct WaypointResponse {
     ci: i64,
     ch: String,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-struct SimilarScheduleItem {
-    schedule_id: String,
+struct SimilarTrainItem {
+    train_name: String,
     start_time: DateTime<Utc>,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
+    #[schema(value_type = SimilarTrainWaypointResponse)]
     begin: WaypointResponse,
-    #[schema(value_type = SimilarScheduleWaypointResponse)]
+    #[schema(value_type = SimilarTrainWaypointResponse)]
     end: WaypointResponse,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
 struct Response {
     #[schema(inline)]
-    similar_schedules: Vec<SimilarScheduleItem>,
+    similar_trains: Vec<SimilarTrainItem>,
 }
 
 #[utoipa::path(
     post, path = "",
-    tag = "similar_schedules,stdcm,sncf",
+    tag = "similar_trains,stdcm,sncf",
     request_body = inline(Request),
     responses(
         (
             status = 200,
-            description = "A combination of reference train schedules identifiers similar to the provided schedule",
+            description = "A combination of reference train identifiers similar to the provided train",
             body = inline(Response),
         ),
     ),
 )]
-async fn similar_schedules(
+async fn similar_trains(
     Extension(auth): AuthenticationExt,
     State(AppState { .. }): State<AppState>,
     Json(Request { .. }): Json<Request>,
@@ -113,10 +111,10 @@ async fn similar_schedules(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let similar_schedules = Response {
-        similar_schedules: vec![
-            SimilarScheduleItem {
-                schedule_id: "mock_similar_schedule_1".to_string(),
+    let similar_trains = Response {
+        similar_trains: vec![
+            SimilarTrainItem {
+                train_name: "mock_similar_train_1".to_string(),
                 start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
                     .unwrap()
                     .to_utc(),
@@ -129,8 +127,8 @@ async fn similar_schedules(
                     ch: "B1".to_string(),
                 },
             },
-            SimilarScheduleItem {
-                schedule_id: "mock_similar_schedule_2".to_string(),
+            SimilarTrainItem {
+                train_name: "mock_similar_train_2".to_string(),
                 start_time: DateTime::parse_from_rfc3339("2025-05-14T00:00:00Z")
                     .unwrap()
                     .to_utc(),
@@ -146,5 +144,5 @@ async fn similar_schedules(
         ],
     };
 
-    Ok(Json(similar_schedules))
+    Ok(Json(similar_trains))
 }

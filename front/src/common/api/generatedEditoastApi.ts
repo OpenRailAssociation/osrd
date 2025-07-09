@@ -20,7 +20,7 @@ export const addTagTypes = [
   'rolling_stock_livery',
   'round_trips',
   'search',
-  'similar_schedules',
+  'similar_trains',
   'stdcm',
   'sncf',
   'sprites',
@@ -925,12 +925,9 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['search'],
       }),
-      postSimilarSchedules: build.mutation<
-        PostSimilarSchedulesApiResponse,
-        PostSimilarSchedulesApiArg
-      >({
-        query: (queryArg) => ({ url: `/similar_schedules`, method: 'POST', body: queryArg.body }),
-        invalidatesTags: ['similar_schedules', 'stdcm', 'sncf'],
+      postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
+        query: (queryArg) => ({ url: `/similar_trains`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['similar_trains', 'stdcm', 'sncf'],
       }),
       getSpritesSignalingSystems: build.query<
         GetSpritesSignalingSystemsApiResponse,
@@ -2090,16 +2087,16 @@ export type PostSearchApiArg = {
   pageSize?: number | null;
   searchPayload: SearchPayload;
 };
-export type PostSimilarSchedulesApiResponse =
-  /** status 200 A combination of reference train schedules identifiers similar to the provided schedule */ {
-    similar_schedules: {
-      begin: SimilarScheduleWaypointResponse;
-      end: SimilarScheduleWaypointResponse;
-      schedule_id: string;
+export type PostSimilarTrainsApiResponse =
+  /** status 200 A combination of reference train identifiers similar to the provided train */ {
+    similar_trains: {
+      begin: SimilarTrainWaypointResponse;
+      end: SimilarTrainWaypointResponse;
       start_time: string;
+      train_name: string;
     }[];
   };
-export type PostSimilarSchedulesApiArg = {
+export type PostSimilarTrainsApiArg = {
   body: {
     infra_id: number;
     rolling_stock: {
@@ -2107,7 +2104,7 @@ export type PostSimilarSchedulesApiArg = {
       speed_limit_tag?: string | null;
     };
     timetable_id: number;
-    waypoints: SimilarScheduleWaypoint[];
+    waypoints: SimilarTrainWaypoint[];
   };
 };
 export type GetSpritesSignalingSystemsApiResponse =
@@ -4216,11 +4213,11 @@ export type SearchPayload = {
   object: string;
   query: SearchQuery;
 };
-export type SimilarScheduleWaypointResponse = {
+export type SimilarTrainWaypointResponse = {
   ch: string;
   ci: number;
 };
-export type SimilarScheduleWaypoint = {
+export type SimilarTrainWaypoint = {
   ch: string;
   ci: number;
   stop: boolean;

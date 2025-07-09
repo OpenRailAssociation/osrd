@@ -3027,10 +3027,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
-  /similar_schedules:
+  /similar_trains:
     post:
       tags:
-      - similar_schedules
+      - similar_trains
       - stdcm
       - sncf
       requestBody:
@@ -3063,37 +3063,37 @@ paths:
                 waypoints:
                   type: array
                   items:
-                    $ref: '#/components/schemas/SimilarScheduleWaypoint'
+                    $ref: '#/components/schemas/SimilarTrainWaypoint'
         required: true
       responses:
         '200':
-          description: A combination of reference train schedules identifiers similar to the provided schedule
+          description: A combination of reference train identifiers similar to the provided train
           content:
             application/json:
               schema:
                 type: object
                 required:
-                - similar_schedules
+                - similar_trains
                 properties:
-                  similar_schedules:
+                  similar_trains:
                     type: array
                     items:
                       type: object
                       required:
-                      - schedule_id
+                      - train_name
                       - start_time
                       - begin
                       - end
                       properties:
                         begin:
-                          $ref: '#/components/schemas/SimilarScheduleWaypointResponse'
+                          $ref: '#/components/schemas/SimilarTrainWaypointResponse'
                         end:
-                          $ref: '#/components/schemas/SimilarScheduleWaypointResponse'
-                        schedule_id:
-                          type: string
+                          $ref: '#/components/schemas/SimilarTrainWaypointResponse'
                         start_time:
                           type: string
                           format: date-time
+                        train_name:
+                          type: string
   /sprites/signaling_systems:
     get:
       tags:
@@ -12137,7 +12137,7 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
-    SimilarScheduleWaypoint:
+    SimilarTrainWaypoint:
       type: object
       required:
       - ci
@@ -12151,7 +12151,7 @@ components:
           format: int64
         stop:
           type: boolean
-    SimilarScheduleWaypointResponse:
+    SimilarTrainWaypointResponse:
       type: object
       required:
       - ci
