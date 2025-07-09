@@ -27,7 +27,7 @@
     "paced": { "time_window": "PT2H", "interval": "PT1H" }
   },
   {
-    "train_name": "Paced Train 2",
+    "train_name": "Paced Train - Updated exception (Train name)",
     "labels": ["Paced-Train-Tag-2", "SS-NS", "Valid"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-15T04:00:00Z",
@@ -65,7 +65,7 @@
     ]
   },
   {
-    "train_name": "PacedTrain3",
+    "train_name": "Paced Train - Updated exception (RS)",
     "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored", "Valid"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-15T05:00:00Z",
@@ -108,7 +108,7 @@
     ]
   },
   {
-    "train_name": "PacedTrain4",
+    "train_name": "Paced Train - Updated exception (Speed limit tag)",
     "labels": ["Invalid"],
     "rolling_stock_name": "",
     "start_time": "2024-10-15T09:45:43Z",
@@ -144,7 +144,7 @@
     ]
   },
   {
-    "train_name": "paced train with exceptions",
+    "train_name": "Paced Train - Added exception",
     "labels": ["Valid"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-16T00:00:00Z",
@@ -181,7 +181,7 @@
     ]
   },
   {
-    "train_name": "Paced Train with added and updated exceptions",
+    "train_name": "Paced Train - Updated and added exception (RS)",
     "labels": ["Paced-Train-Tag-5", "SS-NS", "Valid"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T11:00:00Z",
