@@ -5,11 +5,6 @@ import { Duration } from 'utils/duration';
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
 
-const isSiphFile = (xmlDoc: Document): boolean => {
-  const rootElement = xmlDoc.documentElement;
-  return rootElement.hasAttribute('xmlns:tps');
-};
-
 const extractCiChCode = (code: string) => {
   const [ciCode, chCode] = code.split('/');
   return { ciCode: Number(ciCode), chCode };
@@ -78,7 +73,6 @@ export const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration =>
 };
 
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
-  const isSiph = isSiphFile(xmlDoc);
   const trainSchedules: TrainSchedule[] = [];
 
   // Initialize localCichDict
@@ -91,8 +85,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     ocps.forEach((ocp) => {
       const id = ocp.getAttribute('id');
-      // "abbrevation" is a typing error in SIPH file
-      const code = isSiph ? ocp.getAttribute('abbrevation') : ocp.getAttribute('code');
+      const code = ocp.getAttribute('code') || ocp.getAttribute('abbrevation');
 
       if (id && code) {
         const { ciCode, chCode } = extractCiChCode(code);
@@ -115,25 +108,20 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   }
 
   trainParts.forEach((train) => {
-    const trainNumber = isSiph
-      ? train.getAttribute('trainNumber') || ''
-      : train.getAttribute('id') || '';
+    const trainNumber = train.getAttribute('trainNumber') || train.getAttribute('id') || '';
     const trainPartId = train.getAttribute('id') || '';
     const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
     const formationTT = train.getElementsByTagName('formationTT')[0];
     const formationRef = formationTT?.getAttribute('formationRef');
 
-    function extractSiphRollingStockName(): string {
-      let vehicleName = '';
-      if (formationRef !== null) {
-        const formation = xmlDoc.getElementById(formationRef);
-        const trainOrder = formation?.getElementsByTagName('trainOrder')[0];
-        const vehicleRef = trainOrder?.getElementsByTagName('vehicleRef')[0];
-        const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
-        const vehicle = xmlDoc.getElementById(vehicleRefAttribute || '');
-        vehicleName = vehicle?.getAttribute('name') || '';
-      }
-      return vehicleName;
+    let rollingStockName = null;
+    if (formationRef !== null) {
+      const formation = xmlDoc.getElementById(formationRef);
+      const trainOrder = formation?.getElementsByTagName('trainOrder')[0];
+      const vehicleRef = trainOrder?.getElementsByTagName('vehicleRef')[0];
+      const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
+      const vehicle = xmlDoc.getElementById(vehicleRefAttribute || '');
+      rollingStockName = vehicle?.getAttribute('name') || '';
     }
 
     const firstOcpTT = ocpSteps[0];
@@ -148,9 +136,11 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
 
     const trainSchedule: TrainSchedule = {
       train_name: trainNumber,
-      rolling_stock_name: isSiph ? extractSiphRollingStockName() : formationRef || '', // RollingStocks in xml files rarely have the correct format
+      rolling_stock_name: formationRef || rollingStockName || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
-      constraint_distribution: isSiph ? 'STANDARD' : 'MARECO',
+      constraint_distribution: xmlDoc.documentElement.hasAttribute('xmlns:tps')
+        ? 'STANDARD'
+        : 'MARECO',
       path,
       schedule,
     };
