@@ -99,7 +99,7 @@ test.describe('Times and Stops Tab Verification', () => {
       await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.setTrainStartTime('11:22:40');
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
-      await operationalStudiesPage.setTrainScheduleName('Train-name-e2e-test');
+      await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
 
       // Perform route pathfinding
       await operationalStudiesPage.openRouteTab();

@@ -157,7 +157,7 @@ const Timetable = ({
       <div className="scenario-timetable-addtrains-buttons">
         <button
           type="button"
-          data-testid="scenarios-add-train-schedule-button"
+          data-testid="scenarios-add-timetable-item-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
           }}

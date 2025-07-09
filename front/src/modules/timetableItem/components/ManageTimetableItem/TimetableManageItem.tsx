@@ -123,7 +123,7 @@ const TimetableManageItem = ({
                     updateTimetable();
                   }
                 }}
-                data-testid="submit-edit-train-schedule"
+                data-testid="submit-edit-timetable-item"
               >
                 <span className="mr-2">
                   <Pencil size="lg" />

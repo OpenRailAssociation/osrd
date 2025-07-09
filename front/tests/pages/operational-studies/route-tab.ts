@@ -3,9 +3,9 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 
-const frTranslations: FlatTranslations = readJsonFile<{ manageTrainSchedule: FlatTranslations }>(
+const frTranslations: FlatTranslations = readJsonFile<{ manageTimetableItem: FlatTranslations }>(
   'public/locales/fr/operational-studies.json'
-).manageTrainSchedule;
+).manageTimetableItem;
 
 class RouteTab {
   readonly page: Page;

@@ -7,7 +7,7 @@ import type {
   PacedTrain,
 } from 'common/api/osrdEditoastApi';
 
-import { trainScheduleProjectName, trainScheduleStudyName } from './assets/constants/project-const';
+import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -21,13 +21,13 @@ import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type {
   CommonTranslations,
-  ManageTrainScheduleTranslations,
+  ManageTimetableItemTranslations,
   TimetableFilterTranslations,
 } from './utils/types';
 
-const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
+const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
+  manageTimetableItem: ManageTimetableItemTranslations;
+}>('public/locales/fr/operational-studies.json').manageTimetableItem;
 
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -35,7 +35,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 const frTranslations = {
-  ...frManageTrainScheduleTranslations,
+  ...frManageTimetableItemTranslations,
   ...frScenarioTranslations,
   ...frCommonTranslations,
 };
@@ -63,8 +63,8 @@ test.describe('Edit trains and missions', () => {
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
+    project = await getProject(timetableItemProjectName);
+    study = await getStudy(project.id, timetableItemStudyName);
     infra = await getInfra();
   });
 
@@ -110,7 +110,7 @@ test.describe('Edit trains and missions', () => {
 
     await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
     await operationalStudiesPage.setInterval(INTERVAL);
-    await operationalStudiesPage.setTrainScheduleName(EDITED_PACED_TRAIN_NAME);
+    await operationalStudiesPage.setTimetableItemName(EDITED_PACED_TRAIN_NAME);
 
     await operationalStudiesPage.updateTimetableItem(frTranslations.updatePacedTrain);
 

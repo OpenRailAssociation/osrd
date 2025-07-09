@@ -7,7 +7,7 @@ import type {
   PacedTrain,
 } from 'common/api/osrdEditoastApi';
 
-import { trainScheduleProjectName, trainScheduleStudyName } from './assets/constants/project-const';
+import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -22,13 +22,13 @@ import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type {
   CommonTranslations,
-  ManageTrainScheduleTranslations,
+  ManageTimetableItemTranslations,
   TimetableFilterTranslations,
 } from './utils/types';
 
-const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
+const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
+  manageTimetableItem: ManageTimetableItemTranslations;
+}>('public/locales/fr/operational-studies.json').manageTimetableItem;
 
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -37,7 +37,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
 const frTranslations = {
-  ...frManageTrainScheduleTranslations,
+  ...frManageTimetableItemTranslations,
   ...frScenarioTranslations,
   ...frCommonTranslations,
 };
@@ -58,8 +58,8 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
   test.beforeAll(
     'Setup project, study, infra and create scenario with timetableItems',
     async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
+      project = await getProject(timetableItemProjectName);
+      study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
       scenarioItems = (
         await createScenario(
@@ -121,7 +121,7 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
     // Edit a train schedule in the second tab and verify the update
     await secondTimetableSection.editTrain(1);
     await operationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
-    await secondTimetableSection.editTrainSchedule();
+    await secondTimetableSection.editTimetableItem();
     await secondTimetableSection.getTrainArrivalTime('08:43', 1);
 
     // Switch back to the first tab and confirm that the edit is synchronized

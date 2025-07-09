@@ -322,7 +322,7 @@ export type StdcmTranslations = {
 
 export type FlatTranslations = Record<string, string>;
 
-export type ManageTrainScheduleTranslations = FlatTranslations & {
+export type ManageTimetableItemTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
 };
 
