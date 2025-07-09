@@ -9,6 +9,7 @@ type AnchoreMenuParams = {
   anchorRef: React.RefObject<HTMLElement>;
   onDismiss: () => void;
   container?: Element | null;
+  alignment?: 'left' | 'right' | 'auto';
 };
 
 /**
@@ -22,7 +23,13 @@ type AnchoreMenuParams = {
  *
  * It handles the space needed by the menu to know if the children should be positioned above or below the anchor element.
  */
-const AnchoredMenu = ({ children, anchorRef, onDismiss, container }: AnchoreMenuParams) => {
+const AnchoredMenu = ({
+  children,
+  anchorRef,
+  onDismiss,
+  container,
+  alignment = 'auto',
+}: AnchoreMenuParams) => {
   const [menuPosition, setMenuPosition] = useState<{
     top?: number;
     left: number;
@@ -36,14 +43,31 @@ const AnchoredMenu = ({ children, anchorRef, onDismiss, container }: AnchoreMenu
     const anchorRefBoundingRect = anchorRef.current?.getBoundingClientRect();
     const menuRefBoundingRect = menuRef.current?.getBoundingClientRect();
 
-    if (anchorRefBoundingRect && menuRefBoundingRect) {
+    if (anchorRefBoundingRect && menuRefBoundingRect && menuRefBoundingRect.width > 0) {
       // Check if there is enough space below the anchor element
       const isSpaceBelow =
         window.innerHeight - anchorRefBoundingRect.bottom > menuRefBoundingRect.height;
 
+      // Check if menu would overflow on the right side of the viewport
+      const wouldOverflowRight =
+        anchorRefBoundingRect.left + menuRefBoundingRect.width > window.innerWidth;
+
+      // Determine the alignment based on prop and overflow detection
+      let boxLeftPosition: number;
+      if (alignment === 'right') {
+        boxLeftPosition = anchorRefBoundingRect.right - menuRefBoundingRect.width;
+      } else if (alignment === 'left') {
+        boxLeftPosition = anchorRefBoundingRect.left;
+      } else {
+        // auto alignment: switch to right alignment if would overflow
+        boxLeftPosition = wouldOverflowRight
+          ? anchorRefBoundingRect.right - menuRefBoundingRect.width
+          : anchorRefBoundingRect.left;
+      }
+
       setMenuPosition({
         top: isSpaceBelow ? anchorRefBoundingRect.bottom : undefined,
-        left: anchorRefBoundingRect.left,
+        left: boxLeftPosition,
         bottom: isSpaceBelow ? undefined : window.innerHeight - anchorRefBoundingRect.top,
       });
     }
