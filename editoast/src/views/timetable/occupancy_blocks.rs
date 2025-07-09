@@ -8,7 +8,6 @@ use core_client::signal_projection::TrainSimulation;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
-use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -24,16 +23,10 @@ use crate::views::timetable::simulation::train_simulation_batch;
 
 editoast_common::schemas! {
     OccupancyBlockForm,
-    OccupancyBlocks,
 }
 
-// TODO: Remove this struct and replace it with a `type OccupancyBlocks = Vec<SignalUpdate>;`
 /// Occupancy block output is described by time-space points and blocks
-#[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
-pub(super) struct OccupancyBlocks {
-    /// list of signal updates along the path
-    pub(super) signal_updates: Vec<SignalUpdate>,
-}
+pub type OccupancyBlocks = Vec<SignalUpdate>;
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub(super) struct OccupancyBlockForm {
@@ -67,7 +60,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
             .enumerate()
             .map(|(index, train_details)| {
                 (
-                    index as i64,
+                    index,
                     TrainSimulation {
                         signal_critical_positions: &train_details.signal_critical_positions,
                         zone_updates: &train_details.zone_updates,
@@ -78,14 +71,13 @@ pub(super) async fn compute_batch_signal_updates<'a>(
             .collect(),
     };
 
-    // TODO: Make core use indexes instead of ids
     let response = request.fetch(&core).await?;
 
     let mut results = vec![vec![]; trains_details.len()];
     response
         .signal_updates
         .into_iter()
-        .for_each(|(index, signal_updates)| results[index as usize] = signal_updates);
+        .for_each(|(index, signal_updates)| results[index] = signal_updates);
 
     Ok(results)
 }
@@ -96,9 +88,9 @@ pub(super) async fn compute_occupancy_blocks(
     valkey_client: Arc<ValkeyClient>,
     path: ProjectPathInput,
     infra: &Infra,
-    trains_schedules: Vec<models::TrainSchedule>,
+    trains_schedules: &[models::TrainSchedule],
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<OccupancyBlocks>> // TODO: Use schemas::TrainSchedule instead
+) -> Result<Vec<Arc<OccupancyBlocks>>> // TODO: Use schemas::TrainSchedule instead
 {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
@@ -107,7 +99,7 @@ pub(super) async fn compute_occupancy_blocks(
         conn,
         valkey_client.clone(),
         core_client.clone(),
-        &trains_schedules,
+        trains_schedules,
         infra,
         electrical_profile_set_id,
     )
@@ -141,16 +133,17 @@ pub(super) async fn compute_occupancy_blocks(
     let train_hashes: Vec<_> = train_hashes_to_idx.keys().cloned().collect();
 
     // 3. Retrieve cached occupancy blocks
-    let cached_projections = valkey_conn
+    let cached_blocks = valkey_conn
         .json_get_bulk(&train_hashes)
         .await?
         .collect::<Vec<Option<OccupancyBlocks>>>();
 
-    let mut occupancy_blocks_result = vec![Default::default(); trains_schedules.len()];
+    let mut occupancy_blocks_result = vec![Arc::default(); trains_schedules.len()];
     let mut occupancy_block_requests = vec![];
-    for (hash, occupancy_block) in train_hashes.into_iter().zip(cached_projections) {
+    for (hash, occupancy_block) in train_hashes.into_iter().zip(cached_blocks) {
         if let Some(occupancy_block) = occupancy_block {
             let indexes = &train_hashes_to_idx[&hash];
+            let occupancy_block = Arc::new(occupancy_block);
             for index in indexes {
                 occupancy_blocks_result[*index] = occupancy_block.clone();
             }
@@ -193,10 +186,9 @@ pub(super) async fn compute_occupancy_blocks(
     // 6. Build block occupancy response
     for (hash, occupancy_blocks) in occupancy_blocks.into_iter() {
         let indexes = &train_hashes_to_idx[hash];
+        let occupancy_blocks = Arc::new(occupancy_blocks);
         for index in indexes {
-            occupancy_blocks_result[*index] = OccupancyBlocks {
-                signal_updates: occupancy_blocks.clone(),
-            };
+            occupancy_blocks_result[*index] = occupancy_blocks.clone();
         }
     }
 
