@@ -49,7 +49,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     expectedOccurrencesCount: 2,
   },
   {
-    name: 'Paced Train 2',
+    name: 'Paced Train - Updated exception (Train name)',
     startTime: '06:00',
     labels: ['Paced-Train-Tag-2', 'SS-NS', 'Valid'],
     timeWindow: '120',
@@ -57,7 +57,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     expectedOccurrencesCount: 4,
   },
   {
-    name: 'PacedTrain3',
+    name: 'Paced Train - Updated exception (RS)',
     startTime: '07:00',
     labels: ['Paced-Train-Tag-2', 'MWS-NES', 'Not-honored'],
     timeWindow: '120',
@@ -65,7 +65,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     expectedOccurrencesCount: 3,
   },
   {
-    name: 'PacedTrain4',
+    name: 'Paced Train - Updated exception (Speed limit tag)',
     startTime: '11:45',
     labels: ['Invalid'],
     timeWindow: '120',
@@ -73,7 +73,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     expectedOccurrencesCount: 3,
   },
   {
-    name: 'paced train with exceptions',
+    name: 'Paced Train - Added exception',
     startTime: '02:00',
     labels: ['Valid'],
     timeWindow: '120',
@@ -81,7 +81,7 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     expectedOccurrencesCount: 3,
   },
   {
-    name: 'Paced Train with added and updated exceptions',
+    name: 'Paced Train - Updated and added exception (RS)',
     startTime: '11:00',
     labels: ['Paced-Train-Tag-5', 'SS-NS', 'Valid'],
     timeWindow: '180',
@@ -105,7 +105,7 @@ export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
   ],
   [
     {
-      name: 'Paced Train 2',
+      name: 'Paced Train - Updated exception (Train name) 1',
       startTime: '06:00',
       arrivalTime: '06:07',
     },
@@ -115,58 +115,58 @@ export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [
       arrivalTime: '06:37',
     },
     {
-      name: 'Paced Train 6',
+      name: 'Paced Train - Updated exception (Train name) 5',
       startTime: '07:00',
       arrivalTime: '07:07',
     },
     {
-      name: 'Paced Train 8',
+      name: 'Paced Train - Updated exception (Train name) 7',
       startTime: '07:30',
       arrivalTime: '07:37',
     },
   ],
   [
     {
-      name: 'PacedTrain3 1',
+      name: 'Paced Train - Updated exception (RS) 1',
       startTime: '07:00',
       arrivalTime: '07:19',
     },
     {
-      name: 'PacedTrain3 3',
+      name: 'Paced Train - Updated exception (RS) 3',
       startTime: '07:50',
       arrivalTime: '08:09',
     },
     {
-      name: 'PacedTrain3 5',
+      name: 'Paced Train - Updated exception (RS) 5',
       startTime: '08:40',
       arrivalTime: '08:59',
     },
   ],
   [
     {
-      name: 'PacedTrain4 1',
+      name: 'Paced Train - Updated exception (Speed limit tag) 1',
       startTime: '11:40',
       arrivalTime: '11:46',
     },
     {
-      name: 'PacedTrain4 3',
+      name: 'Paced Train - Updated exception (Speed limit tag) 3',
       startTime: '12:45',
       arrivalTime: '12:51',
     },
   ],
   [
     {
-      name: 'paced train with exceptions 1',
+      name: 'Paced Train - Added exception 1',
       startTime: '02:00',
       arrivalTime: '02:07',
     },
     {
-      name: 'paced train with exceptions/+',
+      name: 'Paced Train - Added exception/+',
       startTime: '02:30',
       arrivalTime: '02:37',
     },
     {
-      name: 'paced train with exceptions 3',
+      name: 'Paced Train - Added exception 3',
       startTime: '03:00',
       arrivalTime: '03:07',
     },

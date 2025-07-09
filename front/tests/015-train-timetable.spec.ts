@@ -124,7 +124,7 @@ test.describe('Verify train schedule elements and filters', () => {
 
     // Name and label filter
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
-      'Paced Train 2',
+      'Paced Train - Updated exception (Train name)',
       NAME_FILTERED_TIMETABLE_ITEMS
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
