@@ -16,8 +16,7 @@ import RCInfo from 'modules/SimulationReportSheet/RCInfo';
 import SchedulesToDuplicate from 'modules/SimulationReportSheet/SchedulesToDuplicate';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
-import type { RefSchedule } from 'modules/SimulationReportSheet/types';
-import type { RouteTableRow } from 'modules/SimulationReportSheet/types';
+import type { RefSchedule, RouteTableRow } from 'modules/SimulationReportSheet/types';
 import {
   getArrivalTimes,
   getSecondaryCode,

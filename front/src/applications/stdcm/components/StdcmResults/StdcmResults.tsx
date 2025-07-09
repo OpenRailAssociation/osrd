@@ -90,6 +90,7 @@ const StdcmResults = ({
   const [refSchedule, setRefSchedules] = useState<RefSchedule[]>([]);
 
   const [postRefSchedules] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
+  const [getStdcmEnv] = osrdEditoastApi.endpoints.getStdcmSearchEnvironment.useLazyQuery();
   const requestTrainSchedules = async () => {
     const { consist, pathSteps } = selectedSimulation.inputs;
     if (!consist) {
@@ -112,6 +113,7 @@ const StdcmResults = ({
           };
         }
       ) ?? [];
+    const env = await getStdcmEnv().unwrap();
     const request = {
       rolling_stock: {
         name: consist.tractionEngine?.name ?? '',
@@ -120,6 +122,8 @@ const StdcmResults = ({
         weight: consist.totalMass,
       },
       waypoints,
+      timetable_id: env.timetable_id,
+      infra_id: env.infra_id,
     };
     const response = await postRefSchedules({ body: request });
     setRefSchedules(response.data?.similar_trains ?? []);
