@@ -1,6 +1,6 @@
 import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
 
-import { trainScheduleProjectName, trainScheduleStudyName } from './assets/constants/project-const';
+import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
 import {
   TOTAL_ITEMS,
   TOTAL_PACED_TRAINS,
@@ -44,8 +44,8 @@ test.describe('Verify train schedule elements and filters', () => {
   test.beforeAll(
     'Setup project, study, infra and create scenario with timetableItems',
     async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
+      project = await getProject(timetableItemProjectName);
+      study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
       scenarioItems = (
         await createScenario(

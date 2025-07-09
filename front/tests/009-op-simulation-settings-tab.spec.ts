@@ -138,7 +138,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await waitForInfraStateToBeCached(infra.id);
       // Add a new train and set its properties
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTrainScheduleName('Train-name-e2e-test');
+      await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
       await operationalStudiesPage.setTrainStartTime('11:22:40');
 
@@ -197,7 +197,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.editTrain();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.deactivateElectricalProfile();
-    await scenarioTimetableSection.editTrainSchedule();
+    await scenarioTimetableSection.editTimetableItem();
     await scenarioPage.toggletrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
@@ -247,7 +247,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.editTrain();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.selectCodeCompoOption('__PLACEHOLDER__');
-    await scenarioTimetableSection.editTrainSchedule();
+    await scenarioTimetableSection.editTimetableItem();
     await scenarioPage.toggletrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
@@ -308,7 +308,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.editTrain();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.activateMarecoMargin();
-    await scenarioTimetableSection.editTrainSchedule();
+    await scenarioTimetableSection.editTimetableItem();
     await scenarioPage.toggletrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();

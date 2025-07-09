@@ -7,7 +7,7 @@ import {
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
 import { createDateInSpecialTimeZone } from '../../utils/date-utils';
-import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../utils/types';
+import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../utils/types';
 import CommonPage from '../common-page';
 
 class OperationalStudiesPage extends CommonPage {
@@ -15,7 +15,7 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly editTrainButton: Locator;
 
-  private readonly manageTrainSchedulePage: Locator;
+  private readonly manageTimetableItemPage: Locator;
 
   private readonly rollingStockTab: Locator;
 
@@ -60,7 +60,7 @@ class OperationalStudiesPage extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
-    this.addScenarioTrainButton = page.getByTestId('scenarios-add-train-schedule-button');
+    this.addScenarioTrainButton = page.getByTestId('scenarios-add-timetable-item-button');
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
@@ -79,8 +79,8 @@ class OperationalStudiesPage extends CommonPage {
       list: page.getByTestId('added-occurrences-list'),
     };
     this.addTrainButton = page.getByTestId('add-train');
-    this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
-    this.manageTrainSchedulePage = page.getByTestId('manage-timetable-item');
+    this.editTrainButton = page.getByTestId('submit-edit-timetable-item');
+    this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
     this.TimetableItemNameInput = page.locator('#timetable-item-name');
     this.initialSpeedInput = page.locator('#initial-speed');
     this.trainTagsInput = page.getByTestId('chips-input');
@@ -93,7 +93,7 @@ class OperationalStudiesPage extends CommonPage {
   // Click on the button to add a scenario train.
   async openTimetableItemForm() {
     await this.addScenarioTrainButton.click();
-    await expect(this.manageTrainSchedulePage).toBeVisible();
+    await expect(this.manageTimetableItemPage).toBeVisible();
   }
 
   async openRouteTab() {
@@ -154,7 +154,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.resultPathfindingDistance).toHaveText(distance);
   }
 
-  async checkInputsAndButtons(translations: ManageTrainScheduleTranslations, date: string) {
+  async checkInputsAndButtons(translations: ManageTimetableItemTranslations, date: string) {
     await expect(this.addTrainButton).toBeVisible();
     await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
     await expect(this.definePacedTrainCheckboxLabel).toBeVisible();
@@ -189,7 +189,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.validateAndCloseTrainEdition();
   }
 
-  async turnTrainScheduleIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
+  async turnTrainScheduleIntoPacedTrain(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.editTrainButton).toBeVisible();
     await expect(this.editTrainButton).toHaveText(translations.updateTrainSchedule);
@@ -201,7 +201,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.validateAndCloseTrainEdition();
   }
 
-  async turnPacedTrainIntoTrainSchedule(translations: ManageTrainScheduleTranslations) {
+  async turnPacedTrainIntoTrainSchedule(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
     await expect(this.editTrainButton).toBeVisible();
     await expect(this.editTrainButton).toHaveText(translations.updatePacedTrain);
@@ -223,7 +223,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.verifyTabWarningPresence();
   }
 
-  async checkPacedTrainModeAndVerifyInputs(translations: ManageTrainScheduleTranslations) {
+  async checkPacedTrainModeAndVerifyInputs(translations: ManageTimetableItemTranslations) {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
@@ -241,7 +241,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.pacedTrainIntervalInput).toHaveValue(value);
   }
 
-  async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
+  async testPacedTrainMode(translations: ManageTimetableItemTranslations) {
     await this.setTimeWindow(PACED_TRAIN_SETTINGS_TEST.timeWindow);
     await this.setInterval(PACED_TRAIN_SETTINGS_TEST.interval);
     await this.definePacedTrainCheckboxLabel.click();
@@ -263,7 +263,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.definePacedTrainCheckboxLabel.click();
     await this.setTimeWindow(timeWindow);
     await this.setInterval(interval);
-    await this.setTrainScheduleName(name);
+    await this.setTimetableItemName(name);
     await this.setFormattedStartTime(startTime);
   }
 
@@ -281,7 +281,7 @@ class OperationalStudiesPage extends CommonPage {
     await this.addTrainButton.click();
   }
 
-  async setTrainScheduleName(name: string) {
+  async setTimetableItemName(name: string) {
     await this.TimetableItemNameInput.fill(name);
     await expect(this.TimetableItemNameInput).toHaveValue(name);
   }
@@ -291,7 +291,7 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   async checkInputsBeforeEditingAPacedTrain(
-    translations: ManageTrainScheduleTranslations,
+    translations: ManageTimetableItemTranslations,
     editedPacedTrainTimeWindow: string,
     editedPacedTrainInterval: string
   ) {

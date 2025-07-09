@@ -4,7 +4,7 @@ import { test as teardown } from '@playwright/test';
 
 import ROLLING_STOCK_NAMES, {
   globalProjectName,
-  trainScheduleProjectName,
+  timetableItemProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
 import { deleteApiRequest, deleteStdcmEnvironment, listStdcmEnvironment } from './utils/api-utils';
@@ -15,7 +15,7 @@ teardown('teardown', async ({ browser }) => {
     logger.info('Starting test data teardown...');
 
     // Delete projects and rolling stocks
-    await deleteProject(trainScheduleProjectName);
+    await deleteProject(timetableItemProjectName);
     await deleteProject(globalProjectName);
     await deleteRollingStocks(ROLLING_STOCK_NAMES);
 

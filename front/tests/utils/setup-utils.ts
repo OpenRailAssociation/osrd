@@ -33,9 +33,9 @@ import {
   improbableRollingStockName,
   infrastructureName,
   slowRollingStockName,
-  trainScheduleProjectName,
-  trainScheduleScenarioName,
-  trainScheduleStudyName,
+  timetableItemProjectName,
+  timetableItemScenarioName,
+  timetableItemStudyName,
 } from '../assets/constants/project-const';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
@@ -178,18 +178,21 @@ export async function createDataForTests(): Promise<void> {
     await createScenario(undefined, project.id, study.id, smallInfra.id);
 
     // Step 6: Create a project, study, scenario and import train schedule and paced train data
-    const projectTrainSchedule = await createProject(trainScheduleProjectName);
-    const studyTrainSchedule = await createStudy(projectTrainSchedule.id, trainScheduleStudyName);
-    const scenarioTrainSchedule = (
+    const projectWithTimetableItems = await createProject(timetableItemProjectName);
+    const studyWithTimetableItems = await createStudy(
+      projectWithTimetableItems.id,
+      timetableItemStudyName
+    );
+    const scenarioWithTimetableItems = (
       await createScenario(
-        trainScheduleScenarioName,
-        projectTrainSchedule.id,
-        studyTrainSchedule.id,
+        timetableItemScenarioName,
+        projectWithTimetableItems.id,
+        studyWithTimetableItems.id,
         smallInfra.id
       )
     ).scenario;
-    await sendTrainSchedules(scenarioTrainSchedule.timetable_id, trainSchedulesJson);
-    await sendPacedTrains(scenarioTrainSchedule.timetable_id, pacedTrainsJson);
+    await sendTrainSchedules(scenarioWithTimetableItems.timetable_id, trainSchedulesJson);
+    await sendPacedTrains(scenarioWithTimetableItems.timetable_id, pacedTrainsJson);
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {
@@ -202,7 +205,7 @@ export async function createDataForTests(): Promise<void> {
         '2024-10-18T23:59:59',
         'Europe/Paris'
       ).toISOString(),
-      timetable_id: scenarioTrainSchedule.timetable_id,
+      timetable_id: scenarioWithTimetableItems.timetable_id,
       enabled_from: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // one hour ago
       enabled_until: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // in four hours
     } as StdcmSearchEnvironment;

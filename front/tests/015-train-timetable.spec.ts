@@ -7,9 +7,9 @@ import {
   IMPORTED_PACED_TRAIN_DETAILS,
 } from './assets/constants/operational-studies-const';
 import {
-  trainScheduleProjectName,
-  trainScheduleScenarioName,
-  trainScheduleStudyName,
+  timetableItemProjectName,
+  timetableItemScenarioName,
+  timetableItemStudyName,
 } from './assets/constants/project-const';
 import {
   HONORED_ITEMS,
@@ -62,9 +62,9 @@ test.describe('Verify train schedule elements and filters', () => {
   let infra: Infra;
 
   test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    scenario = await getScenario(project.id, study.id, trainScheduleScenarioName);
+    project = await getProject(timetableItemProjectName);
+    study = await getStudy(project.id, timetableItemStudyName);
+    scenario = await getScenario(project.id, study.id, timetableItemScenarioName);
     infra = await getInfra();
   });
 

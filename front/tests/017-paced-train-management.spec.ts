@@ -36,14 +36,14 @@ import type {
   CellData,
   CommonTranslations,
   FlatTranslations,
-  ManageTrainScheduleTranslations,
+  ManageTimetableItemTranslations,
   StationData,
   TimetableFilterTranslations,
 } from './utils/types';
 
-const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
+const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
+  manageTimetableItem: ManageTimetableItemTranslations;
+}>('public/locales/fr/operational-studies.json').manageTimetableItem;
 
 const frTimeStopsTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
@@ -56,7 +56,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
 const frTranslations = {
-  ...frManageTrainScheduleTranslations,
+  ...frManageTimetableItemTranslations,
   ...frTimeStopsTranslations,
   ...frScenarioTranslations,
   ...frCommonTranslations,

@@ -6,8 +6,8 @@ import {
   electricRollingStockName,
   fastRollingStockName,
   slowRollingStockName,
-  trainScheduleProjectName,
-  trainScheduleStudyName,
+  timetableItemProjectName,
+  timetableItemStudyName,
 } from './assets/constants/project-const';
 import {
   ADDED_EXCEPTION_MENU_BUTTONS,
@@ -35,13 +35,13 @@ import { deleteScenario } from './utils/teardown-utils';
 import type {
   ChangeGroup,
   CommonTranslations,
-  ManageTrainScheduleTranslations,
+  ManageTimetableItemTranslations,
   TimetableFilterTranslations,
 } from './utils/types';
 
-const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
-  manageTrainSchedule: ManageTrainScheduleTranslations;
-}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
+const frManageTimetableItemTranslations: ManageTimetableItemTranslations = readJsonFile<{
+  manageTimetableItem: ManageTimetableItemTranslations;
+}>('public/locales/fr/operational-studies.json').manageTimetableItem;
 
 const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
@@ -49,10 +49,10 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 
 const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
 
-const frTranslations: ManageTrainScheduleTranslations &
+const frTranslations: ManageTimetableItemTranslations &
   TimetableFilterTranslations &
   CommonTranslations = {
-  ...frManageTrainScheduleTranslations,
+  ...frManageTimetableItemTranslations,
   ...frScenarioTranslations,
   ...frCommonTranslations,
 };
@@ -80,8 +80,8 @@ test.describe('Paced trains and exception management', () => {
   test.beforeAll(
     'Setup project, study, infra and create scenario with timetableItems',
     async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
+      project = await getProject(timetableItemProjectName);
+      study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
       scenarioItems = (
         await createScenario(
@@ -136,7 +136,7 @@ test.describe('Paced trains and exception management', () => {
     });
 
     await pacedTrainSection.editPacedTrain(5);
-    await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
+    await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
 
     // update RS
     await rollingStockSelector.openRollingstockModal();
@@ -246,7 +246,7 @@ test.describe('Paced trains and exception management', () => {
 
     await pacedTrainSection.editPacedTrain(1);
 
-    await scenarioTimetableSection.verifyEditTrainScheduleButtonVisibility();
+    await scenarioTimetableSection.verifyEditTimetableItemButtonVisibility();
 
     await operationalStudiesPage.checkInputsBeforeEditingAPacedTrain(
       frTranslations,
@@ -296,7 +296,7 @@ test.describe('Paced trains and exception management', () => {
       translations: frTranslations,
     });
     await pacedTrainSection.clickOccurrenceMenuButton('edit');
-    await operationalStudiesPage.setTrainScheduleName(EDITED_OCCURRENCE_NAME);
+    await operationalStudiesPage.setTimetableItemName(EDITED_OCCURRENCE_NAME);
     await operationalStudiesPage.updateTimetableItem(frTranslations.pacedTrains.updatePacedTrain);
     await operationalStudiesPage.checkToastHasBeenLaunched(
       frTranslations.timetable.pacedTrainUpdated

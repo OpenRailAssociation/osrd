@@ -62,7 +62,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly projectItemButton: Locator;
 
-  private readonly editTrainScheduleButton: Locator;
+  private readonly editTimetableItemButton: Locator;
 
   private readonly trainArrivalTime: Locator;
 
@@ -107,7 +107,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     );
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
-    this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
+    this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.trainArrivalTime = page.getByTestId('train-arrival-time');
     this.trainArrivalTimeLoader = page.getByTestId('arrival-time-loader');
     this.emptyTimetable = page.getByTestId('empty-timetable-list');
@@ -366,8 +366,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.projectItemButton.click();
   }
 
-  async editTrainSchedule() {
-    await this.editTrainScheduleButton.click();
+  async editTimetableItem() {
+    await this.editTimetableItemButton.click();
     await this.closeToastNotification();
   }
 
@@ -426,8 +426,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }
 
-  async verifyEditTrainScheduleButtonVisibility() {
-    await expect(this.editTrainScheduleButton).toBeVisible();
+  async verifyEditTimetableItemButtonVisibility() {
+    await expect(this.editTimetableItemButton).toBeVisible();
   }
 }
 
