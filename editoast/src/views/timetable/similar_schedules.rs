@@ -60,6 +60,8 @@ struct Request {
     rolling_stock: RollingStockCharacteristics,
     #[schema(value_type = Vec<SimilarScheduleWaypoint>)]
     waypoints: Vec<Waypoint>,
+    infra_id: i64,
+    timetable_id: i64,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
