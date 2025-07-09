@@ -1,7 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
-import { flatMap, forEach, fromPairs, isFunction, keyBy, keys, noop, pick, uniqBy } from 'lodash';
+import {
+  flatMap,
+  forEach,
+  fromPairs,
+  isEmpty,
+  isEqual,
+  isFunction,
+  keyBy,
+  keys,
+  noop,
+  pick,
+  uniqBy,
+} from 'lodash';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -10,6 +22,7 @@ import { extractEditoastIdFromTrainId } from 'utils/trainId';
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
+import { usePrevious } from '../../../../utils/hooks/state';
 
 type AsyncState<T> = { type: 'loading'; data?: T; abort?: () => void } | { type: 'ok'; data: T };
 type ZonesState = AsyncState<MovableOccupancyZone[]>;
@@ -68,6 +81,9 @@ const useTrackOccupancy = ({
     stopPanning: boolean;
   }) => Promise<void>;
 } => {
+  const draggedTrains = useRef(new Set<string>());
+  const previousTrains = usePrevious(trains);
+
   const pathOperationalPointsDict = useMemo(
     () => keyBy(pathOperationalPoints, 'waypointId'),
     [pathOperationalPoints]
@@ -240,6 +256,9 @@ const useTrackOccupancy = ({
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
     }) => {
+      if (stopPanning) draggedTrains.current.delete(draggedTrainId);
+      else draggedTrains.current.add(draggedTrainId);
+
       // Update actual state:
       const impactedPathOperationalPointIDs = new Set<string>();
       const newState = { ...pathOperationalPointsState };
@@ -348,6 +367,79 @@ const useTrackOccupancy = ({
       aborted = true;
     };
   }, [pathOperationalPoints]);
+
+  // Update train data for all deployed waypoints on trains update:
+  useEffect(() => {
+    if (!previousTrains || isEqual(trains, previousTrains) || isEmpty(pathOperationalPointsState))
+      return;
+
+    const previousTrainsDict = keyBy(previousTrains, (train) =>
+      extractEditoastIdFromTrainId(train.id)
+    );
+
+    const addedTrainIDs = new Set<number>();
+    const removedTrainIDs = new Set<number>();
+    const modifiedTrainIDs = new Set<number>();
+
+    trains.forEach((train) => {
+      const id = extractEditoastIdFromTrainId(train.id);
+      if (!previousTrainsDict[id]) addedTrainIDs.add(id);
+      else if (!isEqual(train, previousTrainsDict[id]) && !draggedTrains.current.has(train.id))
+        modifiedTrainIDs.add(id);
+    });
+
+    previousTrains.forEach((train) => {
+      const id = extractEditoastIdFromTrainId(train.id);
+      if (!trainsDict[id]) removedTrainIDs.add(id);
+    });
+
+    // Load zones for added trains, for each path operational point that has already been toggled at least once:
+    if (addedTrainIDs.size || modifiedTrainIDs.size) {
+      forEach(pathOperationalPointsState, async (_, waypointId) => {
+        const newZones = await fetchTrackOccupancy(
+          pathOperationalPointsDict[waypointId]?.opId,
+          pick(trainsDict, [...addedTrainIDs, ...modifiedTrainIDs])
+        );
+
+        if (newZones.length)
+          updatePathOperationalPointState(waypointId, (state) =>
+            state
+              ? {
+                  ...state,
+                  zones: {
+                    ...state.zones,
+                    data: (state.zones.data || [])
+                      .filter(
+                        (zone) => !modifiedTrainIDs.has(extractEditoastIdFromTrainId(zone.trainId))
+                      )
+                      .concat(newZones),
+                  },
+                }
+              : undefined
+          );
+      });
+    }
+
+    // Remove zones for trains that have been removed
+    if (removedTrainIDs.size) {
+      forEach(pathOperationalPointsState, (_, waypointId) => {
+        updatePathOperationalPointState(waypointId, (state) =>
+          state
+            ? {
+                ...state,
+                zones: {
+                  ...state.zones,
+                  data:
+                    state.zones.data?.filter(
+                      (zone) => !removedTrainIDs.has(extractEditoastIdFromTrainId(zone.trainId))
+                    ) || [],
+                },
+              }
+            : undefined
+        );
+      });
+    }
+  }, [trains]);
 
   return { deployedWaypoints, toggleWaypoint, handleTrainDrag };
 };
