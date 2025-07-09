@@ -96,7 +96,6 @@ editoast_common::schemas! {
     TrainScheduleResponse,
     ElectricalProfileSetIdQueryParam,
     OccupancyBlockForm,
-    OccupancyBlocks,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -837,7 +836,7 @@ async fn project_path_op(
     tag = "train_schedule",
     request_body = OccupancyBlockForm,
     responses(
-        (status = 200, body = HashMap<i64, OccupancyBlocks>),
+        (status = 200, body = HashMap<i64, Vec<SignalUpdate>>),
     ),
 )]
 async fn occupancy_blocks(
@@ -884,7 +883,7 @@ async fn occupancy_blocks(
         valkey_client,
         path,
         infra,
-        trains_schedules.clone(),
+        &trains_schedules,
         electrical_profile_set_id,
     )
     .await?;
@@ -895,7 +894,7 @@ async fn occupancy_blocks(
         .into_iter()
         .zip(trains_schedules)
         .for_each(|(occupancy_blocks, train_schedule)| {
-            results.insert(train_schedule.id, occupancy_blocks);
+            results.insert(train_schedule.id, Arc::unwrap_or_clone(occupancy_blocks));
         });
     Ok(Json(results))
 }

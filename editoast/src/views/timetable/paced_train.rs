@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -62,7 +61,7 @@ editoast_common::schemas! {
     PacedTrainForm,
     PacedTrain,
     OccupancyBlockForm,
-    OccupancyBlocks,
+    OccupancyBlocksPacedTrainResult,
     PacedTrainSummaryResponse,
     ExceptionQueryParam,
 }
@@ -676,12 +675,23 @@ async fn project_path(
     Ok(Json(results))
 }
 
+/// Occupancy blocks output is described by blocks (signal updates)
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct OccupancyBlocksPacedTrainResult {
+    /// Paced train
+    #[schema(value_type = Vec<SignalUpdate>)]
+    pub paced_train: OccupancyBlocks,
+    /// Exceptions whose blocks are different from the paced train
+    #[schema(value_type = HashMap<String, Vec<SignalUpdate>>)]
+    pub exceptions: HashMap<String, OccupancyBlocks>,
+}
+
 #[utoipa::path(
     post, path = "",
     tag = "paced_train",
     request_body = OccupancyBlockForm,
     responses(
-        (status = 200, body = HashMap<i64, OccupancyBlocks>),
+        (status = 200, body = HashMap<i64, OccupancyBlocksPacedTrainResult>),
     ),
 )]
 async fn occupancy_blocks(
@@ -698,7 +708,7 @@ async fn occupancy_blocks(
         path,
         electrical_profile_set_id,
     }): Json<OccupancyBlockForm>,
-) -> Result<Json<HashMap<i64, OccupancyBlocks>>> {
+) -> Result<Json<HashMap<i64, OccupancyBlocksPacedTrainResult>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -722,11 +732,29 @@ async fn occupancy_blocks(
         })
         .await?;
 
-    let first_occurrences = paced_trains
-        .clone()
-        .into_iter()
-        .map(|p| p.into_train_schedule())
-        .collect_vec();
+    let simulation_contexts: Vec<SimulationContext> =
+        paced_trains
+            .iter()
+            .flat_map(|paced_train| {
+                std::iter::once(SimulationContext {
+                    paced_train_id: paced_train.id,
+                    exception_key: None,
+                    train_schedule: paced_train.clone().into_train_schedule(),
+                })
+                .chain(paced_train.exceptions.iter().map(|exception| {
+                    SimulationContext {
+                        paced_train_id: paced_train.id,
+                        exception_key: Some(exception.key.clone()),
+                        train_schedule: paced_train.apply_exception(exception),
+                    }
+                }))
+            })
+            .collect();
+
+    let train_schedules = simulation_contexts
+        .iter()
+        .map(|c| c.train_schedule.clone())
+        .collect::<Vec<_>>();
 
     let occupancy_blocks_result = compute_occupancy_blocks(
         conn,
@@ -734,19 +762,37 @@ async fn occupancy_blocks(
         valkey_client,
         path,
         infra,
-        first_occurrences,
+        &train_schedules,
         electrical_profile_set_id,
     )
     .await?;
 
-    let mut results = HashMap::new();
+    let mut base_occupancy_blocks = occupancy_blocks_result[0].clone();
+    let mut results = HashMap::<i64, OccupancyBlocksPacedTrainResult>::new();
 
-    occupancy_blocks_result
-        .into_iter()
-        .zip(paced_trains)
-        .for_each(|(occupancy_blocks, paced_train)| {
-            results.insert(paced_train.id, occupancy_blocks);
-        });
+    for (index, simulation_context) in simulation_contexts.into_iter().enumerate() {
+        if let Some(exception_key) = simulation_context.exception_key {
+            if !Arc::ptr_eq(&base_occupancy_blocks, &occupancy_blocks_result[index]) {
+                results
+                    .get_mut(&simulation_context.paced_train_id)
+                    .expect("paced_train_id should exist")
+                    .exceptions
+                    .insert(
+                        exception_key,
+                        Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
+                    );
+            }
+        } else {
+            results.insert(
+                simulation_context.paced_train_id,
+                OccupancyBlocksPacedTrainResult {
+                    paced_train: Arc::unwrap_or_clone(occupancy_blocks_result[index].clone()),
+                    exceptions: HashMap::new(),
+                },
+            );
+            base_occupancy_blocks = occupancy_blocks_result[index].clone();
+        }
+    }
 
     Ok(Json(results))
 }

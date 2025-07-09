@@ -1836,7 +1836,7 @@ export type DeletePacedTrainApiArg = {
   };
 };
 export type PostPacedTrainOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: OccupancyBlocks;
+  [key: string]: OccupancyBlocksPacedTrainResult;
 };
 export type PostPacedTrainOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
@@ -2378,7 +2378,7 @@ export type DeleteTrainScheduleApiArg = {
   };
 };
 export type PostTrainScheduleOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: OccupancyBlocks;
+  [key: string]: SignalUpdate[];
 };
 export type PostTrainScheduleOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
@@ -3558,9 +3558,13 @@ export type SignalUpdate = {
   /** The aspects start being displayed at this time (number of ms since `departure_time`) */
   time_start: number;
 };
-export type OccupancyBlocks = {
-  /** list of signal updates along the path */
-  signal_updates: SignalUpdate[];
+export type OccupancyBlocksPacedTrainResult = {
+  /** Exceptions whose blocks are different from the paced train */
+  exceptions: {
+    [key: string]: SignalUpdate[];
+  };
+  /** Paced train */
+  paced_train: SignalUpdate[];
 };
 export type OccupancyBlockForm = {
   electrical_profile_set_id?: number | null;

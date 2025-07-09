@@ -1745,7 +1745,7 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/OccupancyBlocks'
+                  $ref: '#/components/schemas/OccupancyBlocksPacedTrainResult'
   /paced_train/project_path:
     post:
       tags:
@@ -4068,7 +4068,9 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  $ref: '#/components/schemas/OccupancyBlocks'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SignalUpdate'
   /train_schedule/project_path:
     post:
       tags:
@@ -9643,17 +9645,25 @@ components:
                 $ref: '#/components/schemas/TrackRange'
               description: List of track ranges
               minItems: 1
-    OccupancyBlocks:
+    OccupancyBlocksPacedTrainResult:
       type: object
-      description: Occupancy block output is described by time-space points and blocks
+      description: Occupancy blocks output is described by blocks (signal updates)
       required:
-      - signal_updates
+      - paced_train
+      - exceptions
       properties:
-        signal_updates:
+        exceptions:
+          type: object
+          description: Exceptions whose blocks are different from the paced train
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/SignalUpdate'
+        paced_train:
           type: array
           items:
             $ref: '#/components/schemas/SignalUpdate'
-          description: list of signal updates along the path
+          description: Paced train
     OffsetRange:
       type: object
       required:

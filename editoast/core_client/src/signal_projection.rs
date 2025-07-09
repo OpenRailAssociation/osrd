@@ -28,7 +28,7 @@ pub struct SignalUpdatesRequest<'a> {
     /// Path description as block ids
     pub blocks: &'a [Identifier],
     /// List of signal critical positions and zone updates for each train
-    pub train_simulations: HashMap<i64, TrainSimulation<'a>>,
+    pub train_simulations: HashMap<usize, TrainSimulation<'a>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -63,7 +63,7 @@ pub struct TrainSimulation<'a> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct SignalUpdatesResponse {
-    pub signal_updates: HashMap<i64, Vec<SignalUpdate>>,
+    pub signal_updates: HashMap<usize, Vec<SignalUpdate>>,
 }
 
 impl AsCoreRequest<Json<SignalUpdatesResponse>> for SignalUpdatesRequest<'_> {
