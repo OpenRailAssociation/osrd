@@ -53,8 +53,8 @@ const RoundTripsModal = ({
         <RoundTripsModalColumn type="roundTrips" pairingItems={[]} />
       </div>
       <div className="round-trips-modal-footer">
-        <Button label={commonT('cancel')} variant="Cancel" onClick={closeModal} />
-        <Button label={commonT('saveEdits')} variant="Primary" onClick={closeModal} />
+        <Button label={commonT('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
+        <Button label={commonT('saveEdits')} variant="Primary" size="medium" onClick={closeModal} />
       </div>
     </dialog>
   );
