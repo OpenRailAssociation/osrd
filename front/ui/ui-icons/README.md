@@ -16,5 +16,5 @@ Based upon https://octicons.github.com our icons set provide slick & clear picto
 
 In osrd-ui
 
-- launch `npm run build`
-- launch `npm run storybook`
+1. launch `npm run build-ui`
+2. Run `cd storybook` and `npm start`
