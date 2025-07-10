@@ -150,6 +150,7 @@
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "",
     "requestedPoint": "point demandé ({{ count }})",
+    "requestedPointUnknown": "point demandé",
     "roundTripsModal": {
       "cadence": "Cadence",
       "manageRoundTrips": "Gérer les aller-retours",

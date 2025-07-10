@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
+import type { TFunction } from 'i18next';
 import {
   flatMap,
   forEach,
@@ -14,8 +15,13 @@ import {
   pick,
   uniqBy,
 } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  type OperationalPointReference,
+  osrdEditoastApi,
+  type PathItemLocation,
+} from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { extractEditoastIdFromTrainId } from 'utils/trainId';
 
@@ -38,13 +44,31 @@ type DeployedWaypoint = {
   loading?: boolean;
 };
 
+const SIDES = ['origin', 'destination'] as const;
+type Side = (typeof SIDES)[number];
+export type OccupancyTrainSpaceTimeData = TrainSpaceTimeData &
+  Record<`${Side}PathItemLocation`, PathItemLocation | undefined>;
+
+type StationLabel = { type?: 'label'; label: string } | { type: 'requestedPoint' };
+function extractStationLabel(
+  stationLabel: StationLabel | undefined,
+  t: TFunction<'operational-studies'>
+): string | undefined {
+  if (!stationLabel) return undefined;
+  if (stationLabel.type === 'requestedPoint')
+    return `${t('main.requestedPointUnknown').slice(0, 3)}…`;
+  return stationLabel.label;
+}
+
 /**
  * This hook handles track occupancy zones lifecycle.
  *
  * It takes the following inputs:
  * - infraId
  * - trains:
- *   An array with all visible TrainSpaceTimeData items in the SpaceTimeChart
+ *   An array with all visible OccupancyTrainSpaceTimeData items in the SpaceTimeChart. These are
+ *   TrainSpaceTimeData, but with optional origin and destination PathItemLocation, to allow
+ *   displaying related labels.
  * - pathOperationalPoints:
  *   An array with all PathOperationalPoint items along the current path
  *
@@ -64,7 +88,7 @@ const useTrackOccupancy = ({
   pathOperationalPoints,
 }: {
   infraId: number;
-  trains: TrainSpaceTimeData[];
+  trains: OccupancyTrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
 }): {
   deployedWaypoints: DeployedWaypoint[];
@@ -81,6 +105,7 @@ const useTrackOccupancy = ({
     stopPanning: boolean;
   }) => Promise<void>;
 } => {
+  const { t, i18n } = useTranslation('operational-studies');
   const draggedTrains = useRef(new Set<string>());
   const previousTrains = usePrevious(trains);
 
@@ -102,6 +127,9 @@ const useTrackOccupancy = ({
   });
   const [pathOperationalPointsState, setPathOperationalPointsState] = useState<
     Record<string, OperationalPointState>
+  >({});
+  const trainsStationLabelsRef = useRef<
+    Record<string, { origin?: StationLabel; destination?: StationLabel } | undefined>
   >({});
   const updatePathOperationalPointState = useCallback(
     (
@@ -167,7 +195,14 @@ const useTrackOccupancy = ({
             operationalPointId: op.opId,
             operationalPointPosition: op.position,
             operationalPointName: op.extensions?.identifier?.name || undefined,
-            zones: opState.zones.data,
+            zones: opState.zones.data?.map((zone) => {
+              const trainStationLabels = trainsStationLabelsRef.current[zone.trainId];
+              return {
+                ...zone,
+                originStation: extractStationLabel(trainStationLabels?.origin, t),
+                destinationStation: extractStationLabel(trainStationLabels?.destination, t),
+              };
+            }),
             loading: opState.zones.type === 'loading',
             tracks,
           });
@@ -175,7 +210,7 @@ const useTrackOccupancy = ({
       });
 
     return res;
-  }, [pathOperationalPointsState, pathOperationalPointsDict]);
+  }, [pathOperationalPointsState, pathOperationalPointsDict, t]);
 
   const toggleWaypoint = useCallback(
     (waypointId: string, selectedState?: boolean) => {
@@ -383,14 +418,30 @@ const useTrackOccupancy = ({
 
     trains.forEach((train) => {
       const id = extractEditoastIdFromTrainId(train.id);
-      if (!previousTrainsDict[id]) addedTrainIDs.add(id);
-      else if (!isEqual(train, previousTrainsDict[id]) && !draggedTrains.current.has(train.id))
+      const previousTrain = previousTrainsDict[id];
+      if (!previousTrain) addedTrainIDs.add(id);
+      else if (!isEqual(train, previousTrain) && !draggedTrains.current.has(train.id)) {
         modifiedTrainIDs.add(id);
+        if (
+          !isEqual(train.originPathItemLocation, previousTrain.originPathItemLocation) ||
+          !isEqual(
+            train.destinationPathItemLocation,
+            previousTrainsDict[id].destinationPathItemLocation
+          )
+        ) {
+          // Remove cached station labels for this train:
+          trainsStationLabelsRef.current[train.id] = undefined;
+        }
+      }
     });
 
     previousTrains.forEach((train) => {
       const id = extractEditoastIdFromTrainId(train.id);
-      if (!trainsDict[id]) removedTrainIDs.add(id);
+      if (!trainsDict[id]) {
+        removedTrainIDs.add(id);
+        // Remove cached station labels for this train:
+        trainsStationLabelsRef.current[train.id] = undefined;
+      }
     });
 
     // Load zones for added trains, for each path operational point that has already been toggled at least once:
@@ -440,6 +491,90 @@ const useTrackOccupancy = ({
       });
     }
   }, [trains]);
+
+  // Load train origin and destination stations names:
+  useEffect(() => {
+    const trainsStationLabels = trainsStationLabelsRef.current;
+    const trainsToFetch = trains.filter((train) => !trainsStationLabels[train.id]);
+
+    if (!trainsToFetch.length) return;
+
+    const fetchOperationalPoints = async () => {
+      try {
+        const requests: {
+          trainId: TrainId;
+          side: Side;
+          opReference: OperationalPointReference;
+        }[] = [];
+
+        trainsToFetch.forEach((train) => {
+          trainsStationLabels[train.id] = {};
+          SIDES.forEach((side) => {
+            const itemLocation = train[`${side}PathItemLocation`];
+            if (!itemLocation) {
+              trainsStationLabels[train.id] = {
+                ...trainsStationLabels[train.id],
+                [side]: undefined,
+              };
+            } else if ('track' in itemLocation) {
+              trainsStationLabels[train.id] = {
+                ...trainsStationLabels[train.id],
+                [side]: { type: 'requestedPoint' },
+              };
+            } else if ('operational_point' in itemLocation) {
+              requests.push({
+                side,
+                trainId: train.id,
+                opReference: { operational_point: itemLocation.operational_point },
+              });
+            } else if ('trigram' in itemLocation) {
+              requests.push({
+                side,
+                trainId: train.id,
+                opReference: {
+                  trigram: itemLocation.trigram,
+                  secondary_code: itemLocation.secondary_code,
+                },
+              });
+            } else if ('uic' in itemLocation) {
+              requests.push({
+                side,
+                trainId: train.id,
+                opReference: { uic: itemLocation.uic, secondary_code: itemLocation.secondary_code },
+              });
+            }
+          });
+        });
+
+        if (!requests.length) return;
+
+        const { data, error } = await postInfraByInfraIdMatchOperationalPoints({
+          infraId,
+          body: {
+            operational_point_references: requests.map(({ opReference }) => opReference),
+          },
+        });
+
+        if (error)
+          throw new Error('Error while fetching tracks origin/destination names', { cause: error });
+
+        requests.forEach(({ side, trainId }, i) => {
+          const op = data.related_operational_points[i].at(0);
+          trainsStationLabels[trainId] = {
+            ...trainsStationLabels[trainId],
+            [side]: {
+              type: 'label',
+              label: op?.extensions?.sncf?.trigram || op?.extensions?.identifier?.name || undefined,
+            },
+          };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchOperationalPoints();
+  }, [trains, i18n.language]);
 
   return { deployedWaypoints, toggleWaypoint, handleTrainDrag };
 };

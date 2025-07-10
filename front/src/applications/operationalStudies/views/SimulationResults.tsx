@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -13,10 +14,12 @@ import ManchetteWithSpaceTimeChartWrapper, {
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
-import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChart/useTrackOccupancy';
+import useTrackOccupancy, {
+  type OccupancyTrainSpaceTimeData,
+} from 'modules/simulationResult/components/SpaceTimeChart/useTrackOccupancy';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
-import type { ProjectionData, TrainSpaceTimeData } from 'modules/simulationResult/types';
+import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -73,13 +76,28 @@ const SimulationResults = ({
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [mapCanvas, setMapCanvas] = useState<string>();
 
-  const [projectPathTrainResult, setProjectPathTrainResult] = useState<TrainSpaceTimeData[]>([]);
+  const [projectPathTrainResult, setProjectPathTrainResult] = useState<
+    OccupancyTrainSpaceTimeData[]
+  >([]);
 
   useEffect(() => {
     if (projectionData?.projectedTrains) {
-      setProjectPathTrainResult(projectionData?.projectedTrains || []);
+      const timetableItemDict = keyBy(timetableItemsWithDetails, 'id');
+      setProjectPathTrainResult(
+        projectionData.projectedTrains.map((train) => {
+          const timetableItem =
+            timetableItemDict[
+              isTrainScheduleId(train.id) ? train.id : extractPacedTrainIdFromOccurrenceId(train.id)
+            ];
+          return {
+            ...train,
+            originPathItemLocation: timetableItem?.path.at(0),
+            destinationPathItemLocation: timetableItem?.path.at(-1),
+          };
+        })
+      );
     }
-  }, [projectionData]);
+  }, [projectionData, timetableItemsWithDetails]);
 
   const {
     operationalPoints: projectedOperationalPoints,
