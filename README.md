@@ -80,7 +80,7 @@ Send an email at <contact@osrd.fr>, [open an issue](https://github.com/OpenRailA
 ## Sponsors
 
 <p align="center">
-  <img src="assets/sponsors/france-dot.svg" width="150px" height="150px" alt="Ministère chargé des Transports"/>
+  <img src="assets/sponsors/ministere-amenagement-territoire-decentralisation.png" width="150px" height="150px" alt="Ministère de l'Aménagement du Territoire et de la Décentralisation"/>
   <img src="assets/sponsors/european-union.svg" width="150px" height="150px" alt="European Union"/>
   <img src="assets/sponsors/sncf-reseau.svg" width="150px" height="150px" alt="SNCF Réseau"/>
 </p>
