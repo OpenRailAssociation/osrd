@@ -158,7 +158,7 @@ struct ListTrainSchedulesResponse {
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
-    params(TimetableIdParam, PaginationQueryParams<25>),
+    params(TimetableIdParam, PaginationQueryParams<200>),
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = inline(ListTrainSchedulesResponse)),
         (status = 404, description = "Timetable not found"),
@@ -168,7 +168,7 @@ async fn get_train_schedules(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams<25>>,
+    Query(pagination_params): Query<PaginationQueryParams<200>>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -353,7 +353,7 @@ struct ListPacedTrainsResponse {
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
-    params(TimetableIdParam, PaginationQueryParams<25>),
+    params(TimetableIdParam, PaginationQueryParams<200>),
     responses(
         (status = 200, description = "Timetable with paced train ids", body = inline(ListPacedTrainsResponse)),
         (status = 404, description = "Timetable not found"),
@@ -363,7 +363,7 @@ async fn get_paced_trains(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Query(pagination_params): Query<PaginationQueryParams<25>>,
+    Query(pagination_params): Query<PaginationQueryParams<200>>,
 ) -> Result<Json<ListPacedTrainsResponse>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())

@@ -3428,9 +3428,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 200
           nullable: true
-          maximum: 25
+          maximum: 200
           minimum: 1
       responses:
         '200':
@@ -3794,9 +3794,9 @@ paths:
         schema:
           type: integer
           format: int64
-          default: 25
+          default: 200
           nullable: true
-          maximum: 25
+          maximum: 200
           minimum: 1
       responses:
         '200':
