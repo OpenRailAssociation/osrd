@@ -2,7 +2,9 @@
 
 All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
 
-Check out our community's [Code of Conduct](https://github.com/OpenRailAssociation/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on our [#public-general:osrd.fr](https://matrix.to/#/#public-general:osrd.fr) matrix channel if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/OpenRailAssociation/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+Check out our community's [Code of Conduct](https://github.com/OpenRailAssociation/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on our [#public-general:osrd.fr](https://matrix.to/#/#public-general:osrd.fr) matrix channel if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting.
+
+OSRD is a complex project currently in development phase. If you want to contribute and feel lost on the best way to do so, we will be happy to help you: please get in touch through <contact@osrd.fr>, via [Matrix](https://matrix.to/#/#public-general:osrd.fr) or [ask a question on GitHub Discussions](https://github.com/OpenRailAssociation/osrd/discussions/categories/q-a). You can also check out the currently open [good first issues](https://github.com/OpenRailAssociation/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## Getting oriented
 
