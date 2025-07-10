@@ -30,7 +30,7 @@ const osrdEditoastApi = generatedEditoastApi
         { timetableId: number }
       >({
         queryFn: async ({ timetableId }, { dispatch }) => {
-          const pageSize = 25;
+          const pageSize = 200;
           let page = 1;
           let reachEnd = false;
           const result: TrainScheduleResponse[] = [];
@@ -56,7 +56,7 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getAllTimetableByIdPacedTrains: builder.query<PacedTrainResponse[], { timetableId: number }>({
         queryFn: async ({ timetableId }, { dispatch }) => {
-          const pageSize = 25;
+          const pageSize = 200;
           let page = 1;
           let reachEnd = false;
           const result: PacedTrainResponse[] = [];
