@@ -5,7 +5,7 @@
   right: -100%;
   height: 100vh;
   width: 520px;
-  background-color: var(--white100);
+  background-color: var(--whiteAlpha100);
   box-shadow:
     0 6px 21px -5px rgba(24, 68, 239, 0.26),
     0 16px 30px -5px rgba(0, 0, 0, 0.16),
@@ -49,7 +49,7 @@
     }
   }
   .stdcm__help-section {
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
     transition: all 0.3s;
     position: fixed;
     top: 72px;
@@ -77,7 +77,7 @@
       font-size: 2rem;
       font-weight: 600;
       margin-bottom: 46px;
-      color: var(--black100);
+      color: var(--black);
     }
     &__subtitle {
       font-size: 1.5rem;
@@ -118,13 +118,13 @@
         font-size: 1rem;
         font-weight: 600;
         line-height: 24px;
-        color: var(--black100);
+        color: var(--black);
       }
       &__content {
         font-size: 1rem;
         font-weight: 400;
         line-height: 24px;
-        color: var(--black100);
+        color: var(--black);
       }
     }
     hr {

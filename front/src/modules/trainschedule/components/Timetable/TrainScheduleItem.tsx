@@ -193,7 +193,7 @@ const TrainScheduleItem = ({
                 >
                   {projectionPathIsUsed && (
                     <div className="train-projected">
-                      <Manchette iconColor="var(--white100)" />
+                      <Manchette iconColor="var(--white)" />
                     </div>
                   )}
                   <span className="train-name">{train.name}</span>

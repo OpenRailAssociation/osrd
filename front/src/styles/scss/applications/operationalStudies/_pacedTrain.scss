@@ -105,7 +105,7 @@
         background-image: url('data:image/svg+xml,%3Csvg version="1.1" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"%3E%3Ctitle%3EAssets/TrainList/InvalidTrain%3C/title%3E%3Cg fill-rule="evenodd"%3E%3Crect width="48" height="48" fill="%23FFEEED"/%3E%3Cpath d="m48 26v22h-22l22-22zm0-26-48 48v-22l26-26h22z" fill="%23FF6868" opacity=".1"/%3E%3C/g%3E%3C/svg%3E');
         background-repeat: repeat;
 
-        box-shadow: inset 0 -1px 0 0 var(--black10);
+        box-shadow: inset 0 -1px 0 0 var(--blackAlpha10);
       }
     }
   }
@@ -115,7 +115,7 @@
     border: 0.5px solid var(--grey90);
     font-size: 14px;
     padding: 3px 4px;
-    color: var(--white100);
+    color: var(--whiteAlpha100);
     font-weight: 600;
     border-radius: 3px;
     display: flex;
@@ -134,8 +134,8 @@
       position: relative;
       width: 100%;
       padding-left: 4px;
-      border-top: 1px solid var(--white100);
-      border-bottom: 1px solid var(--black10);
+      border-top: 1px solid var(--whiteAlpha100);
+      border-bottom: 1px solid var(--blackAlpha10);
       &:hover {
         background-color: var(--ambientB15);
 
@@ -168,7 +168,7 @@
         background-color: var(--selection20);
       }
       &.next-after-midnight {
-        border-bottom: 1px solid var(--black50);
+        border-bottom: 1px solid var(--blackAlpha50);
       }
       &:last-child {
         border-bottom: none;
@@ -210,13 +210,13 @@
                 min-width: 200px;
                 position: fixed;
                 z-index: 10;
-                background-color: var(--black85);
+                background-color: var(--blackAlpha85);
                 border-radius: 8px;
-                box-shadow: 0 4px 6px -2px var(--black28);
+                box-shadow: 0 4px 6px -2px var(--blackAlpha28);
                 font-size: 0.875rem;
 
                 hr {
-                  border-top: 1px solid var(--white50);
+                  border-top: 1px solid var(--whiteAlpha50);
                   margin-block: 7px 5px;
                 }
 
@@ -231,7 +231,7 @@
                 .change-groups {
                   display: flex;
                   flex-direction: column;
-                  color: var(--white100);
+                  color: var(--whiteAlpha100);
                   line-height: 20px;
                 }
 
@@ -259,7 +259,7 @@
                   height: 6px;
                   background: var(--grey80);
                   border-radius: 50%;
-                  box-shadow: 0 0 0 2px var(--white100);
+                  box-shadow: 0 0 0 2px var(--whiteAlpha100);
                 }
               }
 
@@ -277,7 +277,7 @@
                   left: 4px;
                   width: 8px;
                   height: 8px;
-                  background: var(--white100);
+                  background: var(--whiteAlpha100);
                   border-radius: 50%;
                   box-shadow: none;
                 }
@@ -356,7 +356,7 @@
         }
 
         .consecutive-day-display {
-          color: var(--black50);
+          color: var(--blackAlpha50);
           position: absolute;
           left: 0;
           bottom: 0;
@@ -393,12 +393,12 @@
         box-shadow: 0px 0px 0px 1.5px rgba(255, 255, 255, 1) inset;
 
         &:hover {
-          background-color: var(--white100);
+          background-color: var(--whiteAlpha100);
         }
 
         &.show-menu {
           display: flex;
-          background-color: var(--white100);
+          background-color: var(--whiteAlpha100);
         }
       }
 

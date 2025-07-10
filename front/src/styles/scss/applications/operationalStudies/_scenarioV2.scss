@@ -38,10 +38,10 @@
 
       .close-btn {
         padding: 8px 0px 8px 8px;
-        color: var(--black25);
+        color: var(--blackAlpha25);
 
         &:hover {
-          color: var(--black100);
+          color: var(--black);
 
           & ~ .scenario-name-container {
             opacity: 0;
@@ -85,14 +85,14 @@
 
         .chevron-btn {
           padding: 4px;
-          color: var(--black25);
+          color: var(--blackAlpha25);
         }
 
         &:hover {
           cursor: pointer;
           .scenario-name-label,
           .chevron-btn {
-            color: var(--black100);
+            color: var(--black);
           }
         }
 
@@ -129,8 +129,8 @@
             background-color: var(--ambientB5);
 
             &:hover {
-              color: var(--black100);
-              background-color: var(--white100);
+              color: var(--black);
+              background-color: var(--whiteAlpha100);
             }
 
             &:active {
@@ -146,7 +146,7 @@
 
             &:hover {
               color: var(--grey30);
-              background-color: var(--white100);
+              background-color: var(--whiteAlpha100);
             }
 
             &:active {
@@ -303,9 +303,9 @@
       height: 48px;
       width: 28px;
       color: var(--grey40);
-      background-color: var(--white100);
+      background-color: var(--whiteAlpha100);
       border-radius: 5px 0px 0px 5px;
-      box-shadow: 0 1px 0 0 var(--black10);
+      box-shadow: 0 1px 0 0 var(--blackAlpha10);
       clip-path: inset(-1px 1px -1px -1px);
 
       &:hover {

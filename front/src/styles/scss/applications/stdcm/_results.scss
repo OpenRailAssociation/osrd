@@ -421,7 +421,7 @@
   margin-bottom: 8px;
   .feedback-card-header {
     h3 {
-      color: var(--black100);
+      color: var(--black);
       font-size: 600;
       line-height: 24px;
       margin-bottom: 0;
@@ -438,13 +438,13 @@
     border-bottom: 5px solid var(--grey20);
   }
   .feedback-card-text {
-    color: var(--black100);
+    color: var(--black);
   }
   .feedback-card-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
     border-radius: 5px;
     color: var(--grey70);
     font-weight: 500;

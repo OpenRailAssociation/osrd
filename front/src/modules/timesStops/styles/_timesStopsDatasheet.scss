@@ -6,10 +6,10 @@
     0px 4px 7px -3px rgba(255, 171, 88, 0.17),
     0px 2px 4px rgba(0, 0, 0, 0.22);
   background-color: var(--ambientB15);
-  --dsg-cell-background-color: var(--white100);
-  --dsg-cell-disabled-background-color: var(--white100);
+  --dsg-cell-background-color: var(--whiteAlpha100);
+  --dsg-cell-disabled-background-color: var(--whiteAlpha100);
   --dsg-header-text-color: var(--grey50);
-  --dsg-header-active-text-color: var(--black100);
+  --dsg-header-active-text-color: var(--black);
 
   .invalidCell {
     color: red !important;
@@ -85,7 +85,7 @@
   .dsg-row {
     &.activeRow {
       font-weight: 600;
-      color: var(--black100);
+      color: var(--black);
       .dsg-cell-gutter,
       .secondary-code-column {
         font-weight: normal;

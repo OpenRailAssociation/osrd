@@ -52,7 +52,7 @@
       height: 40px;
       display: flex;
       align-items: center;
-      border-bottom: 1px solid var(--black10);
+      border-bottom: 1px solid var(--blackAlpha10);
 
       &.selector-all {
         padding-bottom: 14px;
@@ -92,7 +92,7 @@
   .waypoints-panel-footer {
     position: relative;
     height: 105px;
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
     border-top: 1px solid var(--grey30);
     display: flex;
     justify-content: end;
@@ -108,7 +108,7 @@
       left: 0;
       width: 100%;
       height: 4px;
-      background-color: var(--black10);
+      background-color: var(--blackAlpha10);
     }
 
     &.wizz-effect:active {
@@ -159,7 +159,7 @@
       gap: 6px;
       padding-top: calc(16px - 4px);
       padding-inline: 29px;
-      border: 4px solid var(--white100);
+      border: 4px solid var(--whiteAlpha100);
       color: var(--warning60);
       background-color: var(--warning5);
       border-radius: 8px;

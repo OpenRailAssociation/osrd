@@ -79,7 +79,7 @@
       }
     }
     &-name {
-      color: var(--black100);
+      color: var(--black);
       &.bold {
         font-weight: 500;
       }
@@ -90,7 +90,7 @@
 
       * > .osrd-ui-custom-select,
       * > .osrd-ui-custom-select:focus {
-        background-color: var(--white100);
+        background-color: var(--whiteAlpha100);
         margin: 0 0 0 8px;
         width: 136px;
         height: 32px;

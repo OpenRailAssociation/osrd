@@ -235,7 +235,7 @@ const PacedTrainItem = ({
         >
           {isProjectionPathUsed && (
             <div className="train-projected">
-              <Manchette iconColor="var(--white100)" />
+              <Manchette iconColor="var(--white)" />
             </div>
           )}
           <div

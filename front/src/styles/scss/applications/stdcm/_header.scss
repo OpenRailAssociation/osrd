@@ -60,7 +60,7 @@
       &:hover {
         color: var(--primary80);
         border: 1px solid var(--primary80);
-        background-color: var(--white100);
+        background-color: var(--whiteAlpha100);
       }
       &:focus {
         outline: none;
@@ -70,13 +70,13 @@
         opacity: 0.5;
       }
       &.selected {
-        box-shadow: 0 0 0 2px var(--white100) inset;
+        box-shadow: 0 0 0 2px var(--whiteAlpha100) inset;
         border: 1px solid rgba(92, 89, 85);
         background-color: rgba(255, 242, 179);
         &:hover {
-          border: 3px solid var(--white100);
-          border: 1px solid var(--black100);
-          background-color: var(--black5);
+          border: 3px solid var(--whiteAlpha100);
+          border: 1px solid var(--black);
+          background-color: var(--blackAlpha5);
         }
       }
       &.debug {
@@ -88,19 +88,19 @@
       }
       &.impersonated {
         width: 40px;
-        color: var(--black50);
-        background-color: var(--white100);
-        border: 1px solid var(--black50);
+        color: var(--blackAlpha50);
+        background-color: var(--whiteAlpha100);
+        border: 1px solid var(--blackAlpha50);
         &:hover {
-          color: var(--black100);
-          border: 1px solid var(--black100);
+          color: var(--black);
+          border: 1px solid var(--black);
         }
       }
     }
   }
 
   .impersonated-bg {
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
   }
 
   .scenario-explorator-card {

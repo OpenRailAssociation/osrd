@@ -170,7 +170,7 @@
       margin-left: 8px;
 
       &:hover:not(:disabled) {
-        background-color: var(--white100);
+        background-color: var(--whiteAlpha100);
         color: var(--primary80);
       }
 
@@ -280,9 +280,9 @@
     height: 34px;
     width: 24px;
     color: var(--grey40);
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
     border-radius: 0px 5px 5px 0px;
-    box-shadow: 0 0 0 1px var(--black10);
+    box-shadow: 0 0 0 1px var(--blackAlpha10);
     clip-path: inset(-1px -1px -1px 1px);
     z-index: 4;
   }
@@ -325,7 +325,7 @@
   }
 
   .micro-macro-buttons:hover {
-    background-color: var(--white100);
+    background-color: var(--whiteAlpha100);
   }
 
   .scenario-timetable-collapsed {
@@ -388,7 +388,7 @@
       align-items: center;
       justify-content: space-between;
       font-weight: 600;
-      color: var(--black100);
+      color: var(--black);
       font-size: 1.125rem;
       text-align: left;
       line-height: 24px;
@@ -425,7 +425,7 @@
         position: absolute;
         top: 0;
         left: -8px;
-        background-color: var(--white100);
+        background-color: var(--whiteAlpha100);
         color: var(--grey80);
         padding: 54px 56px 50px 56px;
         font-size: 1rem;
@@ -456,7 +456,7 @@
         border-radius: 5px 0 0 5px;
         top: 0;
         transform: translateX(24px);
-        box-shadow: 0 0 0 1px var(--black10);
+        box-shadow: 0 0 0 1px var(--blackAlpha10);
         clip-path: inset(-1px 0 -1px -1px);
       }
 
@@ -475,7 +475,7 @@
         background-color: var(--ambientB10);
         color: var(--primary60);
         &:hover {
-          background-color: var(--white100);
+          background-color: var(--whiteAlpha100);
           color: var(--primary80);
         }
       }
@@ -486,13 +486,13 @@
       font-weight: 400;
       line-height: 16px;
       margin-top: 6px;
-      color: var(--black100);
+      color: var(--black);
     }
     .scenario-details-infra-name {
       font-size: 0.75rem;
       font-weight: 400;
       line-height: 16px;
-      color: var(--black100);
+      color: var(--black);
       margin-top: 4px;
       display: flex;
       align-items: center;
@@ -547,12 +547,12 @@
         padding: 4px 8px;
         border-radius: 4px;
         &.on {
-          color: var(--white100);
+          color: var(--whiteAlpha100);
           background-color: var(--secondary);
         }
         &:hover {
           background-color: var(--secondary);
-          color: var(--white100);
+          color: var(--whiteAlpha100);
           .scenario-details-modify-button-text {
             opacity: 1;
           }
@@ -564,7 +564,7 @@
         border-radius: 4px;
         border-color: transparent;
         background-color: rgba(var(--red-rgb), 0.75);
-        color: var(--white100);
+        color: var(--whiteAlpha100);
         height: 32px;
         &.disabled {
           background-color: rgba(var(--secondary-rgb), 0.5);
@@ -642,7 +642,7 @@
           background-color: var(--ambientB15);
           border-top-left-radius: 10px;
           border-top-right-radius: 10px;
-          box-shadow: inset 0 1px 0 var(--white100);
+          box-shadow: inset 0 1px 0 var(--whiteAlpha100);
           border-bottom: solid 1px rgba(0, 0, 0, 0.1);
 
           .toolbar-header {
@@ -687,9 +687,9 @@
           height: 32px;
           line-height: 28.8px;
           text-align: center;
-          background-color: var(--black5);
-          border-top: 1px solid var(--white75);
-          border-bottom: 1px solid var(--black25);
+          background-color: var(--blackAlpha5);
+          border-top: 1px solid var(--whiteAlpha75);
+          border-bottom: 1px solid var(--blackAlpha25);
           color: var(--grey50);
           font-size: 0.875rem;
         }
@@ -697,7 +697,7 @@
         .invalid-trains {
           display: flex;
           background: var(--warning5);
-          box-shadow: inset 0 1px var(--white100);
+          box-shadow: inset 0 1px var(--whiteAlpha100);
           height: 48px;
           font-size: 1rem;
           font-weight: 600;
@@ -718,7 +718,7 @@
         .filter {
           background-color: var(--ambientB5);
           height: 31px;
-          border-top: 1px solid var(--white100);
+          border-top: 1px solid var(--whiteAlpha100);
           border-bottom: solid 1px rgba(0, 0, 0, 0.25);
           display: flex;
           justify-content: center;
@@ -729,8 +729,8 @@
           }
 
           &:hover {
-            background-color: var(--white100);
-            color: var(--black100);
+            background-color: var(--whiteAlpha100);
+            color: var(--black);
             cursor: pointer;
 
             .scenario-details-modify-button-text {
@@ -781,8 +781,8 @@
           position: relative;
           padding: 17px 39px 23px 24px;
           background-color: var(--ambientB5);
-          border-top: solid 1px var(--black25);
-          box-shadow: inset 0 1px 0 0 var(--white100);
+          border-top: solid 1px var(--blackAlpha25);
+          box-shadow: inset 0 1px 0 0 var(--whiteAlpha100);
           border-bottom: solid 1px rgba(0, 0, 0, 0.25);
 
           // cancel bootstrap default margin
@@ -850,15 +850,15 @@
               }
 
               button:hover {
-                background-color: var(--white100);
-                color: var(--black100);
+                background-color: var(--whiteAlpha100);
+                color: var(--black);
                 border: 1px solid var(--grey90);
               }
 
               .selectedTag {
                 background-color: var(--grey60);
-                color: var(--white100);
-                border: 1px solid var(--black100);
+                color: var(--whiteAlpha100);
+                border: 1px solid var(--black);
               }
             }
           }

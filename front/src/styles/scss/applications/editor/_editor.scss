@@ -105,7 +105,7 @@
       background-color: var(--ambientB10);
       border-radius: 5px 0 0 5px;
       transform: translate(492px, 500px);
-      box-shadow: 0 0 0 1px var(--black10);
+      box-shadow: 0 0 0 1px var(--blackAlpha10);
       clip-path: inset(-1px 0 -1px -1px);
 
       &:hover {
@@ -194,7 +194,7 @@
       background-color: var(--ambientB10);
       transform: translate(-1px, 500px);
       border-radius: 0px 5px 5px 0px;
-      box-shadow: 0 0 0 1px var(--black10);
+      box-shadow: 0 0 0 1px var(--blackAlpha10);
       clip-path: inset(-1px -1px -1px 1px);
       z-index: 4;
 

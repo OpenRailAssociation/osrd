@@ -8,7 +8,7 @@
     0 6px 21px -5px rgba(101, 169, 232, 0.341810533216783),
     0 16px 30px -5px rgba(0, 0, 0, 0.2),
     0 3px 5px -2px rgba(0, 0, 0, 0.1),
-    inset 0 0 0 1px var(--white100);
+    inset 0 0 0 1px var(--whiteAlpha100);
 
   button:disabled {
     opacity: 0.5;
@@ -22,7 +22,7 @@
     align-items: center;
 
     &:not(:first-child) {
-      border-top: 1px solid var(--white100);
+      border-top: 1px solid var(--whiteAlpha100);
     }
 
     &:not(:only-of-type, :last-child) {

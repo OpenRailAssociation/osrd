@@ -11,13 +11,13 @@
     right: 7px;
     top: 7px;
     z-index: 10;
-    border: 1px solid var(--black10);
+    border: 1px solid var(--blackAlpha10);
     border-radius: 5px;
 
     button {
       outline: none;
-      background: var(--white100);
-      color: var(--black100);
+      background: var(--whiteAlpha100);
+      color: var(--black);
       padding: 0 7px;
 
       &:first-child {
@@ -25,7 +25,7 @@
       }
 
       &:not(:last-child) {
-        border-right: 1px solid var(--black10);
+        border-right: 1px solid var(--blackAlpha10);
       }
 
       &:last-child {
@@ -51,7 +51,7 @@
       background-color: var(--primary90);
 
       .icon {
-        color: var(--white100);
+        color: var(--whiteAlpha100);
       }
 
       &:hover {
@@ -66,11 +66,11 @@
     }
 
     .reset-button-disabled {
-      color: var(--black25);
+      color: var(--blackAlpha25);
       cursor: inherit;
 
       &:hover {
-        background: var(--white100);
+        background: var(--whiteAlpha100);
       }
     }
 
