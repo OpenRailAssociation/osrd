@@ -1,5 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
+import PacedTrainSection from './paced-train-section';
 import OpSimulationResultPage from './simulation-results-page';
 import readJsonFile from '../../utils/file-utils';
 import type {
@@ -190,11 +191,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  private static async togglePacedTrainOccurrences(pacedTrainButton: Locator): Promise<void> {
-    await expect(pacedTrainButton).toBeVisible();
-    await pacedTrainButton.click();
-  }
-
   // Verify that the imported train number is correct
   async verifyTrainCount(trainCount: number): Promise<void> {
     await expect(this.timetableTrains).toHaveCount(trainCount);
@@ -319,13 +315,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Iterate over each paced train occurrences and verify the visibility of simulation results
   async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
-    // filter paced trains
+    const pacedTrainSection = new PacedTrainSection(this.page);
+    // Filter only paced trains to fix visibility issues when list grows.
+    // May need scrolling support if more trains are added later.
     await this.filterTrainTypeAndVerifyTrainCount('Service', pacedTrainCount);
     for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
       const pacedTrain = this.timetableTrains.nth(pacedTrainIndex);
-      const pacedTrainButton = ScenarioTimetableSection.getPacedTrainButton(pacedTrain);
 
-      await ScenarioTimetableSection.togglePacedTrainOccurrences(pacedTrainButton); // opens
+      await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // opens
 
       const occurrences = ScenarioTimetableSection.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
 
@@ -335,7 +332,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
         await occurrenceButton.click({ force: true });
         await this.verifySimulationResultsVisibility();
       }
-      await ScenarioTimetableSection.togglePacedTrainOccurrences(pacedTrainButton); // closes
+
+      await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // closes
     }
   }
 
