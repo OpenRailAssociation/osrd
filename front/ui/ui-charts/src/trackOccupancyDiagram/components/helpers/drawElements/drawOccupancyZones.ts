@@ -13,6 +13,7 @@ const X_BACKGROUND_PADDING = 4;
 const X_TROUGHTRAIN_BACKGROUND_PADDING = 8;
 const BACKGROUND_HEIGHT = 40;
 const SELECTED_TRAIN_ID_GRADIANT = 2;
+const PATH_SIZE_DEFAULT = 1;
 
 const drawDefaultZone = (
   ctx: CanvasRenderingContext2D,
@@ -99,6 +100,7 @@ export const drawOccupationZone = (
     isSelected?: boolean;
   }
 ) => {
+  const size = zone.size || PATH_SIZE_DEFAULT;
   const color = zone.color || PATH_COLOR_DEFAULT;
   const isThroughTrain = zone.startTime === zone.endTime;
 
@@ -149,7 +151,7 @@ export const drawOccupationZone = (
 
   // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = size;
   ctx.setLineDash([1, 4]);
   if (zone.startDirection) {
     ctx.beginPath();
