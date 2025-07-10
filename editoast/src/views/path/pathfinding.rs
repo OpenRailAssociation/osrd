@@ -318,9 +318,10 @@ async fn pathfinding_blocks_batch(
                 to_compute_hashes.push(hash);
             }
             Err(result) => {
+                let arc_result = Arc::new(result.clone());
                 hash_to_path_indexes[hash]
                     .iter()
-                    .for_each(|index| pathfinding_results[*index] = Arc::new(result.clone()));
+                    .for_each(|index| pathfinding_results[*index] = arc_result.clone());
                 to_cache.push((hash, result));
             }
         }
