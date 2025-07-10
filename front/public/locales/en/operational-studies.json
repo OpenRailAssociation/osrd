@@ -150,6 +150,7 @@
     "pacedTrain_other": "{{count}} services",
     "pacedTrain_zero": "0 service",
     "requestedPoint": "requested point ({{ count }})",
+    "requestedPointUnknown": "requested point",
     "roundTripsModal": {
       "cadence": "Cadence",
       "manageRoundTrips": "Manage round trips",
