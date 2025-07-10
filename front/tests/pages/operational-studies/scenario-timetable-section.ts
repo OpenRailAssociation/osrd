@@ -364,8 +364,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async getTimetableItemArrivalTime(expectedArrivalTime: string, index = 0) {
     await expect(this.timetableItemArrivalTime.nth(index)).toBeVisible();
     await expect(this.timetableItemArrivalTimeLoader).toBeHidden();
-    const actualArrivalTime = await this.timetableItemArrivalTime.nth(index).textContent();
-    expect(actualArrivalTime).toEqual(expectedArrivalTime);
+    await expect
+      .poll(async () => this.timetableItemArrivalTime.nth(index).textContent())
+      .toBe(expectedArrivalTime);
   }
 
   async selectAllTimetableItems(
