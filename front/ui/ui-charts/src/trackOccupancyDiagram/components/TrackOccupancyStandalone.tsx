@@ -3,9 +3,10 @@ import React, { useMemo, useRef } from 'react';
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
 import { TRACK_HEIGHT_CONTAINER } from './consts';
+import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
-import type { OccupancyZone, OccupancyZonePickingElement, Track } from './types';
+import type { OccupancyZone, Track } from './types';
 import { Manchette, useManchetteWithSpaceTimeChart } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
 import { HOUR } from '../../spaceTimeChart/lib/consts';
@@ -108,9 +109,9 @@ const TrackOccupancyStandalone = ({
                 (({ hoveredItem }) => {
                   if (
                     hoveredItem?.layer === 'overlay' &&
-                    hoveredItem.element.type === 'occupancyZone'
+                    isOccupancyPickingElement(hoveredItem.element)
                   ) {
-                    const newId = (hoveredItem.element as OccupancyZonePickingElement).trainId;
+                    const newId = hoveredItem.element.pathId;
                     onSelectedTrainIdChange(newId === selectedTrainId ? undefined : newId);
                   } else {
                     onSelectedTrainIdChange(undefined);

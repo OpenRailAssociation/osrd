@@ -27,6 +27,7 @@ import {
   TRACK_HEIGHT_CONTAINER,
   DEFAULT_THEME,
   BASE_WAYPOINT_HEIGHT,
+  isOccupancyPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
@@ -283,13 +284,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     allTrainsProjected
   );
 
+  const extractTrainId = useCallback((id: string) => {
+    if (isTrainScheduleId(id)) return extractEditoastIdFromTrainScheduleId(id);
+    if (isOccurrenceId(id))
+      return extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
+    return id;
+  }, []);
+
   const splitPoints = useMemo<SplitPoint[]>(() => {
-    const pathsIndex = keyBy(paths, ({ id }) => {
-      if (isTrainScheduleId(id)) return extractEditoastIdFromTrainScheduleId(id);
-      if (isOccurrenceId(id))
-        return extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
-      return id;
-    });
+    const pathsIndex = keyBy(paths, ({ id }) => extractTrainId(id));
 
     return (
       sortBy(
@@ -312,18 +315,22 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             <TrackOccupancyCanvas
               position={operationalPointPosition}
               tracks={tracks || []}
-              occupancyZones={(zones || []).map((zone) => ({
-                ...zone,
-                color: pathsIndex[zone.trainId]
-                  ? getPathStyle(
-                      hoveredItem,
-                      pathsIndex[zone.trainId],
-                      !!draggingState,
-                      timetableItemsWithDetails,
-                      selectedTrainId
-                    ).color
-                  : undefined,
-              }))}
+              occupancyZones={(zones || []).map((zone) => {
+                const path = pathsIndex[extractTrainId(zone.trainId)];
+                if (!path) return zone;
+                const pathStyle = getPathStyle(
+                  hoveredItem,
+                  path,
+                  !!draggingState,
+                  timetableItemsWithDetails,
+                  selectedTrainId
+                );
+                return {
+                  ...zone,
+                  color: pathStyle.color,
+                  size: pathStyle.level === 1 ? 2 : undefined,
+                };
+              })}
               selectedTrainId={selectedTrainId}
               onClose={() => onCloseOccupancyLayer?.(waypointId)}
               topPadding={BASE_WAYPOINT_HEIGHT}
@@ -356,7 +363,13 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         })
       ) || []
     );
-  }, [occupancyZonesLayers, activeWaypointId, timetableItemsWithDetails]);
+  }, [
+    occupancyZonesLayers,
+    activeWaypointId,
+    timetableItemsWithDetails,
+    selectedTrainId,
+    hoveredItem,
+  ]);
 
   const {
     manchetteProps,
@@ -522,7 +535,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       onTrainClick &&
       !draggingState &&
       hoveredItem &&
-      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
+      (isSegmentPickingElement(hoveredItem.element) ||
+        isPointPickingElement(hoveredItem.element) ||
+        isOccupancyPickingElement(hoveredItem.element))
     ) {
       const hoveredTrainId = hoveredItem.element.pathId;
       if (isTrainId(hoveredTrainId) && selectedTrainId !== hoveredTrainId) {

@@ -7,6 +7,7 @@ import {
   type DrawingFunction,
   type PickingDrawingFunction,
   usePicking,
+  type PickingElement,
 } from '../../../spaceTimeChart';
 import { drawAliasedRect } from '../../../spaceTimeChart/utils/canvas';
 import { hexToRgb, indexToColor } from '../../../spaceTimeChart/utils/colors';
@@ -38,6 +39,12 @@ type RenderingInstruction =
 
 const Y_OFFSET_INCREMENT = 4;
 const MAX_ZONES = 9;
+
+export function isOccupancyPickingElement(
+  element: PickingElement
+): element is OccupancyZonePickingElement {
+  return element.type === 'occupancyZone';
+}
 
 const OccupancyZonesLayer = ({
   tracks,
@@ -183,6 +190,7 @@ const OccupancyZonesLayer = ({
   const pickingFunction = useCallback<PickingDrawingFunction>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       const flatStepOffsetY = getSpacePixel(position);
+      const flatStepEndY = getSpacePixel(position, true);
 
       instructionsToDraw.forEach((instruction) => {
         if (instruction.type === 'occupancyZone') {
@@ -194,7 +202,7 @@ const OccupancyZonesLayer = ({
 
           const pickingElement: OccupancyZonePickingElement = {
             type: 'occupancyZone',
-            trainId: instruction.zone.trainId,
+            pathId: instruction.zone.trainId,
           };
           const pickingIndex = registerPickingElement(pickingElement);
           const color = hexToRgb(indexToColor(pickingIndex));
@@ -207,6 +215,31 @@ const OccupancyZonesLayer = ({
             color,
             scalingRatio
           );
+
+          if (instruction.zone.startDirection) {
+            const yStart = instruction.zone.startDirection === 'up' ? flatStepOffsetY : y;
+            const yStop = instruction.zone.startDirection === 'up' ? y : flatStepEndY;
+            drawAliasedRect(
+              imageData,
+              { x: x - margin, y: yStart - margin },
+              2 * margin,
+              yStop - yStart + 2 * margin,
+              color,
+              scalingRatio
+            );
+          }
+          if (instruction.zone.endDirection) {
+            const yStart = instruction.zone.endDirection === 'up' ? flatStepOffsetY : y;
+            const yStop = instruction.zone.endDirection === 'up' ? y : flatStepEndY;
+            drawAliasedRect(
+              imageData,
+              { x: x + width - margin, y: yStart - margin },
+              2 * margin,
+              yStop - yStart + 2 * margin,
+              color,
+              scalingRatio
+            );
+          }
         }
       });
     },

@@ -1,4 +1,5 @@
 import { type TICKS_PATTERN } from './consts';
+import { type PickingElement } from '../../spaceTimeChart';
 
 export type Track = {
   id: string;
@@ -10,6 +11,7 @@ export type OccupancyZone = {
   trainId: string;
   trackId: string;
   color?: string;
+  size?: number;
   trainName: string;
   originStation?: string;
   destinationStation?: string;
@@ -19,6 +21,9 @@ export type OccupancyZone = {
   endDirection?: 'up' | 'down';
 };
 
-export type OccupancyZonePickingElement = { type: 'occupancyZone'; trainId: string };
+export type OccupancyZonePickingElement = PickingElement & {
+  type: 'occupancyZone';
+  pathId: string;
+};
 
 export type TickPattern = keyof typeof TICKS_PATTERN;
