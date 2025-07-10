@@ -61,7 +61,7 @@ const ManageTrainScheduleModal = ({
     )}
 
     {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
-      <div className="scenario-manage-timetable-item">
+      <div className="scenario-manage-timetable-item" data-testid="manage-import-timetable">
         <ImportTimetableItem scenario={scenario} upsertTimetableItems={upsertTimetableItems} />
       </div>
     )}

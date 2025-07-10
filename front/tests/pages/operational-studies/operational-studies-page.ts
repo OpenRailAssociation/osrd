@@ -13,9 +13,13 @@ import CommonPage from '../common-page';
 class OperationalStudiesPage extends CommonPage {
   private readonly addScenarioTrainButton: Locator;
 
+  private readonly openTimetableImportModalButton: Locator;
+
   private readonly editTrainButton: Locator;
 
   private readonly manageTrainSchedulePage: Locator;
+
+  private readonly manageImportTrainSchedulePage: Locator;
 
   private readonly rollingStockTab: Locator;
 
@@ -61,6 +65,9 @@ class OperationalStudiesPage extends CommonPage {
     super(page);
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.addScenarioTrainButton = page.getByTestId('scenarios-add-train-schedule-button');
+    this.openTimetableImportModalButton = page.getByTestId(
+      'scenarios-import-timetable-item-button'
+    );
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
@@ -81,6 +88,7 @@ class OperationalStudiesPage extends CommonPage {
     this.addTrainButton = page.getByTestId('add-train');
     this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
     this.manageTrainSchedulePage = page.getByTestId('manage-timetable-item');
+    this.manageImportTrainSchedulePage = page.getByTestId('manage-import-timetable');
     this.TimetableItemNameInput = page.locator('#timetable-item-name');
     this.initialSpeedInput = page.locator('#initial-speed');
     this.trainTagsInput = page.getByTestId('chips-input');
@@ -94,6 +102,12 @@ class OperationalStudiesPage extends CommonPage {
   async openTimetableItemForm() {
     await this.addScenarioTrainButton.click();
     await expect(this.manageTrainSchedulePage).toBeVisible();
+  }
+
+  // Click on the "Import" button to add multiple train schedules and/or paced trains.
+  async openTimetableImportModal() {
+    await this.openTimetableImportModalButton.click();
+    await expect(this.manageImportTrainSchedulePage).toBeVisible();
   }
 
   async openRouteTab() {
