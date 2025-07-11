@@ -2,7 +2,9 @@ import type { TFunction } from 'i18next';
 import type { Dictionary } from 'lodash';
 
 import type {
+  OperationalPointReference,
   PathfindingResultSuccess,
+  PathItemLocation,
   PathProperties,
   SimulationResponseSuccess,
   SimulationSummaryResult,
@@ -284,4 +286,17 @@ export const isTooFast = (
     if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) return true;
   }
   return false;
+};
+
+export const isOperationalPointReference = (
+  pathItemLocation: PathItemLocation
+): pathItemLocation is OperationalPointReference => {
+  if ('track' in pathItemLocation) return false;
+  // Returning just `!('track' in pathItemLocation)` won't guarantee that the param is an OperationPointReference
+  // if in the future PathItemLocation is extended like `PathItemLocation = TrackOffset | OperationalPointReference | IntlOp;`.
+  // The following line ensures that if later PathItemLocation is extended, Typescript will show an error
+  // making the CI fail so we can update this util accordingly.
+  pathItemLocation satisfies OperationalPointReference;
+
+  return true;
 };
