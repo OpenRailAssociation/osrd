@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
-import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
+import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
@@ -12,7 +12,6 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,7 +56,7 @@ class PathfindingSignalingTest {
 
         // Run a pathfinding with a non TVM train, expecting not to find any path
         assertThatThrownBy {
-                fr.sncf.osrd.api.pathfinding.runPathfinding(
+                runPathfinding(
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.TRAIN_WITHOUT_TVM,
@@ -85,23 +84,24 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
-            fr.sncf.osrd.api.pathfinding.runPathfinding(
+            runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
-            .isEqualTo(
+        checkPathfindingSuccess(
+            pathfindingResp,
+            400.meters,
+            expectedTrackSectionRanges =
                 arrayListOf(
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
-            )
+        )
     }
 
     @Test
@@ -111,23 +111,24 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
-            fr.sncf.osrd.api.pathfinding.runPathfinding(
+            runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
-            .isEqualTo(
+        checkPathfindingSuccess(
+            pathfindingResp,
+            400.meters,
+            expectedTrackSectionRanges =
                 arrayListOf(
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
-            )
+        )
     }
 
     @ParameterizedTest
@@ -156,16 +157,18 @@ class PathfindingSignalingTest {
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingSouthResp =
-            fr.sncf.osrd.api.pathfinding.runPathfinding(
+            runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_ETCS_FAST_TRAIN,
                     listOf(waypointsStart, waypointsInter, waypointsEnd)
                 )
             )
-        assertThat(pathfindingSouthResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((pathfindingSouthResp as PathfindingBlockSuccess).trackSectionRanges)
-            .isEqualTo(
+        checkPathfindingSuccess(
+            pathfindingSouthResp,
+            400.meters,
+            expectedIntermediatePathItemPosition = listOf(Offset(200.meters)),
+            expectedTrackSectionRanges =
                 arrayListOf(
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange(
@@ -182,6 +185,6 @@ class PathfindingSignalingTest {
                     ),
                     DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
-            )
+        )
     }
 }
