@@ -116,7 +116,7 @@ const useTrackOccupancy = ({
   const [postTrainScheduleTrackOccupancy] =
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
-    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const trainsDict = useMemo(
     () => keyBy(trains, ({ id }) => extractEditoastIdFromTrainId(id)),
     [trains]
@@ -362,15 +362,14 @@ const useTrackOccupancy = ({
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
       try {
-        const { data, error } = await postInfraByInfraIdMatchOperationalPoints({
+        const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
           body: {
             operational_point_references: operationalPointReferences,
           },
-        });
+        }).unwrap();
 
         if (aborted) return;
-        if (error) throw new Error('Error while fetching tracks definition', { cause: error });
 
         setTracksState({
           type: 'ok',
@@ -548,15 +547,12 @@ const useTrackOccupancy = ({
 
         if (!requests.length) return;
 
-        const { data, error } = await postInfraByInfraIdMatchOperationalPoints({
+        const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
           body: {
             operational_point_references: requests.map(({ opReference }) => opReference),
           },
-        });
-
-        if (error)
-          throw new Error('Error while fetching tracks origin/destination names', { cause: error });
+        }).unwrap();
 
         requests.forEach(({ side, trainId }, i) => {
           const op = data.related_operational_points[i].at(0);
