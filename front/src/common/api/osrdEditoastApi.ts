@@ -17,6 +17,8 @@ import {
   type PacedTrainResponse,
   type PathfindingResult,
   type SimulationResponse,
+  type OperationalPoint,
+  type OperationalPointReference,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -185,6 +187,38 @@ const osrdEditoastApi = generatedEditoastApi
         },
         // TODO: fix getPacedTrainByIdSimulation tags (it should be paced_train)
         providesTags: ['train_schedule'],
+      }),
+      matchAllOperationalPoints: builder.query<
+        OperationalPoint[][],
+        { infraId: number; opRefs: OperationalPointReference[] }
+      >({
+        queryFn: async ({ infraId, opRefs }, { dispatch }) => {
+          const batchSize = 200;
+          const result: OperationalPoint[][] = [];
+
+          // Split opRefs into batches of 200
+          for (let i = 0; i < opRefs.length; i += batchSize) {
+            const batch = opRefs.slice(i, i + batchSize);
+
+            const promise = dispatch(
+              osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.initiate(
+                {
+                  infraId,
+                  body: {
+                    operational_point_references: batch,
+                  },
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            );
+
+            const data = await promise.unwrap();
+            result.push(...data.related_operational_points);
+          }
+
+          return { data: result };
+        },
+        providesTags: ['infra'],
       }),
     }),
   })
