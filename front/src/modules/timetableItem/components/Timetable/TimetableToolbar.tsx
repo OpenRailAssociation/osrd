@@ -1,14 +1,12 @@
 import { useState } from 'react';
 
-import { Alert, ArrowSwitch, Filter } from '@osrd-project/ui-icons';
+import { Alert, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
-import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import type { TimetableFilters, TimetableItemWithDetails } from './types';
 import { timetableHasInvalidItem } from './utils';
 
@@ -26,10 +24,8 @@ const TimetableToolbar = ({
   isInSelection,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
-  const { infraId } = useScenarioContext();
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const toggleFilterPanel = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
@@ -37,33 +33,6 @@ const TimetableToolbar = ({
 
   return (
     <>
-      <div
-        className={cx('scenario-timetable-toolbar', {
-          centered: timetableItems.length === 0,
-        })}
-      >
-        <div
-          className={cx('toolbar-header', {
-            'with-details': isInSelection,
-          })}
-        >
-          <button
-            type="button"
-            title={t('roundTripsModal.manageRoundTrips')}
-            onClick={() => setRoundTripsModalIsOpen(true)}
-          >
-            <ArrowSwitch />
-          </button>
-          {roundTripsModalIsOpen && (
-            <RoundTripsModal
-              roundTripsModalIsOpen={roundTripsModalIsOpen}
-              setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
-              infraId={infraId}
-              timetableItems={timetableItems}
-            />
-          )}
-        </div>
-      </div>
       {timetableHasInvalidItem(filteredTimetableItems) && (
         <div className="invalid-trains">
           <Alert size="sm" variant="fill" />
