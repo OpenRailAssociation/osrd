@@ -69,26 +69,6 @@ class SignalCriticalPosition(
     val state: String,
 )
 
-class RJSRoutingRequirement(
-    val route: String,
-    @Json(name = "begin_time") val beginTime: TimeDelta,
-    val zones: List<RJSRoutingZoneRequirement>
-)
-
-class RJSRoutingZoneRequirement(
-    val zone: String,
-    @Json(name = "entry_detector") val entryDetector: String,
-    @Json(name = "exit_detector") val exitDetector: String,
-    val switches: Map<String, String>,
-    @Json(name = "end_time") val endTime: TimeDelta,
-)
-
-class RJSSpacingRequirement(
-    val zone: String,
-    @Json(name = "begin_time") val beginTime: TimeDelta,
-    @Json(name = "end_time") val endTime: TimeDelta,
-)
-
 data class WorkSchedule(
     /** List of affected track ranges */
     @Json(name = "track_ranges") val trackRanges: Collection<TrackRange> = listOf(),

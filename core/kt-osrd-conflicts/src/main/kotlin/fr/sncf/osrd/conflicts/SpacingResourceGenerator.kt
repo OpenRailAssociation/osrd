@@ -10,7 +10,6 @@ import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
@@ -36,6 +35,9 @@ import mu.KotlinLogging
  */
 
 val logger = KotlinLogging.logger {}
+
+// Reserve clear track with a margin for the reaction time of the driver
+const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
 
 data class PendingSpacingRequirement(
     val zoneIndex: Int,

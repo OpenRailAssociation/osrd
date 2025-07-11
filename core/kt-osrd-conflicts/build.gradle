@@ -1,0 +1,50 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
+    id 'jacoco'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    implementation project(':envelope-sim')
+    implementation project(':osrd-railjson')
+    implementation project(':kt-osrd-signaling')
+    implementation project(":kt-osrd-sim-infra")
+    implementation project(":kt-osrd-sncf-signaling")
+
+    implementation libs.guava
+    implementation libs.hppc
+    implementation libs.kotlin.logging
+
+    testImplementation libs.kotlin.test
+}
+
+// to get KSP generated-stuff to be recognised
+kotlin {
+    sourceSets {
+        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+        test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
+    }
+}
+
+tasks.withType(KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlin.ExperimentalUnsignedTypes",
+                "-opt-in=kotlin.time.ExperimentalTime",
+                "-opt-in=kotlin.contracts.ExperimentalContracts",
+        ]
+    }
+}

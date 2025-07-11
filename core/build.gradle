@@ -34,6 +34,7 @@ dependencies {
     testImplementation libs.kotlin.test
     testImplementation libs.kotlinx.coroutines.test
 
+    implementation project(':kt-osrd-conflicts')
     implementation project(':kt-osrd-utils')
     implementation project(':kt-fast-collections')
     implementation project(':kt-osrd-signaling')
@@ -145,6 +146,7 @@ sourceSets {
 
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsTask
 
 allprojects {
     apply plugin: 'com.github.spotbugs'
@@ -181,7 +183,7 @@ allprojects {
         excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
     }
 
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).tap {
+    tasks.withType(SpotBugsTask).tap {
         configureEach {
             if (project.hasProperty("spotbugs_report_xml")) {
                 reports { xml.required = true }

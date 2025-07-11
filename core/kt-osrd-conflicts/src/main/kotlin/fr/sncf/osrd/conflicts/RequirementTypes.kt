@@ -1,13 +1,12 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.api.RJSRoutingRequirement
-import fr.sncf.osrd.api.RJSRoutingZoneRequirement
-import fr.sncf.osrd.api.RJSSpacingRequirement
+import com.squareup.moshi.Json
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.utils.Direction
+import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 
 data class SpacingRequirement(
@@ -95,3 +94,23 @@ data class RoutingRequirement(
         }
     }
 }
+
+class RJSRoutingRequirement(
+    val route: String,
+    @Json(name = "begin_time") val beginTime: TimeDelta,
+    val zones: List<RJSRoutingZoneRequirement>
+)
+
+class RJSRoutingZoneRequirement(
+    val zone: String,
+    @Json(name = "entry_detector") val entryDetector: String,
+    @Json(name = "exit_detector") val exitDetector: String,
+    val switches: Map<String, String>,
+    @Json(name = "end_time") val endTime: TimeDelta,
+)
+
+class RJSSpacingRequirement(
+    val zone: String,
+    @Json(name = "begin_time") val beginTime: TimeDelta,
+    @Json(name = "end_time") val endTime: TimeDelta,
+)

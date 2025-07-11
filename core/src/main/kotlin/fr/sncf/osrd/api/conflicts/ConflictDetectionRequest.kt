@@ -4,9 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.RJSRoutingRequirement
-import fr.sncf.osrd.api.RJSSpacingRequirement
 import fr.sncf.osrd.api.WorkSchedule
+import fr.sncf.osrd.conflicts.RJSRoutingRequirement
+import fr.sncf.osrd.conflicts.RJSSpacingRequirement
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
 

@@ -29,9 +29,6 @@ import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 
-// Reserve clear track with a margin for the reaction time of the driver
-const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
-
 // the start offset is the distance from the start of the first block to the start location
 class PathOffsetBuilder(val startOffset: Distance) {
     fun toTravelledPath(offset: Offset<BlockPath>): Offset<TravelledPath> {
