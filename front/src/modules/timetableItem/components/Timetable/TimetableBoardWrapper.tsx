@@ -1,12 +1,21 @@
 import { useCallback, useContext, useMemo, useState } from 'react';
 
-import { Check, Download, Note, PlusCircle, Trash, Upload } from '@osrd-project/ui-icons';
+import {
+  ArrowSwitch,
+  Check,
+  Download,
+  Note,
+  PlusCircle,
+  Trash,
+  Upload,
+} from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   osrdEditoastApi,
   type InfraState,
@@ -35,6 +44,7 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
+import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import Timetable from './Timetable';
 import type { TimetableItemWithDetails } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
@@ -62,6 +72,9 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
+  const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
+
+  const { infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
 
   const dispatch = useAppDispatch();
@@ -256,80 +269,95 @@ const TimetableBoardWrapper = ({
   };
 
   return (
-    <BoardWrapper
-      visible
-      withFooter
-      name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
-      items={[
-        {
-          title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
-          icon: <Note />,
-          dataTestID: 'scenarios-show-train-details-button',
-          disabled: timetableItemsWithDetails.length === 0,
-          onClick: () => toggleShowTrainDetails(),
-        },
-        {
-          title:
-            selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
-            selectedTimetableItemIds.length > 0
-              ? t('main.timetable.unselectAll')
-              : t('main.timetable.selectAll'),
-          icon: <Check />,
-          dataTestID: 'scenarios-select-all-button',
-          disabled: timetableItemsWithDetails.length === 0,
-          onClick: () => toggleAllTrainsSelecton(),
-        },
-        {
-          title: t('main.timetable.addTimetableItem'),
-          icon: <PlusCircle />,
-          dataTestID: 'scenarios-add-timetable-item-button',
-          onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add),
-        },
-        {
-          title: t('main.timetable.importTimetableItem'),
-          icon: <Download />,
-          dataTestID: 'scenarios-import-timetable-item-button',
-          onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
-        },
-        {
-          title: t('main.timetable.exportSelection'),
-          icon: <Upload />,
-          dataTestID: 'scenarios-export-timetable-item-button',
-          disabled: selectedTimetableItemIds.length === 0,
-          onClick: () => exportTimetableItems(selectedTimetableItemIds),
-        },
-        {
-          title: t('main.timetable.deleteSelection'),
-          icon: <Trash />,
-          dataTestID: 'delete-all-items-button',
-          disabled: selectedTimetableItemIds.length === 0,
-          onClick: () =>
-            openModal(
-              <DeleteModal
-                handleDelete={() => handleTrainsDelete(selectedTrainId)}
-                selectedPacedTrainIds={selectedPacedTrainIds}
-                selectedTrainScheduleIds={selectedTrainScheduleIds}
-              />,
-              'sm'
-            ),
-        },
-      ]}
-    >
-      <Timetable
-        selectedTimetableItemIds={selectedTimetableItemIds}
-        filteredTimetableItems={filteredTimetableItems}
-        timetableFilters={timetableFilters}
-        setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-        setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-        infraState={infraState}
-        upsertTimetableItems={upsertTimetableItems}
-        setTimetableItemToEditData={setTimetableItemToEditData}
-        removeAndUnselectTrains={removeAndUnselectTrains}
-        timetableItemToEditData={timetableItemToEditData}
-        timetableItems={timetableItems}
-        showTrainDetails={showTrainDetails}
-      />
-    </BoardWrapper>
+    <>
+      <BoardWrapper
+        visible
+        withFooter
+        name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
+        items={[
+          {
+            title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
+            icon: <Note />,
+            dataTestID: 'scenarios-show-train-details-button',
+            disabled: timetableItemsWithDetails.length === 0,
+            onClick: () => toggleShowTrainDetails(),
+          },
+          {
+            title:
+              selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
+              selectedTimetableItemIds.length > 0
+                ? t('main.timetable.unselectAll')
+                : t('main.timetable.selectAll'),
+            icon: <Check />,
+            dataTestID: 'scenarios-select-all-button',
+            disabled: timetableItemsWithDetails.length === 0,
+            onClick: () => toggleAllTrainsSelecton(),
+          },
+          {
+            title: t('main.roundTripsModal.manageRoundTrips'),
+            icon: <ArrowSwitch />,
+            onClick: () => setRoundTripsModalIsOpen(true),
+          },
+          {
+            title: t('main.timetable.addTimetableItem'),
+            icon: <PlusCircle />,
+            dataTestID: 'scenarios-add-timetable-item-button',
+            onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add),
+          },
+          {
+            title: t('main.timetable.importTimetableItem'),
+            icon: <Download />,
+            dataTestID: 'scenarios-import-timetable-item-button',
+            onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+          },
+          {
+            title: t('main.timetable.exportSelection'),
+            icon: <Upload />,
+            dataTestID: 'scenarios-export-timetable-item-button',
+            disabled: selectedTimetableItemIds.length === 0,
+            onClick: () => exportTimetableItems(selectedTimetableItemIds),
+          },
+          {
+            title: t('main.timetable.deleteSelection'),
+            icon: <Trash />,
+            dataTestID: 'delete-all-items-button',
+            disabled: selectedTimetableItemIds.length === 0,
+            onClick: () =>
+              openModal(
+                <DeleteModal
+                  handleDelete={() => handleTrainsDelete(selectedTrainId)}
+                  selectedPacedTrainIds={selectedPacedTrainIds}
+                  selectedTrainScheduleIds={selectedTrainScheduleIds}
+                />,
+                'sm'
+              ),
+          },
+        ]}
+      >
+        <Timetable
+          selectedTimetableItemIds={selectedTimetableItemIds}
+          filteredTimetableItems={filteredTimetableItems}
+          timetableFilters={timetableFilters}
+          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+          infraState={infraState}
+          upsertTimetableItems={upsertTimetableItems}
+          setTimetableItemToEditData={setTimetableItemToEditData}
+          removeAndUnselectTrains={removeAndUnselectTrains}
+          timetableItemToEditData={timetableItemToEditData}
+          timetableItems={timetableItems}
+          showTrainDetails={showTrainDetails}
+        />
+      </BoardWrapper>
+      {roundTripsModalIsOpen && (
+        <RoundTripsModal
+          roundTripsModalIsOpen={roundTripsModalIsOpen}
+          setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
+          infraId={infraId}
+          timetableItems={timetableItems}
+        />
+      )}
+    </>
   );
 };
 
