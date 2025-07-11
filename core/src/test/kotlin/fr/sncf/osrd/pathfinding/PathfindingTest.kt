@@ -7,11 +7,13 @@ import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.takes.TakesUtils
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
@@ -41,69 +43,85 @@ fun getPathfindingBlockRequest(
     )
 }
 
+fun checkPathfindingSuccess(
+    pathResp: PathfindingBlockResponse,
+    expectedLength: Distance,
+    expectedTrackSectionRanges: List<DirectionalTrackRange>? = null,
+    expectedBlocks: List<String>? = null,
+    expectedRoutes: List<String>? = null,
+    expectedIntermediatePathItemPosition: List<Offset<TravelledPath>> = listOf()
+): PathfindingBlockSuccess {
+    assertThat(pathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+    val pathSuccess = pathResp as PathfindingBlockSuccess
+
+    AssertionsForClassTypes.assertThat(pathSuccess.length.distance).isEqualTo(expectedLength)
+    val expectedPathItemsPos =
+        listOf(Offset<TravelledPath>(0.meters))
+            .plus(expectedIntermediatePathItemPosition)
+            .plusElement(Offset(pathSuccess.length.distance))
+    assertEquals(expectedPathItemsPos, pathSuccess.pathItemPositions)
+
+    if (expectedBlocks != null) {
+        assertEquals(expectedBlocks.map { "block.${md5(it)}" }, pathSuccess.blocks)
+    }
+    if (expectedRoutes != null) {
+        assertEquals(expectedRoutes, pathSuccess.routes)
+    }
+    if (expectedTrackSectionRanges != null) {
+        assertEquals(expectedTrackSectionRanges, pathSuccess.trackSectionRanges)
+    }
+
+    return pathSuccess
+}
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingTest : ApiTest() {
+
     @Test
     fun simpleTinyInfraTest() {
         val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(50.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
-        val requestBody =
-            pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
-                    "tiny_infra/infra.json"
-                )
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsEnd),
+                "tiny_infra/infra.json"
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
-        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10250.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(parsed.length.distance)),
-            parsed.pathItemPositions
-        )
-        assertEquals(
-            listOf(
+        checkPathfindingSuccess(
+            parsed,
+            10250.meters,
+            expectedBlocks =
+                listOf(
                     "[il.sig.C3-BAL];[buffer_stop_b, tde.foo_b-switch_foo];[]",
                     "[il.sig.C3-BAL, il.sig.S7-BAL];[tde.foo_b-switch_foo, tde.track-bar];[il.switch_foo-A_B1]",
                     "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"
-                )
-                .map { "block.${md5(it)}" },
-            parsed.blocks
-        )
-
-        assertEquals(
-            listOf(
-                "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                "rt.tde.foo_b-switch_foo->buffer_stop_c"
-            ),
-            parsed.routes
-        )
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.foo_b",
-                    Offset(50.meters),
-                    Offset(200.meters),
-                    EdgeDirection.START_TO_STOP
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.foo_to_bar",
-                    Offset(0.meters),
-                    Offset(10_000.meters),
-                    EdgeDirection.START_TO_STOP
+            expectedRoutes =
+                listOf(
+                    "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c"
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(0.meters),
-                    Offset(100.meters),
-                    EdgeDirection.START_TO_STOP
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.foo_b",
+                        Offset(50.meters),
+                        Offset(200.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.foo_to_bar",
+                        Offset(0.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(0.meters),
+                        Offset(100.meters),
+                        EdgeDirection.START_TO_STOP
+                    )
                 )
-            ),
-            parsed.trackSectionRanges
         )
     }
 
@@ -278,63 +296,48 @@ class PathfindingTest : ApiTest() {
         val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
         val waypointsMid = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(5000.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
-        val requestBody =
-            pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsMid, waypointsEnd),
-                    "tiny_infra/infra.json"
-                )
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsMid, waypointsEnd),
+                "tiny_infra/infra.json"
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
-        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10200.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(5100.meters), Offset(parsed.length.distance)),
-            parsed.pathItemPositions
-        )
-        assertEquals(
-            listOf(
+        checkPathfindingSuccess(
+            parsed,
+            10200.meters,
+            expectedIntermediatePathItemPosition = listOf(Offset(5100.meters)),
+            expectedBlocks =
+                listOf(
                     "[il.sig.C3-BAL];[buffer_stop_b, tde.foo_b-switch_foo];[]",
                     "[il.sig.C3-BAL, il.sig.S7-BAL];[tde.foo_b-switch_foo, tde.track-bar];[il.switch_foo-A_B1]",
                     "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"
-                )
-                .map { "block.${md5(it)}" },
-            parsed.blocks
-        )
-
-        assertEquals(
-            listOf(
-                "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                "rt.tde.foo_b-switch_foo->buffer_stop_c"
-            ),
-            parsed.routes
-        )
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.foo_b",
-                    Offset(100.meters),
-                    Offset(200.meters),
-                    EdgeDirection.START_TO_STOP
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.foo_to_bar",
-                    Offset(0.meters),
-                    Offset(10_000.meters),
-                    EdgeDirection.START_TO_STOP
+            expectedRoutes =
+                listOf(
+                    "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c"
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(0.meters),
-                    Offset(100.meters),
-                    EdgeDirection.START_TO_STOP
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.foo_b",
+                        Offset(100.meters),
+                        Offset(200.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.foo_to_bar",
+                        Offset(0.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(0.meters),
+                        Offset(100.meters),
+                        EdgeDirection.START_TO_STOP
+                    )
                 )
-            ),
-            parsed.trackSectionRanges
         )
     }
 
@@ -402,9 +405,7 @@ class PathfindingTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((normalPathResp as PathfindingBlockSuccess).length.distance)
-            .isEqualTo(10200.meters)
+        checkPathfindingSuccess(normalPathResp, 10200.meters)
 
         // Check that we can't go through the infra with a large train
         assertThatThrownBy {
@@ -441,75 +442,55 @@ class PathfindingTest : ApiTest() {
                     listOf(waypointsStart, closerWaypointsEnd)
                 )
             )
-        assertThat(shorterPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((shorterPathResp as PathfindingBlockSuccess).length.distance)
-            .isEqualTo(1100.meters)
+        checkPathfindingSuccess(shorterPathResp, 1100.meters)
     }
 
     @Test
     fun simpleRoutesInverted() {
         val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
-        val requestBody =
-            pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
-                    "tiny_infra/infra.json"
-                )
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsEnd),
+                "tiny_infra/infra.json"
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
-
-        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10200.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(parsed.length.distance)),
-            parsed.pathItemPositions
-        )
-
-        assertEquals(
-            listOf(
+        checkPathfindingSuccess(
+            parsed,
+            10200.meters,
+            expectedBlocks =
+                listOf(
                     "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
                     "[il.sig.C2-BAL, il.sig.C6-BAL];[tde.track-bar, tde.switch_foo-track];[]",
                     "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_b];[il.switch_foo-A_B1]"
-                )
-                .map { "block.${md5(it)}" },
-            parsed.blocks
-        )
-
-        assertEquals(
-            listOf(
-                "rt.buffer_stop_c->tde.track-bar",
-                "rt.tde.track-bar->tde.switch_foo-track",
-                "rt.tde.switch_foo-track->buffer_stop_b"
-            ),
-            parsed.routes
-        )
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(0.meters),
-                    Offset(100.meters),
-                    EdgeDirection.STOP_TO_START
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.foo_to_bar",
-                    Offset(0.meters),
-                    Offset(10_000.meters),
-                    EdgeDirection.STOP_TO_START
+            expectedRoutes =
+                listOf(
+                    "rt.buffer_stop_c->tde.track-bar",
+                    "rt.tde.track-bar->tde.switch_foo-track",
+                    "rt.tde.switch_foo-track->buffer_stop_b"
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.foo_b",
-                    Offset(100.meters),
-                    Offset(200.meters),
-                    EdgeDirection.STOP_TO_START
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(0.meters),
+                        Offset(100.meters),
+                        EdgeDirection.STOP_TO_START
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.foo_to_bar",
+                        Offset(0.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.STOP_TO_START
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.foo_b",
+                        Offset(100.meters),
+                        Offset(200.meters),
+                        EdgeDirection.STOP_TO_START
+                    )
                 )
-            ),
-            parsed.trackSectionRanges
         )
     }
 
@@ -518,40 +499,26 @@ class PathfindingTest : ApiTest() {
         // Tests that we find a route path between two points on the same edge
         val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
-        val requestBody =
-            pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
-                    "tiny_infra/infra.json"
-                )
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsEnd),
+                "tiny_infra/infra.json"
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
-        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(parsed.length.distance)),
-            parsed.pathItemPositions
-        )
-        assertEquals(
-            listOf("[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]").map { "block.${md5(it)}" },
-            parsed.blocks
-        )
-
-        assertEquals(listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"), parsed.routes)
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(100.meters),
-                    Offset(110.meters),
-                    EdgeDirection.START_TO_STOP
+        checkPathfindingSuccess(
+            parsed,
+            10.meters,
+            expectedBlocks = listOf("[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"),
+            expectedRoutes = listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"),
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(100.meters),
+                        Offset(110.meters),
+                        EdgeDirection.START_TO_STOP
+                    )
                 )
-            ),
-            parsed.trackSectionRanges
         )
     }
 
@@ -559,50 +526,32 @@ class PathfindingTest : ApiTest() {
     fun simpleRoutesSameEdgeInverted() {
         val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
-        val requestBody =
-            pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd),
-                    "tiny_infra/infra.json"
-                )
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                listOf(waypointsStart, waypointsEnd),
+                "tiny_infra/infra.json"
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingBlockSuccess)!!
-
-        AssertionsForClassTypes.assertThat(parsed.length.distance).isEqualTo(10.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(parsed.length.distance)),
-            parsed.pathItemPositions
-        )
-
-        assertEquals(
-            listOf(
+        checkPathfindingSuccess(
+            parsed,
+            10.meters,
+            expectedBlocks =
+                listOf(
                     "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
-                )
-                .map { "block.${md5(it)}" },
-            parsed.blocks
-        )
-
-        assertEquals(
-            listOf(
-                "rt.buffer_stop_c->tde.track-bar",
-            ),
-            parsed.routes
-        )
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(100.meters),
-                    Offset(110.meters),
-                    EdgeDirection.STOP_TO_START
                 ),
-            ),
-            parsed.trackSectionRanges
+            expectedRoutes =
+                listOf(
+                    "rt.buffer_stop_c->tde.track-bar",
+                ),
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(100.meters),
+                        Offset(110.meters),
+                        EdgeDirection.STOP_TO_START
+                    )
+                )
         )
     }
 
@@ -629,43 +578,50 @@ class PathfindingTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((normalPathResp as PathfindingBlockSuccess).length.distance)
-            .isEqualTo(10000.meters)
-        assertEquals(
-            listOf(Offset(0.meters), Offset(normalPathResp.length.distance)),
-            normalPathResp.pathItemPositions
-        )
-        assertEquals(
-            listOf(
+        checkPathfindingSuccess(
+            normalPathResp,
+            10000.meters,
+            expectedBlocks =
+                listOf(
                     "[il.sig.C1-BAL, il.sig.S7-BAL];[tde.foo_a-switch_foo, tde.track-bar];[il.switch_foo-A_B2]"
-                )
-                .map { "block.${md5(it)}" },
-            normalPathResp.blocks
-        )
-        assertEquals(listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"), normalPathResp.routes)
-        assertEquals(
-            listOf(
-                DirectionalTrackRange(
-                    "ne.micro.foo_a",
-                    Offset(200.meters),
-                    Offset(200.meters),
-                    EdgeDirection.START_TO_STOP
                 ),
-                DirectionalTrackRange(
-                    "ne.micro.foo_to_bar",
-                    Offset(0.meters),
-                    Offset(10_000.meters),
-                    EdgeDirection.START_TO_STOP
-                ),
-                DirectionalTrackRange(
-                    "ne.micro.bar_a",
-                    Offset(0.meters),
-                    Offset(0.meters),
-                    EdgeDirection.START_TO_STOP
+            expectedRoutes = listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"),
+            expectedTrackSectionRanges =
+                listOf(
+                    DirectionalTrackRange(
+                        "ne.micro.foo_a",
+                        Offset(200.meters),
+                        Offset(200.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.foo_to_bar",
+                        Offset(0.meters),
+                        Offset(10_000.meters),
+                        EdgeDirection.START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "ne.micro.bar_a",
+                        Offset(0.meters),
+                        Offset(0.meters),
+                        EdgeDirection.START_TO_STOP
+                    )
                 )
-            ),
-            normalPathResp.trackSectionRanges
         )
+    }
+
+    fun callPathfindingEndpoint(
+        rs: RollingStock,
+        pathItems: List<Collection<TrackLocation>>,
+        infra: String,
+    ): PathfindingBlockResponse {
+        val requestBody =
+            pathfindingRequestAdapter.toJson(getPathfindingBlockRequest(rs, pathItems, infra))
+        val rawResponse =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
+        val response = TakesUtils.readBodyResponse(rawResponse)
+        val parsed = pathfindingResponseAdapter.fromJson(response)!!
+        return parsed
     }
 }

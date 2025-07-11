@@ -4,7 +4,6 @@ import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
-import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
@@ -62,10 +61,9 @@ class PathfindingElectrificationTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 400.meters)
 
-        val normalTracks =
-            (normalPathResp as PathfindingBlockSuccess).trackSectionRanges.map { it.trackSection }
+        val normalTracks = normalPathSuccess.trackSectionRanges.map { it.trackSection }
 
         // Removes electrification in the section used by the normal train
         val normalPathTrackAfterB = normalTracks.intersect(setOf("b->N", "b->S"))
@@ -82,11 +80,10 @@ class PathfindingElectrificationTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(electricPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        val electricPathSuccess = checkPathfindingSuccess(electricPathResp, 400.meters)
 
         // We check that the path is different, we need to avoid the non-electrified track
-        val electrifiedTracks =
-            (electricPathResp as PathfindingBlockSuccess).trackSectionRanges.map { it.trackSection }
+        val electrifiedTracks = electricPathSuccess.trackSectionRanges.map { it.trackSection }
         assertNotEquals(normalTracks, electrifiedTracks)
 
         // Remove all electrification
@@ -154,8 +151,7 @@ class PathfindingElectrificationTest : ApiTest() {
                         listOf(waypointsStart, waypointsEnd)
                     )
                 )
-            assertThat(electricPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-            assertThat((electricPathResp as PathfindingBlockSuccess).length.distance == 300.meters)
+            checkPathfindingSuccess(electricPathResp, 300.meters)
         } else {
             assertThatThrownBy {
                     runPathfinding(
@@ -226,9 +222,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
-        assertThat(normalPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        val normalTracks =
-            (normalPathResp as PathfindingBlockSuccess).trackSectionRanges.map { it.trackSection }
+        val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 39_553.meters)
+        val normalTracks = normalPathSuccess.trackSectionRanges.map { it.trackSection }
 
         // Replace with electrifications
         // Set voltage to 25000V everywhere except for trackSectionToBlock
@@ -249,13 +244,12 @@ class PathfindingElectrificationTest : ApiTest() {
                     listOf(waypointsStart, waypointsEnd)
                 )
             )
+        val partialElectricPathSuccess =
+            checkPathfindingSuccess(partialElectricPathResp, 39_553.meters)
 
         // Check that the paths are different, we need to avoid the non-electrified track
-        assertThat(partialElectricPathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
         val partialElectrifiedTracks =
-            (partialElectricPathResp as PathfindingBlockSuccess).trackSectionRanges.map {
-                it.trackSection
-            }
+            partialElectricPathSuccess.trackSectionRanges.map { it.trackSection }
         assertThat(normalTracks).usingRecursiveComparison().isNotEqualTo(partialElectrifiedTracks)
     }
 
