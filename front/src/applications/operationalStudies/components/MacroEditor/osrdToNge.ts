@@ -36,6 +36,7 @@ import {
 import {
   type PortDto,
   type TimeLockDto,
+  type TrainrunDto,
   type TrainrunSectionDto,
   type TrainrunFrequency,
   type NetzgrafikDto,
@@ -329,7 +330,7 @@ const getNgeTrainruns = (
   state: MacroEditorState,
   timetableItems: TimetableItem[],
   labels: LabelDto[]
-) =>
+): TrainrunDto[] =>
   timetableItems
     .filter((timetableItem) => timetableItem.path.length >= 2)
     .map((timetableItem, index) => {
@@ -344,6 +345,7 @@ const getNgeTrainruns = (
         labelIds: (timetableItem.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
+        trainrunDirection: 'one_way',
       };
     });
 
