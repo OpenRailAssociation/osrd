@@ -1004,22 +1004,30 @@ async fn match_operational_points(
             .into_values()
             .map(|op_model| op_model.schema)
             .collect::<Vec<_>>(),
-            OperationalPointIdentifier::OperationalPointDescription { ref trigram, .. } => {
-                retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
-                    .await?
-                    .into_iter()
-                    .flat_map(|(_, op_models)| op_models)
-                    .map(|op_model| op_model.schema)
-                    .collect::<Vec<_>>()
-            }
-            OperationalPointIdentifier::OperationalPointUic { uic, .. } => {
-                retrieve_op_from_uic(&mut conn, infra_id, &[i64::from(uic)])
-                    .await?
-                    .into_iter()
-                    .flat_map(|(_, op_models)| op_models)
-                    .map(|op_model| op_model.schema)
-                    .collect::<Vec<_>>()
-            }
+            OperationalPointIdentifier::OperationalPointDescription {
+                ref trigram,
+                secondary_code,
+            } => retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
+                .await?
+                .into_iter()
+                .flat_map(|(_, op_models)| op_models)
+                .map(|op_model| op_model.schema)
+                .filter(|op| {
+                    op.extensions.sncf.as_ref().map(|ext| &ext.ch) == secondary_code.as_ref()
+                })
+                .collect::<Vec<_>>(),
+            OperationalPointIdentifier::OperationalPointUic {
+                uic,
+                secondary_code,
+            } => retrieve_op_from_uic(&mut conn, infra_id, &[i64::from(uic)])
+                .await?
+                .into_iter()
+                .flat_map(|(_, op_models)| op_models)
+                .map(|op_model| op_model.schema)
+                .filter(|op| {
+                    op.extensions.sncf.as_ref().map(|ext| &ext.ch) == secondary_code.as_ref()
+                })
+                .collect::<Vec<_>>(),
         };
         // Filter OPs according to the input `TrackReference` if provided:
         related_operational_points = related_operational_points
@@ -1555,7 +1563,7 @@ pub mod tests {
             OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointDescription {
                     trigram: "MES".into(),
-                    secondary_code: None,
+                    secondary_code: Some("BV".into()),
                 },
                 track_reference: Some(TrackReference::Name {
                     track_name: "V1".into(),
@@ -1581,11 +1589,7 @@ pub mod tests {
             .iter()
             .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
             .collect_vec();
-        let expected_identifiers = [
-            ["West_station"],
-            ["Mid_East_station"],
-            ["South_East_station"],
-        ];
+        let expected_identifiers = [vec!["West_station"], vec!["Mid_East_station"], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);
         let expected_track_names: HashMap<Identifier, Option<String>> = HashMap::from([
             ("TA0".into(), Some("V1".to_string())),
@@ -1593,7 +1597,6 @@ pub mod tests {
             ("TA2".into(), Some("A".to_string())),
             ("TD0".into(), Some("V1".to_string())),
             ("TD1".into(), Some("V2".to_string())),
-            ("TH1".into(), Some("V1".to_string())),
         ]);
         assert_eq!(response.track_names, expected_track_names);
     }
@@ -1623,6 +1626,13 @@ pub mod tests {
                     track_id: "does_not_exist".into(),
                 }),
             },
+            OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointDescription {
+                    trigram: "MES".into(),
+                    secondary_code: Some("PAUL".into()),
+                },
+                track_reference: None,
+            },
         ];
         let request = app
             .post(format!("/infra/{}/match_operational_points", infra.id).as_str())
@@ -1634,7 +1644,7 @@ pub mod tests {
             .iter()
             .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
             .collect::<Vec<_>>();
-        let expected_identifiers: [Vec<&str>; 2] = [vec![], vec![]];
+        let expected_identifiers: [Vec<&str>; 3] = [vec![], vec![], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);
     }
 }
