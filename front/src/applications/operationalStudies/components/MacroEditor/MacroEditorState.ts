@@ -80,7 +80,7 @@ export default class MacroEditorState {
   /**
    * Given a NGE `Trainrun.id`, returns the OSRD `TimetableItemId`.
    */
-  timetableItemIdByNgeId: Map<number, TimetableItemId>;
+  timetableItemIdByNgeId: Map<number, [TimetableItemId, TimetableItemId | null]>;
 
   /**
    * Default constructor
@@ -98,7 +98,7 @@ export default class MacroEditorState {
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };
-    this.timetableItemIdByNgeId = new Map<number, TimetableItemId>();
+    this.timetableItemIdByNgeId = new Map();
   }
 
   /**

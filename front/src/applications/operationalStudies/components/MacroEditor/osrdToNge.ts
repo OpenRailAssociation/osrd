@@ -367,7 +367,7 @@ const getNgeTrainruns = (
   timetableItems
     .filter((timetableItem) => timetableItem.path.length >= 2)
     .map((timetableItem, index) => {
-      state.timetableItemIdByNgeId.set(index + 1, timetableItem.id);
+      state.timetableItemIdByNgeId.set(index + 1, [timetableItem.id, null]);
       const trainrunFrequency = getTrainrunFrequencyFromTimetableItem(timetableItem, state);
       return {
         id: index + 1,
