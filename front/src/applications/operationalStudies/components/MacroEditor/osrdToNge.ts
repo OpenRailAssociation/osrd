@@ -7,7 +7,11 @@ import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQu
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import {
+  isPacedTrainResponseWithPacedTrainId,
+  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -579,4 +583,39 @@ export const getNgeDto = (
       filterSettings: [],
     },
   };
+};
+
+export const loadNgeDto = async (
+  state: MacroEditorState,
+  timetableId: number,
+  dispatch: AppDispatch,
+  t: TFunction<'operational-studies'>
+): Promise<NetzgrafikDto> => {
+  const trainSchedulesPromise = dispatch(
+    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
+      { timetableId },
+      { forceRefetch: true, subscribe: false }
+    )
+  );
+  const trainSchedules = (await trainSchedulesPromise.unwrap())
+    .filter((trainSchedule) => trainSchedule.path.length >= 2)
+    .map((trainSchedule) => ({
+      ...trainSchedule,
+      id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
+    }));
+  const pacedTrainsPromise = dispatch(
+    osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
+      { timetableId },
+      { forceRefetch: true, subscribe: false }
+    )
+  );
+  const pacedTrains = (await pacedTrainsPromise.unwrap())
+    .filter((pacedTrain) => pacedTrain.path.length >= 2)
+    .map((pacedTrain) => ({
+      ...pacedTrain,
+      id: formatEditoastIdToPacedTrainId(pacedTrain.id),
+    }));
+  const timetableItems = [...trainSchedules, ...pacedTrains];
+  await loadAndIndexNge(state, timetableItems, dispatch, t);
+  return getNgeDto(state, timetableItems);
 };
