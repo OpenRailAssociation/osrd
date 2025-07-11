@@ -457,7 +457,8 @@ const handleCreateTimetableItem = async (
     ...newTimetableItems[0],
     id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
   };
-  state.timetableItemIdByNgeId.set(trainrun.id, newPacedTrain.id);
+  // TODO: handle roundtrips
+  state.timetableItemIdByNgeId.set(trainrun.id, [newPacedTrain.id, null]);
   addUpsertedTimetableItems([newPacedTrain]);
 };
 
@@ -487,7 +488,8 @@ const handleUpdateTimetableItem = async ({
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
-  const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)!;
+  // TODO: handle roundtrips
+  const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)![0];
   const timetableItem = await fetchTimetableItem(timetableItemId, dispatch);
   const { labels, startDate, trainrunSections } = generateTrainrunProperties(
     netzgrafikDto,
@@ -551,7 +553,8 @@ const handleUpdateTimetableItem = async ({
       addDeletedTimetableItemIds
     );
   }
-  state.timetableItemIdByNgeId.set(trainrun.id, updatedTimetableItem.id);
+  // TODO: handle roundtrips
+  state.timetableItemIdByNgeId.set(trainrun.id, [updatedTimetableItem.id, null]);
 };
 
 const handleDeleteTimetableItem = async (
@@ -560,7 +563,8 @@ const handleDeleteTimetableItem = async (
   dispatch: AppDispatch,
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
 ) => {
-  const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)!;
+  // TODO: handle roundtrips
+  const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)![0];
   const editoastTrainId = isPacedTrainId(timetableItemId)
     ? extractEditoastIdFromPacedTrainId(timetableItemId)
     : extractEditoastIdFromTrainScheduleId(timetableItemId);
