@@ -119,7 +119,7 @@ fun runStandaloneSimulation(
             envelopeSimPath,
             timeStep,
             curvesAndConditions.curves,
-            makeETCSContext(rollingStock, infra, chunkPath, routes, signalingRanges)
+            makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath, signalingRanges)
         )
 
     // Max speed envelope

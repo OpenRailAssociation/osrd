@@ -93,7 +93,14 @@ class ETCSBrakingCurvesEndpoint(
                     envelopeSimPath,
                     2.0,
                     curvesAndConditions.curves,
-                    makeETCSContext(rollingStock, infra, chunkPath, routePath, signalingRanges)
+                    makeETCSContext(
+                        rollingStock,
+                        infra,
+                        chunkPath,
+                        routePath,
+                        blockPath,
+                        signalingRanges
+                    )
                 )
 
             // Parse mrsp.

@@ -7,12 +7,10 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.getRoutePathStartOffset
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.mapToRangeSet
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
 /** Build the ETCS context, if relevant. */
@@ -21,6 +19,7 @@ fun makeETCSContext(
     infra: FullInfra,
     chunkPath: ChunkPath,
     routePath: StaticIdxList<Route>,
+    blockPath: StaticIdxList<Block>,
     signalingRanges: DistanceRangeMap<String>,
 ): EnvelopeSimContext.ETCSContext? {
     val etcsRanges = signalingRanges.mapToRangeSet { it == ETCS_LEVEL2.id }
@@ -34,7 +33,8 @@ fun makeETCSContext(
     }
     return EnvelopeSimContext.ETCSContext(
         etcsRanges,
-        buildETCSDangerPoints(infra.rawInfra, chunkPath, routePath)
+        buildETCSDangerPoints(infra.rawInfra, chunkPath, routePath),
+        buildETCSBlockDetectors(infra, blockPath, chunkPath)
     )
 }
 
@@ -67,11 +67,43 @@ fun buildETCSDangerPoints(
     return res.sorted()
 }
 
+/** Builds the offset list of detectors for ETCS blocks on the block path. */
+fun buildETCSBlockDetectors(
+    infra: FullInfra,
+    blockPath: StaticIdxList<Block>,
+    chunkPath: ChunkPath
+): List<Offset<TravelledPath>> {
+    val etcsBlockDetectors = mutableListOf<Offset<BlockPath>>()
+    var currentOffset = Offset.zero<BlockPath>()
+    for (block in blockPath) {
+        if (isETCSBlock(block, infra)) {
+            // Add entry detector
+            etcsBlockDetectors.add(currentOffset)
+            currentOffset += infra.blockInfra.getBlockLength(block).distance
+            // Add exit detector
+            etcsBlockDetectors.add(currentOffset)
+        }
+    }
+    val pathOffsetBuilder =
+        PathOffsetBuilder(
+            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath).distance
+        )
+    return etcsBlockDetectors
+        .map { pathOffsetBuilder.toTravelledPath(it) }
+        .filter { it.distance >= Distance.ZERO }
+}
+
+private fun isETCSBlock(block: BlockId, infra: FullInfra): Boolean {
+    return infra.signalingSimulator.sigModuleManager.getName(
+        infra.blockInfra.getBlockSignalingSystem(block)
+    ) == ETCS_LEVEL2.id
+}
+
 /**
  * Find the last danger point, which may extend beyond the end of the path. Null if tracks are
  * circular with no switch nor buffer stop.
  */
-fun findLastDangerPoint(infra: RawInfra, chunkPath: ChunkPath): Offset<TravelledPath>? {
+private fun findLastDangerPoint(infra: RawInfra, chunkPath: ChunkPath): Offset<TravelledPath>? {
     // Find the offset of the last chunk on the path
     val lastChunk = chunkPath.chunks.last()
     var lastChunkEndOffset = Offset<TravelledPath>(chunkPath.beginOffset.distance * -1.0)
@@ -98,7 +130,7 @@ fun findLastDangerPoint(infra: RawInfra, chunkPath: ChunkPath): Offset<Travelled
 }
 
 /** Figure out where the end of the last track is located, as a path offset. */
-fun getEndOfLastTrackPathOffset(
+private fun getEndOfLastTrackPathOffset(
     infra: RawInfra,
     lastTrack: TrackSectionId,
     lastChunk: DirStaticIdx<TrackChunk>,

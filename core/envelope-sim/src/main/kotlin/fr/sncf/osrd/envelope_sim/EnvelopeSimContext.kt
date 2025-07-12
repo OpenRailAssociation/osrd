@@ -28,13 +28,23 @@ constructor(
          * *after* the end of the path (or right at the end).
          */
         val dangerPointOffsets: List<Offset<TravelledPath>>,
+        /**
+         * List of block-delimiting detectors (block entry/exit) offsets for every ETCS-block on the
+         * path. Starts at the start of the path, can end after the end of the path.
+         */
+        val detectorOffsets: List<Offset<TravelledPath>>
     ) {
         /**
-         * Returns the SVL location: next buffer stop or switch, whichever is closest. If there is
-         * any.
+         * Returns the next danger point location: next buffer stop or switch, whichever is closest.
+         * If there is any.
          */
-        fun getDangerPoint(stop: Offset<TravelledPath>): Offset<TravelledPath>? {
-            return dangerPointOffsets.firstOrNull { it.distance.meters >= stop.distance.meters }
+        fun getDangerPoint(offset: Offset<TravelledPath>): Offset<TravelledPath>? {
+            return dangerPointOffsets.firstOrNull { it >= offset }
+        }
+
+        /** Returns the next ETCS detector location. */
+        fun getNextDetector(offset: Offset<TravelledPath>): Offset<TravelledPath>? {
+            return detectorOffsets.firstOrNull { it >= offset }
         }
     }
 
