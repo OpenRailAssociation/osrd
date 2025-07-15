@@ -47,7 +47,7 @@ const Project = () => {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId: urlProjectId } = useParams() as ProjectParams;
@@ -232,7 +232,7 @@ const Project = () => {
                 <div className="row w-100 no-gutters">
                   <div className={project.image ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
-                      <img src={imageUrl} alt="project logo" />
+                      {imageUrl && <img src={imageUrl} alt="project logo" />}
                     </div>
                   </div>
                   <div className={project.image ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
