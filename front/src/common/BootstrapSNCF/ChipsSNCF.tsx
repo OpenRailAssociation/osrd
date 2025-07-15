@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import React, { useId, useState } from 'react';
 
 enum colorClasses {
   primary = 'bg-primary',
@@ -18,7 +18,7 @@ type Props = {
   tags?: string[];
   addTag: (tag: string) => void;
   removeTag: (tagIdx: number) => void;
-  title?: JSX.Element | string;
+  title?: React.JSX.Element | string;
   color?: string;
 };
 

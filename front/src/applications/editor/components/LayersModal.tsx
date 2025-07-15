@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +29,7 @@ import { updateLayersSettings } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
+export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },
   { layers: ['signals'], icon: signalsIcon },
   { layers: ['buffer_stops'], icon: bufferStopIcon },

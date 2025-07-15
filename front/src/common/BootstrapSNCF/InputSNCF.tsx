@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import { type InputHTMLAttributes, type ReactNode } from 'react';
+import React, { type InputHTMLAttributes, type ReactNode } from 'react';
 
 import cx from 'classnames';
 
@@ -8,7 +8,7 @@ export type InputSNCFProps = {
   type: string;
   containerClass?: string;
   name?: string;
-  label?: JSX.Element | string;
+  label?: React.JSX.Element | string;
   placeholder?: string;
   title?: string;
   onChange?: InputHTMLAttributes<HTMLInputElement>['onChange'];
@@ -84,7 +84,7 @@ const InputSNCF = ({
   textRight = false,
   disabled = false,
   ref,
-}: InputSNCFProps): JSX.Element => {
+}: InputSNCFProps): React.JSX.Element => {
   // Build custom classes
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
 

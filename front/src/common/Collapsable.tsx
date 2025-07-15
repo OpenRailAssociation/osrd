@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type HTMLAttributes } from 'react';
+import React, { useCallback, useEffect, useState, type HTMLAttributes } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -6,7 +6,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 interface CollapsableProps extends Omit<HTMLAttributes<unknown>, 'children' | 'collapsed'> {
-  children: [JSX.Element, JSX.Element];
+  children: [React.JSX.Element, React.JSX.Element];
   collapsed?: boolean;
 }
 const Collapsable = (props: CollapsableProps) => {
