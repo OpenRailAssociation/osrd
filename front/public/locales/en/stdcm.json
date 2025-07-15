@@ -68,7 +68,6 @@
     "title": "A configuration problem prevents you from performing a search"
   },
   "noCorrespondingResults": "No results matching your search.",
-  "notificationTitle": "Current scope from D-7 to D-1 5pm on the axes:",
   "pathfindingStatus": {
     "calculating": "Validating path...",
     "success": "The requested path is valid."

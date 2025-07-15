@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
 
@@ -11,12 +12,17 @@ import getMastLayerProps from '../../getMastLayerProps';
 
 export function getNeutralSectionSignsLayerProps({
   sourceTable,
-}: Pick<LayerContext, 'sourceTable'>): Omit<SymbolLayer, 'source'> {
+  highlightedArea,
+}: Pick<LayerContext, 'sourceTable'> & { highlightedArea?: Geometry }): Omit<
+  SymbolLayer,
+  'source'
+> {
   const res: Omit<SymbolLayer, 'source'> = {
     id: 'neutralSectionSignParams',
     type: 'symbol',
     minzoom: 11,
     paint: {},
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     layout: {
       'icon-image': ['get', 'type'],
       'icon-size': ['step', ['zoom'], 0.3, 13, 0.4],
@@ -50,6 +56,7 @@ type NeutralSectionSignsProps = {
   infraID: number | undefined;
   colors: Theme;
   layerOrder?: number;
+  highlightedArea?: Geometry;
 };
 
 /**
@@ -57,13 +64,14 @@ type NeutralSectionSignsProps = {
  * https://osrd.fr/en/docs/explanation/models/neutral_sections
  */
 export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
-  const { colors, layerOrder, infraID } = props;
+  const { colors, layerOrder, infraID, highlightedArea } = props;
 
   const signsParams: LayerProps = getNeutralSectionSignsLayerProps({
     sourceTable: 'neutral_signs',
   });
   const mastsParams: LayerProps = getMastLayerProps({
     sourceTable: 'neutral_signs',
+    highlightedArea,
   });
 
   const KPLabelsParams: LayerProps = getKPLabelLayerProps({
@@ -71,6 +79,7 @@ export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
     minzoom: 13,
     isSignalisation: true,
     sourceTable: 'neutral_signs',
+    highlightedArea,
   });
 
   if (isNil(infraID)) return null;

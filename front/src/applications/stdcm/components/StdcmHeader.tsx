@@ -45,17 +45,7 @@ const StdcmHeader = ({
   return (
     <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
       <LogoSTDCM />
-      <div className="flex-grow-1 d-flex justify-content-center">
-        <span className="stdcm-header__notification " id="notification">
-          {t('stdcm:notificationTitle')}
-          <br />
-          <span>&#8226; Perrigny - Cerbère / Le Boulou</span>
-          <br />
-          <span>&#8226; Perrigny - Saint-Jory</span>
-          <br />
-          <span>&#8226; Perrigny - Fos-sur-Mer</span>
-        </span>
-      </div>
+      <div className="flex-grow-1 d-flex justify-content-center" />
       <div className="stdcm-header__debug">
         {isSuperUser && (
           <button

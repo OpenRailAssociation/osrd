@@ -31,8 +31,6 @@ class STDCMPage extends HomePage {
 
   private readonly debugButton: Locator;
 
-  private readonly notificationHeader: Locator;
-
   private readonly mapContainer: Locator;
 
   readonly launchSimulationButton: Locator;
@@ -57,7 +55,6 @@ class STDCMPage extends HomePage {
 
   constructor(page: Page) {
     super(page);
-    this.notificationHeader = page.locator('#notification');
     this.debugButton = page.getByTestId('stdcm-debug-button');
     this.helpButton = page.getByTestId('stdcm-help-button');
     this.mapContainer = page.locator('#stdcm-map-config');
@@ -106,7 +103,6 @@ class STDCMPage extends HomePage {
     const elements = [
       this.debugButton,
       this.helpButton,
-      this.notificationHeader,
       this.consistCard,
       this.originCard,
       this.addViaButton,

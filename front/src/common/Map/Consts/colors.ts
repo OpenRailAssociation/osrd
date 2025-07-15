@@ -11,6 +11,8 @@ const speedOver220 = '#91d3ff';
 
 const colors: Record<string, Theme> = {
   normal: {
+    // color used mainly in stdcm to hide data that are not in the perimeter
+    muted: { color: '#bfbfbf' },
     background: { color: 'rgb(246, 245, 241)' },
     chantier: {
       text: '#2c457a',
@@ -146,8 +148,8 @@ const colors: Record<string, Theme> = {
       text: '#a1006b',
     },
     track: {
-      minor: '#777777',
-      major: '#6A707D',
+      minor: '#bfbfbf',
+      major: '#404040',
     },
     trackname: {
       text: '#555555',
@@ -172,6 +174,7 @@ const colors: Record<string, Theme> = {
    *
    **************************************************************************** */
   dark: {
+    muted: { color: '#d0d1d1' },
     background: { color: '#0b011d' },
     chantier: {
       text: '#aacc00',
@@ -333,6 +336,7 @@ const colors: Record<string, Theme> = {
    *
    **************************************************************************** */
   minimal: {
+    muted: { color: '#d0d1d1' },
     background: { color: '#eeeeee' },
     chantier: {
       text: '#2c457a',

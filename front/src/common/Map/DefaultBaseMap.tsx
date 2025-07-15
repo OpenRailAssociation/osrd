@@ -1,6 +1,7 @@
 import { type PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 
 import bbox from '@turf/bbox';
+import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
 import type { MapRef } from 'react-map-gl/maplibre';
 
@@ -23,6 +24,7 @@ type DefaultBaseMapProps = {
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
   layersSettings: LayersSettings;
+  highlightedArea?: Geometry;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -40,6 +42,7 @@ const DefaultBaseMap = ({
   isFeasible = true,
   children,
   layersSettings,
+  highlightedArea,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
   const mapRef = useRef<MapRef | null>(null);
   const [viewPort, setViewPort] = useState(mapInitialState.viewport);
@@ -110,6 +113,7 @@ const DefaultBaseMap = ({
         hideAttribution
         showOSM
         layersSettings={layersSettings}
+        highlightedArea={highlightedArea}
       >
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}

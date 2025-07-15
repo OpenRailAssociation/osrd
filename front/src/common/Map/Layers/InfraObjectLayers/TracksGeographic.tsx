@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -14,9 +15,10 @@ interface TracksGeographicProps {
   colors: Theme;
   layerOrder?: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
-function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps) {
+function TracksGeographic({ colors, layerOrder, infraID, highlightedArea }: TracksGeographicProps) {
   const { showIGNBDORTHO, showIGNSCAN25 } = useSelector(getMap);
 
   if (isNil(infraID)) return null;
@@ -28,16 +30,16 @@ function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       <OrderedLayer
-        {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25)}
+        {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25, highlightedArea)}
         id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
       <OrderedLayer
         {...{
-          ...trackNameLayer(colors),
+          ...trackNameLayer(colors, highlightedArea),
           layout: {
-            ...trackNameLayer(colors).layout,
+            ...trackNameLayer(colors, highlightedArea).layout,
             'text-field': '{extensions_sncf_track_name}',
             'text-size': 11,
           },
@@ -48,9 +50,9 @@ function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps
       />
       <OrderedLayer
         {...{
-          ...lineNumberLayer(colors),
+          ...lineNumberLayer(colors, highlightedArea),
           layout: {
-            ...lineNumberLayer(colors).layout,
+            ...lineNumberLayer(colors, highlightedArea).layout,
             'text-field': '{extensions_sncf_line_code}',
           },
         }}
@@ -60,9 +62,9 @@ function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps
       />
       <OrderedLayer
         {...{
-          ...lineNameLayer(colors),
+          ...lineNameLayer(colors, highlightedArea),
           layout: {
-            ...lineNameLayer(colors).layout,
+            ...lineNameLayer(colors, highlightedArea).layout,
             'text-field': '{extensions_sncf_line_name}',
           },
         }}

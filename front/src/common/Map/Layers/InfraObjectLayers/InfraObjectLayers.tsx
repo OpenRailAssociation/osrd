@@ -1,3 +1,5 @@
+import type { Geometry } from 'geojson';
+
 import colors from 'common/Map/Consts/colors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { LayersSettings, MapStyle } from 'reducers/map';
@@ -19,6 +21,7 @@ type InfraObjectLayersProps = {
   mapStyle: MapStyle;
   hoveredOperationalPointId?: string;
   layersSettings: LayersSettings;
+  highlightedArea?: Geometry;
 };
 
 const InfraObjectLayers = ({
@@ -26,18 +29,21 @@ const InfraObjectLayers = ({
   mapStyle,
   hoveredOperationalPointId,
   layersSettings,
+  highlightedArea,
 }: InfraObjectLayersProps) => (
   <>
     <TracksGeographic
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS.GROUP]}
       infraID={infraId}
+      highlightedArea={highlightedArea}
     />
     {layersSettings.routes && (
       <Routes
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.operational_points && (
@@ -46,6 +52,7 @@ const InfraObjectLayers = ({
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
         operationnalPointId={hoveredOperationalPointId}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.electrifications && (
@@ -53,6 +60,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.neutral_sections && (
@@ -60,6 +68,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.buffer_stops && (
@@ -67,6 +76,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.detectors && (
@@ -74,6 +84,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.switches && (
@@ -81,6 +92,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.speed_limits && (
@@ -90,6 +102,7 @@ const InfraObjectLayers = ({
         punctualLayerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS_PUNCTUAL.GROUP]}
         infraID={infraId}
         layersSettings={layersSettings}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.sncf_psl && (
@@ -99,6 +112,7 @@ const InfraObjectLayers = ({
         punctualLayerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS_PUNCTUAL.GROUP]}
         infraID={infraId}
         layersSettings={layersSettings}
+        highlightedArea={highlightedArea}
       />
     )}
     {layersSettings.signals && (
@@ -107,6 +121,7 @@ const InfraObjectLayers = ({
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
         infraID={infraId}
+        highlightedArea={highlightedArea}
       />
     )}
   </>

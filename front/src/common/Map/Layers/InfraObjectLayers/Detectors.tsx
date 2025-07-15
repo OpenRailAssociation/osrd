@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
@@ -10,10 +11,12 @@ import OrderedLayer from '../OrderedLayer';
 export function getDetectorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<CircleLayer> {
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     minzoom: 8,
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'circle-stroke-color': params.colors.detectors.circle,
       'circle-color': params.colors.detectors.circle,
@@ -28,6 +31,7 @@ export function getDetectorsLayerProps(params: {
 export function getDetectorsNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
@@ -42,6 +46,7 @@ export function getDetectorsNameLayerProps(params: {
       'text-offset': [0.5, 0.2],
       visibility: 'visible',
     },
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': params.colors.detectors.text,
       'text-halo-width': 1,
@@ -58,11 +63,16 @@ interface DetectorsProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
-const Detectors = ({ colors, layerOrder, infraID }: DetectorsProps) => {
-  const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
-  const layerName = getDetectorsNameLayerProps({ colors, sourceTable: 'detectors' });
+const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsProps) => {
+  const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors', highlightedArea });
+  const layerName = getDetectorsNameLayerProps({
+    colors,
+    sourceTable: 'detectors',
+    highlightedArea,
+  });
 
   if (isNil(infraID)) return null;
   return (

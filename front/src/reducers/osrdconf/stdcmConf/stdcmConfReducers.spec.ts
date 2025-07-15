@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -24,6 +25,7 @@ import {
   selectSimulation,
   addStdcmSimulations,
   updateLoadingGauge,
+  updateStdcmEnvironmentActiveArea,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -175,6 +177,22 @@ describe('stdcmConfReducers', () => {
       store.dispatch(updateLoadingGauge('GB'));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.loadingGauge).toEqual('GB');
+    });
+    it('should handle activePerimeter', () => {
+      const geometry: Geometry = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-1, 47],
+            [-2, 47],
+            [-2, 48],
+            [-1, 47],
+          ],
+        ],
+      };
+      store.dispatch(updateStdcmEnvironmentActiveArea(geometry));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.activePerimeter).toEqual(geometry);
     });
   });
 

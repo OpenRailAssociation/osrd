@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
@@ -11,11 +12,13 @@ interface RoutesProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
 export function getRoutesLineLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<LineLayer> {
   const res: OmitLayer<LineLayer> = {
     type: 'line',
@@ -26,6 +29,7 @@ export function getRoutesLineLayerProps(params: {
       // 'line-cap': 'round',
       // 'line-join': 'miter',
     },
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'line-color': '#e05206',
       'line-width': 1,
@@ -42,9 +46,11 @@ export function getRoutesLineLayerProps(params: {
 export function getRoutesPointLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<CircleLayer> {
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'circle-stroke-color': 'rgba(255, 182, 18, 0.5)',
       'circle-color': 'rgba(255, 182, 18, 0.5)',
@@ -59,6 +65,7 @@ export function getRoutesPointLayerProps(params: {
 export function getRoutesTextLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
@@ -75,6 +82,7 @@ export function getRoutesTextLayerProps(params: {
       'text-ignore-placement': true,
       'text-offset': [0, -0.5],
     },
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': params.colors.routes.text,
       'text-halo-color': params.colors.routes.halo,
@@ -87,10 +95,10 @@ export function getRoutesTextLayerProps(params: {
   return res;
 }
 
-export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
-  const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes' });
-  const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });
-  const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
+export default function Routes({ colors, layerOrder, infraID, highlightedArea }: RoutesProps) {
+  const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes', highlightedArea });
+  const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes', highlightedArea });
+  const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes', highlightedArea });
 
   if (isNil(infraID)) return null;
   return (

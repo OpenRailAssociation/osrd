@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source, type SymbolLayer } from 'react-map-gl/maplibre';
 
@@ -6,7 +7,10 @@ import type { Theme, OmitLayer } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
+export function getBufferStopsLayerProps(params: {
+  sourceTable?: string;
+  highlightedArea?: Geometry;
+}): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
     minzoom: 12,
@@ -23,6 +27,7 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Omit
       'icon-allow-overlap': ['step', ['zoom'], false, 15, true],
       'text-allow-overlap': ['step', ['zoom'], false, 15, true],
     },
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': '#333',
     },
@@ -36,9 +41,10 @@ interface BufferStopsProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
-const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
+const BufferStops = ({ layerOrder, infraID, highlightedArea }: BufferStopsProps) => {
   if (isNil(infraID)) return null;
   return (
     <Source
@@ -47,7 +53,7 @@ const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
       url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer
-        {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
+        {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops', highlightedArea })}
         id="chartis/osrd_bufferstop/geo"
         layerOrder={layerOrder}
       />

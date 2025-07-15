@@ -68,7 +68,6 @@
     "title": "Un problème de configuration vous empêche de faire une recherche"
   },
   "noCorrespondingResults": "Aucun résultat ne correspond à votre recherche.",
-  "notificationTitle": "Périmètre actuel du démonstrateur de J-7 à J-1 17h, sur les axes :",
   "pathfindingStatus": {
     "calculating": "Validation de l'itinéraire en cours...",
     "success": "L'itinéraire demandé est valide."

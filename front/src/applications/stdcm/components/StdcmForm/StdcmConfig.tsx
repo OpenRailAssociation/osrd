@@ -12,6 +12,7 @@ import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
+  getActivePerimeter,
   getStdcmConf,
   getStdcmDestination,
   getStdcmInfraID,
@@ -38,6 +39,7 @@ import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
 import checkStdcmConfigErrors from '../../utils/checkStdcmConfigErrors';
 import StdcmLoader from '../StdcmLoader';
 import StdcmWarningBox from '../StdcmWarningBox';
+import StdcmMapActivePerimeter from './StdcmMapActivePerimeter';
 
 declare global {
   interface Window {
@@ -91,6 +93,7 @@ const StdcmConfig = ({
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
   const stdcmLayers = useSelector(getStdcmSelectedLayers);
+  const activePerimeter = useSelector(getActivePerimeter);
 
   const [showMessage, setShowMessage] = useState(false);
 
@@ -332,7 +335,10 @@ const StdcmConfig = ({
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
             layersSettings={stdcmLayers}
-          />
+            highlightedArea={activePerimeter}
+          >
+            <StdcmMapActivePerimeter />
+          </DefaultBaseMap>
         </div>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';
@@ -15,6 +16,7 @@ interface SpeedLimitsProps {
   punctualLayerOrder: number;
   infraID?: number;
   layersSettings: LayersSettings;
+  highlightedArea?: Geometry;
 }
 
 export function getSpeedSectionsTag({ speedlimittag }: LayersSettings): string {
@@ -31,10 +33,17 @@ export function getSpeedSectionsName(layersSettings: LayersSettings): Expression
   return ['round', ['*', 3.6, ['case', ['!=', tag, 'null'], ['get', tag], ['get', 'speed_limit']]]];
 }
 
-export function getFilterBySpeedSectionsTag(layersSettings: LayersSettings): FilterSpecification {
-  return isNil(layersSettings.speedlimittag)
-    ? ['has', 'speed_limit']
-    : ['has', getSpeedSectionsTag(layersSettings)];
+export function getFilterBySpeedSectionsTag(
+  layersSettings: LayersSettings,
+  highlightedArea?: Geometry
+): FilterSpecification {
+  return [
+    'all',
+    isNil(layersSettings.speedlimittag)
+      ? ['has', 'speed_limit']
+      : ['has', getSpeedSectionsTag(layersSettings)],
+    highlightedArea ? ['within', highlightedArea] : true,
+  ];
 }
 
 export function getSpeedSectionsLineLayerProps({
@@ -170,8 +179,9 @@ export default function SpeedLimits({
   punctualLayerOrder,
   infraID,
   layersSettings,
+  highlightedArea,
 }: SpeedLimitsProps) {
-  const filter = getFilterBySpeedSectionsTag(layersSettings);
+  const filter = getFilterBySpeedSectionsTag(layersSettings, highlightedArea);
   const lineProps = {
     ...getSpeedSectionsLineLayerProps({
       colors,

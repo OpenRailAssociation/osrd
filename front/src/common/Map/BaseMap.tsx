@@ -1,5 +1,6 @@
 import { type MutableRefObject, type PropsWithChildren, useEffect, useState } from 'react';
 
+import type { Geometry } from 'geojson';
 import type { MapLayerMouseEvent, MapLibreEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -38,6 +39,12 @@ type MapProps = Pick<MapState, 'layersSettings' | 'mapSearchMarker' | 'mapStyle'
   onMouseEnter?: (e: MapLayerMouseEvent) => void;
   onMouseMove?: (e: MapLayerMouseEvent) => void;
   onIdle?: (e: MapLibreEvent) => void;
+  /**
+   * If an area is provided, then the map style is focus on it :
+   * - filtering all data layouts on this area
+   * - OP & tracks are full displayed, but elements ouside the area are muted
+   */
+  highlightedArea?: Geometry;
 };
 
 const BaseMap = ({
@@ -60,6 +67,7 @@ const BaseMap = ({
   onMouseMove,
   onIdle,
   layersSettings,
+  highlightedArea,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
 
@@ -138,6 +146,7 @@ const BaseMap = ({
           mapStyle={mapStyle}
           hoveredOperationalPointId={hoveredOperationalPointId}
           layersSettings={layersSettings}
+          highlightedArea={highlightedArea}
         />
       )}
 

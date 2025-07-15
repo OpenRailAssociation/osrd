@@ -196,7 +196,7 @@ const StdcmViewContent = ({
 };
 
 const StdcmView = () => {
-  const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
+  const { loading, error, loadStdcmEnvironment, resetStdcmEnvironment } = useStdcmEnvironment();
   const stdcmConf = useSelector(getStdcmConf);
 
   const [isDebugMode, setIsDebugMode] = useState(false);
@@ -217,6 +217,10 @@ const StdcmView = () => {
     if (!isDebugMode) {
       loadStdcmEnvironment();
     }
+
+    return () => {
+      resetStdcmEnvironment();
+    };
   }, [isDebugMode]);
 
   // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
