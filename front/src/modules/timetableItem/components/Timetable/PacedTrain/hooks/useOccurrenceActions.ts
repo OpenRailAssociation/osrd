@@ -57,6 +57,7 @@ const useOccurrenceActions = ({
         ...pacedTrain,
         name: editedOccurrence.trainName,
         startTime: editedOccurrence.startTime,
+        rollingStock: editedOccurrence.rollingStock,
       };
 
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
@@ -65,20 +66,10 @@ const useOccurrenceActions = ({
       );
 
       if (occurrenceToUpdateException) {
-        const pacedTrainWithOccurrenceDetails = formatPacedTrainWithOccurrenceDetails(
+        updatedPacedtrain = formatPacedTrainWithOccurrenceDetails(
           updatedPacedtrain,
           occurrenceToUpdateException
         );
-
-        let occurrenceRollingStock = pacedTrain.rollingStock;
-        if (occurrenceToUpdateException.rolling_stock) {
-          occurrenceRollingStock = editedOccurrence.rollingStock;
-        }
-
-        updatedPacedtrain = {
-          ...pacedTrainWithOccurrenceDetails,
-          rollingStock: occurrenceRollingStock,
-        };
       }
 
       selectPacedTrainToEdit(updatedPacedtrain, pacedTrain, editedOccurrence.id);
