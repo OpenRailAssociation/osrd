@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import type { PacedTrainId } from 'reducers/osrdconf/types';
+import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import { formatPacedTrainWithOccurrenceDetails, getOccurrencesNb } from '../pacedTrain';
@@ -40,11 +38,11 @@ describe('getOccurrencesNb', () => {
 });
 
 describe('formatPacedTrainWithOccurrenceDetails', () => {
-  const pacedTrain: PacedTrainWithDetails = {
-    id: 'paced_123' as PacedTrainId,
-    name: '8608',
+  const pacedTrain: Omit<PacedTrain, 'paced' | 'exceptions'> = {
+    train_name: '8608',
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
-    startTime: new Date('2024-10-15T03:00:00Z'),
+    rolling_stock_name: '',
+    start_time: '2024-10-15T03:00:00Z',
     path: [
       { id: 'id227', deleted: false, uic: 6, secondary_code: 'BV' },
       { id: 'id228', deleted: false, uic: 5, secondary_code: 'BV' },
@@ -64,15 +62,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
     },
     comfort: 'STANDARD',
     constraint_distribution: 'MARECO',
-    speedLimitTag: 'MA100',
-    paced: { timeWindow: Duration.parse('PT2H'), interval: Duration.parse('PT1H') },
-    arrivalTime: new Date('2024-10-15T04:00:00Z'),
-    duration: Duration.parse('PT1H'),
-    stopsCount: 0,
-    pathLength: '200',
-    mechanicalEnergyConsumed: 5000,
-    isValid: true,
-    exceptions: [],
+    speed_limit_tag: 'MA100',
   };
 
   it('should properly update a standard property', () => {
@@ -83,7 +73,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
     const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
-      name: '8608 updated',
+      train_name: '8608 updated',
     });
   });
 
@@ -95,7 +85,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
     const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
-      speedLimitTag: null,
+      speed_limit_tag: null,
     });
   });
 

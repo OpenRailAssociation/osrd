@@ -1,4 +1,4 @@
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   extractExceptionIdFromOccurrenceId,
@@ -31,20 +31,23 @@ export const findExceptionWithOccurrenceId = (
   return exceptions.find(({ key }) => addedExceptionId === key);
 };
 
-export const formatPacedTrainWithOccurrenceDetails = (
-  pacedTrain: PacedTrainWithDetails,
+export const formatPacedTrainWithOccurrenceDetails = <
+  T extends Omit<PacedTrain, 'paced' | 'exceptions'>,
+>(
+  pacedTrain: T,
   exceptionChangeGroups: ExceptionChangeGroups
 ) => {
-  const updatedPacedTrain: PacedTrainWithDetails & { rollingStockName?: string } = pacedTrain;
+  const updatedPacedTrain = { ...pacedTrain };
+
   if (exceptionChangeGroups.train_name) {
-    updatedPacedTrain.name = exceptionChangeGroups.train_name.value;
+    updatedPacedTrain.train_name = exceptionChangeGroups.train_name.value;
   }
   if (exceptionChangeGroups.start_time) {
-    updatedPacedTrain.startTime = new Date(exceptionChangeGroups.start_time.value);
+    updatedPacedTrain.start_time = exceptionChangeGroups.start_time.value;
   }
   if (exceptionChangeGroups.speed_limit_tag) {
     // speed limit tag will always be a string or null
-    updatedPacedTrain.speedLimitTag = exceptionChangeGroups.speed_limit_tag.value!;
+    updatedPacedTrain.speed_limit_tag = exceptionChangeGroups.speed_limit_tag.value!;
   }
   if (exceptionChangeGroups.labels) {
     updatedPacedTrain.labels = exceptionChangeGroups.labels.value;
@@ -59,6 +62,7 @@ export const formatPacedTrainWithOccurrenceDetails = (
     updatedPacedTrain.category = exceptionChangeGroups.rolling_stock_category.value;
   }
   if (exceptionChangeGroups.rolling_stock) {
+    updatedPacedTrain.rolling_stock_name = exceptionChangeGroups.rolling_stock.rolling_stock_name;
     updatedPacedTrain.comfort = exceptionChangeGroups.rolling_stock.comfort;
   }
   if (exceptionChangeGroups.path_and_schedule) {

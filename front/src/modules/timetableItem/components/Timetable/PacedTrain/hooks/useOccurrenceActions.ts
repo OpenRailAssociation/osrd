@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { updatePacedTrainExceptionsList } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -52,13 +52,7 @@ const useOccurrenceActions = ({
   // the occurrence start time and all its eventual exceptions
   const editOccurrence = useCallback(
     async (editedOccurrence: Occurrence) => {
-      // TODO refacto this function in issue https://github.com/OpenRailAssociation/osrd/issues/12030
-      let updatedPacedtrain: PacedTrainWithDetails = {
-        ...pacedTrain,
-        name: editedOccurrence.trainName,
-        startTime: editedOccurrence.startTime,
-        rollingStock: editedOccurrence.rollingStock,
-      };
+      let occurrenceWithDetails: PacedTrainWithDetails = pacedTrain;
 
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
         pacedTrain.exceptions,
@@ -66,13 +60,33 @@ const useOccurrenceActions = ({
       );
 
       if (occurrenceToUpdateException) {
-        updatedPacedtrain = formatPacedTrainWithOccurrenceDetails(
-          updatedPacedtrain,
-          occurrenceToUpdateException
-        );
+        const rawPacedTrain: Omit<PacedTrain, 'paced'> = {
+          ...pacedTrain,
+          train_name: editedOccurrence.trainName,
+          speed_limit_tag: pacedTrain.speedLimitTag,
+          rolling_stock_name: editedOccurrence.rollingStock?.name || '',
+          start_time: editedOccurrence.startTime.toISOString(),
+        };
+
+        const {
+          train_name,
+          start_time,
+          speed_limit_tag,
+          rolling_stock_name: _rollingStockName,
+          ...occurrenceProps
+        } = formatPacedTrainWithOccurrenceDetails(rawPacedTrain, occurrenceToUpdateException);
+
+        occurrenceWithDetails = {
+          ...pacedTrain,
+          ...occurrenceProps,
+          name: train_name,
+          startTime: new Date(start_time),
+          speedLimitTag: speed_limit_tag ?? null,
+          rollingStock: editedOccurrence.rollingStock,
+        };
       }
 
-      selectPacedTrainToEdit(updatedPacedtrain, pacedTrain, editedOccurrence.id);
+      selectPacedTrainToEdit(occurrenceWithDetails, pacedTrain, editedOccurrence.id);
     },
     [pacedTrain, selectPacedTrainToEdit]
   );
