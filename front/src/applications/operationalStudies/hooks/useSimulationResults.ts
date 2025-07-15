@@ -1,11 +1,20 @@
+import { useMemo } from 'react';
+
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
-import useSelectedTrain from 'modules/timetableItem/hooks/useSelectedTrain';
+import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { Duration } from 'utils/duration';
+import {
+  extractOccurrenceIndexFromOccurrenceId,
+  isPacedTrainResponseWithPacedTrainId,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
 import { preparePathPropertiesData } from '../utils';
@@ -19,7 +28,29 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const train = useSelectedTrain();
+  const timetableItem = useSelectedTimetableItem();
+
+  const train = useMemo(() => {
+    if (!selectedTrainId || !timetableItem) return undefined;
+    if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+      return timetableItem;
+    }
+
+    if (isTrainScheduleId(selectedTrainId)) {
+      throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, exceptions, paced, ...trainProps } = timetableItem;
+
+    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
+    const pacedTrainIntervalInMs = Duration.parse(timetableItem.paced.interval).ms;
+
+    const occurrenceStartTime: string = dayjs(timetableItem.start_time)
+      .add(occurrenceIndex * pacedTrainIntervalInMs, 'ms')
+      .toISOString();
+    return { ...trainProps, id: selectedTrainId, start_time: occurrenceStartTime };
+  }, [timetableItem]);
 
   const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
     {
