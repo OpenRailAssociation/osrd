@@ -5,6 +5,7 @@ import type {
   ApiEndpointQuery,
   QueryDefinition,
   EndpointDefinitions,
+  BaseQueryFn,
 } from '@reduxjs/toolkit/query/react';
 
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -32,6 +33,7 @@ import {
   type RelatedOperationalPoint,
   type SimulationResponse,
   type StdcmResponse,
+  type PaginationStats,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -70,30 +72,28 @@ const compressedQuery = async <Response>(
   return result as { data: Response } | { error: ApiError };
 };
 
-type EndpointQueryArgs<E> = E extends ApiEndpointQuery<
-  QueryDefinition<infer QueryArgs, infer _BaseQuery, infer _TagTypes, infer _ResultType>,
-  EndpointDefinitions
->
-  ? QueryArgs
-  : never;
-
-type EndpointQueryResult<E> = E extends ApiEndpointQuery<
-  QueryDefinition<infer _QueryArgs, infer _BaseQuery, infer _TagTypes, infer ResultType>,
-  EndpointDefinitions
->
-  ? ResultType
-  : never;
-
-type PaginatedApiEndpointQuery = typeof osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules;
-
-const fetchAllPages = async <E extends PaginatedApiEndpointQuery>(
-  endpoint: E,
-  args: EndpointQueryArgs<E>,
+const fetchAllPages = async <
+  QueryArgs extends {
+    page?: number;
+    pageSize?: number | null;
+  },
+  BaseQuery extends BaseQueryFn,
+  TagTypes extends string,
+  ResultItem,
+  ResultType extends { results: ResultItem[] } & PaginationStats,
+  Definitions extends EndpointDefinitions,
+  Endpoint extends ApiEndpointQuery<
+    QueryDefinition<QueryArgs, BaseQuery, TagTypes, ResultType>,
+    Definitions
+  >,
+>(
+  endpoint: Endpoint,
+  args: QueryArgs,
   dispatch: ThunkDispatch<unknown, unknown, Action>
-): Promise<EndpointQueryResult<E>['results']> => {
+): Promise<ResultType['results']> => {
   let page = 1;
   let reachEnd = false;
-  const results: TrainScheduleResponse[] = [];
+  const results: ResultItem[] = [];
   while (!reachEnd) {
     const data = await dispatch(
       endpoint.initiate(
@@ -119,12 +119,13 @@ const osrdEditoastApi = generatedEditoastApi
         { timetableId: number }
       >({
         queryFn: async ({ timetableId }, { dispatch }) => {
-          const data/*: TrainScheduleResponse[]*/ = await fetchAllPages(
+          const data: TrainScheduleResponse[] = await fetchAllPages(
             osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules,
             { id: timetableId, pageSize: 200 },
             dispatch
           );
           return { data: [] as TrainScheduleResponse[] }; // TODO: ehhhhhhhh
+          //return { data };
         },
         providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       }),
