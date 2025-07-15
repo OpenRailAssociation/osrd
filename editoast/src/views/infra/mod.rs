@@ -20,7 +20,9 @@ use core_client::AsCoreRequest;
 use core_client::infra_loading::InfraLoadRequest;
 use editoast_authz as authz;
 use editoast_authz::InfraGrant;
+use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_models::model;
 use editoast_osrdyne_client::OsrdyneClient;
@@ -42,6 +44,7 @@ use super::params::List;
 use crate::AppState;
 use crate::Arc;
 use crate::error::Result;
+use crate::generated_data::operational_point::OperationalPointLayer;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
@@ -103,6 +106,7 @@ editoast_common::schemas! {
     InfraIdQueryParam,
     InfraState,
     InfraWithState,
+    RelatedOperationalPoint,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -935,8 +939,16 @@ struct MatchOperationalPointsForm {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
+struct RelatedOperationalPoint {
+    #[serde(flatten)]
+    op: OperationalPoint,
+    geo: Option<GeoJsonPoint>,
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 struct MatchOperationalPointsResponse {
-    related_operational_points: Vec<Vec<OperationalPoint>>,
+    related_operational_points: Vec<Vec<RelatedOperationalPoint>>,
     track_names: HashMap<Identifier, Option<String>>,
 }
 
@@ -1044,6 +1056,8 @@ async fn match_operational_points(
         // Add the operational point reference related operational points to the response:
         operational_points.push(related_operational_points);
     }
+    let related_operational_points =
+        populate_op_geo(&mut conn, infra_id, &operational_points).await?;
     let track_names = find_track_names(
         db_pool,
         infra_id,
@@ -1051,7 +1065,7 @@ async fn match_operational_points(
     )
     .await?;
     Ok(Json(MatchOperationalPointsResponse {
-        related_operational_points: operational_points,
+        related_operational_points,
         track_names,
     }))
 }
@@ -1083,6 +1097,31 @@ async fn find_track_names(
     )))
 }
 
+async fn populate_op_geo(
+    conn: &mut DbConnection,
+    infra_id: i64,
+    operational_points: &[Vec<OperationalPoint>],
+) -> Result<Vec<Vec<RelatedOperationalPoint>>> {
+    let op_ids = operational_points
+        .iter()
+        .flatten()
+        .map(|op| op.id.as_str())
+        .collect_vec();
+    let geo_points = OperationalPointLayer::get(conn, infra_id, &op_ids).await?;
+
+    Ok(operational_points
+        .iter()
+        .map(|ops| {
+            ops.iter()
+                .map(|op| RelatedOperationalPoint {
+                    op: op.clone(),
+                    geo: geo_points.get(op.id.as_str()).cloned(),
+                })
+                .collect_vec()
+        })
+        .collect_vec())
+}
+
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
@@ -1091,6 +1130,7 @@ pub mod tests {
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
+    use editoast_common::geometry::GeoJsonPointValue;
     use editoast_osrdyne_client::OsrdyneClient;
     use editoast_osrdyne_client::WorkerStatus;
     use editoast_schemas::infra::Electrification;
@@ -1552,7 +1592,14 @@ pub mod tests {
     async fn match_operational_points() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
+            .await
+            .unwrap();
+        infra
+            .refresh(db_pool.clone(), false, &infra_cache)
+            .await
+            .unwrap();
         let operational_point_references = vec![
             OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointId {
@@ -1587,10 +1634,22 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
+            .map(|op_ref| {
+                op_ref
+                    .iter()
+                    .map(|op| op.op.id.as_str())
+                    .collect::<Vec<_>>()
+            })
             .collect_vec();
         let expected_identifiers = [vec!["West_station"], vec!["Mid_East_station"], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);
+        assert_eq!(
+            response.related_operational_points[0][0].geo,
+            Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
+                -0.392307692,
+                49.4998
+            ))))
+        );
         let expected_track_names: HashMap<Identifier, Option<String>> = HashMap::from([
             ("TA0".into(), Some("V1".to_string())),
             ("TA1".into(), Some("V2".to_string())),
@@ -1642,7 +1701,12 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
+            .map(|op_ref| {
+                op_ref
+                    .iter()
+                    .map(|op| op.op.id.as_str())
+                    .collect::<Vec<_>>()
+            })
             .collect::<Vec<_>>();
         let expected_identifiers: [Vec<&str>; 3] = [vec![], vec![], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);

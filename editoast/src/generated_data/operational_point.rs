@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ops::DerefMut;
 
 use diesel::delete;
@@ -5,8 +6,10 @@ use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_common::geometry::GeoJsonPoint;
 use editoast_models::DbConnection;
 use editoast_models::tables::infra_layer_operational_point::dsl;
 use editoast_schemas::primitives::ObjectType;
@@ -68,5 +71,34 @@ impl GeneratedData for OperationalPointLayer {
                 .await?;
         }
         Ok(())
+    }
+}
+
+#[derive(QueryableByName)]
+struct OperationalPoint {
+    #[diesel(sql_type = Text)]
+    obj_id: String,
+    #[diesel(sql_type = Jsonb)]
+    geo: diesel_json::Json<GeoJsonPoint>,
+}
+
+impl OperationalPointLayer {
+    pub async fn get(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        ids: &[&str],
+    ) -> Result<HashMap<String, GeoJsonPoint>> {
+        Ok(sql_query(
+            "SELECT obj_id, ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb AS geo
+                FROM infra_layer_operational_point
+                WHERE infra_id = $1 AND obj_id = ANY($2)",
+        )
+        .bind::<BigInt, _>(infra_id)
+        .bind::<Array<Text>, _>(ids)
+        .load::<OperationalPoint>(conn.write().await.deref_mut())
+        .await?
+        .into_iter()
+        .map(|op| (op.obj_id, op.geo.0))
+        .collect())
     }
 }
