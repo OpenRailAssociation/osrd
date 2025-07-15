@@ -1,8 +1,12 @@
+import type { Geometry } from 'geojson';
 import type { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl/maplibre';
 
 import type { Theme, OmitLayer } from 'types';
 
-export function trackNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
+export function trackNameLayer(
+  colors: Theme,
+  highlightedArea: Geometry | undefined = undefined
+): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     layout: {
@@ -22,15 +26,22 @@ export function trackNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
       },
     },
     paint: {
-      'text-color': colors.trackname.text,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.trackname.text, colors.muted.color]
+        : colors.trackname.text,
       'text-halo-width': 2,
-      'text-halo-color': colors.trackname.halo,
+      'text-halo-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.trackname.halo, colors.muted.color]
+        : colors.trackname.halo,
       'text-halo-blur': 1,
     },
   };
 }
 
-export function lineNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
+export function lineNameLayer(
+  colors: Theme,
+  highlightedArea: Geometry | undefined = undefined
+): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     layout: {
@@ -41,7 +52,9 @@ export function lineNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
       'text-offset': [0, 0.75],
     },
     paint: {
-      'text-color': colors.linename.text,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.linename.text, colors.muted.color]
+        : colors.linename.text,
       'text-halo-width': 2,
       'text-halo-color': colors.linename.halo,
       'text-halo-blur': 1,
@@ -49,7 +62,10 @@ export function lineNameLayer(colors: Theme): OmitLayer<SymbolLayer> {
   };
 }
 
-export function lineNumberLayer(colors: Theme): OmitLayer<SymbolLayer> {
+export function lineNumberLayer(
+  colors: Theme,
+  highlightedArea: Geometry | undefined = undefined
+): OmitLayer<SymbolLayer> {
   return {
     type: 'symbol',
     minzoom: 11,
@@ -60,7 +76,9 @@ export function lineNumberLayer(colors: Theme): OmitLayer<SymbolLayer> {
       'text-offset': [0, 0.5],
     },
     paint: {
-      'text-color': colors.line.text,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.line.text, colors.muted.color]
+        : colors.line.text,
       'text-halo-width': 2,
       'text-halo-color': colors.line.halo,
       'text-halo-blur': 2,

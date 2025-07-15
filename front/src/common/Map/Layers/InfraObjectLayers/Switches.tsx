@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
@@ -10,10 +11,12 @@ import OrderedLayer from '../OrderedLayer';
 export function getSwitchesLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<CircleLayer> {
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
     minzoom: 8,
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'circle-stroke-color': params.colors.switches.circle,
       'circle-stroke-width': 2,
@@ -29,6 +32,7 @@ export function getSwitchesLayerProps(params: {
 export function getSwitchesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
@@ -43,6 +47,7 @@ export function getSwitchesNameLayerProps(params: {
       'text-offset': [0.75, 0.1],
       visibility: 'visible',
     },
+    filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': params.colors.switches.text,
       'text-halo-width': 2,
@@ -59,11 +64,12 @@ interface SwitchesProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
-const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
-  const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
-  const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
+const Switches = ({ colors, layerOrder, infraID, highlightedArea }: SwitchesProps) => {
+  const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches', highlightedArea });
+  const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches', highlightedArea });
 
   if (isNil(infraID)) return null;
   return (

@@ -1,4 +1,4 @@
-import type { Position } from 'geojson';
+import type { Geometry, Position } from 'geojson';
 
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
@@ -81,6 +81,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   workScheduleGroupId?: number;
   temporarySpeedLimitGroupId?: number;
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
+  activePerimeter?: Geometry;
 };
 
 export type PathStep = PathItemLocation & {

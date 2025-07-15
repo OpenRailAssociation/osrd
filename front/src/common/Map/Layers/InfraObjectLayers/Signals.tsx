@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source, type MapRef } from 'react-map-gl/maplibre';
 
@@ -17,9 +18,10 @@ interface PlatformProps {
   mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
-const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) => {
+const Signals = ({ colors, sourceTable, layerOrder, infraID, highlightedArea }: PlatformProps) => {
   const context: SignalContext = {
     colors,
     sourceTable,
@@ -34,8 +36,14 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
       type="vector"
       url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer {...getMastLayerProps(context)} layerOrder={layerOrder} />
-      <OrderedLayer {...getPointLayerProps(context)} layerOrder={layerOrder} />
+      <OrderedLayer
+        {...getMastLayerProps({ ...context, highlightedArea })}
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...getPointLayerProps({ ...context, highlightedArea })}
+        layerOrder={layerOrder}
+      />
       <OrderedLayer
         {...getKPLabelLayerProps({
           bottomOffset: 6.5,
@@ -44,10 +52,14 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
           minzoom: 12,
           isSignalisation: true,
           sourceTable,
+          highlightedArea,
         })}
         layerOrder={layerOrder}
       />
-      <OrderedLayer {...getSignalLayerProps(context)} layerOrder={layerOrder} />
+      <OrderedLayer
+        {...getSignalLayerProps({ ...context, highlightedArea })}
+        layerOrder={layerOrder}
+      />
     </Source>
   );
 };

@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
@@ -12,6 +13,7 @@ type OperationalPointsProps = {
   layerOrder: number;
   infraID: number | undefined;
   operationnalPointId?: string;
+  highlightedArea?: Geometry;
 };
 
 const OperationalPointsLayer = ({
@@ -19,6 +21,7 @@ const OperationalPointsLayer = ({
   layerOrder,
   infraID,
   operationnalPointId,
+  highlightedArea,
 }: OperationalPointsProps) => {
   if (isNil(infraID)) return null;
 
@@ -27,7 +30,9 @@ const OperationalPointsLayer = ({
     'source-layer': 'operational_points',
     minzoom: 8,
     paint: {
-      'circle-stroke-color': colors.op.circle,
+      'circle-stroke-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.op.circle, colors.muted.color]
+        : colors.op.circle,
       'circle-stroke-width': 2,
       'circle-color': 'rgba(255, 255, 255, 0)',
       'circle-radius': 3,
@@ -66,7 +71,9 @@ const OperationalPointsLayer = ({
       'text-max-width': 32,
     },
     paint: {
-      'text-color': colors.op.text,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.op.text, colors.muted.color]
+        : colors.op.text,
       'text-halo-width': 2,
       'text-halo-color': colors.op.halo,
       'text-halo-blur': 1,
@@ -90,7 +97,9 @@ const OperationalPointsLayer = ({
       'text-max-width': 32,
     },
     paint: {
-      'text-color': colors.op.minitext,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.op.minitext, colors.muted.color]
+        : colors.op.minitext,
       'text-halo-width': 2,
       'text-halo-color': colors.op.halo,
       'text-halo-blur': 1,
@@ -126,6 +135,7 @@ const OperationalPointsLayer = ({
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.1],
     },
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'text-color': colors.op.text,
       'text-halo-width': 2,
@@ -161,6 +171,7 @@ const OperationalPointsLayer = ({
           colors,
           minzoom: 9.5,
           sourceTable: 'operational_points',
+          highlightedArea,
         })}
         id="chartis/osrd_operational_point_kp/geo"
         layerOrder={layerOrder}

@@ -1,6 +1,6 @@
+import type { Geometry } from 'geojson';
 import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
-import holyLand from 'common/MotriceRelated/holyLand';
 import type { OmitLayer } from 'types';
 
 import type { SignalContext } from '../types';
@@ -9,10 +9,15 @@ const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
 const signalCenteredTextOffset = [0, 6];
 
-export function getPointLayerProps({ sourceTable, colors }: SignalContext): OmitLayer<CircleLayer> {
+export function getPointLayerProps({
+  sourceTable,
+  colors,
+  highlightedArea,
+}: SignalContext & { highlightedArea?: Geometry }): OmitLayer<CircleLayer> {
   const props: OmitLayer<CircleLayer> = {
     type: 'circle',
     minzoom: 9,
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
@@ -24,8 +29,10 @@ export function getPointLayerProps({ sourceTable, colors }: SignalContext): Omit
   return props;
 }
 
-export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLayer> {
-  const { sourceTable, colors } = context;
+export function getSignalLayerProps(
+  context: SignalContext & { highlightedArea?: Geometry }
+): OmitLayer<SymbolLayer> {
+  const { sourceTable, colors, highlightedArea } = context;
   const offsetY = -105;
   const iconOffsetX = 45;
 
@@ -56,8 +63,6 @@ export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLay
       'icon-offset': iconOffset,
       'icon-image': [
         'case',
-        ['within', holyLand],
-        'UNKNOWN2',
         ['==', ['get', 'signaling_system'], ['literal', null]],
         'UNKNOWN',
         ['concat', ['get', 'signaling_system'], ':', ['get', 'sprite']],
@@ -73,6 +78,7 @@ export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLay
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
     },
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'text-color': colors.signal.text,
       'text-halo-width': 3,

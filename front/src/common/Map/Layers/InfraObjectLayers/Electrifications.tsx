@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
@@ -11,14 +12,17 @@ interface ElectrificationsProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
+  highlightedArea?: Geometry;
 }
 
 export function getElectrificationsProps({
   colors,
   sourceTable,
+  highlightedArea,
 }: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }) {
   const res: LayerProps = {
     type: 'line',
@@ -28,6 +32,7 @@ export function getElectrificationsProps({
       visibility: 'visible',
       'line-join': 'miter',
     },
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'line-color': [
         'let',
@@ -67,9 +72,11 @@ export function getElectrificationsProps({
 export function getElectrificationsTextParams({
   colors,
   sourceTable,
+  highlightedArea,
 }: {
   colors: Theme;
   sourceTable?: string;
+  highlightedArea?: Geometry;
 }) {
   const res: LayerProps = {
     type: 'symbol',
@@ -87,6 +94,7 @@ export function getElectrificationsTextParams({
       'text-pitch-alignment': 'auto',
       'text-rotation-alignment': 'auto',
     },
+    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'text-color': [
         'let',
@@ -119,14 +127,21 @@ export function getElectrificationsTextParams({
   return res;
 }
 
-export default function Electrifications({ colors, layerOrder, infraID }: ElectrificationsProps) {
+export default function Electrifications({
+  colors,
+  layerOrder,
+  infraID,
+  highlightedArea,
+}: ElectrificationsProps) {
   const electrificationsParams: LayerProps = getElectrificationsProps({
     colors,
     sourceTable: 'electrifications',
+    highlightedArea,
   });
   const electrificationsTextParams: LayerProps = getElectrificationsTextParams({
     colors,
     sourceTable: 'electrifications',
+    highlightedArea,
   });
   if (isNil(infraID)) return null;
   return (

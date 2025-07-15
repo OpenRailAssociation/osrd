@@ -1,3 +1,4 @@
+import type { Geometry } from 'geojson';
 import type { ExpressionFilterSpecification } from 'maplibre-gl';
 import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 
@@ -10,6 +11,7 @@ export default function getKPLabelLayerProps(params: {
   PKFieldName?: string;
   colors: Theme;
   minzoom?: number;
+  highlightedArea?: Geometry;
 }): OmitLayer<SymbolLayer> {
   const {
     bottomOffset = 2.5,
@@ -18,6 +20,7 @@ export default function getKPLabelLayerProps(params: {
     minzoom = 7,
     isSignalisation = false,
     sourceTable,
+    highlightedArea,
   } = params;
 
   // Will have to be removed when backend will be updated with consistent fieldnames
@@ -59,6 +62,7 @@ export default function getKPLabelLayerProps(params: {
       'all',
       ['!=', ['literal', null], ['get', PKFieldName]],
       ['!=', '', ['get', PKFieldName]],
+      highlightedArea ? ['within', highlightedArea] : true,
     ],
     minzoom,
     layout: {

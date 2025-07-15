@@ -179,7 +179,8 @@ export const stdcmConfSlice = createSlice({
           | 'searchDatetimeWindow'
           | 'projectID'
           | 'studyID'
-          | 'scenarioID',
+          | 'scenarioID'
+          | 'activePerimeter',
           'infraID' | 'timetableID'
         >
       >
@@ -195,6 +196,7 @@ export const stdcmConfSlice = createSlice({
       state.projectID = action.payload.projectID;
       state.studyID = action.payload.studyID;
       state.scenarioID = action.payload.scenarioID;
+      state.activePerimeter = action.payload.activePerimeter;
 
       // check that the arrival dates are in the search time window
       const origin = state.stdcmPathSteps.at(0) as Extract<StdcmPathStep, { isVia: false }>;
@@ -218,6 +220,12 @@ export const stdcmConfSlice = createSlice({
       }
 
       state.stdcmPathSteps = [newOrigin, ...state.stdcmPathSteps.slice(1, -1), newDestination];
+    },
+    updateStdcmEnvironmentActiveArea(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['activePerimeter']>
+    ) {
+      state.activePerimeter = action.payload;
     },
     updateStdcmPathSteps(
       state: Draft<OsrdStdcmConfState>,
@@ -328,6 +336,7 @@ export const {
   updateGridMarginBefore,
   updateStandardAllowance,
   updateStdcmEnvironment,
+  updateStdcmEnvironmentActiveArea,
   updateStdcmPathSteps,
   updateStdcmPathStep,
   addStdcmVia,

@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
+import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ interface SNCF_PSLProps {
   punctualLayerOrder: number;
   infraID?: number;
   layersSettings: LayersSettings;
+  highlightedArea?: Geometry;
 }
 
 export function getPSLSpeedValueLayerProps({
@@ -156,9 +158,10 @@ const SNCF_PSL = ({
   punctualLayerOrder,
   infraID,
   layersSettings,
+  highlightedArea,
 }: SNCF_PSLProps) => {
   const { t } = useTranslation();
-  const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings);
+  const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings, highlightedArea);
 
   const speedValueParams = {
     ...getPSLSpeedValueLayerProps({
