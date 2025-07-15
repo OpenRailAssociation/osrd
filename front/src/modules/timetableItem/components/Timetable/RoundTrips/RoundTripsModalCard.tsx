@@ -9,7 +9,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 
-import { TRAIN_CATEGORY_CLASS } from '../consts';
+import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
@@ -97,7 +97,10 @@ const RoundTripsModalCard = ({
     <div className="round-trips-card">
       <div className="round-trips-card-header">
         <h3
-          className={cx('name', `train-category-text-${TRAIN_CATEGORY_CLASS[category ?? 'None']}`)}
+          className={cx(
+            'name',
+            `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category ?? 'None']}`
+          )}
         >
           {name}
         </h3>

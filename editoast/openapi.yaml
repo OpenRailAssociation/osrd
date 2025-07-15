@@ -9107,13 +9107,13 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainCategories'
+          $ref: '#/components/schemas/TrainMainCategories'
         power_restrictions:
           type: object
           additionalProperties:
             type: string
         primary_category:
-          $ref: '#/components/schemas/TrainCategory'
+          $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
         rolling_resistance:
@@ -11114,13 +11114,13 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainCategories'
+          $ref: '#/components/schemas/TrainMainCategories'
         power_restrictions:
           type: object
           additionalProperties:
             type: string
         primary_category:
-          $ref: '#/components/schemas/TrainCategory'
+          $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
         raise_pantograph_time:
@@ -11150,7 +11150,7 @@ components:
       properties:
         value:
           allOf:
-          - $ref: '#/components/schemas/TrainCategory'
+          - $ref: '#/components/schemas/TrainMainCategory'
           nullable: true
     RollingStockChangeGroup:
       type: object
@@ -11240,14 +11240,14 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainCategories'
+          $ref: '#/components/schemas/TrainMainCategories'
         power_restrictions:
           type: object
           description: Mapping of power restriction code to power class
           additionalProperties:
             type: string
         primary_category:
-          $ref: '#/components/schemas/TrainCategory'
+          $ref: '#/components/schemas/TrainMainCategory'
         raise_pantograph_time:
           type: number
           format: double
@@ -13310,7 +13310,7 @@ components:
         color:
           $ref: '#/components/schemas/SubCategoryColor'
         main_category:
-          $ref: '#/components/schemas/TrainCategory'
+          $ref: '#/components/schemas/TrainMainCategory'
         name:
           type: string
     SubCategoryColor:
@@ -13741,11 +13741,11 @@ components:
           items:
             $ref: '#/components/schemas/Slope'
       additionalProperties: false
-    TrainCategories:
+    TrainMainCategories:
       type: array
       items:
-        $ref: '#/components/schemas/TrainCategory'
-    TrainCategory:
+        $ref: '#/components/schemas/TrainMainCategory'
+    TrainMainCategory:
       type: string
       enum:
       - HIGH_SPEED_TRAIN
@@ -13776,7 +13776,7 @@ components:
       properties:
         category:
           allOf:
-          - $ref: '#/components/schemas/TrainCategory'
+          - $ref: '#/components/schemas/TrainMainCategory'
           nullable: true
         comfort:
           $ref: '#/components/schemas/Comfort'

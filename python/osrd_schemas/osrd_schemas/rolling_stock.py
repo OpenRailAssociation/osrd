@@ -16,7 +16,7 @@ RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.3"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
 
 
-class TrainCategory(str, Enum):
+class TrainMainCategory(str, Enum):
     """
     The list of categories that can be assigned to a rolling stock.
     """
@@ -349,10 +349,10 @@ class RollingStock(BaseModel, extra="forbid"):
         default=None,
     )
     supported_signaling_systems: List[str] = Field(default_factory=list)
-    primary_category: TrainCategory = Field(
+    primary_category: TrainMainCategory = Field(
         description="The primary category of the rolling stock."
     )
-    other_categories: List[TrainCategory] = Field(
+    other_categories: List[TrainMainCategory] = Field(
         description="Additional categories for the rolling stock."
     )
 

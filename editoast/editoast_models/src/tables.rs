@@ -6,8 +6,8 @@ pub mod sql_types {
     pub struct Geometry;
 
     #[derive(diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "train_category"))]
-    pub struct TrainCategory;
+    #[diesel(postgres_type(name = "train_main_category"))]
+    pub struct TrainMainCategory;
 }
 
 diesel::table! {
@@ -430,7 +430,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
-    use super::sql_types::TrainCategory;
+    use super::sql_types::TrainMainCategory;
 
     paced_train (id) {
         id -> Int8,
@@ -453,7 +453,7 @@ diesel::table! {
         options -> Jsonb,
         time_window -> Interval,
         interval -> Interval,
-        main_category -> Nullable<TrainCategory>,
+        main_category -> Nullable<TrainMainCategory>,
         exceptions -> Jsonb,
     }
 }
@@ -483,7 +483,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
-    use super::sql_types::TrainCategory;
+    use super::sql_types::TrainMainCategory;
 
     rolling_stock (id) {
         id -> Int8,
@@ -513,8 +513,8 @@ diesel::table! {
         version -> Int8,
         supported_signaling_systems -> Array<Nullable<Text>>,
         etcs_brake_params -> Jsonb,
-        primary_category -> TrainCategory,
-        other_categories -> Array<Nullable<TrainCategory>>,
+        primary_category -> TrainMainCategory,
+        other_categories -> Array<Nullable<TrainMainCategory>>,
     }
 }
 
@@ -787,7 +787,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
-    use super::sql_types::TrainCategory;
+    use super::sql_types::TrainMainCategory;
 
     train_schedule (id) {
         id -> Int8,
@@ -808,7 +808,7 @@ diesel::table! {
         speed_limit_tag -> Nullable<Varchar>,
         power_restrictions -> Jsonb,
         options -> Jsonb,
-        main_category -> Nullable<TrainCategory>,
+        main_category -> Nullable<TrainMainCategory>,
     }
 }
 

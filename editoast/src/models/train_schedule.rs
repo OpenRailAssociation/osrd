@@ -1,7 +1,7 @@
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::TrainCategory;
+use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
@@ -41,7 +41,7 @@ pub struct TrainSchedule {
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[model(json)]
     pub options: TrainScheduleOptions,
-    pub main_category: Option<TrainCategory>,
+    pub main_category: Option<TrainMainCategory>,
 }
 
 impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
@@ -77,6 +77,6 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .start_time(start_time)
             .train_name(train_name)
             .options(options)
-            .main_category(category.map(TrainCategory))
+            .main_category(category.map(TrainMainCategory))
     }
 }

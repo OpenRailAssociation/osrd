@@ -39,7 +39,7 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTimetableItem/helpers/formatTimetableItemPayload';
-import { TIMETABLE_ITEM_DELTA, TRAIN_CATEGORY_CLASS } from '../consts';
+import { TIMETABLE_ITEM_DELTA, TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
@@ -242,7 +242,7 @@ const PacedTrainItem = ({
             data-testid="occurrences-count"
             className={cx(
               'occurrences-count',
-              `train-category-bg-${TRAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+              `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
             )}
           >
             {occurrencesCount}
@@ -263,7 +263,7 @@ const PacedTrainItem = ({
               data-testid="paced-train-name"
               className={cx(
                 'train-name',
-                `train-category-text-${TRAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+                `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
               )}
             >
               {pacedTrain.name}

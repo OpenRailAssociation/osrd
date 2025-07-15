@@ -6,7 +6,7 @@ import {
   type MacroNodeResponse,
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
-  type TrainCategory,
+  type TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -258,7 +258,7 @@ export const getNetzgrafikColors = () =>
     colorDarkModeRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
   }));
 
-export const getTrainCategoryFromId = (id: number): TrainCategory | null => {
+export const getTrainCategoryFromId = (id: number): TrainMainCategory | null => {
   for (const key of OSRD_TRAINRUN_CATEGORY_MAPPING.keys()) {
     if (OSRD_TRAINRUN_CATEGORY_MAPPING.get(key)!.id === id) {
       return key !== 'NO_CATEGORY' ? key : null;
@@ -268,5 +268,5 @@ export const getTrainCategoryFromId = (id: number): TrainCategory | null => {
 };
 
 // If the categoryKey is null or undefined, we return the ID for 'NO_CATEGORY'
-export const getTrainrunCategoryId = (categoryKey?: TrainCategory | null) =>
+export const getTrainrunCategoryId = (categoryKey?: TrainMainCategory | null) =>
   OSRD_TRAINRUN_CATEGORY_MAPPING.get(categoryKey || 'NO_CATEGORY')!.id;
