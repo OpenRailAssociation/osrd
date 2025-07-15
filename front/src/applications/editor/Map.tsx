@@ -45,7 +45,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   mapStyle: MapStyle;
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
-  mapRef: React.RefObject<MapRef>;
+  mapRef: React.RefObject<MapRef | null>;
   infraID: number | undefined;
 }
 

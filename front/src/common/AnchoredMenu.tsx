@@ -6,7 +6,7 @@ import useModalFocusTrap from '../utils/hooks/useModalFocusTrap';
 
 type AnchoreMenuParams = {
   children?: React.ReactNode;
-  anchorRef: React.RefObject<HTMLElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
   onDismiss: () => void;
   container?: Element | null;
   alignment?: 'left' | 'right' | 'auto';

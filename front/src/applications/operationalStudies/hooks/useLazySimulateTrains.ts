@@ -41,13 +41,13 @@ export default function useLazySimulateTrains({
   onProgress,
 }: UseLazySimulateTrainsOptions) {
   const dispatch = useAppDispatch();
-  const loaderRef = useRef<TrainSimulationLazyLoader>();
+  const loaderRef = useRef<TrainSimulationLazyLoader>(null);
   const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItem>>(new Map());
   const [simulatedTrainsById, setSimulatedTrainsById] = useState<
     Map<TimetableItemId, TimetableItemWithDetails>
   >(new Map());
 
-  const onProgressRef = useRef<UseLazySimulateTrainsOptions['onProgress']>();
+  const onProgressRef = useRef<UseLazySimulateTrainsOptions['onProgress']>(null);
   onProgressRef.current = onProgress;
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function useLazySimulateTrains({
     loaderRef.current = loader;
     return () => {
       loader.cancel();
-      loaderRef.current = undefined;
+      loaderRef.current = null;
     };
   }, [infraId, electricalProfileSetId, rollingStocks]);
 

@@ -12,7 +12,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
 const useWaypointMenu = (
-  activeWaypointRef: RefObject<HTMLDivElement>,
+  activeWaypointRef: RefObject<HTMLDivElement | null>,
   waypointsPanelData?: WaypointsPanelData,
   allTrainsProjected?: boolean
 ) => {

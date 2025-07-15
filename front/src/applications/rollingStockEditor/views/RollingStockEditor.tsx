@@ -15,7 +15,7 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 
 const RollingStockEditor = () => {
   const { t } = useTranslation();
-  const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
+  const ref2scroll = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const { openModal } = useModal();

@@ -71,7 +71,7 @@ const ScenarioContent = ({
     updateTrainDepartureTime,
   } = useScenarioData(scenario, infra);
 
-  const macroEditorState = useRef<MacroEditorState>();
+  const macroEditorState = useRef<MacroEditorState>(null);
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 

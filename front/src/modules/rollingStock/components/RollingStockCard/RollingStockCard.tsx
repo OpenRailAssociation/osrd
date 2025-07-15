@@ -35,7 +35,7 @@ const RollingStockCard = ({
 }: RollingStockCardProps) => {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
-  const ref2scrollWhenOpened: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
+  const ref2scrollWhenOpened = useRef<HTMLInputElement>(null);
 
   const tractionModes = useMemo(() => {
     const localModes = {
