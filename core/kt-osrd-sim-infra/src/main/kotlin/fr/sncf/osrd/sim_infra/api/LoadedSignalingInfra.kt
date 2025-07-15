@@ -132,29 +132,3 @@ fun BlockInfra.convertBlockPath(blocks: List<String>): StaticIdxList<Block> {
     for (block in blocks) res.add(getBlockFromName(block)!!)
     return res
 }
-
-/**
- * Returns the sorted list of unique signal offsets on the block path, corresponding to the
- * signaling system if specified.
- */
-fun BlockInfra.getSignalOffsets(
-    rawInfra: RawInfra,
-    blockPath: StaticIdxList<Block>,
-    signalingSystemId: String? = null
-): List<Offset<BlockPath>> {
-    val res = mutableSetOf<Offset<BlockPath>>()
-    var currentOffset = Offset<BlockPath>(Distance.ZERO)
-    for (block in blockPath) {
-        val blockSignalsPositions = getSignalsPositions(block)
-        val blockSignalsTypes = getBlockSignals(block).map { rawInfra.getSignalingSystemId(it) }
-        assert(blockSignalsPositions.size == blockSignalsTypes.size)
-        for ((signalPosition, signalType) in blockSignalsPositions zip blockSignalsTypes) {
-            if (signalingSystemId == null || signalType == signalingSystemId) {
-                val signalOffset = currentOffset + signalPosition.distance
-                res.add(signalOffset)
-            }
-        }
-        currentOffset += getBlockLength(block).distance
-    }
-    return res.sorted()
-}

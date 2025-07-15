@@ -7,11 +7,9 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
-import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.increase
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.TravelledPath
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -62,9 +60,21 @@ interface ETCSBrakingSimulator {
 
     /**
      * Compute the ETCS EoAs, only for the stops which are inside an ETCS portion of the path
-     * present in the envelope.
+     * present in the envelope. Used to compute EoAs for:
+     * - stops
+     * - spacing requirement locations
+     * - routing requirement locations.
+     *
+     * Each stop offset has a corresponding signal which can be restrictive or not:
+     * - a restrictive signal corresponds to a CLOSED or route delimiter signal
+     * - a non-restrictive signal corresponds to an OPEN or non-route delimiter signal.
      */
-    fun computeEoaLocations(envelope: Envelope, stops: Collection<SimStop>): List<EndOfAuthority>
+    fun computeEoaLocations(
+        envelope: Envelope,
+        offsets: List<Offset<TravelledPath>>,
+        areSignalsOnOffsetsRestrictive: List<Boolean>,
+        eoaType: EoaType,
+    ): List<EndOfAuthority>
 }
 
 typealias BrakingCurves = EnumMap<BrakingType, BrakingCurve?>
@@ -92,7 +102,8 @@ data class LimitOfAuthority(
 data class EndOfAuthority(
     val offsetEOA: Offset<TravelledPath>,
     val offsetSVL: Offset<TravelledPath>?,
-    val usedCurveType: BrakingType
+    val usedCurveType: BrakingType,
+    val eoaType: EoaType = EoaType.STOP,
 ) : Comparable<EndOfAuthority> {
     init {
         if (offsetSVL != null) assert(offsetSVL >= offsetEOA)
@@ -100,11 +111,25 @@ data class EndOfAuthority(
 
     override fun compareTo(other: EndOfAuthority): Int {
         if (offsetEOA != other.offsetEOA) return offsetEOA.compareTo(other.offsetEOA)
-        if (offsetSVL == null && other.offsetSVL == null) return 0
-        if (offsetSVL == null) return -1
-        if (other.offsetSVL == null) return 1
-        return offsetSVL.compareTo(other.offsetSVL)
+        if (offsetSVL != other.offsetSVL) {
+            if (offsetSVL == null) return -1
+            if (other.offsetSVL == null) return 1
+            return offsetSVL.compareTo(other.offsetSVL)
+        }
+        if (usedCurveType != other.usedCurveType) {
+            return usedCurveType.compareTo(other.usedCurveType)
+        }
+        if (eoaType != other.eoaType) {
+            return eoaType.compareTo(other.eoaType)
+        }
+        return 0
     }
+}
+
+enum class EoaType {
+    STOP,
+    SPACING,
+    ROUTING
 }
 
 class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSBrakingSimulator {
@@ -204,14 +229,16 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun computeEoaLocations(
         envelope: Envelope,
-        stops: Collection<SimStop>
+        offsets: List<Offset<TravelledPath>>,
+        areSignalsOnOffsetsRestrictive: List<Boolean>,
+        eoaType: EoaType
     ): List<EndOfAuthority> {
         val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
-        val orderedStops = stops.sortedBy { it.offset }
+        val orderedStops = offsets.zip(areSignalsOnOffsetsRestrictive).sortedBy { it.first }
         val endsOfAuthority = mutableListOf<EndOfAuthority>()
         for (stop in orderedStops) {
-            var stopOffset = stop.offset
-            if (stopOffset.distance == Distance.ZERO) continue
+            var stopOffset = stop.first
+            val isStopSignalRestrictive = stop.second
             val isBeginPos =
                 TrainPhysicsIntegrator.arePositionsEqual(
                     stopOffset.distance.meters,
@@ -239,22 +266,97 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 )
             }
             if (etcsRanges.contains(stopOffset.distance)) {
-                endsOfAuthority.add(
-                    EndOfAuthority(
-                        offsetEOA = stopOffset,
-                        // On a closed signal, we follow the indication speed curve with an SVL at
-                        // the next danger point to protect
-                        // On an open signal, we follow the permitted speed curve with no SVL
-                        offsetSVL =
-                            if (stop.rjsReceptionSignal.isStopOnClosedSignal)
-                                this.context.etcsContext.getDangerPoint(stopOffset)
-                            else null,
-                        usedCurveType =
-                            if (stop.rjsReceptionSignal.isStopOnClosedSignal) IND else PS
-                    )
-                )
+                val eoa =
+                    when (eoaType) {
+                        EoaType.STOP -> computeStopEoA(stopOffset, isStopSignalRestrictive)
+                        EoaType.SPACING ->
+                            computeSpacingConflictEoa(
+                                stopOffset,
+                                isStopSignalRestrictive,
+                                envelope.endPos
+                            )
+                        EoaType.ROUTING ->
+                            computeRoutingConflictEoa(stopOffset, isStopSignalRestrictive)
+                    }
+                if (eoa != null) endsOfAuthority.add(eoa)
             }
         }
         return endsOfAuthority
+    }
+
+    /** Compute the EoA for a simple stop. */
+    private fun computeStopEoA(
+        stopOffset: Offset<TravelledPath>,
+        isStopOnClosedSignal: Boolean,
+    ): EndOfAuthority {
+        return if (isStopOnClosedSignal) {
+            // On a closed signal, EoA = signal, SvL = next closed signal danger point.
+            EndOfAuthority(
+                offsetEOA = stopOffset,
+                offsetSVL = this.context.etcsContext!!.getMandatoryDangerPoint(stopOffset),
+                usedCurveType = IND,
+                eoaType = EoaType.STOP
+            )
+        } else {
+            // On an open signal, EoA = stop, SvL = null and the used curve is the permitted speed.
+            EndOfAuthority(
+                offsetEOA = stopOffset,
+                offsetSVL = null,
+                usedCurveType = PS,
+                eoaType = EoaType.STOP
+            )
+        }
+    }
+
+    /** Compute the EoA for a spacing conflict on a signal. */
+    private fun computeSpacingConflictEoa(
+        signalOffset: Offset<TravelledPath>,
+        isRouteDelimiter: Boolean,
+        endPos: Double
+    ): EndOfAuthority? {
+        val nextDetector = this.context.etcsContext!!.getNextDetector(signalOffset)!!
+        return if (isRouteDelimiter) {
+            // On a route delimiter signal for spacing requirements, EoA = signal, SvL = next
+            // detector.
+            EndOfAuthority(
+                offsetEOA = signalOffset,
+                offsetSVL = nextDetector,
+                usedCurveType = IND,
+                eoaType = EoaType.SPACING
+            )
+        } else if (nextDetector.distance.meters <= endPos) {
+            // On a non-route delimiter signal for spacing requirements, EoA = SvL = next detector.
+            EndOfAuthority(
+                offsetEOA = nextDetector,
+                offsetSVL = nextDetector,
+                usedCurveType = IND,
+                eoaType = EoaType.SPACING
+            )
+        } else {
+            // On a non-route delimiter  signal, if the next detector is not located before the end
+            // position, then the EoA is not on the path: return null.
+            null
+        }
+    }
+
+    /** Compute the EoA for a routing conflict on a signal. */
+    private fun computeRoutingConflictEoa(
+        signalOffset: Offset<TravelledPath>,
+        isRouteDelimiter: Boolean,
+    ): EndOfAuthority? {
+        return if (isRouteDelimiter) {
+            // On a route delimiter signal for routing requirements, EoA = signal, SvL = next
+            // mandatory danger point.
+            EndOfAuthority(
+                offsetEOA = signalOffset,
+                offsetSVL = this.context.etcsContext!!.getMandatoryDangerPoint(signalOffset),
+                usedCurveType = IND,
+                eoaType = EoaType.ROUTING
+            )
+        } else {
+            // It isn't possible to have a routing requirement on a non-route delimiter signal:
+            // return null.
+            null
+        }
     }
 }

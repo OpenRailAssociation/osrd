@@ -4,7 +4,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
-import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
+import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -420,30 +420,15 @@ class SpacingRequirementAutomaton(
         etcsSimulator: ETCSBrakingSimulator,
     ): SignalRequirementsCreationStatus {
         val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
-        // Find the first zone of the block protected by signal
-        val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
-        val blockStartOffset =
-            incrementalPath.toTravelledPath(
-                incrementalPath.getZonePathStartOffset(firstRequiredZone)
-            )
-
-        var isNf = true
+        var isRouteDelimiter = true
         try {
-            isNf = loadedSignalInfra.getSettings(pathSignal.signal).getFlag("Nf")
+            isRouteDelimiter = loadedSignalInfra.getSettings(pathSignal.signal).getFlag("Nf")
         } catch (e: Throwable) {
             logger.warn {
                 "Unable to determine if " +
-                    "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} is Nf or F: $e"
+                    "signal ${rawInfra.getLogicalSignalName(pathSignal.signal)} is a route delimiter or not: $e"
             }
         }
-
-        // EoA offset is the detector (blockStartOffset) if signal is 'F' and signalOffset if 'Nf'
-        // SvL offset is always the detector
-        // The braking curve used is always the indication curve, pending potential future
-        // refinements
-        val eoa =
-            EndOfAuthority(if (isNf) signalOffset else blockStartOffset, blockStartOffset, IND)
-
         val envelope = callbacks.getRawEnvelopeIfSingle()
         // TODO: stop using a single envelope that's unavailable in STDCM and maybe move to a
         //   dedicated EnvelopeTimeInterpolate.getIntersection().
@@ -452,11 +437,23 @@ class SpacingRequirementAutomaton(
         assert(envelope != null) {
             "A single envelope covering whole path is currently expected (used only through standalone simulation)"
         }
-        val curvesList = etcsSimulator.computeStopBrakingCurves(envelope!!, listOf(eoa))
+
+        val eoa =
+            etcsSimulator
+                .computeEoaLocations(
+                    envelope!!,
+                    listOf(signalOffset),
+                    listOf(isRouteDelimiter),
+                    EoaType.SPACING
+                )
+                .first()
+        val curvesList = etcsSimulator.computeStopBrakingCurves(envelope, listOf(eoa))
 
         assert(curvesList.size == 1)
         val reqPos = curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
 
+        // Find the first zone of the block protected by signal
+        val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)
         // Find the last zone required by the signal
         val lastRequiredZone = getSignalFirstProtectedBlockLastZone(pathSignal)
 

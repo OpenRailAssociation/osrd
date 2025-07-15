@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EndOfAuthority
+import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.TravelledPath
@@ -106,7 +107,13 @@ private fun addStopBrakingCurves(
     curveWithDecelerations: Envelope
 ): Envelope {
     var envelope = curveWithDecelerations
-    val etcsStops = etcsSimulator.computeEoaLocations(curveWithDecelerations, stops)
+    val etcsStops =
+        etcsSimulator.computeEoaLocations(
+            curveWithDecelerations,
+            stops.map { it.offset },
+            stops.map { it.rjsReceptionSignal.isStopOnClosedSignal },
+            EoaType.STOP
+        )
     val constStops =
         stops
             .filter { stop ->
