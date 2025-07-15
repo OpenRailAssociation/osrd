@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { keyColumn, createTextColumn } from '@sdziadkowiec/react-datasheet-grid';
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
-import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';

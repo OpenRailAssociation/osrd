@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
-import { DataSheetGrid, keyColumn, intColumn, floatColumn } from 'react-datasheet-grid';
-import 'react-datasheet-grid/dist/style.css';
+import {
+  DataSheetGrid,
+  keyColumn,
+  intColumn,
+  floatColumn,
+} from '@sdziadkowiec/react-datasheet-grid';
+import '@sdziadkowiec/react-datasheet-grid/dist/style.css';
 import { useTranslation } from 'react-i18next';
 
 import type {

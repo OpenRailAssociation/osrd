@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 
-import type { CellProps } from 'react-datasheet-grid/dist/types';
+import type { CellProps } from '@sdziadkowiec/react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import type { TimeExtraDays } from './types';

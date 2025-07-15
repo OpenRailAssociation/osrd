@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
+import type { Operation } from '@sdziadkowiec/react-datasheet-grid/dist/types';
 import { isEqual, isNil } from 'lodash';
-import type { Operation } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
