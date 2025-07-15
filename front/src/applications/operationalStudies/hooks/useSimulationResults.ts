@@ -6,6 +6,10 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
+import {
+  extractOccurrenceDetailsFromPacedTrain,
+  findExceptionWithOccurrenceId,
+} from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
@@ -40,22 +44,40 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, exceptions, paced, ...trainProps } = timetableItem;
+    const exception = findExceptionWithOccurrenceId(timetableItem.exceptions, selectedTrainId);
 
-    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
-    const pacedTrainIntervalInMs = Duration.parse(timetableItem.paced.interval).ms;
+    let startTime: string;
+    if (exception?.start_time) {
+      startTime = exception.start_time.value;
+    } else {
+      const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
+      const pacedTrainIntervalInMs = Duration.parse(timetableItem.paced.interval).ms;
+      startTime = dayjs(timetableItem.start_time)
+        .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
+        .toISOString();
+    }
 
-    const occurrenceStartTime: string = dayjs(timetableItem.start_time)
-      .add(occurrenceIndex * pacedTrainIntervalInMs, 'ms')
-      .toISOString();
-    return { ...trainProps, id: selectedTrainId, start_time: occurrenceStartTime };
-  }, [timetableItem]);
+    return {
+      ...timetableItem,
+      start_time: startTime,
+      ...(exception ? extractOccurrenceDetailsFromPacedTrain(timetableItem, exception) : {}),
+      id: selectedTrainId,
+    };
+  }, [selectedTrainId, timetableItem]);
+
+  const exception = useMemo(() => {
+    if (!selectedTrainId || !timetableItem || !isPacedTrainResponseWithPacedTrainId(timetableItem))
+      return undefined;
+    if (isTrainScheduleId(selectedTrainId))
+      throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
+    return findExceptionWithOccurrenceId(timetableItem.exceptions, selectedTrainId);
+  }, [selectedTrainId, timetableItem]);
 
   const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
     {
       id: selectedTrainId!,
       infraId,
+      exceptionKey: exception?.key,
     },
     {
       skip: !selectedTrainId,
@@ -67,6 +89,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       id: selectedTrainId!,
       infraId,
       electricalProfileSetId,
+      exceptionKey: exception?.key,
     },
     {
       skip: !selectedTrainId,
