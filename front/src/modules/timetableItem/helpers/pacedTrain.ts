@@ -31,54 +31,53 @@ export const findExceptionWithOccurrenceId = (
   return exceptions.find(({ key }) => addedExceptionId === key);
 };
 
-export const formatPacedTrainWithOccurrenceDetails = <
+export const extractOccurrenceDetailsFromPacedTrain = <
   T extends Omit<PacedTrain, 'paced' | 'exceptions'>,
 >(
   pacedTrain: T,
   exceptionChangeGroups: ExceptionChangeGroups
 ) => {
-  const updatedPacedTrain = { ...pacedTrain };
+  const occurrence = { ...pacedTrain };
 
   if (exceptionChangeGroups.train_name) {
-    updatedPacedTrain.train_name = exceptionChangeGroups.train_name.value;
+    occurrence.train_name = exceptionChangeGroups.train_name.value;
   }
   if (exceptionChangeGroups.start_time) {
-    updatedPacedTrain.start_time = exceptionChangeGroups.start_time.value;
+    occurrence.start_time = exceptionChangeGroups.start_time.value;
   }
   if (exceptionChangeGroups.speed_limit_tag) {
     // speed limit tag will always be a string or null
-    updatedPacedTrain.speed_limit_tag = exceptionChangeGroups.speed_limit_tag.value!;
+    occurrence.speed_limit_tag = exceptionChangeGroups.speed_limit_tag.value!;
   }
   if (exceptionChangeGroups.labels) {
-    updatedPacedTrain.labels = exceptionChangeGroups.labels.value;
+    occurrence.labels = exceptionChangeGroups.labels.value;
   }
   if (exceptionChangeGroups.initial_speed) {
-    updatedPacedTrain.initial_speed = exceptionChangeGroups.initial_speed.value;
+    occurrence.initial_speed = exceptionChangeGroups.initial_speed.value;
   }
   if (exceptionChangeGroups.constraint_distribution) {
-    updatedPacedTrain.constraint_distribution = exceptionChangeGroups.constraint_distribution.value;
+    occurrence.constraint_distribution = exceptionChangeGroups.constraint_distribution.value;
   }
   if (exceptionChangeGroups.rolling_stock_category) {
-    updatedPacedTrain.category = exceptionChangeGroups.rolling_stock_category.value;
+    occurrence.category = exceptionChangeGroups.rolling_stock_category.value;
   }
   if (exceptionChangeGroups.rolling_stock) {
-    updatedPacedTrain.rolling_stock_name = exceptionChangeGroups.rolling_stock.rolling_stock_name;
-    updatedPacedTrain.comfort = exceptionChangeGroups.rolling_stock.comfort;
+    occurrence.rolling_stock_name = exceptionChangeGroups.rolling_stock.rolling_stock_name;
+    occurrence.comfort = exceptionChangeGroups.rolling_stock.comfort;
   }
   if (exceptionChangeGroups.path_and_schedule) {
-    updatedPacedTrain.margins = exceptionChangeGroups.path_and_schedule.margins;
-    updatedPacedTrain.path = exceptionChangeGroups.path_and_schedule.path;
-    updatedPacedTrain.power_restrictions =
-      exceptionChangeGroups.path_and_schedule.power_restrictions;
-    updatedPacedTrain.schedule = exceptionChangeGroups.path_and_schedule.schedule;
+    occurrence.margins = exceptionChangeGroups.path_and_schedule.margins;
+    occurrence.path = exceptionChangeGroups.path_and_schedule.path;
+    occurrence.power_restrictions = exceptionChangeGroups.path_and_schedule.power_restrictions;
+    occurrence.schedule = exceptionChangeGroups.path_and_schedule.schedule;
   }
   if (exceptionChangeGroups.options) {
     // options is optional when creating a timetable item but
     // is always present when editing an existing one
-    updatedPacedTrain.options!.use_electrical_profiles =
+    occurrence.options!.use_electrical_profiles =
       exceptionChangeGroups.options.value?.use_electrical_profiles;
-    updatedPacedTrain.options!.use_speed_limits_for_simulation =
+    occurrence.options!.use_speed_limits_for_simulation =
       exceptionChangeGroups.options.value?.use_speed_limits_for_simulation;
   }
-  return updatedPacedTrain;
+  return occurrence;
 };
