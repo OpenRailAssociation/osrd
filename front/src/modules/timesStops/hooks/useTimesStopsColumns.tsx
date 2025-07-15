@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
 
+import {
+  keyColumn,
+  type Column,
+  checkboxColumn,
+  createTextColumn,
+} from '@sdziadkowiec/react-datasheet-grid';
+import type { CellComponent } from '@sdziadkowiec/react-datasheet-grid/dist/types';
 import cx from 'classnames';
-import { keyColumn, type Column, checkboxColumn, createTextColumn } from 'react-datasheet-grid';
-import type { CellComponent } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import { NO_BREAK_SPACE } from 'utils/strings';

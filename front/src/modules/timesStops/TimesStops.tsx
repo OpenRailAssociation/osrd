@@ -1,6 +1,6 @@
+import { DynamicDataSheetGrid, type DataSheetGridProps } from '@sdziadkowiec/react-datasheet-grid';
+import type { Operation } from '@sdziadkowiec/react-datasheet-grid/dist/types';
 import cx from 'classnames';
-import { DynamicDataSheetGrid, type DataSheetGridProps } from 'react-datasheet-grid';
-import type { Operation } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import { Loader } from 'common/Loaders/Loader';
