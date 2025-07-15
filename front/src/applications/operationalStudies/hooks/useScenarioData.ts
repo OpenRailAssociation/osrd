@@ -161,7 +161,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     }
   }, [timetableItems, infra.state, simulatedTrainsById]);
 
-  const broadcastChannel = useRef<BroadcastChannel>();
+  const broadcastChannel = useRef<BroadcastChannel>(null);
 
   const broadcastScenarioMessage = (msg: ScenarioBroadcastMessage) => {
     broadcastChannel.current?.postMessage(msg);
@@ -326,7 +326,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
     return () => {
       channel.close();
-      broadcastChannel.current = undefined;
+      broadcastChannel.current = null;
     };
   }, [scenario]);
 

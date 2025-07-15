@@ -133,7 +133,7 @@ export default function MapButtons({
     }
   }, [editorProps, openModal, toggleMapModal, dispatch, layersSettings]);
 
-  const mapButtonsRef = useRef<HTMLDivElement | null>(null);
+  const mapButtonsRef = useRef<HTMLDivElement>(null);
 
   // Close the pop up of the map
   useEffect(() => {

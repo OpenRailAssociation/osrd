@@ -53,7 +53,7 @@ const useStdcm = ({
   const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
-  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>();
+  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>(null);
   const isCancelledRef = useRef(false);
 
   const currentSimulationInputs = useStdcmForm();
@@ -247,7 +247,7 @@ const useStdcm = ({
         promise.abort();
       }
     });
-    requestPromise.current = undefined;
+    requestPromise.current = null;
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
 

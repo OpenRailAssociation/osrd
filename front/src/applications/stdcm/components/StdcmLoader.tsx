@@ -12,8 +12,8 @@ const LOADER_OFFSET = 32;
 type StdcmLoaderProps = {
   isPendingAdditional: boolean;
   cancelStdcmRequest: () => void;
-  launchButtonRef: RefObject<HTMLDivElement>;
-  formRef: RefObject<HTMLDivElement>;
+  launchButtonRef: RefObject<HTMLDivElement | null>;
+  formRef: RefObject<HTMLDivElement | null>;
 };
 
 const StdcmLoader = ({
@@ -25,7 +25,7 @@ const StdcmLoader = ({
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const { top } = launchButtonRef.current!.getBoundingClientRect();
+  const { top } = launchButtonRef.current?.getBoundingClientRect() ?? { top: 0 };
   const windowHeight = window.innerHeight;
 
   const [loaderStatus, setLoaderStatus] = useState<LoaderStatus>({

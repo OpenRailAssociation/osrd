@@ -12,7 +12,7 @@ export type OSRDMenuItem = {
 };
 
 type OSRDMenuProps = {
-  menuRef: React.RefObject<HTMLDivElement>;
+  menuRef: React.RefObject<HTMLDivElement | null>;
   items: OSRDMenuItem[];
   className?: string;
 };

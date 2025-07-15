@@ -47,7 +47,7 @@ const initialModalContext: ModalContextType = {
 export const ModalContext = createContext(initialModalContext);
 
 export const ModalSNCF = () => {
-  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
 
   useOutsideClick(modalRef, closeModal, isOpen);

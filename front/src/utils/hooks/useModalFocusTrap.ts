@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  * */
 
 export default function useModalFocusTrap(
-  modalRef: React.RefObject<HTMLDivElement | HTMLDialogElement>,
+  modalRef: React.RefObject<HTMLDivElement | HTMLDialogElement | null>,
   closeModal: () => void,
   { focusOnFirstElement = false } = {}
 ) {

@@ -21,7 +21,7 @@ const useLazyProjectTrains = ({
   path,
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
-  const loaderRef = useRef<TrainProjectionLazyLoader>();
+  const loaderRef = useRef<TrainProjectionLazyLoader>(null);
   const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItem>>(new Map());
   const [projectedTrainsById, setProjectedTrainsById] = useState<
     Map<TimetableItemId, TrainSpaceTimeData>
@@ -48,7 +48,7 @@ const useLazyProjectTrains = ({
     loaderRef.current = loader;
     return () => {
       loader.cancel();
-      loaderRef.current = undefined;
+      loaderRef.current = null;
     };
   }, [infraId, electricalProfileSetId, path]);
 

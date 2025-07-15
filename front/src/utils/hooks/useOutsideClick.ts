@@ -4,7 +4,7 @@ import { useEffect, type RefObject, useState } from 'react';
  * Register click outside event to close the modal.
  * Using setHasChanges allow us to trigger a confirm close modal if needed.
  */
-const useOutsideClick = <T extends HTMLElement = HTMLElement>(
+const useOutsideClick = <T extends HTMLElement | null = HTMLElement>(
   ref: RefObject<T>,
   callback: (e: MouseEvent) => void,
   isOpen?: boolean
