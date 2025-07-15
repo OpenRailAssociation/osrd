@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { IconData } from '../types/icon-data';
 import { default as sizes } from '../sizes';
 
@@ -33,7 +33,7 @@ const IconReplaceName: IconReplaceNameIcon = ({
         height={currentSize}
         fill={iconColor || 'currentColor'}
         viewBox={`0 0 ${currentSize} ${currentSize}`}
-        dangerouslySetInnerHTML={{ __html: data }}
+        dangerouslySetInnerHTML={useMemo(() => ({ __html: data }), [data])}
       />
     </span>
   );
