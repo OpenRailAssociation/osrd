@@ -1,9 +1,6 @@
 import { sortBy } from 'lodash';
 
-import type {
-  MacroNodeResponse,
-  SearchResultItemOperationalPoint,
-} from 'common/api/osrdEditoastApi';
+import type { MacroNodeResponse, OperationalPoint } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 
 import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
@@ -246,14 +243,17 @@ export default class MacroEditorState {
   /**
    * Given a search result item, returns all possible pathKeys, ordered by weight.
    */
-  static getPathKeys(item: SearchResultItemOperationalPoint): string[] {
+  static getPathKeys(op: OperationalPoint): string[] {
+    const { uic } = op.extensions?.identifier ?? {};
+    const { trigram, ch } = op.extensions?.sncf ?? {};
+
     const result = [];
-    result.push(`op_id:${item.obj_id}`);
-    result.push(`trigram:${item.trigram}${item.ch ? `/${item.ch}` : ''}`);
-    result.push(`uic:${item.uic}${item.ch ? `/${item.ch}` : ''}`);
-    item.track_sections.forEach((ts) => {
-      result.push(`track_offset:${ts.track}+${ts.position}`);
-    });
+    result.push(`op_id:${op.id}`);
+    result.push(`trigram:${trigram}${ch ? `/${ch}` : ''}`);
+    result.push(`uic:${uic}${ch ? `/${ch}` : ''}`);
+    for (const opPart of op.parts) {
+      result.push(`track_offset:${opPart.track}+${opPart.position}`);
+    }
     return result;
   }
 }

@@ -1,10 +1,12 @@
 import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
+import {
+  getUniqueOpRefsFromTimetableItems,
+  addPathOpsToTimetableItems,
+} from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { SearchResultItemOperationalPoint, TrainSchedule } from 'common/api/osrdEditoastApi';
-import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 import {
@@ -79,42 +81,6 @@ const getNgeTrainrunFrequencies = (
   });
 
   return trainrunFrequencies;
-};
-
-/**
- * Execute the search payload and collect all result pages.
- */
-const executeSearch = async (
-  state: MacroEditorState,
-  timetableItems: TimetableItem[],
-  dispatch: AppDispatch
-): Promise<SearchResultItemOperationalPoint[]> => {
-  const pathSteps: TrainSchedule['path'] = timetableItems.flatMap(
-    (timetableItem) => timetableItem.path
-  );
-  const searchPayload = buildOpSearchQuery(state.infraId, pathSteps);
-  if (!searchPayload) {
-    return [];
-  }
-  const pageSize = 100;
-  let done = false;
-  const searchResults: SearchResultItemOperationalPoint[] = [];
-  for (let page = 1; !done; page += 1) {
-    const searchPromise = dispatch(
-      osrdEditoastApi.endpoints.postSearch.initiate(
-        {
-          page,
-          pageSize,
-          searchPayload,
-        },
-        { track: false }
-      )
-    );
-    const results = (await searchPromise.unwrap()) as SearchResultItemOperationalPoint[];
-    searchResults.push(...results);
-    done = results.length < pageSize;
-  }
-  return searchResults;
 };
 
 const distance = (a: [number, number], b: [number, number]): number => {
@@ -285,7 +251,7 @@ export const getTrainrunCategories = (t: TFunction<'operational-studies'>): Trai
  */
 export const loadAndIndexNge = async (
   state: MacroEditorState,
-  timetableItems: TimetableItem[],
+  timetableItems: TimetableItemWithPathOps[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies'>
 ): Promise<void> => {
@@ -310,21 +276,17 @@ export const loadAndIndexNge = async (
       }
     });
 
-  // Enhance nodes by calling the search API
-  const searchResults = await executeSearch(state, timetableItems, dispatch);
-  searchResults.forEach((searchResult) => {
-    const macroNode: Pick<NodeIndexed, 'full_name' | 'trigram' | 'geocoord'> = {
-      full_name: searchResult.name,
-      trigram: searchResult.trigram + (searchResult.ch ? `/${searchResult.ch}` : ''),
-      geocoord: {
-        lng: searchResult.geographic.coordinates[0],
-        lat: searchResult.geographic.coordinates[1],
-      },
-    };
-    MacroEditorState.getPathKeys(searchResult).forEach((pathKey) => {
-      state.updateNodeDataByKey(pathKey, macroNode);
-    });
-  });
+  const pathOps = timetableItems.flatMap((timetableItem) => timetableItem.pathOps).flat();
+  for (const op of pathOps) {
+    const { trigram, ch } = op.extensions?.sncf ?? {};
+    for (const pathKey of MacroEditorState.getPathKeys(op)) {
+      state.updateNodeDataByKey(pathKey, {
+        full_name: op.extensions?.identifier?.name,
+        trigram: trigram ? trigram + (ch ? `/${ch}` : '') : null,
+        geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
+      });
+    }
+  }
 
   // Load saved nodes and update the indexed nodes
   // If a saved node is not present in the timetableItems, we delete it.
@@ -585,6 +547,24 @@ export const getNgeDto = (
   };
 };
 
+const fetchTimetableItemPathOps = async (
+  infraId: number,
+  timetableItems: TimetableItem[],
+  dispatch: AppDispatch
+): Promise<TimetableItemWithPathOps[]> => {
+  const opRefs = getUniqueOpRefsFromTimetableItems(timetableItems);
+  const ops = await dispatch(
+    osrdEditoastApi.endpoints.matchAllOperationalPoints.initiate(
+      {
+        infraId,
+        opRefs,
+      },
+      { subscribe: false }
+    )
+  ).unwrap();
+  return addPathOpsToTimetableItems(timetableItems, opRefs, ops);
+};
+
 export const loadNgeDto = async (
   state: MacroEditorState,
   timetableId: number,
@@ -603,6 +583,7 @@ export const loadNgeDto = async (
       ...trainSchedule,
       id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
     }));
+
   const pacedTrainsPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
       { timetableId },
@@ -615,7 +596,13 @@ export const loadNgeDto = async (
       ...pacedTrain,
       id: formatEditoastIdToPacedTrainId(pacedTrain.id),
     }));
-  const timetableItems = [...trainSchedules, ...pacedTrains];
+
+  const timetableItems = await fetchTimetableItemPathOps(
+    state.infraId,
+    [...trainSchedules, ...pacedTrains],
+    dispatch
+  );
+
   await loadAndIndexNge(state, timetableItems, dispatch, t);
   return getNgeDto(state, timetableItems);
 };
