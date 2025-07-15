@@ -8,20 +8,17 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingCurves
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
-import fr.sncf.osrd.envelope_sim.pipelines.SimStop
+import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
-import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
-import fr.sncf.osrd.sim_infra.api.TravelledPath
-import fr.sncf.osrd.sim_infra.api.getSignalOffsets
-import fr.sncf.osrd.sim_infra.api.makePathProperties
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.buildSignalingRanges
 import fr.sncf.osrd.standalone_sim.getSimStops
 import fr.sncf.osrd.standalone_sim.makeETCSContext
 import fr.sncf.osrd.utils.*
+import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -112,36 +109,96 @@ class ETCSBrakingCurvesEndpoint(
             val slowdowns = etcsSimulator.computeLoaLocations(mrsp)
             val slowdownBrakingCurves = etcsSimulator.computeSlowdownBrakingCurves(mrsp, slowdowns)
             // Compute stop braking curves.
-            val etcsStops = etcsSimulator.computeEoaLocations(mrsp, stops)
+            val etcsStops =
+                etcsSimulator.computeEoaLocations(
+                    mrsp,
+                    stops.map { it.offset },
+                    stops.map { it.rjsReceptionSignal.isStopOnClosedSignal },
+                    EoaType.STOP
+                )
             val stopBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsStops)
-            // Compute signal braking curves.
-            val etcsSignalBlockPathOffsets =
-                infra.blockInfra.getSignalOffsets(infra.rawInfra, blockPath, ETCS_LEVEL2.id)
+            // Compute conflict braking curves on each of the path's ETCS signals.
             val pathOffsetBuilder =
                 PathOffsetBuilder(
                     trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath)
                         .distance
                 )
-            val etcsSignalOffsets =
-                etcsSignalBlockPathOffsets
-                    .map { pathOffsetBuilder.toTravelledPath(it) }
-                    .filter { it.distance > Distance.ZERO && it.distance <= chunkPath.length }
-            val etcsSignalStops =
-                etcsSignalOffsets.map { SimStop(it, RJSReceptionSignal.SHORT_SLIP_STOP) }
-            val etcsSignalEoas = etcsSimulator.computeEoaLocations(mrsp, etcsSignalStops)
-            val signalBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsSignalEoas)
+            val etcsSignals =
+                getTravelledPathSignals(infra, blockPath, pathOffsetBuilder, ETCS_LEVEL2.id)
+            val etcsSignalsOnPath =
+                etcsSignals.filter {
+                    it.offset.distance > Distance.ZERO && it.offset.distance <= chunkPath.length
+                }
+            val etcsSignalOffsets = etcsSignalsOnPath.map { it.offset }
+            val areEtcsSignalRouteDelimiters = etcsSignalsOnPath.map { it.isRouteDelimiter }
+            val etcsSpacingConflictEoas =
+                etcsSimulator.computeEoaLocations(
+                    mrsp,
+                    etcsSignalOffsets,
+                    areEtcsSignalRouteDelimiters,
+                    EoaType.SPACING
+                )
+            val etcsRoutingConflictEoas =
+                etcsSimulator.computeEoaLocations(
+                    mrsp,
+                    etcsSignalOffsets,
+                    areEtcsSignalRouteDelimiters,
+                    EoaType.ROUTING
+                )
+            val etcsConflictEoas = etcsSpacingConflictEoas.plus(etcsRoutingConflictEoas).sorted()
+            val conflictBrakingCurves =
+                etcsSimulator.computeStopBrakingCurves(mrsp, etcsConflictEoas)
 
             // Build response.
             val res =
                 ETCSBrakingCurvesResponse(
                     slowdownBrakingCurves.map { buildETCSCurves(it.value) },
                     stopBrakingCurves.map { buildETCSCurves(it.value) },
-                    signalBrakingCurves.map { buildETCSCurves(it.value) }
+                    conflictBrakingCurves.map { buildETCSCurves(it.value) }
                 )
             RsJson(RsWithBody(etcsBrakingCurvesResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
         }
+    }
+
+    private data class TravelledPathSignal(
+        val offset: Offset<TravelledPath>,
+        val isRouteDelimiter: Boolean
+    ) : Comparable<TravelledPathSignal> {
+        override fun compareTo(other: TravelledPathSignal): Int {
+            return offset.compareTo(other.offset)
+        }
+    }
+
+    /**
+     * Returns the sorted list of unique signals on the block path, corresponding to the signaling
+     * system if specified.
+     */
+    private fun getTravelledPathSignals(
+        fullInfra: FullInfra,
+        blockPath: StaticIdxList<Block>,
+        pathOffsetBuilder: PathOffsetBuilder,
+        signalingSystemId: String? = null
+    ): List<TravelledPathSignal> {
+        val res = mutableSetOf<TravelledPathSignal>()
+        var currentOffset = Offset<BlockPath>(Distance.ZERO)
+        for (block in blockPath) {
+            val blockSignalsPositions = fullInfra.blockInfra.getSignalsPositions(block)
+            val blockSignals = fullInfra.blockInfra.getBlockSignals(block)
+            assert(blockSignalsPositions.size == blockSignals.size)
+            for ((signalPosition, signal) in blockSignalsPositions zip blockSignals) {
+                val signSystemId = fullInfra.rawInfra.getSignalingSystemId(signal)
+                val isRouteDelimiter = fullInfra.loadedSignalInfra.getSettings(signal).getFlag("Nf")
+                if (signalingSystemId == null || signSystemId == signalingSystemId) {
+                    val signalOffset =
+                        pathOffsetBuilder.toTravelledPath(currentOffset + signalPosition.distance)
+                    res.add(TravelledPathSignal(signalOffset, isRouteDelimiter))
+                }
+            }
+            currentOffset += fullInfra.blockInfra.getBlockLength(block).distance
+        }
+        return res.sorted()
     }
 
     private fun parseRawMrsp(
