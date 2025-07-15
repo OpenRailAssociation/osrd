@@ -39,23 +39,26 @@ const GroupedTrackRangeList = ({ displayedRanges }: GroupedTrackRangeListProps) 
     }
     return undefined;
   });
-  return Object.entries(rangesByRoute).reduce<JSX.Element[]>((acc, [route, trackRanges], index) => {
-    const routeTrackRanges = trackRanges.map((trackRange, rangeIndex) => (
-      <TrackRange
-        trackRange={trackRange}
-        index={rangeIndex}
-        speedRestrictionTool
-        key={trackRangeKey(trackRange, rangeIndex)}
-      />
-    ));
-    acc.push(
-      <React.Fragment key={`track-range-group-${index}`}>
-        <h3 key={`route-${index}`}>{route}</h3>
-        {routeTrackRanges}
-      </React.Fragment>
-    );
-    return acc;
-  }, []);
+  return Object.entries(rangesByRoute).reduce<React.JSX.Element[]>(
+    (acc, [route, trackRanges], index) => {
+      const routeTrackRanges = trackRanges.map((trackRange, rangeIndex) => (
+        <TrackRange
+          trackRange={trackRange}
+          index={rangeIndex}
+          speedRestrictionTool
+          key={trackRangeKey(trackRange, rangeIndex)}
+        />
+      ));
+      acc.push(
+        <React.Fragment key={`track-range-group-${index}`}>
+          <h3 key={`route-${index}`}>{route}</h3>
+          {routeTrackRanges}
+        </React.Fragment>
+      );
+      return acc;
+    },
+    []
+  );
 };
 
 export default GroupedTrackRangeList;

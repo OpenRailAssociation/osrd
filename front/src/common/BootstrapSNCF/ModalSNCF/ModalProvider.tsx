@@ -1,4 +1,4 @@
-import {
+import React, {
   type PropsWithChildren,
   type ReactNode,
   useState,
@@ -22,9 +22,9 @@ export interface ModalContextType {
   isOpen: boolean;
   size?: string;
   className?: string;
-  content: ReactNode | JSX.Element | null;
+  content: ReactNode | React.JSX.Element | null;
   openModal: (
-    content: ReactNode | JSX.Element | null,
+    content: ReactNode | React.JSX.Element | null,
     size?: string,
     optionalClasses?: string
   ) => void;

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { BiLockAlt } from 'react-icons/bi';
@@ -26,7 +26,7 @@ type RollingStockProps = {
   condensed?: boolean;
   rollingStockSelected?: RollingStockWithLiveries;
   rollingStockComfort: Comfort;
-  image?: JSX.Element;
+  image?: React.JSX.Element;
   onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import cx from 'classnames';
 import type { TFunction } from 'i18next';
@@ -122,10 +122,10 @@ function getSumUpContent(
   t: TFunction,
   classesOverride: Partial<typeof DEFAULT_CLASSES> | undefined,
   status: string | undefined
-): JSX.Element {
+): React.JSX.Element {
   const type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
-  const subtexts: (string | JSX.Element)[] = [];
+  const subtexts: (string | React.JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
   const sources: string[] = [];
 
