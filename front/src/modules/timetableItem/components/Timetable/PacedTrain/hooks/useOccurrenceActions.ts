@@ -8,7 +8,7 @@ import { updatePacedTrainExceptionsList } from 'modules/timetableItem/components
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
   findExceptionWithOccurrenceId,
-  formatPacedTrainWithOccurrenceDetails,
+  extractOccurrenceDetailsFromPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -74,7 +74,7 @@ const useOccurrenceActions = ({
           speed_limit_tag,
           rolling_stock_name: _rollingStockName,
           ...occurrenceProps
-        } = formatPacedTrainWithOccurrenceDetails(rawPacedTrain, occurrenceToUpdateException);
+        } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
 
         occurrenceWithDetails = {
           ...pacedTrain,

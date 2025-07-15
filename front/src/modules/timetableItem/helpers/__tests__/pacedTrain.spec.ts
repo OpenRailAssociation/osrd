@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
-import { formatPacedTrainWithOccurrenceDetails, getOccurrencesNb } from '../pacedTrain';
+import { extractOccurrenceDetailsFromPacedTrain, getOccurrencesNb } from '../pacedTrain';
 
 describe('getOccurrencesNb', () => {
   it('should properly compute occurrence nb for time window of 2h and interval of 30min', () => {
@@ -37,7 +37,7 @@ describe('getOccurrencesNb', () => {
   });
 });
 
-describe('formatPacedTrainWithOccurrenceDetails', () => {
+describe('extractOccurrenceDetailsFromPacedTrain', () => {
   const pacedTrain: Omit<PacedTrain, 'paced' | 'exceptions'> = {
     train_name: '8608',
     labels: ['Paced-Train-Tag-1', 'SS-NS', 'Valid'],
@@ -70,7 +70,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
       key: '123123',
       train_name: { value: '8608 updated' },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       train_name: '8608 updated',
@@ -82,7 +82,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
       key: '123123',
       speed_limit_tag: { value: null },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       speed_limit_tag: null,
@@ -94,7 +94,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
       key: '123123',
       options: { value: { use_electrical_profiles: true } },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       options: {
@@ -124,7 +124,7 @@ describe('formatPacedTrainWithOccurrenceDetails', () => {
         power_restrictions: [],
       },
     };
-    const updatedPacedTrain = formatPacedTrainWithOccurrenceDetails(pacedTrain, exception);
+    const updatedPacedTrain = extractOccurrenceDetailsFromPacedTrain(pacedTrain, exception);
     expect(updatedPacedTrain).toEqual({
       ...pacedTrain,
       path: exception.path_and_schedule!.path,
