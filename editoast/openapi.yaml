@@ -12971,6 +12971,8 @@ components:
       - enabled_from
       - enabled_until
       properties:
+        active_perimeter:
+          $ref: '#/components/schemas/GeoJson'
         electrical_profile_set_id:
           type: integer
           format: int64
@@ -13018,7 +13020,10 @@ components:
       - search_window_end
       - enabled_from
       - enabled_until
+      - active_perimeter
       properties:
+        active_perimeter:
+          $ref: '#/components/schemas/GeoJson'
         electrical_profile_set_id:
           type: integer
           format: int64

@@ -17,6 +17,9 @@ use clap::Subcommand;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 
 #[derive(Subcommand, Debug)]
 pub enum StdcmSearchEnvCommands {
@@ -72,6 +75,8 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
     pub search_window_end: Option<DateTime<Utc>>,
+    /// Path to the file that contains the geometry of the active perimeter
+    pub active_perimeter_geojson_path: Option<PathBuf>,
 }
 
 async fn set_stdcm_search_env_from_scenario(
@@ -102,6 +107,14 @@ async fn set_stdcm_search_env_from_scenario(
     )
     .await?;
 
+    let active_perimeter = args.active_perimeter_geojson_path.map(|perimeter_path| {
+        let perimeter_file = File::open(perimeter_path).expect("Perimeter file must exist");
+        let geometry: geos::geojson::Geometry =
+            serde_json::from_reader(BufReader::new(perimeter_file))
+                .expect("Perimeter file can't be read");
+        diesel_json::Json(geometry)
+    });
+
     StdcmSearchEnvironment::changeset()
         .infra_id(scenario.infra_id)
         .electrical_profile_set_id(scenario.electrical_profile_set_id)
@@ -111,6 +124,7 @@ async fn set_stdcm_search_env_from_scenario(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
+        .active_perimeter(active_perimeter)
         .create(conn)
         .await?;
 
@@ -139,6 +153,8 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
     pub search_window_end: Option<DateTime<Utc>>,
+    /// Path to the file that contains the geometry of the active perimeter
+    pub active_perimeter_geojson_path: Option<PathBuf>,
 }
 
 async fn set_stdcm_search_env_from_scratch(
@@ -171,6 +187,14 @@ async fn set_stdcm_search_env_from_scratch(
     )
     .await?;
 
+    let active_perimeter = args.active_perimeter_geojson_path.map(|perimeter_path| {
+        let perimeter_file = File::open(perimeter_path).expect("Perimeter file must exist");
+        let geometry: geos::geojson::Geometry =
+            serde_json::from_reader(BufReader::new(perimeter_file))
+                .expect("Perimeter file can't be read");
+        diesel_json::Json(geometry)
+    });
+
     StdcmSearchEnvironment::changeset()
         .infra_id(args.infra_id)
         .electrical_profile_set_id(args.electrical_profile_set_id)
@@ -180,6 +204,7 @@ async fn set_stdcm_search_env_from_scratch(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
+        .active_perimeter(active_perimeter)
         .create(conn)
         .await?;
 
@@ -234,6 +259,7 @@ async fn show_stdcm_search_env(
 
 #[cfg(test)]
 mod tests {
+    use crate::client::generate_temp_file;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_scenario_fixtures_set;
@@ -245,9 +271,12 @@ mod tests {
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
+    use diesel_json::Json;
     use editoast_models::DbConnection;
     use editoast_models::DbConnectionPoolV2;
+    use geos::geojson::Geometry;
     use rstest::rstest;
+    use serde_json::json;
 
     fn make_datetime(s: &str) -> DateTime<Utc> {
         DateTime::parse_from_rfc3339(s).unwrap().to_utc()
@@ -368,7 +397,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_stdcm_set_search_env_from_scenario() {
+    async fn test_stdcm_set_search_env_from_scenario_with_perimeter() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
 
@@ -389,11 +418,25 @@ mod tests {
         )
         .await;
 
+        let perimeter_json = json!({
+            "type": "Polygon",
+            "coordinates": [[
+                [-1, 47 ],
+                [ -2, 47 ],
+                [ -2, 48 ],
+                [ -1, 47 ]
+            ]]
+        });
+        let perimeter: Json<Geometry> =
+            Json(serde_json::from_value(perimeter_json).expect("Failed to parse geometry"));
+        let perimeter_file = generate_temp_file(&perimeter);
+
         let args = SetSTDCMSearchEnvFromScenarioArgs {
             scenario_id: scenario_fixture_set.scenario.id,
             work_schedule_group_id: Some(work_schedule_group.id),
             search_window_begin: None,
             search_window_end: None,
+            active_perimeter_geojson_path: Some(perimeter_file.path().into()),
         };
 
         let result = set_stdcm_search_env_from_scenario(args, conn).await;
@@ -412,6 +455,8 @@ mod tests {
             search_env.search_window_end,
             make_datetime("2000-02-03 08:00:00Z")
         );
+
+        assert_eq!(search_env.active_perimeter, Some(perimeter));
     }
 
     #[rstest]
@@ -438,6 +483,7 @@ mod tests {
             timetable_id: timetable.id,
             search_window_begin: None,
             search_window_end: None,
+            active_perimeter_geojson_path: None,
         };
 
         let result = set_stdcm_search_env_from_scratch(args, conn).await;

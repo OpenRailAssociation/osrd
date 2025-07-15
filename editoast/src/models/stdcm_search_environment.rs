@@ -43,6 +43,9 @@ pub struct StdcmSearchEnvironment {
     /// The time window end point where the environment is enabled.
     /// This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     pub enabled_until: DateTime<Utc>,
+    #[schema(value_type = GeoJson)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
 }
 
 impl StdcmSearchEnvironment {
@@ -59,6 +62,7 @@ impl StdcmSearchEnvironment {
             .await
             .map(Into::into)
             .ok();
+
         if enabled_env.is_some() {
             return enabled_env;
         }
