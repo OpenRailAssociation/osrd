@@ -184,7 +184,11 @@ const ComboBox = <T,>({
         <ul className="suggestions-list">
           {suggestions.map((suggestion, index) => (
             <li
-              ref={(el) => (suggestionRefs.current[index] = el)}
+              ref={(el) => {
+                if (suggestionRefs) {
+                  suggestionRefs.current[index] = el;
+                }
+              }}
               key={`${getSuggestionLabel(suggestion)}-${index}`}
               className={cx('suggestion-item', {
                 active: index === activeSuggestionIndex,

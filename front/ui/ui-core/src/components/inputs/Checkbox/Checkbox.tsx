@@ -42,7 +42,11 @@ const Checkbox = ({
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        ref={(input) => input && (input.indeterminate = isIndeterminate)}
+        ref={(input) => {
+          if (input) {
+            input.indeterminate = isIndeterminate;
+          }
+        }}
         onClick={handleClick}
         onBlur={handleBlur}
         onKeyUp={handleKeyUp}
