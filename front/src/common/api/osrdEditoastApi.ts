@@ -111,8 +111,11 @@ const osrdEditoastApi = generatedEditoastApi
           isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
         ],
       }),
-      getTrainPath: builder.query<PathfindingResult, { id: TrainId; infraId: number }>({
-        queryFn: async ({ id: trainId, infraId }, { dispatch }) => {
+      getTrainPath: builder.query<
+        PathfindingResult,
+        { id: TrainId; infraId: number; exceptionKey?: string }
+      >({
+        queryFn: async ({ id: trainId, infraId, exceptionKey }, { dispatch }) => {
           let path: PathfindingResult;
           if (isTrainScheduleId(trainId)) {
             path = await dispatch(
@@ -131,6 +134,7 @@ const osrdEditoastApi = generatedEditoastApi
                 {
                   id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                   infraId,
+                  exceptionKey,
                 },
                 { forceRefetch: true, subscribe: false }
               )
@@ -145,9 +149,12 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getTrainSimulation: builder.query<
         SimulationResponse,
-        { id: TrainId; infraId: number; electricalProfileSetId?: number }
+        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
       >({
-        queryFn: async ({ id: trainId, infraId, electricalProfileSetId }, { dispatch }) => {
+        queryFn: async (
+          { id: trainId, infraId, electricalProfileSetId, exceptionKey },
+          { dispatch }
+        ) => {
           let simulation: SimulationResponse;
           if (isTrainScheduleId(trainId)) {
             simulation = await dispatch(
@@ -168,6 +175,7 @@ const osrdEditoastApi = generatedEditoastApi
                   id: extractEditoastIdFromPacedTrainId(pacedTrainId),
                   infraId,
                   electricalProfileSetId,
+                  exceptionKey,
                 },
                 { forceRefetch: true, subscribe: false }
               )
