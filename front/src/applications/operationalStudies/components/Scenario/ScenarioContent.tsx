@@ -262,32 +262,29 @@ const ScenarioContent = ({
             </BoardWrapper>
           </div>
         </div>
-        <div
-          className="right-column"
-          data-testid="conflicts-list"
-          style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
+        <BoardWrapper
+          hidden={!activeBoards.has('conflicts')}
+          name={`${conflicts?.length ?? ''} CONFLICTS`}
         >
-          <BoardWrapper
-            hidden={!activeBoards.has('conflicts')}
-            name={`${conflicts?.length ?? ''} CONFLICTS`}
-          >
+          <div className="right-column" data-testid="conflicts-list">
             <div className="conflicts-wrapper">
-              {isConflictsLoading ? (
+              {!conflicts && (
                 <Loader
                   msg={t('main.loadingConflicts')}
                   className="scenario-loader"
                   childClass="scenario-loader-msg"
                 />
-              ) : (
+              )}
+              {conflicts && (
                 <ConflictsList
-                  conflicts={conflicts ?? []}
+                  conflicts={conflicts}
                   timetableItems={timetableItemsWithDetails}
                   onConflictClick={handleConflictClick}
                 />
               )}
             </div>
-          </BoardWrapper>
-        </div>
+          </div>
+        </BoardWrapper>
       </main>
     </EditedElementContainerProvider>
   );

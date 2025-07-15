@@ -9,14 +9,15 @@
 }
 
 .conflicts-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  display: block;
   position: relative;
+  width: 100%;
   transition: 0.2s;
-  overflow: hidden auto;
+  max-height: 90vh;
+  overflow-y: auto;
+
   .scenario-loader {
-    position: absolute;
+    top: 10vw;
   }
 }
 
