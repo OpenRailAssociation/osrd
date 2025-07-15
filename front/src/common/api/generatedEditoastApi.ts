@@ -4267,6 +4267,7 @@ export type SimilarTrainWaypoint = {
   stop: boolean;
 };
 export type StdcmSearchEnvironment = {
+  active_perimeter?: GeoJson;
   electrical_profile_set_id?: number;
   /** The time window start point where the environment is enabled. */
   enabled_from: string;
@@ -4285,6 +4286,7 @@ export type StdcmSearchEnvironment = {
   work_schedule_group_id?: number;
 };
 export type StdcmSearchEnvironmentCreateForm = {
+  active_perimeter: GeoJson;
   electrical_profile_set_id?: number | null;
   enabled_from: string;
   enabled_until: string;
