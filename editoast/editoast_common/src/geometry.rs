@@ -32,7 +32,7 @@ pub enum GeoJson {
     MultiPolygon(GeoJsonMultiPolygon),
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
 #[serde(tag = "type", content = "coordinates")]
 #[allow(unused)]
 pub enum GeoJsonPoint {

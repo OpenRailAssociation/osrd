@@ -1648,7 +1648,7 @@ used to filter out operational points that match the input operational point ide
 not match the input track reference (i.e. operational points which do not have any part that
 matches the input track reference).
  */ {
-  related_operational_points: OperationalPoint[][];
+  related_operational_points: RelatedOperationalPoint[][];
   track_names: {
     [key: string]: string | null;
   };
@@ -3123,6 +3123,13 @@ export type InfraErrorTypeLabel =
   | 'unknown_port_name'
   | 'unused_port';
 export type BoundingBox = (number & number)[][];
+export type GeoJsonPoint = {
+  coordinates: GeoJsonPointValue;
+  type: 'Point';
+};
+export type RelatedOperationalPoint = OperationalPoint & {
+  geo?: GeoJsonPoint | null;
+};
 export type TrackReference =
   | {
       track_id: string;
@@ -3147,10 +3154,6 @@ export type OperationalPointReference = (
     }
 ) & {
   track_reference?: TrackReference | null;
-};
-export type GeoJsonPoint = {
-  coordinates: GeoJsonPointValue;
-  type: 'Point';
 };
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];
 export type GeoJsonMultiPoint = {

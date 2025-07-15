@@ -1031,7 +1031,7 @@ paths:
                     items:
                       type: array
                       items:
-                        $ref: '#/components/schemas/OperationalPoint'
+                        $ref: '#/components/schemas/RelatedOperationalPoint'
                   track_names:
                     type: object
                     additionalProperties:
@@ -11058,6 +11058,15 @@ components:
           format: double
           minimum: 0
       additionalProperties: false
+    RelatedOperationalPoint:
+      allOf:
+      - $ref: '#/components/schemas/OperationalPoint'
+      - type: object
+        properties:
+          geo:
+            allOf:
+            - $ref: '#/components/schemas/GeoJsonPoint'
+            nullable: true
     RemoveOperation:
       type: object
       description: JSON Patch 'remove' operation representation

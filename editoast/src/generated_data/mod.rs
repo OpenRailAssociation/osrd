@@ -6,7 +6,7 @@ mod electrification;
 mod error;
 mod neutral_section;
 mod neutral_sign;
-mod operational_point;
+pub mod operational_point;
 mod psl_sign;
 mod signal;
 pub mod speed_limit_tags_config;
