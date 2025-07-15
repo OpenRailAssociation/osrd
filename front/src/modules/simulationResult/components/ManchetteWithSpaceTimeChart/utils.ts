@@ -3,7 +3,7 @@ import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import {
   DEFAULT_TRAIN_PATH_COLORS,
-  TRAIN_CATEGORY_PATH_COLORS,
+  TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'modules/simulationResult/consts';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TrainId } from 'reducers/osrdconf/types';
@@ -31,7 +31,7 @@ const getPathStyle = (
   const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
   const category = item?.category;
 
-  const colors = category ? TRAIN_CATEGORY_PATH_COLORS[category] : DEFAULT_TRAIN_PATH_COLORS;
+  const colors = category ? TRAIN_MAIN_CATEGORY_PATH_COLORS[category] : DEFAULT_TRAIN_PATH_COLORS;
 
   if (hovered && 'pathId' in hovered.element && !dragging) {
     const hoveredTrainId = hovered.element.pathId as TrainId;

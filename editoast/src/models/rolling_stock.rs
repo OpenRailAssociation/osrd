@@ -12,8 +12,8 @@ use editoast_common::units::quantities::Time;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_models::model;
-use editoast_models::rolling_stock::TrainCategories;
-use editoast_models::rolling_stock::TrainCategory;
+use editoast_models::rolling_stock::TrainMainCategories;
+use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -103,9 +103,9 @@ pub struct RollingStock {
     #[schema(value_type = Vec<String>)]
     #[model(remote = "Vec<Option<String>>")]
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    pub primary_category: TrainCategory,
-    #[model(remote = "Vec<Option<TrainCategory>>")]
-    pub other_categories: TrainCategories,
+    pub primary_category: TrainMainCategory,
+    #[model(remote = "Vec<Option<TrainMainCategory>>")]
+    pub other_categories: TrainMainCategories,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -239,7 +239,7 @@ impl From<RollingStock> for editoast_schemas::RollingStock {
             raise_pantograph_time: rolling_stock.raise_pantograph_time,
             supported_signaling_systems: rolling_stock.supported_signaling_systems,
             primary_category: rolling_stock.primary_category.deref().clone(),
-            other_categories: editoast_schemas::rolling_stock::TrainCategories(
+            other_categories: editoast_schemas::rolling_stock::TrainMainCategories(
                 rolling_stock
                     .other_categories
                     .iter()
@@ -275,13 +275,13 @@ impl From<editoast_schemas::RollingStock> for RollingStockChangeset {
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
-            .primary_category(TrainCategory(rolling_stock.primary_category))
-            .other_categories(TrainCategories(
+            .primary_category(TrainMainCategory(rolling_stock.primary_category))
+            .other_categories(TrainMainCategories(
                 rolling_stock
                     .other_categories
                     .0
                     .into_iter()
-                    .map(TrainCategory)
+                    .map(TrainMainCategory)
                     .collect::<Vec<_>>(),
             ))
     }
@@ -289,8 +289,8 @@ impl From<editoast_schemas::RollingStock> for RollingStockChangeset {
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::rolling_stock::TrainCategories;
-    use editoast_models::rolling_stock::TrainCategory;
+    use editoast_models::rolling_stock::TrainMainCategories;
+    use editoast_models::rolling_stock::TrainMainCategory;
     use rstest::rstest;
 
     use super::RollingStock;
@@ -366,11 +366,11 @@ pub mod tests {
 
         assert_eq!(
             created_fast_rolling_stock.primary_category,
-            TrainCategory(editoast_schemas::rolling_stock::TrainCategory::CommuterTrain)
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::CommuterTrain)
         );
         assert_eq!(
             created_fast_rolling_stock.other_categories,
-            TrainCategories(vec![])
+            TrainMainCategories(vec![])
         );
     }
 
@@ -379,25 +379,29 @@ pub mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let rolling_stock = fast_rolling_stock_changeset("fast_rolling_stock_with_categories")
-            .primary_category(TrainCategory(
-                editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain,
+            .primary_category(TrainMainCategory(
+                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             ))
-            .other_categories(TrainCategories(vec![
-                TrainCategory(editoast_schemas::rolling_stock::TrainCategory::TramTrain),
-                TrainCategory(editoast_schemas::rolling_stock::TrainCategory::CommuterTrain),
+            .other_categories(TrainMainCategories(vec![
+                TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::TramTrain),
+                TrainMainCategory(
+                    editoast_schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                ),
             ]))
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
         assert_eq!(
             rolling_stock.primary_category,
-            TrainCategory(editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain,),
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,),
         );
         assert_eq!(
             rolling_stock.other_categories,
-            TrainCategories(vec![
-                TrainCategory(editoast_schemas::rolling_stock::TrainCategory::TramTrain,),
-                TrainCategory(editoast_schemas::rolling_stock::TrainCategory::CommuterTrain,),
+            TrainMainCategories(vec![
+                TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::TramTrain,),
+                TrainMainCategory(
+                    editoast_schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                ),
             ])
         );
     }

@@ -1,4 +1,4 @@
-import type { Comfort, TrainCategory } from 'common/api/osrdEditoastApi';
+import type { Comfort, TrainMainCategory } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ElectricalProfileByMode,
@@ -346,7 +346,7 @@ export const EP_BY_MODE: ElectricalProfileByMode = {
 
 // This dict is passthrough as we actually only need a list of categories, but using a dict lets typescript check
 // that the keys perfectly corresponds to the API-provided keys or raise a type error, thus enforcing consistency
-export const TrainCategoryDict: Record<TrainCategory, TrainCategory> = {
+export const TrainMainCategoryDict: Record<TrainMainCategory, TrainMainCategory> = {
   HIGH_SPEED_TRAIN: 'HIGH_SPEED_TRAIN',
   INTERCITY_TRAIN: 'INTERCITY_TRAIN',
   REGIONAL_TRAIN: 'REGIONAL_TRAIN',

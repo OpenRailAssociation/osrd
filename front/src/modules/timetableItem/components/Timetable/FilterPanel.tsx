@@ -3,7 +3,7 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 import useCategoryOptions, {
   type CategoryOptionWithId,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -61,7 +61,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
   ];
 
   const formattedCategoryOptions: {
-    id: TrainCategory | 'all' | 'noCategory';
+    id: TrainMainCategory | 'all' | 'noCategory';
     label: string;
   }[] = [
     { id: 'all', label: t('timetable.showAllCategories') },

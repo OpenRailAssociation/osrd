@@ -3444,7 +3444,7 @@ export type RollingStockMetadata = {
   type: string;
   unit: string;
 };
-export type TrainCategory =
+export type TrainMainCategory =
   | 'HIGH_SPEED_TRAIN'
   | 'INTERCITY_TRAIN'
   | 'REGIONAL_TRAIN'
@@ -3455,7 +3455,7 @@ export type TrainCategory =
   | 'TRAM_TRAIN'
   | 'TOURISTIC_TRAIN'
   | 'WORK_TRAIN';
-export type TrainCategories = TrainCategory[];
+export type TrainMainCategories = TrainMainCategory[];
 export type RollingResistance = {
   /** Solid friction
     Solid Friction in N */
@@ -3490,11 +3490,11 @@ export type LightRollingStock = {
   max_speed: number;
   metadata: RollingStockMetadata | null;
   name: string;
-  other_categories: TrainCategories;
+  other_categories: TrainMainCategories;
   power_restrictions: {
     [key: string]: string;
   };
-  primary_category: TrainCategory;
+  primary_category: TrainMainCategory;
   railjson_version: string;
   rolling_resistance: RollingResistance;
   /** Acceleration in m·s⁻² */
@@ -3621,7 +3621,7 @@ export type Distribution = 'STANDARD' | 'MARECO';
 export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainSchedule = {
-  category?: TrainCategory | null;
+  category?: TrainMainCategory | null;
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;
@@ -3714,7 +3714,7 @@ export type RollingStockChangeGroup = {
   rolling_stock_name: string;
 };
 export type RollingStockCategoryChangeGroup = {
-  value?: TrainCategory | null;
+  value?: TrainMainCategory | null;
 };
 export type SpeedLimitTagChangeGroup = {
   value?: string | null;
@@ -4074,11 +4074,11 @@ export type RollingStock = {
   max_speed: number;
   metadata: RollingStockMetadata | null;
   name: string;
-  other_categories: TrainCategories;
+  other_categories: TrainMainCategories;
   power_restrictions: {
     [key: string]: string;
   };
-  primary_category: TrainCategory;
+  primary_category: TrainMainCategory;
   railjson_version: string;
   /** Duration in s */
   raise_pantograph_time: number | null;
@@ -4113,12 +4113,12 @@ export type RollingStockForm = {
   max_speed: number;
   metadata?: RollingStockMetadata | null;
   name: string;
-  other_categories: TrainCategories;
+  other_categories: TrainMainCategories;
   /** Mapping of power restriction code to power class */
   power_restrictions: {
     [key: string]: string;
   };
-  primary_category: TrainCategory;
+  primary_category: TrainMainCategory;
   /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
     Duration in s */
   raise_pantograph_time?: number | null;
@@ -4456,7 +4456,7 @@ export type SubCategoryColor = string;
 export type SubCategory = {
   code: string;
   color: SubCategoryColor;
-  main_category: TrainCategory;
+  main_category: TrainMainCategory;
   name: string;
 };
 export type SubCategoryPage = PaginationStats & {

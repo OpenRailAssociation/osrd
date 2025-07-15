@@ -36,10 +36,13 @@ pub use rolling_stock_livery::RollingStockLiveryMetadata;
 mod towed_rolling_stock;
 pub use towed_rolling_stock::TowedRollingStock;
 
-mod train_category;
-pub use train_category::SubCategory;
-pub use train_category::TrainCategories;
-pub use train_category::TrainCategory;
+mod train_main_category;
+pub use train_main_category::TrainMainCategories;
+pub use train_main_category::TrainMainCategory;
+
+mod sub_category;
+pub use sub_category::SubCategory;
+pub use sub_category::SubCategoryColor;
 
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
@@ -61,7 +64,8 @@ editoast_common::schemas! {
     rolling_resistance::schemas(),
     rolling_stock_livery::schemas(),
     supported_signaling_systems::schemas(),
-    train_category::schemas(),
+    train_main_category::schemas(),
+    sub_category::schemas(),
 }
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
@@ -110,8 +114,8 @@ pub struct RollingStock {
     pub railjson_version: String,
     #[serde(default)]
     pub metadata: Option<RollingStockMetadata>,
-    pub primary_category: TrainCategory,
-    pub other_categories: TrainCategories,
+    pub primary_category: TrainMainCategory,
+    pub other_categories: TrainMainCategories,
 }
 
 impl<'de> Deserialize<'de> for RollingStock {

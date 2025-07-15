@@ -1,10 +1,10 @@
-import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 
 export const specialCodeDictionary: { [key: string]: string } = {
   '': 'NO CODE',
 };
 
-export const TRAIN_CATEGORY_CLASS: Record<TrainCategory | 'None', string> = {
+export const TRAIN_MAIN_CATEGORY_CLASS: Record<TrainMainCategory | 'None', string> = {
   HIGH_SPEED_TRAIN: 'high-speed',
   INTERCITY_TRAIN: 'intercity',
   REGIONAL_TRAIN: 'regional',

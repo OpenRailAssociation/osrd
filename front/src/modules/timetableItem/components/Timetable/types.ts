@@ -4,7 +4,7 @@ import type {
   PathfindingInputError,
   PathfindingNotFound,
   SimulationSummaryResult,
-  TrainCategory,
+  TrainMainCategory,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
@@ -16,7 +16,7 @@ export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
 export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
 
-export type TrainCategoryFilter = 'all' | 'noCategory' | TrainCategory;
+export type TrainCategoryFilter = 'all' | 'noCategory' | TrainMainCategory;
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
@@ -97,7 +97,7 @@ export type Occurrence = {
    * An added exception can only be deleted, not disabled.
    */
   disabled?: boolean;
-  category?: TrainCategory | null;
+  category?: TrainMainCategory | null;
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
@@ -120,7 +120,7 @@ export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 export type PairingItem = {
   id: number;
   name: string;
-  category: TrainCategory | null;
+  category: TrainMainCategory | null;
   interval: Duration | null;
   origin: string;
   stops: string[];

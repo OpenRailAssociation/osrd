@@ -17,7 +17,7 @@ import type {
   PacedTrain,
   PathItemLocation,
   ReceptionSignal,
-  TrainCategory,
+  TrainMainCategory,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
@@ -42,7 +42,7 @@ export type StandardAllowance = {
 
 export type OperationalStudiesConfState = OsrdConfState & {
   name: string;
-  category: TrainCategory | null;
+  category: TrainMainCategory | null;
   startTime: Date;
   initialSpeed?: number;
   labels: string[];

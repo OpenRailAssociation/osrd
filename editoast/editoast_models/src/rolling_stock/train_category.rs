@@ -13,19 +13,19 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression)]
-#[diesel(sql_type = crate::tables::sql_types::TrainCategory)]
-pub struct TrainCategory(pub editoast_schemas::rolling_stock::TrainCategory);
+#[diesel(sql_type = crate::tables::sql_types::TrainMainCategory)]
+pub struct TrainMainCategory(pub editoast_schemas::rolling_stock::TrainMainCategory);
 
-impl FromSql<crate::tables::sql_types::TrainCategory, Pg> for TrainCategory {
+impl FromSql<crate::tables::sql_types::TrainMainCategory, Pg> for TrainMainCategory {
     fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
         let s = std::str::from_utf8(value.as_bytes()).map_err(|_| "Invalid UTF-8 data")?;
-        editoast_schemas::rolling_stock::TrainCategory::from_str(s)
-            .map(TrainCategory)
+        editoast_schemas::rolling_stock::TrainMainCategory::from_str(s)
+            .map(TrainMainCategory)
             .map_err(|_| "Unrecognized enum variant for TrainCategory".into())
     }
 }
 
-impl ToSql<crate::tables::sql_types::TrainCategory, Pg> for TrainCategory {
+impl ToSql<crate::tables::sql_types::TrainMainCategory, Pg> for TrainMainCategory {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
         let variant: &str = &self.0.to_string();
         out.write_all(variant.as_bytes())?;
@@ -33,8 +33,8 @@ impl ToSql<crate::tables::sql_types::TrainCategory, Pg> for TrainCategory {
     }
 }
 
-impl Deref for TrainCategory {
-    type Target = editoast_schemas::rolling_stock::TrainCategory;
+impl Deref for TrainMainCategory {
+    type Target = editoast_schemas::rolling_stock::TrainMainCategory;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -42,22 +42,22 @@ impl Deref for TrainCategory {
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct TrainCategories(pub Vec<TrainCategory>);
+pub struct TrainMainCategories(pub Vec<TrainMainCategory>);
 
-impl From<Vec<Option<TrainCategory>>> for TrainCategories {
-    fn from(categories: Vec<Option<TrainCategory>>) -> Self {
+impl From<Vec<Option<TrainMainCategory>>> for TrainMainCategories {
+    fn from(categories: Vec<Option<TrainMainCategory>>) -> Self {
         Self(categories.into_iter().flatten().collect())
     }
 }
 
-impl From<TrainCategories> for Vec<Option<TrainCategory>> {
-    fn from(categories: TrainCategories) -> Self {
+impl From<TrainMainCategories> for Vec<Option<TrainMainCategory>> {
+    fn from(categories: TrainMainCategories) -> Self {
         categories.0.into_iter().map(Some).collect()
     }
 }
 
-impl Deref for TrainCategories {
-    type Target = Vec<TrainCategory>;
+impl Deref for TrainMainCategories {
+    type Target = Vec<TrainMainCategory>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

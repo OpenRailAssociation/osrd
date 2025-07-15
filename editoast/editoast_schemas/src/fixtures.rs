@@ -25,8 +25,8 @@ use crate::rolling_stock::RollingResistance;
 use crate::rolling_stock::RollingResistancePerWeight;
 use crate::rolling_stock::RollingStockSupportedSignalingSystems;
 use crate::rolling_stock::TowedRollingStock;
-use crate::rolling_stock::TrainCategories;
-use crate::rolling_stock::TrainCategory;
+use crate::rolling_stock::TrainMainCategories;
+use crate::rolling_stock::TrainMainCategory;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
 use crate::train_schedule::MarginValue;
@@ -64,8 +64,8 @@ pub fn simple_rolling_stock() -> RollingStock {
         length: units::meter::new(140.0),
         mass: units::kilogram::new(15000.0),
         max_speed: units::meter_per_second::new(20.0),
-        primary_category: TrainCategory::HighSpeedTrain,
-        other_categories: TrainCategories(vec![]),
+        primary_category: TrainMainCategory::HighSpeedTrain,
+        other_categories: TrainMainCategories(vec![]),
     }
 }
 

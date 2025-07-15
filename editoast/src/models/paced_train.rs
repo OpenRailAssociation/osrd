@@ -2,7 +2,7 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::TrainCategory;
+use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas;
 use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::ExceptionType;
@@ -54,7 +54,7 @@ pub struct PacedTrain {
     pub time_window: ChronoDuration,
     /// Time between two occurrences
     pub interval: ChronoDuration,
-    pub main_category: Option<TrainCategory>,
+    pub main_category: Option<TrainMainCategory>,
     #[model(json)]
     pub exceptions: Vec<PacedTrainException>,
 }
@@ -71,7 +71,7 @@ impl PacedTrain {
             train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
         }
         if let Some(change_group) = &exception.rolling_stock_category {
-            train_schedule.main_category = change_group.value.clone().map(TrainCategory);
+            train_schedule.main_category = change_group.value.clone().map(TrainMainCategory);
         }
         if let Some(change_group) = &exception.labels {
             train_schedule.labels = change_group.value.iter().cloned().map(Some).collect();
@@ -233,7 +233,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
-            .main_category(train_schedule_base.category.map(TrainCategory))
+            .main_category(train_schedule_base.category.map(TrainMainCategory))
             .exceptions(exceptions)
     }
 }
@@ -272,7 +272,7 @@ mod tests {
 
     use chrono::DateTime;
     use chrono::Utc;
-    use editoast_models::rolling_stock::TrainCategory;
+    use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::StartTimeChangeGroup;
     use editoast_schemas::train_schedule::Comfort;
@@ -297,8 +297,8 @@ mod tests {
             rolling_stock_name: "R2D2".to_string(),
             comfort: Comfort::Standard,
             initial_speed: 25.0,
-            main_category: Some(TrainCategory(
-                editoast_schemas::rolling_stock::TrainCategory::HighSpeedTrain,
+            main_category: Some(TrainMainCategory(
+                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             )),
             constraint_distribution: Distribution::Standard,
             labels: Tags::new(vec![]),
@@ -347,7 +347,7 @@ mod tests {
                 .rolling_stock_category
                 .unwrap()
                 .value
-                .map(TrainCategory)
+                .map(TrainMainCategory)
         );
         assert_eq!(
             paced_train_exception.constraint_distribution,

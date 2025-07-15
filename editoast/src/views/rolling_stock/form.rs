@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use editoast_common::units::quantities::*;
 use editoast_common::units::*;
-use editoast_models::rolling_stock::TrainCategories;
-use editoast_models::rolling_stock::TrainCategory;
+use editoast_models::rolling_stock::TrainMainCategories;
+use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -62,8 +62,8 @@ pub struct RollingStockForm {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub locked: Option<bool>,
     pub metadata: Option<RollingStockMetadata>,
-    pub primary_category: TrainCategory,
-    pub other_categories: TrainCategories,
+    pub primary_category: TrainMainCategory,
+    pub other_categories: TrainMainCategories,
 }
 
 impl From<RollingStockForm> for Changeset<RollingStock> {

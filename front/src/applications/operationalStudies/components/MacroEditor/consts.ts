@@ -1,4 +1,4 @@
-import type { PacedTrain, TrainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, TrainMainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import type {
@@ -169,7 +169,7 @@ export const DEFAULT_PACED_TRAIN_PAYLOAD: Pick<
 export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });
 
 const TRAIN_CATEGORY_TO_NGE: {
-  trainCategory: TrainCategory | 'NO_CATEGORY';
+  trainCategory: TrainMainCategory | 'NO_CATEGORY';
   colorRef: string;
 }[] = [
   { trainCategory: 'HIGH_SPEED_TRAIN', colorRef: 'HST' },
@@ -186,7 +186,7 @@ const TRAIN_CATEGORY_TO_NGE: {
 ];
 
 export const OSRD_TRAINRUN_CATEGORY_MAPPING = new Map<
-  TrainCategory | 'NO_CATEGORY',
+  TrainMainCategory | 'NO_CATEGORY',
   TrainrunCategory
 >();
 

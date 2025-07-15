@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getExceptionType } from 'utils/trainId';
 
-import { TRAIN_CATEGORY_CLASS } from '../consts';
+import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { Occurrence } from '../types';
 
 type OccurrenceIndicatorProps = {
@@ -118,7 +118,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
       <span
         className={cx(
           'icon',
-          `train-category-bg-${TRAIN_CATEGORY_CLASS[occurrence.category ?? 'None']}`,
+          `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[occurrence.category ?? 'None']}`,
           {
             exception: !isEmpty(occurrence.exceptionChangeGroups),
             disabled: occurrence.disabled,

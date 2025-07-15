@@ -1,4 +1,4 @@
-import type { TrainCategory } from 'common/api/osrdEditoastApi';
+import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 
 import type { AspectLabel } from './types';
 
@@ -39,8 +39,8 @@ export const DEFAULT_TRAIN_PATH_COLORS = {
   background: '#EBEBEA',
 };
 
-export const TRAIN_CATEGORY_PATH_COLORS: Record<
-  TrainCategory,
+export const TRAIN_MAIN_CATEGORY_PATH_COLORS: Record<
+  TrainMainCategory,
   { normal: string; hovered: string; background: string }
 > = {
   HIGH_SPEED_TRAIN: { normal: '#E6221A', hovered: '#A62924', background: '#FAE7E6' },

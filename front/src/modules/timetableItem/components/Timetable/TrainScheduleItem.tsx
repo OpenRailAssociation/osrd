@@ -27,7 +27,7 @@ import {
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
-import { TIMETABLE_ITEM_DELTA, TRAIN_CATEGORY_CLASS } from './consts';
+import { TIMETABLE_ITEM_DELTA, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
@@ -188,7 +188,7 @@ const TrainScheduleItem = ({
                 <div
                   className={cx(
                     'train-info',
-                    `train-category-text-${TRAIN_CATEGORY_CLASS[train.category ?? 'None']}`
+                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category ?? 'None']}`
                   )}
                 >
                   {projectionPathIsUsed && (

@@ -1,6 +1,6 @@
 import { test, it, describe, expect } from 'vitest';
 
-import type { PacedTrainException, TrainCategory } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainMainCategory } from 'common/api/osrdEditoastApi';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,
@@ -331,7 +331,7 @@ describe('formatTimetableItemPayload', () => {
     });
     describe('use modifies category in the pace train to match the exception', () => {
       describe('exception is only a category exception', () => {
-        const userChanges: Record<string, TrainCategory> = {
+        const userChanges: Record<string, TrainMainCategory> = {
           category: 'NIGHT_TRAIN',
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
@@ -363,7 +363,7 @@ describe('formatTimetableItemPayload', () => {
         });
       });
       describe('exception is both a label and category exception', () => {
-        const userChanges: Record<string, TrainCategory> = {
+        const userChanges: Record<string, TrainMainCategory> = {
           category: 'NIGHT_TRAIN',
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
