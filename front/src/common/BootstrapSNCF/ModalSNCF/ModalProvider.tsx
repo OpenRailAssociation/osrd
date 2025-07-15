@@ -61,7 +61,7 @@ export const ModalSNCF = () => {
       style={{ display: 'block' }}
       tabIndex={-1}
       role="dialog"
-      {...(!isOpen && { inert: '' })}
+      {...(!isOpen && { inert: true })}
     >
       <div
         ref={modalRef}
