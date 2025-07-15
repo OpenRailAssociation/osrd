@@ -64,7 +64,11 @@ const TextareaSNCF = (props: TextareaSNCFProps) => {
           id={id}
           value={value}
           placeholder={placeholder}
-          ref={(input) => (focus ? input && input.focus() : null)}
+          ref={(input) => {
+            if (focus && input) {
+              input.focus();
+            }
+          }}
           onFocus={(e) => selectAllOnFocus && e.target.select()}
           rows={rows}
         />
