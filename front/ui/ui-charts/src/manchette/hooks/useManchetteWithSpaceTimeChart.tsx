@@ -107,9 +107,9 @@ const useManchetteWithSpaceTimeChart = ({
   options = {},
 }: {
   waypoints: Waypoint[];
-  manchetteWithSpaceTimeChartRef: React.RefObject<HTMLDivElement>;
+  manchetteWithSpaceTimeChartRef: React.RefObject<HTMLDivElement | null>;
   height?: number;
-  spaceTimeChartRef?: React.RefObject<HTMLDivElement>;
+  spaceTimeChartRef?: React.RefObject<HTMLDivElement | null>;
   defaultTimeOrigin?: number;
   defaultSpaceOrigin?: number;
   defaultXOffset?: number;

@@ -20,7 +20,7 @@ const MARGIN_ADJUSTMENT = 2;
 
 const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerProps) => {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const tooltip = useRef<tooltipInfos | null>();
+  const tooltip = useRef<tooltipInfos | null>(null);
   const [images, setImages] = useState<LoadedImages>({ questionImage: null, alertFillImage: null });
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export const useModalPosition = (
-  inputRef: React.RefObject<HTMLInputElement>,
-  modalRef: React.RefObject<HTMLDivElement>,
+  inputRef: React.RefObject<HTMLInputElement | null>,
+  modalRef: React.RefObject<HTMLDivElement | null>,
   offset: number = 3 // Default offset below the input
 ) => {
   const [modalPosition, setModalPosition] = useState<{ top: number; left: number }>({

@@ -7,7 +7,7 @@ import { positionMmToKm } from '../utils';
 
 type WaypointProps = {
   waypoint: Omit<InteractiveWaypoint, 'name'> & { name?: ReactNode };
-  waypointRef?: React.RefObject<HTMLDivElement>;
+  waypointRef?: React.RefObject<HTMLDivElement | null>;
   isActive: boolean;
   isMenuActive?: boolean;
 };
