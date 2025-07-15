@@ -70,6 +70,7 @@
     "infraLoadingState": "{{step}}/3",
     "infrastructure": "Infrastructure",
     "lessDetails": "Afficher moins de détails",
+    "loadingConflicts": "Chargement des conflits…",
     "loadingMacroEditor": "Chargement de l'éditeur macroscopique…",
     "macroEditor": {
       "intervalXmin": "Intervalle {{minutes}}min",
