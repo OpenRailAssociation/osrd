@@ -14,7 +14,7 @@ type UseCanvasParams = {
 type UseCanvas = (
   draw: DrawFunction,
   params: UseCanvasParams
-) => React.RefObject<HTMLCanvasElement>;
+) => React.RefObject<HTMLCanvasElement | null>;
 
 export const useCanvas: UseCanvas = (draw, { width, height, store, setStore }) => {
   const canvas = useRef<HTMLCanvasElement>(null);

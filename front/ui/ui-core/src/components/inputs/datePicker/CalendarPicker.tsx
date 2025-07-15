@@ -14,7 +14,7 @@ export type CalendarPickerPrivateProps = {
     top: number;
     left: number;
   };
-  calendarPickerRef: React.RefObject<HTMLDivElement>;
+  calendarPickerRef: React.RefObject<HTMLDivElement | null>;
   selectableSlot?: CalendarSlot;
 };
 

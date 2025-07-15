@@ -6,7 +6,7 @@ import { useModalPosition } from '../hooks/useModalPosition';
 import useOutsideClick from '../hooks/useOutsideClick';
 
 type ModalProps = {
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;

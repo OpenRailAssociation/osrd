@@ -11,7 +11,7 @@ import { isInteractiveWaypoint } from '../utils/helpers';
 export type ManchetteProps = {
   contents: (InteractiveWaypoint | React.ReactNode)[];
   activeWaypointId?: string;
-  activeWaypointRef?: React.RefObject<HTMLDivElement>;
+  activeWaypointRef?: React.RefObject<HTMLDivElement | null>;
   zoomYIn: () => void;
   zoomYOut: () => void;
   resetZoom: () => void;
