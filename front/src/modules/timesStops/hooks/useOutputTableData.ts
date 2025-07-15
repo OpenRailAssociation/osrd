@@ -9,6 +9,7 @@ import type {
   PathfindingResultSuccess,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
@@ -36,67 +37,70 @@ const useOutputTableData = (
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
-  const pathStepRows = useMemo(() => {
-    if (!selectedTrain || !simulationSummary?.isValid || !path) return [];
+  const pathStepRowsById: Map<string, Partial<TimesStopsRow>> = useMemo(() => {
+    if (!selectedTrain || !simulationSummary?.isValid || !path) return new Map();
 
     const { pathItemTimes } = simulationSummary;
 
     const startDatetime = new Date(selectedTrain.start_time);
     let lastReferenceDate = startDatetime;
 
-    return selectedTrain.path.map((pathStep, index) => {
-      const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
+    return new Map(
+      selectedTrain.path.map((pathStep, index) => {
+        const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
 
-      const computedArrival = new Date(startDatetime.getTime() + pathItemTimes.final[index]);
+        const computedArrival = new Date(startDatetime.getTime() + pathItemTimes.final[index]);
 
-      const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
-        computedArrival,
-        schedule
-      );
-      const {
-        theoreticalMargin,
-        isTheoreticalMarginBoundary,
-        theoreticalMarginSeconds,
-        calculatedMargin,
-        diffMargins,
-      } = computeMargins(theoreticalMargins, selectedTrain, scheduleByAt, index, pathItemTimes);
+        const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
+          computedArrival,
+          schedule
+        );
+        const {
+          theoreticalMargin,
+          isTheoreticalMarginBoundary,
+          theoreticalMarginSeconds,
+          calculatedMargin,
+          diffMargins,
+        } = computeMargins(theoreticalMargins, selectedTrain, scheduleByAt, index, pathItemTimes);
 
-      const { theoreticalArrival, arrival, departure, refDate } = computeInputDatetimes(
-        startDatetime,
-        lastReferenceDate,
-        schedule,
-        {
-          isDeparture: index === 0,
-        }
-      );
-      lastReferenceDate = refDate;
+        const { theoreticalArrival, arrival, departure, refDate } = computeInputDatetimes(
+          startDatetime,
+          lastReferenceDate,
+          schedule,
+          {
+            isDeparture: index === 0,
+          }
+        );
+        lastReferenceDate = refDate;
 
-      const isOnTime = theoreticalArrival
-        ? Duration.subtractDate(theoreticalArrival, computedArrival).abs() <=
-          ARRIVAL_TIME_ACCEPTABLE_ERROR
-        : false;
+        const isOnTime = theoreticalArrival
+          ? Duration.subtractDate(theoreticalArrival, computedArrival).abs() <=
+            ARRIVAL_TIME_ACCEPTABLE_ERROR
+          : false;
 
-      return {
-        pathStepId: pathStep.id,
-        name: t('timeStopTable.waypoint', { id: pathStep.id }),
-        ch: undefined,
+        const pathStepRow = {
+          pathStepId: pathStep.id,
+          name: t('timeStopTable.waypoint', { id: pathStep.id }),
+          ch: undefined,
 
-        arrival,
-        departure,
-        stopFor,
-        onStopSignal,
-        shortSlipDistance,
-        theoreticalMargin,
-        isTheoreticalMarginBoundary,
+          arrival,
+          departure,
+          stopFor,
+          onStopSignal,
+          shortSlipDistance,
+          theoreticalMargin,
+          isTheoreticalMarginBoundary,
 
-        theoreticalMarginSeconds,
-        calculatedMargin,
-        diffMargins,
-        calculatedArrival: dateToHHMMSS(isOnTime ? theoreticalArrival! : computedArrival),
-        calculatedDeparture,
-        positionOnPath: path.path_item_positions[index],
-      };
-    });
+          theoreticalMarginSeconds,
+          calculatedMargin,
+          diffMargins,
+          calculatedArrival: dateToHHMMSS(isOnTime ? theoreticalArrival! : computedArrival),
+          calculatedDeparture,
+        };
+
+        return [pathStepRow.pathStepId, pathStepRow];
+      })
+    );
   }, [selectedTrain, path, simulationSummary]);
 
   useEffect(() => {
@@ -110,12 +114,24 @@ const useOutputTableData = (
       const trackSections = await getTrackSectionsByIds(trackIds);
 
       const formattedRows = operationalPoints.map((op) => {
-        const matchingPathStep = pathStepRows.find(
-          (pathStepRow) => op.position === pathStepRow.positionOnPath
+        const matchingPathStep = selectedTrain?.path.find((pathStep) =>
+          matchPathStepAndOp(pathStep, {
+            opId: op.id,
+            uic: op.extensions?.identifier?.uic,
+            ch: op.extensions?.sncf?.ch,
+            trigram: op.extensions?.sncf?.trigram,
+            track: op.part.track,
+            offsetOnTrack: op.part.position,
+          })
         );
-        if (matchingPathStep) {
+
+        const matchingPathStepRow = matchingPathStep
+          ? pathStepRowsById.get(matchingPathStep.id)
+          : undefined;
+
+        if (matchingPathStepRow) {
           return {
-            ...matchingPathStep,
+            ...matchingPathStepRow,
             opId: op.id,
             name: op.extensions?.identifier?.name,
             ch: op.extensions?.sncf?.ch,
@@ -146,7 +162,7 @@ const useOutputTableData = (
     };
 
     formatRows();
-  }, [operationalPoints, pathStepRows, simulatedTrain, getTrackSectionsByIds]);
+  }, [operationalPoints, pathStepRowsById, simulatedTrain, getTrackSectionsByIds]);
 
   return rows;
 };
