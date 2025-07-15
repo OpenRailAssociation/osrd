@@ -23,6 +23,7 @@ import {
   appendFileSync,
 } from 'fs';
 import { join } from 'path';
+
 import { load } from 'cheerio';
 
 // Define the path to the icons directory and constants for icon variants and sizes
@@ -156,11 +157,11 @@ for (const [name, currentData] of Object.entries(representation)) {
     ];
   });
   const iconPropsContent = definitions.map(([_, content]) => `${content}\n`).join('\n');
-  const iconsPropsTypeUnion = definitions.map(([name]) => name).join(' | ');
+  const iconsPropsTypeUnion = definitions.map(([iconName]) => iconName).join(' | ');
   const iconPropsExport =
     `export type IconReplaceNameProps = ${iconsPropsTypeUnion};` +
     '\n' +
-    'export type IconReplaceNameIcon = React.FC<IconReplaceNameProps>;';
+    'export type IconReplaceNameIcon = (props: IconReplaceNameProps) => React.JSX.Element;';
 
   let file = componentTemplate
     .replace(
