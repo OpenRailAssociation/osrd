@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
 import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
+import { getProjectionType } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
@@ -26,6 +28,7 @@ const useGetProjectedTrainOperationalPoints = ({
   timetableItemUsedForProjection?: TimetableItem;
 }) => {
   const { t } = useTranslation('operational-studies');
+  const projectionType = useSelector(getProjectionType);
 
   const [operationalPoints, setOperationalPoints] = useState<PathOperationalPoint[]>([]);
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
@@ -73,13 +76,16 @@ const useGetProjectedTrainOperationalPoints = ({
             opId: op.id,
           })) || [];
 
-        operationalPointsWithUniqueIds = upsertMapWaypointsInOperationalPoints(
-          'PathOperationalPoint',
-          timetableItemUsedForProjection.path,
-          path.path_item_positions,
-          operationalPointsWithUniqueIds,
-          t
-        );
+        operationalPointsWithUniqueIds =
+          projectionType === 'trackProjection'
+            ? upsertMapWaypointsInOperationalPoints(
+                'PathOperationalPoint',
+                timetableItemUsedForProjection.path,
+                path.path_item_positions,
+                operationalPointsWithUniqueIds,
+                t
+              )
+            : operationalPointsWithUniqueIds;
 
         setOperationalPoints(operationalPointsWithUniqueIds);
 
@@ -109,7 +115,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
-  }, [timetableItemUsedForProjection, infraId, t]);
+  }, [timetableItemUsedForProjection, infraId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };
 };

@@ -1,72 +1,23 @@
-import {
-  osrdEditoastApi,
-  type PostTrainScheduleProjectPathApiResponse,
-  type PostTrainScheduleOccupancyBlocksApiResponse,
-  type PostPacedTrainProjectPathApiResponse,
-  type PostPacedTrainOccupancyBlocksApiResponse,
-  type OccupancyBlockForm,
-  type SpaceTimeCurve,
-  type SignalUpdate,
+import type {
+  PostPacedTrainOccupancyBlocksApiResponse,
+  PostPacedTrainProjectPathApiResponse,
+  PostTrainScheduleOccupancyBlocksApiResponse,
+  PostTrainScheduleProjectPathApiResponse,
 } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
-import type { AppDispatch } from 'store';
 import {
-  formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
-const BATCH_SIZE = 20;
+import TrainProjectionLazyLoaderAbstract from './TrainProjectionLazyLoaderAbstract';
+import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
-export type ProjectionResult = {
-  space_time_curves: SpaceTimeCurve[];
-  signal_updates: SignalUpdate[];
-};
-
-type TrainProjectionLazyLoaderOptions = {
-  dispatch: AppDispatch;
-  infraId: number;
-  electricalProfileSetId?: number;
-  path: OccupancyBlockForm['path'];
-  onProgress: (results: Map<TimetableItemId, ProjectionResult>) => void;
-};
-
-export default class TrainProjectionLazyLoader {
-  readonly options: TrainProjectionLazyLoaderOptions;
-
-  pending: TimetableItemId[] = [];
-
-  prevPromise: Promise<void> = Promise.resolve();
-
-  cancelled = false;
-
-  constructor(options: TrainProjectionLazyLoaderOptions) {
-    this.options = options;
-  }
-
-  projectTimetableItems(ids: TimetableItemId[]) {
-    if (this.cancelled) {
-      throw new Error('projectTimetableItems() called after cancel()');
-    }
-    this.pending.push(...ids);
-    this.prevPromise = this.prevPromise.finally(() => this.processPending());
-  }
-
-  cancel() {
-    this.pending = [];
-    this.cancelled = true;
-  }
-
-  async processPending() {
-    while (this.pending.length > 0) {
-      const batch = this.pending.slice(0, BATCH_SIZE);
-      this.pending = this.pending.slice(BATCH_SIZE);
-      await this.processBatch(batch);
-    }
-  }
-
+export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
   async processBatch(batch: TimetableItemId[]) {
     const { infraId, path, electricalProfileSetId } = this.options;
 

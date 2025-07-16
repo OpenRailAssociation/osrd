@@ -21,6 +21,7 @@ const config: ConfigFile = {
         'postPacedTrainOccupancyBlocks',
         'postTrainScheduleSimulationSummary',
         'postTrainScheduleProjectPath',
+        'postTrainScheduleProjectPathOp',
         'postTrainScheduleOccupancyBlocks',
         'postWorkSchedulesProjectPath',
       ],

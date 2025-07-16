@@ -6,7 +6,7 @@ import {
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
-import type { ProjectionResult } from './TrainProjectionLazyLoader';
+import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
 const upsertNewProjectedTrains = (
   projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
@@ -27,7 +27,7 @@ const upsertNewProjectedTrains = (
       name: matchingTrain?.train_name || 'Train name not found',
       departureTime: new Date(matchingTrain?.start_time),
       spaceTimeCurves: trainData.space_time_curves,
-      signalUpdates: trainData.signal_updates,
+      signalUpdates: trainData.signal_updates || [],
       ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)
         ? {
             id: formatPacedTrainIdToIndexedOccurrenceId(matchingTrain.id, 0),
