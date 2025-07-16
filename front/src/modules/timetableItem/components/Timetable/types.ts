@@ -25,29 +25,33 @@ export type TrainCategoryFilter = 'all' | 'noCategory' | TrainMainCategory;
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
-type TimetableItemWithSummaries = Omit<
+export type SimulationSummary =
+  | { isValid: false; invalidReason: InvalidReason }
+  | {
+      isValid: true;
+      /** Travel time */
+      duration: Duration;
+      pathLength: string;
+      mechanicalEnergyConsumed: number;
+      notHonoredReason?: 'scheduleNotHonored' | 'trainTooFast';
+      pathItemTimes: {
+        base: SimulationSummaryResultSuccess['path_item_times_base'];
+        provisional: SimulationSummaryResultSuccess['path_item_times_provisional'];
+        final: SimulationSummaryResultSuccess['path_item_times_final'];
+      };
+    };
+
+export type TimetableItemWithSummaries = Omit<
   TrainScheduleResponse,
   'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
   name: string;
   startTime: Date;
-  arrivalTime: Date | null;
-  duration: Duration | null;
   stopsCount: number;
-  pathLength: string;
   rollingStock?: LightRollingStockWithLiveries;
-  mechanicalEnergyConsumed: number;
   speedLimitTag: string | null;
   labels: string[];
-  invalidReason?: InvalidReason;
-  notHonoredReason?: 'scheduleNotHonored' | 'trainTooFast';
-  scheduledPointsNotHonored?: boolean;
-  isValid: boolean;
-  pathItemTimes?: {
-    base: SimulationSummaryResultSuccess['path_item_times_base'];
-    provisional: SimulationSummaryResultSuccess['path_item_times_provisional'];
-    final: SimulationSummaryResultSuccess['path_item_times_final'];
-  };
+  summary?: SimulationSummary;
 };
 
 export type InvalidReason =

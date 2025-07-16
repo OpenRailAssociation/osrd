@@ -9,6 +9,7 @@ import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
 } from 'modules/timetableItem/helpers/pacedTrain';
+import { addDurationToDate } from 'utils/duration';
 import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
@@ -24,15 +25,10 @@ const useOccurrences = (
     id,
     paced,
     startTime,
-    arrivalTime,
     name,
     rollingStock,
     stopsCount,
-    mechanicalEnergyConsumed,
-    pathLength,
-    duration,
-    isValid,
-    invalidReason,
+    summary,
     exceptions,
     category: pacedTrainCategory,
   } = pacedTrain;
@@ -46,9 +42,6 @@ const useOccurrences = (
     for (let i = 0; i < occurrencesCount; i += 1) {
       const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(id, i);
       const occurrenceStartTime = dayjs(startTime)
-        .add(i * paced.interval.ms, 'ms')
-        .toDate();
-      const occurrenceArrivalTime = dayjs(arrivalTime)
         .add(i * paced.interval.ms, 'ms')
         .toDate();
 
@@ -79,18 +72,20 @@ const useOccurrences = (
         exceptionChangeGroups: correspondingException
           ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
           : undefined,
-        ...(isValid
+        ...(summary?.isValid
           ? {
               isValid: true,
               // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: occurrenceArrivalTime,
-              pathLength,
-              mechanicalEnergyConsumed,
-              duration,
+              arrivalTime: dayjs(addDurationToDate(startTime, summary.duration))
+                .add(i * paced.interval.ms, 'ms')
+                .toDate(),
+              pathLength: summary.pathLength,
+              mechanicalEnergyConsumed: summary.mechanicalEnergyConsumed,
+              duration: summary.duration,
             }
           : {
               isValid: false,
-              invalidReason,
+              invalidReason: summary?.invalidReason,
             }),
       });
     }
@@ -119,14 +114,14 @@ const useOccurrences = (
           ? exception.rolling_stock_category.value
           : pacedTrainCategory,
         exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index']),
-        ...(isValid
+        ...(summary?.isValid
           ? {
               isValid: true,
               // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: new Date(Date.parse(exception.start_time!.value) + duration!.ms),
-              pathLength,
-              mechanicalEnergyConsumed,
-              duration,
+              arrivalTime: new Date(Date.parse(exception.start_time!.value) + summary.duration.ms),
+              pathLength: summary.pathLength,
+              mechanicalEnergyConsumed: summary.mechanicalEnergyConsumed,
+              duration: summary.duration,
             }
           : {
               isValid: false,

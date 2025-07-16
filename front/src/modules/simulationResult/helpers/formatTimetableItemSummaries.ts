@@ -24,44 +24,43 @@ const formatTimetableItemSummaries = (
     if (!timetableItem) {
       throw new Error('Missing timetable item');
     }
-
-    let notHonoredReason: TimetableItemWithDetails['notHonoredReason'];
-    if (timetableItemSummary.status === 'success') {
-      if (isTooFast(timetableItem, timetableItemSummary)) notHonoredReason = 'trainTooFast';
-      if (isScheduledPointsNotHonored(timetableItem, timetableItemSummary))
-        notHonoredReason = 'scheduleNotHonored';
-    }
-
     const baseItem = formatBaseTimetableItemWithDetails(timetableItem, rollingStocks);
+
+    if (timetableItemSummary.status !== 'success') {
+      return {
+        ...baseItem,
+        summary: {
+          isValid: false,
+          invalidReason:
+            timetableItemSummary.status === 'pathfinding_not_found' ||
+            timetableItemSummary.status === 'pathfinding_input_error'
+              ? timetableItemSummary.error_type
+              : timetableItemSummary.status,
+        },
+      };
+    }
+    let notHonoredReason: Extract<
+      NonNullable<TimetableItemWithDetails['summary']>,
+      { isValid: true }
+    >['notHonoredReason'];
+    if (isTooFast(timetableItem, timetableItemSummary)) notHonoredReason = 'trainTooFast';
+    if (isScheduledPointsNotHonored(timetableItem, timetableItemSummary))
+      notHonoredReason = 'scheduleNotHonored';
+
     return {
       ...baseItem,
-      scheduledPointsNotHonored: notHonoredReason !== undefined,
-      notHonoredReason,
-      ...(timetableItemSummary.status === 'success'
-        ? {
-            isValid: true,
-            arrivalTime: new Date(baseItem.startTime.getTime() + timetableItemSummary.time),
-            duration: new Duration({ milliseconds: timetableItemSummary.time }),
-            pathLength: formatKmValue(timetableItemSummary.length, 'millimeters', 1),
-            mechanicalEnergyConsumed: jouleToKwh(timetableItemSummary.energy_consumption, true),
-            pathItemTimes: {
-              base: timetableItemSummary.path_item_times_base,
-              provisional: timetableItemSummary.path_item_times_provisional,
-              final: timetableItemSummary.path_item_times_final,
-            },
-          }
-        : {
-            isValid: false,
-            arrivalTime: null,
-            duration: null,
-            pathLength: '',
-            mechanicalEnergyConsumed: 0,
-            invalidReason:
-              timetableItemSummary.status === 'pathfinding_not_found' ||
-              timetableItemSummary.status === 'pathfinding_input_error'
-                ? timetableItemSummary.error_type
-                : timetableItemSummary.status,
-          }),
+      summary: {
+        isValid: true,
+        duration: new Duration({ milliseconds: timetableItemSummary.time }),
+        pathLength: formatKmValue(timetableItemSummary.length, 'millimeters', 1),
+        mechanicalEnergyConsumed: jouleToKwh(timetableItemSummary.energy_consumption, true),
+        notHonoredReason,
+        pathItemTimes: {
+          base: timetableItemSummary.path_item_times_base,
+          provisional: timetableItemSummary.path_item_times_provisional,
+          final: timetableItemSummary.path_item_times_final,
+        },
+      },
     };
   });
 

@@ -37,13 +37,13 @@ const keepTrainsRunningDuringStdcm = (
   );
 
   for (const trainSchedule of trainSchedules.values()) {
-    if (trainSchedule.invalidReason || trainSchedule.pathItemTimes === undefined) {
+    if (!trainSchedule.summary?.isValid) {
       continue;
     }
     const departureTime = trainSchedule.startTime;
     const arrivalTime = addDurationToDate(
       trainSchedule.startTime,
-      new Duration({ milliseconds: trainSchedule.pathItemTimes.final.at(-1)! })
+      new Duration({ milliseconds: trainSchedule.summary.pathItemTimes.final.at(-1)! })
     );
 
     if (

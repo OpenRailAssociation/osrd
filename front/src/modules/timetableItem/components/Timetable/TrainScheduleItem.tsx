@@ -63,6 +63,8 @@ const TrainScheduleItem = ({
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
   const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
+  const { summary } = train;
+
   const changeSelectedTrainId = (trainId: TrainId) => {
     dispatch(updateSelectedTrainId(trainId));
   };
@@ -146,7 +148,12 @@ const TrainScheduleItem = ({
     dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
-  const isAfterMidnight = dayjs(train.arrivalTime).isAfter(train.startTime, 'day');
+  const arrivalTime = summary?.isValid
+    ? addDurationToDate(train.startTime, summary.duration)
+    : undefined;
+  const isAfterMidnight = arrivalTime
+    ? dayjs(arrivalTime).isAfter(train.startTime, 'day')
+    : undefined;
 
   return (
     <div
@@ -155,7 +162,7 @@ const TrainScheduleItem = ({
         selected: isSelected,
         modified: isModified,
         'in-selection': isInSelection,
-        invalid: train.invalidReason,
+        invalid: summary && !summary.isValid,
       })}
     >
       <div
@@ -167,9 +174,9 @@ const TrainScheduleItem = ({
       >
         <div
           className={cx('base-info', {
-            warning: train.invalidReason || train.notHonoredReason,
-            invalid: train.invalidReason,
-            'not-honored': train.notHonoredReason,
+            invalid: summary && !summary.isValid,
+            warning: summary && (!summary.isValid || !!summary.notHonoredReason),
+            'not-honored': summary?.isValid && !!summary.notHonoredReason,
           })}
         >
           <div className="title-img">
@@ -201,12 +208,12 @@ const TrainScheduleItem = ({
               </div>
             </div>
             <div className="rolling-stock">
-              {train.rollingStock && !train.invalidReason && (
+              {summary?.isValid && train.rollingStock && (
                 <RollingStock2Img rollingStock={train.rollingStock} />
               )}
             </div>
           </div>
-          {!train.invalidReason ? (
+          {(!summary || summary.isValid) && (
             <div className="train-time">
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               <div
@@ -217,52 +224,51 @@ const TrainScheduleItem = ({
               </div>
               <div
                 className={cx('status-icon', {
-                  'not-honored-or-too-fast': train.notHonoredReason,
+                  'not-honored-or-too-fast': summary?.isValid && summary.notHonoredReason,
                 })}
               >
-                {train.notHonoredReason &&
-                  (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
+                {summary?.isValid &&
+                  summary.notHonoredReason &&
+                  (summary.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
               <div
                 data-testid="timetable-item-arrival-time"
                 className="scenario-timetable-train-times"
-                title={train.arrivalTime ? formatFullDate(train.arrivalTime) : undefined}
+                title={arrivalTime ? formatFullDate(arrivalTime) : undefined}
               >
-                {train.arrivalTime ? (
-                  roundAndFormatToNearestMinute(train.arrivalTime)
-                ) : (
-                  <ArrivalTimeLoader />
-                )}
+                {arrivalTime ? roundAndFormatToNearestMinute(arrivalTime) : <ArrivalTimeLoader />}
               </div>
               <div
                 className={cx('status-dot', {
                   'not-honored-or-too-fast':
-                    train.notHonoredReason === 'scheduleNotHonored' ||
-                    train.notHonoredReason === 'trainTooFast',
+                    summary?.isValid &&
+                    (summary.notHonoredReason === 'scheduleNotHonored' ||
+                      summary.notHonoredReason === 'trainTooFast'),
                 })}
               />
             </div>
-          ) : (
-            <div className="invalid-reason" title={t(`timetable.invalid.${train.invalidReason}`)}>
-              <span>{t(`timetable.invalid.${train.invalidReason}`)}</span>
+          )}
+          {summary && !summary.isValid && (
+            <div className="invalid-reason" title={t(`timetable.invalid.${summary.invalidReason}`)}>
+              <span>{t(`timetable.invalid.${summary.invalidReason}`)}</span>
             </div>
           )}
         </div>
 
-        {train.isValid && (
+        {summary?.isValid && (
           <div className="more-info">
             <div className="more-info-left">
               {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
               <span className="more-info-item">
                 {t('timetable.stopsCount', { count: train.stopsCount })}
               </span>
-              <span className="more-info-item">{train.pathLength}</span>
+              <span className="more-info-item">{summary.pathLength}</span>
               <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
-                {train.mechanicalEnergyConsumed}&nbsp;kWh
+                {summary.mechanicalEnergyConsumed}&nbsp;kWh
               </span>
             </div>
             <div className="duration-time">
-              <span data-testid="train-duration">{formatTrainDuration(train.duration!)}</span>
+              <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
             </div>
           </div>
         )}
@@ -272,7 +278,7 @@ const TrainScheduleItem = ({
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
-        isTimetableItemValid={!train.invalidReason}
+        isTimetableItemValid={summary?.isValid}
       />
     </div>
   );

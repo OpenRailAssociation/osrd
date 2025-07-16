@@ -81,6 +81,8 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
+
+  const { summary } = pacedTrain;
   const { rollingStocks } = useRollingStockContext();
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);
 
@@ -209,9 +211,9 @@ const PacedTrainItem = ({
       <div
         data-testid="paced-train"
         className={cx('base-info', {
-          warning: pacedTrain.invalidReason || pacedTrain.notHonoredReason,
-          invalid: pacedTrain.invalidReason,
-          'not-honored': pacedTrain.notHonoredReason,
+          warning: summary && (!summary.isValid || summary.notHonoredReason),
+          invalid: summary && !summary.isValid,
+          'not-honored': summary?.isValid && summary.notHonoredReason,
         })}
       >
         <div className="checkbox-title">
@@ -269,30 +271,29 @@ const PacedTrainItem = ({
           </div>
         </div>
 
-        {!pacedTrain.invalidReason ? (
+        {summary?.isValid && (
           <div className="paced-train-right-zone">
-            {pacedTrain.isValid && (
-              <div data-testid="paced-train-interval">
-                &mdash;&nbsp;{`${pacedTrain.paced.interval.total('minute')}min`}
-              </div>
-            )}
+            <div data-testid="paced-train-interval">
+              &mdash;&nbsp;{`${pacedTrain.paced.interval.total('minute')}min`}
+            </div>
             <div
               className={cx('status-icon', {
-                'not-honored-or-too-fast': pacedTrain.notHonoredReason,
+                'not-honored-or-too-fast': summary.notHonoredReason,
               })}
             >
-              {pacedTrain.notHonoredReason &&
-                (pacedTrain.notHonoredReason === 'scheduleNotHonored' ? (
+              {summary.notHonoredReason &&
+                (summary.notHonoredReason === 'scheduleNotHonored' ? (
                   <Clock className="center-icon" />
                 ) : (
                   <Flame className="center-icon" />
                 ))}
             </div>
           </div>
-        ) : (
+        )}
+        {summary && !summary.isValid && (
           <div className="invalid-reason">
-            <span title={t(`timetable.invalid.${pacedTrain.invalidReason}`)}>
-              {t(`timetable.invalid.${pacedTrain.invalidReason}`)}
+            <span title={t(`timetable.invalid.${summary.invalidReason}`)}>
+              {t(`timetable.invalid.${summary.invalidReason}`)}
             </span>
           </div>
         )}
@@ -311,7 +312,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          isTimetableItemValid={!pacedTrain.invalidReason}
+          isTimetableItemValid={summary && !summary.isValid}
           showResetExceptionsButton={pacedTrain.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(
@@ -323,20 +324,20 @@ const PacedTrainItem = ({
           }}
         />
       </div>
-      {pacedTrain.isValid && (
+      {summary?.isValid && (
         <div className="more-info">
           <div className="more-info-left">
             {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
             <span className="more-info-item">
               {t('timetable.stopsCount', { count: pacedTrain.stopsCount })}
             </span>
-            <span className="more-info-item">{pacedTrain.pathLength}</span>
+            <span className="more-info-item">{summary.pathLength}</span>
             <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
-              {pacedTrain.mechanicalEnergyConsumed}&nbsp;kWh
+              {summary.mechanicalEnergyConsumed}&nbsp;kWh
             </span>
           </div>
           <div className="duration-time">
-            <span data-testid="train-duration">{formatTrainDuration(pacedTrain.duration!)}</span>
+            <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
           </div>
         </div>
       )}

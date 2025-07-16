@@ -61,21 +61,23 @@ const useFilterTimetableItems = (
       timetableItems.filter((timetableItem) => {
         if (!keepItem(timetableItem, debouncedNameLabelFilter)) return false;
 
+        const { summary } = timetableItem;
+
         // Apply validity filter
         if (validityFilter !== 'both') {
-          if (validityFilter === 'valid' && !timetableItem.isValid) return false;
-          if (validityFilter === 'invalid' && timetableItem.isValid) return false;
+          if (validityFilter === 'valid' && !summary?.isValid) return false;
+          if (validityFilter === 'invalid' && summary?.isValid) return false;
         }
 
         // Apply scheduled points honored filter
         if (scheduledPointsHonoredFilter !== 'both') {
-          if (!timetableItem.isValid) {
+          if (!summary || !summary.isValid) {
             return false;
           }
-          const { scheduledPointsNotHonored } = timetableItem;
+          const { notHonoredReason } = summary;
           if (
-            (scheduledPointsHonoredFilter === 'honored' && scheduledPointsNotHonored) ||
-            (scheduledPointsHonoredFilter === 'notHonored' && !scheduledPointsNotHonored)
+            (scheduledPointsHonoredFilter === 'honored' && !!notHonoredReason) ||
+            (scheduledPointsHonoredFilter === 'notHonored' && !notHonoredReason)
           ) {
             return false;
           }

@@ -4,6 +4,7 @@ import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type {
   PacedTrainWithDetails,
+  TimetableItemWithSummaries,
   TrainScheduleWithDetails,
 } from 'modules/timetableItem/components/Timetable/types';
 import {
@@ -23,6 +24,29 @@ import { Duration } from 'utils/duration';
 
 import testTrainSettingsReducer from './trainSettingsReducer';
 
+const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
+  name: 'train1',
+  constraint_distribution: 'MARECO',
+  rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
+  path: [
+    { id: 'id1', uic: 123 },
+    { id: 'id2', uic: 234 },
+  ],
+  speedLimitTag: 'MA100',
+  labels: ['label1'],
+  margins: { boundaries: ['id2'], values: ['10%', '0%'] },
+  startTime: new Date('2021-01-01T00:00:00Z'),
+  options: { use_electrical_profiles: false },
+  stopsCount: 2,
+  summary: {
+    isValid: true,
+    pathLength: '100',
+    duration: new Duration({ milliseconds: 1000 }),
+    mechanicalEnergyConsumed: 100,
+    pathItemTimes: { base: [], provisional: [], final: [] },
+  },
+};
+
 const createStore = (extraInitialState?: Partial<OperationalStudiesConfState>) =>
   createStoreWithoutMiddleware({
     [operationalStudiesConfSlice.name]: {
@@ -41,25 +65,8 @@ describe('simulationConfReducer', () => {
   describe('selectTrainToEdit', () => {
     it('train schedule case', () => {
       const trainSchedule: TrainScheduleWithDetails = {
+        ...baseTimetableItemWithSummary,
         id: 'trainschedule_1' as TrainScheduleId,
-        name: 'train1',
-        constraint_distribution: 'MARECO',
-        rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
-        path: [
-          { id: 'id1', uic: 123 },
-          { id: 'id2', uic: 234 },
-        ],
-        margins: { boundaries: ['id2'], values: ['10%', '0%'] },
-        startTime: new Date('2021-01-01T00:00:00Z'),
-        arrivalTime: null,
-        duration: new Duration({ milliseconds: 1000 }),
-        stopsCount: 2,
-        pathLength: '100',
-        mechanicalEnergyConsumed: 100,
-        speedLimitTag: 'MA100',
-        labels: ['label1'],
-        isValid: true,
-        options: { use_electrical_profiles: false },
       };
 
       const store = createStore();
@@ -103,25 +110,8 @@ describe('simulationConfReducer', () => {
 
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
+        ...baseTimetableItemWithSummary,
         id: 'paced_1' as PacedTrainId,
-        name: 'train1',
-        constraint_distribution: 'MARECO',
-        rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
-        path: [
-          { id: 'id1', uic: 123 },
-          { id: 'id2', uic: 234 },
-        ],
-        margins: { boundaries: ['id2'], values: ['10%', '0%'] },
-        startTime: new Date('2021-01-01T00:00:00Z'),
-        arrivalTime: null,
-        duration: new Duration({ milliseconds: 1000 }),
-        stopsCount: 2,
-        pathLength: '100',
-        mechanicalEnergyConsumed: 100,
-        speedLimitTag: 'MA100',
-        labels: ['label1'],
-        isValid: true,
-        options: { use_electrical_profiles: false },
         paced: {
           timeWindow: new Duration({ minutes: 60 }),
           interval: new Duration({ minutes: 30 }),

@@ -62,7 +62,7 @@ export const extractTagCode = (tag?: string | null) => {
 };
 
 export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails[]) =>
-  timetableItems.some((timetableItem) => timetableItem.invalidReason);
+  timetableItems.some((timetableItem) => timetableItem.summary && !timetableItem.summary.isValid);
 
 export const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
 
