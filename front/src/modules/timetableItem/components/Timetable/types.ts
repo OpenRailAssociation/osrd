@@ -7,7 +7,12 @@ import type {
   TrainMainCategory,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OccurrenceId,
+  PacedTrainId,
+  TimetableItemId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
@@ -118,14 +123,20 @@ export type Occurrence = {
 export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 
 export type PairingItem = {
-  id: number;
+  id: TimetableItemId;
   name: string;
-  category: TrainMainCategory | null;
+  category?: TrainMainCategory | null;
   interval: Duration | null;
   origin: string;
   stops: string[];
   destination: string;
   startTime: Date;
-  arrivalTime: Date;
+  requestedArrivalTime: Date | null;
   status: 'todo' | 'oneWays' | 'roundTrip';
+};
+
+export type RoundTripsModalColumnData = {
+  todo: PairingItem[];
+  oneWays: PairingItem[];
+  roundTrips: PairingItem[][];
 };
