@@ -523,8 +523,11 @@
     "timeSpaceChartSettings": {
       "capacity": "Capacité",
       "conflicts": "Conflits",
+      "operationalPointProjection": "Au point remarquable",
       "paths": "Sillons",
-      "signalsStates": "États des signaux"
+      "projection": "Projection",
+      "signalsStates": "États des signaux",
+      "trackProjection": "À la voie"
     },
     "timetableOutput": "Table horaire de sortie",
     "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",

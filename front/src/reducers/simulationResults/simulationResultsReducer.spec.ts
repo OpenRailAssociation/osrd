@@ -57,4 +57,13 @@ describe('simulationResultsReducer', () => {
     const state = store.getState()[simulationResultsSlice.name];
     expect(state.trainIdUsedForProjection).toBe('paced-1');
   });
+
+  it('should handle updateProjectionType', () => {
+    const store = createStore();
+    const newProjectionType = 'operationalPointProjection';
+    store.dispatch(simulationResultsSlice.actions.updateProjectionType(newProjectionType));
+
+    const state = store.getState()[simulationResultsSlice.name];
+    expect(state.projectionType).toBe(newProjectionType);
+  });
 });

@@ -523,8 +523,11 @@
     "timeSpaceChartSettings": {
       "capacity": "Capacity",
       "conflicts": "Conflicts",
+      "operationalPointProjection": "Onto operational point",
       "paths": "Paths",
-      "signalsStates": "Signals states"
+      "projection": "Projection",
+      "signalsStates": "Signals states",
+      "trackProjection": "Onto track"
     },
     "timetableOutput": "Timetable Output",
     "toggleManchetteMenu": "Toggle manchette menu",
