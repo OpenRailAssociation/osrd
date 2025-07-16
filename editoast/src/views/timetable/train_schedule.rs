@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::views::projection::OperationalPointProjection;
-use crate::views::projection::compute_projected_train_path_op;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -35,7 +33,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-
 use crate::error::Result;
 use crate::models;
 use crate::models::OperationalPointModel;
@@ -52,10 +49,11 @@ use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
+use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
-use crate::views::projection::SpaceTimeCurves;
-
 use crate::views::projection::ProjectPathOperationalPointForm;
+use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
 use crate::views::projection::linear_interpolate;
@@ -148,22 +146,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
         Self {
             id: value.id,
             timetable_id: value.timetable_id,
-            train_schedule: TrainSchedule {
-                train_name: value.train_name,
-                labels: value.labels.into_iter().flatten().collect(),
-                rolling_stock_name: value.rolling_stock_name,
-                start_time: value.start_time,
-                schedule: value.schedule,
-                margins: value.margins,
-                initial_speed: value.initial_speed,
-                comfort: value.comfort,
-                path: value.path,
-                constraint_distribution: value.constraint_distribution,
-                speed_limit_tag: value.speed_limit_tag.map(Into::into),
-                power_restrictions: value.power_restrictions,
-                options: value.options,
-                category: value.main_category.as_deref().cloned(),
-            },
+            train_schedule: TrainSchedule::from(value),
         }
     }
 }

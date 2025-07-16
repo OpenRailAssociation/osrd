@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import { getExceptionType } from 'utils/trainId';
 
 import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
@@ -68,16 +69,26 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup], i) => (
-        <span key={i} className="change-group">
-          {changeGroup !== 'rolling_stock_category'
-            ? t(`occurrenceChangeGroup.${changeGroup}`)
-            : t(
-                `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value ?? 'noCategory'}`,
+      .map(([changeGroup], i) => {
+        const occurrenceCategory =
+          occurrence.exceptionChangeGroups?.rolling_stock_category?.value &&
+          isMainCategory(occurrence.exceptionChangeGroups?.rolling_stock_category?.value)
+            ? t(
+                `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value.main_category}`,
                 { ns: 'translation', keyPrefix: '' }
-              )}
-        </span>
-      ));
+              )
+            : t('rollingStock.categoriesOptions.noCategory', {
+                ns: 'translation',
+                keyPrefix: '',
+              });
+        return (
+          <span key={i} className="change-group">
+            {changeGroup !== 'rolling_stock_category'
+              ? t(`occurrenceChangeGroup.${changeGroup}`)
+              : occurrenceCategory}
+          </span>
+        );
+      });
   return (
     <div
       data-testid="occurrence-indicator"
@@ -118,7 +129,7 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
       <span
         className={cx(
           'icon',
-          `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[occurrence.category ?? 'None']}`,
+          `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[occurrence.category && isMainCategory(occurrence.category) ? occurrence.category.main_category : 'None']}`,
           {
             exception: !isEmpty(occurrence.exceptionChangeGroups),
             disabled: occurrence.disabled,

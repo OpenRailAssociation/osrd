@@ -1,6 +1,10 @@
 import { test, it, describe, expect } from 'vitest';
 
-import type { PacedTrainException, TrainMainCategory } from 'common/api/osrdEditoastApi';
+import type {
+  PacedTrainException,
+  TrainCategory,
+  TrainMainCategory,
+} from 'common/api/osrdEditoastApi';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,
@@ -23,7 +27,9 @@ describe('formatTimetableItemPayload', () => {
     initialSpeed: 0,
     labels: [],
     rollingStockComfort: 'STANDARD',
-    category: 'FREIGHT_TRAIN',
+    category: {
+      main_category: 'FREIGHT_TRAIN',
+    },
     pathSteps: [
       {
         id: '0-0',
@@ -68,7 +74,9 @@ describe('formatTimetableItemPayload', () => {
   const rawTimetableItemToEditData: TimetableItemToEditData = {
     timetableItemId: 'paced_238' as PacedTrainId,
     originalPacedTrain: {
-      category: 'FREIGHT_TRAIN',
+      category: {
+        main_category: 'FREIGHT_TRAIN',
+      },
       comfort: 'STANDARD',
       constraint_distribution: 'MARECO',
       exceptions: [],
@@ -190,7 +198,9 @@ describe('formatTimetableItemPayload', () => {
       };
       const result = formatPacedTrainPayload(osrdconfWithUserChanges, rollingStockName);
       expect(result).toEqual({
-        category: 'FREIGHT_TRAIN',
+        category: {
+          main_category: 'FREIGHT_TRAIN',
+        },
         comfort: 'STANDARD',
         constraint_distribution: 'MARECO',
         initial_speed: 0,
@@ -273,7 +283,9 @@ describe('formatTimetableItemPayload', () => {
           itemDataWithPREVIOUSLYAddedException
         );
         expect(result).toEqual({
-          category: 'FREIGHT_TRAIN',
+          category: {
+            main_category: 'FREIGHT_TRAIN',
+          },
           comfort: 'STANDARD',
           constraint_distribution: 'MARECO',
           initial_speed: 0,
@@ -336,7 +348,9 @@ describe('formatTimetableItemPayload', () => {
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
           ...rawOsrdconf,
-          category: userChanges.category,
+          category: {
+            main_category: userChanges.category,
+          },
         };
         const timetableItemToEditDataWithOneChangeGroup: TimetableItemToEditData = {
           ...rawTimetableItemToEditData,
@@ -347,7 +361,9 @@ describe('formatTimetableItemPayload', () => {
                 key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
                 occurrence_index: 1,
                 rolling_stock_category: {
-                  value: 'NIGHT_TRAIN',
+                  value: {
+                    main_category: 'NIGHT_TRAIN',
+                  },
                 },
               },
             ],
@@ -363,8 +379,8 @@ describe('formatTimetableItemPayload', () => {
         });
       });
       describe('exception is both a label and category exception', () => {
-        const userChanges: Record<string, TrainMainCategory> = {
-          category: 'NIGHT_TRAIN',
+        const userChanges: Record<string, TrainCategory> = {
+          category: { main_category: 'NIGHT_TRAIN' },
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {
           ...rawOsrdconf,
@@ -380,7 +396,9 @@ describe('formatTimetableItemPayload', () => {
                 key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
                 occurrence_index: 1,
                 rolling_stock_category: {
-                  value: 'NIGHT_TRAIN',
+                  value: {
+                    main_category: 'NIGHT_TRAIN',
+                  },
                 },
                 labels: {
                   value: ['label1', 'label2'],
@@ -413,7 +431,9 @@ describe('formatTimetableItemPayload', () => {
     describe('when the user modifies occurrence at index 2', () => {
       it('should create a new exception if it was not present before', () => {
         const userChanges: Partial<OperationalStudiesConfState> = {
-          category: 'HIGH_SPEED_TRAIN',
+          category: {
+            main_category: 'HIGH_SPEED_TRAIN',
+          },
           rollingStockComfort: 'HEATING',
           // These are not user changes but we need to updated these values so they match the ones from the occurrence at its specific index
           startTime: new Date('2025-06-02T14:45:00.000Z'), // occurrence with index 2 start time
@@ -446,7 +466,9 @@ describe('formatTimetableItemPayload', () => {
             key: expect.any(String),
             occurrence_index: 2,
             rolling_stock_category: {
-              value: 'HIGH_SPEED_TRAIN',
+              value: {
+                main_category: 'HIGH_SPEED_TRAIN',
+              },
             },
             rolling_stock: {
               rolling_stock_name: 'DUAL-MODE_RS_E2Ee',
