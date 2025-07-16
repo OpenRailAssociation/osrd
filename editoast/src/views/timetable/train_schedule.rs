@@ -23,6 +23,7 @@ use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::PositiveDuration;
+use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::TrainSchedule;
@@ -161,7 +162,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
                 speed_limit_tag: value.speed_limit_tag.map(Into::into),
                 power_restrictions: value.power_restrictions,
                 options: value.options,
-                category: value.main_category.as_deref().cloned(),
+                category: TrainCategory::new(value.main_category.map(|c| c.0), None),
             },
         }
     }

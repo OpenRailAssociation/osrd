@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   TimetableItemId,
@@ -188,7 +189,7 @@ const TrainScheduleItem = ({
                 <div
                   className={cx(
                     'train-info',
-                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category ?? 'None']}`
+                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category && isMainCategory(train.category) && train.category.main_category ? train.category.main_category : 'None']}`
                   )}
                 >
                   {projectionPathIsUsed && (

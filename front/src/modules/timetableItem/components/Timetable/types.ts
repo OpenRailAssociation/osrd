@@ -1,4 +1,5 @@
 import type {
+  TrainCategory,
   LightRollingStockWithLiveries,
   PacedTrainException,
   PathfindingInputError,
@@ -102,7 +103,7 @@ export type Occurrence = {
    * An added exception can only be deleted, not disabled.
    */
   disabled?: boolean;
-  category?: TrainMainCategory | null;
+  category?: TrainCategory | null;
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;

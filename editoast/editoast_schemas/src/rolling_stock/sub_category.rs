@@ -26,6 +26,18 @@ pub struct SubCategory {
 #[derive(Clone, Debug, PartialEq, Serialize, ToSchema)]
 pub struct SubCategoryColor(String);
 
+impl From<String> for SubCategoryColor {
+    fn from(color: String) -> Self {
+        SubCategoryColor(color)
+    }
+}
+
+impl From<SubCategoryColor> for String {
+    fn from(color: SubCategoryColor) -> Self {
+        color.0
+    }
+}
+
 static COLOR_REGEX: OnceLock<Regex> = OnceLock::new();
 impl FromStr for SubCategoryColor {
     type Err = String;

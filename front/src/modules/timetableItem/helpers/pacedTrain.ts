@@ -1,4 +1,5 @@
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   extractExceptionIdFromOccurrenceId,
@@ -59,7 +60,13 @@ export const extractOccurrenceDetailsFromPacedTrain = <
     occurrence.constraint_distribution = exceptionChangeGroups.constraint_distribution.value;
   }
   if (exceptionChangeGroups.rolling_stock_category) {
-    occurrence.category = exceptionChangeGroups.rolling_stock_category.value;
+    occurrence.category =
+      exceptionChangeGroups.rolling_stock_category.value &&
+      isMainCategory(exceptionChangeGroups.rolling_stock_category.value)
+        ? {
+            main_category: exceptionChangeGroups.rolling_stock_category.value.main_category,
+          }
+        : undefined;
   }
   if (exceptionChangeGroups.rolling_stock) {
     occurrence.rolling_stock_name = exceptionChangeGroups.rolling_stock.rolling_stock_name;

@@ -5,6 +5,7 @@ use chrono::Utc;
 use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas;
+use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
@@ -65,6 +66,10 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             category,
         }: editoast_schemas::TrainSchedule,
     ) -> Self {
+        let main_category = match category {
+            Some(TrainCategory::Main { main_category }) => Some(TrainMainCategory(main_category)),
+            _ => None,
+        };
         TrainSchedule::changeset()
             .comfort(comfort)
             .constraint_distribution(constraint_distribution)
@@ -79,7 +84,7 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .start_time(start_time)
             .train_name(train_name)
             .options(options)
-            .main_category(category.map(TrainMainCategory))
+            .main_category(main_category)
     }
 }
 
