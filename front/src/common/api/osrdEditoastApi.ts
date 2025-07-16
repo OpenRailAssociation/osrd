@@ -72,15 +72,39 @@ const compressedQuery = async <Response>(
   return result as { data: Response } | { error: ApiError };
 };
 
-const fetchAllPages = async <
-  QueryArgs extends {
+type EndpointQueryArgs<E> =
+  E extends ApiEndpointQuery<
+    QueryDefinition<infer QueryArgs, infer _BaseQuery, infer _TagTypes, infer _ResultType>,
+    EndpointDefinitions
+  >
+    ? QueryArgs
+    : never;
+
+type EndpointQueryResult<E> =
+  E extends ApiEndpointQuery<
+    QueryDefinition<infer _QueryArgs, infer _BaseQuery, infer _TagTypes, infer ResultType>,
+    EndpointDefinitions
+  >
+    ? ResultType
+    : never;
+
+type PaginatedEndpointQueryArgs<E> =
+  EndpointQueryArgs<E> extends {
     page?: number;
     pageSize?: number | null;
-  },
+  }
+    ? EndpointQueryArgs<E>
+    : never;
+
+type PaginatedEndpointQueryResultItem<E> =
+  EndpointQueryResult<E> extends { results: (infer Item)[] } & PaginationStats ? Item : never;
+
+const fetchAllPages = async <
+  QueryArgs,
   BaseQuery extends BaseQueryFn,
   TagTypes extends string,
   ResultItem,
-  ResultType extends { results: ResultItem[] } & PaginationStats,
+  ResultType,
   Definitions extends EndpointDefinitions,
   Endpoint extends ApiEndpointQuery<
     QueryDefinition<QueryArgs, BaseQuery, TagTypes, ResultType>,
@@ -88,12 +112,12 @@ const fetchAllPages = async <
   >,
 >(
   endpoint: Endpoint,
-  args: QueryArgs,
+  args: PaginatedEndpointQueryArgs<Endpoint>,
   dispatch: ThunkDispatch<unknown, unknown, Action>
-): Promise<ResultType['results']> => {
+): Promise<PaginatedEndpointQueryResultItem<Endpoint>[]> => {
   let page = 1;
   let reachEnd = false;
-  const results: ResultItem[] = [];
+  const results: PaginatedEndpointQueryResultItem<Endpoint>[] = [];
   while (!reachEnd) {
     const data = await dispatch(
       endpoint.initiate(
@@ -124,8 +148,8 @@ const osrdEditoastApi = generatedEditoastApi
             { id: timetableId, pageSize: 200 },
             dispatch
           );
-          return { data: [] as TrainScheduleResponse[] }; // TODO: ehhhhhhhh
-          //return { data };
+          //return { data: [] as TrainScheduleResponse[] }; // TODO: ehhhhhhhh
+          return { data };
         },
         providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       }),
