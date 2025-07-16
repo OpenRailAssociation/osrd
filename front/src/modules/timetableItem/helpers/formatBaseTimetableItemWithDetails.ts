@@ -32,11 +32,6 @@ const formatBaseTimetableItemWithDetails = (
     speedLimitTag: timetableItem.speed_limit_tag ?? null,
     labels: timetableItem.labels ?? [],
     rollingStock: rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name),
-    isValid: false,
-    arrivalTime: null,
-    duration: null,
-    pathLength: '',
-    mechanicalEnergyConsumed: 0,
   };
 };
 

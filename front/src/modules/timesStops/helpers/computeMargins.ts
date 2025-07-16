@@ -34,7 +34,9 @@ function computeMargins(
   train: Pick<Train, 'path' | 'margins'>,
   scheduleByAt: Record<string, ScheduleEntry>,
   pathStepIndex: number,
-  pathItemTimes: NonNullable<TrainScheduleWithDetails['pathItemTimes']> // in ms
+  pathItemTimes: NonNullable<
+    Extract<NonNullable<TrainScheduleWithDetails['summary']>, { isValid: true }>['pathItemTimes']
+  > // in ms
 ) {
   const { path, margins } = train;
   const pathStepId = path[pathStepIndex].id;

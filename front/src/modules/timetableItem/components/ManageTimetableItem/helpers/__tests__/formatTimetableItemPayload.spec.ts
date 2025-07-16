@@ -161,16 +161,16 @@ describe('formatTimetableItemPayload', () => {
         primary_category: 'FREIGHT_TRAIN',
         other_categories: [],
       },
-      isValid: true,
-      arrivalTime: new Date('2025-06-02T14:17:12.133Z'),
-      duration: Duration.parse('PT1H32M12.133S'),
-      pathLength: '101.0 km',
-      mechanicalEnergyConsumed: 131,
-      scheduledPointsNotHonored: false,
-      pathItemTimes: {
-        base: [0, 5532133],
-        provisional: [0, 5532133],
-        final: [0, 5532133],
+      summary: {
+        isValid: true,
+        duration: Duration.parse('PT1H32M12.133S'),
+        pathLength: '101.0 km',
+        mechanicalEnergyConsumed: 131,
+        pathItemTimes: {
+          base: [0, 5532133],
+          provisional: [0, 5532133],
+          final: [0, 5532133],
+        },
       },
     },
   };

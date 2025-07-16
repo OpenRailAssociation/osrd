@@ -39,8 +39,9 @@ const useOutputTableData = (
   const startDatetime = selectedTrain ? new Date(selectedTrain.start_time) : undefined;
 
   const pathStepRows = useMemo(() => {
-    const pathItemTimes = timetableItemWithDetails?.pathItemTimes;
-    if (!path || !selectedTrain || !pathItemTimes || !startDatetime) return [];
+    if (!path || !selectedTrain || !timetableItemWithDetails?.summary?.isValid || !startDatetime)
+      return [];
+    const { pathItemTimes } = timetableItemWithDetails.summary;
 
     let lastReferenceDate = startDatetime;
 
@@ -97,7 +98,7 @@ const useOutputTableData = (
         positionOnPath: path.path_item_positions[index],
       };
     });
-  }, [selectedTrain, path, timetableItemWithDetails?.pathItemTimes]);
+  }, [selectedTrain, path, timetableItemWithDetails?.summary]);
 
   useEffect(() => {
     const formatRows = async () => {
