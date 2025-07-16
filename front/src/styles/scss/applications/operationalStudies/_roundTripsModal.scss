@@ -56,12 +56,16 @@
         color: var(--black100);
         margin-bottom: 9px;
 
+        span {
+          margin-bottom: 1px;
+        }
+
         .item-count {
           display: flex;
           justify-content: center;
           align-items: center;
-          width: 19px;
           height: 20px;
+          padding-inline: 5px;
           border: 0.5px solid var(--grey40);
           border-radius: 3px;
           background: linear-gradient(
