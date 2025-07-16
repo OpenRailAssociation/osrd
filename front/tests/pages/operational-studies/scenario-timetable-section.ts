@@ -22,7 +22,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly timetableItems: Locator;
 
-  private readonly timetableAllItemCheckbox: Locator;
+  private readonly timetableBoardWrapper: Locator;
+
+  private readonly timetableBoardWrapperMenuButton: Locator;
+
+  private readonly timetableSelectAllButton: Locator;
 
   private readonly timetableTotalItemLabel: Locator;
 
@@ -66,17 +70,15 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly timetableItemArrivalTimeLoader: Locator;
 
-  private readonly emptyTimetable: Locator;
-
-  private readonly timetableItemsCount: Locator;
-
   constructor(page: Page) {
     super(page);
     this.invalidTimetableItemsMessage = page.getByTestId('invalid-timetable-item-message');
     this.timetableItems = page.getByTestId('scenario-timetable-item');
-    this.timetableItemsCount = page.getByTestId('timetable-item-count');
-    this.timetableAllItemCheckbox = this.timetableItemsCount.locator('.checkmark');
-    this.timetableTotalItemLabel = this.timetableItemsCount.locator('.label');
+    this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
+    this.timetableTotalItemLabel = this.timetableBoardWrapper.locator('.board-header-name');
+    this.timetableBoardWrapperMenuButton =
+      this.timetableBoardWrapper.locator('.board-header-button');
+    this.timetableSelectAllButton = page.getByTestId('scenarios-select-all-button');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
@@ -107,7 +109,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
-    this.emptyTimetable = page.getByTestId('empty-timetable-list');
   }
 
   private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
@@ -203,7 +204,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       .split(' ')[1]
       .slice(0, totalTrainScheduleCount > 1 ? undefined : -1); // "trains"
 
-    let expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel} ${translations.common.and} ${totalTrainScheduleCount} ${trainScheduleLabel}`;
+    let expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}, ${totalTrainScheduleCount} ${trainScheduleLabel}`;
     if (totalPacedTrainCount === 0) {
       expectedComputedLabel = `${totalTrainScheduleCount} ${trainScheduleLabel}`;
     } else if (totalTrainScheduleCount === 0) {
@@ -367,7 +368,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       totalTrainScheduleCount: number;
     }
   ) {
-    await this.timetableAllItemCheckbox.click();
+    await this.timetableBoardWrapperMenuButton.click();
+    await this.timetableSelectAllButton.click();
 
     const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
     await expect(this.timetableTotalItemLabel).toBeVisible();
@@ -377,11 +379,12 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     const [pacedTrains, trainSchedules] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
     const pacedTrainAndTrainCountTrad = translations.pacedTrainAndTrainCount; // finished by "selected"
     const selectedTrad = pacedTrainAndTrainCountTrad.split(' ').at(-1); // expect to return "selected"
-    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()} ${translations.common.and} ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trainSchedules} ${selectedTrad}`;
+    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()}, ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trainSchedules} ${selectedTrad}`;
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
   }
 
   async deleteAllTimetableItems() {
+    await this.timetableBoardWrapperMenuButton.click();
     await expect(this.deleteAllTimetableItemsButton).toBeVisible();
     await this.deleteAllTimetableItemsButton.click();
 
@@ -404,7 +407,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   async verifyTimetableIsEmpty(translation: string) {
     await expect(this.timetableItems).toHaveCount(0);
-    await expect(this.emptyTimetable).toBeVisible();
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }
 

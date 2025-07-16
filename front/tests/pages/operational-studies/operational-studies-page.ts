@@ -11,6 +11,10 @@ import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../u
 import CommonPage from '../common-page';
 
 class OperationalStudiesPage extends CommonPage {
+  private readonly timetableBoardWrapper: Locator;
+
+  private readonly timetableBoardWrapperMenuButton: Locator;
+
   private readonly addTimetableItemButton: Locator;
 
   private readonly editTimetableItemButton: Locator;
@@ -57,6 +61,9 @@ class OperationalStudiesPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
+    this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
+    this.timetableBoardWrapperMenuButton =
+      this.timetableBoardWrapper.locator('.board-header-button');
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.addTimetableItemButton = page.getByTestId('scenarios-add-timetable-item-button');
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
@@ -86,6 +93,7 @@ class OperationalStudiesPage extends CommonPage {
 
   // Click on the button to add a scenario timetable item.
   async openTimetableItemForm() {
+    await this.timetableBoardWrapperMenuButton.click();
     await this.addTimetableItemButton.click();
     await expect(this.manageTimetableItemPage).toBeVisible();
   }
