@@ -2,12 +2,13 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import { type SimulationResultsState } from 'reducers/simulationResults/types';
+import type { ProjectionType, SimulationResultsState } from 'reducers/simulationResults/types';
 
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
   selectedTrainId: undefined,
   trainIdUsedForProjection: undefined,
+  projectionType: 'trackProjection',
 };
 
 export const simulationResultsSlice = createSlice({
@@ -26,10 +27,16 @@ export const simulationResultsSlice = createSlice({
     ) {
       state.trainIdUsedForProjection = action.payload;
     },
+    updateProjectionType(
+      state: Draft<SimulationResultsState>,
+      action: PayloadAction<ProjectionType>
+    ) {
+      state.projectionType = action.payload;
+    },
   },
 });
 
-export const { updateSelectedTrainId, updateTrainIdUsedForProjection } =
+export const { updateSelectedTrainId, updateTrainIdUsedForProjection, updateProjectionType } =
   simulationResultsSlice.actions;
 
 export default simulationResultsSlice.reducer;

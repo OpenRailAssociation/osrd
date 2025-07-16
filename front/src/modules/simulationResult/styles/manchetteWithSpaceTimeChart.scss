@@ -112,5 +112,26 @@
       font-weight: 600;
       margin-bottom: 7px;
     }
+
+    section {
+      // Correctly align the checkbox with the radio buttons
+      .custom-checkbox {
+        margin-left: 4px;
+      }
+
+      // Override the default padding of the radio button wrapper
+      .radio-button-wrapper {
+        padding-left: 0;
+        padding-block: 0;
+
+        .radio-button {
+          padding-left: 8px;
+
+          label {
+            font-weight: 400;
+          }
+        }
+      }
+    }
   }
 }

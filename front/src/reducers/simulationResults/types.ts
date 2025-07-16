@@ -28,8 +28,11 @@ export type SpeedRanges = {
   speeds: number[];
 };
 
+export type ProjectionType = 'trackProjection' | 'operationalPointProjection';
+
 export interface SimulationResultsState {
   chart?: Chart;
   selectedTrainId?: TrainId;
   trainIdUsedForProjection?: TimetableItemId;
+  projectionType: ProjectionType;
 }

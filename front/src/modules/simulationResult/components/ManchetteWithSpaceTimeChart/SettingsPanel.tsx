@@ -1,8 +1,14 @@
 import { type ChangeEvent } from 'react';
 
-import { Checkbox } from '@osrd-project/ui-core';
+import { Checkbox, RadioGroup } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import { updateProjectionType } from 'reducers/simulationResults';
+import { getProjectionType } from 'reducers/simulationResults/selectors';
+import type { ProjectionType } from 'reducers/simulationResults/types';
+import { useAppDispatch } from 'store';
 
 type Settings = {
   showConflicts: boolean;
@@ -17,6 +23,8 @@ type SettingsPanelProps = {
 
 const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
+  const dispatch = useAppDispatch();
+  const projectionType = useSelector(getProjectionType);
 
   const handleChange = (key: keyof Settings) => (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ ...settings, [key]: event.target.checked });
@@ -27,6 +35,24 @@ const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
       <button type="button" className="close-btn" onClick={onClose}>
         <X />
       </button>
+
+      <section className="pb-3">
+        <RadioGroup
+          label={t('timeSpaceChartSettings.projection')}
+          value={projectionType}
+          onChange={(value) => dispatch(updateProjectionType(value as ProjectionType))}
+          options={[
+            {
+              label: t('timeSpaceChartSettings.trackProjection'),
+              value: 'trackProjection',
+            },
+            {
+              label: t('timeSpaceChartSettings.operationalPointProjection'),
+              value: 'operationalPointProjection',
+            },
+          ]}
+        />
+      </section>
 
       <section className="pb-4">
         <header>{t('timeSpaceChartSettings.capacity')}</header>
