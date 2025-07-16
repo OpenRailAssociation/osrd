@@ -1,6 +1,6 @@
 import { beforeEach, it, expect } from 'vitest';
 
-import type { Distribution, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { Distribution, TrainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -82,7 +82,7 @@ const testTrainSettingsReducer = () => {
   });
 
   it('should handle updateCategory', () => {
-    const newCategory = 'HIGH_SPEED_TRAIN';
+    const newCategory = { main_category: 'HIGH_SPEED_TRAIN' } as TrainCategory;
     defaultStore.dispatch(updateCategory(newCategory));
     const state = getState();
     expect(state.category).toBe(newCategory);

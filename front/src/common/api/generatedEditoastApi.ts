@@ -3651,12 +3651,19 @@ export type PacedTrainSimulationSummaryResult = {
   };
   paced_train: SimulationSummaryResult;
 };
+export type TrainCategory =
+  | {
+      main_category: TrainMainCategory;
+    }
+  | {
+      sub_category_code: string;
+    };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
 export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainSchedule = {
-  category?: TrainMainCategory | null;
+  category?: TrainCategory | null;
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;
@@ -3749,7 +3756,7 @@ export type RollingStockChangeGroup = {
   rolling_stock_name: string;
 };
 export type RollingStockCategoryChangeGroup = {
-  value?: TrainMainCategory | null;
+  value?: TrainCategory | null;
 };
 export type SpeedLimitTagChangeGroup = {
   value?: string | null;

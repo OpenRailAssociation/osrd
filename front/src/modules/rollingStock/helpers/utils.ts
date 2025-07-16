@@ -7,6 +7,8 @@ import type {
   Comfort,
   RollingStock,
   RollingStockForm,
+  TrainCategory,
+  TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import {
@@ -564,3 +566,9 @@ export const rescaleMassDependentParam = (
   unit: massDependentParam.unit,
   value: massDependentParam.value,
 });
+
+export function isMainCategory(
+  category: TrainCategory
+): category is { main_category: TrainMainCategory } {
+  return 'main_category' in category;
+}

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { uniq } from 'lodash';
 
 import { useRollingStockContext } from 'common/RollingStockContext';
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import { useDebounce } from 'utils/helpers';
 import { isPacedTrainId, isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 
@@ -143,8 +144,18 @@ const useFilterTimetableItems = (
         if (trainCategoryFilter !== 'all') {
           const exceptionsCategories = isPacedTrainWithDetails(timetableItem)
             ? timetableItem.exceptions
-                .filter((exception) => exception.rolling_stock_category)
-                .map((exception) => extractTagCode(exception.rolling_stock_category!.value))
+                .filter(
+                  (exception) =>
+                    exception.rolling_stock_category?.value &&
+                    isMainCategory(exception.rolling_stock_category.value) &&
+                    exception.rolling_stock_category.value.main_category
+                )
+                .map(
+                  (exception) =>
+                    exception.rolling_stock_category!.value &&
+                    isMainCategory(exception.rolling_stock_category!.value) &&
+                    extractTagCode(exception.rolling_stock_category!.value.main_category)
+                )
             : [];
           const allCategories = uniq([timetableItem.category, ...exceptionsCategories]);
           if (

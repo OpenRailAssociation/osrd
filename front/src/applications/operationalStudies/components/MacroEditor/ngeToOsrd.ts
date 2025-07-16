@@ -6,6 +6,7 @@ import {
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
   type MacroNodeForm,
+  type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import { checkChangeGroups } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
@@ -434,6 +435,7 @@ const handleCreateTimetableItem = async (
     startDate
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
+  const category = getTrainCategoryFromId(trainrun.categoryId);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
@@ -442,7 +444,11 @@ const handleCreateTimetableItem = async (
     path,
     start_time: startDate.toISOString(),
     schedule,
-    category: getTrainCategoryFromId(trainrun.categoryId),
+    category: category
+      ? {
+          main_category: category,
+        }
+      : undefined,
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -514,7 +520,9 @@ const handleUpdateTimetableItem = async ({
     margins: undefined,
     paced: undefined,
     exceptions: undefined,
-    category: getTrainCategoryFromId(trainrun.categoryId),
+    category: {
+      main_category: getTrainCategoryFromId(trainrun.categoryId),
+    } as TrainCategory,
   };
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);

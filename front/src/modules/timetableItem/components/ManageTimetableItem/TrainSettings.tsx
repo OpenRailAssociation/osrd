@@ -11,6 +11,7 @@ import { isInvalidName } from 'applications/operationalStudies/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import useCategoryOptions, {
   type CategoryOption,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -65,13 +66,21 @@ const TrainSettings = () => {
   };
 
   useEffect(() => {
-    dispatch(updateCategory(trainCategory?.id || null));
+    dispatch(
+      updateCategory(
+        trainCategory?.id
+          ? {
+              main_category: trainCategory.id,
+            }
+          : null
+      )
+    );
   }, [trainCategory]);
 
   useEffect(() => {
     if (categoryFromStore) {
       setTrainCategory({
-        id: categoryFromStore,
+        id: isMainCategory(categoryFromStore) ? categoryFromStore.main_category : undefined,
         label: tRollingStock(`rollingStock.categoriesOptions.${categoryFromStore}`),
       });
     }
