@@ -9,6 +9,7 @@ type BoardWrapperProps = {
   name: string;
   items?: OSRDMenuItem[];
   withFooter?: boolean;
+  dataTestId?: string;
 };
 
 const BoardWrapper = ({
@@ -17,13 +18,14 @@ const BoardWrapper = ({
   name,
   items = [],
   withFooter = false,
+  dataTestId,
 }: BoardWrapperProps) => {
   if (!visible) {
     return null;
   }
 
   return (
-    <div className="board-wrapper">
+    <div className="board-wrapper" data-testid={dataTestId}>
       <div className="board-header">
         <span className="board-header-name">{name}</span>
         <MenuButton

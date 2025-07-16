@@ -333,6 +333,7 @@ const TimetableBoardWrapper = ({
               ),
           },
         ]}
+        dataTestId="timetable-board-wrapper"
       >
         <Timetable
           selectedTimetableItemIds={selectedTimetableItemIds}
