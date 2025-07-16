@@ -17,6 +17,7 @@ export type RadioGroupProps = {
   value?: string;
   options: RadioButtonProps[];
   statusWithMessage?: StatusWithMessage;
+  onChange?: (value: string) => void;
 };
 
 const RadioGroup = ({
@@ -29,6 +30,7 @@ const RadioGroup = ({
   statusWithMessage,
   required,
   small,
+  onChange,
 }: RadioGroupProps) => {
   const [selectedValue, setSelectedValue] = useState<string | undefined>(value);
 
@@ -36,6 +38,7 @@ const RadioGroup = ({
     if (!readOnly) {
       setSelectedValue(nextOption.value);
       nextOption.onChange?.(e);
+      onChange?.(nextOption.value);
     }
   };
 
