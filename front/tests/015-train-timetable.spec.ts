@@ -20,6 +20,7 @@ import {
   LABEL_FILTERED_ITEMS_EXCEPTION,
   NAME_FILTERED_ITEMS,
   NAME_FILTERED_ITEMS_EXCEPTION,
+  NAME_LABEL_FILTERED_ITEMS_MIXED,
   NOT_HONORED_ITEMS,
   NOT_HONORED_PACED_TRAINS,
   ROLLING_STOCK_FILTERED_ITEMS_EXCEPTION,
@@ -138,6 +139,10 @@ test.describe('Verify train schedule elements and filters', () => {
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'exception',
+      NAME_LABEL_FILTERED_ITEMS_MIXED
+    );
+    await scenarioTimetableSection.filterNameAndVerifyTrainCount(
+      'exception-label',
       LABEL_FILTERED_ITEMS_EXCEPTION
     );
 
