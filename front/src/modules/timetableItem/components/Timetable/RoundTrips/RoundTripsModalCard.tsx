@@ -25,7 +25,7 @@ const RoundTripsModalCard = ({
     stops,
     startTime,
     origin,
-    arrivalTime,
+    requestedArrivalTime,
     destination,
   },
 }: RoundTripsModalCardProps) => {
@@ -133,7 +133,11 @@ const RoundTripsModalCard = ({
             <div className="location">{origin}</div>
           </div>
           <div className="extremity">
-            <div className="times">{arrivalTime.getMinutes().toString().padStart(2, '0')}</div>
+            <div className="times">
+              {requestedArrivalTime
+                ? requestedArrivalTime.getMinutes().toString().padStart(2, '0')
+                : '?'}
+            </div>
             <div className="location">{destination}</div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next';
 import type { Dictionary } from 'lodash';
 
 import type {
+  OperationalPoint,
   OperationalPointReference,
   PathfindingResultSuccess,
   PathItemLocation,
@@ -300,3 +301,6 @@ export const isOperationalPointReference = (
 
   return true;
 };
+
+export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
+  ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);

@@ -7,6 +7,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -44,7 +45,6 @@ type TimetableToolbarProps = {
   setSelectedTimetableItemIds: (selectedTimetableIds: TimetableItemId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   timetableItems: TimetableItem[];
-
   isInSelection: boolean;
 };
 
@@ -63,6 +63,7 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
+  const { infraId } = useScenarioContext();
 
   const selectedTrainId = useSelector(getSelectedTrainId);
 
@@ -289,6 +290,8 @@ const TimetableToolbar = ({
             <RoundTripsModal
               roundTripsModalIsOpen={roundTripsModalIsOpen}
               setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
+              infraId={infraId}
+              timetableItems={timetableItems}
             />
           )}
         </div>
