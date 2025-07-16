@@ -1231,7 +1231,7 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
-      postTrainScheduleProjectPathOp: build.mutation<
+      postTrainScheduleProjectPathOp: build.query<
         PostTrainScheduleProjectPathOpApiResponse,
         PostTrainScheduleProjectPathOpApiArg
       >({
@@ -1240,7 +1240,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedule'],
+        providesTags: ['train_schedule'],
       }),
       postTrainScheduleSimulationSummary: build.query<
         PostTrainScheduleSimulationSummaryApiResponse,

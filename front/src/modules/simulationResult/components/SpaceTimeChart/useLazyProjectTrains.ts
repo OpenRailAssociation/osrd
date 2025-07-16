@@ -1,18 +1,23 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-import TrainProjectionLazyLoader, {
-  type ProjectionResult,
-} from 'applications/operationalStudies/helpers/TrainProjectionLazyLoader';
+import { skipToken } from '@reduxjs/toolkit/query/react';
+import { useSelector } from 'react-redux';
+
+import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
+import type { ProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
+import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
+import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import type { OccupancyBlockForm } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import { getProjectionType } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 type UseLazyProjectTrainsOptions = {
   infraId: number;
   electricalProfileSetId?: number;
-  path?: OccupancyBlockForm['path'];
+  path?: PathfindingResultSuccess;
 };
 
 const useLazyProjectTrains = ({
@@ -21,27 +26,46 @@ const useLazyProjectTrains = ({
   path,
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
-  const loaderRef = useRef<TrainProjectionLazyLoader>(null);
+  const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
   const timetableItemsByIdRef = useRef<Map<TimetableItemId, TimetableItem>>(new Map());
   const [projectedTrainsById, setProjectedTrainsById] = useState<
     Map<TimetableItemId, TrainSpaceTimeData>
   >(new Map());
+  const projectionType = useSelector(getProjectionType);
+
+  const { data: pathProperties } =
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
+      projectionType === 'operationalPointProjection' && path
+        ? {
+            infraId,
+            props: ['operational_points'],
+            pathPropertiesInput: {
+              track_section_ranges: path.track_section_ranges,
+            },
+          }
+        : skipToken
+    );
+
+  const onProgress = useCallback((results: Map<TimetableItemId, ProjectionResult>) => {
+    setProjectedTrainsById((prev) =>
+      upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
+    );
+  }, []);
 
   useEffect(() => {
     if (!path) return undefined;
-
-    const { blocks, routes, track_section_ranges } = path;
-    const loader = new TrainProjectionLazyLoader({
+    const options = {
       dispatch,
       infraId,
-      path: { blocks, routes, track_section_ranges },
+      path,
       electricalProfileSetId,
-      onProgress: (results: Map<TimetableItemId, ProjectionResult>) => {
-        setProjectedTrainsById((prev) =>
-          upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
-        );
-      },
-    });
+      onProgress,
+    };
+
+    const loader =
+      projectionType === 'trackProjection'
+        ? new TrainTrackProjectionLazyLoader(options)
+        : new TrainOpProjectionLazyLoader(options, pathProperties?.operational_points);
 
     loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
 
@@ -50,7 +74,7 @@ const useLazyProjectTrains = ({
       loader.cancel();
       loaderRef.current = null;
     };
-  }, [infraId, electricalProfileSetId, path]);
+  }, [infraId, electricalProfileSetId, path, projectionType, pathProperties]);
 
   const projectTimetableItems = useCallback((timetableItems: TimetableItem[]) => {
     for (const timetableItem of timetableItems) {
@@ -88,6 +112,14 @@ const useLazyProjectTrains = ({
         });
         return next;
       });
+      // Update the timetable item in the reference map
+      // This is necessary to keep the reference up-to-date for future projections
+      // and to ensure that the projected trains are correctly updated
+      // when the projection type changes
+      const timetableItem = timetableItemsByIdRef.current.get(id);
+      if (timetableItem) {
+        timetableItem.start_time = newDeparture.toISOString();
+      }
     },
     []
   );
