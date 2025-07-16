@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 
 import Manchette, { type ManchetteProps } from './Manchette';
 import { PathLayer, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
+import { INITIAL_SPACE_TIME_CHART_HEIGHT } from '../consts';
 import useManchetteWithSpaceTimeChart, {
   type SplitPoint,
 } from '../hooks/useManchetteWithSpaceTimeChart';
@@ -28,7 +29,7 @@ export type ManchetteWithSpaceTimeChartProps = {
 const ManchetteWithSpaceTimeChart = ({
   waypoints,
   projectPathTrainResult,
-  height = 561,
+  height = INITIAL_SPACE_TIME_CHART_HEIGHT,
   children,
   header,
   manchetteProps: additionalManchetteProps,
@@ -56,12 +57,7 @@ const ManchetteWithSpaceTimeChart = ({
       >
         {header}
       </div>
-      <div
-        ref={manchetteWithSpaceTimeChartRef}
-        className="manchette flex"
-        style={{ height: `${height}px` }}
-        onScroll={handleScroll}
-      >
+      <div ref={manchetteWithSpaceTimeChartRef} className="manchette flex" onScroll={handleScroll}>
         <Manchette {...manchetteProps} {...additionalManchetteProps} />
         <div className="space-time-chart-container w-full sticky" ref={spaceTimeChartRef}>
           <SpaceTimeChart

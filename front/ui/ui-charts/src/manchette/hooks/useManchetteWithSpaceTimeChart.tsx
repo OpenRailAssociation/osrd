@@ -23,6 +23,7 @@ import {
   BASE_WAYPOINT_HEIGHT,
   FOOTER_HEIGHT,
   WAYPOINT_LINE_HEIGHT,
+  INITIAL_SPACE_TIME_CHART_HEIGHT,
 } from '../consts';
 import type { InteractiveWaypoint, Waypoint } from '../types';
 import { getDistance, calcTotalDistance } from '../utils';
@@ -97,7 +98,7 @@ export const DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS: ManchetteWithSpace
 const useManchetteWithSpaceTimeChart = ({
   waypoints,
   manchetteWithSpaceTimeChartRef,
-  height = 561,
+  height = INITIAL_SPACE_TIME_CHART_HEIGHT,
   spaceTimeChartRef,
   defaultTimeOrigin = 0,
   defaultSpaceOrigin = 0,
