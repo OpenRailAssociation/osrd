@@ -170,7 +170,6 @@
           .round-trips-card-body {
             display: flex;
             align-items: center;
-            gap: 2px;
             flex: 1;
             font-size: 14px;
             color: var(--black60);
@@ -212,8 +211,11 @@
                 gap: 4px;
 
                 .times {
+                  width: 20px;
                   font-size: 10px;
                   color: var(--info60);
+                  text-align: end;
+                  padding-inline: 4px;
                 }
 
                 .location {
