@@ -3,7 +3,6 @@ package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
-import com.google.common.collect.TreeRangeSet
 
 /**
  * This class maps duration ranges to their "visited" values. Some ranges are considered visited if
@@ -71,19 +70,27 @@ data class VisitedRangeMap(
 
         val visitingRange = newValues.span()
         val subMap = map.subRangeMap(visitingRange)
+        val subMapRanges = subMap.asMapOfRanges()
+        if (subMapRanges.isEmpty()) return false
 
-        // Keep track of any range that isn't covered by the map
-        val uncovered = TreeRangeSet.create<Double>()
-        uncovered.add(visitingRange)
-        for (visitedEntry in subMap.asMapOfRanges()) {
-            uncovered.remove(visitedEntry.key)
+        // Check boundaries first
+        val subMapSpan = subMap.span()
+        if (visitingRange != subMapSpan) return false
 
+        var expectedNextRangeStart = visitingRange.lowerEndpoint()
+        for (visitedEntry in subMapRanges) {
+            val rangeStart = visitedEntry.key.lowerEndpoint()
+            assert(rangeStart >= expectedNextRangeStart)
+            if (expectedNextRangeStart < rangeStart) {
+                // Ranges aren't contiguous: uncovered area
+                return false
+            }
             for (newEntry in newValues.subRangeMap(visitedEntry.key).asMapOfRanges()) {
                 // Value isn't visited: we can early return "false"
                 if (!visitedEntry.value.isVisited(newEntry.key, newEntry.value)) return false
             }
+            expectedNextRangeStart = visitedEntry.key.upperEndpoint()
         }
-        // If any area is left uncovered, we still return "false"
-        return uncovered.isEmpty
+        return true
     }
 }
