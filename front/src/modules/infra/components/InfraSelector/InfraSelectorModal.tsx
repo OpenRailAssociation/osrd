@@ -48,8 +48,10 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
 
   function filterInfras(infrasListLocal: Infra[]) {
     if (debouncedFilter) {
-      infrasListLocal = infrasListLocal.filter((infra) =>
-        infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
+      infrasListLocal = infrasListLocal.filter(
+        (infra) =>
+          infra.name.toLowerCase().includes(debouncedFilter.toLowerCase()) ||
+          infra.id.toString().includes(debouncedFilter)
       );
     }
     const filteredInfrasListLocal = infrasListLocal
