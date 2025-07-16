@@ -60,7 +60,7 @@
         "train_name": {
           "value": "abc"
         },
-        "labels": { "value": ["exception"] }
+        "labels": { "value": ["exception-label"] }
       }
     ]
   },
