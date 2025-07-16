@@ -4,6 +4,7 @@ import { useDraw } from '../hooks/useCanvas';
 import { HOUR, MINUTE } from '../lib/consts';
 import { type DrawingFunction } from '../lib/types';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../utils/canvas';
+import { WHITE_ALPHA_75 } from '../utils/colors';
 
 const MARGIN = 100;
 const MINUTES_FORMATTER = (t: number) => `:${new Date(t).getMinutes().toString().padStart(2, '0')}`;
@@ -110,8 +111,12 @@ export const TimeCaptions = () => {
       // Render caption background:
       ctx.fillStyle = background;
       if (!swapAxis) {
+        ctx.fillStyle = WHITE_ALPHA_75;
+        ctx.fillRect(0, 0, width, 24);
+        ctx.fillStyle = background;
         ctx.fillRect(0, spaceAxisSize, timeAxisSize, captionSize);
       } else {
+        ctx.fillStyle = background;
         ctx.fillRect(0, 0, captionSize, timeAxisSize);
       }
 
@@ -129,14 +134,25 @@ export const TimeCaptions = () => {
         const timePixel = getCrispLineCoordinate(getTimePixel(time), ctx.lineWidth);
 
         if (!swapAxis) {
-          if (showTicks) {
-            ctx.strokeStyle = timeCaptionsStyles[1].color;
-            ctx.moveTo(timePixel, spaceAxisSize);
-            ctx.lineTo(timePixel, time % 180000 === 0 ? 8 : 4);
-            ctx.stroke();
+          ctx.beginPath();
+          ctx.strokeStyle = timeCaptionsStyles[1].color;
+          ctx.lineWidth = 1;
+          let tickHeight = 4;
+          const mod = time % (60 * 60 * 1000);
+          if (mod === 0) {
+            tickHeight = 8;
+          } else if (mod % (30 * 60 * 1000) === 0) {
+            tickHeight = 6;
           }
 
-          ctx.strokeText(text, timePixel, spaceAxisSize + (styles.topOffset || 0));
+          ctx.moveTo(timePixel, spaceAxisSize);
+          ctx.lineTo(timePixel, spaceAxisSize + tickHeight);
+          ctx.moveTo(timePixel, 0);
+          ctx.lineTo(timePixel, tickHeight);
+          ctx.stroke();
+
+          ctx.fillStyle = timeCaptionsStyles[1].color;
+          ctx.fillText(text, timePixel, styles.topOffset || 0);
           ctx.fillText(text, timePixel, spaceAxisSize + (styles.topOffset || 0));
         } else {
           ctx.save();

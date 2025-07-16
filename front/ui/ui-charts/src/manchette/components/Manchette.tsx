@@ -38,7 +38,7 @@ const Manchette = ({
   <div className="ui-manchette-container">
     <div
       className="bg-white-100 border-r border-grey-30 relative"
-      style={{ minHeight: `${height}px` }}
+      style={{ minHeight: `${height + 16}px` }}
     >
       <div className="waypoints-list">
         {contents.map((content, index) =>

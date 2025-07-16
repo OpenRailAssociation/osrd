@@ -25,8 +25,6 @@ type ManchetteWithSpaceTimeWrapperProps = {
   selectedTrain: number;
 };
 
-const DEFAULT_HEIGHT = 561;
-
 /**
  * Example of setting up a menu for the waypoints.
  * When displayed, the interaction with the rest of the manchette is disabled,
@@ -92,7 +90,6 @@ const ManchetteWithSpaceTimeWrapper = ({
       <div
         ref={manchetteWithSpaceTimeChartRef}
         className="manchette flex"
-        style={{ height: `${DEFAULT_HEIGHT}px` }}
         onScroll={handleScroll}
       >
         <Manchette

@@ -5,6 +5,10 @@ import { type RGBAColor } from '../lib/types';
 const COLORS_TO_INDICES: Record<string, number> = {};
 const INDICES_TO_COLORS: Record<number, string> = {};
 
+export const WHITE_ALPHA_75 = '#ffffffbf';
+export const BLACK_ALPHA_25 = '#00000025';
+export const GREY_50 = '#797671';
+
 /**
  * This function returns a unique hex color corresponding to the given index. The colors are
  * generated as #000001, #000002 ... #0000ff, #000100 etc.
