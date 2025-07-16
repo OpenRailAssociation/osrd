@@ -38,6 +38,8 @@
     .round-trips-modal-column {
       width: 344px;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
 
       &.round-trips-column {
         width: 664px;
@@ -79,6 +81,7 @@
         background-color: var(--white100);
         border: 1px solid var(--grey10);
         border-radius: 12px;
+        overflow-y: auto;
 
         .round-trip-pair {
           display: flex;
