@@ -46,7 +46,11 @@ const RollingStockSelector = ({
   const selectRollingStock = useCallback(
     (newRollingStock: LightRollingStockWithLiveries, comfort: Comfort) => {
       if (!currentCategory && newRollingStock.primary_category) {
-        dispatch(updateCategory(newRollingStock.primary_category));
+        dispatch(
+          updateCategory({
+            main_category: newRollingStock.primary_category,
+          })
+        );
       }
 
       onSelectRollingStock(newRollingStock.id, comfort);
