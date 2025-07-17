@@ -14,6 +14,8 @@ import { useAppDispatch } from 'store';
 
 import useSearchOperationalPoint, { MAIN_OP_CH_CODES } from './useSearchOperationalPoint';
 
+const MAX_DISPLAYABLE_RESULTS = 100;
+
 type MapSearchOperationalPointProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
@@ -35,7 +37,7 @@ const MapSearchOperationalPoint = ({
     setChCodeFilter,
     setSearchResults,
     setMainOperationalPointsOnly,
-  } = useSearchOperationalPoint();
+  } = useSearchOperationalPoint({ pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation();
@@ -133,7 +135,7 @@ const MapSearchOperationalPoint = ({
         </span>
       </div>
       <h2 className="text-center mt-3">
-        {searchResults.length > 100
+        {searchResults.length > MAX_DISPLAYABLE_RESULTS
           ? t('mapSearch.too-many-results')
           : t('mapSearch.results-count', {
               count: searchResultsFilteredByCh.length,
@@ -141,7 +143,7 @@ const MapSearchOperationalPoint = ({
       </h2>
       <div className="search-results">
         {searchResults.length > 0 &&
-          searchResults.length <= 100 &&
+          searchResults.length <= MAX_DISPLAYABLE_RESULTS &&
           searchResultsFilteredByCh.map((searchResult, index) => (
             <button
               id={`result-${index}`}
