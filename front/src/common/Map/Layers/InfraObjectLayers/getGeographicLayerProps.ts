@@ -1,5 +1,5 @@
 import type { Geometry } from 'geojson';
-import type { LineLayer } from 'react-map-gl/maplibre';
+import type { LineLayerSpecification } from 'react-map-gl/maplibre';
 
 import type { Theme } from 'types';
 
@@ -7,7 +7,7 @@ export default function geoMainLayer(
   theme: Theme,
   bigger = false,
   highlightedArea: Geometry | undefined = undefined
-): Omit<LineLayer, 'source'> {
+): Omit<LineLayerSpecification, 'source'> {
   return {
     id: 'geoMainLayer',
     type: 'line',

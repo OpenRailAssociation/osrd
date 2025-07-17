@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
-import { type StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import { featureCollection } from '@turf/helpers';
 import type { Feature, FeatureCollection } from 'geojson';
 import { createPortal } from 'react-dom';
-import ReactMapGL, { Layer, type LayerProps, type MapRef, Source } from 'react-map-gl/maplibre';
+import ReactMapGL, {
+  Layer,
+  type LayerProps,
+  type MapRef,
+  Source,
+  type StyleSpecification,
+} from 'react-map-gl/maplibre';
 
 import { simplifyFeature } from '../core/helpers';
 import type { BBox2D, SourceDefinition } from '../core/types';

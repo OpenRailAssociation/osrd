@@ -3,7 +3,7 @@ import { useContext, useMemo, useState } from 'react';
 import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
 import type { Map } from 'maplibre-gl';
-import { Popup } from 'react-map-gl/dist/esm/exports-maplibre';
+import { Popup } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';

@@ -1,6 +1,6 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
+import { type LayerProps, Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { LayerContext } from 'common/Map/Layers/types';
@@ -14,10 +14,10 @@ export function getNeutralSectionSignsLayerProps({
   sourceTable,
   highlightedArea,
 }: Pick<LayerContext, 'sourceTable'> & { highlightedArea?: Geometry }): Omit<
-  SymbolLayer,
+  SymbolLayerSpecification,
   'source'
 > {
-  const res: Omit<SymbolLayer, 'source'> = {
+  const res: Omit<SymbolLayerSpecification, 'source'> = {
     id: 'neutralSectionSignParams',
     type: 'symbol',
     minzoom: 11,

@@ -1,6 +1,6 @@
 import { isNil } from 'lodash';
 import type { FilterSpecification } from 'maplibre-gl';
-import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
+import type { LayerProps, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
@@ -20,8 +20,8 @@ type SNCF_PSL_SignsProps = {
 
 export function getPSLSignsLayerProps({
   sourceTable,
-}: Pick<LayerContext, 'sourceTable'>): Omit<SymbolLayer, 'source'> {
-  const res: Omit<SymbolLayer, 'source'> = {
+}: Pick<LayerContext, 'sourceTable'>): Omit<SymbolLayerSpecification, 'source'> {
+  const res: Omit<SymbolLayerSpecification, 'source'> = {
     id: 'signParams',
     type: 'symbol',
     minzoom: 11,

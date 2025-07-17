@@ -1,8 +1,10 @@
 import type { Geometry } from 'geojson';
 import type { ExpressionFilterSpecification } from 'maplibre-gl';
-import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
+import type { SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import type { OmitLayer, Theme } from 'types';
+
+import type { LayerProps } from '../types';
 
 export default function getKPLabelLayerProps(params: {
   sourceTable?: string;
@@ -12,7 +14,7 @@ export default function getKPLabelLayerProps(params: {
   colors: Theme;
   minzoom?: number;
   highlightedArea?: Geometry;
-}): OmitLayer<SymbolLayer> {
+}): OmitLayer<SymbolLayerSpecification> {
   const {
     bottomOffset = 2.5,
     colors,
@@ -56,7 +58,7 @@ export default function getKPLabelLayerProps(params: {
         'text-offset': ['literal', [-1, 0.1]],
       };
 
-  const res: OmitLayer<SymbolLayer> = {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     filter: [
       'all',

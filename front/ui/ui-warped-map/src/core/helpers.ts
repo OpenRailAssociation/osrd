@@ -21,7 +21,7 @@ import type {
   Position,
 } from 'geojson';
 import { chunk, first, last } from 'lodash';
-import { type MapGeoJSONFeature } from 'maplibre-gl';
+import { type GeoJSONFeature } from 'maplibre-gl';
 
 import type { BBox2D, Zone } from './types';
 import vec, { type Vec2 } from './vec-lib';
@@ -140,13 +140,13 @@ export function getPointInTriangle(
  * This helper takes a MapboxGeoJSONFeature (ie a data item extracted from a MapLibre instance through the
  * `querySourceFeatures` method), and returns a proper and clean GeoJSON Feature object.
  */
-export function simplifyFeature(feature: MapGeoJSONFeature, sourceLayer?: string): Feature {
+export function simplifyFeature(feature: GeoJSONFeature, sourceLayer?: string): Feature {
   return {
     type: 'Feature',
     id: feature.id,
     properties: {
       ...feature.properties,
-      sourceLayer: feature.sourceLayer || feature.properties.sourceLayer || sourceLayer,
+      sourceLayer,
     },
     geometry: feature.geometry || feature._geometry,
   };

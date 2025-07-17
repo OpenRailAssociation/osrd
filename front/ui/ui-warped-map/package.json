@@ -56,12 +56,12 @@
     "@turf/nearest-point-on-line": "^7.1.0",
     "@turf/simplify": "^7.1.0",
     "@turf/transform-translate": "^7.1.0",
-    "lodash": "^4.17.21",
-    "maplibre-gl": "^4.7.1",
-    "react-map-gl": "^7.1.7"
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
+    "maplibre-gl": "^5.6.1",
     "react": "^18.0.0 || ^19.1.0",
-    "react-dom": "^18.0.0 || ^19.1.0"
+    "react-dom": "^18.0.0 || ^19.1.0",
+    "react-map-gl": "^8.0.4"
   }
 }

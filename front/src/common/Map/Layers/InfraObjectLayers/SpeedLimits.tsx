@@ -2,7 +2,7 @@ import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';
-import type { SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
+import type { SymbolLayerSpecification, LineLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { LayersSettings } from 'reducers/map';
@@ -54,8 +54,8 @@ export function getSpeedSectionsLineLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-}): OmitLayer<LineLayer> {
-  const res: OmitLayer<LineLayer> = {
+}): OmitLayer<LineLayerSpecification> {
+  const res: OmitLayer<LineLayerSpecification> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -107,8 +107,8 @@ export function getSpeedSectionsPointLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -145,8 +145,8 @@ export function getSpeedSectionsTextLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,

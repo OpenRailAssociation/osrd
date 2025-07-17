@@ -1,8 +1,9 @@
 import config from 'config/config';
+import { absoluteUrl } from 'utils/strings';
 
 // Map constants
 export const MAP_URL = `${config.proxy_editoast}/layers`;
-export const SPRITES_URL = `${config.proxy_editoast}/sprites`;
+export const SPRITES_URL = absoluteUrl(`${config.proxy_editoast}/sprites`);
 export const FONTS_URL = `${config.proxy_editoast}/fonts`;
 export const OSM_URL = 'pmtiles://https://osm.nbg1.your-objectstorage.com/planet.pmtiles';
 export const TERRAIN_URL =

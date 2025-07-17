@@ -1,6 +1,6 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import type { SymbolLayer } from 'react-map-gl/maplibre';
+import type { SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import type { OmitLayer } from 'types';
 
@@ -13,8 +13,8 @@ export default function getMastLayerProps({
   highlightedArea,
 }: Pick<LayerContext, 'sourceTable' | 'sidePropertyName' | 'minzoom'> & {
   highlightedArea?: Geometry;
-}): Omit<SymbolLayer, 'source' | 'id'> {
-  const res: OmitLayer<SymbolLayer> = {
+}): Omit<SymbolLayerSpecification, 'source' | 'id'> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom,
     paint: {},

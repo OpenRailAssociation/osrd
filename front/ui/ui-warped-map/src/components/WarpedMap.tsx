@@ -1,10 +1,9 @@
 import React, { type ComponentType, type PropsWithChildren, useEffect, useState } from 'react';
 
-import { type StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import { bbox } from '@turf/bbox';
 import type { Feature, FeatureCollection, LineString } from 'geojson';
 import { isNil, mapValues, omitBy } from 'lodash';
-import { type LineLayer } from 'react-map-gl/maplibre';
+import { type LineLayerSpecification, type StyleSpecification } from 'react-map-gl/maplibre';
 
 import DataLoader from './DataLoader';
 import Loader from './Loader';
@@ -30,7 +29,7 @@ const DEFAULT_COMPONENTS: Components = {
 
 type WarpedMapProps = {
   path: Feature<LineString>;
-  pathLayer?: Omit<LineLayer, 'source-layer'>;
+  pathLayer?: Omit<LineLayerSpecification, 'source-layer'>;
   sources: SourceDefinition[];
   components?: Partial<Components>;
   mapStyle?: string | StyleSpecification;

@@ -134,6 +134,13 @@
   "settings": {
     "react": {
       "version": "detect"
+    },
+    "import/resolver": {
+      "node": {
+        "paths": ["src"],
+        "moduleDirectory": ["node_modules", "src"]
+      },
+      "typescript": true
     }
   }
 }

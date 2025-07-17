@@ -5,7 +5,6 @@ import type { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, mapValues, omit } from 'lodash';
 import type { FilterSpecification } from 'maplibre-gl';
 import { Layer, Source } from 'react-map-gl/maplibre';
-import type { AnyLayer, LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
@@ -44,7 +43,7 @@ import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 import { Platforms } from '../OSMLayers/Platforms';
-import type { LayerContext } from '../types';
+import type { LayerContext, LayerProps } from '../types';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
@@ -133,7 +132,7 @@ function adaptFilter(
 
   // MapLibre does not allow combining in a logical tree expression filters and legacy filters.
   // We have to check that the existing filters do not contain expression filters:
-  const hasExpressionFilters = !isLegacyOnlyFilter(layer.filter as FilterSpecification);
+  const hasExpressionFilters = !isLegacyOnlyFilter(layer.filter ?? null);
 
   // Get the field name of the id field. Default is 'id', but for example on error layers its obj_id
   let fieldId = 'id';
@@ -406,13 +405,13 @@ const SOURCES_DEFINITION: {
 
 export const SourcesDefinitionsIndex = SOURCES_DEFINITION.reduce(
   (acc, curr) => ({ ...acc, [curr.entityType]: curr.getLayers }),
-  {} as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>
+  {} as Record<LayerType, (context: LayerContext, prefix: string) => LayerProps[]>
 );
 
 interface EditorSourceProps {
   id?: string;
   data: Feature | FeatureCollection;
-  layers: AnyLayer[];
+  layers: LayerProps[];
   layerOrder?: number;
 }
 
