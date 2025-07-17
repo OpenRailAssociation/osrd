@@ -4,11 +4,15 @@ import type {
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import formatBaseTimetableItemWithDetails from 'modules/timetableItem/helpers/formatBaseTimetableItemWithDetails';
+import {
+  formatPacedTrainWithDetails,
+  formatTrainScheduleWithDetails,
+} from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 /**
@@ -25,7 +29,9 @@ const formatTimetableItemSummaries = (
       throw new Error('Missing timetable item');
     }
     const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-    const baseItem = formatBaseTimetableItemWithDetails(timetableItem, rollingStock);
+    const baseItem = isPacedTrainResponseWithPacedTrainId(timetableItem)
+      ? formatPacedTrainWithDetails(timetableItem, rollingStock)
+      : formatTrainScheduleWithDetails(timetableItem, rollingStock);
 
     if (timetableItemSummary.status !== 'success') {
       return {
