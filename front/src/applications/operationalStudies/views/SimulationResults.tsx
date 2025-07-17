@@ -22,15 +22,17 @@ import SimulationResultExport from 'modules/simulationResult/SimulationResultExp
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import {
-  getSelectedTrainId,
-  getTrainIdUsedForProjection,
-} from 'reducers/simulationResults/selectors';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/trainId';
+import {
+  extractPacedTrainIdFromOccurrenceId,
+  isPacedTrainWithDetails,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import BoardWrapper from '../components/Scenario/BoardWrapper';
 import { useScenarioContext } from '../hooks/useScenarioContext';
@@ -62,9 +64,9 @@ const SimulationResults = ({
   const { infraId } = useScenarioContext();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
-  const selectedTrainId = useSelector(getSelectedTrainId);
 
   const simulationResults = useSimulationResults(infraId);
+  const selectedTrainId = simulationResults?.train.id;
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -124,14 +126,20 @@ const SimulationResults = ({
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
   const simulationSummary = useMemo(() => {
-    if (!simulationResults) return undefined;
-    const selectedTimetableItemId = isTrainScheduleId(simulationResults.train.id)
-      ? simulationResults.train.id
-      : extractPacedTrainIdFromOccurrenceId(simulationResults.train.id);
-    return timetableItemsWithDetails.find(
-      (timetableItem) => timetableItem.id === selectedTimetableItemId
-    )?.summary;
-  }, [timetableItemsWithDetails, simulationResults?.train.id]);
+    if (!selectedTrainId) return undefined;
+
+    if (isTrainScheduleId(selectedTrainId)) {
+      return timetableItemsWithDetails.find((timetableItem) => timetableItem.id === selectedTrainId)
+        ?.summary;
+    }
+
+    const pacedTrain = timetableItemsWithDetails.find(
+      (timetableItem) => timetableItem.id === extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+    );
+    if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return undefined;
+    const exception = findExceptionWithOccurrenceId(pacedTrain.exceptions, selectedTrainId);
+    return exception?.summary ?? pacedTrain.summary;
+  }, [timetableItemsWithDetails, selectedTrainId]);
 
   const handleTrainDrag = async ({
     draggedTrainId,
