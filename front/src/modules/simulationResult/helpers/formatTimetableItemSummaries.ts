@@ -24,7 +24,8 @@ const formatTimetableItemSummaries = (
     if (!timetableItem) {
       throw new Error('Missing timetable item');
     }
-    const baseItem = formatBaseTimetableItemWithDetails(timetableItem, rollingStocks);
+    const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
+    const baseItem = formatBaseTimetableItemWithDetails(timetableItem, rollingStock);
 
     if (timetableItemSummary.status !== 'success') {
       return {

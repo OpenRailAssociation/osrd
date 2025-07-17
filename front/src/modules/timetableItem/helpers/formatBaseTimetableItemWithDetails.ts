@@ -6,7 +6,7 @@ import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 const formatBaseTimetableItemWithDetails = (
   timetableItem: TimetableItem,
-  rollingStocks: LightRollingStockWithLiveries[]
+  rollingStock?: LightRollingStockWithLiveries
 ): TimetableItemWithDetails => {
   let baseProps;
   if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
@@ -31,7 +31,7 @@ const formatBaseTimetableItemWithDetails = (
       ).length ?? 0) + 1, // +1 to take the final stop (destination) into account
     speedLimitTag: timetableItem.speed_limit_tag ?? null,
     labels: timetableItem.labels ?? [],
-    rollingStock: rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name),
+    rollingStock,
   };
 };
 
