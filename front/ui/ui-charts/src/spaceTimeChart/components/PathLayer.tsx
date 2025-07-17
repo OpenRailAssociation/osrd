@@ -28,8 +28,7 @@ const DEFAULT_PICKING_TOLERANCE = 5;
 const PAUSE_THICKNESS = 7;
 const PAUSE_OPACITY = 0.2;
 const CIRCLE_RADIUS = 4;
-const LINE_WIDTH = 1;
-const VERTICAL_LINE_HEIGHT = 5;
+const VERTICAL_LINE_HEIGHT = 18;
 const TEXT_PADDING = 3;
 
 export type PointPickingElement = PickingElement & { type: 'point'; pathId: string; point: Point };
@@ -270,6 +269,63 @@ export const PathLayer = ({
   );
 
   /**
+   * This function draws the label with a background.
+   * It is used to draw the label of the path or single point, with a background to make it more readable.
+   */
+  const drawLabelWithBackground = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      text: string,
+      x: number,
+      y: number,
+      {
+        textColor,
+        background,
+        fontSize,
+        fontFamily,
+        padding = TEXT_PADDING,
+        alpha = 0.75,
+      }: {
+        textColor: string;
+        background: string;
+        fontSize?: number;
+        fontFamily?: string;
+        padding?: number;
+        alpha?: number;
+      }
+    ) => {
+      ctx.save();
+
+      ctx.font = `${fontSize}px ${fontFamily}`;
+
+      const measure = ctx.measureText(text);
+      const left = measure.actualBoundingBoxLeft;
+      const right = measure.actualBoundingBoxRight;
+      const ascent = measure.actualBoundingBoxAscent;
+      const descent = measure.actualBoundingBoxDescent;
+
+      const w = left + right + 2 * padding;
+      const h = ascent + descent + 2 * padding;
+
+      const rx = x - left - padding;
+      const ry = y - ascent - padding;
+
+      // BACKGROUND
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = background;
+      ctx.fillRect(rx, ry, w, h);
+
+      // TEXT
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = textColor;
+      ctx.fillText(text, x, y);
+
+      ctx.restore();
+    },
+    []
+  );
+
+  /**
    * This function draws the label of the path.
    */
   const drawLabel = useCallback(
@@ -333,27 +389,25 @@ export const PathLayer = ({
       ctx.save();
       ctx.translate(position.x, position.y);
       ctx.rotate(angle);
-      ctx.font = `${fontSize}px ${fontFamily}`;
       ctx.textAlign = 'start';
 
       const padding = 2;
       const measure = ctx.measureText(label);
       const w = measure.width + 2 * padding;
-      const actualBoundingBoxHeight =
-        measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent;
-      const h = actualBoundingBoxHeight + 2 * padding;
 
       const dx = w < pathLength ? 5 : (pathLength - w) / 2; // Progressively center the label if the path is shorter than the label
       const dy = angle >= 0 ? -5 : 15;
-      ctx.globalAlpha = 0.75;
-      ctx.fillStyle = background;
-      ctx.fillRect(dx - padding, dy - h + padding, w, h);
-      ctx.fillStyle = labelColor;
-      ctx.globalAlpha = 1;
-      ctx.fillText(label, dx, dy);
+
+      drawLabelWithBackground(ctx, label, dx, dy, {
+        fontSize,
+        fontFamily,
+        textColor: labelColor,
+        background,
+        padding,
+      });
       ctx.restore();
     },
-    []
+    [drawLabelWithBackground]
   );
 
   /**
@@ -455,56 +509,57 @@ export const PathLayer = ({
     [border, getPathLines, level]
   );
 
-  const drawSinglePoint = useCallback<DrawingFunction>((ctx, { getTimePixel, getSpacePixel, hidePathsLabels, theme : {
-    pathsStyles: { fontSize, fontFamily }
-  }}) => {
-    if (path.points.length !== 1) return;
+  const drawSinglePoint = useCallback(
+    (ctx: CanvasRenderingContext2D, stcContext: SpaceTimeChartContextType, point: DataPoint) => {
+      const {
+        getPoint,
+        hidePathsLabels,
+        theme: {
+          background,
+          pathsStyles: { fontSize, fontFamily },
+        },
+      } = stcContext;
+      const { x, y } = getPoint(point);
+      const style = STYLES[level];
 
-    const { time, position } = path.points[0];
-    const x = getTimePixel(time);
-    const y = getSpacePixel(position);
+      ctx.save();
 
-    ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = style.width;
+      ctx.setLineDash((style.dashArray || []).map((v) => v / 2));
 
-    // Draw the vertical lines above and below the circle
-    ctx.beginPath();
-    // above the circle
-    ctx.moveTo(x, y - CIRCLE_RADIUS);
-    ctx.lineTo(x, y - CIRCLE_RADIUS - VERTICAL_LINE_HEIGHT);
+      // Draw the vertical lines above and below the circle
+      ctx.beginPath();
+      ctx.moveTo(x, y - VERTICAL_LINE_HEIGHT / 2);
+      ctx.lineTo(x, y + VERTICAL_LINE_HEIGHT / 2);
+      ctx.stroke();
 
-    // below the circle
-    ctx.moveTo(x, y + CIRCLE_RADIUS);
-    ctx.lineTo(x, y + CIRCLE_RADIUS + VERTICAL_LINE_HEIGHT);
+      // Draw the circle
+      ctx.beginPath();
+      ctx.arc(x, y, CIRCLE_RADIUS, 0, Math.PI * 2);
+      ctx.stroke();
 
-    // lines style
-    ctx.strokeStyle = color;
-    ctx.lineWidth = LINE_WIDTH;
-    ctx.stroke();
+      // Draw the label
+      if (!hidePathsLabels) {
+        ctx.textAlign = 'center';
+        const labelY = y - CIRCLE_RADIUS - VERTICAL_LINE_HEIGHT - TEXT_PADDING;
+        drawLabelWithBackground(ctx, path.label, x, labelY, {
+          fontFamily,
+          fontSize,
+          textColor: color,
+          background,
+        });
+      }
 
-    // Draw the circle
-    ctx.beginPath();
-    ctx.arc(x, y, CIRCLE_RADIUS, 0, Math.PI * 2);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = LINE_WIDTH;
-    ctx.stroke();
-
-    //Draw the label
-    if( !hidePathsLabels) {
-      ctx.font = `${fontSize}px ${fontFamily}`;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = color;
-      ctx.fillText(path.label, x, y - CIRCLE_RADIUS - VERTICAL_LINE_HEIGHT - TEXT_PADDING);
-    }
-
-    ctx.restore();
-
-
-  }, [color, path.points, path.label]);
+      ctx.restore();
+    },
+    [level, color, drawLabelWithBackground, path.label]
+  );
 
   const drawAll = useCallback<DrawingFunction>(
     (ctx, stcContext) => {
       if (path.points.length === 1) {
-        drawSinglePoint(ctx, stcContext);
+        drawSinglePoint(ctx, stcContext, path.points[0]);
         return;
       }
 
@@ -553,17 +608,17 @@ export const PathLayer = ({
       }
     },
     [
+      path.points,
+      path.label,
+      drawBorder,
       color,
       drawPauses,
       level,
       getPathLines,
       drawExtremities,
+      drawSinglePoint,
       computePathLength,
       drawLabel,
-      drawBorder,
-      drawSinglePoint,
-      path.points.length,
-      path.label,
     ]
   );
   useDraw('paths', drawAll);
@@ -571,6 +626,26 @@ export const PathLayer = ({
   const drawPicking = useCallback<PickingDrawingFunction>(
     (imageData, stcContext, scalingRatio) => {
       const { registerPickingElement } = stcContext;
+
+      // Draw single point:
+      if (path.points.length === 1) {
+        const pickingElement: PointPickingElement = {
+          type: 'point',
+          pathId: path.id,
+          point: stcContext.getPoint(path.points[0]),
+        };
+        const index = registerPickingElement(pickingElement);
+        const pointColor = hexToRgb(indexToColor(index));
+
+        drawAliasedDisc(
+          imageData,
+          pickingElement.point,
+          VERTICAL_LINE_HEIGHT / 2,
+          pointColor,
+          false,
+          scalingRatio
+        );
+      }
 
       // Draw segments:
       getPathLines(stcContext).forEach((line) =>
@@ -622,7 +697,7 @@ export const PathLayer = ({
         );
       });
     },
-    [getPathLines, getSnapPoints, level, path.id, pickingTolerance]
+    [getPathLines, getSnapPoints, level, path.id, path.points, pickingTolerance]
   );
   usePicking('paths', drawPicking);
 
