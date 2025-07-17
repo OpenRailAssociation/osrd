@@ -9,7 +9,6 @@ import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import { addDurationToDate } from 'utils/duration';
 import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
@@ -24,7 +23,6 @@ const useOccurrences = (
   const {
     id,
     paced,
-    startTime,
     name,
     rollingStock,
     stopsCount,
@@ -41,9 +39,6 @@ const useOccurrences = (
     // Handle indexed occurrences
     for (let i = 0; i < occurrencesCount; i += 1) {
       const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(id, i);
-      const occurrenceStartTime = dayjs(startTime)
-        .add(i * paced.interval.ms, 'ms')
-        .toDate();
 
       const correspondingException = findExceptionWithOccurrenceId(exceptions, occurrenceId);
 
@@ -53,13 +48,17 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
+      const startTime = correspondingException?.start_time?.value
+        ? new Date(correspondingException.start_time.value)
+        : dayjs(pacedTrain.startTime)
+            .add(i * paced.interval.ms, 'ms')
+            .toDate();
+
       computedOccurrences.push({
         id: occurrenceId,
         trainName: correspondingException?.train_name?.value ?? computeOccurrenceName(name, i),
         rollingStock: occurrenceRollingStock,
-        startTime: correspondingException?.start_time?.value
-          ? new Date(correspondingException.start_time.value)
-          : occurrenceStartTime,
+        startTime,
         stopsCount: correspondingException?.path_and_schedule
           ? correspondingException.path_and_schedule.schedule.filter((step) => step.stop_for).length
           : stopsCount,
@@ -72,21 +71,7 @@ const useOccurrences = (
         exceptionChangeGroups: correspondingException
           ? omit(correspondingException, ['key', 'occurrence_index', 'disabled', 'summary'])
           : undefined,
-        ...(summary?.isValid
-          ? {
-              isValid: true,
-              // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: dayjs(addDurationToDate(startTime, summary.duration))
-                .add(i * paced.interval.ms, 'ms')
-                .toDate(),
-              pathLength: summary.pathLength,
-              mechanicalEnergyConsumed: summary.mechanicalEnergyConsumed,
-              duration: summary.duration,
-            }
-          : {
-              isValid: false,
-              invalidReason: summary?.invalidReason,
-            }),
+        summary: correspondingException?.summary ?? summary,
       });
     }
 
@@ -100,12 +85,14 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
+      // An added exception will always have a least a start time in its exceptions
+      const startTime = new Date(exception.start_time!.value);
+
       computedOccurrences.push({
         id: formatPacedTrainIdToExceptionId(id, exception.key),
         trainName: exception.train_name?.value ?? `${name}/+`,
         rollingStock: occurrenceRollingStock,
-        // An added exception will always have a least a start time in its exceptions
-        startTime: new Date(exception.start_time!.value),
+        startTime,
         stopsCount: exception.path_and_schedule
           ? exception.path_and_schedule.schedule.filter((step) => step.stop_for).length
           : stopsCount,
@@ -114,18 +101,7 @@ const useOccurrences = (
           ? exception.rolling_stock_category.value
           : pacedTrainCategory,
         exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index', 'summary']),
-        ...(summary?.isValid
-          ? {
-              isValid: true,
-              // TODO exceptions : update the arrival time if the exception is in the paced train summaries
-              arrivalTime: new Date(Date.parse(exception.start_time!.value) + summary.duration.ms),
-              pathLength: summary.pathLength,
-              mechanicalEnergyConsumed: summary.mechanicalEnergyConsumed,
-              duration: summary.duration,
-            }
-          : {
-              isValid: false,
-            }),
+        summary: exception.summary ?? summary,
       });
     });
 
