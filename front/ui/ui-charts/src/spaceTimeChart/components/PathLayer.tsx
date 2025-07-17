@@ -27,6 +27,10 @@ import { getSpaceBreakpoints } from '../utils/scales';
 const DEFAULT_PICKING_TOLERANCE = 5;
 const PAUSE_THICKNESS = 7;
 const PAUSE_OPACITY = 0.2;
+const CIRCLE_RADIUS = 4;
+const LINE_WIDTH = 1;
+const VERTICAL_LINE_HEIGHT = 5;
+const TEXT_PADDING = 3;
 
 export type PointPickingElement = PickingElement & { type: 'point'; pathId: string; point: Point };
 
@@ -451,8 +455,59 @@ export const PathLayer = ({
     [border, getPathLines, level]
   );
 
+  const drawSinglePoint = useCallback<DrawingFunction>((ctx, { getTimePixel, getSpacePixel, hidePathsLabels, theme : {
+    pathsStyles: { fontSize, fontFamily }
+  }}) => {
+    if (path.points.length !== 1) return;
+
+    const { time, position } = path.points[0];
+    const x = getTimePixel(time);
+    const y = getSpacePixel(position);
+
+    ctx.save();
+
+    // Draw the vertical lines above and below the circle
+    ctx.beginPath();
+    // above the circle
+    ctx.moveTo(x, y - CIRCLE_RADIUS);
+    ctx.lineTo(x, y - CIRCLE_RADIUS - VERTICAL_LINE_HEIGHT);
+
+    // below the circle
+    ctx.moveTo(x, y + CIRCLE_RADIUS);
+    ctx.lineTo(x, y + CIRCLE_RADIUS + VERTICAL_LINE_HEIGHT);
+
+    // lines style
+    ctx.strokeStyle = color;
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.stroke();
+
+    // Draw the circle
+    ctx.beginPath();
+    ctx.arc(x, y, CIRCLE_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.stroke();
+
+    //Draw the label
+    if( !hidePathsLabels) {
+      ctx.font = `${fontSize}px ${fontFamily}`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = color;
+      ctx.fillText(path.label, x, y - CIRCLE_RADIUS - VERTICAL_LINE_HEIGHT - TEXT_PADDING);
+    }
+
+    ctx.restore();
+
+
+  }, [color, path.points, path.label]);
+
   const drawAll = useCallback<DrawingFunction>(
     (ctx, stcContext) => {
+      if (path.points.length === 1) {
+        drawSinglePoint(ctx, stcContext);
+        return;
+      }
+
       drawBorder(ctx, stcContext);
 
       // Draw stops:
@@ -506,6 +561,8 @@ export const PathLayer = ({
       computePathLength,
       drawLabel,
       drawBorder,
+      drawSinglePoint,
+      path.points.length,
       path.label,
     ]
   );
