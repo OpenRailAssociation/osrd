@@ -139,6 +139,18 @@ export type PathDisplay = PathData & {
   level?: PathLevel;
 };
 export const PATHS: PathDisplay[] = [
+  // Inter OP
+  {
+    id: 'single-point',
+    label: 'Single Point',
+    points: [
+      {
+        position: positionKmToMm(50),
+        time: +START_DATE + 10 * MIN,
+      }
+    ],
+    color: '#C75300',
+  },
   // Paced Train
   ...getPaths(
     'Paced',
