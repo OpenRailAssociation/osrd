@@ -99,6 +99,8 @@ interface InfraExplorer {
 
     /** Returns the step tracker, giving data about the steps on the path (including lookahead) */
     fun getStepTracker(): StepTracker
+
+    fun getLastEdgeMaxSlope(): Double
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -132,6 +134,7 @@ fun initInfraExplorer(
     val pathProps = makePathProps(blockInfra, rawInfra, block)
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
+    val maxSlopeCache = mutableMapOf<BlockId, Double>()
 
     routes.forEach { route ->
         val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
@@ -147,6 +150,7 @@ fun initInfraExplorer(
                 blockToPathProperties,
                 stepTracker = StepTracker(steps),
                 constraints = constraints,
+                maxSlopeCache = maxSlopeCache,
             )
         val infraExtended = infraExplorer.extend(route, location)
         if (infraExtended) infraExplorers.add(infraExplorer)
@@ -167,6 +171,7 @@ private class InfraExplorerImpl(
     private var stepTracker: StepTracker,
     private var predecessorLength: Length<BlockPath> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>,
+    private val maxSlopeCache: MutableMap<BlockId, Double>
 ) : InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -271,6 +276,7 @@ private class InfraExplorerImpl(
             this.stepTracker.clone(),
             this.predecessorLength,
             this.constraints,
+            this.maxSlopeCache,
         )
     }
 
@@ -280,6 +286,18 @@ private class InfraExplorerImpl(
 
     override fun getStepTracker(): StepTracker {
         return stepTracker
+    }
+
+    override fun getLastEdgeMaxSlope(): Double {
+        return maxSlopeCache.getOrPut(getCurrentBlock()) {
+            val pathProperties =
+                getCurrentEdgePathProperties(
+                    Offset(0.meters),
+                    null,
+                )
+            val maxSlope = pathProperties.getSlopes().maxOfOrNull { it.value } ?: 0.0
+            maxSlope
+        }
     }
 
     /**

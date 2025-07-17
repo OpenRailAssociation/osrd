@@ -27,6 +27,9 @@ data class STDCMNode(
     val previousPlannedNodeRelativeTimeDiff: Double?,
     // Estimation of the min time it takes to reach the end from this node
     var remainingTimeEstimation: Double,
+    // Pessimistic estimation of maximum allowance value up to this node. We know we can add at
+    // least that much time.
+    val minEngineeringAllowanceBefore: Double = 0.0,
 ) : Comparable<STDCMNode> {
 
     /**

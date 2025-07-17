@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -79,6 +80,7 @@ data class STDCMEdge(
                 null,
                 previousPlannedNodeRelativeTimeDiff,
                 graph.remainingTimeEstimator.invoke(this, null, stepTracker),
+                estimateMaxMarginDuration(graph),
             )
         } else {
             // New edge on the same block, after a stop
@@ -103,8 +105,35 @@ data class STDCMEdge(
                 nextStop.originalStep.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
                 graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),
+                estimateMaxMarginDuration(graph),
             )
         }
+    }
+
+    /**
+     * Give a (rough) estimation of how much delay we could add before this node with engineering
+     * margins. Should be on the pessimistic side.
+     */
+    private fun estimateMaxMarginDuration(graph: STDCMGraph): Double {
+        // We look for engineering allowance opportunities, but using simplified simulations (const
+        // acceleration on max block slope). We look for the largest allowance value, with an upper
+        // bound on allowance length to avoid long computations.
+        val segments = generatePreviousSimulationSegments(this, graph, runFullSimulation = false)
+        val opportunities =
+            graph.allowanceManager.generateAllowanceOpportunities(segments, endSpeed)
+
+        var lastAddedTime = 0.0
+        for (opportunity in opportunities) {
+            if (opportunity.distance >= 20_000.meters) {
+                // Long enough to reasonably stop and accelerate back, even if we're too pessimistic on
+                // the const acceleration simulation
+                return opportunity.maxNextAllowanceValue
+            }
+            lastAddedTime = opportunity.addedTime
+            if (opportunity.addedTime >= opportunity.maxNextAllowanceValue)
+                break
+        }
+        return lastAddedTime
     }
 
     /**

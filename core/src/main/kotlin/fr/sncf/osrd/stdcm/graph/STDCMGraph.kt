@@ -19,8 +19,6 @@ import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding
@@ -101,7 +99,7 @@ class STDCMGraph(
 
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
         val res = ArrayList<STDCMEdge>()
-        val maxMarginDuration = estimateMaxMarginDuration(node)
+        val maxMarginDuration = node.minEngineeringAllowanceBefore
         var visitedNodesParameters =
             VisitedNodes.Parameters(
                 null,
@@ -142,40 +140,5 @@ class STDCMGraph(
             }
         }
         return res
-    }
-
-    /**
-     * Give a (rough) estimation of how much delay we could add before this node with engineering
-     * margins. Should be on the pessimistic side.
-     */
-    private fun estimateMaxMarginDuration(inputNode: STDCMNode): Double {
-        // We look for the 20km before the node (very rough estimation of a distance that lets the
-        // train slow down to a stop and speed up). We return the max delay that can be added after
-        // the train in all of those edges, on top of maximum start time delay
-
-        // TODO: use new EngineeringAllowanceManager?
-        // We'd need to use a const acceleration sim, and we may add some caching
-
-        var node = inputNode
-        var remainingDistance = 20_000.meters
-        var maxTime = Double.POSITIVE_INFINITY
-        while (true) {
-            val edge = node.previousEdge ?: return maxTime
-
-            val latestTimeWithMaxShift =
-                edge.timeData.earliestReachableTime +
-                    edge.totalTime +
-                    edge.timeData.maxDepartureDelayingWithoutConflict
-
-            // Only consider this specific edge, not the rest of the path
-            val maxDelayAddedOnEdge =
-                max(0.0, edge.timeData.timeOfNextConflictAtLocation - latestTimeWithMaxShift)
-            maxTime = min(maxTime, maxDelayAddedOnEdge)
-
-            remainingDistance -= edge.length.distance
-            if (edge.beginSpeed == 0.0 || remainingDistance <= 0.meters) return maxTime
-
-            node = edge.previousNode
-        }
     }
 }

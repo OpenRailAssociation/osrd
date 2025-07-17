@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph.engineering_allowance
 
+import com.google.common.collect.ImmutableRangeMap
+import com.google.common.collect.Range
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
@@ -7,11 +9,17 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
+import fr.sncf.osrd.envelope_sim.electrification.Electrification
+import fr.sncf.osrd.envelope_sim.electrification.Electrified
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 
@@ -28,6 +36,7 @@ data class SimulationSegment(
     // Function to compute an acceleration over this segment. Can be dummy values for tests,
     // wrap a full simulation pipeline in normal processing.
     val computeAccelSequenceFromEndSpeed: (Double) -> SummarizedSimulationResult,
+    val minAllowanceBefore: Double = 0.0,
 ) {
     init {
         positive(beginTime)
@@ -35,6 +44,7 @@ data class SimulationSegment(
         positive(beginSpeed)
         positive(travelTime)
         positive(maxAddedDelay)
+        positive(minAllowanceBefore)
     }
 }
 
@@ -59,7 +69,8 @@ data class SummarizedSimulationResult(
 fun generatePreviousSimulationSegments(
     initialEdge: STDCMEdge?,
     graph: STDCMGraph?,
-    maxLength: Distance = 100.meters
+    maxLength: Distance = 100.meters,
+    runFullSimulation: Boolean = true,
 ): Sequence<SimulationSegment> = sequence {
     var currentEdge = initialEdge
     while (currentEdge != null) {
@@ -82,6 +93,23 @@ fun generatePreviousSimulationSegments(
             val travelTime = scaleAllowanceTime(graph, positive(endT - beginT), length)
 
             val currentEdgeSnapshot = currentEdge // For closure reference
+
+            val func =
+                if (runFullSimulation)
+                    { speed: Double ->
+                        val pathProperties =
+                            currentEdgeSnapshot.infraExplorer.getCurrentEdgePathProperties(
+                                currentEdgeSnapshot.envelopeStartOffset + segmentStartOffset,
+                                segmentEndOffset - segmentStartOffset
+                            )
+                        computeAcceleration(pathProperties, speed, graph!!)
+                    }
+                else
+                    { speed: Double ->
+                        val maxSlope = currentEdgeSnapshot.infraExplorer.getLastEdgeMaxSlope()
+                        val acceleration = getAcceleration(graph!!.rollingStock, maxSlope, speed)
+                        constAcceleration(speed, length, acceleration)
+                    }
             yield(
                 SimulationSegment(
                     beginTime = beginT,
@@ -89,15 +117,8 @@ fun generatePreviousSimulationSegments(
                     beginSpeed = segmentStart.speed,
                     travelTime = travelTime,
                     maxAddedDelay = maxAddedDelay,
-                    computeAccelSequenceFromEndSpeed = { endSpeed ->
-                        val pathProperties =
-                            currentEdgeSnapshot.infraExplorer.getCurrentEdgePathProperties(
-                                offset =
-                                    currentEdgeSnapshot.envelopeStartOffset + segmentStartOffset,
-                                length = segmentEndOffset - segmentStartOffset,
-                            )
-                        computeAcceleration(pathProperties, endSpeed, graph!!)
-                    },
+                    computeAccelSequenceFromEndSpeed = func,
+                    currentEdge.previousNode.minEngineeringAllowanceBefore,
                 )
             )
         }
@@ -152,4 +173,41 @@ private fun computeAcceleration(
         envelope.beginSpeed,
         newTime,
     )
+}
+
+private fun constAcceleration(
+    endSpeed: Double,
+    length: Distance,
+    acceleration: Double,
+): SummarizedSimulationResult {
+    val sim =
+        runSimplifiedSimulation(
+            acceleration,
+            endSpeed,
+            length.meters,
+        )
+    return SummarizedSimulationResult(sim.newBeginSpeed, sim.newDuration)
+}
+
+/** Estimates the acceleration for a given rolling stock at given speed and slope. */
+private fun getAcceleration(rollingStock: RollingStock, maxSlope: Double, speed: Double): Double {
+    val electrification =
+        ImmutableRangeMap.of<Double, Electrification>(
+            Range.all(),
+            Electrified(rollingStock.modeNames.first())
+        )
+    val curve = rollingStock.mapTractiveEffortCurves(electrification, Comfort.STANDARD).curves[0.0]
+    val acceleration =
+        TrainPhysicsIntegrator.computeAcceleration(
+            rollingStock,
+            rollingStock.getRollingResistance(speed),
+            TrainPhysicsIntegrator.getWeightForce(rollingStock, maxSlope),
+            speed,
+            PhysicsRollingStock.getMaxEffort(
+                speed,
+                curve,
+            ),
+            1.0,
+        )
+    return acceleration
 }

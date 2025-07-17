@@ -38,19 +38,26 @@ class EngineeringAllowanceManager(
 
         val requiredAdditionalTime = expectedStartTime - prevNode.timeData.earliestReachableTime
         val segments = generatePreviousSimulationSegments(prevNode.previousEdge, graph).cacheable()
+
+        // We still try to roughly guess the maximum length over which to add the time
+        val estimateMaxDistance by lazy {
+            var distance = 0.meters
+            for (segment in segments) {
+                distance += segment.length
+                if (distance > 10_000.meters) return@lazy distance
+            }
+            distance
+        }
+
+        if (prevNode.minEngineeringAllowanceBefore > requiredAdditionalTime)
+            return estimateMaxDistance
+
         val opportunities = generateAllowanceOpportunities(segments, prevNode.speed)
         val solution =
             opportunities
                 .takeWhile { it.maxNextAllowanceValue >= requiredAdditionalTime }
                 .firstOrNull { it.addedTime >= requiredAdditionalTime } ?: return null
-
-        // We still try to roughly guess the maximum length over which to add the time
-        var distance = 0.meters
-        for (segment in segments) {
-            distance += segment.length
-            if (distance > 10_000.meters) return distance
-        }
-        return Distance.max(solution.distance, distance)
+        return Distance.max(solution.distance, estimateMaxDistance)
     }
 
     /**
@@ -155,6 +162,7 @@ class EngineeringAllowanceManager(
         // Keep track of how much delay we can add before causing conflict on the braking sequence
         var maxBrakingDelay = Double.POSITIVE_INFINITY
         var totalBrakingDelay = 0.0
+        var lastSegment: ConstDecelerationData? = null
         for (decelerationSegment in decelerationSequence) {
             totalBrakingDelay += decelerationSegment.addedTimeOnSegment
             decelerationLength += decelerationSegment.segment.length
@@ -173,12 +181,15 @@ class EngineeringAllowanceManager(
                     decelerationLength = null
                 )
             }
+            lastSegment = decelerationSegment
         }
         val canStop = decelerationEndSpeed <= 0.0
         if (canStop) totalBrakingDelay = Double.POSITIVE_INFINITY
+        val allowanceBeforeLastSegment = lastSegment?.segment?.minAllowanceBefore ?: 0.0
+        val actualAddedTime = min(maxBrakingDelay, totalBrakingDelay + allowanceBeforeLastSegment)
         return DecelerationResults(
             hasConflict = false,
-            addedDelay = totalBrakingDelay,
+            addedDelay = actualAddedTime,
             decelerationLength
         )
     }
@@ -215,6 +226,13 @@ class EngineeringAllowanceManager(
             if (pureDecelerationSim.newBeginSpeed > segment.beginSpeed) {
                 // Intersection with base sim. We could try to guess the exact added time,
                 // but ignoring this segment is generally good enough.
+                yield(
+                    ConstDecelerationData(
+                        segment,
+                        segment.travelTime,
+                        0.0,
+                    )
+                )
                 break
             }
             val newTravelTime =

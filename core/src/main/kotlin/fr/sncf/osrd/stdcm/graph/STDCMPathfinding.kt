@@ -292,6 +292,7 @@ class STDCMPathfinding(
                         firstStep.plannedTimingData,
                         null,
                         graph.bestPossibleTime,
+                        minEngineeringAllowanceBefore = POSITIVE_INFINITY,
                     )
                 res.add(node)
             }
