@@ -132,7 +132,7 @@ const SpeedSpaceChartContainer = ({
         style={{ height: `${heightOfSpeedSpaceChartContainer}px` }}
       >
         <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('speedSpaceChart')}</p>
-        {containerWidth && (
+        {containerWidth > 0 && (
           <SpeedSpaceChart
             width={containerWidth || SPEEDSPACECHART_MIN_HEIGHT}
             height={heightOfSpeedSpaceChart - SPEEDSPACECHART_PADDING_BOTTOM}
