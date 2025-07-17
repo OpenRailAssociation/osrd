@@ -115,16 +115,8 @@ export type Occurrence = {
   startTime: Date;
   stopsCount: number;
   exceptionChangeGroups?: ExceptionChangeGroups;
-} & (
-  | {
-      isValid: true;
-      arrivalTime: Date;
-      pathLength: string;
-      mechanicalEnergyConsumed: number;
-      duration: Duration | null;
-    }
-  | { isValid: false; invalidReason?: InvalidReason }
-);
+  summary?: SimulationSummary;
+};
 
 export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 

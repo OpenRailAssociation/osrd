@@ -175,7 +175,7 @@ test.describe('Paced trains and exception management', () => {
       {
         name: `${editedPacedTrainData.train_name} 1`,
         startTime: '12:00',
-        arrivalTime: '12:03',
+        arrivalTime: '12:07',
         rollingStock: slowRollingStockName,
       },
       1

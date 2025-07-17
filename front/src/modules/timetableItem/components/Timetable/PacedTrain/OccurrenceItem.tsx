@@ -11,6 +11,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addElementAtIndex } from 'utils/array';
+import { addDurationToDate } from 'utils/duration';
 import {
   getExceptionType,
   isExceptionFromPathOrSimulation,
@@ -63,13 +64,17 @@ const OccurrenceItem = ({
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { trainName, rollingStock, startTime, disabled, exceptionChangeGroups, isValid } =
+  const { trainName, rollingStock, startTime, disabled, exceptionChangeGroups, summary } =
     occurrence;
 
-  const isAfterMidnight = isValid && dayjs(occurrence.arrivalTime).isAfter(startTime, 'day');
-  const isNextAfterMidnight = nextOccurrence
-    ? dayjs(nextOccurrence.startTime).isAfter(startTime, 'day')
-    : false;
+  let arrivalTime: Date | undefined;
+  let isAfterMidnight = false;
+  if (summary?.isValid) {
+    arrivalTime = addDurationToDate(startTime, summary.duration);
+    isAfterMidnight = dayjs(arrivalTime).isAfter(startTime, 'day');
+  }
+  const isNextAfterMidnight =
+    !!nextOccurrence && dayjs(nextOccurrence.startTime).isAfter(startTime, 'day');
   const isStartTimeException = !!exceptionChangeGroups?.start_time?.value;
 
   const closeMenu = () => {
@@ -208,8 +213,8 @@ const OccurrenceItem = ({
             {roundAndFormatToNearestMinute(startTime)}
           </div>
           <div className="occurrence-item-time arrival-time">
-            {occurrence.isValid && roundAndFormatToNearestMinute(occurrence.arrivalTime)}
-            {!occurrence.isValid && !occurrence.invalidReason && <ArrivalTimeLoader />}
+            {arrivalTime && roundAndFormatToNearestMinute(arrivalTime)}
+            {!summary && <ArrivalTimeLoader />}
           </div>
         </div>
 
@@ -221,23 +226,21 @@ const OccurrenceItem = ({
         )}
       </div>
 
-      {occurrence.isValid && !disabled && isExceptionFromPathOrSimulation(occurrence) && (
+      {summary?.isValid && !disabled && isExceptionFromPathOrSimulation(occurrence) && (
         <div className="more-info">
           <div className="more-info-left">
             {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
             <span className="more-info-item">
               {t('timetable.stopsCount', { count: occurrence.stopsCount })}
             </span>
-            <span className="more-info-item">{occurrence.pathLength}</span>
+            <span className="more-info-item">{summary.pathLength}</span>
             <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
-              {occurrence.mechanicalEnergyConsumed}&nbsp;kWh
+              {summary.mechanicalEnergyConsumed}&nbsp;kWh
             </span>
           </div>
-          {occurrence.duration && (
-            <div className="duration-time">
-              <span data-testid="train-duration">{formatTrainDuration(occurrence.duration)}</span>
-            </div>
-          )}
+          <div className="duration-time">
+            <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
+          </div>
         </div>
       )}
       <button
