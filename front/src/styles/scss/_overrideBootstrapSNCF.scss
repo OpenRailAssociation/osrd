@@ -70,17 +70,18 @@
 */
 .chips-container {
   .form-chips-container {
-    min-height: 52px;
+    min-height: 45px;
     text-align: center;
-    padding: 5px;
     display: flex;
-  }
+    padding: 5px;
 
-  input {
-    width: auto;
-    flex-grow: 1;
-    line-height: 1;
-    height: 35.2px;
+    input {
+      width: 100%;
+      flex-grow: 1;
+      line-height: 1;
+      min-height: 25px;
+      padding: 0;
+    }
   }
 
   .chips {
