@@ -10,10 +10,7 @@ import type {
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type {
-  SimulationSummary,
-  TimetableItemWithDetails,
-} from 'modules/timetableItem/components/Timetable/types';
+import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -39,12 +36,12 @@ const useOutputTableData = (
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
-  const startDatetime = selectedTrain ? new Date(selectedTrain.start_time) : undefined;
-
   const pathStepRows = useMemo(() => {
-    if (!path || !selectedTrain || !simulationSummary?.isValid || !startDatetime) return [];
+    if (!selectedTrain || !simulationSummary?.isValid || !path) return [];
+
     const { pathItemTimes } = simulationSummary;
 
+    const startDatetime = new Date(selectedTrain.start_time);
     let lastReferenceDate = startDatetime;
 
     return selectedTrain.path.map((pathStep, index) => {
@@ -104,7 +101,7 @@ const useOutputTableData = (
 
   useEffect(() => {
     const formatRows = async () => {
-      if (!operationalPoints || !startDatetime || !simulatedTrain) {
+      if (!operationalPoints || !selectedTrain || !simulatedTrain) {
         setRows([]);
         return;
       }
@@ -135,7 +132,7 @@ const useOutputTableData = (
           matchingReportTrainIndex === -1
             ? interpolateValue(simulatedTrain, op.position, 'times')
             : simulatedTrain.times[matchingReportTrainIndex];
-        const calculatedArrival = new Date(startDatetime.getTime() + time);
+        const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
 
         return {
           opId: op.id,
