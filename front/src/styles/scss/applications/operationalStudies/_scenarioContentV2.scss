@@ -1,5 +1,6 @@
 .scenario-content-v2 {
   display: flex;
+  height: calc(100vh - 32px);
   // TODO: remove !important after a refacto of mastnav-container
   padding: 0px 12px 0px 12px !important;
   .right-column,

@@ -218,7 +218,7 @@
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 32px);
   z-index: 3;
 
   .scenario-timetable-manage-timetable-item {
@@ -269,8 +269,8 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    padding: 8px 16px;
     background-color: var(--coolgray1);
-    padding-left: 8px;
     animation: fadein 1s;
 
     &.collapsed {
@@ -290,7 +290,6 @@
       flex-direction: column;
       flex-grow: 1;
       background-color: var(--coolgray1);
-      padding-left: 8px;
       animation: fadein 1s;
       overflow: auto;
     }
