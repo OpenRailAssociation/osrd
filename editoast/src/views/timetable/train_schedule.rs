@@ -1263,33 +1263,8 @@ pub mod tests {
     use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use crate::views::tests::mocked_core_pathfinding_and_sim;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
-
-    #[cfg(test)]
-    fn mocked_core_pathfinding_and_sim() -> MockingClient {
-        let mut core = MockingClient::new();
-        core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(
-                serde_json::from_str::<serde_json::Value>(include_str!(
-                    "../../tests/track_occupancy/example_pathfinding_track_occupancy.json"
-                ))
-                .expect("Invalid JSON file"),
-            )
-            .finish();
-        core.stub("/standalone_simulation")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(
-                serde_json::from_str::<serde_json::Value>(include_str!(
-                    "../../tests/track_occupancy/example_simulation_track_occupancy.json"
-                ))
-                .expect("Invalid JSON file"),
-            )
-            .finish();
-        core
-    }
 
     #[rstest]
     async fn train_schedule_get() {
@@ -1543,7 +1518,7 @@ pub mod tests {
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create train schedule");
-        let core = mocked_core_pathfinding_sim_and_proj(train_schedule.id);
+        let core = mocked_core_pathfinding_sim_and_proj();
         let app = TestAppBuilder::new()
             .db_pool(db_pool.clone())
             .core_client(core.into())
@@ -1611,7 +1586,7 @@ pub mod tests {
             .await
             .expect("Failed to create train schedule");
 
-        let core = mocked_core_pathfinding_sim_and_proj(train_schedule_valid.id);
+        let core = mocked_core_pathfinding_sim_and_proj();
         let app = TestAppBuilder::new()
             .db_pool(db_pool.clone())
             .core_client(core.into())
@@ -1899,5 +1874,32 @@ pub mod tests {
             occupancy.duration,
             PositiveDuration::try_from(Duration::milliseconds(expected_stop_duration_ms)).unwrap()
         );
+    }
+
+    #[rstest]
+    async fn test_occupancy_blocks() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_train_schedule_id_for_simulation_tests().await;
+
+        let request =
+            app.post("/train_schedule/occupancy_blocks")
+                .json(&json!({"ids": [train_schedule_id],
+                    "infra_id": infra_id,
+                    "path": {
+                        "track_section_ranges": [{
+                            "track_section": "T1",
+                            "begin": 0,
+                            "end": 100,
+                            "direction": "START_TO_STOP",
+                        }],
+                        "routes": [],
+                        "blocks":[],
+                    },
+                }));
+        let response = app.fetch(request);
+        let response: HashMap<i64, OccupancyBlocks> =
+            response.assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(response.get(&train_schedule_id).unwrap().len(), 1);
     }
 }
