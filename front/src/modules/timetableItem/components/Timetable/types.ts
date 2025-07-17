@@ -63,9 +63,11 @@ export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
   id: TrainScheduleId;
 };
 
+export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
+
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   id: PacedTrainId;
-  exceptions: PacedTrainException[];
+  exceptions: SimulatedException[];
   paced: {
     timeWindow: Duration;
     interval: Duration;

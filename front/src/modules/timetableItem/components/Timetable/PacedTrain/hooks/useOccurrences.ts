@@ -70,7 +70,7 @@ const useOccurrences = (
           : pacedTrainCategory,
         occurrenceIndex: i,
         exceptionChangeGroups: correspondingException
-          ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])
+          ? omit(correspondingException, ['key', 'occurrence_index', 'disabled', 'summary'])
           : undefined,
         ...(summary?.isValid
           ? {
@@ -113,7 +113,7 @@ const useOccurrences = (
         category: exception.rolling_stock_category
           ? exception.rolling_stock_category.value
           : pacedTrainCategory,
-        exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index']),
+        exceptionChangeGroups: omit(exception, ['key', 'disabled', 'occurrence_index', 'summary']),
         ...(summary?.isValid
           ? {
               isValid: true,
