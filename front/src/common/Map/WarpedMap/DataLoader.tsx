@@ -5,7 +5,12 @@ import { featureCollection } from '@turf/helpers';
 import type { FeatureCollection } from 'geojson';
 import { uniqBy } from 'lodash';
 import { createPortal } from 'react-dom';
-import type { LayerProps, MapRef } from 'react-map-gl/maplibre';
+import type {
+  BackgroundLayerSpecification,
+  LayerProps,
+  LayerSpecification,
+  MapRef,
+} from 'react-map-gl/maplibre';
 import ReactMapGL, { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -78,25 +83,31 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
             uniqBy(
               m
                 .querySourceFeatures(`editor/geo/${layer}`, { sourceLayer: layer })
-                .map(simplifyFeature),
+                .map((f) => simplifyFeature(f, layer)),
               (f) => f.id
             )
           );
         });
 
-        // Retrieve OSM data:
-        // (we have to force cast, because in our weird setup, osmSource is
-        // typed as if it was from mapbox when it actually comes from maplibre)
-        const osmSource = m.getSource('osm') as unknown as { vectorLayerIds: string[] };
+        // Retrieve OSM data
+        const osmSourceLayerIds = m
+          .getStyle()
+          .layers.filter(
+            (l): l is Exclude<LayerSpecification, BackgroundLayerSpecification> =>
+              l.type !== 'background' && l.source === 'osm' && l['source-layer'] !== undefined
+          )
+          .map((l) => `${l['source-layer']}`);
         let incrementalID = 1;
-        const osmData: Record<string, FeatureCollection> = osmSource.vectorLayerIds.reduce(
+        const osmData: Record<string, FeatureCollection> = osmSourceLayerIds.reduce(
           (iter, sourceLayer) =>
             OSM_LAYERS.has(sourceLayer)
               ? {
                   ...iter,
                   [sourceLayer]: featureCollection(
                     uniqBy(
-                      m.querySourceFeatures('osm', { sourceLayer }).map(simplifyFeature),
+                      m
+                        .querySourceFeatures('osm', { sourceLayer })
+                        .map((f) => simplifyFeature(f, sourceLayer)),
                       // eslint-disable-next-line no-plusplus
                       (f) => (f.id ? `osm-${f.id}` : `generated-${++incrementalID}`) // only deduplicate features with IDs
                     )

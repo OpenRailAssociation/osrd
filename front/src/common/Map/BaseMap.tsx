@@ -94,6 +94,7 @@ const BaseMap = ({
       ref={mapRef}
       {...viewPort}
       interactiveLayerIds={interactiveLayerIds}
+      canvasContextAttributes={{ preserveDrawingBuffer: true }}
       cursor={cursor}
       mapStyle={mapBlankStyle}
       terrain={
@@ -122,7 +123,6 @@ const BaseMap = ({
       attributionControl={false} // Defined below
       dragPan
       maxPitch={85}
-      preserveDrawingBuffer
       scrollZoom
       style={{ width: '100%', height: '100%' }}
       touchZoomRotate

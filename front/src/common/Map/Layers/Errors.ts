@@ -1,4 +1,8 @@
-import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
+import type {
+  CircleLayerSpecification,
+  LineLayerSpecification,
+  SymbolLayerSpecification,
+} from 'react-map-gl/maplibre';
 
 import { INFRA_ERRORS } from 'applications/editor/components/InfraErrors';
 import type { OmitLayer } from 'types';
@@ -6,9 +10,9 @@ import type { OmitLayer } from 'types';
 import type { LayerContext } from './types';
 
 const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];
-export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayer> {
+export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLayerSpecification> {
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
-  const res: OmitLayer<LineLayer> = {
+  const res: OmitLayer<LineLayerSpecification> = {
     type: 'line',
     filter: [
       'all',
@@ -31,9 +35,11 @@ export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLa
   return res;
 }
 
-export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
+export function getLineTextErrorsLayerProps(
+  context: LayerContext
+): OmitLayer<SymbolLayerSpecification> {
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
-  const res: OmitLayer<SymbolLayer> = {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     filter: [
       'all',
@@ -61,9 +67,11 @@ export function getLineTextErrorsLayerProps(context: LayerContext): OmitLayer<Sy
   return res;
 }
 
-export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<CircleLayer> {
+export function getPointErrorsLayerProps(
+  context: LayerContext
+): OmitLayer<CircleLayerSpecification> {
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
-  const res: OmitLayer<CircleLayer> = {
+  const res: OmitLayer<CircleLayerSpecification> = {
     type: 'circle',
     filter: [
       'all',
@@ -85,9 +93,11 @@ export function getPointErrorsLayerProps(context: LayerContext): OmitLayer<Circl
   return res;
 }
 
-export function getPointTextErrorsLayerProps(context: LayerContext): OmitLayer<SymbolLayer> {
+export function getPointTextErrorsLayerProps(
+  context: LayerContext
+): OmitLayer<SymbolLayerSpecification> {
   const enableErrorTypes = context.issuesSettings?.types || INFRA_ERRORS;
-  const res: OmitLayer<SymbolLayer> = {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     filter: [
       'all',

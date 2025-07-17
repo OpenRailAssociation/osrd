@@ -13,7 +13,7 @@ import type {
   BBox,
 } from 'geojson';
 import _, { first, last, mapValues } from 'lodash';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
+import type { GeoJSONFeature } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
 
 import { type EditoastType, LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
@@ -177,11 +177,11 @@ export async function getImprovedOSRDData(
  * This helper takes a MapboxGeoJSONFeature (ie a data item extracted from a MapLibre instance through the
  * `querySourceFeatures` method), and returns a proper and clean GeoJSON Feature object.
  */
-export function simplifyFeature(feature: MapGeoJSONFeature): Feature {
+export function simplifyFeature(feature: GeoJSONFeature, sourceLayer?: string): Feature {
   return {
     type: 'Feature',
     id: feature.id,
-    properties: { ...feature.properties, sourceLayer: feature.sourceLayer },
+    properties: { ...feature.properties, sourceLayer },
     // eslint-disable-next-line no-underscore-dangle
     geometry: feature.geometry || feature._geometry,
   };

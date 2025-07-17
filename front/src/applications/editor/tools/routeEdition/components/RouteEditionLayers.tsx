@@ -6,7 +6,7 @@ import { compact, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FaFlagCheckered } from 'react-icons/fa';
-import { Layer, Popup, Source, type LineLayer } from 'react-map-gl/maplibre';
+import { Layer, Popup, Source, type LineLayerSpecification } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
@@ -87,7 +87,7 @@ const RouteEditionLayers = () => {
         'line-dasharray': [2, 1],
         'line-offset': ['get', 'offset'],
       },
-    } as OmitLayer<LineLayer>;
+    } as OmitLayer<LineLayerSpecification>;
   }, [mapStyle]);
 
   /**
@@ -202,7 +202,7 @@ const RouteEditionLayers = () => {
         </Source>
       )}
 
-      {!shouldDisplayOptions && (
+      {!shouldDisplayOptions && entityGeo && (
         <Source type="geojson" data={entityGeo}>
           <Layer {...lineProps} />
           <Layer {...pointProps} />

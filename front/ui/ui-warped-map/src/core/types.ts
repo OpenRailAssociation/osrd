@@ -1,5 +1,5 @@
 import type { Position } from 'geojson';
-import { type LayerProps } from 'react-map-gl';
+import { type BackgroundLayerSpecification, type LayerSpecification } from 'react-map-gl/maplibre';
 
 export interface RectangleZone {
   type: 'rectangle';
@@ -16,7 +16,9 @@ export type RequiredFor<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>
 export interface SourceDefinition {
   id: string;
   url: string;
-  layers: RequiredFor<LayerProps, 'id' | 'source-layer'>[];
+  layers: (Exclude<LayerSpecification, BackgroundLayerSpecification> & {
+    'source-layer': string;
+  })[];
 }
 
 export type BBox2D = [number, number, number, number];

@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
-import type { SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
+import type { SymbolLayerSpecification, CircleLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
@@ -12,8 +12,8 @@ export function getSwitchesLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<CircleLayer> {
-  const res: OmitLayer<CircleLayer> = {
+}): OmitLayer<CircleLayerSpecification> {
+  const res: OmitLayer<CircleLayerSpecification> = {
     type: 'circle',
     minzoom: 8,
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
@@ -33,8 +33,8 @@ export function getSwitchesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 8,
     layout: {

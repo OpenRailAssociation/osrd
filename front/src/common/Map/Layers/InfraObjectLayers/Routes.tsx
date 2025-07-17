@@ -1,7 +1,11 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
-import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
+import type {
+  CircleLayerSpecification,
+  LineLayerSpecification,
+  SymbolLayerSpecification,
+} from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
@@ -19,8 +23,8 @@ export function getRoutesLineLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<LineLayer> {
-  const res: OmitLayer<LineLayer> = {
+}): OmitLayer<LineLayerSpecification> {
+  const res: OmitLayer<LineLayerSpecification> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -47,8 +51,8 @@ export function getRoutesPointLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<CircleLayer> {
-  const res: OmitLayer<CircleLayer> = {
+}): OmitLayer<CircleLayerSpecification> {
+  const res: OmitLayer<CircleLayerSpecification> = {
     type: 'circle',
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
@@ -66,8 +70,8 @@ export function getRoutesTextLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,

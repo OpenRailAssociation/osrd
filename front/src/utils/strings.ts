@@ -116,3 +116,12 @@ export function distanceToHumanReadable(distance: number): string {
 export function capitalizeFirstLetter(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
+
+/**
+ * Generate an absolute url from a path or an url.
+ */
+export function absoluteUrl(href: string): string {
+  const link = document.createElement('a');
+  link.href = href;
+  return link.href;
+}

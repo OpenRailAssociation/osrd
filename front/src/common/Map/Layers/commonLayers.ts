@@ -1,12 +1,16 @@
 import type { Geometry } from 'geojson';
-import type { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl/maplibre';
+import type {
+  SymbolLayerSpecification,
+  LineLayerSpecification,
+  CircleLayerSpecification,
+} from 'react-map-gl/maplibre';
 
 import type { Theme, OmitLayer } from 'types';
 
 export function trackNameLayer(
   colors: Theme,
   highlightedArea: Geometry | undefined = undefined
-): OmitLayer<SymbolLayer> {
+): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
     layout: {
@@ -41,7 +45,7 @@ export function trackNameLayer(
 export function lineNameLayer(
   colors: Theme,
   highlightedArea: Geometry | undefined = undefined
-): OmitLayer<SymbolLayer> {
+): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
     layout: {
@@ -65,7 +69,7 @@ export function lineNameLayer(
 export function lineNumberLayer(
   colors: Theme,
   highlightedArea: Geometry | undefined = undefined
-): OmitLayer<SymbolLayer> {
+): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
     minzoom: 11,
@@ -86,7 +90,7 @@ export function lineNumberLayer(
   };
 }
 
-export function hoverLayer(): OmitLayer<LineLayer> {
+export function hoverLayer(): OmitLayer<LineLayerSpecification> {
   return {
     type: 'line',
     paint: {
@@ -96,7 +100,7 @@ export function hoverLayer(): OmitLayer<LineLayer> {
   };
 }
 
-export function hoverCircleLayer(): OmitLayer<CircleLayer> {
+export function hoverCircleLayer(): OmitLayer<CircleLayerSpecification> {
   return {
     type: 'circle',
     paint: {
@@ -106,7 +110,7 @@ export function hoverCircleLayer(): OmitLayer<CircleLayer> {
   };
 }
 
-export function selectedLayer(): Omit<LineLayer, 'source'> {
+export function selectedLayer(): Omit<LineLayerSpecification, 'source'> {
   return {
     id: 'selectedLayer',
     type: 'line',
@@ -117,7 +121,7 @@ export function selectedLayer(): Omit<LineLayer, 'source'> {
   };
 }
 
-export function selectedCircleLayer(): Omit<CircleLayer, 'source'> {
+export function selectedCircleLayer(): Omit<CircleLayerSpecification, 'source'> {
   return {
     id: 'selectedLayer',
     type: 'circle',

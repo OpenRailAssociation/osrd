@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Source } from 'react-map-gl/maplibre';
-import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
+import type { LineLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { LayersSettings } from 'reducers/map';
@@ -33,8 +33,8 @@ export function getPSLSpeedValueLayerProps({
   sourceTable?: string;
   layersSettings: LayersSettings;
   t?: TFunction<'translation'>;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 9,
     maxzoom: 24,
@@ -75,8 +75,8 @@ export function getPSLSpeedLineBGLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-}): OmitLayer<LineLayer> {
-  const res: OmitLayer<LineLayer> = {
+}): OmitLayer<LineLayerSpecification> {
+  const res: OmitLayer<LineLayerSpecification> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,
@@ -106,8 +106,8 @@ export function getPSLSpeedLineLayerProps({
   colors: Theme;
   sourceTable?: string;
   layersSettings: LayersSettings;
-}): OmitLayer<LineLayer> {
-  const res: OmitLayer<LineLayer> = {
+}): OmitLayer<LineLayerSpecification> {
+  const res: OmitLayer<LineLayerSpecification> = {
     type: 'line',
     minzoom: 6,
     maxzoom: 24,

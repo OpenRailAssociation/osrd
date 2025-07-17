@@ -125,7 +125,8 @@
       "node": {
         "paths": ["src"],
         "moduleDirectory": ["node_modules", "src"]
-      }
+      },
+      "typescript": true
     }
   },
   "overrides": [

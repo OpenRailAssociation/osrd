@@ -1,6 +1,6 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import { Source, type SymbolLayer } from 'react-map-gl/maplibre';
+import { Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
@@ -10,8 +10,8 @@ import OrderedLayer from '../OrderedLayer';
 export function getBufferStopsLayerProps(params: {
   sourceTable?: string;
   highlightedArea?: Geometry;
-}): OmitLayer<SymbolLayer> {
-  const res: OmitLayer<SymbolLayer> = {
+}): OmitLayer<SymbolLayerSpecification> {
+  const res: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 12,
     layout: {

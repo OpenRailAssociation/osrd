@@ -1,5 +1,5 @@
 import type { Geometry } from 'geojson';
-import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
+import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import type { OmitLayer } from 'types';
 
@@ -13,8 +13,8 @@ export function getPointLayerProps({
   sourceTable,
   colors,
   highlightedArea,
-}: SignalContext & { highlightedArea?: Geometry }): OmitLayer<CircleLayer> {
-  const props: OmitLayer<CircleLayer> = {
+}: SignalContext & { highlightedArea?: Geometry }): OmitLayer<CircleLayerSpecification> {
+  const props: OmitLayer<CircleLayerSpecification> = {
     type: 'circle',
     minzoom: 9,
     filter: highlightedArea ? ['within', highlightedArea] : true,
@@ -31,12 +31,12 @@ export function getPointLayerProps({
 
 export function getSignalLayerProps(
   context: SignalContext & { highlightedArea?: Geometry }
-): OmitLayer<SymbolLayer> {
+): OmitLayer<SymbolLayerSpecification> {
   const { sourceTable, colors, highlightedArea } = context;
   const offsetY = -105;
   const iconOffsetX = 45;
 
-  const iconOffset: Required<SymbolLayer>['layout']['icon-offset'] = [
+  const iconOffset: Required<SymbolLayerSpecification>['layout']['icon-offset'] = [
     'case',
     ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
     ['literal', [iconOffsetX, offsetY]],
@@ -45,7 +45,7 @@ export function getSignalLayerProps(
     ['literal', [0, 0]],
   ];
 
-  const props: OmitLayer<SymbolLayer> = {
+  const props: OmitLayer<SymbolLayerSpecification> = {
     type: 'symbol',
     minzoom: 12,
     layout: {
