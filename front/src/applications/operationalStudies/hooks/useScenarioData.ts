@@ -43,7 +43,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
-  const { rollingStocks } = useRollingStockContext();
+  const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infra);
 
@@ -130,12 +130,12 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const timetableItemsWithDetails = useMemo(() => {
     const items = (timetableItems || []).map((timetableItem) => {
       const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
-      return (
-        simulatedTrain ?? formatBaseTimetableItemWithDetails(timetableItem, rollingStocks ?? [])
-      );
+      if (simulatedTrain) return simulatedTrain;
+      const rollingStock = rollingStocksByName.get(timetableItem.rolling_stock_name);
+      return formatBaseTimetableItemWithDetails(timetableItem, rollingStock);
     });
     return sortBy(items, 'startTime');
-  }, [timetableItems, rollingStocks, simulatedTrainsById]);
+  }, [timetableItems, rollingStocksByName, simulatedTrainsById]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
