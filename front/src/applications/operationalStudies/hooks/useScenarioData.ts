@@ -10,7 +10,10 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
-import formatBaseTimetableItemWithDetails from 'modules/timetableItem/helpers/formatBaseTimetableItemWithDetails';
+import {
+  formatPacedTrainWithDetails,
+  formatTrainScheduleWithDetails,
+} from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -132,7 +135,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
       if (simulatedTrain) return simulatedTrain;
       const rollingStock = rollingStocksByName.get(timetableItem.rolling_stock_name);
-      return formatBaseTimetableItemWithDetails(timetableItem, rollingStock);
+      return isPacedTrainResponseWithPacedTrainId(timetableItem)
+        ? formatPacedTrainWithDetails(timetableItem, rollingStock)
+        : formatTrainScheduleWithDetails(timetableItem, rollingStock);
     });
     return sortBy(items, 'startTime');
   }, [timetableItems, rollingStocksByName, simulatedTrainsById]);
