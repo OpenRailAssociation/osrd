@@ -1,4 +1,3 @@
-import { isScheduledPointsNotHonored, isTooFast } from 'applications/operationalStudies/utils';
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
@@ -9,9 +8,6 @@ import {
   formatTrainScheduleWithDetails,
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
-import { jouleToKwh } from 'utils/physics';
-import { formatKmValue } from 'utils/strings';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -29,46 +25,9 @@ const formatTimetableItemSummaries = (
       throw new Error('Missing timetable item');
     }
     const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-    const baseItem = isPacedTrainResponseWithPacedTrainId(timetableItem)
-      ? formatPacedTrainWithDetails(timetableItem, rollingStock)
-      : formatTrainScheduleWithDetails(timetableItem, rollingStock);
-
-    if (timetableItemSummary.status !== 'success') {
-      return {
-        ...baseItem,
-        summary: {
-          isValid: false,
-          invalidReason:
-            timetableItemSummary.status === 'pathfinding_not_found' ||
-            timetableItemSummary.status === 'pathfinding_input_error'
-              ? timetableItemSummary.error_type
-              : timetableItemSummary.status,
-        },
-      };
-    }
-    let notHonoredReason: Extract<
-      NonNullable<TimetableItemWithDetails['summary']>,
-      { isValid: true }
-    >['notHonoredReason'];
-    if (isTooFast(timetableItem, timetableItemSummary)) notHonoredReason = 'trainTooFast';
-    if (isScheduledPointsNotHonored(timetableItem, timetableItemSummary))
-      notHonoredReason = 'scheduleNotHonored';
-
-    return {
-      ...baseItem,
-      summary: {
-        isValid: true,
-        duration: new Duration({ milliseconds: timetableItemSummary.time }),
-        pathLength: formatKmValue(timetableItemSummary.length, 'millimeters', 1),
-        mechanicalEnergyConsumed: jouleToKwh(timetableItemSummary.energy_consumption, true),
-        notHonoredReason,
-        pathItemTimes: {
-          base: timetableItemSummary.path_item_times_base,
-          provisional: timetableItemSummary.path_item_times_provisional,
-          final: timetableItemSummary.path_item_times_final,
-        },
-      },
-    };
+    return isPacedTrainResponseWithPacedTrainId(timetableItem)
+      ? formatPacedTrainWithDetails(timetableItem, rollingStock, timetableItemSummary)
+      : formatTrainScheduleWithDetails(timetableItem, rollingStock, timetableItemSummary);
   });
 
   return mapBy(items, 'id');
