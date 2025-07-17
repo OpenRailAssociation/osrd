@@ -18,8 +18,8 @@ export const getOccurrencesNb = ({ timeWindow, interval }: PacedTrainWithDetails
 /**
  * Based on an exception list and an occurrence id, find the corresponding exception
  */
-export const findExceptionWithOccurrenceId = (
-  exceptions: PacedTrainException[],
+export const findExceptionWithOccurrenceId = <T extends PacedTrainException>(
+  exceptions: T[],
   occurrenceId: OccurrenceId
 ) => {
   if (isIndexedOccurrenceId(occurrenceId)) {

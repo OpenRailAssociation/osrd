@@ -1,10 +1,11 @@
 import {
   osrdEditoastApi,
+  type PacedTrainSimulationSummaryResult,
   type PostPacedTrainSimulationSummaryApiResponse,
   type PostTrainScheduleSimulationSummaryApiResponse,
   type SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
@@ -20,7 +21,10 @@ type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
   electricalProfileSetId?: number;
-  onProgress: (results: Map<TimetableItemId, SimulationSummaryResult>) => void;
+  onProgress: (
+    trainScheduleSummaries: Map<TrainScheduleId, SimulationSummaryResult>,
+    pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>
+  ) => void;
 };
 
 /**
@@ -131,17 +135,17 @@ export default class TrainSimulationLazyLoader {
       return;
     }
 
-    const rawSummaries = new Map();
+    const trainScheduleSummaries = new Map();
+    const pacedTrainSummaries = new Map();
     for (const [rawId, rawSummary] of Object.entries(rawTrainScheduleSummaries)) {
       const id = formatEditoastIdToTrainScheduleId(Number(rawId));
-      rawSummaries.set(id, rawSummary);
+      trainScheduleSummaries.set(id, rawSummary);
     }
     for (const [rawId, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
       const id = formatEditoastIdToPacedTrainId(Number(rawId));
-      // TODO exceptions : adapt this to handle exceptions summaries
-      rawSummaries.set(id, rawSummary.paced_train);
+      pacedTrainSummaries.set(id, rawSummary);
     }
 
-    this.options.onProgress(rawSummaries);
+    this.options.onProgress(trainScheduleSummaries, pacedTrainSummaries);
   }
 }

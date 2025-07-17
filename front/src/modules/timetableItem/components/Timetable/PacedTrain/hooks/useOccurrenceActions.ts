@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { PacedTrain } from 'common/api/osrdEditoastApi';
 import { updatePacedTrainExceptionsList } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -18,7 +18,7 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
 
-import type { Occurrence, PacedTrainWithDetails } from '../../types';
+import type { Occurrence, PacedTrainWithDetails, SimulatedException } from '../../types';
 
 type OccurrenceActionsParams = {
   pacedTrain: PacedTrainWithDetails;
@@ -101,7 +101,7 @@ const useOccurrenceActions = ({
         throw new Error('Cannot enable an occurrence which was not disabled');
       }
 
-      const updatedException: PacedTrainException = occurrenceToUpdateException
+      const updatedException = occurrenceToUpdateException
         ? {
             ...occurrenceToUpdateException,
             disabled: status === 'disabled' ? true : undefined,
@@ -159,7 +159,7 @@ const useOccurrenceActions = ({
         throw new Error('Cannot reset an occurrence which was not an exception');
       }
 
-      let updatedExceptions: PacedTrainException[];
+      let updatedExceptions: SimulatedException[];
 
       if (isIndexedOccurrenceId(occurrenceId)) {
         updatedExceptions = pacedTrain.exceptions.filter(
