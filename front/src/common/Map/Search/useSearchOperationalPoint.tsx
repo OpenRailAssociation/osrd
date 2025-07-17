@@ -21,6 +21,7 @@ type SearchOperationalPoint = {
   initialSearchTerm?: string;
   initialChCodeFilter?: string;
   isStdcm?: boolean;
+  pageSize?: number;
 };
 
 export default function useSearchOperationalPoint({
@@ -28,6 +29,7 @@ export default function useSearchOperationalPoint({
   initialSearchTerm = '',
   initialChCodeFilter,
   isStdcm = false,
+  pageSize = 1000,
 }: SearchOperationalPoint = {}) {
   const infraID = useInfraID();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
@@ -39,21 +41,46 @@ export default function useSearchOperationalPoint({
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const sortOperationalPoints =
+  /** Sort two operational points alphabetically first by name, then by ch (prioritizing main ch) */
+  const sortOperationalPointsByNameAndCh = (
+    a: SearchResultItemOperationalPoint,
+    b: SearchResultItemOperationalPoint
+  ) => {
+    const nameComparison = a.name.localeCompare(b.name);
+    if (nameComparison !== 0) {
+      return nameComparison;
+    }
+
+    const chA = a.ch ?? '';
+    const chB = b.ch ?? '';
+
+    if (MAIN_OP_CH_CODES.includes(chA)) {
+      return -1;
+    }
+    if (MAIN_OP_CH_CODES.includes(chB)) {
+      return 1;
+    }
+    return chA.localeCompare(chB);
+  };
+
+  /** Sort two operational points alphabetically first by trigram, then by name, then by ch (prioritizing main ch) */
+  const sortOperationalPointsFromTrigramSearch = (
+    a: SearchResultItemOperationalPoint,
+    b: SearchResultItemOperationalPoint
+  ) => {
+    const trigramComparison = a.trigram.localeCompare(b.trigram);
+    if (trigramComparison !== 0) {
+      return trigramComparison;
+    }
+
+    return sortOperationalPointsByNameAndCh(a, b);
+  };
+
+  /** Sort two operational points prioritizing those starting with the search query, then alphabetically using name and ch */
+  const sortOperationalPointsFromNameAndUicSearch =
     (searchQuery: string) =>
     (a: SearchResultItemOperationalPoint, b: SearchResultItemOperationalPoint) => {
-      const upperCaseSearchTerm = searchQuery.toUpperCase();
       const lowerCaseSearchTerm = searchQuery.toLowerCase();
-
-      // ops with trigram match first
-      if (a.trigram === upperCaseSearchTerm && b.trigram !== upperCaseSearchTerm) {
-        return -1;
-      }
-      if (b.trigram === upperCaseSearchTerm && a.trigram !== upperCaseSearchTerm) {
-        return 1;
-      }
-
-      // ops whose name starts by the searchTerm
       const aStartsWithSearchTerm = a.name.toLowerCase().startsWith(lowerCaseSearchTerm);
       const bStartsWithSearchTerm = b.name.toLowerCase().startsWith(lowerCaseSearchTerm);
 
@@ -64,24 +91,10 @@ export default function useSearchOperationalPoint({
         return 1;
       }
 
-      // other matching ops alphabetically ordered
-      const nameComparison = a.name.localeCompare(b.name);
-      if (nameComparison !== 0) {
-        return nameComparison;
-      }
-
-      const chA = a.ch ?? '';
-      const chB = b.ch ?? '';
-
-      if (MAIN_OP_CH_CODES.includes(chA)) {
-        return -1;
-      }
-      if (MAIN_OP_CH_CODES.includes(chB)) {
-        return 1;
-      }
-      return chA.localeCompare(chB);
+      return sortOperationalPointsByNameAndCh(a, b);
     };
 
+  /* Search for operational whose trigrams start with the search query */
   const searchOperationalPointsByTrigram = useCallback(
     async (searchQuery: string) => {
       const shouldSearchByTrigram = !Number.isInteger(+searchQuery) && searchQuery.length < 4;
@@ -95,7 +108,7 @@ export default function useSearchOperationalPoint({
         object: 'operationalpoint',
         query: [
           'and',
-          ['=i', ['trigram'], searchQuery],
+          ['ilike', ['trigram'], `${searchQuery}%`],
           ['=', ['infra_id'], infraID],
           stdcmPerimeterOperationalpointsFilter,
         ],
@@ -103,10 +116,10 @@ export default function useSearchOperationalPoint({
       try {
         const results = (await postSearch({
           searchPayload: payload,
-          pageSize: 101,
+          pageSize,
         }).unwrap()) as SearchResultItemOperationalPoint[];
         const sortedResults = [...results];
-        sortedResults.sort(sortOperationalPoints(searchQuery));
+        sortedResults.sort(sortOperationalPointsFromTrigramSearch);
         return sortedResults;
       } catch (error) {
         setFailure(castErrorToFailure(error));
@@ -116,12 +129,13 @@ export default function useSearchOperationalPoint({
     [infraID, isStdcm, isSuperUser]
   );
 
-  /** Search for operational points by name or UIC code (primary code) */
+  /** Search for operational points whose trigrams start with the search query or whose name or UIC code (primary code) contain the search query */
   const searchOperationalPoints = useCallback(
     async (searchQuery: string) => {
       if (infraID === undefined) return [];
 
-      const trigramResults = await searchOperationalPointsByTrigram(searchQuery);
+      const sortedTrigramResults = await searchOperationalPointsByTrigram(searchQuery);
+      const trigramResultsIds = new Set(sortedTrigramResults.map((op) => op.obj_id));
 
       const stdcmPerimeterOperationalpointsFilter =
         isStdcm && !isSuperUser ? STDCM_PERIMETER_FILTER : true;
@@ -141,11 +155,13 @@ export default function useSearchOperationalPoint({
               stdcmPerimeterOperationalpointsFilter,
             ],
           },
-          pageSize: 101,
+          pageSize,
         }).unwrap()) as SearchResultItemOperationalPoint[];
+        const deduplicatedResults = results.filter((item) => !trigramResultsIds.has(item.obj_id));
+        const sortedResults = [...deduplicatedResults];
+        sortedResults.sort(sortOperationalPointsFromNameAndUicSearch(searchTerm));
 
-        const allResults = [...trigramResults, ...results];
-        allResults.sort(sortOperationalPoints(searchQuery));
+        const allResults = [...sortedTrigramResults, ...sortedResults];
         return allResults;
       } catch (error) {
         setFailure(castErrorToFailure(error));
