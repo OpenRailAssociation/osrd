@@ -979,7 +979,6 @@ pub(in crate::views) async fn occupancy_blocks(
             base_occupancy_blocks = occupancy_blocks_result[index].clone();
         }
     }
-
     Ok(Json(results))
 }
 
@@ -1032,6 +1031,7 @@ mod tests {
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+    use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
@@ -1307,7 +1307,7 @@ mod tests {
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
-        let core = mocked_core_pathfinding_sim_and_proj(paced_train.id);
+        let core = mocked_core_pathfinding_sim_and_proj();
         let app = TestAppBuilder::new()
             .db_pool(db_pool)
             .core_client(core.into())
@@ -1814,7 +1814,7 @@ mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let core = mocked_core_pathfinding_sim_and_proj(paced_train_valid.id);
+        let core = mocked_core_pathfinding_sim_and_proj();
         let app = TestAppBuilder::new()
             .db_pool(db_pool)
             .core_client(core.into())
@@ -1839,5 +1839,65 @@ mod tests {
         // EXPECT
         // TODO: improve this test
         assert_eq!(response.len(), 2);
+    }
+
+    #[rstest]
+    async fn paced_train_occupancy_blocks() {
+        let (app, infra_id, paced_train_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+
+        let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
+        let mut paced_train_response: PacedTrainResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        // First remove all already generated exceptions
+        paced_train_response.paced_train.exceptions.clear();
+
+        // Add one exception which will not change the simulation from base
+        paced_train_response
+            .paced_train
+            .exceptions
+            .push(PacedTrainException {
+                key: "change_train_name".to_string(),
+                train_name: Some(TrainNameChangeGroup {
+                    value: "exception_name_but_same_simulation".into(),
+                }),
+                ..Default::default()
+            });
+        // Add one exception which will change the simulation from base
+        // and therefore add another entry in the response (field `exceptions`)
+        paced_train_response
+            .paced_train
+            .exceptions
+            .push(PacedTrainException {
+                key: "change_initial_speed".to_string(),
+                initial_speed: Some(InitialSpeedChangeGroup { value: 1.23 }),
+                ..Default::default()
+            });
+        let request = app
+            .put(format!("/paced_train/{paced_train_id}").as_str())
+            .json(&json!(paced_train_response.paced_train));
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+
+        let request =
+            app.post("/paced_train/occupancy_blocks")
+                .json(&json!({"ids": vec![paced_train_id],
+                    "infra_id": infra_id,
+                    "path": {
+                        "track_section_ranges": [{
+                            "track_section": "T1",
+                            "begin": 0,
+                            "end": 100,
+                            "direction": "START_TO_STOP",
+                        }],
+                        "routes": [],
+                        "blocks":[],
+                    },
+                }));
+        let response = app.fetch(request);
+        let response: HashMap<i64, OccupancyBlocksPacedTrainResult> =
+            response.assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(response.get(&paced_train_id).unwrap().paced_train.len(), 1);
+        assert_eq!(response.get(&paced_train_id).unwrap().exceptions.len(), 0);
     }
 }

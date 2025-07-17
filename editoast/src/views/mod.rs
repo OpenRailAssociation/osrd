@@ -1062,7 +1062,33 @@ mod tests {
     }
 
     #[cfg(test)]
-    pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
+    pub fn mocked_core_pathfinding_and_sim() -> MockingClient {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(
+                serde_json::from_str::<serde_json::Value>(include_str!(
+                    "../tests/track_occupancy/example_pathfinding_track_occupancy.json"
+                ))
+                .expect("Invalid JSON file"),
+            )
+            .finish();
+        core.stub("/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(
+                serde_json::from_str::<serde_json::Value>(include_str!(
+                    "../tests/track_occupancy/example_simulation_track_occupancy.json"
+                ))
+                .expect("Invalid JSON file"),
+            )
+            .finish();
+        core
+    }
+
+    #[cfg(test)]
+    pub fn mocked_core_pathfinding_sim_and_proj() -> MockingClient {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1086,7 +1112,17 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
-                "signal_updates": {train_id.to_string(): [] },
+                "signal_updates": [[{
+                    "signal_id": "SA1",
+                    "signaling_system": "ERTMS",
+                    "time_start": 0,
+                    "time_end": 100,
+                    "position_start": 0,
+                    "position_end": 100,
+                    "color": 0x000000,
+                    "blinking": false,
+                    "aspect_label": "VL",
+                }]]
             }))
             .finish();
         core
