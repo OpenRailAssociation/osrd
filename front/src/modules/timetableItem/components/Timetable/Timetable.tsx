@@ -15,7 +15,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import {
   getSelectedTrainId,
-  getTrainIdUsedForProjection,
+  getTrainUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
@@ -70,7 +70,7 @@ const Timetable = ({
   );
 
   const selectedTrainId = useSelector(getSelectedTrainId);
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
   const dispatch = useAppDispatch();
 
   const handleSelectTimetableItem = useCallback(
@@ -176,7 +176,7 @@ const Timetable = ({
                   removeTrains={removeAndUnselectTrains}
                   selectTrainToEdit={selectTimetableItemToEdit}
                   projectionPathIsUsed={
-                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                    infraState === 'CACHED' && trainUsedForProjection?.id === timetableItem.id
                   }
                   subCategories={subCategories}
                 />
@@ -193,7 +193,7 @@ const Timetable = ({
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
                   isProjectionPathUsed={
-                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                    infraState === 'CACHED' && trainUsedForProjection?.id === timetableItem.id
                   }
                   subCategories={subCategories}
                 />

@@ -3,10 +3,10 @@ import { useEffect, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
-  getTrainIdUsedForProjection,
+  getTrainUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isOccurrenceId, isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
@@ -32,7 +32,7 @@ const useScenarioQueryParams = () => {
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
   const reduxSelectedTrainId = useSelector(getSelectedTrainId);
-  const reduxProjectionTrainId = useSelector(getTrainIdUsedForProjection);
+  const reduxProjectionTrain = useSelector(getTrainUsedForProjection);
 
   // Helper function to get a parameter from the URL, or if absent from local storage
   const getParamFromUrlOrStorage = useCallback(
@@ -70,7 +70,7 @@ const useScenarioQueryParams = () => {
       projectionFromUrl &&
       (isTrainScheduleId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
     ) {
-      dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
+      dispatch(updateTrainUsedForProjection({ trainId: projectionFromUrl }));
     }
   }, [dispatch, getParamFromUrlOrStorage]);
 
@@ -79,12 +79,12 @@ const useScenarioQueryParams = () => {
     if (reduxSelectedTrainId?.toString() !== getParamFromUrlOrStorage('selected_train')) {
       setParamsInUrlAndStorage('selected_train', reduxSelectedTrainId?.toString());
     }
-    if (reduxProjectionTrainId?.toString() !== getParamFromUrlOrStorage('projection')) {
-      setParamsInUrlAndStorage('projection', reduxProjectionTrainId?.toString());
+    if (reduxProjectionTrain?.id.toString() !== getParamFromUrlOrStorage('projection')) {
+      setParamsInUrlAndStorage('projection', reduxProjectionTrain?.id.toString());
     }
   }, [
     reduxSelectedTrainId,
-    reduxProjectionTrainId,
+    reduxProjectionTrain,
     setParamsInUrlAndStorage,
     getParamFromUrlOrStorage,
   ]);

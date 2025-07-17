@@ -59,6 +59,7 @@ export type SpeedSpaceChartData = {
 
 export type ProjectionData = {
   trainSchedule: TimetableItem;
+  exceptionKeyUsedForProjection?: string;
   projectedTrains: TrainSpaceTimeData[];
   path: PathfindingResultSuccess;
   geometry: PathProperties['geometry'];

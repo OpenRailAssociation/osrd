@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateTrainUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
@@ -57,7 +57,7 @@ const useScenario = () => {
     } else {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
-      dispatch(updateTrainIdUsedForProjection(undefined));
+      dispatch(updateTrainUsedForProjection(undefined));
       dispatch(updateElectricalProfileSetId(undefined));
     }
   }, [scenario]);

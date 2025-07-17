@@ -21,10 +21,14 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import type { PacedTrainId } from 'reducers/osrdconf/types';
+import { updateTrainUsedForProjection } from 'reducers/simulationResults';
+import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { addDurationToDate } from 'utils/duration';
 import {
   getExceptionType,
+  isException,
   isExceptionFromPathOrSimulation,
   isIndexedOccurrenceId,
 } from 'utils/trainId';
@@ -57,6 +61,7 @@ type OccurrenceItemProps = {
   nextOccurrence?: Occurrence;
   occurrenceActions: ReturnType<typeof useOccurrenceActions>;
   subCategories?: SubCategory[];
+  pacedTrainId: PacedTrainId;
 };
 
 const OccurrenceItem = ({
@@ -71,7 +76,9 @@ const OccurrenceItem = ({
     deleteAddedException,
   },
   subCategories,
+  pacedTrainId,
 }: OccurrenceItemProps) => {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -89,6 +96,23 @@ const OccurrenceItem = ({
   const isNextAfterMidnight =
     !!nextOccurrence && dayjs(nextOccurrence.startTime).isAfter(startTime, 'day');
   const isStartTimeException = !!exceptionChangeGroups?.start_time?.value;
+
+  const selectPathProjection = async () => {
+    if (isException(occurrence)) {
+      dispatch(
+        updateTrainUsedForProjection({
+          trainId: pacedTrainId,
+          exceptionKey: occurrence.key,
+        })
+      );
+    } else {
+      dispatch(
+        updateTrainUsedForProjection({
+          trainId: pacedTrainId,
+        })
+      );
+    }
+  };
 
   const closeMenu = () => {
     setIsMenuOpen(false);
@@ -136,6 +160,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.project'),
       icon: <GiPathDistance />,
       onClick: () => {
+        selectPathProjection();
         closeMenu();
       },
       dataTestID: 'occurrence-project-button',

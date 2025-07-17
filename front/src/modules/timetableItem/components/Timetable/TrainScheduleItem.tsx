@@ -18,7 +18,7 @@ import type {
   TrainScheduleId,
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
-import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateTrainUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -148,7 +148,7 @@ const TrainScheduleItem = ({
   };
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(train.id));
+    dispatch(updateTrainUsedForProjection({ trainId: train.id }));
   };
 
   const arrivalTime = summary?.isValid

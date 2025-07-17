@@ -7,7 +7,7 @@ import {
   simulationResultsInitialState,
   simulationResultsSlice,
   updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
+  updateTrainUsedForProjection,
 } from '.';
 import type { SimulationResultsState } from './types';
 
@@ -42,20 +42,20 @@ describe('simulationResultsReducer', () => {
     expect(state.selectedTrainId).toBe('paced-1-occurrence-2');
   });
 
-  it('should handle updateTrainIdUsedForProjection with a train schedule', () => {
+  it('should handle updateTrainUsedForProjection with a train schedule', () => {
     const store = createStore();
-    store.dispatch(updateTrainIdUsedForProjection('trainschedule-1' as TrainScheduleId));
+    store.dispatch(updateTrainUsedForProjection({ trainId: 'trainschedule-1' as TrainScheduleId }));
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.trainIdUsedForProjection).toBe('trainschedule-1');
+    expect(state.trainUsedForProjection).toEqual({ id: 'trainschedule-1' });
   });
 
-  it('should handle updateTrainIdUsedForProjection with a paced train', () => {
+  it('should handle updateTrainUsedForProjection with a paced train', () => {
     const store = createStore();
-    store.dispatch(updateTrainIdUsedForProjection('paced-1' as PacedTrainId));
+    store.dispatch(updateTrainUsedForProjection({ trainId: 'paced-1' as PacedTrainId }));
 
     const state = store.getState()[simulationResultsSlice.name];
-    expect(state.trainIdUsedForProjection).toBe('paced-1');
+    expect(state.trainUsedForProjection).toEqual({ id: 'paced-1' });
   });
 
   it('should handle updateProjectionType', () => {

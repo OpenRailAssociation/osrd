@@ -32,7 +32,7 @@ import type {
   TrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -104,7 +104,7 @@ const PacedTrainItem = ({
   const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
+    dispatch(updateTrainUsedForProjection({ trainId: pacedTrain.id }));
   };
 
   const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
@@ -375,6 +375,7 @@ const PacedTrainItem = ({
               nextOccurrence={occurrences[index + 1]}
               occurrenceActions={occurrenceActions}
               subCategories={subCategories}
+              pacedTrainId={pacedTrain.id}
             />
           ))}
         </div>

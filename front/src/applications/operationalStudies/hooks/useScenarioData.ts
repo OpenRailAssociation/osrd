@@ -16,7 +16,7 @@ import {
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { getTrainUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
@@ -39,7 +39,7 @@ type ScenarioBroadcastMessage =
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const dispatch = useAppDispatch();
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
 
@@ -155,8 +155,8 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   const trainScheduleUsedForProjection = useMemo(
-    () => (trainIdUsedForProjection ? timetableItemsById.get(trainIdUsedForProjection) : undefined),
-    [trainIdUsedForProjection, timetableItems]
+    () => (trainUsedForProjection ? timetableItemsById.get(trainUsedForProjection.id) : undefined),
+    [trainUsedForProjection, timetableItems]
   );
 
   const timetableItemIds = useMemo(
@@ -355,9 +355,12 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       timetableItemsWithDetails,
       timetableItems,
       projectionData:
-        trainScheduleUsedForProjection && projectionPath
+        trainUsedForProjection && trainScheduleUsedForProjection && projectionPath
           ? {
               trainSchedule: trainScheduleUsedForProjection,
+              ...('exceptionKey' in trainUsedForProjection && {
+                exceptionKeyUsedForProjection: trainUsedForProjection.exceptionKey,
+              }),
               ...projectionPath,
               projectedTrains,
               projectionLoaderData: {

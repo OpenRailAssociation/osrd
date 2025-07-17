@@ -5,10 +5,10 @@ import { useSelector } from 'react-redux';
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
-  getTrainIdUsedForProjection,
+  getTrainUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
@@ -32,13 +32,13 @@ const useAutoUpdateProjection = (
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
-  const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   useEffect(() => {
     if (infra.state !== 'CACHED' || timetableItemIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
-      if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
+      if (trainUsedForProjection) dispatch(updateTrainUsedForProjection(undefined));
       return;
     }
 
@@ -55,8 +55,8 @@ const useAutoUpdateProjection = (
     // if a selected timetable item is given and is still in the timetable, don't change the selected train
     if (timetableItemId && isSelectedTimetableItemIncluded) {
       // if no train is used for the projection, use the selected train
-      if (!currentTrainIdForProjection) {
-        dispatch(updateTrainIdUsedForProjection(timetableItemId));
+      if (!trainUsedForProjection) {
+        dispatch(updateTrainUsedForProjection({ trainId: timetableItemId }));
       }
       return;
     }
@@ -65,7 +65,7 @@ const useAutoUpdateProjection = (
     // by default, select the first valid train
     const firstValidTrain = timetableItemsWithDetails.find((item) => item.summary?.isValid);
     if (firstValidTrain) {
-      dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
+      dispatch(updateTrainUsedForProjection({ trainId: firstValidTrain.id }));
       const newTrainIdToSelect = isTrainScheduleId(firstValidTrain.id)
         ? firstValidTrain.id
         : formatPacedTrainIdToIndexedOccurrenceId(firstValidTrain.id, 0);

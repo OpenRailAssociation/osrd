@@ -1,13 +1,15 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
+import type { Occurrence } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import type { ProjectionType, SimulationResultsState } from 'reducers/simulationResults/types';
+import { isPacedTrainId } from 'utils/trainId';
 
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
   selectedTrainId: undefined,
-  trainIdUsedForProjection: undefined,
+  trainUsedForProjection: undefined,
   projectionType: 'trackProjection',
 };
 
@@ -21,11 +23,25 @@ export const simulationResultsSlice = createSlice({
     ) {
       state.selectedTrainId = action.payload;
     },
-    updateTrainIdUsedForProjection(
+    updateTrainUsedForProjection(
       state: Draft<SimulationResultsState>,
-      action: PayloadAction<TimetableItemId | undefined>
+      action: PayloadAction<
+        { trainId: TimetableItemId; exceptionKey?: Occurrence['key'] } | undefined
+      >
     ) {
-      state.trainIdUsedForProjection = action.payload;
+      const { trainId, exceptionKey } = action.payload || {};
+      if (!trainId) {
+        state.trainUsedForProjection = undefined;
+        return;
+      }
+      if (isPacedTrainId(trainId)) {
+        state.trainUsedForProjection = {
+          id: trainId,
+          exceptionKey,
+        };
+      } else {
+        state.trainUsedForProjection = { id: trainId };
+      }
     },
     updateProjectionType(
       state: Draft<SimulationResultsState>,
@@ -36,7 +52,7 @@ export const simulationResultsSlice = createSlice({
   },
 });
 
-export const { updateSelectedTrainId, updateTrainIdUsedForProjection, updateProjectionType } =
+export const { updateSelectedTrainId, updateTrainUsedForProjection, updateProjectionType } =
   simulationResultsSlice.actions;
 
 export default simulationResultsSlice.reducer;

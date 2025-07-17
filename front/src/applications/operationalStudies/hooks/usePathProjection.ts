@@ -4,28 +4,37 @@ import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type InfraWithState } from 'common/api/osrdEditoastApi';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { getTrainUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
+  isPacedTrainId,
 } from 'utils/trainId';
 
 const usePathProjection = (infra: InfraWithState) => {
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
 
   const trainScheduleId =
-    trainIdUsedForProjection && isTrainScheduleId(trainIdUsedForProjection)
-      ? extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection)
+    trainUsedForProjection && isTrainScheduleId(trainUsedForProjection.id)
+      ? extractEditoastIdFromTrainScheduleId(trainUsedForProjection.id)
       : undefined;
 
   const pacedTrainId =
-    trainIdUsedForProjection && !isTrainScheduleId(trainIdUsedForProjection)
-      ? extractEditoastIdFromPacedTrainId(trainIdUsedForProjection)
+    trainUsedForProjection && isPacedTrainId(trainUsedForProjection.id)
+      ? extractEditoastIdFromPacedTrainId(trainUsedForProjection.id)
       : undefined;
 
   const scheduleArg = trainScheduleId ? { id: trainScheduleId, infraId: infra.id } : skipToken;
-  const pacedArg = pacedTrainId ? { id: pacedTrainId, infraId: infra.id } : skipToken;
+  const pacedArg = pacedTrainId
+    ? {
+        id: pacedTrainId,
+        infraId: infra.id,
+        ...('exceptionKey' in trainUsedForProjection! && {
+          exceptionKey: trainUsedForProjection.exceptionKey,
+        }),
+      }
+    : skipToken;
 
   const { data: schedulePath } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);

@@ -26,7 +26,7 @@ import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pac
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { getTrainUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
@@ -71,7 +71,7 @@ const SimulationResults = ({
   const simulationResults = useSimulationResults(infraId);
   const selectedTrainId = simulationResults?.train.id;
 
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
 
   const [showWarpedMap, setShowWarpedMap] = useState(false);
 
@@ -112,6 +112,7 @@ const SimulationResults = ({
     setFilteredOperationalPoints,
   } = useGetProjectedTrainOperationalPoints({
     timetableItemUsedForProjection: projectionData?.trainSchedule,
+    exceptionKeyUsedForProjection: projectionData?.exceptionKeyUsedForProjection,
     infraId,
     timetableId,
   });
@@ -223,7 +224,7 @@ const SimulationResults = ({
 
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 <div className="chart-container">
-                  {trainIdUsedForProjection && (
+                  {trainUsedForProjection && (
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
@@ -250,7 +251,7 @@ const SimulationResults = ({
                       onTrainClick={(trainId) => {
                         dispatch(updateSelectedTrainId(trainId));
                       }}
-                      selectedProjectionId={trainIdUsedForProjection}
+                      selectedProjectionId={trainUsedForProjection.id}
                     />
                   )}
                 </div>

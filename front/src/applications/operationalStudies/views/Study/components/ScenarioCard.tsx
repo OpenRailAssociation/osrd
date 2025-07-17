@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { updateTrainUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 
@@ -33,7 +33,7 @@ export default function ScenarioCard({
 
   const handleClick = () => {
     dispatch(updateScenarioID(scenario.id));
-    dispatch(updateTrainIdUsedForProjection(undefined));
+    dispatch(updateTrainUsedForProjection(undefined));
     navigate(`scenarios/${scenario.id}`);
   };
 
