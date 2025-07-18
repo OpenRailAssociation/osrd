@@ -355,6 +355,10 @@ impl TestApp {
         self.app_state.db_pool.clone()
     }
 
+    pub fn valkey_client(&self) -> Arc<ValkeyClient> {
+        self.app_state.valkey.clone()
+    }
+
     pub fn regulator(&self) -> Regulator {
         self.app_state.regulator.clone()
     }

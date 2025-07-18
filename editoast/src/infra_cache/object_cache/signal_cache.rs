@@ -6,13 +6,15 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::LogicalSignal;
 use editoast_schemas::infra::Signal;
 
-#[derive(QueryableByName, Debug, Clone, Educe)]
+#[derive(QueryableByName, Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq)]
 pub struct SignalCache {
     #[diesel(sql_type = Text)]

@@ -23,12 +23,15 @@ use json_patch::RemoveOperation;
 use json_patch::ReplaceOperation;
 use serde_json::json;
 use std::collections::HashMap;
+use std::sync::Arc;
 use thiserror::Error;
 use tracing::error;
 use tracing::info;
 use uuid::Uuid;
 
 use crate::AppState;
+use crate::ValkeyClient;
+use crate::client::get_app_version;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
@@ -113,6 +116,7 @@ async fn edit(
         &mut infra,
         &operations,
         &mut infra_cache,
+        valkey.clone(),
     )
     .await?;
 
@@ -355,6 +359,7 @@ pub async fn split_track_section(
         &mut infra,
         &operations,
         &mut infra_cache,
+        valkey.clone(),
     )
     .await?;
     let mut conn = valkey.get_connection().await?;
@@ -864,6 +869,7 @@ async fn apply_edit(
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
+    valkey: Arc<ValkeyClient>,
 ) -> Result<Vec<InfraObject>> {
     let infra_id = infra.id;
     // Check if the infra is locked
@@ -903,6 +909,17 @@ async fn apply_edit(
                 infra.bump_version(&mut conn.clone()).await?;
                 // Apply operations to infra cache
                 infra_cache.apply_operations(&cache_operations)?;
+
+                infra_cache.infra_version = infra.version;
+                let osrd_version = get_app_version().unwrap_or_default();
+                let mut valkey_conn = valkey.get_connection().await?;
+                let _ = valkey_conn
+                    .json_zadd(
+                        format!("infra_patches.{osrd_version}.{infra_id})"),
+                        &cache_operations,
+                        infra_cache.infra_version,
+                    )
+                    .await;
 
                 // Refresh layers if needed
                 generated_data::update_all(
@@ -1083,6 +1100,7 @@ pub mod tests {
             &mut small_infra,
             &operations,
             &mut infra_cache,
+            app.valkey_client(),
         )
         .await
         .ok()
@@ -1119,10 +1137,15 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result: Vec<InfraObject> =
-            apply_edit(conn, &mut small_infra, &operations, &mut infra_cache)
-                .await
-                .unwrap();
+        let result: Vec<InfraObject> = apply_edit(
+            conn,
+            &mut small_infra,
+            &operations,
+            &mut infra_cache,
+            app.valkey_client(),
+        )
+        .await
+        .unwrap();
 
         // Check that the updated track has the new length
         assert_eq!(1234.0, result[0].get_data()["length"]);
@@ -1165,7 +1188,14 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result = apply_edit(conn, &mut small_infra, &operations, &mut infra_cache).await;
+        let result = apply_edit(
+            conn,
+            &mut small_infra,
+            &operations,
+            &mut infra_cache,
+            app.valkey_client(),
+        )
+        .await;
 
         // Check that we have an error
         assert!(result.is_err());

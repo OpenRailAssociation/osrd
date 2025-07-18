@@ -6,13 +6,15 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
 
-#[derive(Debug, Clone, Educe)]
+#[derive(Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq, Default)]
 pub struct TrackSectionCache {
     pub obj_id: String,
