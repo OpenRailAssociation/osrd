@@ -362,11 +362,13 @@ class StandaloneSimulationTest {
      * Test that the safety speed is not applied to stops in a range of ETCS_LEVEL2 signaling system
      */
     @Test
-    fun testSafetySpeedWithETCSLevel2() {
+    fun testNoSafetySpeedWhenStopInETCSLevel2Range() {
         // Path length = 10400m
         // SIGNAL OFFSETS on this path: 150m and 10150m
         // Then, buffer stop at the end of the last route: 10400m
-        // A ETCS_LEVEL2 signaling range is added between 9500m and 10400m
+        //
+        // Safety Speed ranges are triggered only when a stop is not under ETCS signaling (whether
+        // switch or buffer-stop is under ETCS or not doesn't matter)
         val schedule =
             listOf(
                 SimulationScheduleItem(
@@ -375,16 +377,14 @@ class StandaloneSimulationTest {
                     42.seconds,
                     STOP,
                 ),
-                // Stop that will be skipped from safety speed range (in ETCS_LEVEL2 range),
-                // associated to the 10150m signal
+                // Stop associated to the 10150m signal
                 SimulationScheduleItem(
                     Offset(10_000.meters),
                     42.seconds,
                     42.seconds,
                     SHORT_SLIP_STOP,
                 ),
-                // Stop that will be skipped from safety speed range (in ETCS_LEVEL2 range),
-                // associated to the last buffer stop
+                // Stop associated to the last buffer stop
                 SimulationScheduleItem(
                     Offset(10_300.meters),
                     42.seconds,
@@ -393,18 +393,178 @@ class StandaloneSimulationTest {
                 ),
             )
 
-        val signalingRanges = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
-        signalingRanges.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
-        val safetySpeedRanges =
-            makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule, signalingRanges)
-        val expected =
+        val signalingRangesBAL = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
+
+        // ETCS_LEVEL2 range covers the first stop only: getting safetySpeed for the other stops
+        val signalingRangesEtcsHappyPath = signalingRangesBAL.clone()
+        signalingRangesEtcsHappyPath.put(10.meters, 1_000.meters, ETCS_LEVEL2.id)
+        val safetySpeedRangesEtcsHappyPath =
+            makeSafetySpeedRanges(
+                infra,
+                chunkPath,
+                routes.toIdxList(),
+                schedule,
+                signalingRangesEtcsHappyPath
+            )
+        val expectedEtcsHappyPath =
+            distanceRangeMapOf(
+                *listOf(
+                        DistanceRangeMap.RangeMapEntry(
+                            9_950.meters,
+                            10_050.meters,
+                            30.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_050.meters,
+                            10_150.meters,
+                            10.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_200.meters,
+                            10_300.meters,
+                            30.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_300.meters,
+                            10_400.meters,
+                            10.kilometersPerHour
+                        ),
+                    )
+                    .toTypedArray(),
+            )
+        assertEquals(expectedEtcsHappyPath, safetySpeedRangesEtcsHappyPath)
+
+        // ETCS_LEVEL2 range covers the last 2 stops only and their associated EoA: no safetySpeed
+        // for those stops (only the first)
+        val signalingRangesEndFullEtcs = signalingRangesBAL.clone()
+        signalingRangesEndFullEtcs.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
+        val safetySpeedRangesEndFullEtcs =
+            makeSafetySpeedRanges(
+                infra,
+                chunkPath,
+                routes.toIdxList(),
+                schedule,
+                signalingRangesEndFullEtcs
+            )
+        val expectedEndFullEtcs =
             distanceRangeMapOf(
                 *listOf(
                         DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
                     )
                     .toTypedArray(),
             )
-        assertEquals(expected, safetySpeedRanges)
+        assertEquals(expectedEndFullEtcs, safetySpeedRangesEndFullEtcs)
+
+        // ETCS_LEVEL2 range covers the last 2 stops but not the final buffer-stop: no safetySpeed
+        // for those stops (only the first)
+        val signalingRangesEndEtcsExceptFinalBuffer = signalingRangesBAL.clone()
+        signalingRangesEndEtcsExceptFinalBuffer.put(9_500.meters, 10_350.meters, ETCS_LEVEL2.id)
+        val safetySpeedRangesEndFullEtcsExceptFinalBuffer =
+            makeSafetySpeedRanges(
+                infra,
+                chunkPath,
+                routes.toIdxList(),
+                schedule,
+                signalingRangesEndEtcsExceptFinalBuffer
+            )
+        val expectedEndFullEtcsExceptFinalBuffer =
+            distanceRangeMapOf(
+                *listOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
+                    )
+                    .toTypedArray(),
+            )
+        assertEquals(
+            expectedEndFullEtcsExceptFinalBuffer,
+            safetySpeedRangesEndFullEtcsExceptFinalBuffer
+        )
+
+        // ETCS_LEVEL2 range covers all the end, starting between penultimate stop and its signal:
+        // safetySpeed for first and penultimate stops
+        val signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
+            signalingRangesBAL.clone()
+        signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal.put(
+            10_100.meters,
+            10_400.meters,
+            ETCS_LEVEL2.id
+        )
+        val safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
+            makeSafetySpeedRanges(
+                infra,
+                chunkPath,
+                routes.toIdxList(),
+                schedule,
+                signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal
+            )
+        val expectedEtcsStartingBetweenPenultimateStopAndItsSignal =
+            distanceRangeMapOf(
+                *listOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
+                        DistanceRangeMap.RangeMapEntry(
+                            9_950.meters,
+                            10_050.meters,
+                            30.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_050.meters,
+                            10_150.meters,
+                            10.kilometersPerHour
+                        ),
+                    )
+                    .toTypedArray(),
+            )
+        assertEquals(
+            expectedEtcsStartingBetweenPenultimateStopAndItsSignal,
+            safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal
+        )
+
+        // ETCS_LEVEL2 covers only the end, starting between the last stop and the buffer-stop:
+        // safetySpeed expected for all (stops are in BAL range)
+        val signalingRangesEtcsStartingBetweenLastStopAndBuffer = signalingRangesBAL.clone()
+        signalingRangesEtcsStartingBetweenLastStopAndBuffer.put(
+            10_350.meters,
+            10_400.meters,
+            ETCS_LEVEL2.id
+        )
+        val safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer =
+            makeSafetySpeedRanges(
+                infra,
+                chunkPath,
+                routes.toIdxList(),
+                schedule,
+                signalingRangesEtcsStartingBetweenLastStopAndBuffer
+            )
+        val expectedEtcsStartingBetweenLastStopAndBuffer =
+            distanceRangeMapOf(
+                *listOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
+                        DistanceRangeMap.RangeMapEntry(
+                            9_950.meters,
+                            10_050.meters,
+                            30.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_050.meters,
+                            10_150.meters,
+                            10.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_200.meters,
+                            10_300.meters,
+                            30.kilometersPerHour
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            10_300.meters,
+                            10_400.meters,
+                            10.kilometersPerHour
+                        ),
+                    )
+                    .toTypedArray(),
+            )
+        assertEquals(
+            expectedEtcsStartingBetweenLastStopAndBuffer,
+            safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer
+        )
     }
 
     /** Test that for a given safety speed range, they are correctly applied to the mrsp */
