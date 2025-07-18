@@ -9,7 +9,6 @@ use core_client::simulation::ZoneUpdate;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PathItemLocation;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -421,18 +420,61 @@ pub struct TrainToProjectOnOperationalPoint {
 }
 
 impl TrainToProjectOnOperationalPoint {
-    pub fn new(path_items: Vec<PathItem>, sim: simulation::Response) -> Self {
+    pub fn new(ts: models::TrainSchedule, sim: simulation::Response) -> Self {
         let simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) = sim
         else {
-            // TODO: Handle non-simulated
-            return Default::default();
+            // Handle non-simulated trains
+            let schedule_inputs = ts
+                .schedule
+                .iter()
+                .filter_map(|schedule| {
+                    schedule
+                        .arrival
+                        .as_ref()
+                        .map(|arrival| (&schedule.at, arrival.num_milliseconds() as u64))
+                })
+                .collect::<HashMap<_, _>>();
+
+            let mut refs = ts.path.iter().map(|path_item| match &path_item.location {
+                PathItemLocation::OperationalPointReference(op_ref) => {
+                    Some((&op_ref.reference, &path_item.id))
+                }
+                PathItemLocation::TrackOffset(_) => None,
+            });
+
+            let first_path_item = refs.next().flatten();
+
+            let refs = refs.flatten().map(|(op_ref, id)| {
+                schedule_inputs
+                    .get(&id)
+                    .map(|time| OperationalPointRefAndTime {
+                        time: *time,
+                        op_ref: op_ref.clone(),
+                    })
+            });
+
+            let first_op_ref = first_path_item.map(|(op_ref, _)| OperationalPointRefAndTime {
+                time: 0,
+                op_ref: op_ref.clone(),
+            });
+
+            let refs = std::iter::once(first_op_ref)
+                .chain(refs)
+                .flatten()
+                .collect();
+
+            return TrainToProjectOnOperationalPoint {
+                space_time_curve: None,
+                refs,
+            };
         };
         let CompleteReportTrain { report_train, .. } = final_output;
         let space_time_curve = Some(SpaceTimeCurve {
             positions: report_train.positions,
             times: report_train.times,
         });
-        let refs = path_items
+        let refs = ts
+            .path
             .into_iter()
             .zip(report_train.path_item_times)
             .flat_map(|(path_item, time)| match path_item.location {
