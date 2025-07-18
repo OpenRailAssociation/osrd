@@ -598,6 +598,13 @@ async fn project_path(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
     let conn = &mut db_pool.get().await?;
 
     let paced_trains: Vec<models::PacedTrain> =
@@ -706,6 +713,13 @@ async fn occupancy_blocks(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
 
     let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
