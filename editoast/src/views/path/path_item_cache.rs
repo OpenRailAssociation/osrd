@@ -23,8 +23,7 @@ type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingR
 /// Gather information about several path items, factorizing db calls.
 #[derive(Default)]
 pub struct PathItemCache {
-    // TODO: Should be an u32 instead of i64
-    uic_to_ops: HashMap<i64, Vec<OperationalPointModel>>,
+    uic_to_ops: HashMap<u32, Vec<OperationalPointModel>>,
     trigram_to_ops: HashMap<String, Vec<OperationalPointModel>>,
     ids_to_ops: HashMap<String, OperationalPointModel>,
     existing_track_ids: HashSet<String>,
@@ -99,7 +98,7 @@ impl PathItemCache {
     }
 
     /// Get the operational points associated with a UIC code
-    pub fn get_from_uic(&self, uic: i64) -> Option<&Vec<OperationalPointModel>> {
+    pub fn get_from_uic(&self, uic: u32) -> Option<&Vec<OperationalPointModel>> {
         self.uic_to_ops.get(&uic)
     }
 
@@ -130,7 +129,7 @@ impl PathItemCache {
             PathItemLocation::OperationalPointReference(OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
                 ..
-            }) => self.get_from_uic(i64::from(*uic)).map(Vec::as_slice),
+            }) => self.get_from_uic(*uic).map(Vec::as_slice),
         }
     }
 
@@ -147,7 +146,7 @@ impl PathItemCache {
             OperationalPointIdentifier::OperationalPointUic {
                 uic,
                 secondary_code,
-            } => (self.uic_to_ops.get(&i64::from(*uic))?, secondary_code),
+            } => (self.uic_to_ops.get(uic)?, secondary_code),
         };
         secondary_code_filter(secondary_code, ops.clone())
             .into_iter()
@@ -217,10 +216,7 @@ impl PathItemCache {
                         },
                     track_reference,
                 }) => {
-                    let ops = self
-                        .get_from_uic(i64::from(*uic))
-                        .cloned()
-                        .unwrap_or_default();
+                    let ops = self.get_from_uic(*uic).cloned().unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code, ops);
                     let track_offsets = track_offsets_from_ops(&ops);
                     let track_offsets = self.track_reference_filter(track_offsets, track_reference);
@@ -291,9 +287,9 @@ impl PathItemCache {
 /// Collect the ids of the operational points from the path items
 pub fn collect_path_item_ids(
     path_items: &[&PathItemLocation],
-) -> (Vec<String>, Vec<i64>, Vec<String>) {
+) -> (Vec<String>, Vec<u32>, Vec<String>) {
     let mut trigrams: Vec<String> = Vec::new();
-    let mut ops_uic: Vec<i64> = Vec::new();
+    let mut ops_uic: Vec<u32> = Vec::new();
     let mut ops_id: Vec<String> = Vec::new();
 
     for item in path_items {
@@ -308,7 +304,7 @@ pub fn collect_path_item_ids(
                 reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
                 ..
             }) => {
-                ops_uic.push(i64::from(*uic));
+                ops_uic.push(*uic);
             }
             PathItemLocation::OperationalPointReference(OperationalPointReference {
                 reference:
@@ -329,9 +325,9 @@ pub fn collect_path_item_ids(
 pub async fn retrieve_op_from_uic(
     conn: &mut DbConnection,
     infra_id: i64,
-    ops_uic: &[i64],
-) -> Result<HashMap<i64, Vec<OperationalPointModel>>> {
-    let mut uic_to_ops: HashMap<i64, Vec<OperationalPointModel>> = HashMap::new();
+    ops_uic: &[u32],
+) -> Result<HashMap<u32, Vec<OperationalPointModel>>> {
+    let mut uic_to_ops: HashMap<_, Vec<_>> = HashMap::new();
     OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic)
         .await?
         .into_iter()

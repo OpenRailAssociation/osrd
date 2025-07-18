@@ -80,7 +80,7 @@ pub struct OperationalPointSncfExtension {
 pub struct OperationalPointIdentifierExtension {
     #[schema(inline)]
     pub name: NonBlankString,
-    pub uic: i64,
+    pub uic: u32,
 }
 
 impl OSRDTyped for OperationalPoint {

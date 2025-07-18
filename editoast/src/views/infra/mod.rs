@@ -1019,7 +1019,7 @@ async fn match_operational_points(
             OperationalPointIdentifier::OperationalPointUic {
                 uic,
                 secondary_code,
-            } => retrieve_op_from_uic(&mut conn, infra_id, &[i64::from(uic)])
+            } => retrieve_op_from_uic(&mut conn, infra_id, &[uic])
                 .await?
                 .into_iter()
                 .flat_map(|(_, op_models)| op_models)
