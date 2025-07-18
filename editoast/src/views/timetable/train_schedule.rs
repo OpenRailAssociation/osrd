@@ -810,15 +810,15 @@ async fn project_path_op(
         let train_id = ts.id;
         to_compute
             .entry(Arc::as_ptr(&sim))
-            .or_insert((vec![], ts.path, Arc::unwrap_or_clone(sim)))
+            .or_insert((vec![], ts, Arc::unwrap_or_clone(sim)))
             .0
             .push(train_id);
     }
 
     // 3. Each simulated train can be projected using `project_train_path_op`
     let mut results = HashMap::<i64, _>::new();
-    for (train_ids, path_items, sim) in to_compute.into_values() {
-        let train_to_project = TrainToProjectOnOperationalPoint::new(path_items, sim);
+    for (train_ids, ts, sim) in to_compute.into_values() {
+        let train_to_project = TrainToProjectOnOperationalPoint::new(ts, sim);
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
             &path_item_cache,
