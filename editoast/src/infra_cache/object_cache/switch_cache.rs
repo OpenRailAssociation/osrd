@@ -3,13 +3,15 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use serde::Deserialize;
+use serde::Serialize;
 use std::collections::HashMap;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::Switch;
 
-#[derive(Debug, Clone, Educe)]
+#[derive(Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq)]
 pub struct SwitchCache {
     pub obj_id: String,

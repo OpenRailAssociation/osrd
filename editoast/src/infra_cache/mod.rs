@@ -43,6 +43,8 @@ use enum_map::EnumMap;
 use geos::geojson::Geometry;
 pub use graph::Graph;
 use itertools::Itertools as _;
+use serde::Deserialize;
+use serde::Serialize;
 use std::ops::DerefMut;
 use thiserror::Error;
 
@@ -69,6 +71,9 @@ pub struct InfraCache {
 
     /// Map reference to their cache object
     objects: EnumMap<ObjectType, HashMap<String, ObjectCache>>,
+
+    /// Infra version of the current infra
+    pub infra_version: i64,
 }
 
 pub trait Cache: OSRDObject {
@@ -79,7 +84,7 @@ pub trait Cache: OSRDObject {
     fn get_object_cache(&self) -> ObjectCache;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum ObjectCache {
     TrackSection(TrackSectionCache),
     Signal(SignalCache),

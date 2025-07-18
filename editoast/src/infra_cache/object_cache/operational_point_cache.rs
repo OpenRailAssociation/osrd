@@ -11,7 +11,7 @@ use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::OperationalPoint;
 use editoast_schemas::infra::OperationalPointPart;
 
-#[derive(Debug, Clone, Educe)]
+#[derive(Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq)]
 pub struct OperationalPointCache {
     pub obj_id: String,

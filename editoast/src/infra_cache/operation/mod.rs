@@ -111,7 +111,7 @@ impl<'s> ToSchema<'s> for Operation {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum CacheOperation {
     Create(ObjectCache),
     Update(ObjectCache),
