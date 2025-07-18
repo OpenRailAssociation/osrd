@@ -37,4 +37,31 @@
     text-overflow: ellipsis;
     padding-right: 50px;
   }
+
+  .simulation-settings {
+    .first-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+
+      .toggle-container {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        background-color: white;
+        padding: 8px;
+        border-radius: 4px;
+      }
+
+      .constraint-distribution-switch {
+        justify-content: space-between;
+      }
+    }
+
+    .second-row {
+      background-color: white;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+  }
 }

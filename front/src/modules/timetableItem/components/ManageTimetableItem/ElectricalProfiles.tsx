@@ -13,7 +13,7 @@ export default function ElectricalProfiles() {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   return (
-    <div className="osrd-config-item-container d-flex align-items-center mb-2">
+    <div className="toggle-container">
       <img className="mr-2" src={electricalProfilesIcon} alt="infraIcon" width="32px" />
       <span className="mr-2 text-muted">{t('usingElectricalProfiles')}</span>
       <span className="ml-auto mt-1">
