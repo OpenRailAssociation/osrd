@@ -119,6 +119,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                         request.startTime
                     )
                     .toMutableList()
+            request.trainsRequirements = mapOf() // Free up the RAM taken by raw requirements
             val convertedWorkSchedules =
                 convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
             trainsRequirements.add(convertedWorkSchedules)
