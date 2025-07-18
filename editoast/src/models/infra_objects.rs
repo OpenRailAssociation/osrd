@@ -250,13 +250,14 @@ impl OperationalPointModel {
     pub async fn retrieve_from_uic(
         conn: &mut DbConnection,
         infra_id: i64,
-        uic: &[i64],
+        uic: &[u32],
     ) -> crate::error::Result<Vec<Self>> {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::infra_object_operational_point::dsl;
+        let uic: Vec<i64> = uic.iter().map(|&u| i64::from(u)).collect();
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))

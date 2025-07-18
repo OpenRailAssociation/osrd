@@ -1229,7 +1229,7 @@ fn match_path_item_id_with_op_id<'a>(
                 }
                 OperationalPointIdentifier::OperationalPointUic { uic, .. } => {
                     let ops = path_item_cache
-                        .get_from_uic(*uic as i64)
+                        .get_from_uic(*uic)
                         .expect("The operational points are supposed to exist");
                     if ops.iter().any(|op| op.obj_id == operational_point_id) {
                         return Some(&path_item.id);

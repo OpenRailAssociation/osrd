@@ -9746,7 +9746,8 @@ components:
                     minLength: 1
                   uic:
                     type: integer
-                    format: int64
+                    format: int32
+                    minimum: 0
                 additionalProperties: false
               nullable: true
             sncf:
@@ -9804,7 +9805,8 @@ components:
                 minLength: 1
               uic:
                 type: integer
-                format: int64
+                format: int32
+                minimum: 0
             additionalProperties: false
           nullable: true
         sncf:

@@ -488,7 +488,7 @@ fn identifier(
 ) -> Option<OperationalPointIdentifierExtension> {
     let uic = tags
         .get("uic_ref")
-        .and_then(|uic| match i64::from_str(uic.as_str()) {
+        .and_then(|uic| match u32::from_str(uic.as_str()) {
             Ok(uic) => Some(uic),
             Err(_) => {
                 warn!("Could not parse {uic} uic code as integer");
