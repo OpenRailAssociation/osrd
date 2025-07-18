@@ -44,7 +44,7 @@ const ConstraintDistributionSwitch = ({ constraintDistribution }: Props) => {
   );
 
   return (
-    <div className="osrd-config-item-container d-flex align-items-center mb-2">
+    <div className="toggle-container constraint-distribution-switch">
       <span className="mr-2 text-muted">{t('allowances.standard-allowance')}</span>
       <OptionsSNCF
         name="constraint-distribution-switch"

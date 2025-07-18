@@ -17,10 +17,12 @@ const SimulationSettings = ({
   dispatchUpdateSpeedLimitByTag,
   constraintDistribution,
 }: Props) => (
-  <div className="row no-gutters">
-    <div className="col-lg-6 pr-lg-2">
+  <div className="simulation-settings">
+    <div className="first-row">
       <ElectricalProfiles />
       <ConstraintDistributionSwitch constraintDistribution={constraintDistribution} />
+    </div>
+    <div className="second-row">
       <SpeedLimitByTagSelector
         selectedSpeedLimitByTag={speedLimitByTag}
         speedLimitsByTags={speedLimitsByTags}
