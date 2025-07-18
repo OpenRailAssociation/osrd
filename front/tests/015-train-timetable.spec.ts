@@ -12,24 +12,24 @@ import {
   timetableItemStudyName,
 } from './assets/constants/project-const';
 import {
-  HONORED_ITEMS,
-  INVALID_ITEMS,
+  HONORED_TIMETABLE_ITEMS,
+  INVALID_TIMETABLE_ITEMS,
   ITEMS_WITH_HLP_SPEED_LIMIT_TAG_EXCEPTION,
-  ITEMS_WITH_NO_SPEED_LIMIT_TAG,
-  LABEL_FILTERED_ITEMS,
-  LABEL_FILTERED_ITEMS_EXCEPTION,
-  NAME_FILTERED_ITEMS,
-  NAME_FILTERED_ITEMS_EXCEPTION,
-  NAME_LABEL_FILTERED_ITEMS_MIXED,
-  NOT_HONORED_ITEMS,
-  NOT_HONORED_PACED_TRAINS,
-  ROLLING_STOCK_FILTERED_ITEMS_EXCEPTION,
-  TOTAL_ITEMS,
+  TIMETABLE_ITEMS_WITH_NO_SPEED_LIMIT_TAG,
+  LABEL_FILTERED_TIMETABLE_ITEMS,
+  LABEL_FILTERED_TIMETABLE_ITEMS_EXCEPTION,
+  NAME_FILTERED_TIMETABLE_ITEMS,
+  NAME_FILTERED_TIMETABLE_ITEMS_EXCEPTION,
+  NAME_LABEL_FILTERED_TIMETABLE_ITEMS_MIXED,
+  NOT_HONORED_TIMETABLE_ITEMS,
+  NOT_HONORED_PACED_TRAIN_SCHEDULE,
+  ROLLING_STOCK_FILTERED_TIMETABLE_ITEMS_EXCEPTION,
+  TOTAL_TIMETABLE_ITEMS,
   TOTAL_PACED_TRAINS,
-  TOTAL_TRAINS,
-  VALID_ITEMS,
+  TOTAL_TRAIN_SCHEDULES,
+  VALID_TIMETABLE_ITEMS,
   VALID_PACED_TRAINS,
-  VALID_TRAINS,
+  VALID_TRAIN_SCHEDULE,
 } from './assets/constants/timetable-items-count';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
@@ -86,35 +86,35 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Loading trains and verifying simulation result for trainSchedule', async () => {
-    // Verify train count, invalid train messages, and train simulation results
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+  test('Loading timetable items and verifying simulation result for trainSchedule', async () => {
+    // Verify train schedule count, invalid train schedule messages, and train schedule simulation results
+    await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
-      VALID_ITEMS,
+      VALID_TIMETABLE_ITEMS,
       frTranslations
     );
-    await scenarioTimetableSection.verifyEachTrainSimulation(VALID_TRAINS);
+    await scenarioTimetableSection.verifyEachTrainScheduleSimulation(VALID_TRAIN_SCHEDULE);
   });
 
   /** *************** Test 2 **************** */
-  test('Loading trains and verifying simulation result for paced trains', async () => {
-    // Verify train count, invalid train messages, and train simulation results
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+  test('Loading timetable items and verifying simulation result for paced trains', async () => {
+    // Verify paced train count, invalid paced train messages, and paced train simulation results
+    await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
     await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
-      VALID_ITEMS,
+      VALID_TIMETABLE_ITEMS,
       frTranslations
     );
     await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
   });
 
   /** *************** Test 3 **************** */
-  test('Filtering imported trains and paced trains', async () => {
+  test('Filtering imported timetable items', async () => {
     await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
     });
 
     await scenarioTimetableSection.checkTimetableFilterVisibilityLabelDefaultValue(
@@ -125,61 +125,61 @@ test.describe('Verify train schedule elements and filters', () => {
     // Name and label filter
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'Paced Train 2',
-      NAME_FILTERED_ITEMS
+      NAME_FILTERED_TIMETABLE_ITEMS
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'Paced-Train-Tag-2',
-      LABEL_FILTERED_ITEMS
+      LABEL_FILTERED_TIMETABLE_ITEMS
     );
 
     // Name and label filter for exceptions
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'abc',
-      NAME_FILTERED_ITEMS_EXCEPTION
+      NAME_FILTERED_TIMETABLE_ITEMS_EXCEPTION
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'exception',
-      NAME_LABEL_FILTERED_ITEMS_MIXED
+      NAME_LABEL_FILTERED_TIMETABLE_ITEMS_MIXED
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
       'exception-label',
-      LABEL_FILTERED_ITEMS_EXCEPTION
+      LABEL_FILTERED_TIMETABLE_ITEMS_EXCEPTION
     );
 
     // Rolling stock name and details filter
     await scenarioTimetableSection.filterRollingStockAndVerifyTrainCount(
       'slow_rolling_stock',
-      ROLLING_STOCK_FILTERED_ITEMS_EXCEPTION
+      ROLLING_STOCK_FILTERED_TIMETABLE_ITEMS_EXCEPTION
     );
 
     // Validity filter
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Invalid',
-      INVALID_ITEMS,
+      INVALID_TIMETABLE_ITEMS,
       frTranslations
     );
     await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Valid',
-      VALID_ITEMS,
+      VALID_TIMETABLE_ITEMS,
       frTranslations
     );
 
     // Punctuality filter
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'Honored',
-      HONORED_ITEMS,
+      HONORED_TIMETABLE_ITEMS,
       frTranslations
     );
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'Not honored',
-      NOT_HONORED_ITEMS,
+      NOT_HONORED_TIMETABLE_ITEMS,
       frTranslations
     );
 
     // Train type filter
     await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
       'Service',
-      NOT_HONORED_PACED_TRAINS
+      NOT_HONORED_PACED_TRAIN_SCHEDULE
     );
     await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
       'All',
@@ -192,25 +192,28 @@ test.describe('Verify train schedule elements and filters', () => {
       frTranslations
     );
 
-    await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount('Unique train', TOTAL_TRAINS);
-    await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount('All', TOTAL_ITEMS);
+    await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+      'Unique train',
+      TOTAL_TRAIN_SCHEDULES
+    );
+    await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount('All', TOTAL_TIMETABLE_ITEMS);
 
-    // Verify train composition filters with predefined filter codes and expected counts
+    // Verify timetable item composition filters with predefined filter codes and expected counts
     // TODO Paced train : add a paced train with a unique compo code in https://github.com/OpenRailAssociation/osrd/issues/10615
     await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
       null,
-      ITEMS_WITH_NO_SPEED_LIMIT_TAG,
+      TIMETABLE_ITEMS_WITH_NO_SPEED_LIMIT_TAG,
       frTranslations
     );
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+    await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
 
-    // Verify train composition filters with predefined filter codes and expected counts for exceptions
+    // Verify timetable item composition filters with predefined filter codes and expected counts for exceptions
     await scenarioTimetableSection.filterSpeedLimitTagAndVerifyTrainCount(
       'HLP',
       ITEMS_WITH_HLP_SPEED_LIMIT_TAG_EXCEPTION,
       frTranslations
     );
-    await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+    await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
   });
 
   /** *************** Test 4 **************** */

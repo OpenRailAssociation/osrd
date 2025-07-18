@@ -186,14 +186,14 @@ test.describe('Verify simulation configuration in operational studies for train 
     }
 
     // Add paced train
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
 
     // Verify the paced train has been added and return to the simulation results and timetable
     await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
     await operationalStudiesPage.returnSimulationResult();
 
     // Confirm that the number of paced trains added matches the expected number
-    await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
+    await scenarioTimetableSection.verifyTimetableItemsCount(1); // Only one paced train can be added at a time
 
     await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
       occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
@@ -201,7 +201,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Click on occurrence to check its simulation results
     await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-    await scenarioPage.toggletrainList();
+    await scenarioPage.toggleTrainList();
 
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
       'SpeedSpaceChart-InitialInputs.png'
@@ -214,7 +214,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   test('Duplicate and delete a paced train', async ({ page }) => {
     await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
 
-    // to trigger list of train initialization for this e2e test, which isn't needed locally
+    // to trigger list of paced train initialization for this e2e test, which isn't needed locally
     await page.reload();
 
     await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {

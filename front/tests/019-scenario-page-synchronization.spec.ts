@@ -119,14 +119,14 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
     });
 
     // Edit a train schedule in the second tab and verify the update
-    await secondTimetableSection.editTrain(1);
+    await secondTimetableSection.editTimetableItem(1);
     await operationalStudiesPage.setFormattedStartTime('2025-03-15T08:35:40');
-    await secondTimetableSection.editTimetableItem();
-    await secondTimetableSection.getTrainArrivalTime('08:43', 1);
+    await operationalStudiesPage.submitTimetableItemEdit();
+    await secondTimetableSection.getTimetableItemArrivalTime('08:43', 1);
 
     // Switch back to the first tab and confirm that the edit is synchronized
     await firstPage.bringToFront();
-    await firstTimetableSection.getTrainArrivalTime('08:43', 1);
+    await firstTimetableSection.getTimetableItemArrivalTime('08:43', 1);
 
     // Navigate back to the study page, verify the train count, then delete the scenario
     await firstPage.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);

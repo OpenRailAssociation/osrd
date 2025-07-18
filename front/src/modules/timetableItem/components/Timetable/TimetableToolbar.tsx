@@ -249,7 +249,7 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          <div className="train-count" data-testid="timetable-train-count">
+          <div className="train-count" data-testid="timetable-item-count">
             <Checkbox
               label={timetableItems.length > 0 ? computedItemLabel() : t('timetable.noTrain')}
               small
@@ -325,7 +325,7 @@ const TimetableToolbar = ({
       {timetableHasInvalidItem(filteredTimetableItems) && (
         <div className="invalid-trains">
           <Alert size="sm" variant="fill" />
-          <span data-testid="invalid-trains-message" className="invalid-trains-message">
+          <span data-testid="invalid-timetable-item-message" className="invalid-trains-message">
             {t('timetable.invalidTrains')}
           </span>
         </div>

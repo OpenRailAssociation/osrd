@@ -91,9 +91,9 @@ test.describe('Times and Stops Tab Verification', () => {
       // Wait for infra to be in 'CACHED' state before proceeding
       await waitForInfraStateToBeCached(infra.id);
 
-      // Setup train configuration and schedule
+      // Setup train schedule configuration and schedule
       await operationalStudiesPage.openTimetableItemForm();
-      await operationalStudiesPage.setTrainStartTime('11:22:40');
+      await operationalStudiesPage.setTimetableItemStartTime('11:22:40');
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
       await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
 
@@ -163,7 +163,7 @@ test.describe('Times and Stops Tab Verification', () => {
     }
 
     // Add train schedule, verify results and output table data
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();

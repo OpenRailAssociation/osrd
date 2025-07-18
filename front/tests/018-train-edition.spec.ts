@@ -49,7 +49,7 @@ const TIME_WINDOW = '240';
 const INTERVAL = '20';
 const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
-test.describe('Edit trains and missions', () => {
+test.describe('Edit train schedules and paced trains', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
@@ -148,7 +148,7 @@ test.describe('Edit trains and missions', () => {
   });
 
   test('Turn a train schedule into a paced train', async () => {
-    await scenarioTimetableSection.editTrain(1);
+    await scenarioTimetableSection.editTimetableItem(1);
 
     await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(frTranslations);
 

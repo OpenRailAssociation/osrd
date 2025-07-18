@@ -151,9 +151,9 @@ test.describe('Paced trains and exception management', () => {
     );
 
     // update Departure time
-    await operationalStudiesPage.setTrainStartTime('12:00');
+    await operationalStudiesPage.setTimetableItemStartTime('12:00');
 
-    await operationalStudiesPage.validateAndCloseTrainEdition();
+    await operationalStudiesPage.submitTimetableItemEdit();
 
     await operationalStudiesPage.checkToastHasBeenLaunched(
       frTranslations.timetable.pacedTrainUpdated
@@ -256,7 +256,7 @@ test.describe('Paced trains and exception management', () => {
 
     await operationalStudiesPage.createPacedTrainException('2025-08-08', '12:00:00');
 
-    await operationalStudiesPage.validateAndCloseTrainEdition();
+    await operationalStudiesPage.submitTimetableItemEdit();
 
     await pacedTrainSection.expectOccurrencesListLength(5);
 
@@ -365,7 +365,7 @@ test.describe('Paced trains and exception management', () => {
       destinationTrigram: 'NES',
     });
 
-    await operationalStudiesPage.setTrainStartTime('02:40', '2024-10-16');
+    await operationalStudiesPage.setTimetableItemStartTime('02:40', '2024-10-16');
 
     await operationalStudiesPage.openTimesAndStopsTab();
     await timesAndStopsTab.fillTableCellByStationAndHeader(
@@ -377,7 +377,7 @@ test.describe('Paced trains and exception management', () => {
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.selectCodeCompoOption('MA100');
 
-    await operationalStudiesPage.validateAndCloseTrainEdition();
+    await operationalStudiesPage.submitTimetableItemEdit();
     await operationalStudiesPage.checkToastHasBeenLaunched(
       frTranslations.timetable.pacedTrainUpdated
     );

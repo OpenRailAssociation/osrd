@@ -119,7 +119,7 @@ const CreateTimetableItemButton = ({
       type="button"
       disabled={infraState !== 'CACHED'}
       onClick={createTrainSchedules}
-      data-testid="add-train"
+      data-testid="create-timetable-item-button"
     >
       <span className="mr-2">
         <Plus size="lg" />
