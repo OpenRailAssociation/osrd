@@ -155,7 +155,7 @@ class ScenarioPage extends CommonPage {
     }
   }
 
-  async toggletrainList(isOpen: boolean = true) {
+  async toggleTrainList(isOpen: boolean = true) {
     await this.trainsButton.click();
     if (isOpen) {
       await expect(this.trainList).not.toBeVisible();

@@ -18,11 +18,9 @@ const frTranslations: ScenarioTranslations = readJsonFile<{
 }>('public/locales/fr/operational-studies.json').main;
 
 class ScenarioTimetableSection extends OpSimulationResultPage {
-  private readonly invalidTrainsMessage: Locator;
+  private readonly invalidTimetableItemsMessage: Locator;
 
-  private readonly timetableTrains: Locator;
-
-  private readonly selectedTimetableTrain: Locator;
+  private readonly timetableItems: Locator;
 
   private readonly timetableAllItemCheckbox: Locator;
 
@@ -64,22 +62,21 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly editTimetableItemButton: Locator;
 
-  private readonly trainArrivalTime: Locator;
+  private readonly timetableItemArrivalTime: Locator;
 
-  private readonly trainArrivalTimeLoader: Locator;
+  private readonly timetableItemArrivalTimeLoader: Locator;
 
   private readonly emptyTimetable: Locator;
 
-  private readonly timetableTrainCount: Locator;
+  private readonly timetableItemsCount: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.invalidTrainsMessage = page.getByTestId('invalid-trains-message');
-    this.timetableTrains = page.getByTestId('scenario-timetable-train');
-    this.selectedTimetableTrain = page.locator('[data-testid="scenario-timetable-train"].selected');
-    this.timetableTrainCount = page.getByTestId('timetable-train-count');
-    this.timetableAllItemCheckbox = this.timetableTrainCount.locator('.checkmark');
-    this.timetableTotalItemLabel = this.timetableTrainCount.locator('.label');
+    this.invalidTimetableItemsMessage = page.getByTestId('invalid-timetable-item-message');
+    this.timetableItems = page.getByTestId('scenario-timetable-item');
+    this.timetableItemsCount = page.getByTestId('timetable-item-count');
+    this.timetableAllItemCheckbox = this.timetableItemsCount.locator('.checkmark');
+    this.timetableTotalItemLabel = this.timetableItemsCount.locator('.label');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
@@ -106,16 +103,16 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       'timetable-speed-limit-tag-filter-label'
     );
     this.editItemButton = page.getByTestId('edit-item');
-    this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
+    this.projectItemButton = page.getByTestId('project-item');
     this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
-    this.trainArrivalTime = page.getByTestId('train-arrival-time');
-    this.trainArrivalTimeLoader = page.getByTestId('arrival-time-loader');
+    this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
+    this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
     this.emptyTimetable = page.getByTestId('empty-timetable-list');
   }
 
-  // Get the button locator of a train element.
-  private static getTrainButton(trainSelector: Locator): Locator {
-    return trainSelector.getByTestId('scenario-timetable-train-button');
+  // Get the button locator of a train schedule element.
+  private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
+    return trainScheduleSelector.getByTestId('scenario-timetable-train-schedule-button');
   }
 
   // Get the button locator of a paced train element.
@@ -130,7 +127,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Verify that the message "The timetable contains invalid trains" is visible
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
-    const invalidTrainsMessageText = await this.invalidTrainsMessage.innerText();
+    const invalidTrainsMessageText = await this.invalidTimetableItemsMessage.innerText();
     expect(invalidTrainsMessageText).toEqual(frTranslations.timetable.invalidTrains);
   }
 
@@ -191,9 +188,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Verify that the imported train number is correct
-  async verifyTrainCount(trainCount: number): Promise<void> {
-    await expect(this.timetableTrains).toHaveCount(trainCount);
+  // Verify that the imported timetable items number is correct
+  async verifyTimetableItemsCount(timetableItemsCount: number): Promise<void> {
+    await expect(this.timetableItems).toHaveCount(timetableItemsCount);
   }
 
   // Verify that the total items label matches the expected syntax (plural only)
@@ -227,7 +224,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async filterNameAndVerifyTrainCount(name: string, expectedTrainCount: number) {
     await this.timetableFilterButton.click();
     await this.timetableLabelFilterInput.fill(name);
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
     await this.timetableLabelFilterInput.clear();
     await this.timetableFilterButtonClose.click();
   }
@@ -235,7 +232,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   async filterRollingStockAndVerifyTrainCount(name: string, expectedTrainCount: number) {
     await this.timetableFilterButton.click();
     await this.timetableRollingStockFilterInput.fill(name);
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
     await this.timetableRollingStockFilterInput.clear();
     await this.timetableFilterButtonClose.click();
   }
@@ -255,7 +252,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
     await this.selectTrainValidityFilter(validityFilters[validityFilter]);
     await this.timetableFilterButtonClose.click();
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
   }
 
   async filterHonoredAndVerifyTrainCount(
@@ -273,7 +270,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
     await this.selectTrainPunctualityFilter(honoredFilters[honoredFilter]);
     await this.timetableFilterButtonClose.click();
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
   }
 
   async filterTrainTypeAndVerifyTrainCount(
@@ -290,7 +287,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
     await this.selectTrainTypeFilter(trainTypeFilters[trainTypeFilter]);
     await this.timetableFilterButtonClose.click();
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
   }
 
   // Filter train using speed limit tag button based on the provided translation and verify train count
@@ -308,7 +305,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       : this.page.getByRole('button', { name: filterTranslation });
 
     await filterButtonLocator.click();
-    await this.verifyTrainCount(expectedTrainCount);
+    await this.verifyTimetableItemsCount(expectedTrainCount);
     await filterButtonLocator.click();
     await this.timetableFilterButtonClose.click();
   }
@@ -320,7 +317,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     // May need scrolling support if more trains are added later.
     await this.filterTrainTypeAndVerifyTrainCount('Service', pacedTrainCount);
     for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
-      const pacedTrain = this.timetableTrains.nth(pacedTrainIndex);
+      const pacedTrain = this.timetableItems.nth(pacedTrainIndex);
 
       await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // opens
 
@@ -337,44 +334,39 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   }
 
-  // Iterate over each train element and verify the visibility of simulation results
-  async verifyEachTrainSimulation(pacedTrainCount: number): Promise<void> {
-    const trainCount = await this.timetableTrains.count();
+  // Iterate over each trainSchedule and verify the visibility of simulation results
+  async verifyEachTrainScheduleSimulation(trainScheduleCount: number): Promise<void> {
+    const timetableItemsCount = await this.timetableItems.count();
     for (
-      let currentTrainIndex = pacedTrainCount;
-      currentTrainIndex < trainCount;
-      currentTrainIndex += 1
+      let currentTrainScheduleIndex = trainScheduleCount;
+      currentTrainScheduleIndex < timetableItemsCount;
+      currentTrainScheduleIndex += 1
     ) {
-      const trainButton = ScenarioTimetableSection.getTrainButton(
-        this.timetableTrains.nth(currentTrainIndex)
+      const trainScheduleButton = ScenarioTimetableSection.getTrainScheduleButton(
+        this.timetableItems.nth(currentTrainScheduleIndex)
       );
-      await expect(trainButton).toBeVisible();
-      await trainButton.click();
-      await this.projectTrain();
+      await expect(trainScheduleButton).toBeVisible();
+      await trainScheduleButton.click();
+      await this.projectTrain(currentTrainScheduleIndex);
       await this.verifySimulationResultsVisibility();
     }
   }
 
-  async editTrain(index: number = 0) {
-    await this.timetableTrains.nth(index).click();
+  async editTimetableItem(index = 0) {
+    await this.timetableItems.nth(index).click();
     await this.editItemButton.nth(index).click();
   }
 
-  private async projectTrain() {
-    await this.selectedTimetableTrain.hover();
-    await expect(this.projectItemButton).toBeVisible();
-    await this.projectItemButton.click();
+  private async projectTrain(index = 0) {
+    await this.timetableItems.nth(index).hover();
+    await expect(this.projectItemButton.nth(index)).toBeVisible();
+    await this.projectItemButton.nth(index).click();
   }
 
-  async editTimetableItem() {
-    await this.editTimetableItemButton.click();
-    await this.closeToastNotification();
-  }
-
-  async getTrainArrivalTime(expectedArrivalTime: string, index = 0) {
-    await expect(this.trainArrivalTime.nth(index)).toBeVisible();
-    const actualArrivalTime = await this.trainArrivalTime.nth(index).textContent();
-    await expect(this.trainArrivalTimeLoader).toBeHidden();
+  async getTimetableItemArrivalTime(expectedArrivalTime: string, index = 0) {
+    await expect(this.timetableItemArrivalTime.nth(index)).toBeVisible();
+    await expect(this.timetableItemArrivalTimeLoader).toBeHidden();
+    const actualArrivalTime = await this.timetableItemArrivalTime.nth(index).textContent();
     expect(actualArrivalTime).toEqual(expectedArrivalTime);
   }
 
@@ -392,10 +384,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
     // Rebuild the expected text for total items label which has the syntax : "X/X services and Y/Y trains selected"
     const trainTypeTranslation = translations.timetable.trainType; // format "Services, trains"
-    const [pacedTrains, trains] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
+    const [pacedTrains, trainSchedules] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
     const pacedTrainAndTrainCountTrad = translations.pacedTrainAndTrainCount; // finished by "selected"
     const selectedTrad = pacedTrainAndTrainCountTrad.split(' ').at(-1); // expect to return "selected"
-    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()} ${translations.common.and} ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trains} ${selectedTrad}`;
+    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()} ${translations.common.and} ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trainSchedules} ${selectedTrad}`;
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
   }
 
@@ -421,7 +413,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async verifyTimetableIsEmpty(translation: string) {
-    await expect(this.timetableTrains).toHaveCount(0);
+    await expect(this.timetableItems).toHaveCount(0);
     await expect(this.emptyTimetable).toBeVisible();
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }

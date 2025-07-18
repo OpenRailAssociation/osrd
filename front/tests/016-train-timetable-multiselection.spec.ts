@@ -2,9 +2,9 @@ import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi
 
 import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
 import {
-  TOTAL_ITEMS,
+  TOTAL_TIMETABLE_ITEMS,
   TOTAL_PACED_TRAINS,
-  TOTAL_TRAINS,
+  TOTAL_TRAIN_SCHEDULES,
 } from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
@@ -78,19 +78,19 @@ test.describe('Verify train schedule elements and filters', () => {
     // Verify total items count
     await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
     });
     // Select all remaining items
     await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
     });
     // Delete all items
     await scenarioTimetableSection.deleteAllTimetableItems();
     // As in other tests, checking the last notification needs to be done in a different method
     // otherwise the received message of the last notification is empty
     await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
-      TOTAL_ITEMS,
+      TOTAL_TIMETABLE_ITEMS,
       frTranslations
     );
     await page.waitForLoadState('networkidle');

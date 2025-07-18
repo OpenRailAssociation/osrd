@@ -136,11 +136,11 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.removeViteOverlay();
       // Wait for infra to be in 'CACHED' state before proceeding
       await waitForInfraStateToBeCached(infra.id);
-      // Add a new train and set its properties
+      // Add a new train schedule and set its properties
       await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
       await rollingStockSelector.selectRollingStock(improbableRollingStockName);
-      await operationalStudiesPage.setTrainStartTime('11:22:40');
+      await operationalStudiesPage.setTimetableItemStartTime('11:22:40');
 
       // Perform pathfinding
       await operationalStudiesPage.openRouteTab();
@@ -178,11 +178,11 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.checkElectricalProfile();
     await simulationSettingsTab.checkMarecoMargin();
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
-    await scenarioTimetableSection.getTrainArrivalTime('11:53');
-    await scenarioPage.toggletrainList();
+    await scenarioTimetableSection.getTimetableItemArrivalTime('11:53');
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -191,13 +191,13 @@ test.describe('Simulation Settings Tab Verification', () => {
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
-    await scenarioPage.toggletrainList(false);
+    await scenarioPage.toggleTrainList(false);
     // Deactivate electrical profiles and verify output results
-    await scenarioTimetableSection.editTrain();
+    await scenarioTimetableSection.editTimetableItem();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.deactivateElectricalProfile();
-    await scenarioTimetableSection.editTimetableItem();
-    await scenarioPage.toggletrainList();
+    await operationalStudiesPage.submitTimetableItemEdit();
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -205,8 +205,8 @@ test.describe('Simulation Settings Tab Verification', () => {
       'SpeedSpaceChart-ElectricalProfileDisabled.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
-    await scenarioPage.toggletrainList(false);
-    await scenarioTimetableSection.getTrainArrivalTime('11:52');
+    await scenarioPage.toggleTrainList(false);
+    await scenarioTimetableSection.getTimetableItemArrivalTime('11:52');
   });
   test('Activate composition code', async ({ page }) => {
     const cell: CellData = {
@@ -227,11 +227,11 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.checkMarecoMargin();
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
-    await scenarioTimetableSection.getTrainArrivalTime('12:03');
-    await scenarioPage.toggletrainList();
+    await scenarioTimetableSection.getTimetableItemArrivalTime('12:03');
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -240,13 +240,13 @@ test.describe('Simulation Settings Tab Verification', () => {
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
-    await scenarioPage.toggletrainList(false);
+    await scenarioPage.toggleTrainList(false);
     // Remove the composition code option and verify the changes
-    await scenarioTimetableSection.editTrain();
+    await scenarioTimetableSection.editTimetableItem();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.selectCodeCompoOption('__PLACEHOLDER__');
-    await scenarioTimetableSection.editTimetableItem();
-    await scenarioPage.toggletrainList();
+    await operationalStudiesPage.submitTimetableItemEdit();
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -254,8 +254,8 @@ test.describe('Simulation Settings Tab Verification', () => {
       'SpeedSpaceChart-SpeedLimitTagDisabled.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
-    await scenarioPage.toggletrainList(false);
-    await scenarioTimetableSection.getTrainArrivalTime('11:52');
+    await scenarioPage.toggleTrainList(false);
+    await scenarioTimetableSection.getTimetableItemArrivalTime('11:52');
   });
   test('Activate linear and mareco margin', async ({ page }) => {
     const inputTableData: CellData[] = [
@@ -286,11 +286,11 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.deactivateElectricalProfile();
     await simulationSettingsTab.activateLinearMargin();
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
-    await scenarioTimetableSection.getTrainArrivalTime('11:55');
-    await scenarioPage.toggletrainList();
+    await scenarioTimetableSection.getTimetableItemArrivalTime('11:55');
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -300,13 +300,13 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
-    await scenarioPage.toggletrainList(false);
+    await scenarioPage.toggleTrainList(false);
     // Modify the margin to 'Mareco' and verify the changes
-    await scenarioTimetableSection.editTrain();
+    await scenarioTimetableSection.editTimetableItem();
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.activateMarecoMargin();
-    await scenarioTimetableSection.editTimetableItem();
-    await scenarioPage.toggletrainList();
+    await operationalStudiesPage.submitTimetableItemEdit();
+    await scenarioPage.toggleTrainList();
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -314,8 +314,8 @@ test.describe('Simulation Settings Tab Verification', () => {
       'SpeedSpaceChart-MarecoMargin.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
-    await scenarioPage.toggletrainList(false);
-    await scenarioTimetableSection.getTrainArrivalTime('11:55');
+    await scenarioPage.toggleTrainList(false);
+    await scenarioTimetableSection.getTimetableItemArrivalTime('11:55');
   });
   test('Add all the simulation settings', async ({ page }) => {
     const inputTableData: CellData[] = [
@@ -347,10 +347,10 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.activateLinearMargin();
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTimetableItem();
+    await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
     await operationalStudiesPage.returnSimulationResult();
-    await scenarioPage.toggletrainList();
+    await scenarioPage.toggleTrainList();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
@@ -358,7 +358,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
-    await scenarioPage.toggletrainList(false);
-    await scenarioTimetableSection.getTrainArrivalTime('12:06');
+    await scenarioPage.toggleTrainList(false);
+    await scenarioTimetableSection.getTimetableItemArrivalTime('12:06');
   });
 });

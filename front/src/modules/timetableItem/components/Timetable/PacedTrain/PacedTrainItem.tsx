@@ -199,7 +199,7 @@ const PacedTrainItem = ({
 
   const content = (
     <div
-      data-testid="scenario-timetable-train"
+      data-testid="scenario-timetable-item"
       className={cx('scenario-timetable-train paced-train', {
         modified: isOnEdit,
         'in-selection': isInSelection,

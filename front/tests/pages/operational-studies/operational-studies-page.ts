@@ -11,9 +11,9 @@ import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../u
 import CommonPage from '../common-page';
 
 class OperationalStudiesPage extends CommonPage {
-  private readonly addScenarioTrainButton: Locator;
+  private readonly addTimetableItemButton: Locator;
 
-  private readonly editTrainButton: Locator;
+  private readonly editTimetableItemButton: Locator;
 
   private readonly manageTimetableItemPage: Locator;
 
@@ -43,15 +43,13 @@ class OperationalStudiesPage extends CommonPage {
     list: Locator;
   };
 
-  private readonly TimetableItemNameInput: Locator;
+  private readonly timetableItemNameInput: Locator;
 
   private readonly initialSpeedInput: Locator;
 
-  private readonly trainTagsInput: Locator;
+  private readonly timetableItemTagsInput: Locator;
 
-  private readonly addTrainButton: Locator;
-
-  private readonly trainTimetable: Locator;
+  private readonly createTimetableItemButton: Locator;
 
   private readonly simulationSettingsTab: Locator;
 
@@ -60,7 +58,7 @@ class OperationalStudiesPage extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
-    this.addScenarioTrainButton = page.getByTestId('scenarios-add-timetable-item-button');
+    this.addTimetableItemButton = page.getByTestId('scenarios-add-timetable-item-button');
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
@@ -78,21 +76,17 @@ class OperationalStudiesPage extends CommonPage {
       button: page.getByTestId('added-occurrences-add-button'),
       list: page.getByTestId('added-occurrences-list'),
     };
-    this.addTrainButton = page.getByTestId('add-train');
-    this.editTrainButton = page.getByTestId('submit-edit-timetable-item');
+    this.createTimetableItemButton = page.getByTestId('create-timetable-item-button');
+    this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
-    this.TimetableItemNameInput = page.locator('#timetable-item-name');
+    this.timetableItemNameInput = page.locator('#timetable-item-name');
     this.initialSpeedInput = page.locator('#initial-speed');
-    this.trainTagsInput = page.getByTestId('chips-input');
-
-    this.trainTimetable = page
-      .locator('.scenario-timetable-trains')
-      .locator('.scenario-timetable-train');
+    this.timetableItemTagsInput = page.getByTestId('chips-input');
   }
 
-  // Click on the button to add a scenario train.
+  // Click on the button to add a scenario timetable item.
   async openTimetableItemForm() {
-    await this.addScenarioTrainButton.click();
+    await this.addTimetableItemButton.click();
     await expect(this.manageTimetableItemPage).toBeVisible();
   }
 
@@ -120,7 +114,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.routeTab).not.toHaveClass(/warning/);
   }
 
-  async setTrainStartTime(departureTime: string, departureDate?: string) {
+  async setTimetableItemStartTime(departureTime: string, departureDate?: string) {
     const currentDate = departureDate || new Date().toISOString().split('T')[0];
     const startTime = `${currentDate}T${departureTime}`;
     await expect(this.startTimeField).toBeVisible();
@@ -144,9 +138,10 @@ class OperationalStudiesPage extends CommonPage {
     await this.returnSimulationResultButton.click();
   }
 
-  async validateAndCloseTrainEdition() {
-    await this.editTrainButton.click();
+  async submitTimetableItemEdit() {
+    await this.editTimetableItemButton.click();
     await expect(this.returnSimulationResultButton).not.toBeVisible();
+    await this.closeToastNotification();
   }
 
   async checkPathfindingDistance(distance: string | RegExp) {
@@ -155,15 +150,15 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   async checkInputsAndButtons(translations: ManageTimetableItemTranslations, date: string) {
-    await expect(this.addTrainButton).toBeVisible();
-    await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.createTimetableItemButton).toBeVisible();
+    await expect(this.createTimetableItemButton).toHaveText(translations.addTrainSchedule);
     await expect(this.definePacedTrainCheckboxLabel).toBeVisible();
     await expect(this.definePacedTrainCheckboxLabel).toHaveText(
       translations.pacedTrains.defineService
     );
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
     await expect(this.returnSimulationResultButton).toBeVisible();
-    await expect(this.TimetableItemNameInput).toBeVisible();
+    await expect(this.timetableItemNameInput).toBeVisible();
     await expect(this.startTimeField).toBeVisible();
     const startTimeDate = createDateInSpecialTimeZone(
       await this.startTimeField.inputValue(),
@@ -179,38 +174,42 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.initialSpeedInput).toBeVisible();
     await expect(this.initialSpeedInput).toHaveValue('0');
 
-    await expect(this.trainTagsInput).toBeVisible();
+    await expect(this.timetableItemTagsInput).toBeVisible();
   }
 
   async updateTimetableItem(expectedButtonText?: string) {
     if (expectedButtonText) {
-      await expect(this.editTrainButton).toHaveText(expectedButtonText);
+      await expect(this.editTimetableItemButton).toHaveText(expectedButtonText);
     }
-    await this.validateAndCloseTrainEdition();
+    await this.submitTimetableItemEdit();
   }
 
   async turnTrainScheduleIntoPacedTrain(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
-    await expect(this.editTrainButton).toBeVisible();
-    await expect(this.editTrainButton).toHaveText(translations.updateTrainSchedule);
+    await expect(this.editTimetableItemButton).toBeVisible();
+    await expect(this.editTimetableItemButton).toHaveText(translations.updateTrainSchedule);
 
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.definePacedTrainCheckbox).toBeChecked();
-    await expect(this.editTrainButton).toHaveText(translations.turnTrainScheduleIntoPacedTrain);
+    await expect(this.editTimetableItemButton).toHaveText(
+      translations.turnTrainScheduleIntoPacedTrain
+    );
 
-    await this.validateAndCloseTrainEdition();
+    await this.submitTimetableItemEdit();
   }
 
   async turnPacedTrainIntoTrainSchedule(translations: ManageTimetableItemTranslations) {
     await expect(this.definePacedTrainCheckbox).toBeChecked();
-    await expect(this.editTrainButton).toBeVisible();
-    await expect(this.editTrainButton).toHaveText(translations.updatePacedTrain);
+    await expect(this.editTimetableItemButton).toBeVisible();
+    await expect(this.editTimetableItemButton).toHaveText(translations.updatePacedTrain);
 
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.definePacedTrainCheckbox).not.toBeChecked();
-    await expect(this.editTrainButton).toHaveText(translations.turnPacedTrainIntoTrainSchedule);
+    await expect(this.editTimetableItemButton).toHaveText(
+      translations.turnPacedTrainIntoTrainSchedule
+    );
 
-    await this.validateAndCloseTrainEdition();
+    await this.submitTimetableItemEdit();
   }
 
   async checkTabs() {
@@ -225,7 +224,7 @@ class OperationalStudiesPage extends CommonPage {
 
   async checkPacedTrainModeAndVerifyInputs(translations: ManageTimetableItemTranslations) {
     await this.definePacedTrainCheckboxLabel.click();
-    await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+    await expect(this.createTimetableItemButton).toHaveText(translations.addPacedTrain);
 
     await this.checkTimeWindowValue(DEFAULT_PACED_TRAIN_SETTINGS.timeWindow);
     await this.checkIntervalValue(DEFAULT_PACED_TRAIN_SETTINGS.interval);
@@ -245,12 +244,12 @@ class OperationalStudiesPage extends CommonPage {
     await this.setTimeWindow(PACED_TRAIN_SETTINGS_TEST.timeWindow);
     await this.setInterval(PACED_TRAIN_SETTINGS_TEST.interval);
     await this.definePacedTrainCheckboxLabel.click();
-    await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.createTimetableItemButton).toHaveText(translations.addTrainSchedule);
     await expect(this.pacedTrainTimeWindow).not.toBeVisible();
     await expect(this.pacedTrainIntervalInput).not.toBeVisible();
 
     await this.definePacedTrainCheckboxLabel.click();
-    await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+    await expect(this.createTimetableItemButton).toHaveText(translations.addPacedTrain);
 
     await expect(this.pacedTrainTimeWindow).toBeVisible();
     await expect(this.pacedTrainTimeWindow).toHaveValue(PACED_TRAIN_SETTINGS_TEST.timeWindow);
@@ -277,17 +276,13 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.pacedTrainIntervalInput).toHaveValue(interval);
   }
 
-  async addTimetableItem() {
-    await this.addTrainButton.click();
+  async createTimetableItem() {
+    await this.createTimetableItemButton.click();
   }
 
   async setTimetableItemName(name: string) {
-    await this.TimetableItemNameInput.fill(name);
-    await expect(this.TimetableItemNameInput).toHaveValue(name);
-  }
-
-  async checkNumberOfTrains(number: number) {
-    await expect(this.trainTimetable).toHaveCount(number);
+    await this.timetableItemNameInput.fill(name);
+    await expect(this.timetableItemNameInput).toHaveValue(name);
   }
 
   async checkInputsBeforeEditingAPacedTrain(
@@ -311,7 +306,7 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   async checkEditOccurrenceButtonsVisibility() {
-    await expect(this.editTrainButton).toBeVisible();
+    await expect(this.editTimetableItemButton).toBeVisible();
     await expect(this.returnSimulationResultButton).toBeVisible();
   }
 

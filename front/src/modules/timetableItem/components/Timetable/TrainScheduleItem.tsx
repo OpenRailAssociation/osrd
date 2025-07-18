@@ -150,7 +150,7 @@ const TrainScheduleItem = ({
 
   return (
     <div
-      data-testid="scenario-timetable-train"
+      data-testid="scenario-timetable-item"
       className={cx('scenario-timetable-train', {
         selected: isSelected,
         modified: isModified,
@@ -159,7 +159,7 @@ const TrainScheduleItem = ({
       })}
     >
       <div
-        data-testid="scenario-timetable-train-button"
+        data-testid="scenario-timetable-train-schedule-button"
         role="button"
         tabIndex={0}
         onClick={() => changeSelectedTrainId(train.id)}
@@ -224,7 +224,7 @@ const TrainScheduleItem = ({
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
               <div
-                data-testid="train-arrival-time"
+                data-testid="timetable-item-arrival-time"
                 className="scenario-timetable-train-times"
                 title={train.arrivalTime ? formatFullDate(train.arrivalTime) : undefined}
               >
