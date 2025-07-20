@@ -18,6 +18,7 @@ import type {
   TimetableItemId,
   TimetableItem,
 } from 'reducers/osrdconf/types';
+import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
@@ -221,8 +222,10 @@ export const generatePath = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[]
 ): TrainSchedule['path'] => {
+  console.log(trainrunSections, 'trainrunSections');
   const path = trainrunSections.map((section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
+    console.log(sourceNode, 'sourceNode');
     const targetNode = getNodeById(nodes, section.targetNodeId);
     if (!sourceNode || !targetNode) return [];
     const originPathItem = createPathItemFromNode(sourceNode, index);
@@ -440,6 +443,12 @@ const handleUpdateTimetableItem = async ({
 }) => {
   const timetableItemId = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const timetableItem = await fetchTimetableItem(timetableItemId, dispatch);
+  const initialNodesSnapshot = netzgrafikDto.nodes.map((node) => ({
+    id: node.id,
+    betriebspunktName: node.betriebspunktName,
+  }));
+  console.log(initialNodesSnapshot, 'initialNodesSnapshot');
+  console.log(netzgrafikDto.nodes, 'netzgrafikDto.nodes');
   const { path, labels, startDate, schedule } = generateTrainrunProperties(
     netzgrafikDto,
     trainrun,
@@ -447,8 +456,27 @@ const handleUpdateTimetableItem = async ({
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
 
+  const updatedNodesSnapshot = netzgrafikDto.nodes.map((node) => ({
+    id: node.id,
+    betriebspunktName: node.betriebspunktName,
+  }));
+  console.log(updatedNodesSnapshot, 'updatedNodesSnapshot');
+
+  const nodesAreIdentical =
+    initialNodesSnapshot.length === updatedNodesSnapshot.length &&
+    initialNodesSnapshot.every((initialNode, index) => {
+      const updatedNode = updatedNodesSnapshot[index];
+      return (
+        initialNode.id === updatedNode.id &&
+        initialNode.betriebspunktName === updatedNode.betriebspunktName
+      );
+    });
+
+  console.log(nodesAreIdentical, 'nodesAreIdentical');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = timetableItem;
+  console.log({ timetableItem, id }, 'timetableItem, id');
+
   const timetableItemForUpdate = {
     ...timetableItemBase,
     train_name: trainrun.name,
@@ -456,8 +484,7 @@ const handleUpdateTimetableItem = async ({
     path,
     start_time: startDate.toISOString(),
     schedule,
-    // Reset margins because they contain references to path items
-    margins: undefined,
+    margins: nodesAreIdentical ? timetableItem.margins : undefined,
     paced: undefined,
     exceptions: undefined,
     category: getTrainCategoryFromId(trainrun.categoryId),
@@ -497,7 +524,9 @@ const handleUpdateTimetableItem = async ({
       addDeletedTimetableItemIds
     );
   }
+
   state.timetableItemIdByNgeId.set(trainrun.id, updatedTimetableItem.id);
+  console.log(updatedTimetableItem, 'updatedTimetableItem');
 };
 
 const handleDeleteTimetableItem = async (
