@@ -238,7 +238,7 @@ const ScenarioContent = ({
                 updateTrainDepartureTime={updateTrainDepartureTime}
               />
             )}
-            <BoardWrapper visible={activeBoards.has('macro')} name="MACRO">
+            <BoardWrapper hidden={!activeBoards.has('macro')} name="MACRO">
               <div className="osrd-simulation-container speedspacechart-container">
                 <div
                   className="chart-container"

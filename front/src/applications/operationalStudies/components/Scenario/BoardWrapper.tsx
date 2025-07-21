@@ -1,11 +1,11 @@
 import React from 'react';
 
-import MenuButton from 'common/MenuButton';
+import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 
 type BoardWrapperProps = {
   children: React.ReactNode;
-  visible: boolean;
+  hidden?: boolean;
   name: string;
   items?: OSRDMenuItem[];
   withFooter?: boolean;
@@ -14,13 +14,13 @@ type BoardWrapperProps = {
 
 const BoardWrapper = ({
   children,
-  visible,
+  hidden = false,
   name,
   items = [],
   withFooter = false,
   dataTestId,
 }: BoardWrapperProps) => {
-  if (!visible) {
+  if (hidden) {
     return null;
   }
 
@@ -28,11 +28,12 @@ const BoardWrapper = ({
     <div className="board-wrapper" data-testid={dataTestId}>
       <div className="board-header">
         <span className="board-header-name">{name}</span>
-        <MenuButton
+        <MenuTriggerButton
           buttonProps={{
             className: 'board-header-button',
+            disabled: items.length === 0,
           }}
-          menuProps={{ items }}
+          menuProps={{ items, className: 'board-header-menu' }}
         />
       </div>
       <div className="board-body">{children}</div>

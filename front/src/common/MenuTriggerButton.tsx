@@ -18,12 +18,12 @@ export type MenuProps = {
   onMenuOpen?: () => void;
 };
 
-export type MenuButtonProps = {
+export type MenuTriggerButtonProps = {
   buttonProps: ButtonProps;
   menuProps: MenuProps;
 };
 
-const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
+const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { items, className: menuClassName, onMenuClose, onMenuOpen } = menuProps;
@@ -42,12 +42,17 @@ const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
     onMenuClose?.();
   };
 
-  const toggleMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const newState = !isMenuOpen;
-    setIsMenuOpen(newState);
+  const openMenu = () => {
+    setIsMenuOpen(true);
+    onMenuOpen?.();
+  };
 
-    if (newState && onMenuOpen) onMenuOpen();
-    if (!newState && onMenuClose) onMenuClose();
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isMenuOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
 
     onClick?.(e);
   };
@@ -75,7 +80,7 @@ const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
       <button
         ref={menuButtonRef}
         type="button"
-        onClick={toggleMenu}
+        onClick={handleClick}
         className={cx(buttonClassName, { 'menu-is-opened': isMenuOpen })}
         {...restButtonProps}
       >
@@ -86,4 +91,4 @@ const MenuButton = ({ buttonProps, menuProps }: MenuButtonProps) => {
   );
 };
 
-export default MenuButton;
+export default MenuTriggerButton;

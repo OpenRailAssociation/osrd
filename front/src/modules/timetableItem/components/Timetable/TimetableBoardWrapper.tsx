@@ -9,19 +9,13 @@ import {
   Trash,
   Upload,
 } from '@osrd-project/ui-icons';
-import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import {
-  osrdEditoastApi,
-  type InfraState,
-  type PacedTrain,
-  type TrainSchedule,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type InfraState } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -40,7 +34,6 @@ import { castErrorToFailure } from 'utils/error';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
-  isPacedTrainResponseWithPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -48,6 +41,7 @@ import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import Timetable from './Timetable';
 import type { TimetableItemWithDetails } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
+import { exportTimetableItems } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -75,6 +69,8 @@ const TimetableBoardWrapper = ({
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
   const { infraId } = useScenarioContext();
+  const { openModal } = useContext(ModalContext);
+
   const { t } = useTranslation('operational-studies');
 
   const dispatch = useAppDispatch();
@@ -119,8 +115,7 @@ const TimetableBoardWrapper = ({
     [selectedTimetableItemIds]
   );
 
-  const { openModal } = useContext(ModalContext);
-
+  // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
   const computedItemLabel = useCallback(() => {
     if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0)
       return t('main.timetable.noItem');
@@ -160,8 +155,13 @@ const TimetableBoardWrapper = ({
     selectedPacedTrainIds,
   ]);
 
+  // --- BOARD WRAPPER MENU ITEMS CONFIGURATION ---
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
+
+  const toggleShowTrainDetails = () => {
+    setShowTrainDetails(!showTrainDetails);
+  };
 
   const toggleAllTrainsSelecton = () => {
     if (filteredTimetableItems.length === selectedTimetableItemIds.length) {
@@ -170,35 +170,6 @@ const TimetableBoardWrapper = ({
       const timetableItemsDisplayed = filteredTimetableItems.map(({ id }) => id);
       setSelectedTimetableItemIds(timetableItemsDisplayed);
     }
-  };
-
-  const exportTimetableItems = (selectedTimeTableIdsFromClick: TimetableItemId[]) => {
-    if (!timetableItems) return;
-
-    const formattedTimetableItems = timetableItems
-      .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
-      .reduce<{
-        train_schedules: TrainSchedule[];
-        paced_trains: PacedTrain[];
-      }>(
-        (acc, timetableItem) => {
-          if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-            acc.paced_trains.push(omit(timetableItem, ['id']));
-          } else {
-            acc.train_schedules.push(omit(timetableItem, ['id']));
-          }
-          return acc;
-        },
-        { train_schedules: [], paced_trains: [] }
-      );
-
-    const jsonString = JSON.stringify(formattedTimetableItems);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'timetable.json';
-    a.click();
   };
 
   const removeAndUnselectTrains = useCallback(
@@ -264,75 +235,72 @@ const TimetableBoardWrapper = ({
     }
   };
 
-  const toggleShowTrainDetails = () => {
-    setShowTrainDetails(!showTrainDetails);
-  };
+  const menuItems = [
+    {
+      title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
+      icon: <Note />,
+      dataTestID: 'scenarios-show-train-details-button',
+      disabled: timetableItemsWithDetails.length === 0,
+      onClick: () => toggleShowTrainDetails(),
+    },
+    {
+      title:
+        selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
+        selectedTimetableItemIds.length > 0
+          ? t('main.timetable.unselectAll')
+          : t('main.timetable.selectAll'),
+      icon: <Check />,
+      dataTestID: 'scenarios-select-all-button',
+      disabled: timetableItemsWithDetails.length === 0,
+      onClick: () => toggleAllTrainsSelecton(),
+    },
+    {
+      title: t('main.roundTripsModal.manageRoundTrips'),
+      icon: <ArrowSwitch />,
+      onClick: () => setRoundTripsModalIsOpen(true),
+    },
+    {
+      title: t('main.timetable.addTimetableItem'),
+      icon: <PlusCircle />,
+      dataTestID: 'scenarios-add-timetable-item-button',
+      onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add),
+    },
+    {
+      title: t('main.timetable.importTimetableItem'),
+      icon: <Download />,
+      dataTestID: 'scenarios-import-timetable-item-button',
+      onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+    },
+    {
+      title: t('main.timetable.exportSelection'),
+      icon: <Upload />,
+      dataTestID: 'scenarios-export-timetable-item-button',
+      disabled: selectedTimetableItemIds.length === 0,
+      onClick: () => exportTimetableItems(selectedTimetableItemIds, timetableItems),
+    },
+    {
+      title: t('main.timetable.deleteSelection'),
+      icon: <Trash />,
+      dataTestID: 'delete-all-items-button',
+      disabled: selectedTimetableItemIds.length === 0,
+      onClick: () =>
+        openModal(
+          <DeleteModal
+            handleDelete={() => handleTrainsDelete(selectedTrainId)}
+            selectedPacedTrainIds={selectedPacedTrainIds}
+            selectedTrainScheduleIds={selectedTrainScheduleIds}
+          />,
+          'sm'
+        ),
+    },
+  ];
 
   return (
     <>
       <BoardWrapper
-        visible
         withFooter
         name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
-        items={[
-          {
-            title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
-            icon: <Note />,
-            dataTestID: 'scenarios-show-train-details-button',
-            disabled: timetableItemsWithDetails.length === 0,
-            onClick: () => toggleShowTrainDetails(),
-          },
-          {
-            title:
-              selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
-              selectedTimetableItemIds.length > 0
-                ? t('main.timetable.unselectAll')
-                : t('main.timetable.selectAll'),
-            icon: <Check />,
-            dataTestID: 'scenarios-select-all-button',
-            disabled: timetableItemsWithDetails.length === 0,
-            onClick: () => toggleAllTrainsSelecton(),
-          },
-          {
-            title: t('main.roundTripsModal.manageRoundTrips'),
-            icon: <ArrowSwitch />,
-            onClick: () => setRoundTripsModalIsOpen(true),
-          },
-          {
-            title: t('main.timetable.addTimetableItem'),
-            icon: <PlusCircle />,
-            dataTestID: 'scenarios-add-timetable-item-button',
-            onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add),
-          },
-          {
-            title: t('main.timetable.importTimetableItem'),
-            icon: <Download />,
-            dataTestID: 'scenarios-import-timetable-item-button',
-            onClick: () => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
-          },
-          {
-            title: t('main.timetable.exportSelection'),
-            icon: <Upload />,
-            dataTestID: 'scenarios-export-timetable-item-button',
-            disabled: selectedTimetableItemIds.length === 0,
-            onClick: () => exportTimetableItems(selectedTimetableItemIds),
-          },
-          {
-            title: t('main.timetable.deleteSelection'),
-            icon: <Trash />,
-            dataTestID: 'delete-all-items-button',
-            disabled: selectedTimetableItemIds.length === 0,
-            onClick: () =>
-              openModal(
-                <DeleteModal
-                  handleDelete={() => handleTrainsDelete(selectedTrainId)}
-                  selectedPacedTrainIds={selectedPacedTrainIds}
-                  selectedTrainScheduleIds={selectedTrainScheduleIds}
-                />,
-                'sm'
-              ),
-          },
-        ]}
+        items={menuItems}
         dataTestId="timetable-board-wrapper"
       >
         <Timetable

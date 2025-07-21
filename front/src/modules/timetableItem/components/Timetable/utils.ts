@@ -1,9 +1,12 @@
 import dayjs from 'dayjs';
+import { omit } from 'lodash';
 
+import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { getOccurrencesNb } from 'modules/timetableItem/helpers/pacedTrain';
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import { isPacedTrainWithDetails } from 'utils/trainId';
+import { isPacedTrainResponseWithPacedTrainId, isPacedTrainWithDetails } from 'utils/trainId';
 
 import { specialCodeDictionary } from './consts';
 import type { TimetableItemWithDetails } from './types';
@@ -70,3 +73,35 @@ export const roundAndFormatToNearestMinute = (d: Date) =>
 
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
+
+export const exportTimetableItems = (
+  selectedTimeTableIdsFromClick: TimetableItemId[],
+  timetableItems: TimetableItem[]
+) => {
+  if (!timetableItems) return;
+
+  const formattedTimetableItems = timetableItems
+    .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
+    .reduce<{
+      train_schedules: TrainSchedule[];
+      paced_trains: PacedTrain[];
+    }>(
+      (acc, timetableItem) => {
+        if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+          acc.paced_trains.push(omit(timetableItem, ['id']));
+        } else {
+          acc.train_schedules.push(omit(timetableItem, ['id']));
+        }
+        return acc;
+      },
+      { train_schedules: [], paced_trains: [] }
+    );
+
+  const jsonString = JSON.stringify(formattedTimetableItems);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'timetable.json';
+  a.click();
+};
