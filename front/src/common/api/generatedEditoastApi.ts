@@ -4580,6 +4580,36 @@ export type TrainScheduleForm = TrainSchedule & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;
 };
+export type EtcsConflictCurves = {
+  conflict_type: 'Spacing' | 'Routing';
+  guidance: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  indication: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+  permitted_speed: {
+    /** List of positions of a train
+        Both positions (in mm) and times (in ms) must have the same length */
+    positions: number[];
+    /** List of speeds (in m/s) associated to a position */
+    speeds: number[];
+    /** List of times (in ms) associated to a position */
+    times: number[];
+  };
+};
 export type EtcsCurves = {
   guidance: {
     /** List of positions of a train
@@ -4610,8 +4640,11 @@ export type EtcsCurves = {
   };
 };
 export type EtcsBrakingCurvesResponse = {
-  /** List of ETCS braking curves associated to the train schedule's ETCS signals */
-  signals: EtcsCurves[];
+  /** List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+    For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+    For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+    corresponding potential spacing or routing conflict. */
+  conflicts: EtcsConflictCurves[];
   /** List of ETCS braking curves associated to the train schedule's ETCS slowdowns */
   slowdowns: EtcsCurves[];
   /** List of ETCS braking curves associated to the train schedule's ETCS stops */

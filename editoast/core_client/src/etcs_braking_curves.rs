@@ -5,6 +5,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::conflict_detection::ConflictType;
 use crate::simulation::PhysicsConsist;
 use crate::simulation::SimulationPath;
 use crate::simulation::SimulationPowerRestrictionItem;
@@ -14,6 +15,7 @@ use crate::simulation::SpeedLimitProperties;
 editoast_common::schemas! {
     Response,
     ETCSCurves,
+    ETCSConflictCurves,
 }
 
 #[derive(Debug, Serialize)]
@@ -37,8 +39,11 @@ pub struct Response {
     pub slowdowns: Vec<ETCSCurves>,
     /// List of ETCS braking curves associated to the train schedule's ETCS stops
     pub stops: Vec<ETCSCurves>,
-    /// List of ETCS braking curves associated to the train schedule's ETCS signals
-    pub signals: Vec<ETCSCurves>,
+    /// List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+    /// For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+    /// For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+    /// corresponding potential spacing or routing conflict.
+    pub conflicts: Vec<ETCSConflictCurves>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
@@ -49,6 +54,18 @@ pub struct ETCSCurves {
     pub permitted_speed: SimpleEnvelope,
     #[schema(inline)]
     pub guidance: SimpleEnvelope,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+pub struct ETCSConflictCurves {
+    #[schema(inline)]
+    pub indication: SimpleEnvelope,
+    #[schema(inline)]
+    pub permitted_speed: SimpleEnvelope,
+    #[schema(inline)]
+    pub guidance: SimpleEnvelope,
+    #[schema(inline)]
+    pub conflict_type: ConflictType,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
