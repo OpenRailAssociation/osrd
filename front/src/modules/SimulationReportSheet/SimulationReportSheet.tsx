@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { Page, Text, Image, Document, View } from '@react-pdf/renderer';
-import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
@@ -21,6 +21,7 @@ type SimulationReportSheetProps = {
   trainData: SimulationSheetData;
   mapCanvas?: string;
   operationalPointsList: OperationalPointWithTimeAndSpeed[];
+  t: TFunction<'stdcm'>;
 };
 
 const SimulationReportSheet = ({
@@ -29,9 +30,8 @@ const SimulationReportSheet = ({
   trainData,
   mapCanvas,
   operationalPointsList,
+  t,
 }: SimulationReportSheetProps) => {
-  const { t } = useTranslation(['stdcm']);
-
   const { rollingStock, speedLimitByTag, creationDate, trainName } = trainData;
 
   const consistData = {

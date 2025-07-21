@@ -1,6 +1,7 @@
 import { Button } from '@osrd-project/ui-core';
 import { Download, File } from '@osrd-project/ui-icons';
 import { pdf } from '@react-pdf/renderer';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -25,6 +26,7 @@ const exportTrainPDF = async (
   simulation: SimulationResponseSuccess,
   rollingStock: RollingStockWithLiveries,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
+  t: TFunction<'stdcm'>,
   mapCanvas?: string
 ) => {
   const doc = (
@@ -41,6 +43,7 @@ const exportTrainPDF = async (
       }}
       operationalPointsList={operationalPoints}
       mapCanvas={mapCanvas}
+      t={t}
     />
   );
 
@@ -70,6 +73,7 @@ const SimulationResultExport = ({
   mapCanvas,
 }: SimulationResultExportProps) => {
   const { t } = useTranslation('operational-studies');
+  const { t: tSimulationReportSheet } = useTranslation('stdcm');
 
   const operationalPoints = useFormattedOperationalPoints(train, simulation, pathProperties);
 
@@ -84,6 +88,7 @@ const SimulationResultExport = ({
             simulation,
             rollingStock,
             operationalPoints,
+            tSimulationReportSheet,
             mapCanvas
           )
         }
