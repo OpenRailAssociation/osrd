@@ -73,7 +73,6 @@ export default function useAuthz() {
 
   /**
    * Retrieve privileges of the connected user for a list of resources.
-   * TODO: unmock this part with the PR #11767
    */
   const getUserPrivileges = useCallback(
     async (resources: Record<ResourceType, number[]>) => {

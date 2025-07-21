@@ -6,12 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/UserActionsDropdown';
 import UserSettings from 'common/UserSettings';
-import { setImpersonatedUser } from 'reducers/user';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -23,13 +20,11 @@ type Props = {
 
 const LegacyNavBarSNCF = ({ appName }: Props) => {
   const { openModal } = useModal();
-  const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation();
 
-  const { username, impersonatedUser } = useAuth();
-  const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
+  const { username, impersonatedUser, impersonate } = useAuth();
 
   const { logoUrl, name } = useMemo(() => {
     if (!deploymentSettings)
@@ -98,10 +93,7 @@ const LegacyNavBarSNCF = ({ appName }: Props) => {
             <button
               className="impersonated-user"
               type="button"
-              onClick={() => {
-                dispatch(setImpersonatedUser(undefined));
-                dispatch(osrdEditoastApi.util.invalidateTags(tagsToInvalidate));
-              }}
+              onClick={() => impersonate(undefined)}
             >
               <XCircle variant="fill" />
             </button>

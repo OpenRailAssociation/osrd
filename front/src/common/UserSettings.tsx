@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
@@ -8,21 +8,15 @@ import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
-import { setImpersonatedUser, updateUserPreferences } from 'reducers/user';
-import {
-  getIsSuperUser,
-  getImpersonatedUser,
-  getUserPreferences,
-} from 'reducers/user/userSelectors';
+import { updateUserPreferences } from 'reducers/user';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
+import useAuth from 'utils/hooks/useAuth';
 
-import {
-  addTagTypes,
-  type PostSearchApiArg,
-  type SearchResultItemUser,
-} from './api/generatedEditoastApi';
+import { type PostSearchApiArg, type SearchResultItemUser } from './api/generatedEditoastApi';
 import { osrdEditoastApi } from './api/osrdEditoastApi';
+import useAuthz from './authorization/hooks/useAuthz';
 import { ModalContext } from './BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const UserSettings = () => {
@@ -33,9 +27,8 @@ const UserSettings = () => {
   const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
   const dispatch = useAppDispatch();
   const { closeModal } = useContext(ModalContext);
-  const isSuperUser = useSelector(getIsSuperUser);
-  const impersonatedUser = useSelector(getImpersonatedUser);
-  const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
+  const { isSuperUser } = useAuthz();
+  const { impersonatedUser, impersonate } = useAuth();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
 
@@ -63,13 +56,15 @@ const UserSettings = () => {
 
   const userComboBoxDefaultProps = useDefaultComboBox(userList, (subject) => subject.name);
 
-  const handleSubjectSelection = (subject: SearchResultItemUser | undefined) => {
-    if (subject) {
-      dispatch(setImpersonatedUser(subject));
-      dispatch(osrdEditoastApi.util.invalidateTags(tagsToInvalidate));
-      closeModal();
-    }
-  };
+  const handleSubjectSelection = useCallback(
+    (subject: SearchResultItemUser | undefined) => {
+      if (subject) {
+        impersonate(subject);
+        closeModal();
+      }
+    },
+    [impersonate, closeModal]
+  );
 
   useEffect(() => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));

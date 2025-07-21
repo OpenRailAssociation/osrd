@@ -92,7 +92,7 @@ const UserActionsDropdown = ({
     },
     {
       node: (
-        <button type="button" className="btn-link text-reset" onClick={logout}>
+        <button type="button" className="btn-link text-reset" onClick={() => logout()}>
           <span className="mr-2">
             <SignOut />
           </span>
