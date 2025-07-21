@@ -40,7 +40,6 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
-use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::rolling_stock::TrainMainCategories;
 use editoast_schemas::rolling_stock::TrainMainCategory;
 use editoast_schemas::train_schedule::Comfort;

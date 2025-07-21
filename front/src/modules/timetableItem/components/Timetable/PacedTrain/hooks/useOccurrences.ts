@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
@@ -61,18 +60,6 @@ const useOccurrences = (
         occurrenceRollingStock = rollingStockList.find((rs) => rs.name === rollingStockName);
       }
 
-      const correspondingMainCategory =
-        correspondingException?.rolling_stock_category?.value &&
-        isMainCategory(correspondingException?.rolling_stock_category?.value)
-          ? correspondingException.rolling_stock_category.value.main_category
-          : undefined;
-      const pacedMainCategory =
-        pacedTrainCategory && isMainCategory(pacedTrainCategory)
-          ? pacedTrainCategory.main_category
-          : undefined;
-
-      const mainCategory = correspondingMainCategory ?? pacedMainCategory;
-
       computedOccurrences.push({
         id: occurrenceId,
         trainName: correspondingException?.train_name?.value ?? computeOccurrenceName(name, i),
@@ -85,11 +72,8 @@ const useOccurrences = (
           : stopsCount,
         disabled: correspondingException?.disabled,
         // In the model, we can currently have a null category value so we need to handle this case
-        category: mainCategory
-          ? {
-              main_category: mainCategory,
-            }
-          : undefined,
+        category:
+          correspondingException?.rolling_stock_category?.value ?? pacedTrainCategory ?? undefined,
         occurrenceIndex: i,
         exceptionChangeGroups: correspondingException
           ? omit(correspondingException, ['key', 'occurrence_index', 'disabled'])

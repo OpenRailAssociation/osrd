@@ -144,18 +144,13 @@ const useFilterTimetableItems = (
         if (trainCategoryFilter !== 'all') {
           const exceptionsCategories = isPacedTrainWithDetails(timetableItem)
             ? timetableItem.exceptions
-                .filter(
+                .map(
                   (exception) =>
                     exception.rolling_stock_category?.value &&
                     isMainCategory(exception.rolling_stock_category.value) &&
-                    exception.rolling_stock_category.value.main_category
+                    extractTagCode(exception.rolling_stock_category.value.main_category)
                 )
-                .map(
-                  (exception) =>
-                    exception.rolling_stock_category!.value &&
-                    isMainCategory(exception.rolling_stock_category!.value) &&
-                    extractTagCode(exception.rolling_stock_category!.value.main_category)
-                )
+                .filter((tagCode) => !!tagCode)
             : [];
           const allCategories = uniq([timetableItem.category, ...exceptionsCategories]);
           if (

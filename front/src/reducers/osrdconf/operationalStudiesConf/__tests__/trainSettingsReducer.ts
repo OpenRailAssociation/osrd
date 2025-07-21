@@ -82,7 +82,7 @@ const testTrainSettingsReducer = () => {
   });
 
   it('should handle updateCategory', () => {
-    const newCategory = { main_category: 'HIGH_SPEED_TRAIN' } as TrainCategory;
+    const newCategory: TrainCategory = { main_category: 'HIGH_SPEED_TRAIN' };
     defaultStore.dispatch(updateCategory(newCategory));
     const state = getState();
     expect(state.category).toBe(newCategory);
