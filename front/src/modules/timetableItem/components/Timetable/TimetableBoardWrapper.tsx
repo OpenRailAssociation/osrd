@@ -3,6 +3,7 @@ import { useCallback, useContext, useMemo, useState } from 'react';
 import {
   ArrowSwitch,
   Check,
+  Clear,
   Download,
   Note,
   PlusCircle,
@@ -235,6 +236,10 @@ const TimetableBoardWrapper = ({
     }
   };
 
+  const areAllItemsSelected =
+    selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
+    selectedTimetableItemIds.length > 0;
+
   const menuItems = [
     {
       title: showTrainDetails ? t('main.lessDetails') : t('main.moreDetails'),
@@ -244,12 +249,8 @@ const TimetableBoardWrapper = ({
       onClick: () => toggleShowTrainDetails(),
     },
     {
-      title:
-        selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
-        selectedTimetableItemIds.length > 0
-          ? t('main.timetable.unselectAll')
-          : t('main.timetable.selectAll'),
-      icon: <Check />,
+      title: areAllItemsSelected ? t('main.timetable.unselectAll') : t('main.timetable.selectAll'),
+      icon: areAllItemsSelected ? <Clear /> : <Check />,
       dataTestID: 'scenarios-select-all-button',
       disabled: timetableItemsWithDetails.length === 0,
       onClick: () => toggleAllTrainsSelecton(),
