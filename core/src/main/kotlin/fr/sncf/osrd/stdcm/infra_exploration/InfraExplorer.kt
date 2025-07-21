@@ -13,6 +13,7 @@ import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.goodBlocks
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -99,6 +100,7 @@ interface InfraExplorer {
 
     /** Returns the step tracker, giving data about the steps on the path (including lookahead) */
     fun getStepTracker(): StepTracker
+    fun getAllBlocks(): List<BlockId>
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -282,6 +284,10 @@ private class InfraExplorerImpl(
         return stepTracker
     }
 
+    override fun getAllBlocks(): List<BlockId> {
+        return blocks.toList()
+    }
+
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
@@ -296,6 +302,8 @@ private class InfraExplorerImpl(
         val addedBlocks = mutableListOf<BlockId>()
 
         for (block in routeBlocks) {
+            if (!goodBlocks.contains(block.index.toInt()) && block.index.toInt() % 8 != 0)
+                return false
             addedBlocks.add(block)
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true

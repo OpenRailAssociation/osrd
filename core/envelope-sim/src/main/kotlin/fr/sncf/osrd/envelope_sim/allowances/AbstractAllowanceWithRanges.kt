@@ -379,6 +379,7 @@ protected constructor(
         }
 
         if (!search.complete()) {
+            logger.warn("error on range {} to {}:", envelopeSection.getBeginPos(), envelopeSection.getEndPos())
             if (res != null && abs(lastTime - targetTime) <= context.timeStep) {
                 // We couldn't match the distributed tolerance, but we're still within one timestep.
                 // This sometimes happen when the path is very long with many scheduled points. Most

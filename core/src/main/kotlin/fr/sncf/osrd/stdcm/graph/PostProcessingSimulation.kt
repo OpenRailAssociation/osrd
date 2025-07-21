@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope.EnvelopeDebug
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
@@ -101,6 +102,7 @@ fun buildFinalEnvelope(
                 // despite the exploration data identifying a valid opening.
                 // This is not supposed to happen, but we can still fallback
                 // linear allowance, and log as much info as we can
+                EnvelopeDebug.plot(Envelope.make(*newEnvelope.slice(290000.0, 310000.0)))
                 return handlePostProcessingConflict(
                     graph,
                     maxSpeedEnvelope,

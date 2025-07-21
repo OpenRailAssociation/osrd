@@ -38,7 +38,8 @@ class EngineeringAllowanceManager(
 
         val requiredAdditionalTime = expectedStartTime - prevNode.timeData.earliestReachableTime
         val segments = generatePreviousSimulationSegments(prevNode.previousEdge, graph).cacheable()
-        val opportunities = generateAllowanceOpportunities(segments, prevNode.speed)
+        val opportunities = generateAllowanceOpportunities(segments, prevNode.speed).toList()
+        val lastTime = opportunities.lastOrNull()?.addedTime
         val solution =
             opportunities
                 .takeWhile { it.maxNextAllowanceValue >= requiredAdditionalTime }
@@ -48,7 +49,7 @@ class EngineeringAllowanceManager(
         var distance = 0.meters
         for (segment in segments) {
             distance += segment.length
-            if (distance > 10_000.meters) return distance
+            if (distance > 50_000.meters) return distance
         }
         return Distance.max(solution.distance, distance)
     }
@@ -175,7 +176,9 @@ class EngineeringAllowanceManager(
             }
         }
         val canStop = decelerationEndSpeed <= 0.0
-        if (canStop) totalBrakingDelay = Double.POSITIVE_INFINITY
+        if (canStop) {
+            totalBrakingDelay = maxBrakingDelay
+        }
         return DecelerationResults(
             hasConflict = false,
             addedDelay = totalBrakingDelay,
