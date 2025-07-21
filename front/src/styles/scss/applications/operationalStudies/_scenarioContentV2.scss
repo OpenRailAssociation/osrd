@@ -27,6 +27,10 @@
   }
   .left-column {
     padding-right: 8px;
+
+    .board-wrapper {
+      height: 100%;
+    }
   }
   .center-column {
     position: relative;
@@ -36,5 +40,9 @@
   }
   .right-column {
     padding-left: 8px;
+
+    .board-wrapper {
+      height: 100%;
+    }
   }
 }
