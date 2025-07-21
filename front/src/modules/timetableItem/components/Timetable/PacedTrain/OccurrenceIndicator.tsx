@@ -69,21 +69,24 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup], i) => (
-        <span key={i} className="change-group">
-          {changeGroup !== 'rolling_stock_category'
-            ? t(`occurrenceChangeGroup.${changeGroup}`)
-            : occurrence.exceptionChangeGroups?.rolling_stock_category?.value
-              ? t(
-                  `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
-                  { ns: 'translation', keyPrefix: '' }
-                )
-              : t('rollingStock.categoriesOptions.noCategory', {
-                  ns: 'translation',
-                  keyPrefix: '',
-                })}
-        </span>
-      ));
+      .map(([changeGroup], i) => {
+        const occurrenceCategory = occurrence.exceptionChangeGroups?.rolling_stock_category?.value
+          ? t(
+              `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
+              { ns: 'translation', keyPrefix: '' }
+            )
+          : t('rollingStock.categoriesOptions.noCategory', {
+              ns: 'translation',
+              keyPrefix: '',
+            });
+        return (
+          <span key={i} className="change-group">
+            {changeGroup !== 'rolling_stock_category'
+              ? t(`occurrenceChangeGroup.${changeGroup}`)
+              : occurrenceCategory}
+          </span>
+        );
+      });
   return (
     <div
       data-testid="occurrence-indicator"

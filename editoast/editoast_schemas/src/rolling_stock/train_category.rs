@@ -16,7 +16,7 @@ pub enum TrainCategory {
 }
 
 impl TrainCategory {
-    pub fn new(
+    pub fn from_main_or_sub_category(
         main_category: Option<TrainMainCategory>,
         sub_category_code: Option<String>,
     ) -> Option<Self> {

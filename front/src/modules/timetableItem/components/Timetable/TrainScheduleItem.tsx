@@ -189,7 +189,7 @@ const TrainScheduleItem = ({
                 <div
                   className={cx(
                     'train-info',
-                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category && isMainCategory(train.category) && train.category.main_category ? train.category.main_category : 'None']}`
+                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category && isMainCategory(train.category) ? train.category.main_category : 'None']}`
                   )}
                 >
                   {projectionPathIsUsed && (

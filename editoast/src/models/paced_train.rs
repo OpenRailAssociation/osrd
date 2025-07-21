@@ -76,17 +76,14 @@ impl PacedTrain {
             match &change_group.value {
                 Some(TrainCategory::Main { main_category }) => {
                     train_schedule.main_category = Some(TrainMainCategory(main_category.clone()));
-                    // TODO train_schedule.sub_category = None;
                 }
                 Some(TrainCategory::Sub {
                     sub_category_code: _,
                 }) => {
-                    // TODO train_schedule.sub_category = Some(sub_category_code);
                     train_schedule.main_category = None;
                 }
                 None => {
                     train_schedule.main_category = None;
-                    // TODO train_schedule.sub_category = None;
                 }
             }
         }
@@ -276,7 +273,10 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
                 power_restrictions: paced_train.power_restrictions,
                 options: paced_train.options,
-                category: TrainCategory::new(paced_train.main_category.map(|c| c.0), None),
+                category: TrainCategory::from_main_or_sub_category(
+                    paced_train.main_category.map(|c| c.0),
+                    None,
+                ),
             },
             exceptions: paced_train.exceptions,
             paced: Paced {

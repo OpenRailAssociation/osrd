@@ -6,7 +6,6 @@ import {
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
   type MacroNodeForm,
-  type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import { checkChangeGroups } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
@@ -509,7 +508,9 @@ const handleUpdateTimetableItem = async ({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = timetableItem;
-  const timetableItemForUpdate = {
+
+  const mainCategory = getTrainCategoryFromId(trainrun.categoryId);
+  const timetableItemForUpdate: TrainSchedule = {
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
@@ -518,11 +519,11 @@ const handleUpdateTimetableItem = async ({
     schedule,
     // Reset margins because they contain references to path items
     margins: undefined,
-    paced: undefined,
-    exceptions: undefined,
-    category: {
-      main_category: getTrainCategoryFromId(trainrun.categoryId),
-    } as TrainCategory,
+    category: mainCategory
+      ? {
+          main_category: mainCategory,
+        }
+      : undefined,
   };
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
