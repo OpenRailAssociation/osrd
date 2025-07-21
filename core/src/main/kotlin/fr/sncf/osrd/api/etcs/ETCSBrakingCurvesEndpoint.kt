@@ -1,14 +1,12 @@
 package fr.sncf.osrd.api.etcs
 
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.conflicts.ConflictType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.etcs.BrakingCurves
-import fr.sncf.osrd.envelope_sim.etcs.BrakingType
-import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
-import fr.sncf.osrd.envelope_sim.etcs.EoaType
+import fr.sncf.osrd.envelope_sim.etcs.*
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
@@ -154,7 +152,7 @@ class ETCSBrakingCurvesEndpoint(
                 ETCSBrakingCurvesResponse(
                     slowdownBrakingCurves.map { buildETCSCurves(it.value) },
                     stopBrakingCurves.map { buildETCSCurves(it.value) },
-                    conflictBrakingCurves.map { buildETCSCurves(it.value) }
+                    buildETCSConflictCurves(conflictBrakingCurves)
                 )
             RsJson(RsWithBody(etcsBrakingCurvesResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
@@ -225,17 +223,31 @@ class ETCSBrakingCurvesEndpoint(
         return Envelope.make(*mrspParts.toTypedArray())
     }
 
+    private fun buildETCSConflictCurves(
+        eoaBrakingCurves: EOABrakingCurves
+    ): List<ETCSConflictCurves> {
+        return eoaBrakingCurves.map {
+            assert(it.key.eoaType == EoaType.SPACING || it.key.eoaType == EoaType.ROUTING)
+            ETCSConflictCurves(
+                it.value[BrakingType.IND]!!.brakingCurve.buildSimpleEnvelope(),
+                it.value[BrakingType.PS]!!.brakingCurve.buildSimpleEnvelope(),
+                it.value[BrakingType.GUI]!!.brakingCurve.buildSimpleEnvelope(),
+                if (it.key.eoaType == EoaType.SPACING) ConflictType.SPACING
+                else ConflictType.ROUTING
+            )
+        }
+    }
+
     private fun buildETCSCurves(brakingCurves: BrakingCurves): ETCSCurves {
         return ETCSCurves(
-            buildSimpleEnvelope(brakingCurves[BrakingType.IND]?.brakingCurve),
-            buildSimpleEnvelope(brakingCurves[BrakingType.PS]!!.brakingCurve)!!,
-            buildSimpleEnvelope(brakingCurves[BrakingType.GUI]!!.brakingCurve)!!,
+            brakingCurves[BrakingType.IND]?.brakingCurve?.buildSimpleEnvelope(),
+            brakingCurves[BrakingType.PS]!!.brakingCurve.buildSimpleEnvelope(),
+            brakingCurves[BrakingType.GUI]!!.brakingCurve.buildSimpleEnvelope(),
         )
     }
 
-    private fun buildSimpleEnvelope(envelope: Envelope?): SimpleEnvelope? {
-        if (envelope == null) return envelope
-        val points = envelope.iteratePoints().distinct()
+    private fun Envelope.buildSimpleEnvelope(): SimpleEnvelope {
+        val points = this.iteratePoints().distinct()
         // Reduce the number of points in the envelope. Epsilon = 1.0 for now, reduce its value if
         // more precision is needed.
         val simplifiedEnvelope = simplifyEnvelopePoints(points)

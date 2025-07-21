@@ -1243,7 +1243,7 @@ def test_etcs_schedule_braking_curves_endpoint(
     )
     slowdowns = etcs_braking_curves_response.json()["slowdowns"]
     stops = etcs_braking_curves_response.json()["stops"]
-    signals = etcs_braking_curves_response.json()["signals"]
+    conflicts = etcs_braking_curves_response.json()["conflicts"]
 
     # Check that the correct stop curves (EoAs = stops) are present
     first_stop_offset = 29_294_000
@@ -1324,12 +1324,15 @@ def test_etcs_schedule_braking_curves_endpoint(
             and permitted_speed["speeds"][0] <= guidance["speeds"][0]
         )
 
-    # Check that the correct signal curves are present: 29 spacing curves and 7 routing curves
-    assert len(signals) == 36
-    for i in range(len(signals)):
-        indication = signals[i]["indication"]
-        permitted_speed = signals[i]["permitted_speed"]
-        guidance = signals[i]["guidance"]
+    # Check that the correct conflict curves are present: 29 spacing conflict curves and 7 routing conflict curves
+    assert len(conflicts) == 36
+    spacing_count = 0
+    routing_count = 0
+    for i in range(len(conflicts)):
+        indication = conflicts[i]["indication"]
+        permitted_speed = conflicts[i]["permitted_speed"]
+        guidance = conflicts[i]["guidance"]
+        conflict_type = conflicts[i]["conflict_type"]
         assert indication["speeds"][-1] == 0
         assert permitted_speed["speeds"][-1] == 0
         assert guidance["speeds"][-1] == 0
@@ -1341,9 +1344,15 @@ def test_etcs_schedule_braking_curves_endpoint(
             permitted_speed["positions"][0] <= guidance["positions"][0]
             and permitted_speed["speeds"][0] <= guidance["speeds"][0]
         )
-    last_signal_curves = signals[-1]
-    assert last_signal_curves["indication"]["positions"][0] == 42_766_050
-    assert last_signal_curves["indication"]["positions"][-1] == 44_538_000
+        if conflict_type == "Spacing":
+            spacing_count += 1
+        elif conflict_type == "Routing":
+            routing_count += 1
+    assert spacing_count == 29
+    assert routing_count == 7
+    last_conflict_curves = conflicts[-1]
+    assert last_conflict_curves["indication"]["positions"][0] == 42_766_050
+    assert last_conflict_curves["indication"]["positions"][-1] == 44_538_000
 
 
 def _assert_equal_speeds(left, right):

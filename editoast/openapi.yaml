@@ -5125,13 +5125,17 @@ components:
       required:
       - slowdowns
       - stops
-      - signals
+      - conflicts
       properties:
-        signals:
+        conflicts:
           type: array
           items:
-            $ref: '#/components/schemas/ETCSCurves'
-          description: List of ETCS braking curves associated to the train schedule's ETCS signals
+            $ref: '#/components/schemas/ETCSConflictCurves'
+          description: |-
+            List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
+            For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
+            For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
+            corresponding potential spacing or routing conflict.
         slowdowns:
           type: array
           items:
@@ -5142,6 +5146,106 @@ components:
           items:
             $ref: '#/components/schemas/ETCSCurves'
           description: List of ETCS braking curves associated to the train schedule's ETCS stops
+    ETCSConflictCurves:
+      type: object
+      required:
+      - indication
+      - permitted_speed
+      - guidance
+      - conflict_type
+      properties:
+        conflict_type:
+          type: string
+          enum:
+          - Spacing
+          - Routing
+        guidance:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+        indication:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
+        permitted_speed:
+          type: object
+          required:
+          - positions
+          - times
+          - speeds
+          properties:
+            positions:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: |-
+                List of positions of a train
+                Both positions (in mm) and times (in ms) must have the same length
+            speeds:
+              type: array
+              items:
+                type: number
+                format: double
+              description: List of speeds (in m/s) associated to a position
+            times:
+              type: array
+              items:
+                type: integer
+                format: int64
+                minimum: 0
+              description: List of times (in ms) associated to a position
     ETCSCurves:
       type: object
       required:
