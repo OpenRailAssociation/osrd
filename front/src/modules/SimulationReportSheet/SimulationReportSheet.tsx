@@ -6,7 +6,6 @@ import type { TFunction } from 'i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { dateToHHMMSS, formatDateToString } from 'utils/date';
-import { Duration } from 'utils/duration';
 import { msToKmh, tToKg } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
@@ -48,7 +47,7 @@ const SimulationReportSheet = ({
     operationalPointsList.forEach((step, index) => {
       const isFirst = index === 0;
       const isLast = index === operationalPointsList.length - 1;
-      if (!isFirst && !isLast && step.duration === Duration.zero) return;
+      if (!isFirst && !isLast && !step.duration) return;
 
       rows.push({
         name: step.name || t('reportSheet.unknown'),
@@ -57,6 +56,7 @@ const SimulationReportSheet = ({
         leavesAt: isFirst ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
       });
     });
+
     return rows;
   }, [operationalPointsList]);
 

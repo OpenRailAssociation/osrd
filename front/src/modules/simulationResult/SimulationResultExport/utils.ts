@@ -145,7 +145,7 @@ export const formatOperationalPoints = (
     const { time: finalOutputTime, speed: finalOutputSpeed } = getTimeAndSpeed(final_output, op);
 
     // Get duration
-    let stepDuration = Duration.zero;
+    let stepDuration: Duration | undefined;
     const correspondingStep = timetableItem.path.find((step) =>
       matchPathStepAndOp(step, {
         opId: op.id,
