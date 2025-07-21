@@ -118,7 +118,7 @@ export type OperationalPointWithTimeAndSpeed = {
   position: number;
   speed: number;
   time: Date;
-  duration: Duration;
+  duration?: Duration;
   line_code: number | null;
   track_number: number | null;
   line_name: string | null;
