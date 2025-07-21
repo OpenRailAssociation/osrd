@@ -41,6 +41,7 @@ dependencies {
     implementation project(":kt-osrd-sim-infra")
     implementation project(":kt-osrd-rjs-parser")
     implementation project(":kt-osrd-sncf-signaling")
+    implementation project(':kt-osrd-path')
 
     // base primitives
     implementation libs.guava
