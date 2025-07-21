@@ -18,7 +18,6 @@ import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
 import createScenario from './utils/scenario';
-import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type {
   CommonTranslations,
@@ -79,10 +78,6 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
       );
     }
   );
-
-  test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
-  });
 
   test('Reflects updates across tabs ', async ({ context }) => {
     const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
