@@ -87,3 +87,56 @@ export type Attachment = {
   contentType: string;
   path: string;
 };
+
+// GitHub summary report types
+
+/**
+ * A simplified test case used for the GitHub summary report.
+ */
+export type GithubTestSummary = {
+  name: string;
+  status: string;
+  message?: string;
+  duration?: number;
+  flaky?: boolean;
+  browser?: string;
+};
+
+/**
+ * Aggregated GitHub summary stats.
+ */
+export type ReportSummary = {
+  tests: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  pending: number;
+  other: number;
+  start: number;
+  stop: number;
+};
+
+/**
+ * The GitHub-compatible summary report structure.
+ */
+export type GithubSummaryReport = {
+  results: {
+    summary: ReportSummary;
+    tests: GithubTestSummary[];
+  };
+};
+
+/**
+ * Represents a single uploaded GitHub artifact.
+ */
+export type Artifact = {
+  id: number;
+  name: string;
+};
+
+/**
+ * Response from GitHub Actions when fetching uploaded artifacts.
+ */
+export type ArtifactResponse = {
+  artifacts: Artifact[]; // List of uploaded artifacts in the GitHub run
+};

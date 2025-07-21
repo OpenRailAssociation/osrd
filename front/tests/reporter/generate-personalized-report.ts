@@ -10,7 +10,7 @@ import {
   type TestStep,
 } from '@playwright/test/reporter';
 
-import formatAnsiMessageToHtml from '.';
+import { formatAnsiMessageToHtml } from '.';
 import type {
   PersonalizedReport,
   PersonalizedTest,

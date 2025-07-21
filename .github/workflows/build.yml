@@ -940,12 +940,38 @@ jobs:
             osrd-playwright:latest npx playwright test $TEST_PROJECT
           exit $(docker wait playwright-test)
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload video artifacts
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: e2e-traces-and-videos
-          path: front/test-results/
+          name: playwright-videos
+          path: front/test-results/**/video.webm
           retention-days: 30
+
+      - name: Upload trace artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: front/test-results/**/trace.zip
+          retention-days: 30
+
+      - name: Generate GitHub Summary
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -eo pipefail
+          docker run --init --name=build-report --net=host \
+            --ipc=host \
+            -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+            -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
+            -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+            -v "$PWD/front/test-results:/app/front/test-results" \
+            osrd-playwright:latest npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md 
+          cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
       - name: Save container logs
         run: docker compose logs > container-logs

@@ -9,10 +9,18 @@ import Convert from 'ansi-to-html';
  * @param text - The raw ANSI string
  * @returns HTML-formatted string
  */
-export default function formatAnsiMessageToHtml(text: string): string {
+export function formatAnsiMessageToHtml(text: string): string {
   if (!text) return 'No message available';
 
   const converter = new Convert();
   const htmlText = converter.toHtml(text);
   return htmlText.replace(/\n/g, '<br>');
+}
+
+export function formatDuration(start: number, stop: number): string {
+  const seconds = Math.floor((stop - start) / 1000);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 }
