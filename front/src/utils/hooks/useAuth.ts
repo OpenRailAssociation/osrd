@@ -1,25 +1,21 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type SearchResultItemUser } from 'common/api/osrdEditoastApi';
+import {
+  addTagTypes,
+  osrdEditoastApi,
+  type SearchResultItemUser,
+} from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-import { updateAuthzUser } from 'reducers/user';
+import { setImpersonatedUser, updateAuthzUser } from 'reducers/user';
 import { getIsUserLogged, getImpersonatedUser, getUsername } from 'reducers/user/userSelectors';
 
-type AuthHookData = {
-  username?: string;
-  isUserLogged: boolean;
-  impersonatedUser?: SearchResultItemUser;
-  isLoading: boolean;
-  logout: () => void;
-};
-
-function useAuth(): AuthHookData {
+function useAuth() {
+  const dispatch = useDispatch();
   const isUserLogged = useSelector(getIsUserLogged);
   const username = useSelector(getUsername);
   const impersonatedUser = useSelector(getImpersonatedUser);
-  const dispatch = useDispatch();
 
   const [login, { isLoading: isAuthenticateLoading }] =
     osrdGatewayApi.endpoints.login.useMutation();
@@ -45,12 +41,21 @@ function useAuth(): AuthHookData {
     }
   }, [isUserLogged, data]);
 
+  /**
+   * Function to impersonate the given user, or if undefined, stop the impersonation.
+   */
+  const impersonate = useCallback((userToImpersonate: SearchResultItemUser | undefined) => {
+    dispatch(setImpersonatedUser(userToImpersonate));
+    dispatch(osrdEditoastApi.util.invalidateTags(addTagTypes.map((t) => ({ type: t }))));
+  }, []);
+
   return {
     username: user.data?.name ?? username,
     isUserLogged,
     impersonatedUser,
     isLoading: isAuthenticateLoading || !data,
     logout,
+    impersonate,
   };
 }
 

@@ -24,7 +24,7 @@ type ScenarioHeaderProps = {
 };
 
 const ScenarioHeader = ({ scenario, infra, activeBoards, toggleBoard }: ScenarioHeaderProps) => {
-  const { username, impersonatedUser, logout } = useAuth();
+  const { username, impersonatedUser, impersonate } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
 
@@ -152,7 +152,7 @@ const ScenarioHeader = ({ scenario, infra, activeBoards, toggleBoard }: Scenario
           {impersonatedUser && <Hubot size="lg" className="mr-2 text-black" />}
           <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
           {impersonatedUser && (
-            <button type="button" onClick={logout}>
+            <button type="button" onClick={() => impersonate(undefined)}>
               <SignOut className="ml-3 text-black" />
             </button>
           )}

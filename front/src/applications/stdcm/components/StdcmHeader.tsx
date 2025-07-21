@@ -1,13 +1,9 @@
 import { Bug, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
 
-import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { setImpersonatedUser } from 'reducers/user';
-import { getImpersonatedUser, getIsSuperUser } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
+import useAuthz from 'common/authorization/hooks/useAuthz';
+import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 const LogoSTDCM = () => {
@@ -37,10 +33,8 @@ const StdcmHeader = ({
   showHelpModule,
 }: StdcmHeaderProps) => {
   const { t } = useTranslation(['stdcm', 'translation']);
-  const dispatch = useAppDispatch();
-  const isSuperUser = useSelector(getIsSuperUser);
-  const impersonatedUser = useSelector(getImpersonatedUser);
-  const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
+  const { isSuperUser } = useAuthz();
+  const { impersonatedUser, impersonate } = useAuth();
 
   return (
     <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
@@ -71,19 +65,14 @@ const StdcmHeader = ({
           {t('translation:common.help')}
         </button>
         {impersonatedUser && (
-          <Link to="/">
-            <button
-              type="button"
-              aria-label="stdcm-impersonated"
-              className="impersonated ml-4"
-              onClick={() => {
-                dispatch(setImpersonatedUser(undefined));
-                dispatch(osrdEditoastApi.util.invalidateTags(tagsToInvalidate));
-              }}
-            >
-              <SignOut />
-            </button>
-          </Link>
+          <button
+            type="button"
+            aria-label="stdcm-impersonated"
+            className="impersonated ml-4"
+            onClick={() => impersonate(undefined)}
+          >
+            <SignOut />
+          </button>
         )}
       </div>
     </div>
