@@ -37,9 +37,9 @@ class STDCMPage extends HomePage {
 
   private readonly closeTolerancePickerButton: Locator;
 
-  readonly suggestionList: Locator;
+  private readonly suggestionList: Locator;
 
-  private readonly suggestionItems: Locator;
+  readonly suggestionItems: Locator;
 
   private readonly simulationStatus: Locator;
 
@@ -58,26 +58,26 @@ class STDCMPage extends HomePage {
     this.debugButton = page.getByTestId('stdcm-debug-button');
     this.helpButton = page.getByTestId('stdcm-help-button');
     this.mapContainer = page.locator('#stdcm-map-config');
-    this.consistCard = page.locator('.stdcm-consist-container .stdcm-card');
+    this.consistCard = page.getByTestId('consist-card-body');
     this.originCard = page.getByTestId('stdcm-card-origin');
     this.destinationCard = page.getByTestId('stdcm-card-destination');
-    this.addViaButton = page.locator('.stdcm-vias-list button .stdcm-card__body.add-via');
-    this.anteriorLinkedTrainContainer = page.locator(
-      '.stdcm-linked-train-search-container.anterior-linked-train'
+    this.addViaButton = page.getByTestId('add-via-card-body');
+    this.anteriorLinkedTrainContainer = page.getByTestId('anterior-container');
+    this.anteriorAddLinkedPathButton = this.anteriorLinkedTrainContainer.getByTestId(
+      'add-linked-train-card-body'
     );
-    this.anteriorAddLinkedPathButton =
-      this.anteriorLinkedTrainContainer.locator('.add-linked-train');
-    this.posteriorLinkedTrainContainer = page.locator(
-      '.stdcm-linked-train-search-container.posterior-linked-train'
+    this.posteriorLinkedTrainContainer = page.getByTestId('posterior-container');
+    this.posteriorAddLinkedPathButton = this.posteriorLinkedTrainContainer.getByTestId(
+      'add-linked-train-card-body'
     );
-    this.posteriorAddLinkedPathButton =
-      this.posteriorLinkedTrainContainer.locator('.add-linked-train');
     this.launchSimulationButton = page.getByTestId('launch-simulation-button');
 
-    this.closeTolerancePickerButton = page.locator('.tolerance-picker .close-button');
+    this.closeTolerancePickerButton = page
+      .getByTestId('tolerance-picker')
+      .getByTestId('modal-close-button');
 
-    this.suggestionList = page.locator('.suggestions-list');
-    this.suggestionItems = this.suggestionList.locator('.suggestion-item');
+    this.suggestionList = page.getByTestId('suggestions-list');
+    this.suggestionItems = this.suggestionList.getByTestId('suggestion-item');
 
     this.simulationStatus = page.getByTestId('simulation-status');
 
@@ -85,9 +85,9 @@ class STDCMPage extends HomePage {
     this.destinationMarker = this.mapContainer.locator('img[alt="destination"]');
     this.viaMarker = this.mapContainer.locator('img[alt="via"]');
 
-    this.closeTimePickerButton = page.locator('.time-picker .close-button');
+    this.closeTimePickerButton = page.getByTestId('time-picker').getByTestId('modal-close-button');
     this.warningBox = page.getByTestId('warning-box');
-    this.incrementButton = page.locator('.minute-button', { hasText: '+1mn' });
+    this.incrementButton = page.getByTestId('increment-minute');
     this.pathfindingStatusMessage = page.getByTestId('pathfinding-status-message');
   }
 

@@ -44,7 +44,10 @@ const StdcmLinkedTrainSearch = ({
   };
 
   return (
-    <div className={`stdcm-linked-train-search-container ${linkedTrainType}-linked-train`}>
+    <div
+      data-testid={`${linkedTrainType}-container`}
+      className={`stdcm-linked-train-search-container ${linkedTrainType}-linked-train`}
+    >
       {!displayLinkedTrainSearch ? (
         <StdcmDefaultCard
           disabled={disabled}
