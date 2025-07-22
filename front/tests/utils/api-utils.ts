@@ -6,7 +6,6 @@ import type {
   GetProjectsApiResponse,
   GetProjectsByProjectIdStudiesApiResponse,
   GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-  GetLightRollingStockApiResponse,
   LightElectricalProfileSet,
   GetInfraApiResponse,
   InfraWithState,
@@ -221,14 +220,10 @@ export const getScenario = async (
  * @returns {Promise<RollingStock>} - The matching rolling stock data.
  */
 export const getRollingStock = async (rollingStockName: string): Promise<LightRollingStock> => {
-  const rollingStocks: GetLightRollingStockApiResponse = await getApiRequest(
-    '/api/light_rolling_stock',
-    { page_size: 500 }
+  const rollingStock: LightRollingStockWithLiveries = await getApiRequest(
+    `api/light_rolling_stock/name/${encodeURIComponent(rollingStockName)}`
   );
-  const rollingStock = rollingStocks.results.find(
-    (r: LightRollingStockWithLiveries) => r.name === rollingStockName
-  );
-  return rollingStock as LightRollingStock;
+  return rollingStock;
 };
 
 /**
