@@ -324,6 +324,7 @@ impl TrainSchedule {
             options: TrainScheduleOptions {
                 use_electrical_profiles: true,
                 use_speed_limits_for_simulation: true,
+                stops_at_end_of_block: false,
             },
             category: None,
         }

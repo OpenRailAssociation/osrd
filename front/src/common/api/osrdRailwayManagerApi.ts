@@ -84,6 +84,7 @@ export type Items = {
     values: string[];
   };
   options?: {
+    stops_at_end_of_block?: boolean;
     use_electrical_profiles?: boolean;
     use_speed_limits_for_simulation?: boolean;
   };
@@ -150,6 +151,7 @@ export type Items = {
 };
 export type ConstraintDistribution = 'STANDARD' | 'MARECO';
 export type Options = {
+  stops_at_end_of_block?: boolean;
   use_electrical_profiles?: boolean;
   use_speed_limits_for_simulation?: boolean;
 };
@@ -263,6 +265,7 @@ export type TransformTimetableResponse = {
       values: string[];
     };
     options?: {
+      stops_at_end_of_block?: boolean;
       use_electrical_profiles?: boolean;
       use_speed_limits_for_simulation?: boolean;
     };

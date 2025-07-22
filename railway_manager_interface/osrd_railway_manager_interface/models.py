@@ -409,6 +409,7 @@ class TrainScheduleOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    stops_at_end_of_block: bool | None = None
     use_electrical_profiles: bool | None = None
     use_speed_limits_for_simulation: bool | None = None
 

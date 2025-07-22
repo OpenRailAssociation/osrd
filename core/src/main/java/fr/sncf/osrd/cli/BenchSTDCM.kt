@@ -156,7 +156,8 @@ class BenchSTDCM : CliCommand {
                                 it != ETCS_LEVEL2.id
                             },
                         )
-                    val steps = parseSteps(infra, request.pathItems, request.startTime)
+                    val steps =
+                        parseSteps(infra, request.pathItems, request.startTime, rollingStock.length)
                     val requirements = getRequirements(request, infra, cacheManager)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)

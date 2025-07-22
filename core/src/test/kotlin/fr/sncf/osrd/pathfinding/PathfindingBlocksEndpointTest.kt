@@ -2,7 +2,7 @@ package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.TrackLocation
-import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
+import fr.sncf.osrd.api.pathfinding.findDirectedWaypointBlocks
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -31,7 +31,7 @@ class PathfindingBlocksEndpointTest {
         direction: Direction,
         expectedEdgeLocations: Set<EdgeLocation<BlockId, Block>>,
     ) {
-        val blocks = findWaypointBlocks(smallInfra, pathfindingWaypoint, direction)
+        val blocks = findDirectedWaypointBlocks(smallInfra, pathfindingWaypoint, direction)
         Assertions.assertThat(blocks).containsExactlyInAnyOrderElementsOf(expectedEdgeLocations)
     }
 
@@ -40,7 +40,7 @@ class PathfindingBlocksEndpointTest {
         val incoherentWaypoint = TrackLocation("TA3", Offset(100000000.meters))
         val exception =
             assertThrows(OSRDError::class.java) {
-                findWaypointBlocks(smallInfra, incoherentWaypoint, Direction.INCREASING)
+                findDirectedWaypointBlocks(smallInfra, incoherentWaypoint, Direction.INCREASING)
             }
         assertEquals(ErrorType.InvalidWaypointLocation, exception.osrdErrorType)
     }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
@@ -21,15 +22,12 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
@@ -114,7 +112,7 @@ class STDCMEndpoint(
                         it != ETCS_LEVEL2.id
                     },
                 )
-            val steps = parseSteps(infra, request.pathItems, request.startTime)
+            val steps = parseSteps(infra, request.pathItems, request.startTime, rollingStock.length)
             val requirements = getRequirements(request, infra, timetableCacheManager)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
 
@@ -306,6 +304,7 @@ fun parseSteps(
     infra: FullInfra,
     pathItems: List<STDCMPathItem>,
     startTime: ZonedDateTime,
+    rollingStockLength: Double,
 ): List<STDCMStep> {
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
@@ -324,20 +323,34 @@ fun parseSteps(
     // that it's not a stop.
     pathItems.first().stopDuration = null
 
-    return pathItems.map {
-        STDCMStep(
-            findWaypointBlocks(infra, it.locations),
-            it.stopDuration?.seconds,
-            it.stopDuration != null,
-            if (it.stepTimingData != null)
-                PlannedTimingData(
-                    TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
-                    it.stepTimingData.arrivalTimeToleranceBefore,
-                    it.stepTimingData.arrivalTimeToleranceAfter,
-                )
-            else null,
-        )
-    }
+    return pathItems
+        .mapIndexed { index, it ->
+            STDCMStep(
+                if (index != 0 && index != pathItems.size - 1) {
+                    val destinationBlock = findWaypointBlocks(infra, pathItems.last().locations)
+                    findWaypointBlocks(infra, it.locations).map { waypointBlock ->
+                        findStopPositionAtEndOfBlockConsideringRollingStock(
+                            waypointBlock,
+                            destinationBlock,
+                            rollingStockLength,
+                            infra,
+                        )
+                    }
+                } else {
+                    findWaypointBlocks(infra, it.locations)
+                },
+                it.stopDuration?.seconds,
+                it.stopDuration != null,
+                if (it.stepTimingData != null)
+                    PlannedTimingData(
+                        TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
+                        it.stepTimingData.arrivalTimeToleranceBefore,
+                        it.stepTimingData.arrivalTimeToleranceAfter,
+                    )
+                else null,
+            )
+        }
+        .toList()
 }
 
 /**
@@ -414,19 +427,6 @@ private fun parseSimulationScheduleItems(
             SimulationScheduleItem(Offset(it.position.meters), null, duration, it.receptionSignal)
         }
     )
-}
-
-private fun findWaypointBlocks(
-    infra: FullInfra,
-    waypoints: Collection<TrackLocation>,
-): Set<EdgeLocation<BlockId, Block>> {
-    val waypointBlocks = HashSet<EdgeLocation<BlockId, Block>>()
-    for (waypoint in waypoints) {
-        for (direction in Direction.entries) {
-            waypointBlocks.addAll(findWaypointBlocks(infra, waypoint, direction))
-        }
-    }
-    return waypointBlocks
 }
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionName: Set<String>?): Set<TrackSectionId>? {

@@ -391,6 +391,7 @@ fn build_request(
         rolling_stock_maximum_speed: consist.maximum_speed,
         rolling_stock_length: consist.length,
         speed_limit_tag: consist.speed_limit_tag.clone(),
+        stops_at_end_of_block: Some(false),
     }
 }
 
