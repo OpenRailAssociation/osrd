@@ -85,7 +85,8 @@ pub struct SpaceTimeCurve {
 }
 
 impl SpaceTimeCurve {
-    /// Push a point to the space time curve
+    /// Push a point to the space time curve.
+    /// If the point is already present, it is not added again.
     fn push_point(&mut self, position: u64, time: u64) {
         if self.positions.last().zip(self.times.last()) == Some((&position, &time)) {
             // If the point is already in the curve, do not add it again
@@ -93,6 +94,22 @@ impl SpaceTimeCurve {
         }
         self.positions.push(position);
         self.times.push(time);
+    }
+
+    /// Push a stop (two points) to the space time curve.
+    /// If the stop is already present, it is not added again.
+    /// If `stop_for` is 0, equivalent to `push_point`.
+    fn push_stop(&mut self, position: u64, time: u64, stop_for: u64) {
+        if self.positions.last().zip(self.times.last()) == Some((&position, &(time + stop_for))) {
+            // If the point is already in the curve, do not add it again
+            return;
+        }
+        self.positions.push(position);
+        self.times.push(time);
+        if stop_for != 0 {
+            self.positions.push(position);
+            self.times.push(time + stop_for);
+        }
     }
 
     /// Check if the space time curve is empty
@@ -409,7 +426,9 @@ pub async fn compute_projected_train_paths(
 #[derive(Clone, Debug)]
 pub struct OperationalPointRefAndTime {
     /// Arrival time of the train at this operational point
-    time: u64,
+    arrival_time: u64,
+    /// The stop duration at this operational point (0 if it does not stop)
+    stop_for: u64,
     op_ref: OperationalPointIdentifier,
 }
 
@@ -421,10 +440,20 @@ pub struct TrainToProjectOnOperationalPoint {
 
 impl TrainToProjectOnOperationalPoint {
     pub fn new(ts: models::TrainSchedule, sim: simulation::Response) -> Self {
+        let stops_input: HashMap<_, _> = ts
+            .schedule
+            .iter()
+            .filter_map(|schedule| {
+                schedule
+                    .stop_for
+                    .as_ref()
+                    .map(|stop_for| (&schedule.at, stop_for.num_milliseconds() as u64))
+            })
+            .collect();
         let simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) = sim
         else {
             // Handle non-simulated trains
-            let schedule_inputs = ts
+            let arrival_inputs = ts
                 .schedule
                 .iter()
                 .filter_map(|schedule| {
@@ -445,16 +474,18 @@ impl TrainToProjectOnOperationalPoint {
             let first_path_item = refs.next().flatten();
 
             let refs = refs.flatten().map(|(op_ref, id)| {
-                schedule_inputs
+                arrival_inputs
                     .get(&id)
-                    .map(|time| OperationalPointRefAndTime {
-                        time: *time,
+                    .map(|&arrival_time| OperationalPointRefAndTime {
+                        arrival_time,
+                        stop_for: stops_input.get(&id).copied().unwrap_or_default(),
                         op_ref: op_ref.clone(),
                     })
             });
 
-            let first_op_ref = first_path_item.map(|(op_ref, _)| OperationalPointRefAndTime {
-                time: 0,
+            let first_op_ref = first_path_item.map(|(op_ref, id)| OperationalPointRefAndTime {
+                arrival_time: 0,
+                stop_for: stops_input.get(&id).copied().unwrap_or_default(),
                 op_ref: op_ref.clone(),
             });
 
@@ -477,10 +508,11 @@ impl TrainToProjectOnOperationalPoint {
             .path
             .into_iter()
             .zip(report_train.path_item_times)
-            .flat_map(|(path_item, time)| match path_item.location {
+            .flat_map(|(path_item, arrival_time)| match path_item.location {
                 PathItemLocation::OperationalPointReference(op_ref) => {
                     Some(OperationalPointRefAndTime {
-                        time,
+                        arrival_time,
+                        stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
                         op_ref: op_ref.reference,
                     })
                 }
@@ -506,9 +538,14 @@ pub fn project_train_path_op(
     let projection_ops = projection_op_id_to_positions.keys().collect();
 
     // Match operational point references with operational point ids
-    let matching_ops = refs.iter().map(|op_ref_and_time| {
-        match_op_ref_with_ops(&op_ref_and_time.op_ref, &projection_ops, path_item_cache)
-            .map(|id| (projection_op_id_to_positions[&id], op_ref_and_time.time))
+    let matching_ops = refs.iter().map(|op| {
+        match_op_ref_with_ops(&op.op_ref, &projection_ops, path_item_cache).map(|id| {
+            (
+                projection_op_id_to_positions[&id],
+                op.arrival_time,
+                op.stop_for,
+            )
+        })
     });
     // Add a None at the end to close the last segment
     let matching_ops = matching_ops.chain(std::iter::once(None));
@@ -516,10 +553,10 @@ pub fn project_train_path_op(
     // Iterate over the matching operations and build the projection curves
     let mut projection_curves = vec![];
     let mut curve = SpaceTimeCurve::default(); // The current curve being built
-    for (a, b) in matching_ops.into_iter().tuple_windows() {
+    for (a, b) in matching_ops.tuple_windows() {
         match (a, b) {
-            (Some((a_pos, a_time)), Some((b_pos, b_time))) => {
-                curve.push_point(a_pos, a_time);
+            (Some((a_pos, a_time, a_stop_for)), Some((b_pos, b_time, b_stop_for))) => {
+                curve.push_stop(a_pos, a_time, a_stop_for);
                 if let Some(space_time_curve) = &space_time_curve {
                     // Add interpolated points between a and b
                     let index_begin = find_index_upper(&space_time_curve.times, a_time);
@@ -535,18 +572,18 @@ pub fn project_train_path_op(
                         curve.push_point(inter_pos, time);
                     }
                 }
-                curve.push_point(b_pos, b_time);
+                curve.push_stop(b_pos, b_time, b_stop_for);
             }
-            (None, Some((b_pos, b_time))) => {
+            (None, Some((b_pos, b_time, b_stop_for))) => {
                 if !curve.is_empty() {
                     // Save and reset the curve for the next segment
                     projection_curves.push(curve);
                     curve = SpaceTimeCurve::default();
                 }
-                curve.push_point(b_pos, b_time);
+                curve.push_stop(b_pos, b_time, b_stop_for);
             }
-            (Some((a_pos, a_time)), None) => {
-                curve.push_point(a_pos, a_time);
+            (Some((a_pos, a_time, a_stop_for)), None) => {
+                curve.push_stop(a_pos, a_time, a_stop_for);
                 // Save and reset the curve for the next segment
                 projection_curves.push(curve);
                 curve = SpaceTimeCurve::default();
@@ -790,9 +827,10 @@ mod tests {
     }
 
     impl OperationalPointRefAndTime {
-        fn new_trigram(time: u64, trigram: &str) -> Self {
+        fn new_trigram(arrival_time: u64, stop_for: u64, trigram: &str) -> Self {
             OperationalPointRefAndTime {
-                time,
+                arrival_time,
+                stop_for,
                 op_ref: create_path_item_from_trigram(trigram),
             }
         }
@@ -801,7 +839,8 @@ mod tests {
     impl Default for OperationalPointRefAndTime {
         fn default() -> Self {
             OperationalPointRefAndTime {
-                time: 0,
+                arrival_time: 0,
+                stop_for: 0,
                 op_ref: OperationalPointIdentifier::OperationalPointId {
                     operational_point: Identifier::default(),
                 },
@@ -830,10 +869,10 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, "SWS"),
-                OperationalPointRefAndTime::new_trigram(10, "MWS"),
-                OperationalPointRefAndTime::new_trigram(19, "MES"),
-                OperationalPointRefAndTime::new_trigram(35, "NS"),
+                OperationalPointRefAndTime::new_trigram(0, 0, "SWS"),
+                OperationalPointRefAndTime::new_trigram(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_trigram(19, 0, "MES"),
+                OperationalPointRefAndTime::new_trigram(35, 2, "NS"),
             ],
         };
         // Manchette
@@ -856,13 +895,13 @@ mod tests {
         assert_eq!(curves.len(), 1);
         assert_eq!(
             curves[0].times,
-            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 30, 35]
+            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 20, 30, 35, 37]
         );
         assert_eq!(
             curves[0].positions,
             vec![
                 0, 10000, 25000, 25000, 40000, 50000, 60000, 70000, 80000, 90000, 100000, 200000,
-                206250, 268750, 300000
+                206250, 268750, 300000, 300000
             ]
         );
     }
@@ -888,10 +927,10 @@ mod tests {
                 ],
             }),
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, "NS"),
-                OperationalPointRefAndTime::new_trigram(10, "MES"),
-                OperationalPointRefAndTime::new_trigram(19, "MWS"),
-                OperationalPointRefAndTime::new_trigram(35, "SWS"),
+                OperationalPointRefAndTime::new_trigram(0, 0, "NS"),
+                OperationalPointRefAndTime::new_trigram(10, 0, "MES"),
+                OperationalPointRefAndTime::new_trigram(19, 0, "MWS"),
+                OperationalPointRefAndTime::new_trigram(35, 0, "SWS"),
             ],
         };
         // Manchette
@@ -942,14 +981,14 @@ mod tests {
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
             refs: vec![
-                OperationalPointRefAndTime::new_trigram(0, "SWS"),
+                OperationalPointRefAndTime::new_trigram(0, 1, "SWS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(10, "MWS"),
-                OperationalPointRefAndTime::new_trigram(21, "MES"),
+                OperationalPointRefAndTime::new_trigram(10, 0, "MWS"),
+                OperationalPointRefAndTime::new_trigram(21, 3, "MES"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(28, "NS"),
+                OperationalPointRefAndTime::new_trigram(28, 0, "NS"),
                 OperationalPointRefAndTime::default(),
-                OperationalPointRefAndTime::new_trigram(35, "SS"),
+                OperationalPointRefAndTime::new_trigram(35, 1, "SS"),
             ],
         };
         // Manchette
@@ -970,14 +1009,14 @@ mod tests {
 
         // Check results
         assert_eq!(curves.len(), 4);
-        assert_eq!(curves[0].times, vec![0]);
-        assert_eq!(curves[0].positions, vec![0]);
-        assert_eq!(curves[1].times, vec![10, 21]);
-        assert_eq!(curves[1].positions, vec![100_000, 200_000]);
+        assert_eq!(curves[0].times, vec![0, 1]);
+        assert_eq!(curves[0].positions, vec![0, 0]);
+        assert_eq!(curves[1].times, vec![10, 21, 24]);
+        assert_eq!(curves[1].positions, vec![100_000, 200_000, 200_000]);
         assert_eq!(curves[2].times, vec![28]);
         assert_eq!(curves[2].positions, vec![300_000]);
-        assert_eq!(curves[3].times, vec![35]);
-        assert_eq!(curves[3].positions, vec![400_000]);
+        assert_eq!(curves[3].times, vec![35, 36]);
+        assert_eq!(curves[3].positions, vec![400_000, 400_000]);
     }
 
     #[rstest]
