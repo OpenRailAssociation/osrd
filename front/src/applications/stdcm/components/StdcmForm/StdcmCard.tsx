@@ -33,7 +33,9 @@ const StdcmCard = ({
         {title}
       </div>
     )}
-    <div className={cx('stdcm-card__body', `${className}`)}>{children}</div>
+    <div data-testid={`${className}-card-body`} className={cx('stdcm-card__body', `${className}`)}>
+      {children}
+    </div>
   </div>
 );
 
