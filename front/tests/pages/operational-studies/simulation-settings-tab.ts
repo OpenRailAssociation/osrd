@@ -9,14 +9,14 @@ class SimulationSettingsTab {
 
   private readonly marecoMarginSwitch: Locator;
 
-  private readonly codeCompoSelector: Locator;
+  private readonly speedLimitTagSelector: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.electricalProfilesSwitch = page.locator('#usingElectricalProfiles');
-    this.linearMarginSwitch = page.locator('#constraint-distribution-switchSTANDARD + label');
-    this.marecoMarginSwitch = page.locator('#constraint-distribution-switchMARECO + label');
-    this.codeCompoSelector = page.locator('#speed-limit-by-tag-selector');
+    this.electricalProfilesSwitch = page.getByTestId('usingElectricalProfiles');
+    this.linearMarginSwitch = page.getByTestId('constraint-distribution-switch-STANDARD-label');
+    this.marecoMarginSwitch = page.getByTestId('constraint-distribution-switch-MARECO-label');
+    this.speedLimitTagSelector = page.locator('#speed-limit-by-tag-selector');
   }
 
   // Validate that the electrical profiles switch is ON
@@ -31,6 +31,7 @@ class SimulationSettingsTab {
   }
 
   async activateLinearMargin() {
+    await expect(this.linearMarginSwitch).toBeVisible();
     await this.linearMarginSwitch.click();
   }
 
@@ -41,12 +42,13 @@ class SimulationSettingsTab {
   }
 
   async activateMarecoMargin() {
+    await expect(this.marecoMarginSwitch).toBeVisible();
     await this.marecoMarginSwitch.click();
   }
 
-  async selectCodeCompoOption(codeCompo: string) {
-    await this.codeCompoSelector.selectOption({ value: codeCompo });
-    await expect(this.codeCompoSelector).toHaveValue(codeCompo);
+  async selectSpeedLimitTagOption(speedLimitTag: string) {
+    await this.speedLimitTagSelector.selectOption({ value: speedLimitTag });
+    await expect(this.speedLimitTagSelector).toHaveValue(speedLimitTag);
   }
 }
 export default SimulationSettingsTab;

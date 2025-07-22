@@ -372,7 +372,7 @@ test.describe('Paced trains and exception management', () => {
     );
 
     await operationalStudiesPage.openSimulationSettingsTab();
-    await simulationSettingsTab.selectCodeCompoOption('MA100');
+    await simulationSettingsTab.selectSpeedLimitTagOption('MA100');
 
     await operationalStudiesPage.submitTimetableItemEdit();
     await operationalStudiesPage.checkToastHasBeenLaunched(

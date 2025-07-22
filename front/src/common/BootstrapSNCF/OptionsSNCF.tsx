@@ -39,6 +39,7 @@ export default function OptionsSNCF({
         {options.map((option) => (
           <div className="options-item" key={option.value}>
             <input
+              data-testid={`${name}${option.value}`}
               type="radio"
               name={name}
               id={`${name}${option.value}`}
@@ -47,7 +48,11 @@ export default function OptionsSNCF({
               value={option.value}
               checked={selectedValue === option.value}
             />
-            <label className="options-btn font-weight-medium" htmlFor={`${name}${option.value}`}>
+            <label
+              className="options-btn font-weight-medium"
+              htmlFor={`${name}${option.value}`}
+              data-testid={`${name}-${option.value}-label`}
+            >
               {option.label}
             </label>
           </div>
