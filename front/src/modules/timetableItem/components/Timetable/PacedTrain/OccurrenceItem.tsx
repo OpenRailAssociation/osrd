@@ -208,6 +208,7 @@ const OccurrenceItem = ({
 
             <div className="label">
               <div
+                data-testid="occurrence-item-name"
                 className={cx('occurrence-item-name', {
                   'start-time-exception': isStartTimeException,
                 })}
@@ -225,7 +226,7 @@ const OccurrenceItem = ({
           <div className="status-icon after-midnight">
             {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
           </div>
-          <div className="occurrence-item-time departure-time">
+          <div className="occurrence-item-time departure-time" data-testid="departure-time">
             {roundAndFormatToNearestMinute(startTime)}
           </div>
           <div
@@ -238,7 +239,7 @@ const OccurrenceItem = ({
               summary.notHonoredReason &&
               (summary.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
           </div>
-          <div className="occurrence-item-time arrival-time">
+          <div className="occurrence-item-time arrival-time" data-testid="arrival-time">
             {arrivalTime && roundAndFormatToNearestMinute(arrivalTime)}
             {!summary && <ArrivalTimeLoader />}
           </div>

@@ -232,7 +232,6 @@ const PacedTrainItem = ({
         </div>
 
         <div
-          data-testid="paced-train-main-info"
           title={pacedTrain.name}
           className="paced-train-main-info"
           onClick={() => handleOpenOccurrencesList(pacedTrain.id)}
@@ -254,15 +253,9 @@ const PacedTrainItem = ({
             {occurrencesCount}
           </div>
           {isOccurrencesListOpen ? (
-            <ChevronDown
-              data-testid="hide-occurrences-button"
-              className="toggle-icon center-icon"
-            />
+            <ChevronDown className="toggle-icon center-icon" />
           ) : (
-            <ChevronRight
-              data-testid="show-occurrences-button"
-              className="toggle-icon center-icon"
-            />
+            <ChevronRight className="toggle-icon center-icon" />
           )}
           <div className="train-info">
             <span
