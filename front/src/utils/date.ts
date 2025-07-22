@@ -20,16 +20,16 @@ export function dateTimeFormatting(date: Date, locale: string, withoutTime: bool
 }
 
 /**
- * Transform a date from a datetime-local input format to an
- * ISO 8601 date with the user timezone
+ * Transform a date from a datetime-local input format to a JS Date
  * @param inputDate e.g. 2024-04-25T08:30
- * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00) or null
+ * @return a date or null
  */
 export const parseLocalDateTime = (inputDateTime: string) => {
   // Regex to check format 1234-56-78T12:00:00(:00)
   const inputDateTimeRegex = /^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2}){0,1}$/;
   if (inputDateTimeRegex.test(inputDateTime)) {
-    return dayjs.tz(inputDateTime, userTimeZone).toDate();
+    const date = new Date(inputDateTime);
+    return Number.isNaN(date.valueOf()) ? null : date;
   }
   return null;
 };

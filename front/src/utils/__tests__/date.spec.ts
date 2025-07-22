@@ -15,6 +15,12 @@ describe('parseLocalDateTime', () => {
     expect(isoDate?.toISOString()).toEqual('2024-04-25T08:20:10.000Z');
   });
 
+  it('should return an iso date by passing a date with a two digits year', () => {
+    const inputDate = '0024-04-25T08:20:10';
+    const isoDate = parseLocalDateTime(inputDate);
+    expect(isoDate?.toISOString()).toEqual('0024-04-25T08:20:10.000Z');
+  });
+
   it('should return an iso date by passing a date with a space between date and time instead of a T', () => {
     const inputDate = '2024-04-25 08:20:10';
     const isoDate = parseLocalDateTime(inputDate);
