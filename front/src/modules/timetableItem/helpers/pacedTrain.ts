@@ -99,6 +99,8 @@ export const extractOccurrenceDetailsFromPacedTrain = <
       exceptionChangeGroups.options.value?.use_electrical_profiles;
     occurrence.options!.use_speed_limits_for_simulation =
       exceptionChangeGroups.options.value?.use_speed_limits_for_simulation;
+    occurrence.options!.stops_at_end_of_block =
+      exceptionChangeGroups.options.value?.stops_at_end_of_block;
   }
   return occurrence;
 };

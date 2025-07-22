@@ -10953,6 +10953,13 @@ components:
           - string
           - 'null'
           description: Speed limit tag, used to estimate the travel time
+        stops_at_end_of_block:
+          type:
+          - boolean
+          - 'null'
+          description: |-
+            Stop the train at the next block-delimiting signal,
+            staying in the same block and keeping the tail on the initial position
     PathfindingItem:
       type: object
       required:
@@ -14209,6 +14216,8 @@ components:
     TrainScheduleOptions:
       type: object
       properties:
+        stops_at_end_of_block:
+          type: boolean
         use_electrical_profiles:
           type: boolean
         use_speed_limits_for_simulation:

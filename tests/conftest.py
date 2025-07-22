@@ -273,6 +273,7 @@ def west_to_south_east_path(
             ],
             "rolling_stock_maximum_speed": 200,
             "rolling_stock_length": 100000,
+            "stops_at_end_of_block": False,
         },
     )
     yield TrainPath(**response.json())

@@ -446,6 +446,7 @@ fun makeRequirementsFromPath(
                 rollingStock.maxSpeed,
                 rollingStock.length,
                 null,
+                false,
                 null,
                 "",
                 null,

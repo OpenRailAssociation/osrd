@@ -201,6 +201,8 @@ class TrainScheduleOptions(BaseModel):
     - `use_electrical_profiles` : use the electrical profiles for the standalone simulation
     - `use_speed_limits_for_simulation` : use the speed limits coming from the infrastructure for
        the standalone simulation
+    - `stops_at_end_of_block` : stop the train at the next block-delimiting signal instead of on the waypoint
+
     """
 
     use_electrical_profiles: bool = Field(
@@ -210,6 +212,11 @@ class TrainScheduleOptions(BaseModel):
     use_speed_limits_for_simulation: bool = Field(
         default=True,
         description="If false, the speed limits of the infrastructure are ignored in the standalone simulation",
+    )
+    stops_at_end_of_block: bool = Field(
+        default=False,
+        description="If true, stop positions will be shifted toward the next block-delimiting signal, \
+        staying in the same block and keeping the tail on the initial position",
     )
 
 

@@ -63,6 +63,7 @@ describe('formatTimetableItemPayload', () => {
     constraintDistribution: 'MARECO',
     usingElectricalProfiles: true,
     usingSpeedLimits: true,
+    stopsAtEndOfBlock: false,
     powerRestriction: [],
     timeWindow: Duration.parse('PT3H'),
     interval: Duration.parse('PT1H'),
@@ -86,6 +87,7 @@ describe('formatTimetableItemPayload', () => {
         values: ['0%'],
       },
       options: {
+        stops_at_end_of_block: false,
         use_electrical_profiles: true,
         use_speed_limits_for_simulation: true,
       },
@@ -206,6 +208,7 @@ describe('formatTimetableItemPayload', () => {
         labels: [],
         margins: { boundaries: [], values: ['0%'] },
         options: {
+          stops_at_end_of_block: false,
           use_electrical_profiles: true,
           use_speed_limits_for_simulation: true,
         },
@@ -297,6 +300,7 @@ describe('formatTimetableItemPayload', () => {
           labels: [],
           margins: { boundaries: [], values: ['0%'] },
           options: {
+            stops_at_end_of_block: false,
             use_electrical_profiles: true,
             use_speed_limits_for_simulation: true,
           },

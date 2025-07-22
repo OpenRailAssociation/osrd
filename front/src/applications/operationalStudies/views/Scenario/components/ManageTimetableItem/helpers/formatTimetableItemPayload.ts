@@ -40,6 +40,7 @@ export function formatTimetableItemPayload(
     options: {
       use_electrical_profiles: osrdconf.usingElectricalProfiles,
       use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
+      stops_at_end_of_block: false,
     },
     path: compact(osrdconf.pathSteps).map((step) => ({
       id: step.id,

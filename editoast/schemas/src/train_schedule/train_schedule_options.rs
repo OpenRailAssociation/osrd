@@ -13,6 +13,10 @@ pub struct TrainScheduleOptions {
     #[educe(Default = true)]
     #[serde(default = "default_use_speed_limits_for_simulation")]
     pub use_speed_limits_for_simulation: bool,
+
+    #[educe(Default = false)]
+    #[serde(default)]
+    pub stops_at_end_of_block: bool,
 }
 
 fn default_use_electrical_profiles() -> bool {
@@ -21,4 +25,10 @@ fn default_use_electrical_profiles() -> bool {
 
 fn default_use_speed_limits_for_simulation() -> bool {
     true
+}
+
+impl TrainScheduleOptions {
+    pub fn stops_at_end_of_block(&self) -> bool {
+        self.stops_at_end_of_block
+    }
 }

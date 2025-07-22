@@ -3586,6 +3586,9 @@ export type PathfindingInput = {
   rolling_stock_supported_signaling_systems: string[];
   /** Speed limit tag, used to estimate the travel time */
   speed_limit_tag?: string | null;
+  /** Stop the train at the next block-delimiting signal,
+    staying in the same block and keeping the tail on the initial position */
+  stops_at_end_of_block?: boolean | null;
 };
 export type RoutePath = {
   switches_directions: {
@@ -3933,6 +3936,7 @@ export type Margins = {
   values: string[];
 };
 export type TrainScheduleOptions = {
+  stops_at_end_of_block?: boolean;
   use_electrical_profiles?: boolean;
   use_speed_limits_for_simulation?: boolean;
 };

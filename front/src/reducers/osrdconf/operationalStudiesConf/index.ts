@@ -32,6 +32,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   constraintDistribution: 'MARECO',
   usingElectricalProfiles: true,
   usingSpeedLimits: true,
+  stopsAtEndOfBlock: false,
   powerRestriction: [],
   timeWindow: new Duration({ minutes: 120 }),
   interval: new Duration({ minutes: 60 }),
@@ -80,6 +81,7 @@ export const operationalStudiesConfSlice = createSlice({
 
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;
       state.usingSpeedLimits = options?.use_speed_limits_for_simulation ?? true;
+      state.stopsAtEndOfBlock = options?.stops_at_end_of_block ?? false;
       state.labels = labels;
       state.speedLimitByTag = speedLimitTag || undefined;
       state.powerRestriction = power_restrictions || [];

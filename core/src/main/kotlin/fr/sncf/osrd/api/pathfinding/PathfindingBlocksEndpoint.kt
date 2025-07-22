@@ -28,6 +28,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.*
+import fr.sncf.osrd.utils.units.Distance.Companion.min
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -100,10 +101,32 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): PathfindingBlockResponse {
     // Parse the waypoints
     val waypoints = ArrayList<Collection<EdgeLocation<BlockId, Block>>>()
-    for (step in request.pathItems) {
+    val destinationTrack = request.pathItems.last()
+    val destinationBlock = findWaypointBlocks(infra, destinationTrack)
+    request.pathItems.forEachIndexed { stepIndex, step ->
         val allStarts = HashSet<EdgeLocation<BlockId, Block>>()
         for (direction in Direction.entries) {
-            for (waypoint in step) allStarts.addAll(findWaypointBlocks(infra, waypoint, direction))
+            for (waypoint in step) {
+                val waypointBlocks = findDirectedWaypointBlocks(infra, waypoint, direction)
+                if (
+                    request.stopsAtEndOfBlock == true &&
+                        stepIndex != 0 &&
+                        stepIndex != request.pathItems.size - 1
+                ) {
+                    allStarts.addAll(
+                        waypointBlocks.map {
+                            findStopPositionAtEndOfBlockConsideringRollingStock(
+                                it,
+                                destinationBlock,
+                                request.rollingStockLength,
+                                infra,
+                            )
+                        }
+                    )
+                } else {
+                    allStarts.addAll(waypointBlocks)
+                }
+            }
         }
         waypoints.add(allStarts)
     }
@@ -278,7 +301,7 @@ private fun processPathfindingResponse(
  * @param waypoint corresponding waypoint.
  * @return corresponding edge location, containing a block id and its offset from the waypoint.
  */
-fun findWaypointBlocks(
+fun findDirectedWaypointBlocks(
     infra: FullInfra,
     waypoint: TrackLocation,
     direction: Direction,
@@ -305,6 +328,19 @@ fun findWaypointBlocks(
         res.add(EdgeLocation(block, offset))
     }
     return res
+}
+
+fun findWaypointBlocks(
+    infra: FullInfra,
+    waypoints: Collection<TrackLocation>,
+): Set<EdgeLocation<BlockId, Block>> {
+    val waypointBlocks = HashSet<EdgeLocation<BlockId, Block>>()
+    for (waypoint in waypoints) {
+        for (direction in Direction.entries) {
+            waypointBlocks.addAll(findDirectedWaypointBlocks(infra, waypoint, direction))
+        }
+    }
+    return waypointBlocks
 }
 
 private fun getTrackSectionChunkOnWaypoint(
@@ -398,4 +434,37 @@ private fun makeHeuristicsForPathfindingEdges(
         }
     }
     return remainingDistanceEstimators
+}
+
+/**
+ * Given a waypoint block (initial position of a train stop), returns the new stop position of a
+ * train: end of current block, with the constraints of staying in the same block and keeping the
+ * tail of the train on the initial position (waypointBlock). Note that nodes of the infra are not
+ * considered.
+ */
+fun findStopPositionAtEndOfBlockConsideringRollingStock(
+    waypointBlock: EdgeLocation<BlockId, Block>,
+    destinationBlock: Set<EdgeLocation<BlockId, Block>>,
+    rollingStockLength: Double,
+    infra: FullInfra,
+): EdgeLocation<BlockId, Block> {
+    // To ensure that the tail of the rolling stock is not further than the initial operational
+    // point (waypointBlock) position
+    val maxTailOffset = waypointBlock.offset + rollingStockLength.meters
+
+    // Can't go further than the end of the block, which is delimited by a block-delimiting signal
+    val maxHeadOffset = infra.blockInfra.getBlockLength(waypointBlock.edge)
+
+    val newWaypointOffset = Offset.min(maxTailOffset, maxHeadOffset)
+
+    val destinationOffset =
+        destinationBlock
+            .filter { it.edge == waypointBlock.edge && waypointBlock.offset <= it.offset }
+            .minOfOrNull { it.offset }
+
+    // The waypoint offset does not change in the case where the stop is after the destination
+    if (destinationOffset != null && destinationOffset <= newWaypointOffset)
+        return EdgeLocation(waypointBlock.edge, waypointBlock.offset)
+
+    return EdgeLocation(waypointBlock.edge, newWaypointOffset)
 }

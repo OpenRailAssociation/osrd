@@ -20,6 +20,7 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.AssertionsForClassTypes
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -27,6 +28,7 @@ fun getPathfindingBlockRequest(
     rs: RollingStock,
     pathItems: List<Collection<TrackLocation>>,
     infra: String = "unused_name",
+    stopsAtEndOfBlock: Boolean? = false,
 ): PathfindingBlockRequest {
     return PathfindingBlockRequest(
         rs.loadingGaugeType,
@@ -36,6 +38,7 @@ fun getPathfindingBlockRequest(
         rs.maxSpeed,
         rs.length,
         null,
+        stopsAtEndOfBlock,
         null,
         infra,
         1,
@@ -60,6 +63,7 @@ fun checkPathfindingSuccess(
             .plus(expectedIntermediatePathItemPosition)
             .plusElement(Offset(pathSuccess.length.distance))
     assertEquals(expectedPathItemsPos, pathSuccess.pathItemPositions)
+    assertEquals(pathSuccess.pathItemPositions.sorted(), pathSuccess.pathItemPositions)
 
     if (expectedBlocks != null) {
         assertEquals(
@@ -600,5 +604,320 @@ class PathfindingTest : ApiTest() {
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathfindingResponseAdapter.fromJson(response.body())!!
         return parsed
+    }
+}
+
+class PathfindingV2StopsAtEndOfBlock : ApiTest() {
+    fun callPathfindingEndpoint(
+        rs: RollingStock,
+        pathItems: List<Collection<TrackLocation>>,
+        infra: String,
+        stopsAtEndOfBlock: Boolean,
+    ): PathfindingBlockResponse {
+        val requestBody =
+            pathfindingRequestAdapter.toJson(
+                getPathfindingBlockRequest(rs, pathItems, infra, stopsAtEndOfBlock)
+            )
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathfindingResponseAdapter.fromJson(response.body())!!
+        return parsed
+    }
+
+    private lateinit var waypoints: List<List<TrackLocation>>
+    private val firstIntermediateStopDistance = 12050.meters
+    private val secondIntermediateStopDistance = 26500.meters
+    private val reversedFirstIntermediateStopDistance = 19400.meters
+    private val reversedSecondIntermediateStopDistance = 33850.meters
+
+    @BeforeEach
+    override fun setUp() {
+        super.setUp()
+        // West_Station
+        val startWaypoint = TrackLocation("TA1", Offset(500.meters))
+        // Mid_West_Station
+        val firstIntermediateWaypoint = TrackLocation("TC1", Offset(550.meters))
+        // Mid_East_Station
+        val secondIntermediateWaypoint = TrackLocation("TD0", Offset(14000.meters))
+        // South_East_Station
+        val endWaypoint = TrackLocation("TH1", Offset(4400.meters))
+        waypoints =
+            listOf(
+                listOf(startWaypoint),
+                listOf(firstIntermediateWaypoint),
+                listOf(secondIntermediateWaypoint),
+                listOf(endWaypoint),
+            )
+    }
+
+    @Test
+    fun nonStopsAtEndOfBlockTest() {
+        // Stops are not moved - nothing to do here
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                false,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(firstIntermediateStopDistance),
+                    Offset(secondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun reversedNonStopsAtEndOfBlockTest() {
+        // Stops are not moved - nothing to do here
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints.reversed(),
+                "small_infra/infra.json",
+                false,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(reversedFirstIntermediateStopDistance),
+                    Offset(reversedSecondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun shortTrainTest() {
+        // Only intermediate stops are moved to the end of their block
+        val recalculatedFirstIntermediateStopDistance =
+            firstIntermediateStopDistance + TestTrains.VERY_SHORT_FAST_TRAIN.length.meters
+        val recalculatedSecondIntermediateStopDistance =
+            secondIntermediateStopDistance + TestTrains.VERY_SHORT_FAST_TRAIN.length.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.VERY_SHORT_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(recalculatedFirstIntermediateStopDistance),
+                    Offset(recalculatedSecondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun reversedShortTrainTest() {
+        // Only intermediate stops are moved to the end of their block
+        val recalculatedFirstIntermediateStopDistance =
+            reversedFirstIntermediateStopDistance + TestTrains.VERY_SHORT_FAST_TRAIN.length.meters
+        val recalculatedSecondIntermediateStopDistance =
+            reversedSecondIntermediateStopDistance + TestTrains.VERY_SHORT_FAST_TRAIN.length.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.VERY_SHORT_FAST_TRAIN,
+                waypoints.reversed(),
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(recalculatedFirstIntermediateStopDistance),
+                    Offset(recalculatedSecondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun longTrainTest() {
+        // The first intermediate stop is moved to the next block-delimiting signal, but the
+        // distance available is less than the length of the train, so it is moved to the end of the
+        // block (270 meters after the first intermediate stop)
+        val recalculatedFirstIntermediateStopDistance = firstIntermediateStopDistance + 270.meters
+        // The second intermediate stop is also moved to the end of the block (at the "DD0_9"
+        // detector's position, 37.5 meters after the second intermediate stop)
+        val recalculatedSecondIntermediateStopDistance =
+            secondIntermediateStopDistance + 37.5.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.VERY_LONG_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(recalculatedFirstIntermediateStopDistance),
+                    Offset(recalculatedSecondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun reversedLongTrainTest() {
+        // The first intermediate stop is moved to the next block-delimiting signal, but the
+        // distance available is less than the length of the train, so it is moved to the end of the
+        // block, the 9th block of the path (1500 meters after the first intermediate stop)
+        val recalculatedFirstIntermediateStopDistance =
+            reversedFirstIntermediateStopDistance + 1500.meters
+        // The second intermediate stop is also moved to the end of the block, the 13th block of the
+        // path (370 meters after the second intermediate stop)
+        val recalculatedSecondIntermediateStopDistance =
+            reversedSecondIntermediateStopDistance + 370.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.VERY_LONG_FAST_TRAIN,
+                waypoints.reversed(),
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            45900.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(
+                    Offset(recalculatedFirstIntermediateStopDistance),
+                    Offset(recalculatedSecondIntermediateStopDistance),
+                ),
+        )
+    }
+
+    @Test
+    fun penultimateCorrectlyMovedJustBeforeDestination() {
+        var waypoints: List<List<TrackLocation>>
+        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = TrackLocation("TD0", Offset(12550.meters))
+        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+
+        val intermediateStopDistance = 13450.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            13500.meters,
+            expectedIntermediatePathItemPosition = listOf(Offset(intermediateStopDistance)),
+        )
+    }
+
+    @Test
+    fun penultimateStopNotMovedExactlyToDestination() {
+        var waypoints: List<List<TrackLocation>>
+        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = TrackLocation("TD0", Offset(12600.meters))
+        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+
+        // The intermediate stop is moved to the next block-delimiting signal, but the
+        // distance available is more than the length of the train, so it would be moved by the
+        // length of the train (400m) but this is also exactly the destination so the intermediate
+        // stop remains the same
+        val intermediateStopDistance = 13100.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            13500.meters,
+            expectedIntermediatePathItemPosition = listOf(Offset(intermediateStopDistance)),
+        )
+    }
+
+    @Test
+    fun penultimateStopTooCloseToDestination() {
+        var waypoints: List<List<TrackLocation>>
+        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
+        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        waypoints = listOf(listOf(startWaypoint), listOf(intermediateWaypoint), listOf(endWaypoint))
+
+        // The intermediate stop is moved to the next block-delimiting signal, but the
+        // distance available is more than the length of the train, so it would be moved by the
+        // length of the train, but that is after the destination so the intermediate stop remains
+        // the same
+        val intermediateStopDistance = 13490.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            13500.meters,
+            expectedIntermediatePathItemPosition = listOf(Offset(intermediateStopDistance)),
+        )
+    }
+
+    @Test
+    fun twoPenultimatesStopTooCloseToDestination() {
+        var waypoints: List<List<TrackLocation>>
+        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = TrackLocation("TD0", Offset(12950.meters))
+        val secondIntermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
+        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        waypoints =
+            listOf(
+                listOf(startWaypoint),
+                listOf(intermediateWaypoint),
+                listOf(secondIntermediateWaypoint),
+                listOf(endWaypoint),
+            )
+
+        // The intermediate stops are moved to the next block-delimiting signal, but the
+        // distance available is more than the length of the train, so it would be moved by the
+        // length of the train, but that is after the destination so the intermediate stops remains
+        // the same
+        val intermediateStopDistance = 13450.meters
+        val secondIntermediateStopDistance = 13490.meters
+
+        val parsed =
+            callPathfindingEndpoint(
+                TestTrains.REALISTIC_FAST_TRAIN,
+                waypoints,
+                "small_infra/infra.json",
+                true,
+            )
+        checkPathfindingSuccess(
+            parsed,
+            13500.meters,
+            expectedIntermediatePathItemPosition =
+                listOf(Offset(intermediateStopDistance), Offset(secondIntermediateStopDistance)),
+        )
     }
 }

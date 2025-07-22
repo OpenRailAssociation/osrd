@@ -65,6 +65,9 @@ pub(in crate::views) struct PathfindingInput {
     rolling_stock_length: OrderedFloat<f64>,
     /// Speed limit tag, used to estimate the travel time
     speed_limit_tag: Option<String>,
+    /// Stop the train at the next block-delimiting signal,
+    /// staying in the same block and keeping the tail on the initial position
+    stops_at_end_of_block: Option<bool>,
 }
 
 impl PathfindingInput {
@@ -389,6 +392,7 @@ fn build_pathfinding_request(
         rolling_stock_maximum_speed: pathfinding_input.rolling_stock_maximum_speed,
         rolling_stock_length: pathfinding_input.rolling_stock_length,
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
+        stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
     })
 }
 
@@ -479,6 +483,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
                 .map(|item| item.location.clone())
                 .collect(),
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
+            stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
         };
         to_compute.push(path_input);
         to_compute_index.push(index);
