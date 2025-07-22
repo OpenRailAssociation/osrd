@@ -61,23 +61,23 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
     this.timesAndStopsTab = page.getByTestId('tab-timesStops');
-    this.startTimeField = page.locator('#start-time');
+    this.startTimeField = page.getByTestId('start-time-input');
     this.returnSimulationResultButton = page.getByTestId('return-simulation-result');
-    this.definePacedTrainCheckbox = page.locator('#define-paced-train');
+    this.definePacedTrainCheckbox = page.getByTestId('define-paced-train-checkbox');
     this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
-    this.pacedTrainTimeWindow = page.locator('#paced-train-time-window');
-    this.pacedTrainIntervalInput = page.locator('#paced-train-interval');
+    this.pacedTrainTimeWindow = page.getByTestId('paced-train-time-window-input');
+    this.pacedTrainIntervalInput = page.getByTestId('paced-train-interval-input');
     this.pacedTrainAddException = {
       label: page.getByTestId('added-occurrences'),
-      dateInput: page.locator('#added-occurrences-date'),
-      timeInput: page.locator('#added-occurrences-time'),
+      dateInput: page.getByTestId('added-occurrences-date-input'),
+      timeInput: page.getByTestId('added-occurrences-time-input'),
       button: page.getByTestId('added-occurrences-add-button'),
       list: page.getByTestId('added-occurrences-list'),
     };
     this.createTimetableItemButton = page.getByTestId('create-timetable-item-button');
     this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
-    this.timetableItemNameInput = page.locator('#timetable-item-name');
-    this.initialSpeedInput = page.locator('#initial-speed');
+    this.timetableItemNameInput = page.getByTestId('timetable-item-name-input');
+    this.initialSpeedInput = page.getByTestId('initial-speed-input');
     this.timetableItemTagsInput = page.getByTestId('chips-input');
   }
 
@@ -125,11 +125,6 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
   async setFormattedStartTime(startTime: string) {
     await this.startTimeField.fill(startTime);
     await expect(this.startTimeField).toHaveValue(startTime);
-  }
-
-  async checkToastHasBeenLaunched(translation: string) {
-    await this.checkToastTitle(translation);
-    await this.closeToastNotification();
   }
 
   async returnSimulationResult() {

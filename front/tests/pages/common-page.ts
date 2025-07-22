@@ -61,6 +61,11 @@ class CommonPage {
     }
   }
 
+  async checkToastHasBeenLaunched(translation: string) {
+    await this.checkToastTitle(translation);
+    await this.closeToastNotification();
+  }
+
   // Close all visible toast notifications safely
   async closeToastNotification(): Promise<void> {
     const closeToastElements = await this.closeToastButton.all();
