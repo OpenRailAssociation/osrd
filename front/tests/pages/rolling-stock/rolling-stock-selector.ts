@@ -48,18 +48,17 @@ class RollingStockSelector extends CommonPage {
     this.rollingStockSelectorModal = page.getByTestId('rollingstock-selector-modal');
     this.rollingStockList = page.getByTestId('rollingstock-title');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
-    this.rollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
+    this.rollingStockModalSearch = this.rollingStockSelectorModal.getByTestId('searchfilter-input');
     this.rollingStockMiniCards = page.getByTestId('rollingstock-selector-minicard');
     this.electricRollingStockFilter = page.locator('label[for="elec"]');
     this.thermalRollingStockFilter = page.locator('label[for="thermal"]');
     this.rollingStockSearchResult = page.getByTestId('search-results-text');
-    this.thermalRollingStockIcons = page.locator('.rollingstock-footer-specs .text-pink');
-    this.electricRollingStockIcons = page.locator('.rollingstock-footer-specs .text-primary');
+    this.thermalRollingStockIcons = page.getByTestId('traction-mode-thermal');
+    this.electricRollingStockIcons = page.getByTestId('traction-mode-electric');
     this.dualModeRollingStockIcons = page
-      .locator('.rollingstock-footer-specs .rollingstock-tractionmode:has(.text-pink)')
-      .filter({
-        has: page.locator('.text-primary'),
-      });
+      .getByTestId('rollingstock-tractionmode')
+      .filter({ has: this.thermalRollingStockIcons })
+      .filter({ has: this.electricRollingStockIcons });
     this.electricRollingStockFirstIcon = this.electricRollingStockIcons.first();
     this.thermalRollingStockFirstIcon = this.thermalRollingStockIcons.first();
     this.noRollingStockResult = page.getByTestId('rollingstock-empty-result');
@@ -69,16 +68,28 @@ class RollingStockSelector extends CommonPage {
     this.rollingStockNameTab = page.getByTestId('rolling-stock-name-tab');
   }
 
+  getRollingStockMiniCardInfo() {
+    return this.rollingStockMiniCards.getByTestId('selected-rolling-stock-info');
+  }
+
+  getRollingStockInfoComfort() {
+    return this.rollingStockMiniCards.getByTestId('rollingstock-info-comfort');
+  }
+
+  getRollingstockCardByName(rollingstockName: string) {
+    return this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingstockName}`);
+  }
+
+  static getRollingStockSearchButton(locator: Locator) {
+    return locator.getByTestId('select-rolling-stock-button');
+  }
+
   async openRollingstockModal() {
     await this.rollingStockSelectorButton.click();
   }
 
   async searchRollingstock(rollingstockName: string) {
     await this.rollingStockModalSearch.fill(rollingstockName);
-  }
-
-  getRollingstockCardByName(rollingstockName: string) {
-    return this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingstockName}`);
   }
 
   async selectRollingStockCard({
@@ -96,7 +107,7 @@ class RollingStockSelector extends CommonPage {
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
     if (selectComfort) await this.comfortACButton.click();
     if (confirmSelection) {
-      await rollingstockCard.getByTestId('select-rolling-stock-button').click();
+      await RollingStockSelector.getRollingStockSearchButton(rollingstockCard).click();
       await expect(this.rollingStockSelectorModal).toBeHidden();
     }
   }
@@ -109,14 +120,6 @@ class RollingStockSelector extends CommonPage {
   async verifySelectedComfortMatches(expectedComfort: string): Promise<void> {
     const selectedComfort = await this.selectedComfortType.innerText();
     expect(selectedComfort).toMatch(new RegExp(expectedComfort, 'i'));
-  }
-
-  getRollingStockMiniCardInfo() {
-    return this.rollingStockMiniCards.getByTestId('selected-rolling-stock-info');
-  }
-
-  getRollingStockInfoComfort() {
-    return this.rollingStockMiniCards.getByTestId('rollingstock-info-comfort');
   }
 
   async toggleThermalRollingStockFilter() {

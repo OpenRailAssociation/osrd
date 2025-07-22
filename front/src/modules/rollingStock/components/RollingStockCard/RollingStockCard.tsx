@@ -113,15 +113,18 @@ const RollingStockCard = ({
         <div className="rollingstock-footer-specs">
           <div className="row">
             <div className="col-5">
-              <div className="rollingstock-tractionmode text-nowrap">
+              <div
+                className="rollingstock-tractionmode text-nowrap"
+                data-testid="rollingstock-tractionmode"
+              >
                 {tractionModes.thermal && (
-                  <span className="text-pink">
+                  <span className="text-pink" data-testid="traction-mode-thermal">
                     <MdLocalGasStation />
                   </span>
                 )}
                 {tractionModes.electric && (
                   <>
-                    <span className="text-primary">
+                    <span className="text-primary" data-testid="traction-mode-electric">
                       <BsLightningFill />
                     </span>
                     <small>
