@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 
 import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-import 'dayjs/locale/de';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc';
 import type { TFunction } from 'i18next';
