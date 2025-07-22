@@ -269,11 +269,13 @@ const StudyView = () => {
                   </button>
                 </div>
                 {study.study_type && (
-                  <div className="study-details-type">
+                  <div className="study-details-type" data-testid="study-type">
                     {t(`study.studyCategories.${study.study_type}`)}
                   </div>
                 )}
-                <div className="study-details-description">{study.description}</div>
+                <div className="study-details-description" data-testid="study-description">
+                  {study.description}
+                </div>
                 {study.state && (
                   <div className="study-details-state">
                     {studyStates.map(
@@ -317,7 +319,10 @@ const StudyView = () => {
                     )}
                   </div>
                   {study.budget ? (
-                    <div className="study-details-financials-amount">
+                    <div
+                      className="study-details-financials-amount"
+                      data-testid="study-financial-amount"
+                    >
                       <span className="study-details-financials-amount-text">
                         {t('study.budget')}
                       </span>
@@ -328,7 +333,7 @@ const StudyView = () => {
               )}
 
               <div className="study-details-footer">
-                <div className="study-details-tags">
+                <div className="study-details-tags" data-testid="study-tags">
                   {study.tags?.map((tag) => (
                     <div className="study-details-tags-tag" key={tag}>
                       {tag}

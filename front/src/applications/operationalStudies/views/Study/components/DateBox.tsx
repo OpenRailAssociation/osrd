@@ -14,7 +14,7 @@ export default function DateBox({ date, type, withoutTime }: Props) {
   return (
     <div className={`study-details-dates-date ${type}`}>
       <span className="study-details-dates-date-label">{t(`study.date-${type}`)}</span>
-      <span className="study-details-dates-date-value">
+      <span className="study-details-dates-date-value" data-testid={`study-${type}-date-value`}>
         {date ? (
           date.toLocaleString(dateTimeLocale, {
             dateStyle: 'medium',

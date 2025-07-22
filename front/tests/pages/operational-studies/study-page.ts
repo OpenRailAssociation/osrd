@@ -67,43 +67,33 @@ class StudyPage extends CommonPage {
   constructor(page: Page) {
     super(page);
     this.studyName = page.getByTestId('study-name-info');
-    this.studyType = page.locator('.study-details-type');
+    this.studyType = page.getByTestId('study-type');
     this.studyState = page.getByTestId('study-state-step-label');
-    this.studyDescription = page.locator('.study-details-description');
-    this.studyFinancialAmount = page.locator('.study-details-financials-amount');
+    this.studyDescription = page.getByTestId('study-description');
+    this.studyFinancialAmount = page.getByTestId('study-financial-amount');
     this.studyServiceCodeInfo = page.getByTestId('study-service-code-info');
     this.studyBusinessCodeInfo = page.getByTestId('study-business-code-info');
-    this.studyTags = page.locator('.study-details-tags');
+    this.studyTags = page.getByTestId('study-tags');
     this.addStudyButton = page.getByTestId('add-study-button');
     this.studyUpdateButton = page.getByTestId('study-modify-button');
-    this.studyInputName = page.locator('#studyInputName');
-    this.studyTypeSelect = page.locator('.input-group').first();
-    this.studyStatusSelect = page.locator(
-      '.study-edition-modal-state > div > .select-improved > .select-control > .input-group'
-    );
-    this.studyDescriptionInput = page.locator('#studyDescription');
-    this.studyStartDateInput = page.locator('#studyInputStartDate');
-    this.studyExpectedEndDateInput = page.locator('#studyInputExpectedEndDate');
-    this.studyEndDateInput = page.locator('#studyInputRealEndDate');
-    this.studyServiceCodeInput = page.locator('#studyInputServiceCode');
-    this.studyBusinessCodeInput = page.locator('#studyInputBusinessCode');
-    this.studyBudgetInput = page.locator('#studyInputBudget');
-    this.studyUpdateConfirmButton = page.locator('#modal-content').getByTestId('update-study');
-    this.studyDeleteButton = page.locator('#modal-content').getByTestId('delete-study');
+    this.studyInputName = page.getByTestId('studyInputName-input');
+    this.studyTypeSelect = page.getByTestId('select-toggle').first();
+    this.studyStatusSelect = page.getByTestId('select-toggle').last();
+    this.studyDescriptionInput = page.getByTestId('studyDescription-input');
+    this.studyStartDateInput = page.getByTestId('studyInputStartDate-input');
+    this.studyExpectedEndDateInput = page.getByTestId('studyInputExpectedEndDate-input');
+    this.studyEndDateInput = page.getByTestId('studyInputRealEndDate-input');
+    this.studyServiceCodeInput = page.getByTestId('studyInputServiceCode-input');
+    this.studyBusinessCodeInput = page.getByTestId('studyInputBusinessCode-input');
+    this.studyBudgetInput = page.getByTestId('studyInputBudget-input');
+    this.studyUpdateConfirmButton = page.getByTestId('update-study');
+    this.studyDeleteButton = page.getByTestId('delete-study');
     this.createStudyButton = page.getByTestId('create-study');
     this.studyEditionModal = page.getByTestId('study-edition-modal');
-    this.startDate = page.locator(
-      '.study-details-dates-date.start .study-details-dates-date-value'
-    );
-    this.expectedEndDate = page.locator(
-      '.study-details-dates-date.expected-end .study-details-dates-date-value'
-    );
-    this.realEndDate = page.locator(
-      '.study-details-dates-date.real-end .study-details-dates-date-value'
-    );
-    this.studyConfirmDeleteButton = page
-      .locator('#modal-content')
-      .getByTestId('confirm-delete-button');
+    this.startDate = page.getByTestId('study-start-date-value');
+    this.expectedEndDate = page.getByTestId('study-expected-end-date-value');
+    this.realEndDate = page.getByTestId('study-real-end-date-value');
+    this.studyConfirmDeleteButton = page.getByTestId('confirm-delete-button');
     this.deleteScenarioButton = page.getByTestId('delete-scenario-button');
     this.confirmDeleteScenarioButton = page.getByTestId('confirm-delete-button');
   }
