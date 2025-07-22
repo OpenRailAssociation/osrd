@@ -98,6 +98,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
       <div className="grid-template">
         <div id="train-validity-and-label">
           <Input
+            data-testid="timetable-label-filter"
             type="text"
             id="timetable-label-filter"
             name="timetable-label-filter"
@@ -113,6 +114,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
+            data-testid="timetable-train-validity-filter"
             id="timetable-train-validity-filter"
             label={t('timetable.validityFilter')}
             narrow
@@ -131,6 +133,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
+            data-testid="timetable-train-type-filter"
             id="timetable-train-type-filter"
             label={t('timetable.trainType')}
             narrow
@@ -149,6 +152,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
         </div>
         <div id="schedule-point-honored-and-rollingstock">
           <Input
+            data-testid="timetable-rollingstock-filter"
             type="text"
             id="timetable-rollingstock-filter"
             name="timetable-rollingstock-filter"
@@ -158,13 +162,13 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             value={rollingStockFilter}
             onChange={(e) => setRollingStockFilter(e.target.value)}
             placeholder={t('timetable.rollingStockFilterPlaceholder')}
-            data-testid="timetable-rollingstock-filter"
             title={t('timetable.rollingStockFilterPlaceholder')}
           />
 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
+            data-testid="timetable-train-punctuality-filter"
             id="timetable-train-punctuality-filter"
             label={t('timetable.punctuality')}
             narrow
@@ -184,6 +188,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.label}
+            data-testid="timetable-train-category-filter"
             id="timetable-train-category-filter"
             label={t('timetable.trainCategories')}
             narrow

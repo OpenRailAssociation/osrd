@@ -84,23 +84,23 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
     this.timetableLabelFilterInputLabel = page.locator('label[for="timetable-label-filter"]');
-    this.timetableLabelFilterInput = page.locator('#timetable-label-filter');
+    this.timetableLabelFilterInput = page.getByTestId('timetable-label-filter');
     this.timetableRollingStockFilterInputLabel = page.locator(
       'label[for="timetable-rollingstock-filter"]'
     );
-    this.timetableRollingStockFilterInput = page.locator('#timetable-rollingstock-filter');
+    this.timetableRollingStockFilterInput = page.getByTestId('timetable-rollingstock-filter');
     this.timetableValidityFilterSelectLabel = page.locator(
       'label[for="timetable-train-validity-filter"]'
     );
-    this.timetableValidityFilterSelect = page.locator('#timetable-train-validity-filter');
+    this.timetableValidityFilterSelect = page.getByTestId('timetable-train-validity-filter');
     this.timetablePunctualityFilterSelectLabel = page.locator(
       'label[for="timetable-train-punctuality-filter"]'
     );
-    this.timetablePunctualityFilterSelect = page.locator('#timetable-train-punctuality-filter');
+    this.timetablePunctualityFilterSelect = page.getByTestId('timetable-train-punctuality-filter');
     this.timetableTrainTypeFilterSelectLabel = page.locator(
       'label[for="timetable-train-type-filter"]'
     );
-    this.timetableTrainTypeFilterSelect = page.locator('#timetable-train-type-filter');
+    this.timetableTrainTypeFilterSelect = page.getByTestId('timetable-train-type-filter');
     this.timetableSpeedLimitTagFilterLabel = page.getByTestId(
       'timetable-speed-limit-tag-filter-label'
     );
