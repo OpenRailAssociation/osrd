@@ -22,10 +22,10 @@ class ConsistSection {
   constructor(page: Page) {
     this.page = page;
     this.towedRollingStockField = page.locator('#towedRollingStock');
-    this.tonnageField = page.locator('#tonnage');
-    this.lengthField = page.locator('#length');
+    this.tonnageField = page.getByTestId('tonnage-input');
+    this.lengthField = page.getByTestId('length-input');
     this.speedLimitTagField = page.locator('#speed-limit-by-tag-selector');
-    this.maxSpeedField = page.locator('#maxSpeed');
+    this.maxSpeedField = page.getByTestId('maxSpeed-input');
     this.tractionEngineField = page.locator('#tractionEngine');
   }
 

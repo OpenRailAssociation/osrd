@@ -33,12 +33,12 @@ class OriginSection extends STDCMPage {
     this.originChField = this.originCard.getByTestId('operational-point-ch');
     this.originCiField = this.originCard.getByTestId('operational-point-ci');
     this.originArrival = page.locator('#select-origin-arrival');
-    this.dateOriginArrival = page.locator('#date-origin-arrival');
-    this.timeOriginArrival = page.locator('#time-origin-arrival');
-    this.toleranceOriginArrival = page.locator('#stdcm-tolerance-origin-arrival');
+    this.dateOriginArrival = page.getByTestId('date-origin-arrival-input');
+    this.timeOriginArrival = page.getByTestId('time-origin-arrival-input');
+    this.toleranceOriginArrival = page.getByTestId('stdcm-tolerance-origin-arrival-input');
     this.dynamicOriginCi = this.originCard.getByTestId('operational-point-ci');
     this.dynamicOriginCh = this.originCard.getByTestId('operational-point-ch');
-    this.suggestionNWS = this.suggestionList.locator('.suggestion-item', {
+    this.suggestionNWS = this.suggestionItems.filter({
       hasText: 'NWS North_West_station',
     });
   }

@@ -24,6 +24,7 @@ const StdcmLinkedTrainResults = ({
           tabIndex={0}
           type="button"
           className="linked-train-result-infos"
+          data-testid="linked-train-result-infos"
           onClick={() => {
             if (linkedTrainResults.length === 1)
               dispatch(

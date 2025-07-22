@@ -38,12 +38,14 @@ class DestinationSection extends STDCMPage {
     this.destinationChField = this.destinationCard.getByTestId('operational-point-ch');
     this.destinationCiField = this.destinationCard.getByTestId('operational-point-ci');
     this.destinationArrival = page.locator('#select-destination-arrival');
-    this.dateDestinationArrival = page.locator('#date-destination-arrival');
-    this.timeDestinationArrival = page.locator('#time-destination-arrival');
-    this.toleranceDestinationArrival = page.locator('#stdcm-tolerance-destination-arrival');
+    this.dateDestinationArrival = page.getByTestId('date-destination-arrival-input');
+    this.timeDestinationArrival = page.getByTestId('time-destination-arrival-input');
+    this.toleranceDestinationArrival = page.getByTestId(
+      'stdcm-tolerance-destination-arrival-input'
+    );
     this.dynamicDestinationCh = this.destinationCard.getByTestId('operational-point-ch');
     this.dynamicDestinationCi = this.destinationCard.getByTestId('operational-point-ci');
-    this.suggestionSS = this.suggestionList.locator('.suggestion-item', {
+    this.suggestionSS = this.suggestionItems.filter({
       hasText: 'SS South_station',
     });
     this.clearButton = this.destinationCard.locator('.clear-icon');
