@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import cx from 'classnames';
-import { useTranslation } from 'react-i18next';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
@@ -17,7 +16,6 @@ type ConflictsListProps = {
 };
 
 const ConflictsList = ({ conflicts, timetableItems, onConflictClick }: ConflictsListProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const enrichedConflicts = useMemo(
     () => addTrainNamesToConflicts(conflicts, timetableItems),
     [conflicts, timetableItems]
@@ -39,7 +37,9 @@ const ConflictsList = ({ conflicts, timetableItems, onConflictClick }: Conflicts
         {enrichedConflicts.map((conflict, index) => (
           <ConflictCard key={index} conflict={conflict} onConflictClick={onConflictClick} />
         ))}
+        <div className="conflicts-list-empty-placeholder" />
       </div>
+      <div className="bottom-conflicts-list" />
     </div>
   );
 };
