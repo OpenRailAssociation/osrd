@@ -128,7 +128,7 @@ if has_flag "playwright"; then
         exit 1
     fi
 
-    PLAYWRIGHT_VERSION=$(cd front && npm list --package-lock-only --pattern playwright --json | jq -r '.dependencies["@playwright/test"].version' | sort -u)
+    PLAYWRIGHT_VERSION=$(cd front && npm list --package-lock-only playwright --json | jq -r '.dependencies["@playwright/test"].version' | sort -u)
     if [ "$(echo "$PLAYWRIGHT_VERSION" | wc -l)" -ne 1 ]; then
         echo "Error: Zero or multiple playwright versions found: $PLAYWRIGHT_VERSION" >&2
         exit 1
