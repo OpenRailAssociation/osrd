@@ -53,11 +53,11 @@ class SimulationResultPage extends STDCMPage {
     this.destinationResultMarker = this.mapResultContainer.locator('img[alt="destination"]');
     this.viaResultMarker = this.mapResultContainer.locator('img[alt="via"]');
     this.simulationResultTable = page.getByTestId('table-results');
-    this.simulationTableRows = page.locator('.table-results tbody tr');
+    this.simulationTableRows = this.simulationResultTable.locator('tbody tr');
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
-    this.downloadSimulationButton = page.locator('.download-simulation a[download]');
-    this.downloadLink = page.locator('.download-simulation a');
+    this.downloadSimulationButton = page.getByTestId('download-simulation').locator('a[download]');
+    this.downloadLink = page.getByTestId('download-simulation').locator('a');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.feedbackCardContainer = page.getByTestId('feedback-card');

@@ -120,7 +120,7 @@ const StdcmResults = ({
                   />
                   {isSelectedSimulationRetained && (
                     <div className="get-simulation">
-                      <div className="download-simulation">
+                      <div className="download-simulation" data-testid="download-simulation">
                         <PDFDownloadLink
                           document={
                             <StdcmSimulationReportSheet
