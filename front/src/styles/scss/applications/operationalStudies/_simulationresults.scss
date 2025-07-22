@@ -1,5 +1,8 @@
 .simulation-results {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
   .osrd-simulation-container {
     position: relative;
@@ -9,7 +12,7 @@
   .simulation-map {
     position: relative;
     height: 720px;
-    margin: 0 30px 56px 38px;
+    width: 100%;
     border-radius: 10px;
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 1) inset,
