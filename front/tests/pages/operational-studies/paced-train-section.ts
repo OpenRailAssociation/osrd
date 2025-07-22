@@ -60,9 +60,9 @@ class PacedTrainSection extends CommonPage {
     this.testedPacedTrainRollingStock = this.testedPacedTrain.locator('> .rolling-stock');
     this.testedPacedTrainInterval = this.testedPacedTrain.getByTestId('paced-train-interval');
     this.testedPacedTrainOccurrences = this.testedPacedTrain.getByTestId('occurrence-item');
-    this.testedOccurrenceName = this.testedPacedTrain.locator('.occurrence-item-name');
-    this.testedOccurrenceStartTime = this.testedPacedTrain.locator('.departure-time');
-    this.testedOccurrenceArrivalTime = this.testedPacedTrain.locator('.arrival-time');
+    this.testedOccurrenceName = this.testedPacedTrain.getByTestId('occurrence-item-name');
+    this.testedOccurrenceStartTime = this.testedPacedTrain.getByTestId('departure-time');
+    this.testedOccurrenceArrivalTime = this.testedPacedTrain.getByTestId('arrival-time');
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
@@ -90,7 +90,7 @@ class PacedTrainSection extends CommonPage {
 
   // Only the zone with the role button opens the occurrence list
   private async getPacedTrainToClickableZone(index: number) {
-    return this.pacedTrainItem.nth(index).getByTestId('paced-train-main-info');
+    return this.pacedTrainItem.nth(index).getByTestId('paced-train-name');
   }
 
   async verifyPacedTrainItemDetails(
