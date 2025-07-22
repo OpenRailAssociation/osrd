@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+use std::collections::VecDeque;
+use std::ops::Deref;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use http::StatusCode;
 use reqwest::Body;
@@ -10,9 +14,9 @@ use super::CoreResponse;
 /// A mocking core client maintaining a list of stub requests to simulate
 ///
 /// See [MockingClient::stub]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MockingClient {
-    stubs: Vec<StubRequest>,
+    stubs: HashMap<String, Arc<Mutex<VecDeque<StubRequest>>>>,
 }
 
 impl From<MockingClient> for CoreClient {
@@ -40,30 +44,23 @@ impl MockingClient {
 
     pub(super) fn fetch_mocked<P: AsRef<str>, B: Serialize, R: CoreResponse>(
         &self,
-        method: reqwest::Method,
+        req_method: reqwest::Method,
         req_path: P,
         body: Option<&B>,
     ) -> Result<Option<R::Response>, MockingError> {
         let req_path = req_path.as_ref().to_string();
-        let stub = 'find_stub: {
-            for stub in &self.stubs {
-                match stub {
-                    StubRequest {
-                        path, method: None, ..
-                    } if path == &req_path => break 'find_stub Some(stub),
-                    StubRequest {
-                        path,
-                        method: Some(meth),
-                        ..
-                    } if path == &req_path && meth == method => break 'find_stub Some(stub),
-                    _ => (),
-                };
-            }
-            None
+        let Some(stub) = self
+            .stubs
+            .get(&req_path)
+            .and_then(|stubs| stubs.deref().lock().unwrap().pop_front())
+            .filter(|StubRequest { method, .. }| match method {
+                None => true,
+                Some(method) => method == req_method,
+            })
+        else {
+            panic!("could not find stub for {req_method} request at PATH {req_path}")
         };
-        let Some(stub) = stub else {
-            panic!("could not find stub for {method} request at PATH {req_path}")
-        };
+
         match (
             body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
             stub.body.as_ref().map(|b| {
@@ -108,18 +105,9 @@ impl MockingClient {
     }
 }
 
-impl Clone for MockingClient {
-    fn clone(&self) -> Self {
-        let mut cli = Self::default();
-        cli.stubs.clone_from_slice(self.stubs.as_slice());
-        cli
-    }
-}
-
 /// A stub request used to assert the validity of an incoming request to mock
 #[derive(Debug, Clone)]
 pub struct StubRequest {
-    path: String,
     method: Option<reqwest::Method>,
     body: Option<Arc<Body>>,
     response: Option<StubResponse>,
@@ -193,21 +181,33 @@ impl<'a> StubRequestBuilder<'a> {
     /// Builds the [StubResponse] and registers it into the [MockingClient]
     #[allow(unused)]
     pub fn finish(self) {
-        self.client.stubs.push(StubRequest {
-            path: self.path,
-            method: self.method,
-            body: self.body.map(Arc::new),
-            response: None,
-        })
+        self.client
+            .stubs
+            .entry(self.path)
+            .or_default()
+            .deref()
+            .lock()
+            .unwrap()
+            .push_back(StubRequest {
+                method: self.method,
+                body: self.body.map(Arc::new),
+                response: None,
+            })
     }
 
     fn finish_with_response(self, response: StubResponse) {
-        self.client.stubs.push(StubRequest {
-            path: self.path,
-            method: self.method,
-            body: self.body.map(Arc::new),
-            response: Some(response),
-        })
+        self.client
+            .stubs
+            .entry(self.path)
+            .or_default()
+            .deref()
+            .lock()
+            .unwrap()
+            .push_back(StubRequest {
+                method: self.method,
+                body: self.body.map(Arc::new),
+                response: Some(response),
+            })
     }
 }
 

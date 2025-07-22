@@ -744,11 +744,56 @@ mod tests {
 
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::SimulationSuccess;
+    use core_client::simulation::SpeedLimitProperties;
     use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
     use serde_json::json;
 
     use super::test_app::TestAppBuilder;
+
+    fn simulation_response() -> core_client::simulation::Response {
+        core_client::simulation::Response::Success(SimulationSuccess {
+            base: ReportTrain {
+                positions: vec![],
+                times: vec![],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 1000, 2000, 3000],
+            },
+            provisional: ReportTrain {
+                positions: vec![],
+                times: vec![],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 1000, 2000, 3000],
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    positions: vec![0],
+                    times: vec![0],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1000, 2000, 3000],
+                },
+                signal_critical_positions: vec![],
+                zone_updates: vec![],
+                spacing_requirements: vec![],
+                routing_requirements: vec![],
+            },
+            mrsp: SpeedLimitProperties {
+                boundaries: vec![],
+                values: vec![],
+            },
+            electrical_profiles: ElectricalProfiles {
+                boundaries: vec![],
+                values: vec![],
+            },
+        })
+    }
 
     #[cfg(test)]
     pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
@@ -768,42 +813,12 @@ mod tests {
         core.stub("/standalone_simulation")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(json!({
-                "status": "success",
-                "base": {
-                    "positions": [],
-                    "times": [],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000]
-                },
-                "provisional": {
-                    "positions": [],
-                    "times": [],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000]
-                },
-                "final_output": {
-                    "positions": [0],
-                    "times": [0],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000],
-                    "signal_critical_positions": [],
-                    "zone_updates": [],
-                    "spacing_requirements": [],
-                    "routing_requirements": []
-                },
-                "mrsp": {
-                    "boundaries": [],
-                    "values": []
-                },
-                "electrical_profiles": {
-                    "boundaries": [],
-                    "values": []
-                }
-            }))
+            .json(simulation_response())
+            .finish();
+        core.stub("/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(simulation_response())
             .finish();
         core.stub("/signal_projection")
             .method(reqwest::Method::POST)
