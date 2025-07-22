@@ -1,7 +1,10 @@
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+import { TRAIN_MAIN_CATEGORY_CLASS } from 'modules/timetableItem/components/Timetable/consts';
+
 import type { ConflictWithTrainNames } from '../types';
+import TrainNameCardSVG from './TrainNameCardSVG';
 
 const formatToLocalTime = (dateString: string) => dayjs.utc(dateString).local().format('HH:mm:ss');
 
@@ -24,8 +27,27 @@ const ConflictCard = ({
       role="button"
       tabIndex={0}
     >
-      <div className="trains-info">
-        <p className="conflict-type">{t(conflict.conflict_type)}</p>
+      <div className="conflict-header">
+        <div className="conflict-type">{t(conflict.conflict_type)}</div>
+        <div className="trains-name">
+          {conflict.trainNames.map((trainName, idx) => {
+            const category = conflict.trainCategories[idx];
+            const categoryClass = category
+              ? TRAIN_MAIN_CATEGORY_CLASS[category]
+              : TRAIN_MAIN_CATEGORY_CLASS.None;
+
+            return (
+              <TrainNameCardSVG
+                key={`train-${idx}-${trainName}`}
+                text={trainName}
+                categoryClass={categoryClass}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="conflict-details">
         <div className="start-and-end-time">
           <div className="start-time" title={start_time}>
             {start_time}
@@ -37,14 +59,30 @@ const ConflictCard = ({
         <div className="departure-date" title={start_date}>
           {start_date}
         </div>
+        <div className="conflict-separator" />
       </div>
-      <div className="trains-name">
-        {conflict.trainNames.map((trainName, idx) => (
-          <div className="train-name-card" key={`train-${idx}-${trainName}`} title={trainName}>
-            {trainName}
-          </div>
-        ))}
+
+      <div className="trains-name" title={conflict.trainNames.join(', ')}>
+        {conflict.trainNames.map((trainName, idx) => {
+          const category = conflict.trainCategories[idx];
+          const categoryClass = category
+            ? TRAIN_MAIN_CATEGORY_CLASS[category]
+            : TRAIN_MAIN_CATEGORY_CLASS.None;
+
+          return (
+            <div
+              key={`train-${idx}-${trainName}`}
+              className={`train-name-card train-category-text-${categoryClass}`}
+              title={trainName}
+            >
+              <span>{trainName}</span>
+            </div>
+          );
+        })}
       </div>
+
+      <div className="conflict-separator" />
+      <div className="conflict-separator-bottom" />
     </div>
   );
 };

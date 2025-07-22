@@ -5,23 +5,27 @@
   padding: 16px 12px 0px 12px !important;
   .right-column,
   .left-column {
+    width: 488px;
     min-width: 488px;
   }
   @media screen and (max-width: 2400px) {
     .right-column,
     .left-column {
+      width: 424px;
       min-width: 424px;
     }
   }
   @media screen and (max-width: 1920px) {
     .right-column,
     .left-column {
+      width: 392px;
       min-width: 392px;
     }
   }
   @media screen and (max-width: 1249px) {
     .right-column,
     .left-column {
+      width: 360px;
       min-width: 360px;
     }
   }

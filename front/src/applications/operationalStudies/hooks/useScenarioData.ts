@@ -178,31 +178,39 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
-    setTimetableItems((prev) =>
-      sortBy(
-        Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
-        'start_time'
-      )
-    );
+  const upsertTimetableItems = useCallback(
+    (timetableItemsToUpsert: TimetableItem[]) => {
+      setTimetableItems((prev) =>
+        sortBy(
+          Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+          'start_time'
+        )
+      );
 
-    removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
+      removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
 
-    simulateTimetableItems(timetableItemsToUpsert);
-  }, []);
+      simulateTimetableItems(timetableItemsToUpsert);
+      refetchConflicts();
+    },
+    [refetchConflicts]
+  );
 
-  const removeTimetableItems = useCallback((_timetableItemsToRemove: TimetableItemId[]) => {
-    setTimetableItems((prev) => {
-      const prevTimetableItemsById = mapBy(prev, 'id');
-      _timetableItemsToRemove.forEach((timetableItemId) => {
-        prevTimetableItemsById.delete(timetableItemId);
+  const removeTimetableItems = useCallback(
+    (_timetableItemsToRemove: TimetableItemId[]) => {
+      setTimetableItems((prev) => {
+        const prevTimetableItemsById = mapBy(prev, 'id');
+        _timetableItemsToRemove.forEach((timetableItemId) => {
+          prevTimetableItemsById.delete(timetableItemId);
+        });
+        return Array.from(prevTimetableItemsById.values());
       });
-      return Array.from(prevTimetableItemsById.values());
-    });
 
-    removeSimulatedTimetableItems(_timetableItemsToRemove);
-    removeProjectedTimetableItems(_timetableItemsToRemove);
-  }, []);
+      removeSimulatedTimetableItems(_timetableItemsToRemove);
+      removeProjectedTimetableItems(_timetableItemsToRemove);
+      refetchConflicts();
+    },
+    [refetchConflicts]
+  );
 
   const setTimetableItemDepartureTime = useCallback(
     (timetableItemId: TimetableItemId, newDeparture: Date) => {

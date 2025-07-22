@@ -1,4 +1,4 @@
-import type { Conflict } from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainMainCategory } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
@@ -57,6 +57,29 @@ function getConflictTrainNames(
   return trainNames.filter((name): name is string => name !== undefined);
 }
 
+function getConflictTrainCategories(
+  conflict: Conflict,
+  trainMap: Map<TimetableItemId, TimetableItemWithDetails>
+): (TrainMainCategory | null)[] {
+  const timetableItemCategories: (TrainMainCategory | null)[] = conflict.train_schedule_ids.map(
+    (id) => {
+      const train = trainMap.get(formatEditoastIdToTrainScheduleId(id));
+      const category = train?.category;
+      return category && 'main_category' in category ? category.main_category : null;
+    }
+  );
+
+  const occurrenceCategories: (TrainMainCategory | null)[] =
+    conflict.paced_train_occurrence_ids.map((occurrence) => {
+      const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
+      if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return null;
+      const { category } = pacedTrain;
+      return category && 'main_category' in category ? category.main_category : null;
+    });
+
+  return [...timetableItemCategories, ...occurrenceCategories];
+}
+
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
   timetableItems: TimetableItemWithDetails[]
@@ -70,5 +93,6 @@ export default function addTrainNamesToConflicts(
   return conflicts.map((conflict) => ({
     ...conflict,
     trainNames: getConflictTrainNames(conflict, trainMap),
+    trainCategories: getConflictTrainCategories(conflict, trainMap),
   }));
 }
