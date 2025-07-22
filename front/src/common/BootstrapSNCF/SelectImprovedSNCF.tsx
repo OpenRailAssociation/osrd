@@ -154,6 +154,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
         <div className="select-control">
           {!noTogglingHeader && (
             <div
+              data-testid="select-toggle"
               className={cx('input-group', { 'input-group-sm': sm })}
               tabIndex={0}
               role="button"

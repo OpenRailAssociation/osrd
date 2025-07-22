@@ -51,10 +51,10 @@ class ScenarioPage extends CommonPage {
     this.scenarioEditionModal = page.getByTestId('scenario-edition-modal');
     this.scenarioDeleteButton = this.scenarioEditionModal.getByTestId('delete-scenario');
     this.addScenarioButton = page.getByTestId('add-scenario-button');
-    this.scenarioNameInput = page.locator('#scenarioInputName');
-    this.scenarioDescriptionInput = page.locator('#scenarioDescription');
+    this.scenarioNameInput = page.getByTestId('scenarioInputName-input');
+    this.scenarioDescriptionInput = page.getByTestId('scenarioDescription-input');
     this.scenarioInfraList = page.getByTestId('infra-list');
-    this.scenarioElectricProfileSelect = page.locator('.input-group');
+    this.scenarioElectricProfileSelect = page.getByTestId('select-toggle');
     this.scenarioName = page.getByTestId('scenario-name-label');
     this.scenarioNameContainer = page.getByTestId('scenario-name-container');
     this.scenarioDescription = page.getByTestId('scenario-details-description');
@@ -66,9 +66,7 @@ class ScenarioPage extends CommonPage {
     this.conflictsList = page.getByTestId('conflicts-list');
     this.trainsButton = page.getByTestId('trains-button');
     this.trainList = page.getByTestId('scenario-left-column');
-    this.scenarioConfirmDeleteButton = page
-      .locator('#modal-content')
-      .getByTestId('confirm-delete-button');
+    this.scenarioConfirmDeleteButton = page.getByTestId('confirm-delete-button');
   }
 
   // Create a scenario based on the provided details.
