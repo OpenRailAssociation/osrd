@@ -69,7 +69,7 @@ async fn get_sub_categories(
     // TODO implement this endpoint
     Ok(Json(SubCategoryPage {
         results: vec![],
-        stats: PaginationStats::new(0, 0, 0, 0),
+        stats: PaginationStats::new(1, 1000, 1, 1000),
     }))
 }
 
