@@ -32,6 +32,7 @@ import {
 import { useAppDispatch } from 'store';
 import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
+import BoardWrapper from '../components/Scenario/BoardWrapper';
 import { useScenarioContext } from '../hooks/useScenarioContext';
 import useSimulationResults from '../hooks/useSimulationResults';
 
@@ -45,6 +46,7 @@ type SimulationResultsProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
   conflicts?: Conflict[];
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
+  isMapDisplayed?: boolean;
 };
 
 const SimulationResults = ({
@@ -53,8 +55,9 @@ const SimulationResults = ({
   timetableItemsWithDetails,
   conflicts = [],
   updateTrainDepartureTime,
+  isMapDisplayed,
 }: SimulationResultsProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
+  const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { infraId } = useScenarioContext();
 
@@ -196,8 +199,8 @@ const SimulationResults = ({
               <button
                 type="button"
                 className="show-warped-map-button my-3 ml-3 mr-1"
-                aria-label={t('toggleWarpedMap')}
-                title={t('toggleWarpedMap')}
+                aria-label={t('simulationResults.toggleWarpedMap')}
+                title={t('simulationResults.toggleWarpedMap')}
                 onClick={() => setShowWarpedMap(!showWarpedMap)}
               >
                 {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
@@ -268,17 +271,21 @@ const SimulationResults = ({
           </div>
 
           {/* SIMULATION : MAP */}
-          <div data-testid="simulation-map" className="simulation-map">
-            <SimulationResultsMap
-              geometry={simulationResults.pathProperties.geometry}
-              setMapCanvas={setMapCanvas}
-              pathfindingResult={simulationResults.path}
-            />
-          </div>
+          <BoardWrapper hidden={!isMapDisplayed} name={t('boards.map')} withFooter>
+            <div data-testid="simulation-map" className="simulation-map">
+              <SimulationResultsMap
+                geometry={simulationResults.pathProperties.geometry}
+                setMapCanvas={setMapCanvas}
+                pathfindingResult={simulationResults.path}
+              />
+            </div>
+          </BoardWrapper>
 
           {/* TIME STOPS TABLE */}
           <div className="time-stop-outputs">
-            <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('timetableOutput')}</p>
+            <p className="mt-2 mb-3 ml-3 font-weight-bold">
+              {t('simulationResults.timetableOutput')}
+            </p>
             <TimesStopsOutput
               simulatedTimetableItem={simulationResults.simulation}
               timetableItemWithDetails={selectedTimetableItemSummary}
