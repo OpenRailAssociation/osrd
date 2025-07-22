@@ -19,6 +19,7 @@ const CheckboxInput = (props: CheckboxRadioProps) => {
       <input
         {...inputProps}
         id={id}
+        data-testid={`${id}-checkbox`}
         className={cx(className, 'custom-control-input')}
         type="checkbox"
       />
@@ -36,6 +37,7 @@ const RadioInput = (props: CheckboxRadioProps) => {
       <input
         {...inputProps}
         id={id}
+        data-testid={`${id}-radio`}
         className={cx(className, 'custom-control-input')}
         type="radio"
       />
