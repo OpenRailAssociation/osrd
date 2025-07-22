@@ -59,6 +59,7 @@ const TextareaSNCF = (props: TextareaSNCFProps) => {
       )}
       <div className={`form-control-container ${invalidClass}`}>
         <textarea
+          data-testid={`${id}-input`}
           onChange={onChange}
           className={cx('form-control', { 'bg-white': whiteBG, readonly })}
           id={id}

@@ -1,8 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
-import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
-
 import { fillAndCheckInputById } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
@@ -39,8 +36,6 @@ class RollingstockEditorPage extends CommonPage {
 
   private readonly primaryCategorySelector: Locator;
 
-  private readonly categoriesCheckboxes: Record<TrainMainCategory, Locator>;
-
   private readonly tractionModeSelector: Locator;
 
   private readonly confirmModalButtonYes: Locator;
@@ -68,21 +63,15 @@ class RollingstockEditorPage extends CommonPage {
     this.rollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
     this.speedEffortCurvesButton = page.getByTestId('tab-rollingstock-curves');
     this.rollingStockSpreadsheet = page.locator('.dsg-container');
-    this.rollingStockSearchInput = page.locator('#searchfilter');
+    this.rollingStockSearchInput = page.getByTestId('searchfilter-input');
     this.powerRestrictionSelector = page.getByTestId('power-restriction-selector');
     this.electricalProfileSelector = page.getByTestId('electrical-profile-selector');
-    this.loadingGauge = page.locator('#loadingGauge');
-    this.primaryCategorySelector = page.getByTestId('primary-category-selector');
-    this.categoriesCheckboxes = Object.fromEntries(
-      Object.keys(TrainMainCategoryDict).map((category) => [
-        category,
-        page.getByTestId(`category-checkbox-${category}`),
-      ])
-    ) as Record<TrainMainCategory, Locator>;
+    this.loadingGauge = page.getByTestId('loadingGauge-select');
+    this.primaryCategorySelector = page.getByTestId('primary-category-selector-select');
     this.tractionModeSelector = page.getByTestId('traction-mode-selector');
     this.confirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
     this.addPowerRestrictionButton = this.powerRestrictionSelector.getByRole('button').nth(1);
-    this.powerRestrictionModalBody = page.locator('#modal-body');
+    this.powerRestrictionModalBody = page.getByTestId('modal-body');
     this.selectedElectricalProfileButton = this.electricalProfileSelector.getByRole('button');
     this.deleteSelectedElectricalProfileButton = this.selectedElectricalProfileButton.getByRole(
       'button',
@@ -91,6 +80,10 @@ class RollingstockEditorPage extends CommonPage {
     this.editRollingStockButton = page.getByTestId('rollingstock-edit-button');
     this.duplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
     this.deleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
+  }
+
+  private getCategoryCheckboxLocator(rollingstockCategory: string): Locator {
+    return this.page.getByTestId(`category-checkbox-${rollingstockCategory}-checkbox`);
   }
 
   async navigateToRollingStockPage() {
@@ -185,25 +178,23 @@ class RollingstockEditorPage extends CommonPage {
     expect(await this.loadingGauge.inputValue()).toBe(value);
   }
 
-  // Select primary category
-  async selectPrimaryCategory(value: TrainMainCategory) {
+  async selectPrimaryCategory(value: string) {
     await this.primaryCategorySelector.selectOption(value);
     await expect(this.primaryCategorySelector).toHaveValue(value);
-    await expect(this.categoriesCheckboxes[value]).toBeChecked();
-    await expect(this.categoriesCheckboxes[value]).toBeDisabled();
+    const checkbox = this.getCategoryCheckboxLocator(value);
+    await expect(checkbox).toBeChecked();
+    await expect(checkbox).toBeDisabled();
   }
 
-  // Select an unselected category in the category checkbox list
-  async checkCategoryCheckbox(category: TrainMainCategory) {
-    const checkbox = this.categoriesCheckboxes[category];
+  async checkCategoryCheckbox(category: string) {
+    const checkbox = this.getCategoryCheckboxLocator(category);
     await expect(checkbox).not.toBeChecked();
     await checkbox.locator('..').locator('label').click();
     await expect(checkbox).toBeChecked();
   }
 
-  // Deselect a selected category in the category checkbox list
-  async uncheckCategoryCheckbox(category: TrainMainCategory) {
-    const checkbox = this.categoriesCheckboxes[category];
+  async uncheckCategoryCheckbox(category: string) {
+    const checkbox = this.getCategoryCheckboxLocator(category);
     await expect(checkbox).toBeChecked();
     await checkbox.locator('..').locator('label').click();
     await expect(checkbox).not.toBeChecked();
@@ -306,7 +297,6 @@ class RollingstockEditorPage extends CommonPage {
     await fillAndCheckInputById(this.page, 'raisePantographTime', details.raisePantographTime);
   }
 
-  // Submit and confirm rolling stock creation
   async confirmRollingStockCreation() {
     await this.submitRollingstock();
     await this.confirmModalButtonYes.click();
