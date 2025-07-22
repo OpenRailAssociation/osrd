@@ -360,6 +360,56 @@ class EngineeringAllowanceTests {
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }
 
+    /**
+     * Similar test as above, but values have been tweaked to reproduce #12541. Distances are too
+     * short to actually run an engineering allowance.
+     */
+    @Test
+    fun testSeveralDelaysWithConflictAtStart() {
+        /*
+        a --> b --> c --> d --> e
+
+        space
+          ^
+        e |################################ end
+          |################################/__________
+        d |#################### /         /
+          |####################/_________/____________
+        c |############# /    /         /
+          |#############/____/_________/______________
+        b | /          /    /   ######################
+          |/          /    /    ######################
+        a start______/____/_____#######################> time
+
+         */
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b")
+        val secondBlock = infra.addBlock("b", "c")
+        val thirdBlock = infra.addBlock("c", "d")
+        val forthBlock = infra.addBlock("d", "e")
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                firstBlock,
+                OccupancySegment(1_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
+                secondBlock,
+                OccupancySegment(0.0, 800.0, 0.meters, 100.meters),
+                thirdBlock,
+                OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters),
+                forthBlock,
+                OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters)
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(1.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .setMaxRunTime(Double.POSITIVE_INFINITY)
+                .run() ?: return // No solution found is valid here (and expected)
+        // But if we find a solution there must be no conflict
+        occupancyTest(res, occupancyGraph)
+    }
+
     /** Test that we return null with no crash when we can't slow down fast enough */
     @Test
     fun testImpossibleEngineeringAllowance() {
