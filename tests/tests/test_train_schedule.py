@@ -138,9 +138,9 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "first", "stop_for": "PT10S", "reception_signal": "OPEN"},
                     {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
-                    {"at": "third", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "third", "stop_for": "PT10S", "reception_signal": "OPEN"},
                     {"at": "fourth", "stop_for": "PT10S", "reception_signal": "STOP"},
                     {"at": "last", "stop_for": "P0D"},
                 ],
@@ -213,28 +213,28 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
             prev_speed = current_speed
 
     # Check that the uphill brake is shorter than downhill brake.
-    offset_42_ms_brake_uphill = 19_332_051  # first stop is the end of the braking
+    offset_37_ms_brake_uphill = 20_084_083  # first stop is the end of the braking
     assert (
         abs(
             _get_current_or_next_speed_at(
-                simulation_final_output, offset_42_ms_brake_uphill
+                simulation_final_output, offset_37_ms_brake_uphill
             )
-            - 42
+            - 37
         )
         < 1
     )
-    offset_42_ms_brake_downhill = 27_318_065  # third stop is the end of the braking
+    offset_37_ms_brake_downhill = 28_007_977  # third stop is the end of the braking
     assert (
         abs(
             _get_current_or_next_speed_at(
-                simulation_final_output, offset_42_ms_brake_downhill
+                simulation_final_output, offset_37_ms_brake_downhill
             )
-            - 42
+            - 37
         )
         < 1
     )
-    uphill_brake_distance = first_stop_offset - offset_42_ms_brake_uphill
-    downhill_brake_distance = third_stop_offset - offset_42_ms_brake_downhill
+    uphill_brake_distance = first_stop_offset - offset_37_ms_brake_uphill
+    downhill_brake_distance = third_stop_offset - offset_37_ms_brake_downhill
     # make sure that there is at least 100m difference
     assert uphill_brake_distance + 100_000 < downhill_brake_distance
 
@@ -244,35 +244,38 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     # Check it on a tricky case: 4th stop target under a "low" MRSP part (140 km/h) but the braking curve actually
     #   dodges this limit and starts under "high" MRSP (288 km/h), and the guidance curve change at 220 km/h is also
     #   noticeable.
-    # In practice, check noticeable points of the braking curves (with the stops already checked)
-    offset_start_first_brake_high_speed = 14_509_004
-    offset_bending_guidance_point_first_brake = 17_684_268
+    # In practice, check noticeable points of the braking curves:
+    # - check high-speed point
+    # - check the point closest to the bending-point at 220 km/h (can be above or under: only the "shape" of the curve matters)
+    # - stop is already checked
+    offset_start_first_brake_high_speed = 15_032_882
+    offset_bending_guidance_point_first_brake = 18_229_194
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_start_first_brake_high_speed
         ),
-        kph2ms(274.178),
+        kph2ms(276.838),
     )
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_bending_guidance_point_first_brake
         ),
-        kph2ms(217.970),
+        kph2ms(217.971),
     )
 
-    offset_fourth_high_speed = 37_560_933
-    offset_fourth_brake_220_kph_speed = 37_819_833
+    offset_fourth_high_speed = 37_087_326
+    offset_fourth_brake_220_kph_speed = 37_590_127
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_fourth_high_speed
         ),
-        kph2ms(221.94),
+        kph2ms(230.97),
     )
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_fourth_brake_220_kph_speed
         ),
-        kph2ms(215.7),
+        kph2ms(220.92),
     )
 
 
@@ -378,7 +381,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
         )
         < speed_before_first_brake
     )
-    offset_start_second_brake = 40_663_497
+    offset_start_second_brake = 40_543_050
     speed_before_second_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_second_brake
     )
@@ -1061,8 +1064,8 @@ def test_etcs_schedule_result_slowdowns_with_stop(
             prev_speed = current_speed
 
     # Check that the train strictly decelerates to the stop position, and does not
-    # stays at safe speed when reaching the intermediate stop.
-    # Check the same for the strict accerelation after the stop.
+    # stay at safe speed when reaching the intermediate stop.
+    # Check the same for the strict acceleration after the stop.
     positions = simulation_final_output["positions"]
     speeds = simulation_final_output["speeds"]
 
@@ -1074,11 +1077,11 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     intermediate_index = bisect.bisect_left(positions, offset_intermediate_stop)
     end_index = bisect.bisect_left(positions, offset_end_acceleration_from_stop)
 
-    # Strict deceleration to the intermediate stop
+    # Deceleration with release speed to the intermediate stop
     for i in range(start_index + 1, intermediate_index):
-        assert speeds[i] < speeds[i - 1], (
-            f"Speed not strictly decreasing at index {i}: {speeds[i]} >= {speeds[i - 1]}"
-        )
+        assert speeds[i] < speeds[i - 1] or (
+            speeds[i] == speeds[i - 1] and speeds[i] == RELEASE_SPEED_40
+        ), f"Speed not decreasing at index {i}: {speeds[i]} >= {speeds[i - 1]}"
 
     # Strict acceleration after the intermediate stop
     # Assert starting at {intermediate_index + 2} to skip the first speed after the stop
@@ -1182,7 +1185,7 @@ def test_etcs_spacing_req(
     spacing_req_zone_stop = simulation_final_output["spacing_requirements"][32]
     assert spacing_req_zone_stop["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
     assert spacing_req_zone_stop["begin_time"] == 535548
-    assert spacing_req_zone_stop["end_time"] == 843357
+    assert spacing_req_zone_stop["end_time"] == 851123
 
     # zone entry DH1_2 (triggered by SH1_2)
     spacing_req_zone_final = simulation_final_output["spacing_requirements"][36]
@@ -1190,8 +1193,8 @@ def test_etcs_spacing_req(
         spacing_req_zone_final["zone"]
         == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
     )
-    assert spacing_req_zone_final["begin_time"] == 892060
-    assert spacing_req_zone_final["end_time"] == 1035083
+    assert spacing_req_zone_final["begin_time"] == 899826
+    assert spacing_req_zone_final["end_time"] == 1042849
 
 
 def test_etcs_schedule_braking_curves_endpoint(
@@ -1253,7 +1256,10 @@ def test_etcs_schedule_braking_curves_endpoint(
     ]
     start_braking_curves_offsets = [
         [21_467_192, MAX_SPEED_288],
-        [40_663_497, SPEED_LIMIT_142],
+        [
+            34_638_530,
+            MAX_SPEED_288,
+        ],  # Hitting the LoA maintain-speed, but not the actual MRSP
         [43_763_476, SPEED_LIMIT_142],
     ]
     assert len(stops) == len(stop_offsets)
@@ -1318,8 +1324,8 @@ def test_etcs_schedule_braking_curves_endpoint(
             and permitted_speed["speeds"][0] <= guidance["speeds"][0]
         )
 
-    # Check that the correct signal curves are present
-    assert len(signals) == 29
+    # Check that the correct signal curves are present: 29 spacing curves and 7 routing curves
+    assert len(signals) == 36
     for i in range(len(signals)):
         indication = signals[i]["indication"]
         permitted_speed = signals[i]["permitted_speed"]
@@ -1336,8 +1342,8 @@ def test_etcs_schedule_braking_curves_endpoint(
             and permitted_speed["speeds"][0] <= guidance["speeds"][0]
         )
     last_signal_curves = signals[-1]
-    assert last_signal_curves["indication"]["positions"][0] == 42_866_497
-    assert last_signal_curves["indication"]["positions"][-1] == 44_518_000
+    assert last_signal_curves["indication"]["positions"][0] == 42_766_050
+    assert last_signal_curves["indication"]["positions"][-1] == 44_538_000
 
 
 def _assert_equal_speeds(left, right):
