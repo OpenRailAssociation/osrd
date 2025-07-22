@@ -65,6 +65,6 @@ constructor(
     fun updateCurves(
         tractiveEffortCurveMap: RangeMap<Double, Array<PhysicsRollingStock.TractiveEffortPoint>>
     ): EnvelopeSimContext {
-        return EnvelopeSimContext(rollingStock, path, timeStep, tractiveEffortCurveMap)
+        return EnvelopeSimContext(rollingStock, path, timeStep, tractiveEffortCurveMap, etcsContext)
     }
 }
