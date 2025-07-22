@@ -41,25 +41,23 @@ class ProjectPage extends HomePage {
 
   constructor(page: Page) {
     super(page);
-    this.projectNameLabel = page.locator('.project-details-title-name');
+    this.projectNameLabel = page.getByTestId('project-name');
     this.updateProjectButton = page.getByTestId('project-update-button');
-    this.projectDescriptionLabel = page.locator('.project-details-title-description');
-    this.projectObjectivesLabel = page.locator('.project-details-title-objectives');
-    this.projectFinancialAmountLabel = page.locator('.project-details-financials-amount');
-    this.projectFinancialInfoLabel = page.locator('.project-details-financials-infos');
-    this.projectTagsLabel = page.locator('.project-details-tags');
+    this.projectDescriptionLabel = page.getByTestId('project-description');
+    this.projectObjectivesLabel = page.getByTestId('project-objectives');
+    this.projectFinancialAmountLabel = page.getByTestId('project-financial-amount');
+    this.projectFinancialInfoLabel = page.getByTestId('project-financials-infos');
+    this.projectTagsLabel = page.getByTestId('project-tags');
     this.createProjectButton = page.getByTestId('create-project');
     this.addProjectButton = page.getByTestId('add-project');
-    this.projectNameInput = page.locator('#projectInputName');
-    this.projectDescriptionInput = page.locator('#projectDescription');
-    this.projectObjectiveInput = page.locator('#projectObjectives');
-    this.projectFunderInput = page.locator('#projectInputFunders');
-    this.projectBudgetInput = page.locator('#projectInputBudget');
-    this.updateConfirmButton = page.locator('#modal-content').getByTestId('update-project');
-    this.projectDeleteButton = page.locator('#modal-content').getByTestId('delete-project');
-    this.projectConfirmDeleteButton = page
-      .locator('#modal-content')
-      .getByTestId('confirm-delete-button');
+    this.projectNameInput = page.getByTestId('projectInputName-input');
+    this.projectDescriptionInput = page.getByTestId('projectDescription-input');
+    this.projectObjectiveInput = page.getByTestId('projectObjectives-input');
+    this.projectFunderInput = page.getByTestId('projectInputFunders-input');
+    this.projectBudgetInput = page.getByTestId('projectInputBudget-input');
+    this.updateConfirmButton = page.getByTestId('update-project');
+    this.projectDeleteButton = page.getByTestId('delete-project');
+    this.projectConfirmDeleteButton = page.getByTestId('confirm-delete-button');
   }
 
   // Create a project based on the provided details.

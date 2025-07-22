@@ -237,7 +237,7 @@ const ProjectView = () => {
                   </div>
                   <div className={project.image ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
                     <div className="project-details-title-content">
-                      <div className="project-details-title-name">
+                      <div className="project-details-title-name" data-testid="project-name">
                         {project.name}
                         <button
                           data-testid="project-update-button"
@@ -263,7 +263,10 @@ const ProjectView = () => {
                       </div>
                       <div className="row">
                         <div className="col-xl-6">
-                          <div className="project-details-title-description">
+                          <div
+                            className="project-details-title-description"
+                            data-testid="project-description"
+                          >
                             {project.description}
                           </div>
                         </div>
@@ -274,7 +277,10 @@ const ProjectView = () => {
                             </span>
                             {t('project.objectives')}
                           </h3>
-                          <div className="project-details-title-objectives">
+                          <div
+                            className="project-details-title-objectives"
+                            data-testid="project-objectives"
+                          >
                             {project.objectives && (
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {project.objectives}
@@ -289,12 +295,18 @@ const ProjectView = () => {
               </div>
               {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
                 <div className="project-details-financials">
-                  <div className="project-details-financials-infos">
+                  <div
+                    className="project-details-financials-infos"
+                    data-testid="project-financials-infos"
+                  >
                     <h3>{t('project.fundedBy')}</h3>
                     {project.funders && <div>{project.funders}</div>}
                   </div>
                   {project.budget ? (
-                    <div className="project-details-financials-amount">
+                    <div
+                      className="project-details-financials-amount"
+                      data-testid="project-financial-amount"
+                    >
                       <span className="project-details-financials-amount-text">
                         {t('project.totalBudget')}
                       </span>
@@ -303,7 +315,7 @@ const ProjectView = () => {
                   ) : null}
                 </div>
               )}
-              <div className="project-details-tags">
+              <div className="project-details-tags" data-testid="project-tags">
                 {project.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={tag}>
                     {tag}

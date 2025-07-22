@@ -298,7 +298,6 @@ export default function AddOrEditProjectModal({
                 id="projectInputName"
                 type="text"
                 name="projectInputName"
-                data-testid="projectInputName"
                 focus
                 label={
                   <div className="d-flex align-items-center">
