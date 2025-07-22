@@ -24,7 +24,8 @@ abstract class VisitedRange {
      * Returns the range that is most likely to define elements as "already visited". Used to merge
      * overlapping ranges in the range map.
      */
-    fun mergeWith(other: VisitedRange, timeRange: Range<Double>): VisitedRange {
+    fun mergeWith(other: VisitedRange?, timeRange: Range<Double>): VisitedRange {
+        if (other == null) return this
         return sequenceOf(this, other).minBy { it.getLowestCostOnRange(timeRange) }
     }
 
