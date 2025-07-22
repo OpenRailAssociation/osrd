@@ -135,6 +135,7 @@ const InputSNCF = ({
             })}
           >
             <input
+              data-testid={`${id}-input`}
               autoFocus={focus}
               type={type}
               onChange={onChange}
