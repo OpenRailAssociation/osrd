@@ -1,12 +1,13 @@
 import { Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import { formatDay } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 
 import styles from './styles/SimulationReportStyleSheet';
 
 const RCInfo = ({ departureTime }: { departureTime: string }) => {
-  const { t, i18n } = useTranslation('stdcm');
+  const { t } = useTranslation('stdcm');
+  const dateTimeLocale = useDateTimeLocale();
 
   return (
     <View style={styles.rcInfo.rcInfo}>
@@ -14,7 +15,14 @@ const RCInfo = ({ departureTime }: { departureTime: string }) => {
       <View style={styles.rcInfo.rcBox}>
         <View style={styles.rcInfo.stdcmApplication}>
           <Text style={styles.rcInfo.applicationDate}>{t('reportSheet.applicationDate')}</Text>
-          <Text style={styles.rcInfo.date}>{formatDay(departureTime, i18n.language)}</Text>
+          <Text style={styles.rcInfo.date}>
+            {new Date(departureTime).toLocaleDateString(dateTimeLocale, {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })}
+          </Text>
         </View>
       </View>
     </View>
