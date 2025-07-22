@@ -44,17 +44,6 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
  */
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
-export function formatDay(dateString: string, locale: string = 'fr'): string {
-  if (!['en', 'fr'].includes(locale)) {
-    throw new Error('Invalid locale');
-  }
-  const date = dayjs.utc(dateString).locale(locale);
-  if (locale === 'en') {
-    return date.format('dddd, MMMM D, YYYY');
-  }
-  return date.format('dddd D MMMM YYYY');
-}
-
 export const formatDateToString = (date: Date, shortYear: boolean = false) => {
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
