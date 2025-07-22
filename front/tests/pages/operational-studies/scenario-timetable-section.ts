@@ -110,22 +110,18 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.emptyTimetable = page.getByTestId('empty-timetable-list');
   }
 
-  // Get the button locator of a train schedule element.
   private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
     return trainScheduleSelector.getByTestId('scenario-timetable-train-schedule-button');
   }
 
-  // Get the button locator of a paced train element.
   static getPacedTrainButton(pacedTrainSelector: Locator): Locator {
     return pacedTrainSelector.getByTestId('paced-train-name');
   }
 
-  // Get the locator of occurrences.
   static getOccurrences(pacedTrain: Locator): Locator {
     return pacedTrain.getByTestId('occurrence-item');
   }
 
-  // Verify that the message "The timetable contains invalid trains" is visible
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
     const invalidTrainsMessageText = await this.invalidTimetableItemsMessage.innerText();
     expect(invalidTrainsMessageText).toEqual(frTranslations.timetable.invalidTrains);
@@ -173,27 +169,22 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.timetableFilterButtonClose.click();
   }
 
-  // Click the train validity filter button based on the provided translation
   private async selectTrainValidityFilter(filterTranslation: string): Promise<void> {
     await this.timetableValidityFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Click the train punctuality filter button based on the provided translation
   private async selectTrainPunctualityFilter(filterTranslation: string): Promise<void> {
     await this.timetablePunctualityFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Click the train type filter button based on the provided translation
   private async selectTrainTypeFilter(filterTranslation: string): Promise<void> {
     await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Verify that the imported timetable items number is correct
   async verifyTimetableItemsCount(timetableItemsCount: number): Promise<void> {
     await expect(this.timetableItems).toHaveCount(timetableItemsCount);
   }
 
-  // Verify that the total items label matches the expected syntax (plural only)
   async verifyTotalItemsLabel(
     translations: TimetableFilterTranslations & CommonTranslations,
     itemCounts: {
@@ -290,7 +281,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.verifyTimetableItemsCount(expectedTrainCount);
   }
 
-  // Filter train using speed limit tag button based on the provided translation and verify train count
   async filterSpeedLimitTagAndVerifyTrainCount(
     filterTranslation: string | null,
     expectedTrainCount: number,
