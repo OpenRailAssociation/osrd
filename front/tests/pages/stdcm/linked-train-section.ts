@@ -39,25 +39,28 @@ class LinkedTrainSection extends STDCMPage {
     this.anteriorDeleteLinkedPathButton = this.anteriorLinkedTrainContainer.getByTestId(
       'linked-train-delete-button'
     );
-    this.anteriorLinkedTrainField = this.anteriorLinkedTrainContainer.locator('#linked-train-id');
-    this.anteriorLinkedTrainDate = this.anteriorLinkedTrainContainer.locator('#linked-train-date');
+    this.anteriorLinkedTrainField =
+      this.anteriorLinkedTrainContainer.getByTestId('linked-train-id-input');
+    this.anteriorLinkedTrainDate =
+      this.anteriorLinkedTrainContainer.getByTestId('linked-train-date-input');
     this.anteriorLinkedTrainSearchButton = this.anteriorLinkedTrainContainer.getByTestId(
       'linked-train-search-button'
     );
     this.posteriorDeleteLinkedPathButton = this.posteriorLinkedTrainContainer.getByTestId(
       'linked-train-delete-button'
     );
-    this.posteriorLinkedTrainField = this.posteriorLinkedTrainContainer.locator('#linked-train-id');
+    this.posteriorLinkedTrainField =
+      this.posteriorLinkedTrainContainer.getByTestId('linked-train-id-input');
     this.posteriorLinkedTrainDate =
-      this.posteriorLinkedTrainContainer.locator('#linked-train-date');
+      this.posteriorLinkedTrainContainer.getByTestId('linked-train-date-input');
     this.posteriorLinkedTrainSearchButton = this.posteriorLinkedTrainContainer.getByTestId(
       'linked-train-search-button'
     );
-    this.anteriorLinkedTrainResultInfosButton = this.anteriorLinkedTrainContainer.locator(
-      '.linked-train-result-infos'
+    this.anteriorLinkedTrainResultInfosButton = this.anteriorLinkedTrainContainer.getByTestId(
+      'linked-train-result-infos'
     );
-    this.posteriorLinkedTrainResultInfosButton = this.posteriorLinkedTrainContainer.locator(
-      '.linked-train-result-infos'
+    this.posteriorLinkedTrainResultInfosButton = this.posteriorLinkedTrainContainer.getByTestId(
+      'linked-train-result-infos'
     );
   }
 

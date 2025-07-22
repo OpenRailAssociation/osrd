@@ -29,14 +29,15 @@ class ViaSection extends STDCMPage {
 
     this.viaIcon = page.getByTestId('stdcm-via-icons');
     this.viaDeleteButton = page.getByTestId('delete-via-button');
-    this.suggestionNS = this.suggestionList.locator('.suggestion-item', {
+
+    this.suggestionNS = this.suggestionItems.filter({
       hasText: 'NS North_station',
     });
 
-    this.suggestionMES = this.suggestionList.locator('.suggestion-item', {
+    this.suggestionMES = this.suggestionItems.filter({
       hasText: 'MES Mid_East_station',
     });
-    this.suggestionMWS = this.suggestionList.locator('.suggestion-item', {
+    this.suggestionMWS = this.suggestionItems.filter({
       hasText: 'MWS Mid_West_station',
     });
     this.viaCard = this.page.getByTestId('stdcm-via-card');
@@ -44,7 +45,7 @@ class ViaSection extends STDCMPage {
 
   // Dynamic selectors for via cards
   private getViaCard(viaNumber: number): Locator {
-    return this.page.locator('.stdcm-vias-bundle').nth(viaNumber - 1);
+    return this.page.getByTestId('stdcm-via-card').nth(viaNumber - 1);
   }
 
   private getViaCH(viaNumber: number): Locator {
@@ -64,7 +65,7 @@ class ViaSection extends STDCMPage {
   }
 
   private getViaWarning(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('.status-message');
+    return this.getViaCard(viaNumber).getByTestId('status-message-warning');
   }
 
   async addAndDeletedDefaultVia() {
