@@ -225,7 +225,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.deactivateElectricalProfile();
     await simulationSettingsTab.checkMarecoMargin();
-    await simulationSettingsTab.selectCodeCompoOption('HLP');
+    await simulationSettingsTab.selectSpeedLimitTagOption('HLP');
     // Add the train schedule and verify output results
     await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
@@ -244,7 +244,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     // Remove the composition code option and verify the changes
     await scenarioTimetableSection.editTimetableItem();
     await operationalStudiesPage.openSimulationSettingsTab();
-    await simulationSettingsTab.selectCodeCompoOption('__PLACEHOLDER__');
+    await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
     await operationalStudiesPage.submitTimetableItemEdit();
     await scenarioPage.toggleTrainList();
 
@@ -345,7 +345,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.openSimulationSettingsTab();
     await simulationSettingsTab.checkElectricalProfile();
     await simulationSettingsTab.activateLinearMargin();
-    await simulationSettingsTab.selectCodeCompoOption('HLP');
+    await simulationSettingsTab.selectSpeedLimitTagOption('HLP');
     // Add the train schedule and verify output results
     await operationalStudiesPage.createTimetableItem();
     await operationalStudiesPage.closeToastNotification();
