@@ -72,27 +72,27 @@ class RouteTab {
     this.reverseItineraryButton = page.getByTestId('reverse-itinerary-button');
     this.deleteItineraryButton = page.getByTestId('delete-itinerary-button');
     this.droppedWaypoints = page.getByTestId('dropped-via-info');
-    this.waypointSuggestions = page.locator('.suggested-via-clickable');
-    this.viaModal = page.locator('.manage-vias-modal');
+    this.waypointSuggestions = page.getByTestId('clickable-suggested-via');
+    this.viaModal = page.getByTestId('manage-vias-modal');
     this.closeViaModalButton = page.getByLabel('Close');
     this.missingParamMessage = page.getByTestId('missing-params-info');
-    this.pathfindingLoader = page.locator('.dots-loader');
+    this.pathfindingLoader = page.getByTestId('dots-loader');
     this.pathfindingInProgressMessage = page.getByTestId('pathfinding-in-progress');
   }
 
   // Get the name locator of a waypoint suggestion.
   private static getWaypointSuggestionNameLocator(waypointSuggestion: Locator): Locator {
-    return waypointSuggestion.locator('.suggested-via-name');
+    return waypointSuggestion.getByTestId('suggested-via-name');
   }
 
   // Get the CH locator of a waypoint suggestion.
   private static getWaypointSuggestionChLocator(waypointSuggestion: Locator): Locator {
-    return waypointSuggestion.locator('.suggested-via-ch');
+    return waypointSuggestion.getByTestId('suggested-via-ch');
   }
 
   // Get the UIC locator of a waypoint suggestion.
   private static getWaypointSuggestionUicLocator(waypointSuggestion: Locator): Locator {
-    return waypointSuggestion.locator('.suggested-via-uic');
+    return waypointSuggestion.getByTestId('suggested-via-uic');
   }
 
   // Get the distance locator of a waypoint suggestion.

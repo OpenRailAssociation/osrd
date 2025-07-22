@@ -50,14 +50,26 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
         key={`suggested-via-modal-${op.opId}-${idx}`}
         className={cx('d-flex align-items-center p-1', { 'suggested-via-clickable': !isInVias })}
         title={op.name}
+        data-testid="clickable-suggested-via"
       >
         {isInVias && <small className="pr-2">{idxTrueVia}</small>}
         <i className={`${!isInVias ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
-        <span className={cx('mr-1', 'suggested-via-name', { 'reduced-text': isInVias })}>
+        <span
+          className={cx('mr-1', 'suggested-via-name', { 'reduced-text': isInVias })}
+          data-testid="suggested-via-name"
+        >
           {op.name || ''}
         </span>
-        {op.ch && <span className="suggested-via-ch">{op.ch}</span>}
-        {op.uic && <small className="suggested-via-uic text-muted">{formatUicToCi(op.uic)}</small>}
+        {op.ch && (
+          <span className="suggested-via-ch" data-testid="suggested-via-ch">
+            {op.ch}
+          </span>
+        )}
+        {op.uic && (
+          <small className="suggested-via-uic text-muted" data-testid="suggested-via-uic">
+            {formatUicToCi(op.uic)}
+          </small>
+        )}
         <div className="ml-auto">
           {op.positionOnPath && (
             <small
@@ -95,7 +107,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
 
   let idxTrueVia = 0;
   return (
-    <div className="manage-vias-modal">
+    <div className="manage-vias-modal" data-testid="manage-vias-modal">
       <ModalHeaderSNCF withCloseButton>
         <h1>
           {t('manageVias')}
