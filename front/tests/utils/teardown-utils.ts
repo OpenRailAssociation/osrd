@@ -1,9 +1,6 @@
-import type {
-  GetLightRollingStockApiResponse,
-  LightRollingStock,
-} from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
-import { getApiRequest, deleteApiRequest, getStudy, getScenario, getProject } from './api-utils';
+import { deleteApiRequest, getStudy, getScenario, getProject, listApiRequest } from './api-utils';
 import { logger } from '../logging-fixture';
 
 /**
@@ -28,13 +25,12 @@ export async function deleteProject(projectName: string): Promise<void> {
  * @returns {Promise<void>} - A promise that resolves when the matching rolling stocks are deleted or if none are found.
  */
 export async function deleteRollingStocks(rollingStockNames: string[]): Promise<void> {
-  const rollingStocks: GetLightRollingStockApiResponse = await getApiRequest(
-    '/api/light_rolling_stock',
-    { page_size: 500 }
+  const rollingStocks: LightRollingStockWithLiveries[] = await listApiRequest(
+    '/api/light_rolling_stock'
   );
 
   // Find rolling stocks that match the provided names
-  const rollingStockIds = rollingStocks.results
+  const rollingStockIds = rollingStocks
     .filter((r: LightRollingStock) => rollingStockNames.includes(r.name))
     .map((r: LightRollingStock) => r.id);
 
