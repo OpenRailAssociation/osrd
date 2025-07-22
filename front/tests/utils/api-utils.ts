@@ -20,7 +20,6 @@ import type {
   LightRollingStock,
   StdcmSearchEnvironment,
   TowedRollingStock,
-  GetTowedRollingStockApiResponse,
   PaginationStats,
 } from 'common/api/osrdEditoastApi';
 
@@ -327,11 +326,10 @@ export async function deleteStdcmEnvironment(stdcmSearchEnvId: number): Promise<
 export const getTowedRollingStockByName = async (
   towedRollingStockName: string
 ): Promise<TowedRollingStock | undefined> => {
-  const towedRollingStocks: GetTowedRollingStockApiResponse = await getApiRequest(
-    '/api/towed_rolling_stock',
-    { page_size: 50 }
-  );
-  const towedRollingStock = towedRollingStocks.results.find(
+  const towedRollingStocks: TowedRollingStock[] = await listApiRequest('/api/towed_rolling_stock', {
+    page_size: 50,
+  });
+  const towedRollingStock = towedRollingStocks.find(
     (t: TowedRollingStock) => t.name === towedRollingStockName
   );
   return towedRollingStock;
