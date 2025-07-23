@@ -17,7 +17,7 @@ import {
   type PacedTrainResponse,
   type PathfindingResult,
   type SimulationResponse,
-  type OperationalPoint,
+  type RelatedOperationalPoint,
   type OperationalPointReference,
 } from './generatedEditoastApi';
 
@@ -189,12 +189,12 @@ const osrdEditoastApi = generatedEditoastApi
         providesTags: ['train_schedule'],
       }),
       matchAllOperationalPoints: builder.query<
-        OperationalPoint[][],
+        RelatedOperationalPoint[][],
         { infraId: number; opRefs: OperationalPointReference[] }
       >({
         queryFn: async ({ infraId, opRefs }, { dispatch }) => {
           const batchSize = 200;
-          const result: OperationalPoint[][] = [];
+          const result: RelatedOperationalPoint[][] = [];
 
           // Split opRefs into batches of 200
           for (let i = 0; i < opRefs.length; i += batchSize) {
