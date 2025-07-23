@@ -27,10 +27,13 @@ const BoardWrapper = ({
   return (
     <div className="board-wrapper" data-testid={dataTestId}>
       <div className="board-header">
-        <span className="board-header-name">{name}</span>
+        <span className="board-header-name" data-testid="board-header-name">
+          {name}
+        </span>
         <MenuTriggerButton
           buttonProps={{
             className: 'board-header-button',
+            dataTestID: 'board-header-button',
             disabled: items.length === 0,
           }}
           menuProps={{ items, className: 'board-header-menu' }}

@@ -22,9 +22,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly timetableItems: Locator;
 
-  private readonly timetableBoardWrapper: Locator;
+  readonly timetableBoardWrapper: Locator;
 
-  private readonly timetableBoardWrapperMenuButton: Locator;
+  readonly timetableBoardWrapperMenuButton: Locator;
 
   private readonly timetableSelectAllButton: Locator;
 
@@ -64,7 +64,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly projectItemButton: Locator;
 
-  private readonly editTimetableItemButton: Locator;
+  readonly editTimetableItemButton: Locator;
 
   private readonly timetableItemArrivalTime: Locator;
 
@@ -75,9 +75,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.invalidTimetableItemsMessage = page.getByTestId('invalid-timetable-item-message');
     this.timetableItems = page.getByTestId('scenario-timetable-item');
     this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
-    this.timetableTotalItemLabel = this.timetableBoardWrapper.locator('.board-header-name');
+    this.timetableTotalItemLabel = this.timetableBoardWrapper.getByTestId('board-header-name');
     this.timetableBoardWrapperMenuButton =
-      this.timetableBoardWrapper.locator('.board-header-button');
+      this.timetableBoardWrapper.getByTestId('board-header-button');
     this.timetableSelectAllButton = page.getByTestId('scenarios-select-all-button');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');

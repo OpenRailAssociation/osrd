@@ -9,6 +9,7 @@ import OSRDMenu from './OSRDMenu';
 
 export type ButtonProps = {
   icon?: React.ReactNode;
+  dataTestID?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export type MenuProps = {
@@ -31,6 +32,7 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
     icon = <KebabHorizontal />,
     onClick,
     className: buttonClassName = '',
+    dataTestID,
     ...restButtonProps
   } = buttonProps;
 
@@ -82,6 +84,7 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
         type="button"
         onClick={handleClick}
         className={cx(buttonClassName, { 'menu-is-opened': isMenuOpen })}
+        data-testid={dataTestID}
         {...restButtonProps}
       >
         {icon}
