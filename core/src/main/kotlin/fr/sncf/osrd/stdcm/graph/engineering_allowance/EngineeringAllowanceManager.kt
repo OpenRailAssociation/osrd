@@ -51,8 +51,8 @@ class EngineeringAllowanceManager(
         // We still try to roughly guess the maximum length over which to add the time
         var distance = 0.meters
         for (segment in segments) {
+            if (segment.maxAddedDelay <= requiredAdditionalTime) break
             distance += segment.length
-            if (distance > 10_000.meters) return distance
         }
         return Distance.max(solution.distance, distance)
     }
@@ -209,6 +209,7 @@ class EngineeringAllowanceManager(
         constDeceleration: Double
     ): Sequence<ConstDecelerationData> = sequence {
         var endSpeed = decelerationEndSpeed
+        var intersection = false
         for (segment in prevSegments) {
             val pureDecelerationSim =
                 runSimplifiedSimulation(
@@ -216,14 +217,26 @@ class EngineeringAllowanceManager(
                     endSpeed,
                     segment.length.meters,
                 )
+            var simTravelTime = pureDecelerationSim.newDuration
             if (pureDecelerationSim.newBeginSpeed > segment.beginSpeed) {
-                // Intersection with base sim. We could try to guess the exact added time,
-                // but ignoring this segment is generally good enough.
-                break
+                // Intersection with base sim. We estimate the new time with a basic speed plateau +
+                // const deceleration, return this segment, and exit the loop.
+                if (segment.beginSpeed < endSpeed || segment.beginSpeed <= 0.0)
+                    break // Can't run the simplified sim, there's an acceleration
+                val newTime =
+                    simplifiedSpeedPlateauThenDeceleration(
+                        constDeceleration,
+                        segment.beginSpeed,
+                        endSpeed,
+                        segment.length.meters
+                    )
+                intersection = true
+                simTravelTime = newTime
             }
-            val newTravelTime =
-                scaleAllowanceTime(graph, pureDecelerationSim.newDuration, segment.length)
-            val addedTimeOnSegment = positive(newTravelTime - segment.travelTime)
+
+            var newTravelTime = scaleAllowanceTime(graph, simTravelTime, segment.length)
+            newTravelTime = max(newTravelTime, segment.travelTime)
+            val addedTimeOnSegment = newTravelTime - segment.travelTime
 
             yield(
                 ConstDecelerationData(
@@ -232,6 +245,7 @@ class EngineeringAllowanceManager(
                     addedTimeOnSegment,
                 )
             )
+            if (intersection) break
             endSpeed = pureDecelerationSim.newBeginSpeed
         }
     }
