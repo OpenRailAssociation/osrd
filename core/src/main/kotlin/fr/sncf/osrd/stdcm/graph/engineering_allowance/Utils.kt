@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate.EnvelopePoint
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.utils.units.Distance
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 /** Run a very simplified simulation with a constant acceleration value. */
@@ -24,6 +25,28 @@ fun runSimplifiedSimulation(
         initialSpeed,
         time,
     )
+}
+
+/**
+ * Similar function as above, computes a simplified simulation using basic kinetic equations. Here
+ * we compute the travel time over some known distance, with first a speed plateau and then a
+ * deceleration. The exact transition isn't known, but we know the start/end speed and acceleration.
+ */
+fun simplifiedSpeedPlateauThenDeceleration(
+    acceleration: Double,
+    initialSpeed: Double,
+    finalSpeed: Double,
+    distance: Double
+): Double {
+    require(initialSpeed > 0.0)
+    require(finalSpeed >= 0.0)
+    require(initialSpeed > finalSpeed)
+    require(distance > 0.0)
+
+    val constSpeedTime = distance / initialSpeed
+    val addedDecelerationTime =
+        (initialSpeed - finalSpeed).pow(2.0) / abs(2.0 * acceleration * initialSpeed)
+    return constSpeedTime + addedDecelerationTime
 }
 
 /**
