@@ -56,6 +56,7 @@ editoast_common::schemas! {
     project::schemas(),
     rolling_stock::schemas(),
     stdcm_log::schemas(),
+    stdcm_search_environment::schemas(),
     tags::schemas(),
     towed_rolling_stock::schemas(),
 }

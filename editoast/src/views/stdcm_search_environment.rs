@@ -74,6 +74,7 @@ struct StdcmSearchEnvironmentCreateForm {
     enabled_until: DateTime<Utc>,
     #[schema(value_type = GeoJson)]
     active_perimeter: Option<geos::geojson::Geometry>,
+    operational_points: Option<Vec<i64>>,
 }
 
 impl<'de> Deserialize<'de> for StdcmSearchEnvironmentCreateForm {
@@ -122,6 +123,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .enabled_from(form.enabled_from)
             .enabled_until(form.enabled_until)
             .active_perimeter(form.active_perimeter.map(diesel_json::Json))
+            .operational_points(form.operational_points.into())
     }
 }
 
@@ -300,6 +302,7 @@ pub mod tests {
             search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
             enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
             enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            operational_points: Some(Vec::from([1, 2, 3])),
             active_perimeter: None,
         };
 

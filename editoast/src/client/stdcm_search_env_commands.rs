@@ -75,6 +75,9 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
     pub search_window_end: Option<DateTime<Utc>>,
+    /// List of operational points
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operation_points: Option<Vec<i64>>,
     /// Path to the file that contains the geometry of the active perimeter
     pub active_perimeter_geojson_path: Option<PathBuf>,
 }
@@ -125,6 +128,7 @@ async fn set_stdcm_search_env_from_scenario(
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
         .active_perimeter(active_perimeter)
+        .operational_points(args.operation_points.into())
         .create(conn)
         .await?;
 
@@ -153,6 +157,9 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
     pub search_window_end: Option<DateTime<Utc>>,
+    /// List of operational points
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operation_points: Option<Vec<i64>>,
     /// Path to the file that contains the geometry of the active perimeter
     pub active_perimeter_geojson_path: Option<PathBuf>,
 }
@@ -205,6 +212,7 @@ async fn set_stdcm_search_env_from_scratch(
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
         .active_perimeter(active_perimeter)
+        .operational_points(args.operation_points.into())
         .create(conn)
         .await?;
 
@@ -436,6 +444,7 @@ mod tests {
             work_schedule_group_id: Some(work_schedule_group.id),
             search_window_begin: None,
             search_window_end: None,
+            operation_points: Some(Vec::from([1, 2, 3, 4])),
             active_perimeter_geojson_path: Some(perimeter_file.path().into()),
         };
 
@@ -457,6 +466,11 @@ mod tests {
         );
 
         assert_eq!(search_env.active_perimeter, Some(perimeter));
+
+        assert_eq!(
+            search_env.operational_points.to_vec(),
+            Some(Vec::from([1, 2, 3, 4]))
+        );
     }
 
     #[rstest]
@@ -483,6 +497,7 @@ mod tests {
             timetable_id: timetable.id,
             search_window_begin: None,
             search_window_end: None,
+            operation_points: Some(Vec::from([1, 2, 3, 4])),
             active_perimeter_geojson_path: None,
         };
 
@@ -501,6 +516,11 @@ mod tests {
         assert_eq!(
             search_env.search_window_end,
             make_datetime("2000-02-03 08:00:00Z")
+        );
+
+        assert_eq!(
+            search_env.operational_points.to_vec(),
+            Some(Vec::from([1, 2, 3, 4]))
         );
     }
 }

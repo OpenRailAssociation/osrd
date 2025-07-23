@@ -9914,6 +9914,12 @@ components:
             allOf:
             - $ref: '#/components/schemas/TrackReference'
             nullable: true
+    OptionalArrayOfInt:
+      type: array
+      items:
+        type: integer
+        format: int64
+      nullable: true
     OptionsChangeGroup:
       type: object
       required:
@@ -13261,6 +13267,7 @@ components:
       - search_window_end
       - enabled_from
       - enabled_until
+      - operational_points
       properties:
         active_perimeter:
           $ref: '#/components/schemas/GeoJson'
@@ -13283,6 +13290,8 @@ components:
         infra_id:
           type: integer
           format: int64
+        operational_points:
+          $ref: '#/components/schemas/OptionalArrayOfInt'
         search_window_begin:
           type: string
           format: date-time
@@ -13328,6 +13337,12 @@ components:
         infra_id:
           type: integer
           format: int64
+        operational_points:
+          type: array
+          items:
+            type: integer
+            format: int64
+          nullable: true
         search_window_begin:
           type: string
           format: date-time

@@ -5,7 +5,7 @@ use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use editoast_models::DbConnection;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
@@ -13,8 +13,46 @@ use crate::models::prelude::*;
 
 #[cfg(test)]
 use editoast_models::model;
-#[cfg(test)]
-use serde::Deserialize;
+
+editoast_common::schemas! {
+    OptionalArrayOfInt,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
+pub struct OptionalArrayOfInt(Option<Vec<i64>>);
+
+impl OptionalArrayOfInt {
+    pub fn new(value: Option<Vec<i64>>) -> Self {
+        Self(value)
+    }
+
+    pub fn to_vec(&self) -> Option<Vec<i64>> {
+        self.0.as_ref().map(|vec| vec.clone().into_iter().collect())
+    }
+}
+
+impl From<Option<Vec<Option<i64>>>> for OptionalArrayOfInt {
+    fn from(value: Option<Vec<Option<i64>>>) -> Self {
+        match value {
+            Some(vec) => Self(Some(vec.into_iter().flatten().collect())),
+            None => Self(None),
+        }
+    }
+}
+impl From<Option<Vec<i64>>> for OptionalArrayOfInt {
+    fn from(value: Option<Vec<i64>>) -> Self {
+        match value {
+            Some(vec) => Self(Some(vec)),
+            None => Self(None),
+        }
+    }
+}
+
+impl From<OptionalArrayOfInt> for Option<Vec<Option<i64>>> {
+    fn from(value: OptionalArrayOfInt) -> Self {
+        value.0.map(|vec| vec.into_iter().map(Some).collect())
+    }
+}
 
 #[derive(Debug, Clone, Model, ToSchema, Serialize)]
 #[model(table = editoast_models::tables::stdcm_search_environment)]
@@ -46,6 +84,8 @@ pub struct StdcmSearchEnvironment {
     #[schema(value_type = GeoJson)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    #[model(remote = "Option<Vec<Option<i64>>>")]
+    pub operational_points: OptionalArrayOfInt,
 }
 
 impl StdcmSearchEnvironment {

@@ -4298,6 +4298,7 @@ export type SimilarTrainWaypoint = {
   ci: number;
   stop: boolean;
 };
+export type OptionalArrayOfInt = number[] | null;
 export type StdcmSearchEnvironment = {
   active_perimeter?: GeoJson;
   electrical_profile_set_id?: number;
@@ -4308,6 +4309,7 @@ export type StdcmSearchEnvironment = {
   enabled_until: string;
   id: number;
   infra_id: number;
+  operational_points: OptionalArrayOfInt;
   /** The start of the search time window.
     Usually, trains schedules from the `timetable_id` runs within this window. */
   search_window_begin: string;
@@ -4323,6 +4325,7 @@ export type StdcmSearchEnvironmentCreateForm = {
   enabled_from: string;
   enabled_until: string;
   infra_id: number;
+  operational_points?: number[] | null;
   search_window_begin: string;
   search_window_end: string;
   temporary_speed_limit_group_id?: number | null;

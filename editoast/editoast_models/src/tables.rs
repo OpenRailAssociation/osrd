@@ -691,6 +691,7 @@ diesel::table! {
         enabled_from -> Timestamptz,
         enabled_until -> Timestamptz,
         active_perimeter -> Nullable<Jsonb>,
+        operational_points -> Nullable<Array<Nullable<Int8>>>,
     }
 }
 
