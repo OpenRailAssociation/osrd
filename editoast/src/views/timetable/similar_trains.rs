@@ -697,6 +697,7 @@ mod tests {
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
     use super::*;
@@ -876,6 +877,7 @@ mod tests {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn create_train_schedule(
         conn: &mut DbConnection,
         timetable_id: i64,
@@ -884,6 +886,7 @@ mod tests {
         path: Vec<PathItem>,
         start_time: DateTime<Utc>,
         schedule: Vec<ScheduleItem>,
+        speed_limit_tag: Option<String>,
     ) {
         let _ = TrainSchedule::changeset()
             .timetable_id(timetable_id)
@@ -902,36 +905,21 @@ mod tests {
                 use_electrical_profiles: true,
                 use_speed_limits_for_simulation: true,
             })
+            .speed_limit_tag(speed_limit_tag)
             .create(conn)
             .await
             .expect("Failed to create train schedule");
     }
 
-    #[rstest]
-    // MWS(33):stop  MES(44):passing_by  NS(55):stop
-    #[case(
-        vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:44, ch:"BV".into(), stop:false },
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
-        ],
-        WaypointResponse { ci:33, ch:"BV".into() },
-        WaypointResponse { ci:55, ch:"BV".into() },
-    )]
-    // NS(55):stop SS(66):stop
-    #[case(
-        vec![
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
-            Waypoint { ci:66, ch:"BV".into(), stop:true },
-        ],
-        WaypointResponse { ci:55, ch:"BV".into() },
-        WaypointResponse { ci:66, ch:"BV".into() },
-    )]
-    async fn one_similar_train(
-        #[case] waypoints: Vec<Waypoint>,
-        #[case] begin: WaypointResponse,
-        #[case] end: WaypointResponse,
-    ) {
+    struct InitTestResponse {
+        app: TestApp,
+        infra_id: i64,
+        rolling_stock_names: Vec<String>,
+        timetable_id: i64,
+        train_name: String,
+        start_time: DateTime<Utc>,
+    }
+    async fn init_test() -> InitTestResponse {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -959,6 +947,9 @@ mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let rolling_stock_2 =
+            create_fast_rolling_stock(&mut app.db_pool().get_ok(), &Uuid::new_v4().to_string())
+                .await;
 
         let train_name = "train_1".to_string();
         let path: Vec<PathItem> = vec![
@@ -994,17 +985,61 @@ mod tests {
             path,
             start_time,
             schedule,
+            Some("MA100".to_string()),
         )
         .await;
+        InitTestResponse {
+            app,
+            infra_id: small_infra.id,
+            rolling_stock_names: vec![rolling_stock.name, rolling_stock_2.name],
+            timetable_id: timetable.id,
+            train_name,
+            start_time,
+        }
+    }
+
+    #[rstest]
+    // MWS(33):stop  MES(44):passing_by  NS(55):stop
+    #[case(
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:44, ch:"BV".into(), stop:false },
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+        ],
+        WaypointResponse { ci:33, ch:"BV".into() },
+        WaypointResponse { ci:55, ch:"BV".into() },
+    )]
+    // NS(55):stop SS(66):stop
+    #[case(
+        vec![
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { ci:66, ch:"BV".into(), stop:true },
+        ],
+        WaypointResponse { ci:55, ch:"BV".into() },
+        WaypointResponse { ci:66, ch:"BV".into() },
+    )]
+    async fn one_similar_train(
+        #[case] waypoints: Vec<Waypoint>,
+        #[case] begin: WaypointResponse,
+        #[case] end: WaypointResponse,
+    ) {
+        let InitTestResponse {
+            app,
+            infra_id,
+            rolling_stock_names,
+            timetable_id,
+            train_name,
+            start_time,
+        } = init_test().await;
 
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock.name.clone(),
+                name: rolling_stock_names[0].clone(),
                 speed_limit_tag: None,
             },
             waypoints,
-            infra_id: small_infra.id,
-            timetable_id: timetable.id,
+            infra_id,
+            timetable_id,
         };
         let request = app.post("/similar_trains").json(&request);
         let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -1018,5 +1053,80 @@ mod tests {
             }],
         };
         assert_eq!(response, expected_response);
+    }
+
+    #[rstest]
+    // Different rolling stock
+    #[case(
+        1,
+        Some("MA100".to_string()),
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+        ],
+    )]
+    // Different speed limit tag
+    #[case(
+        0,
+        Some("MA90".to_string()),
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+        ],
+    )]
+    // Different schedule
+    // MWS(33):stop  MES(44):stop  NS(55):stop
+    #[case(
+        0,
+        Some("MA100".to_string()),
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:44, ch:"BV".into(), stop:true },
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+        ],
+    )]
+    // Same schedule but too much stops
+    // MWS(33):stop  MES(44):passing_by  NS(55):passing_by  SS(66):stop
+    #[case(
+        0,
+        Some("MA100".to_string()),
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:44, ch:"BV".into(), stop:false },
+            Waypoint { ci:55, ch:"BV".into(), stop:false },
+            Waypoint { ci:66, ch:"BV".into(), stop:true },
+        ],
+    )]
+    async fn no_similar_train(
+        #[case] index_rolling_stock_name: usize,
+        #[case] speed_limit_tag: Option<String>,
+        #[case] waypoints: Vec<Waypoint>,
+    ) {
+        let InitTestResponse {
+            app,
+            infra_id,
+            rolling_stock_names,
+            timetable_id,
+            ..
+        } = init_test().await;
+
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: rolling_stock_names[index_rolling_stock_name].clone(),
+                speed_limit_tag,
+            },
+            waypoints,
+            infra_id,
+            timetable_id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(
+            response,
+            Response {
+                similar_trains: Vec::new()
+            }
+        );
     }
 }
