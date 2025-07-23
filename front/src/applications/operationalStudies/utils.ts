@@ -13,7 +13,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
@@ -304,3 +304,62 @@ export const isOperationalPointReference = (
 
 export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
+
+/**
+ * Get a path item location (without ID and deleted fields) from a train's path
+ * item.
+ */
+const getPathItemLocation = (pathItem: TrainSchedule['path'][number]) => {
+  const { id: _id, deleted: _deleted, ...pathItemLocation } = pathItem;
+  return pathItemLocation;
+};
+
+/**
+ * Get a list of unique OP references from timetable items paths.
+ */
+export const getUniqueOpRefsFromTimetableItems = (
+  timetableItems: TimetableItem[]
+): OperationalPointReference[] => {
+  const pathItems = timetableItems.flatMap((timetableItem) => timetableItem.path);
+  const uniqueSteps = new Map<string, OperationalPointReference>();
+  for (const pathItem of pathItems) {
+    const pathItemLocation = getPathItemLocation(pathItem);
+    if (!isOperationalPointReference(pathItemLocation)) continue;
+    uniqueSteps.set(JSON.stringify(pathItemLocation), pathItemLocation);
+  }
+  return [...uniqueSteps.values()];
+};
+
+/**
+ * Attach OPs to timetable items, given a list of OP references and their
+ * matchAllOperationalPoints response.
+ */
+export const addPathOpsToTimetableItems = (
+  timetableItems: TimetableItem[],
+  timetableOpRefs: OperationalPointReference[],
+  timetableOperationalPoints: OperationalPoint[][]
+): TimetableItemWithPathOps[] => {
+  if (timetableOpRefs.length !== timetableOperationalPoints.length) {
+    throw new Error('Expected as many OP match lists as OP refs');
+  }
+
+  // Map each operational point reference (path step) to its corresponding operational points
+  const opsByKey = new Map<string, OperationalPoint[]>();
+  timetableOperationalPoints.forEach((ops, i) => {
+    const key = JSON.stringify(timetableOpRefs[i]);
+    opsByKey.set(key, ops);
+  });
+
+  // For each timetable item, fill the pathOps property with
+  // their corresponding operational points
+  return timetableItems.map((timetableItem) => {
+    // For each pathStepKeys, find its corresponding operational points :
+    // 1. if found, return the operational points
+    // 2. if key exists but no operational points were found, return an empty array
+    // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
+    const pathOps = timetableItem.path.map(
+      (pathItem) => opsByKey.get(JSON.stringify(getPathItemLocation(pathItem))) ?? []
+    );
+    return { ...timetableItem, pathOps };
+  });
+};
