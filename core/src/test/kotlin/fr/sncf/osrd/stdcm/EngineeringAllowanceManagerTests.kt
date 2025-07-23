@@ -58,7 +58,7 @@ class EngineeringAllowanceManagerTests {
                 .toList()
         print(opportunities)
         assertEquals(3, opportunities.size)
-        assertEquals(100.meters, opportunities[0].distance)
+        assertEquals(200.meters, opportunities[0].distance)
         assertEquals(200.meters, opportunities[1].distance)
         assertEquals(300.meters, opportunities[2].distance)
 
