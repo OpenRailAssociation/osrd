@@ -62,12 +62,14 @@ fun generatePreviousSimulationSegments(
     maxLength: Distance = 100.meters
 ): Sequence<SimulationSegment> = sequence {
     var currentEdge = initialEdge
+    var alreadyAddedDelay = 0.0
     while (currentEdge != null) {
         if (currentEdge.endAtStop) break
 
         val envelope = currentEdge.originalEnvelope
         val edgeEndTime = currentEdge.timeData.earliestReachableTime + currentEdge.totalTime
-        val maxAddedDelay = currentEdge.timeData.timeOfNextConflictAtLocation - edgeEndTime
+        val maxAddedDelay =
+            currentEdge.timeData.timeOfNextConflictAtLocation - edgeEndTime - alreadyAddedDelay
         if (maxAddedDelay <= 0.0) break
 
         val backwardsPointPairs =
@@ -101,6 +103,8 @@ fun generatePreviousSimulationSegments(
                 )
             )
         }
+        currentEdge.engineeringAllowance?.let { alreadyAddedDelay += it.extraDuration }
+        alreadyAddedDelay += currentEdge.timeData.delayAddedToLastDeparture
         currentEdge = currentEdge.previousNode.previousEdge
     }
 }
