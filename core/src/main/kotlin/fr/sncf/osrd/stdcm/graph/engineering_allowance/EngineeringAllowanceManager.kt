@@ -41,8 +41,9 @@ class EngineeringAllowanceManager(
         assert(constDeceleration > 0.0)
 
         val requiredAdditionalTime = expectedStartTime - prevNode.timeData.earliestReachableTime
-        val segments = generatePreviousSimulationSegments(prevNode.previousEdge, graph).cacheable()
-        val opportunities = generateAllowanceOpportunities(segments, prevNode.speed)
+
+        val opportunities = prevNode.allowanceOpportunities
+
         val solution =
             opportunities
                 .takeWhile { it.maxNextAllowanceValue >= requiredAdditionalTime }
@@ -50,7 +51,7 @@ class EngineeringAllowanceManager(
 
         // We still try to roughly guess the maximum length over which to add the time
         var distance = 0.meters
-        for (segment in segments) {
+        for (segment in prevNode.previousSimulationSegments) {
             if (segment.maxAddedDelay <= requiredAdditionalTime) break
             distance += segment.length
         }

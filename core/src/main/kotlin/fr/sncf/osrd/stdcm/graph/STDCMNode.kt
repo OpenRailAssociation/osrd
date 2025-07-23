@@ -3,7 +3,10 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.PlannedTimingData
+import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.utils.SoftLazy
+import fr.sncf.osrd.utils.cacheable
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.min
 
@@ -27,6 +30,8 @@ data class STDCMNode(
     val previousPlannedNodeRelativeTimeDiff: Double?,
     // Estimation of the min time it takes to reach the end from this node
     var remainingTimeEstimation: Double,
+    // Reference to the main graph. Only null in some unit tests, where we don't have a full graph
+    val graph: STDCMGraph?,
 ) : Comparable<STDCMNode> {
 
     /**
@@ -182,5 +187,15 @@ data class STDCMNode(
      */
     fun getRealTime(updatedTimeData: TimeData): Double {
         return timeData.getUpdatedEarliestReachableTime(updatedTimeData)
+    }
+
+    val previousSimulationSegments by SoftLazy {
+        generatePreviousSimulationSegments(previousEdge, graph).cacheable()
+    }
+    val allowanceOpportunities by SoftLazy {
+        graph!!
+            .allowanceManager
+            .generateAllowanceOpportunities(previousSimulationSegments, speed)
+            .cacheable()
     }
 }
