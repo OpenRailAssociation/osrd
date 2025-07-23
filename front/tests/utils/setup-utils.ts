@@ -211,7 +211,7 @@ export async function createDataForTests(): Promise<void> {
     } as StdcmSearchEnvironment;
 
     await createStdcmEnvironment(stdcmEnvironment);
-    await expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
+    expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
       infra_id: smallInfra.id,
     });
   } catch (error) {
