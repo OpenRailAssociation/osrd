@@ -54,10 +54,7 @@
     "electricalProfileSet": "Bahnstromprofil-Satz",
     "errorMessages": {
       "error": "Ein Fehler ist aufgetreten",
-      "hardErrorInfra": "Das Netz enthält Fehler und kann ohne vorherige Korrektur nicht benutzt werden.",
-      "softErrorInfra": "Die Anwendung ist nicht verfügbar, ein Serverfehler ist aufgetreten, bitte versuchen Sie es später erneut.",
-      "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich.",
-      "unableToLoadInfra": "Ladefehler, Neustart in Aufbau ({{reloadCount}})"
+      "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich."
     },
     "filterPlaceholder": "Filter, Tags",
     "infraLoadingState": "{{step}}/3",
