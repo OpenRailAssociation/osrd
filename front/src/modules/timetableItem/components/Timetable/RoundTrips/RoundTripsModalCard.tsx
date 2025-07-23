@@ -15,9 +15,16 @@ import type { PairingItem } from '../types';
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
   status: 'todo' | 'oneWays' | 'roundTrips';
+  restoreItems: () => void;
+  moveItemToOneWays?: (item: PairingItem) => void;
 };
 
-const RoundTripsModalCard = ({ pairingItem, status }: RoundTripsModalCardProps) => {
+const RoundTripsModalCard = ({
+  pairingItem,
+  status,
+  restoreItems,
+  moveItemToOneWays,
+}: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -47,6 +54,7 @@ const RoundTripsModalCard = ({ pairingItem, status }: RoundTripsModalCardProps) 
       title: t('restore'),
       icon: <BsXCircleFill />,
       onClick: () => {
+        restoreItems();
         closeMenu();
       },
     },
@@ -54,6 +62,7 @@ const RoundTripsModalCard = ({ pairingItem, status }: RoundTripsModalCardProps) 
       title: t('setOneWay'),
       icon: <ArrowRight />,
       onClick: () => {
+        moveItemToOneWays?.(pairingItem);
         closeMenu();
       },
     },
