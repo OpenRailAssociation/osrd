@@ -65,6 +65,8 @@ pub(in crate::views) async fn attached(
     State(AppState {
         infra_caches,
         db_pool,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -94,7 +96,14 @@ pub(in crate::views) async fn attached(
     .await?;
 
     // Check track existence
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(
+        &mut conn,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
     if !infra_cache.track_sections().contains_key(&track_id) {
         return Err(AttachedError::TrackNotFound {
             track_id: track_id.clone(),

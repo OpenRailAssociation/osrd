@@ -159,14 +159,20 @@ pub(in crate::views) async fn refresh(
     let mut infra_refreshed = vec![];
 
     for mut infra in infras_list {
-        let infra_cache =
-            InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+        let infra_cache = InfraCache::get_or_load(
+            &mut db_pool.get().await?,
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            config.app_version.as_deref(),
+        )
+        .await?;
         if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
             infra_refreshed.push(infra.id);
         }
     }
 
-    let mut conn = valkey_client.get_connection().await?;
+    let mut conn = valkey_client.clone().get_connection().await?;
     for infra_id in infra_refreshed.iter() {
         map::invalidate_all(
             &mut conn,
@@ -1604,5 +1610,61 @@ pub mod tests {
             .collect::<Vec<_>>();
         let expected_identifiers: [Vec<&str>; 3] = [vec![], vec![], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn load_infra_cache() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_caches = dashmap::DashMap::new();
+        InfraCache::get_or_load(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &app.valkey_client(),
+            app.config().app_version.as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &app.valkey_client(),
+            app.config().app_version.as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn load_infra_cache_mut() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_caches = dashmap::DashMap::new();
+        InfraCache::get_or_load_mut(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &app.valkey_client(),
+            app.config().app_version.as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load_mut(
+            &mut db_pool.get_ok(),
+            &infra_caches,
+            &infra,
+            &app.valkey_client(),
+            app.config().app_version.as_deref(),
+        )
+        .await
+        .unwrap();
+        assert_eq!(infra_caches.len(), 1);
     }
 }

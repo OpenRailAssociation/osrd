@@ -150,6 +150,8 @@ pub(in crate::views) async fn get_routes_track_ranges(
     State(AppState {
         db_pool,
         infra_caches,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -181,8 +183,14 @@ pub(in crate::views) async fn get_routes_track_ranges(
     })
     .await?;
 
-    let infra_cache =
-        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(
+        &mut db_pool.get().await?,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
     let graph = Graph::load(&infra_cache);
     let routes_cache = infra_cache.routes();
     let result = params
@@ -221,6 +229,8 @@ pub(in crate::views) async fn get_routes_nodes(
     State(AppState {
         db_pool,
         infra_caches,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -252,8 +262,14 @@ pub(in crate::views) async fn get_routes_nodes(
         return Ok(Json(RoutesFromNodesPositions::default()));
     }
 
-    let infra_cache =
-        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(
+        &mut db_pool.get().await?,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
     let routes_cache = infra_cache.routes();
 
     let filtered_routes = routes_cache

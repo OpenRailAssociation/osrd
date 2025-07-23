@@ -127,6 +127,8 @@ pub(in crate::views) async fn delimited_area(
     State(AppState {
         infra_caches,
         db_pool,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -157,7 +159,14 @@ pub(in crate::views) async fn delimited_area(
     })
     .await?;
 
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(
+        &mut conn,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
     let graph = Graph::load(&infra_cache);
 
     // Validate user input
