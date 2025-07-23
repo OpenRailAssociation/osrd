@@ -248,6 +248,7 @@ class STDCMHeuristicTests {
                 null,
                 null,
                 0.0,
+                null
             )
         val defaultEdge =
             STDCMEdge(
