@@ -14,28 +14,20 @@ import type { PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
+  status: 'todo' | 'oneWays' | 'roundTrips';
 };
 
-const RoundTripsModalCard = ({
-  pairingItem: {
-    name,
-    category,
-    interval,
-    status,
-    stops,
-    startTime,
-    origin,
-    requestedArrivalTime,
-    destination,
-  },
-}: RoundTripsModalCardProps) => {
+const RoundTripsModalCard = ({ pairingItem, status }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrip') => {
+  const { name, category, interval, origin, stops, destination, startTime, requestedArrivalTime } =
+    pairingItem;
+
+  const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrips') => {
     if (itemStatus === 'todo') {
       return <Square />;
     }
