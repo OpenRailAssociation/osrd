@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-
 import { Ruby } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineTags } from 'react-icons/ai';
@@ -15,6 +13,7 @@ import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import useCategoryOptions, {
   type CategoryOption,
 } from 'modules/rollingStock/hooks/useCategoryOptions';
+import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import {
   updateLabels,
   updateName,
@@ -33,6 +32,7 @@ import { useAppDispatch } from 'store';
 import { parseLocalDateTime, formatLocalDateTime } from 'utils/date';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
+import { useEffect } from 'react';
 
 const TrainSettings = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
@@ -45,8 +45,6 @@ const TrainSettings = () => {
   const initialSpeed = useSelector(getInitialSpeed);
   const startTime = useSelector(getStartTime);
   const categoryFromStore = useSelector(getCategory);
-
-  const [trainCategory, setTrainCategory] = useState<CategoryOption>();
 
   const removeTag = (idx: number) => {
     const newTags = [...labels];
@@ -140,8 +138,23 @@ const TrainSettings = () => {
               <small className="text-nowrap">{t('category')}</small>
             </>
           }
-          onChange={setTrainCategory}
-          value={trainCategory ?? { label: tRollingStock('rollingStock.categoriesOptions.choose') }}
+          onChange={(option) => {
+            if (option && 'id' in option) {
+              dispatch(updateCategory(option.id));
+            } else {
+              dispatch(updateCategory(null));
+            }
+          }}
+          value={
+            categoryFromStore
+              ? {
+                  id: categoryFromStore,
+                  label: tRollingStock(`rollingStock.categoriesOptions.${categoryFromStore}`),
+                }
+              : {
+                  label: tRollingStock('rollingStock.categoriesOptions.choose'),
+                }
+          }
           options={categoryOptions}
         />
       </div>
