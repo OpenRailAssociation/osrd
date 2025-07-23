@@ -11,6 +11,7 @@ import {
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
+import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/ManageTimetableItemModal';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -37,9 +38,7 @@ type ScenarioContentProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
   infraMetadata: { isInfraLoaded: boolean; reloadCount: number };
-  isTimetableDisplayed?: boolean;
-  isConflictsListDisplayed?: boolean;
-  isMacroEditorDisplayed?: boolean;
+  activeBoards: Set<Board>;
 };
 
 const MACRO_EDITOR_HEIGHT = 776; // px
@@ -48,9 +47,7 @@ const ScenarioContent = ({
   scenario,
   infra,
   infraMetadata: { isInfraLoaded },
-  isTimetableDisplayed,
-  isConflictsListDisplayed,
-  isMacroEditorDisplayed,
+  activeBoards,
 }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -123,36 +120,36 @@ const ScenarioContent = ({
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItem[]) => {
       upsertTimetableItems(updatedTimetableItems);
-      if (isMacroEditorDisplayed) {
+      if (activeBoards.has('macro')) {
         refreshNge();
       }
     },
-    [upsertTimetableItems, refreshNge, isMacroEditorDisplayed]
+    [upsertTimetableItems, refreshNge, activeBoards]
   );
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      if (isMacroEditorDisplayed) {
+      if (activeBoards.has('macro')) {
         refreshNge();
       }
     },
-    [removeTimetableItems, refreshNge, isMacroEditorDisplayed]
+    [removeTimetableItems, refreshNge, activeBoards]
   );
 
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
-    if (isMacroEditorDisplayed) {
+    if (activeBoards.has('macro')) {
       refreshNge();
     }
   }, [i18n.language]);
 
   useEffect(() => {
-    if (isMacroEditorDisplayed) {
+    if (activeBoards.has('macro')) {
       setNGEIsLoading(true);
       refreshNge();
     }
-  }, [isMacroEditorDisplayed]);
+  }, [activeBoards.has('macro')]);
 
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
     handleOperation({
@@ -199,7 +196,7 @@ const ScenarioContent = ({
         <div
           data-testid="scenario-left-column"
           className="left-column"
-          style={{ display: isTimetableDisplayed ? 'block' : 'none' }}
+          style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
         >
           <div className="scenario-sidemenu">
             {infra && (
@@ -243,7 +240,7 @@ const ScenarioContent = ({
                 updateTrainDepartureTime={updateTrainDepartureTime}
               />
             )}
-            <BoardWrapper visible={isMacroEditorDisplayed!} name="MACRO">
+            <BoardWrapper visible={activeBoards.has('macro')} name="MACRO">
               <div className="osrd-simulation-container speedspacechart-container">
                 <div
                   className="chart-container"
@@ -251,7 +248,7 @@ const ScenarioContent = ({
                     height: `${MACRO_EDITOR_HEIGHT}px`,
                   }}
                 >
-                  {isMacroEditorDisplayed && (!ngeDto || ngeIsLoading) && (
+                  {(!ngeDto || ngeIsLoading) && (
                     <Loader
                       msg={t('main.loadingMacroEditor')}
                       className="scenario-loader"
@@ -265,7 +262,7 @@ const ScenarioContent = ({
           </div>
         </div>
         <div
-          style={{ display: isConflictsListDisplayed ? 'block' : 'none' }}
+          style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
           className="right-column"
           data-testid="conflicts-list"
         >

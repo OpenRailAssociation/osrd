@@ -10,6 +10,7 @@ import { RollingStockContextProvider } from 'common/RollingStockContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
+import type { Board } from '../types';
 import ScenarioHeader from '../v2/components/ScenarioHeader';
 
 const Scenario = () => {
@@ -23,39 +24,35 @@ const Scenario = () => {
   const infraData = useInfraStatus({ infraId });
   const { infra } = infraData;
 
-  const [isTimetableDisplayed, setIsTimeTableDisplayed] = useState(true);
-  const [isConflictsListDisplayed, setIsConflictsListDisplayed] = useState(false);
-  const [isMacroEditorDisplayed, setIsMacroEditorDisplayed] = useState(true);
+  const [activeBoards, setActiveBoards] = useState<Set<Board>>(
+    new Set<Board>(['trains', 'map', 'std', 'sdd', 'tables', 'macro'])
+  );
+
+  const toggleBoard = (board: Board) => {
+    setActiveBoards((prev) => {
+      const newActiveBoards = new Set([...prev]);
+      if (newActiveBoards.has(board)) newActiveBoards.delete(board);
+      else newActiveBoards.add(board);
+      return newActiveBoards;
+    });
+  };
 
   if (!scenario || !infra) return null;
-
-  const toggleTimetable = () => {
-    setIsTimeTableDisplayed((prev) => !prev);
-  };
-  const toggleConflictsList = () => {
-    setIsConflictsListDisplayed((prev) => !prev);
-  };
-  const toggleMacroEditor = () => {
-    setIsMacroEditorDisplayed((prev) => !prev);
-  };
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
       <ScenarioHeader
         scenario={scenario}
         infra={infra}
-        toggleTimetable={toggleTimetable}
-        toggleConflictsList={toggleConflictsList}
-        toggleMacroEditor={toggleMacroEditor}
+        activeBoards={activeBoards}
+        toggleBoard={toggleBoard}
       />
       <RollingStockContextProvider>
         <ScenarioContent
           scenario={scenario}
           infra={infra}
           infraMetadata={infraData}
-          isTimetableDisplayed={isTimetableDisplayed}
-          isConflictsListDisplayed={isConflictsListDisplayed}
-          isMacroEditorDisplayed={isMacroEditorDisplayed}
+          activeBoards={activeBoards}
         />
       </RollingStockContextProvider>
     </ScenarioContextProvider>
