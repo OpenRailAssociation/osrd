@@ -21,7 +21,6 @@ import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
-import fr.sncf.osrd.standalone_sim.result.ResultStops
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -114,13 +113,6 @@ fun runScheduleMetadataExtractor(
     for (point in envelopeWithStops.iteratePoints()) {
         speeds.add(ResultSpeed(point.time, point.speed, point.position))
         headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
-    }
-
-    // Compute stops
-    val stops = ArrayList<ResultStops>()
-    for (stop in legacyStops) {
-        val stopTime = envelopeWithStops.interpolateArrivalAt(stop.position)
-        stops.add(ResultStops(stopTime, stop.position, stop.duration))
     }
 
     // Compute signal updates
