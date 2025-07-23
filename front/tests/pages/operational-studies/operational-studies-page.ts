@@ -2,22 +2,16 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import { Duration } from 'utils/duration';
 
+import ScenarioTimetableSection from './scenario-timetable-section';
 import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
 import { createDateInSpecialTimeZone } from '../../utils/date-utils';
 import type { ManageTimetableItemTranslations, PacedTrainDetails } from '../../utils/types';
-import CommonPage from '../common-page';
 
-class OperationalStudiesPage extends CommonPage {
-  private readonly timetableBoardWrapper: Locator;
-
-  private readonly timetableBoardWrapperMenuButton: Locator;
-
+class OperationalStudiesPage extends ScenarioTimetableSection {
   private readonly addTimetableItemButton: Locator;
-
-  private readonly editTimetableItemButton: Locator;
 
   private readonly manageTimetableItemPage: Locator;
 
@@ -61,9 +55,6 @@ class OperationalStudiesPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
-    this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
-    this.timetableBoardWrapperMenuButton =
-      this.timetableBoardWrapper.locator('.board-header-button');
     this.resultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.addTimetableItemButton = page.getByTestId('scenarios-add-timetable-item-button');
     this.rollingStockTab = page.getByTestId('tab-rollingstock');
@@ -84,7 +75,6 @@ class OperationalStudiesPage extends CommonPage {
       list: page.getByTestId('added-occurrences-list'),
     };
     this.createTimetableItemButton = page.getByTestId('create-timetable-item-button');
-    this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.manageTimetableItemPage = page.getByTestId('manage-timetable-item');
     this.timetableItemNameInput = page.locator('#timetable-item-name');
     this.initialSpeedInput = page.locator('#initial-speed');
