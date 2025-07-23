@@ -13,7 +13,7 @@ import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
-import type { RoundTripsModalColumnData } from '../types';
+import type { RoundTripsModalColumnsData } from '../types';
 
 const getInvalidStepLabel = (step: OperationalPointReference) => {
   if ('uic' in step) {
@@ -54,12 +54,12 @@ const getStepLabels = (
 const formatPairingItems = (
   items: TimetableItemWithPathOps[],
   t: TFunction<'operational-studies', 'main'>
-): RoundTripsModalColumnData => {
+): RoundTripsModalColumnsData => {
   const sortedItems = items.sort((a, b) =>
     a.train_name.toLowerCase().localeCompare(b.train_name.toLowerCase())
   );
 
-  return sortedItems.reduce<RoundTripsModalColumnData>(
+  return sortedItems.reduce<RoundTripsModalColumnsData>(
     (acc, item) => {
       const stepLabels = getStepLabels(item.pathOps, item.path, t);
 
@@ -83,7 +83,6 @@ const formatPairingItems = (
         destination: stepLabels.at(-1)!,
         startTime: new Date(item.start_time),
         requestedArrivalTime,
-        status: 'todo',
       });
       return acc;
     },

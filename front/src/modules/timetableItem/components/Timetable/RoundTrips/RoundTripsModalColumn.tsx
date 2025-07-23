@@ -36,7 +36,7 @@ const RoundTripsModalColumn = ({ type, pairingItems }: RoundTripsModalColumnProp
             <div className="card-placeholder" />
           ) : (
             pairingItems.map((pairingItem) => (
-              <RoundTripsModalCard key={pairingItem.id} pairingItem={pairingItem} />
+              <RoundTripsModalCard key={pairingItem.id} pairingItem={pairingItem} status={type} />
             ))
           ))}
         {type === 'roundTrips' &&
@@ -49,14 +49,14 @@ const RoundTripsModalColumn = ({ type, pairingItems }: RoundTripsModalColumnProp
           ) : (
             pairingItems.map(({ pair, isValid }) => (
               <div className="round-trip-pair" key={`${pair[0].id}-${pair[1].id}`}>
-                <RoundTripsModalCard pairingItem={pair[0]} />
+                <RoundTripsModalCard pairingItem={pair[0]} status={type} />
                 <div
                   className={cx('separator', {
                     valid: isValid,
                     invalid: !isValid,
                   })}
                 />
-                <RoundTripsModalCard pairingItem={pair[1]} />
+                <RoundTripsModalCard pairingItem={pair[1]} status={type} />
               </div>
             ))
           ))}

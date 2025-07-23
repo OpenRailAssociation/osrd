@@ -132,11 +132,10 @@ export type PairingItem = {
   destination: string;
   startTime: Date;
   requestedArrivalTime: Date | null;
-  status: 'todo' | 'oneWays' | 'roundTrip';
 };
 
-export type RoundTripsModalColumnData = {
+export type RoundTripsModalColumnsData = {
   todo: PairingItem[];
   oneWays: PairingItem[];
-  roundTrips: PairingItem[][];
+  roundTrips: [PairingItem, PairingItem][];
 };
