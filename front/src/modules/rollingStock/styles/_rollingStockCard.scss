@@ -143,8 +143,8 @@
         }
       }
       .rollingstock-info-middle {
-        white-space: normal;
-        overflow-wrap: break-word;
+        white-space: nowrap;
+        text-overflow: ellipsis;
         overflow: hidden;
         max-width: 55%;
         text-transform: uppercase;
