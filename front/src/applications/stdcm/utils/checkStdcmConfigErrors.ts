@@ -2,7 +2,6 @@ import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { dateToHHMMSS } from 'utils/date';
 
 import {
   StdcmConfigErrorTypes,
@@ -16,6 +15,7 @@ import getInvalidFields from './getInvalidFields';
 
 const checkStdcmConfigErrors = ({
   t,
+  dateTimeLocale,
   pathfindingStatus,
   stdcmConf,
   prevFormErrors,
@@ -23,6 +23,7 @@ const checkStdcmConfigErrors = ({
   shouldCheckMandatoryFields,
 }: {
   t: TFunction<'stdcm'>;
+  dateTimeLocale: Intl.Locale;
   pathfindingStatus?: 'success' | 'failure';
   stdcmConf?: OsrdStdcmConfState;
   prevFormErrors?: StdcmConfigErrors;
@@ -88,10 +89,14 @@ const checkStdcmConfigErrors = ({
     if (areBothPointsScheduled) {
       routeErrors.push(StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED);
       routeErrorDetails.originTime = origin.arrival
-        ? t('leaveAt', { time: dateToHHMMSS(origin.arrival, { withoutSeconds: true }) })
+        ? t('leaveAt', {
+            time: origin.arrival.toLocaleString(dateTimeLocale, { timeStyle: 'short' }),
+          })
         : t('departureTime');
       routeErrorDetails.destinationTime = destination.arrival
-        ? t('arriveAt', { time: dateToHHMMSS(destination.arrival, { withoutSeconds: true }) })
+        ? t('arriveAt', {
+            time: destination.arrival.toLocaleString(dateTimeLocale, { timeStyle: 'short' }),
+          })
         : t('destinationTime');
     }
   }

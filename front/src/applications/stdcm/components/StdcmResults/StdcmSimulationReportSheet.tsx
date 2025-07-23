@@ -21,6 +21,7 @@ import {
   getSecondaryCode,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { formatStdcmDataForSimulationTable } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
+import { useDateTimeLocale } from 'utils/date';
 import { msToKmh, tToKg } from 'utils/physics';
 
 type StdcmSimulationReportSheetProps = {
@@ -41,6 +42,7 @@ const StdcmSimulationReportSheet = ({
   simulationSheetLogo,
 }: StdcmSimulationReportSheetProps) => {
   const { t } = useTranslation('stdcm');
+  const dateTimeLocale = useDateTimeLocale();
 
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
 
@@ -68,8 +70,8 @@ const StdcmSimulationReportSheet = ({
       } else {
         const isFirst = index === 0;
         const isLast = index === stdcmData.simulationPathSteps.length - 1;
-        row.arrivesAt = isLast ? getArrivalTimes(step, t) : '';
-        row.leavesAt = isFirst ? getArrivalTimes(step, t) : '';
+        row.arrivesAt = isLast ? getArrivalTimes(step, t, dateTimeLocale) : '';
+        row.leavesAt = isFirst ? getArrivalTimes(step, t, dateTimeLocale) : '';
         if (step.arrivalType === 'preciseTime') {
           row.tolerances = step.tolerances;
           row.italic = false;

@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { dateToHHMMSS, useDateTimeLocale } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 import { msToKmh, tToKg } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
@@ -55,8 +55,8 @@ const SimulationReportSheet = ({
       rows.push({
         name: step.name || t('reportSheet.unknown'),
         secondaryCode: step.ch ?? '',
-        arrivesAt: isLast ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
-        leavesAt: isFirst ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '',
+        arrivesAt: isLast ? step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' }) : '',
+        leavesAt: isFirst ? step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' }) : '',
       });
     });
 
@@ -69,7 +69,8 @@ const SimulationReportSheet = ({
         operationalPointsList,
         path.path_item_positions,
         rollingStock,
-        t
+        t,
+        dateTimeLocale
       ),
     [operationalPointsList, path, rollingStock]
   );

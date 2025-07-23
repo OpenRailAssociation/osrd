@@ -3,7 +3,6 @@ import {
   type MarkerInformation,
 } from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { dateToHHMMSS } from 'utils/date';
 
 export const getTimesInfoFromDate = (date?: Date) =>
   date
@@ -14,7 +13,7 @@ export const getTimesInfoFromDate = (date?: Date) =>
           month: 'numeric',
           year: 'numeric',
         }),
-        arrivalTime: dateToHHMMSS(date, { withoutSeconds: true }),
+        arrivalTime: date.toLocaleString(undefined, { timeStyle: 'short' }),
         arrivalTimeHours: date.getHours(),
         arrivalTimeMinutes: date.getMinutes(),
       }

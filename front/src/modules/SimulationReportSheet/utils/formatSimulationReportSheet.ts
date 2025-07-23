@@ -6,7 +6,6 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { capitalizeFirstLetter } from 'utils/strings';
 
@@ -301,10 +300,14 @@ export function getOperationalPointsWithTimes(
   return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 }
 
-export const getArrivalTimes = (step: StdcmPathStep, t: TFunction<'stdcm'>) => {
+export const getArrivalTimes = (
+  step: StdcmPathStep,
+  t: TFunction<'stdcm'>,
+  dateTimeLocale: Intl.Locale
+) => {
   if (step.isVia) return '';
   return step.arrival && step.arrivalType === 'preciseTime'
-    ? dateToHHMMSS(step.arrival, { withoutSeconds: true })
+    ? step.arrival.toLocaleString(dateTimeLocale, { timeStyle: 'short' })
     : t('reportSheet.asap');
 };
 
