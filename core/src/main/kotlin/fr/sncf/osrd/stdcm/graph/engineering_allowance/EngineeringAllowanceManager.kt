@@ -16,6 +16,10 @@ class EngineeringAllowanceManager(
     private val graph: STDCMGraph?,
 ) {
 
+    // Account for the approximations made during const deceleration,
+    // not to be too optimistic in allowance opportunities
+    private val constDecelerationScaling = 0.9
+
     /**
      * Check whether an engineering allowance can be used in this context to be at the expected
      * start time at the node location. Returns the allowance length if it's possible, or null if it
@@ -109,7 +113,7 @@ class EngineeringAllowanceManager(
                 computeConstDeceleration(
                     cachedSegments.drop(i + 1),
                     newBeginSpeed,
-                    constDeceleration
+                    constDeceleration * constDecelerationScaling
                 )
             val decelerationResults = checkDeceleration(decelerationSequence, newBeginSpeed)
             if (decelerationResults.hasConflict) break
