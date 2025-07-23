@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::views::projection::TrainToProjectOnOperationalPoint;
+use crate::views::projection::OperationalPointProjection;
+use crate::views::projection::compute_projected_train_path_op;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -53,7 +54,6 @@ use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::SpaceTimeCurves;
-use crate::views::projection::project_train_path_op;
 
 use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::compute_projected_train_paths;
@@ -782,60 +782,25 @@ async fn project_path_op(
         })
         .await?;
 
-    let path_item_locations: Vec<&PathItemLocation> = train_schedules
-        .iter()
-        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
-        .collect();
+    let operational_points_projection =
+        OperationalPointProjection::new(operational_points_ids, operational_points_distances)?;
 
-    let path_item_cache = PathItemCache::load(conn, infra_id, &path_item_locations).await?;
-
-    // 1. Build the projection_op_id_to_positions
-    let projection_op_id_to_positions: HashMap<_, _> = operational_points_ids
-        .into_iter()
-        .zip(
-            std::iter::once(0)
-                .chain(operational_points_distances)
-                .scan(0, |acc, i| {
-                    *acc += i;
-                    Some(*acc)
-                }),
-        )
-        .collect();
-
-    // 2. Simulate trains
-    let simulations = train_simulation_batch(
+    let compute_project_path_op = compute_projected_train_path_op(
         conn,
-        valkey_client.clone(),
-        core_client.clone(),
+        valkey_client,
+        core_client,
         &train_schedules,
+        operational_points_projection,
         infra,
         electrical_profile_set_id,
     )
     .await?;
 
-    let mut to_compute = HashMap::new();
-    for (ts, (sim, _)) in train_schedules.into_iter().zip(simulations.into_iter()) {
-        let train_id = ts.id;
-        to_compute
-            .entry(Arc::as_ptr(&sim))
-            .or_insert((vec![], ts, Arc::unwrap_or_clone(sim)))
-            .0
-            .push(train_id);
-    }
-
-    // 3. Each simulated train can be projected using `project_train_path_op`
-    let mut results = HashMap::<i64, _>::new();
-    for (train_ids, ts, sim) in to_compute.into_values() {
-        let train_to_project = TrainToProjectOnOperationalPoint::new(ts, sim);
-        let curves = Arc::new(project_train_path_op(
-            &train_to_project,
-            &path_item_cache,
-            &projection_op_id_to_positions,
-        ));
-        for train_id in train_ids {
-            results.insert(train_id, curves.clone());
-        }
-    }
+    let results: HashMap<_, _> = train_schedules
+        .into_iter()
+        .zip(compute_project_path_op)
+        .map(|(ts, result)| (ts.id, result))
+        .collect();
 
     Ok(Json(results))
 }

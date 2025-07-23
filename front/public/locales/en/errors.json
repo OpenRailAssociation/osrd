@@ -123,6 +123,10 @@
       "ModifyId": "Update operation try to modify object id, which is forbidden",
       "ObjectNotFound": "Object '{{obj_id}}', could not be found in the infrastructure '{{infra_id}}'"
     },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "Excpected {{expected}} distances, but got {{found}}",
+      "InvalidNumberOfIds": "Expected at least two ids"
+    },
     "paced_train": {
       "BatchNotFound": "'{{count}}' paced train(s) could not be found",
       "Database": "Internal error (database)",

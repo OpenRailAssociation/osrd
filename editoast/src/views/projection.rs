@@ -6,6 +6,7 @@ use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
+use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -20,6 +21,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
+use thiserror::Error;
 use utoipa::ToSchema;
 
 use super::path::path_item_cache::PathItemCache;
@@ -465,7 +467,7 @@ pub struct TrainToProjectOnOperationalPoint {
 }
 
 impl TrainToProjectOnOperationalPoint {
-    pub fn new<T: TrainScheduleLike>(ts: T, sim: simulation::Response) -> Self {
+    fn new<T: TrainScheduleLike>(ts: &T, sim: simulation::Response) -> Self {
         let stops_input: HashMap<_, _> = ts
             .schedule()
             .iter()
@@ -553,27 +555,125 @@ impl TrainToProjectOnOperationalPoint {
     }
 }
 
-pub fn project_train_path_op(
+pub struct OperationalPointProjection(HashMap<String, u64>);
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "operationalPointProjection", default_status = 422)]
+pub enum OperationalPointProjectionError {
+    #[error("Expected {expected} distances, but got {found}")]
+    InvalidNumberOfDistances { expected: usize, found: usize },
+    #[error("Expected at least two ids")]
+    InvalidNumberOfIds,
+}
+
+impl OperationalPointProjection {
+    pub fn new(
+        ids: Vec<String>,
+        distances: Vec<u64>,
+    ) -> Result<Self, OperationalPointProjectionError> {
+        if ids.len() < 2 {
+            return Err(OperationalPointProjectionError::InvalidNumberOfIds);
+        }
+        if ids.len() != distances.len() + 1 {
+            return Err(OperationalPointProjectionError::InvalidNumberOfDistances {
+                expected: ids.len() - 1,
+                found: distances.len(),
+            });
+        }
+        Ok(Self(
+            ids.into_iter()
+                .zip(std::iter::once(0).chain(distances).scan(0, |acc, i| {
+                    *acc += i;
+                    Some(*acc)
+                }))
+                .collect(),
+        ))
+    }
+
+    /// Try to match an operational point reference.
+    /// If it matches, the position is returned.
+    /// Otherwise, it returns `None`.
+    fn match_op_ref_with_ops(
+        &self,
+        op_ref: &OperationalPointIdentifier,
+        path_item_cache: &PathItemCache,
+    ) -> Option<u64> {
+        let op_id = path_item_cache.get_op_ref_id(op_ref)?;
+        self.0.get(&op_id).copied()
+    }
+}
+
+pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
+    conn: &mut DbConnection,
+    valkey_client: Arc<ValkeyClient>,
+    core_client: Arc<CoreClient>,
+    train_schedules: &[T],
+    operational_points_projection: OperationalPointProjection,
+    infra: &Infra,
+    electrical_profile_set_id: Option<i64>,
+) -> Result<Vec<Arc<SpaceTimeCurves>>> {
+    let path_item_locations: Vec<&PathItemLocation> = train_schedules
+        .iter()
+        .flat_map(|ts| ts.path().iter().map(|p| &p.location))
+        .collect();
+
+    let path_item_cache = PathItemCache::load(conn, infra.id, &path_item_locations).await?;
+
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client.clone(),
+        core_client.clone(),
+        train_schedules,
+        infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    let mut to_compute = HashMap::new();
+    for ((idx, ts), (sim, _)) in train_schedules
+        .iter()
+        .enumerate()
+        .zip(simulations.into_iter())
+    {
+        to_compute
+            .entry(Arc::as_ptr(&sim))
+            .or_insert((vec![], ts, Arc::unwrap_or_clone(sim)))
+            .0
+            .push(idx);
+    }
+
+    let mut results = vec![Arc::default(); train_schedules.len()];
+    for (indexes, ts, sim) in to_compute.into_values() {
+        let train_to_project = TrainToProjectOnOperationalPoint::new(ts, sim);
+        let curves = Arc::new(project_train_path_op(
+            &train_to_project,
+            &path_item_cache,
+            &operational_points_projection,
+        ));
+
+        for index in indexes {
+            results[index] = curves.clone();
+        }
+    }
+
+    Ok(results)
+}
+
+fn project_train_path_op(
     TrainToProjectOnOperationalPoint {
         space_time_curve,
         refs,
     }: &TrainToProjectOnOperationalPoint,
     path_item_cache: &PathItemCache,
-    projection_op_id_to_positions: &HashMap<String, u64>,
+    projection_op_id_to_positions: &OperationalPointProjection,
 ) -> SpaceTimeCurves {
-    // Build a set of op ids
-    let projection_ops = projection_op_id_to_positions.keys().collect();
-
     // Match operational point references with operational point ids
     let matching_ops = refs.iter().map(|op| {
-        match_op_ref_with_ops(&op.op_ref, &projection_ops, path_item_cache).map(|id| {
-            (
-                projection_op_id_to_positions[&id],
-                op.arrival_time,
-                op.stop_for,
-            )
-        })
+        projection_op_id_to_positions
+            .match_op_ref_with_ops(&op.op_ref, path_item_cache)
+            .map(|pos| (pos, op.arrival_time, op.stop_for))
     });
+
     // Add a None at the end to close the last segment
     let matching_ops = matching_ops.chain(std::iter::once(None));
 
@@ -619,22 +719,6 @@ pub fn project_train_path_op(
         }
     }
     projection_curves
-}
-
-/// Try to match an operational point reference with a list of operational points ids.
-/// If the operational point reference matches an operational point id, it returns the id.
-/// Otherwise, it returns None.
-fn match_op_ref_with_ops(
-    op_ref: &OperationalPointIdentifier,
-    projection_ops: &HashSet<&String>,
-    path_item_cache: &PathItemCache,
-) -> Option<String> {
-    let op_id = path_item_cache.get_op_ref_id(op_ref)?;
-    if projection_ops.contains(&op_id) {
-        Some(op_id)
-    } else {
-        None
-    }
 }
 
 pub async fn extract_train_details(
@@ -918,13 +1002,17 @@ mod tests {
             ],
         };
         // Manchette
-        let projection_op_id_to_positions = HashMap::from([
-            ("South_West_station".to_string(), 0),
-            ("Mid_West_station".to_string(), 100_000),
-            ("Mid_East_station".to_string(), 200_000),
-            ("North_station".to_string(), 300_000),
-            ("South_station".to_string(), 400_000),
-        ]);
+        let projection_op_id_to_positions = OperationalPointProjection::new(
+            vec![
+                "South_West_station".to_string(),
+                "Mid_West_station".to_string(),
+                "Mid_East_station".to_string(),
+                "North_station".to_string(),
+                "South_station".to_string(),
+            ],
+            vec![100_000; 4],
+        )
+        .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
@@ -976,13 +1064,17 @@ mod tests {
             ],
         };
         // Manchette
-        let projection_op_id_to_positions = HashMap::from([
-            ("South_West_station".to_string(), 0),
-            ("Mid_West_station".to_string(), 100_000),
-            ("Mid_East_station".to_string(), 200_000),
-            ("North_station".to_string(), 300_000),
-            ("South_station".to_string(), 400_000),
-        ]);
+        let projection_op_id_to_positions = OperationalPointProjection::new(
+            vec![
+                "South_West_station".to_string(),
+                "Mid_West_station".to_string(),
+                "Mid_East_station".to_string(),
+                "North_station".to_string(),
+                "South_station".to_string(),
+            ],
+            vec![100_000; 4],
+        )
+        .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
@@ -1034,13 +1126,17 @@ mod tests {
             ],
         };
         // Manchette
-        let projection_op_id_to_positions = HashMap::from([
-            ("South_West_station".to_string(), 0),
-            ("Mid_West_station".to_string(), 100_000),
-            ("Mid_East_station".to_string(), 200_000),
-            ("North_station".to_string(), 300_000),
-            ("South_station".to_string(), 400_000),
-        ]);
+        let projection_op_id_to_positions = OperationalPointProjection::new(
+            vec![
+                "South_West_station".to_string(),
+                "Mid_West_station".to_string(),
+                "Mid_East_station".to_string(),
+                "North_station".to_string(),
+                "South_station".to_string(),
+            ],
+            vec![100_000; 4],
+        )
+        .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
@@ -1054,7 +1150,7 @@ mod tests {
         assert_eq!(curves[0].times, vec![0, 1]);
         assert_eq!(curves[0].positions, vec![0, 0]);
         assert_eq!(curves[1].times, vec![10, 21, 24]);
-        assert_eq!(curves[1].positions, vec![100_000, 200_000, 200_000]);
+        assert_eq!(curves[1].positions, vec![100000, 200000, 200000]);
         assert_eq!(curves[2].times, vec![28]);
         assert_eq!(curves[2].positions, vec![300_000]);
         assert_eq!(curves[3].times, vec![35, 36]);
@@ -1075,13 +1171,17 @@ mod tests {
             refs: vec![OperationalPointRefAndTime::default(); 4],
         };
         // Manchette
-        let projection_op_id_to_positions = HashMap::from([
-            ("South_West_station".to_string(), 0),
-            ("Mid_West_station".to_string(), 100_000),
-            ("Mid_East_station".to_string(), 200_000),
-            ("North_station".to_string(), 300_000),
-            ("South_station".to_string(), 400_000),
-        ]);
+        let projection_op_id_to_positions = OperationalPointProjection::new(
+            vec![
+                "South_West_station".to_string(),
+                "Mid_West_station".to_string(),
+                "Mid_East_station".to_string(),
+                "North_station".to_string(),
+                "South_station".to_string(),
+            ],
+            vec![100_000; 4],
+        )
+        .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(

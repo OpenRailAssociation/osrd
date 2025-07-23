@@ -29,8 +29,11 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
+use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
+use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
@@ -43,6 +46,7 @@ crate::routes! {
     "/paced_train" => {
         delete,
         "/project_path" => project_path,
+        "/project_path_op" => project_path_op,
         "/occupancy_blocks" => occupancy_blocks,
         "/simulation_summary" => simulation_summary,
         "/{id}" => {
@@ -673,6 +677,142 @@ async fn project_path(
                     },
                 );
                 base_project_path = project_path_result[index].clone();
+            };
+            results
+        },
+    );
+
+    Ok(Json(results))
+}
+
+/// Represents either a paced train or an exception of a paced train
+enum BaseOrExceptionId {
+    Exception {
+        paced_train_id: i64,
+        exception_key: String,
+    },
+    PacedTrain {
+        paced_train_id: i64,
+    },
+}
+
+#[utoipa::path(
+    post, path = "",
+    tag = "train_schedule",
+    request_body = inline(ProjectPathOperationalPointForm),
+    responses(
+        (status = 200, description = "Project paced trains on a list of operational points.", body = HashMap<i64, Vec<ProjectPathPacedTrainResult>>),
+    ),
+)]
+async fn project_path_op(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(ProjectPathOperationalPointForm {
+        infra_id,
+        train_ids,
+        electrical_profile_set_id,
+        operational_points_ids,
+        operational_points_distances,
+    }): Json<ProjectPathOperationalPointForm>,
+) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
+    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    let conn = &mut db_pool.get().await?;
+
+    let paced_trains: Vec<models::PacedTrain> =
+        models::PacedTrain::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            PacedTrainError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+
+    let (ids, train_schedules): (Vec<_>, Vec<_>) = paced_trains
+        .iter()
+        .flat_map(|paced_train| {
+            std::iter::once((
+                BaseOrExceptionId::PacedTrain {
+                    paced_train_id: paced_train.id,
+                },
+                paced_train.clone().into_train_schedule(),
+            ))
+            .chain(paced_train.exceptions.iter().map(|exception| {
+                (
+                    BaseOrExceptionId::Exception {
+                        paced_train_id: paced_train.id,
+                        exception_key: exception.key.clone(),
+                    },
+                    paced_train.apply_exception(exception),
+                )
+            }))
+        })
+        .collect();
+
+    let operational_points_projection =
+        OperationalPointProjection::new(operational_points_ids, operational_points_distances)?;
+
+    let projected_trains = compute_projected_train_path_op(
+        conn,
+        valkey_client,
+        core_client,
+        &train_schedules,
+        operational_points_projection,
+        infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    let mut base_project_path = Default::default();
+
+    let results = ids.into_iter().zip(projected_trains).fold(
+        HashMap::<i64, ProjectPathPacedTrainResult>::new(),
+        |mut results, (id, projected_train)| {
+            match id {
+                BaseOrExceptionId::Exception {
+                    paced_train_id,
+                    exception_key,
+                } => {
+                    if !Arc::ptr_eq(&base_project_path, &projected_train) {
+                        results
+                            .get_mut(&paced_train_id)
+                            .expect("paced_train_id should exist")
+                            .exceptions
+                            .insert(exception_key, Arc::unwrap_or_clone(projected_train.clone()));
+                    }
+                }
+                BaseOrExceptionId::PacedTrain { paced_train_id } => {
+                    results.insert(
+                        paced_train_id,
+                        ProjectPathPacedTrainResult {
+                            paced_train: Arc::unwrap_or_clone(projected_train.clone()),
+                            exceptions: HashMap::new(),
+                        },
+                    );
+                    base_project_path = projected_train;
+                }
             };
             results
         },

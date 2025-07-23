@@ -123,6 +123,10 @@
       "ModifyId": "L'opération de mise à jour tente de modifier l'ID de l'objet, ce qui est interdit",
       "ObjectNotFound": "Objet '{{obj_id}}' non trouvé dans l'infrastructure '{{infra_id}}'"
     },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "{{expected}} distances attendues, mais {{found}} reçues",
+      "InvalidNumberOfIds": "Au moins 2 ids attendus"
+    },
     "paced_train": {
       "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
       "Database": "Erreur interne (base de données)",
