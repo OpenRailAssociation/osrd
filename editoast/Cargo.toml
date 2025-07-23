@@ -17,6 +17,7 @@ members = [
   "editoast_models",
   "fga",
   "fga_derive",
+  "fga_migrations",
   "osm_to_railjson",
   "osrdyne_client",
   "schemas",
@@ -78,7 +79,8 @@ editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 educe = "0.6.0"
 enum-map = "2.7.3"
-fga = { path = "./fga" }
+fga = { path = "./fga", features = ["test_utilities"] }
+fga_migrations = { path = "./fga_migrations" }
 futures = "0.3.31"
 futures-util = "0.3.30"
 geojson = { version = "0.24", default-features = false }
@@ -91,6 +93,10 @@ linkme = "0.3.35"
 mvt = "0.10.3"
 openssl = "0.10.74"
 opentelemetry = { version = "0.31.0", default-features = false, features = [
+  "trace",
+] }
+opentelemetry-otlp = { version = "0.31.0", default-features = false, features = [
+  "grpc-tonic",
   "trace",
 ] }
 opentelemetry-semantic-conventions = { version = "0.31", features = [
@@ -121,6 +127,7 @@ serde_with = { version = "3.15.1", default-features = false, features = [
   "macros",
 ] }
 serde_yaml = "0.9.34"
+sha1 = "0.10"
 stdext = "0.3.3"
 strum = { version = "0.27.2", features = ["derive"] }
 syn = "2.0"
@@ -178,6 +185,7 @@ editoast_models.workspace = true
 educe.workspace = true
 enum-map.workspace = true
 fga.workspace = true
+fga_migrations.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
@@ -201,10 +209,7 @@ linkme.workspace = true
 mime = "0.3.17"
 mvt.workspace = true
 opentelemetry.workspace = true
-opentelemetry-otlp = { version = "0.31.0", default-features = false, features = [
-  "grpc-tonic",
-  "trace",
-] }
+opentelemetry-otlp.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float.workspace = true
@@ -222,7 +227,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 serde_with.workspace = true
 serde_yaml.workspace = true
-sha1 = "0.10"
+sha1.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

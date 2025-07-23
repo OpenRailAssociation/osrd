@@ -76,7 +76,8 @@ RUN --mount=type=cache,target=/cargo_editoast/registry \
 COPY . .
 RUN --mount=type=cache,target=/cargo_editoast/registry \
     --mount=type=cache,target=/editoast/target \
-    cargo install --profile="${CARGO_PROFILE}" --locked --path .
+    cargo install --profile="${CARGO_PROFILE}" --locked --path . && \
+    cargo install --locked --path './fga_migrations'
 
 ###############
 # Running env #
@@ -85,6 +86,7 @@ FROM alpine:3.22 AS running_env
 RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client
 
 COPY --from=run_builder /cargo_editoast/bin/editoast /usr/local/bin/editoast
+COPY --from=run_builder /cargo_editoast/bin/fga_migrations /usr/local/bin/fga_migrations
 COPY --from=run_builder /editoast/migrations /migrations
 COPY --from=base_builder /cargo_editoast/bin/diesel /usr/local/bin/diesel
 COPY --from=base_builder /usr/local/bin/fga /usr/local/bin/fga

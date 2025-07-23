@@ -10,7 +10,7 @@ use url::Url;
 
 #[derive(Args, Debug)]
 pub struct OpenfgaConfig {
-    #[clap(long, env = "EDITOAST_OPENFGA_URL", default_value_t = Url::parse("http://localhost:8091").unwrap())]
+    #[clap(long, env = "FGA_API_URL", default_value_t = Url::parse("http://localhost:8091").unwrap())]
     pub(super) openfga_url: Url,
     #[clap(long, env = "EDITOAST_OPENFGA_STORE", default_value_t = String::from("osrd-editoast"))]
     pub(super) openfga_store: String,
@@ -44,7 +44,7 @@ impl OpenfgaConfig {
         pool: Arc<DbConnectionPoolV2>,
     ) -> anyhow::Result<views::Regulator> {
         let config: views::OpenfgaConfig = self.into();
-        let mut openfga = {
+        let openfga = {
             tracing::info!(url = %config.url, "connecting to OpenFGA");
             match fga::Client::try_with_store(&config.store, config.as_settings()).await {
                 Err(fga::client::InitializationError::NotFound(store)) => {
@@ -54,7 +54,6 @@ impl OpenfgaConfig {
                 result => result?,
             }
         };
-        authz::ensure_latest_authorization_model(&mut openfga).await?;
         let driver = PgAuthDriver::new(pool);
         Ok(views::Regulator::new(openfga, driver))
     }

@@ -85,5 +85,6 @@ echo "Deleting valkey cache..."
 docker exec "$OSRD_VALKEY" valkey-cli -p "$OSRD_VALKEY_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f $OSRD_VALKEY_VOLUME > /dev/null
 
 echo 'Cleanup done!'
-echo "You may want to apply migrations if you don't load a backup:"
+echo "You may want to apply Diesel and Openfga migrations if you don't load a backup:"
 echo "'diesel migration run --locked-schema --migration-dir \"$root_path/editoast/migrations\"'  # 'docker compose up editoast' does it automatically"
+echo "'fga_migrations apply' # docker compose up openfga-migrate does it automatically"

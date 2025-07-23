@@ -1,30 +1,36 @@
 [package]
-name = "authz"
-license.workspace = true
+name = "fga_migrations"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+
+[features]
+test_utilities = []
 
 [dependencies]
+clap.workspace = true
 common.workspace = true
 derive_more.workspace = true
-editoast_derive.workspace = true
 fga.workspace = true
-fga_migrations = { workspace = true, features = ["test_utilities"] }
 futures.workspace = true
+indexmap = "2.11.0"
 itertools.workspace = true
-serde = { workspace = true, features = ["derive"] }
-strum.workspace = true
+opentelemetry-otlp.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha1.workspace = true
+strum = { workspace = true, features = ["strum_macros"] }
+tempfile.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
-utoipa.workspace = true
+tracing-subscriber.workspace = true
+url.workspace = true
 
 [dev-dependencies]
-common.workspace = true
 fga = { workspace = true, features = ["test_utilities"] }
-pretty_assertions.workspace = true
 stdext.workspace = true
-tokio.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true

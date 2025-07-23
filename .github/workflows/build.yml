@@ -503,6 +503,7 @@ jobs:
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             -e CI="true" \
+            -e FGA_API_URL="http://localhost:8091" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
             /bin/sh -c "diesel migration run --locked-schema && RUST_BACKTRACE=1 cargo test --workspace --verbose -- --test-threads=4"
 

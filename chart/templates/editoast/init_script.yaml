@@ -7,9 +7,8 @@ data:
   script.sh: |
     #!/bin/sh
     set -euo pipefail
-    
     {{- with .Values.services.editoast.init.extend }}
     {{ . | nindent 4 }}
     {{- end }}
-    diesel migration run
+    fga_migrations apply && diesel migration run
 {{- end }}

@@ -864,11 +864,8 @@ impl AppState {
         );
 
         #[tracing::instrument(skip_all, level = "info", err, name = "OpenFGA connection")]
-        async fn connect_openfga(
-            openfga_config: OpenfgaConfig,
-            enable_authorization: bool,
-        ) -> anyhow::Result<fga::Client> {
-            let mut openfga = {
+        async fn connect_openfga(openfga_config: OpenfgaConfig) -> anyhow::Result<fga::Client> {
+            let openfga = {
                 tracing::info!(url = %openfga_config.url, "connecting to OpenFGA");
                 match fga::Client::try_with_store(
                     &openfga_config.store,
@@ -884,15 +881,10 @@ impl AppState {
                 }
             };
             tracing::info!(url = %openfga_config.url, "connected to OpenFGA");
-            if enable_authorization {
-                ::authz::ensure_latest_authorization_model(&mut openfga).await?;
-            }
             Ok(openfga)
         }
-        let openfga_fut = tokio::spawn(
-            connect_openfga(config.openfga_config.clone(), config.enable_authorization)
-                .in_current_span(),
-        );
+        let openfga_fut =
+            tokio::spawn(connect_openfga(config.openfga_config.clone()).in_current_span());
 
         // Synchronous operations
         let infra_caches = DashMap::<i64, InfraCache>::default().into();

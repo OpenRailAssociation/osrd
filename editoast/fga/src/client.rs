@@ -263,6 +263,10 @@ impl Client {
         Ok(models.pop())
     }
 
+    pub fn store(&self) -> &Store {
+        &self.store
+    }
+
     /// Fetches the latest authorization model ID and instructs the [Client] to use it for future API calls
     ///
     /// For API calls that use an authorization model, OpenFGA strongly recommends providing an authorization
@@ -308,9 +312,10 @@ impl Client {
         let (tuples, _continuation) = self
             .get_stores_read(
                 &self.store.id,
-                RawTuple::from(&tuple),
+                Some(RawTuple::from(&tuple)),
                 Some(1),
                 self.authorization_model_id.as_deref(),
+                None,
                 None,
             )
             .await?;
@@ -383,6 +388,9 @@ impl Client {
         &self,
         tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
+        if tuples.is_empty() {
+            return Ok(());
+        }
         if tuples.len() > self.settings.limits.max_tuples_per_write as usize {
             return Err(Either::Right(TooManyTuples {
                 max: self.settings.limits.max_tuples_per_write as usize,
