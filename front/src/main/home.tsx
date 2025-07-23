@@ -22,7 +22,7 @@ export default function Home() {
 
   return (
     <ModalProvider>
-      <NavBarSNCF showLogoWithName />
+      <NavBarSNCF />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="cardscontainer">
           <div className="row justify-content-center mb-2">
