@@ -25,7 +25,7 @@ const Scenario = () => {
   const { infra } = infraData;
 
   const [activeBoards, setActiveBoards] = useState<Set<Board>>(
-    new Set<Board>(['trains', 'map', 'std', 'sdd', 'tables', 'macro'])
+    new Set<Board>(['trains', 'map', 'std', 'sdd', 'tables'])
   );
 
   const toggleBoard = (board: Board) => {
