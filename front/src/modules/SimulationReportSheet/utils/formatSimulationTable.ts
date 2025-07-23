@@ -4,7 +4,6 @@ import type { TFunction } from 'i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { dateToHHMMSS } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
@@ -115,7 +114,8 @@ export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
   pathItemPositions: PathfindingResultSuccess['path_item_positions'],
   rollingStock: { mass: number; name: string },
-  t: TFunction<'stdcm'>
+  t: TFunction<'stdcm'>,
+  dateTimeLocale: Intl.Locale
 ) =>
   operationalPointsList.map((step, index) => {
     const isFirst = index === 0;
@@ -128,18 +128,20 @@ export const formatOperationalStudiesDataForSimulationTable = (
 
     const startTime =
       isFirst || isStop
-        ? dateToHHMMSS(addDurationToDate(step.time, step.duration ?? Duration.zero), {
-            withoutSeconds: true,
-          })
+        ? addDurationToDate(step.time, step.duration ?? Duration.zero).toLocaleString(
+            dateTimeLocale,
+            { timeStyle: 'short' }
+          )
         : '';
-    const endTime = isLast || isStop ? dateToHHMMSS(step.time, { withoutSeconds: true }) : '';
+    const endTime =
+      isLast || isStop ? step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' }) : '';
 
     let passageStop = '';
     if (!isFirst && !isLast) {
       // display the stop duration if is a stop, the passage time if not
       passageStop = step.duration
         ? getStopDurationTime(step.duration)
-        : dateToHHMMSS(step.time, { withoutSeconds: true });
+        : step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' });
     }
 
     return {

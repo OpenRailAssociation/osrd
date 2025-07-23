@@ -27,6 +27,7 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { useDateTimeLocale } from 'utils/date';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
@@ -76,6 +77,7 @@ const StdcmConfig = ({
   launchStdcmRequest,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
+  const dateTimeLocale = useDateTimeLocale();
   const launchButtonRef = useRef<HTMLDivElement>(null);
 
   const infraId = useSelector(getStdcmInfraID);
@@ -124,6 +126,7 @@ const StdcmConfig = ({
   const startSimulation = async () => {
     const formErrorsStatus = checkStdcmConfigErrors({
       t,
+      dateTimeLocale,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
       prevFormErrors: formErrors,
@@ -168,6 +171,7 @@ const StdcmConfig = ({
 
     const formErrorsStatus = checkStdcmConfigErrors({
       t,
+      dateTimeLocale,
       pathfindingStatus: pathfinding?.status,
       stdcmConf,
       prevFormErrors: formErrors,
@@ -228,6 +232,7 @@ const StdcmConfig = ({
   useEffect(() => {
     const updatedErrors = checkStdcmConfigErrors({
       t,
+      dateTimeLocale,
       stdcmConf,
       prevFormErrors: formErrors,
       consistErrors,
