@@ -11,7 +11,7 @@ impl Tags {
     }
 
     pub fn to_vec(&self) -> Vec<String> {
-        self.0.clone().into_iter().collect()
+        self.0.clone()
     }
 }
 

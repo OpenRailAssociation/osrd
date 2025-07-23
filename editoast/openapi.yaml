@@ -3438,7 +3438,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StdcmSearchEnvironment'
+                $ref: '#/components/schemas/StdcmSearchEnvironmentResponse'
         '204':
           description: No search environment was created
     post:
@@ -3494,7 +3494,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/StdcmSearchEnvironment'
+                        $ref: '#/components/schemas/StdcmSearchEnvironmentResponse'
   /stdcm/search_environment/{env_id}:
     delete:
       tags:
@@ -10683,6 +10683,11 @@ components:
             oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/TrackReference'
+    OperationalPoints:
+      type: array
+      items:
+        type: integer
+        format: int64
     OptionsChangeGroup:
       type: object
       required:
@@ -13688,6 +13693,22 @@ components:
           - type: 'null'
           - type: string
             minLength: 1
+    SpeedLimits:
+      type: object
+      required:
+      - speed_limit_tags
+      properties:
+        default_speed_limit_tag:
+          type:
+          - string
+          - 'null'
+        speed_limit_tags:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+          propertyNames:
+            type: string
     SpeedSection:
       type: object
       required:
@@ -13973,9 +13994,16 @@ components:
       - search_window_end
       - enabled_from
       - enabled_until
+      - operational_points
+      - speed_limit_tags
       properties:
         active_perimeter:
           $ref: '#/components/schemas/GeoJson'
+          description: 'TODO: here we should not use diesel_json::Json, but the #[model(json)] instead'
+        default_speed_limit_tag:
+          type:
+          - string
+          - 'null'
         electrical_profile_set_id:
           type: integer
           format: int64
@@ -13995,6 +14023,8 @@ components:
         infra_id:
           type: integer
           format: int64
+        operational_points:
+          $ref: '#/components/schemas/OperationalPoints'
         search_window_begin:
           type: string
           format: date-time
@@ -14005,6 +14035,14 @@ components:
           type: string
           format: date-time
           description: The end of the search time window.
+        speed_limit_tags:
+          type: object
+          description: Map of speed limit tag with their value
+          additionalProperties:
+            type: integer
+            format: int64
+          propertyNames:
+            type: string
         temporary_speed_limit_group_id:
           type: integer
           format: int64
@@ -14042,12 +14080,85 @@ components:
         infra_id:
           type: integer
           format: int64
+        operational_points:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int64
         search_window_begin:
           type: string
           format: date-time
         search_window_end:
           type: string
           format: date-time
+        speed_limits:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SpeedLimits'
+        temporary_speed_limit_group_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        timetable_id:
+          type: integer
+          format: int64
+        work_schedule_group_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+    StdcmSearchEnvironmentResponse:
+      type: object
+      required:
+      - id
+      - infra_id
+      - timetable_id
+      - search_window_begin
+      - search_window_end
+      - enabled_from
+      - enabled_until
+      properties:
+        active_perimeter:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/GeoJson'
+        electrical_profile_set_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        enabled_from:
+          type: string
+          format: date-time
+        enabled_until:
+          type: string
+          format: date-time
+        id:
+          type: integer
+          format: int64
+        infra_id:
+          type: integer
+          format: int64
+        operational_points:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int64
+        search_window_begin:
+          type: string
+          format: date-time
+        search_window_end:
+          type: string
+          format: date-time
+        speed_limits:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/SpeedLimits'
         temporary_speed_limit_group_id:
           type:
           - integer

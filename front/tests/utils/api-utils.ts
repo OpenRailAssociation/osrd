@@ -21,6 +21,7 @@ import type {
   TowedRollingStock,
   PaginationStats,
   WorkerStatus,
+  StdcmSearchEnvironmentCreateForm,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -288,13 +289,11 @@ export async function retrieveLatestStdcmEnvironment(): Promise<StdcmSearchEnvir
  * @param stdcmEnvironment -The stdcm search environment to use.
  */
 export async function createStdcmEnvironment(
-  stdcmEnvironment: StdcmSearchEnvironment
+  stdcmEnvironment: StdcmSearchEnvironmentCreateForm
 ): Promise<void> {
-  // Remove the `id` field to match the StdcmSearchEnvironmentCreateForm schema
-  const { id: _id, ...stdcmEnvironmentWithoutId } = stdcmEnvironment;
   await postApiRequest(
     '/api/stdcm/search_environment',
-    stdcmEnvironmentWithoutId,
+    stdcmEnvironment,
     undefined,
     'Failed to update STDCM configuration environment'
   );

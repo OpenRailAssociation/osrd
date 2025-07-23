@@ -2,11 +2,12 @@ import { useEffect, useMemo } from 'react';
 
 import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import { COMPOSITION_CODES, DEFAULT_COMPOSITION_CODE } from 'applications/stdcm/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import { getDefaultSpeedLimitTag, getSpeedLimitTags } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -21,7 +22,8 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const infraID = useInfraID();
-
+  const stdcmSpeedLimitTags = useSelector(getSpeedLimitTags);
+  const stdcmDefaultSpeedLimitTag = useSelector(getDefaultSpeedLimitTag);
   const { updateSpeedLimitByTag } = useOsrdConfActions();
   const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
     dispatch(updateSpeedLimitByTag(newTag));
@@ -43,15 +45,18 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
     }
   }, [error]);
 
-  useEffect(() => {
-    if (isStdcm && !speedLimitByTag) {
-      dispatchUpdateSpeedLimitByTag(DEFAULT_COMPOSITION_CODE);
-    }
-  }, []);
-
-  const speedLimitsByTags = isStdcm ? COMPOSITION_CODES : uniq(speedLimitsTagsByInfraId);
+  const speedLimitsByTags = isStdcm
+    ? Object.keys(stdcmSpeedLimitTags || {})
+    : uniq(speedLimitsTagsByInfraId);
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
 
+  useEffect(() => {
+    if (isStdcm && !speedLimitByTag) {
+      dispatchUpdateSpeedLimitByTag(
+        stdcmDefaultSpeedLimitTag || speedLimitsByTagsOrdered[0] || null
+      );
+    }
+  }, [speedLimitsByTagsOrdered, stdcmDefaultSpeedLimitTag]);
   return {
     speedLimitsByTags: speedLimitsByTagsOrdered,
     dispatchUpdateSpeedLimitByTag,

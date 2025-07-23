@@ -179,23 +179,20 @@ describe('stdcmConfReducers', () => {
       expect(state.loadingGauge).toEqual('GB');
     });
     it('should handle activePerimeter', () => {
-      const perimeter = {
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [-1, 47],
-              [-2, 47],
-              [-2, 48],
-              [-1, 47],
-            ],
+      const geometry = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-1, 47],
+            [-2, 47],
+            [-2, 48],
+            [-1, 47],
           ],
-        } as Geometry,
-        operationalPoints: [1, 2, 3, 4],
-      };
-      store.dispatch(updateStdcmEnvironmentActiveArea(perimeter));
+        ],
+      } as Geometry;
+      store.dispatch(updateStdcmEnvironmentActiveArea(geometry));
       const state = store.getState()[stdcmConfSlice.name];
-      expect(state.activePerimeter).toEqual(perimeter);
+      expect(state.activePerimeter).toEqual(geometry);
     });
   });
 

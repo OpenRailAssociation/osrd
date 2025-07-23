@@ -82,10 +82,10 @@ export type OsrdStdcmConfState = OsrdConfState & {
   workScheduleGroupId?: number;
   temporarySpeedLimitGroupId?: number;
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
-  activePerimeter?: {
-    geometry: Geometry;
-    operationalPoints: number[];
-  };
+  activePerimeter?: Geometry;
+  operationalPoints?: number[];
+  speedLimitTags?: Record<string, number>;
+  defaultSpeedLimitTag?: string;
 };
 
 export type PathStep = {

@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
 import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import { getOperationalPoints } from 'reducers/osrdconf/stdcmConf/selectors';
 import { getIsSuperUser } from 'reducers/user/userSelectors';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
@@ -15,11 +15,6 @@ import {
   sortOperationalPointsFromNameAndUicSearch,
   sortOperationalPointsFromTrigramSearch,
 } from './sortOperationalPoints';
-
-const STDCM_PERIMETER_FILTER = [
-  'or',
-  ...STDCM_PERIMETER_OPERATIONAL_POINTS.map((ci) => ['=', ['ci'], ci]),
-];
 
 type SearchOperationalPoint = {
   debounceDelay?: number;
@@ -41,10 +36,18 @@ export default function useSearchOperationalPoint({
   const [chCodeFilter, setChCodeFilter] = useState(initialChCodeFilter);
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
+  const stdcmOperationalPoints = useSelector(getOperationalPoints);
   const isSuperUser = useSelector(getIsSuperUser);
 
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+
+  const stdcmPerimeterOperationalpointsFilter = useMemo(() => {
+    if (isStdcm && !isSuperUser && stdcmOperationalPoints) {
+      return ['or', ...stdcmOperationalPoints.map((ci) => ['=', ['ci'], ci])];
+    }
+    return true;
+  }, [stdcmOperationalPoints, isSuperUser, isStdcm]);
 
   /* Search for operational whose trigrams start with the search query */
   const searchOperationalPointsByTrigram = useCallback(
@@ -52,9 +55,6 @@ export default function useSearchOperationalPoint({
       const shouldSearchByTrigram = !Number.isInteger(+searchQuery) && searchQuery.length < 4;
 
       if (!shouldSearchByTrigram || !infraID) return [];
-
-      const stdcmPerimeterOperationalpointsFilter =
-        isStdcm && !isSuperUser ? STDCM_PERIMETER_FILTER : true;
 
       const payload = {
         object: 'operationalpoint',
@@ -78,7 +78,7 @@ export default function useSearchOperationalPoint({
         return [];
       }
     },
-    [infraID, isStdcm, isSuperUser]
+    [infraID, isStdcm, isSuperUser, stdcmPerimeterOperationalpointsFilter]
   );
 
   /** Search for operational points whose trigrams start with the search query or whose name or UIC code (primary code) contain the search query */
@@ -88,9 +88,6 @@ export default function useSearchOperationalPoint({
 
       const sortedTrigramResults = await searchOperationalPointsByTrigram(searchQuery);
       const trigramResultsIds = new Set(sortedTrigramResults.map((op) => op.obj_id));
-
-      const stdcmPerimeterOperationalpointsFilter =
-        isStdcm && !isSuperUser ? STDCM_PERIMETER_FILTER : true;
 
       try {
         const results = (await postSearch({
@@ -120,7 +117,7 @@ export default function useSearchOperationalPoint({
         return [];
       }
     },
-    [infraID, isStdcm, isSuperUser]
+    [infraID, isStdcm, isSuperUser, stdcmPerimeterOperationalpointsFilter]
   );
 
   /** Filter operational points on secondary code (ch), if provided */
