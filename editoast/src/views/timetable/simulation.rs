@@ -167,7 +167,7 @@ impl From<simulation::Response> for SummaryResponse {
                 let report = final_output.report_train;
                 Self::Success {
                     length: *report.positions.last().unwrap(),
-                    time: *report.times.last().unwrap(),
+                    time: *report.path_item_times.last().unwrap(),
                     energy_consumption: report.energy_consumption,
                     path_item_times_final: report.path_item_times.clone(),
                     path_item_times_provisional: provisional.path_item_times.clone(),

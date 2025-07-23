@@ -91,11 +91,12 @@ public class EnvelopeStopWrapper implements EnvelopeInterpolate {
         double sumPreviousStopDuration = 0;
         int stopIndex = 0;
         for (var point : envelope.iteratePoints()) {
-            var shiftedPoint =
-                    new EnvelopePoint(point.time() + sumPreviousStopDuration, point.speed(), point.position());
+            var shiftedTime = point.time() + sumPreviousStopDuration;
+            var shiftedPoint = new EnvelopePoint(shiftedTime, point.speed(), point.position());
             res.add(shiftedPoint);
             if (stopIndex < stops.size() && point.position() >= stops.get(stopIndex).position) {
                 var stopDuration = stops.get(stopIndex).duration;
+                res.add(new EnvelopePoint(shiftedTime + stopDuration, point.speed(), stops.get(stopIndex).position));
                 stopIndex++;
                 sumPreviousStopDuration += stopDuration;
             }

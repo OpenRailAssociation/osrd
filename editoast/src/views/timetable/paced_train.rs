@@ -1315,7 +1315,7 @@ mod tests {
             PacedTrainSummaryResponse {
                 paced_train: SummaryResponse::Success {
                     length: 0,
-                    time: 0,
+                    time: 3000,
                     energy_consumption: 0.0,
                     path_item_times_final: vec![0, 1000, 2000, 3000],
                     path_item_times_provisional: vec![0, 1000, 2000, 3000],
@@ -1327,7 +1327,7 @@ mod tests {
                     // because all simulation results from core are identical stubs
                     SummaryResponse::Success {
                         length: 0,
-                        time: 0,
+                        time: 3000,
                         energy_consumption: 0.0,
                         path_item_times_final: vec![0, 1000, 2000, 3000],
                         path_item_times_provisional: vec![0, 1000, 2000, 3000],

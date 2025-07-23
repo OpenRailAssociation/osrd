@@ -34,17 +34,19 @@ public class EnvelopeStopWrapperTests {
         var envelopeStopWrapper = new EnvelopeStopWrapper(
                 envelopeFloor,
                 List.of(
-                        new TrainStop(1.5, 0, RJSReceptionSignal.OPEN),
-                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP)));
+                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP),
+                        new TrainStop(6, 5, RJSReceptionSignal.OPEN)));
         Assertions.assertEquals(
                 List.of(
                         new EnvelopeTimeInterpolate.EnvelopePoint(0, 1, 0),
                         new EnvelopeTimeInterpolate.EnvelopePoint(1, 1, 1),
                         new EnvelopeTimeInterpolate.EnvelopePoint(2, 1, 2),
                         new EnvelopeTimeInterpolate.EnvelopePoint(4, 0, 3),
+                        new EnvelopeTimeInterpolate.EnvelopePoint(4 + 10, 0, 3),
                         new EnvelopeTimeInterpolate.EnvelopePoint(6 + 10, 1, 4),
                         new EnvelopeTimeInterpolate.EnvelopePoint(7 + 10, 1, 5),
-                        new EnvelopeTimeInterpolate.EnvelopePoint(8 + 10, 1, 6)),
-                envelopeStopWrapper.iteratePoints());
+                        new EnvelopeTimeInterpolate.EnvelopePoint(8 + 10, 1, 6),
+                        new EnvelopeTimeInterpolate.EnvelopePoint(8 + 10 + 5, 1, 6)),
+                envelopeStopWrapper.iteratePoints().stream().distinct().toList());
     }
 }

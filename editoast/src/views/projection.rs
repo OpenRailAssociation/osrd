@@ -210,38 +210,37 @@ fn compute_space_time_curves(
     for intersection in intersections {
         let start = intersection.start();
         let end = intersection.end();
-        let start_index = find_index_upper(positions, start);
+        let start_index = find_index_lower(positions, start);
         let end_index = find_index_upper(positions, end);
 
         // Each segment contains the start, end and all positions between them
         // We must interpolate the start and end positions if they are not part of the positions
         let mut segment_positions = Vec::with_capacity(end_index - start_index + 2);
         let mut segment_times = Vec::with_capacity(end_index - start_index + 2);
-        if positions[start_index] > start {
-            // Interpolate the first point of the segment
-            segment_positions.push(project_pos(start, &train_path, path_projection));
-            segment_times.push(linear_interpolate(
-                positions[start_index - 1],
-                positions[start_index],
-                times[start_index - 1],
-                times[start_index],
-                start,
-            ));
-        }
+        // Interpolate the first point of the segment
+        segment_positions.push(project_pos(start, &train_path, path_projection));
+        segment_times.push(linear_interpolate(
+            positions[start_index],
+            positions[start_index + 1],
+            times[start_index],
+            times[start_index + 1],
+            start,
+        ));
 
         // Project all the points in the segment
-        for index in start_index..end_index {
+        for index in (start_index + 1)..end_index {
             segment_positions.push(project_pos(positions[index], &train_path, path_projection));
             segment_times.push(times[index]);
         }
 
         // Interpolate the last point of the segment
         segment_positions.push(project_pos(end, &train_path, path_projection));
+        // The interpolation is inverted because we want to retrieve the higher time if positions[end_index] == positions[end_index - 1]
         segment_times.push(linear_interpolate(
-            positions[end_index - 1],
             positions[end_index],
-            times[end_index - 1],
+            positions[end_index - 1],
             times[end_index],
+            times[end_index - 1],
             end,
         ));
         space_time_curves.push(SpaceTimeCurve {
@@ -252,7 +251,8 @@ fn compute_space_time_curves(
     space_time_curves
 }
 
-/// Find the index of the first element greater to a value
+/// Find the index of the first element greater than a value.
+/// In case it matches duplicate values, it returns the rightmost index.
 ///
 /// **Values must be sorted in ascending order**
 ///
@@ -284,6 +284,25 @@ pub fn find_index_upper(values: &[u64], value: u64) -> usize {
     }
 }
 
+/// Find the index of the first element lower than a value.
+/// In case it matches duplicate values, it returns the leftmost index.
+///
+/// **Values must be sorted in ascending order**
+///
+/// ## Panics
+///
+/// - If value is greater than the last element of values.
+/// - If values is empty
+pub fn find_index_lower(values: &[u64], value: u64) -> usize {
+    let mut index = find_index_upper(values, value);
+    while index > 0
+        && (values[index] > value || (values[index] == value && values[index - 1] == values[index]))
+    {
+        index -= 1;
+    }
+    index
+}
+
 /// Project a position on a train path to a position on a projection path
 ///
 /// ## Panics
@@ -308,14 +327,21 @@ fn project_pos(
     }
 }
 
-/// Interpolate a time value between two positions
-pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, a_interpolate: u64) -> u64 {
+/// Linear interpolation between two points `a` and `b` given their x and y coordinates.
+/// Note: If `a_x` is equal to `b_x`, it returns `a_y`.
+///
+/// Panics if `x` is not between `a_x` and `b_x`.
+pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64 {
     if a_x == b_x {
         a_y
-    } else if a_y < b_y {
-        a_y + (a_interpolate - a_x) * (b_y - a_y) / (b_x - a_x)
+    } else if a_y < b_y && a_x < b_x {
+        a_y + (x - a_x) * (b_y - a_y) / (b_x - a_x)
+    } else if a_y >= b_y && a_x < b_x {
+        a_y - (x - a_x) * (a_y - b_y) / (b_x - a_x)
+    } else if a_y < b_y && a_x >= b_x {
+        a_y + (a_x - x) * (b_y - a_y) / (a_x - b_x)
     } else {
-        a_y - (a_interpolate - a_x) * (a_y - b_y) / (b_x - a_x)
+        a_y - (a_x - x) * (a_y - b_y) / (a_x - b_x)
     }
 }
 
@@ -672,16 +698,31 @@ mod tests {
     #[rstest]
     #[case(1, 0)]
     #[case(2, 1)]
-    #[case(3, 1)]
-    #[case(4, 2)]
-    #[case(5, 3)]
-    #[case(6, 4)]
-    #[case(7, 4)]
-    #[case(8, 5)]
-    #[case(9, 6)]
+    #[case(3, 2)]
+    #[case(4, 3)]
+    #[case(5, 5)]
+    #[case(6, 6)]
+    #[case(7, 6)]
+    #[case(8, 7)]
+    #[case(9, 9)]
     fn test_find_index_upper(#[case] value: u64, #[case] expected: usize) {
-        let values = vec![1, 3, 4, 5, 7, 8, 9];
+        let values = vec![1, 3, 3, 4, 5, 5, 7, 8, 9, 9];
         assert_eq!(find_index_upper(&values, value), expected);
+    }
+
+    #[rstest]
+    #[case(1, 0)]
+    #[case(2, 0)]
+    #[case(3, 1)]
+    #[case(4, 3)]
+    #[case(5, 4)]
+    #[case(6, 5)]
+    #[case(7, 6)]
+    #[case(8, 7)]
+    #[case(9, 8)]
+    fn test_find_index_lower(#[case] value: u64, #[case] expected: usize) {
+        let values = vec![1, 3, 3, 4, 5, 5, 7, 8, 9, 9];
+        assert_eq!(find_index_lower(&values, value), expected);
     }
 
     #[rstest]
