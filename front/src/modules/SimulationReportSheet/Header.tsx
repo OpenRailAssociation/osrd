@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import StdcmLogo from 'modules/SimulationReportSheet/StdcmLogo';
-import { formatDateToString } from 'utils/date';
+import { useDateTimeLocale } from 'utils/date';
 
 import styles from './styles/SimulationReportStyleSheet';
 
@@ -23,6 +23,7 @@ const Header = ({
   scenarioData,
 }: HeaderProps) => {
   const { t } = useTranslation('stdcm');
+  const dateTimeLocale = useDateTimeLocale();
 
   const title = simulationReportSheetNumber ? (
     <StdcmLogo logoUrl={simulationSheetLogo} />
@@ -43,7 +44,10 @@ const Header = ({
 
         {creationDate && (
           <Text style={styles.header.creationDate}>
-            {t('reportSheet.formattedDate', formatDateToString(creationDate))}
+            {t('reportSheet.formattedDate', {
+              date: creationDate.toLocaleString(dateTimeLocale, { dateStyle: 'short' }),
+              time: creationDate.toLocaleString(dateTimeLocale, { timeStyle: 'short' }),
+            })}
           </Text>
         )}
 

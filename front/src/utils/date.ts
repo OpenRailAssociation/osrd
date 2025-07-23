@@ -42,23 +42,6 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
  */
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
-export const formatDateToString = (date: Date, shortYear: boolean = false) => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const shortYearFormat = String(year).slice(-2);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  return {
-    day,
-    month,
-    year: shortYear ? shortYearFormat : year,
-    hours,
-    minutes,
-  };
-};
-
 /**
  * Checks if the given arrival date falls within the specified search time window.
  *

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import useHorizontalScroll from 'applications/stdcm/hooks/useHorizontalScroll';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { getStdcmCompletedSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
-import { formatDateToString, formatTimeDifference } from 'utils/date';
+import { formatTimeDifference, useDateTimeLocale } from 'utils/date';
 import { mmToKm } from 'utils/physics';
 
 export const SIMULATION_ITEM_CLASSNAME = 'simulation-item';
@@ -28,6 +28,7 @@ const StdcmSimulationNavigator = ({
   onSelectSimulation,
 }: StdcmSimulationNavigatorProps) => {
   const { t } = useTranslation();
+  const dateTimeLocale = useDateTimeLocale();
 
   const completedSimulations = useSelector(getStdcmCompletedSimulations);
 
@@ -113,9 +114,12 @@ const StdcmSimulationNavigator = ({
                     </div>
                     <div className="simulation-metadata" key={index}>
                       <span className="creation-date">
-                        {t('simulation.results.formatCreationDate', {
-                          ...formatDateToString(creationDate, true),
-                          ns: 'stdcm',
+                        {creationDate.toLocaleString(dateTimeLocale, {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
                         })}
                       </span>
                       <span

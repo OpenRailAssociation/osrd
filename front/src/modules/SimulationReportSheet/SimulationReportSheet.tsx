@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { dateToHHMMSS, formatDateToString } from 'utils/date';
+import { dateToHHMMSS, useDateTimeLocale } from 'utils/date';
 import { msToKmh, tToKg } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
@@ -32,6 +32,8 @@ const SimulationReportSheet = ({
   operationalPointsList,
   t,
 }: SimulationReportSheetProps) => {
+  const dateTimeLocale = useDateTimeLocale();
+
   const { rollingStock, speedLimitByTag, creationDate, trainName } = trainData;
 
   const consistData = {
@@ -84,7 +86,12 @@ const SimulationReportSheet = ({
           </View>
         )}
         <View style={styles.footer.creationDate}>
-          <Text>{t('reportSheet.formattedDateScenario', formatDateToString(creationDate))} </Text>
+          <Text>
+            {t('reportSheet.formattedDateScenario', {
+              date: creationDate.toLocaleString(dateTimeLocale, { dateStyle: 'short' }),
+              time: creationDate.toLocaleString(dateTimeLocale, { timeStyle: 'short' }),
+            })}{' '}
+          </Text>
         </View>
       </Page>
     </Document>
