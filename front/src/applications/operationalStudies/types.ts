@@ -18,6 +18,8 @@ import type { Train } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
+export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
+
 export type TimetableJsonPayload = {
   train_schedules: TrainSchedule[];
   paced_trains: PacedTrain[];

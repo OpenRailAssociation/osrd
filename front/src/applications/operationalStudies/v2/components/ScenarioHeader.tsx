@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
+import type { Board } from 'applications/operationalStudies/types';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -13,39 +14,21 @@ import UserActionsDropdown from 'common/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
 
-type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
+const BOARDS: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
 
 type ScenarioHeaderProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
-  toggleTimetable: () => void;
-  toggleConflictsList: () => void;
-  toggleMacroEditor: () => void;
+  activeBoards: Set<Board>;
+  toggleBoard: (board: Board) => void;
 };
 
-const ScenarioHeader = ({
-  scenario,
-  infra,
-  toggleConflictsList,
-  toggleTimetable,
-  toggleMacroEditor,
-}: ScenarioHeaderProps) => {
+const ScenarioHeader = ({ scenario, infra, activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, logout } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
 
   const { t } = useTranslation('operational-studies');
-
-  const boards: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
-
-  const [activeBoards, setActiveBoards] = useState<Board[]>([
-    'trains',
-    'map',
-    'macro',
-    'std',
-    'sdd',
-    'tables',
-  ]);
 
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
@@ -67,15 +50,6 @@ const ScenarioHeader = ({
       }),
     }
   );
-
-  const toggleBoard = (selectedBoard: Board) => {
-    setActiveBoards((prevBoards) => {
-      if (prevBoards.includes(selectedBoard)) {
-        return prevBoards.filter((b) => b !== selectedBoard);
-      }
-      return [...prevBoards, selectedBoard];
-    });
-  };
 
   const toggleScenarioDetails = () => {
     setAreScenarioDetailsVisible((prev) => !prev);
@@ -150,28 +124,21 @@ const ScenarioHeader = ({
           <div className="spacer" />
 
           <div className="board-btns">
-            {boards.map((board, index) => (
+            {BOARDS.map((board, index) => (
               <Fragment key={board}>
                 <button
                   className={cx('board-btn', {
-                    on: activeBoards.includes(board),
+                    on: activeBoards.has(board),
                   })}
                   type="button"
                   data-testid={`${board}-button`}
                   onClick={() => {
-                    if (board === 'conflicts') {
-                      toggleConflictsList();
-                    } else if (board === 'trains') {
-                      toggleTimetable();
-                    } else if (board === 'macro') {
-                      toggleMacroEditor();
-                    }
                     toggleBoard(board);
                   }}
                 >
                   {t(`boards.${board}`)}
                 </button>
-                {index < boards.length - 1 && <div className="inactive-area" />}
+                {index < BOARDS.length - 1 && <div className="inactive-area" />}
               </Fragment>
             ))}
           </div>
