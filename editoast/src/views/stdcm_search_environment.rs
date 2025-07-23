@@ -15,9 +15,11 @@ use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
+use std::collections::HashMap;
 use std::result::Result as StdResult;
 use std::sync::Arc;
 use thiserror::Error;
@@ -42,6 +44,12 @@ enum StdcmSearchEnvError {
     Database(#[from] editoast_models::Error),
 }
 
+#[derive(Default, Deserialize, Serialize, ToSchema)]
+struct SpeedLimits {
+    speed_limit_tags: HashMap<String, i64>,
+    default_speed_limit_tag: Option<String>,
+}
+
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
@@ -57,6 +65,27 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     enabled_until: DateTime<Utc>,
     #[schema(value_type = Option<common::geometry::GeoJson>)]
     active_perimeter: Option<geos::geojson::Geometry>,
+    operational_points: Option<Vec<i64>>,
+    speed_limits: Option<SpeedLimits>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+struct StdcmSearchEnvironmentResponse {
+    id: i64,
+    infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
+    work_schedule_group_id: Option<i64>,
+    temporary_speed_limit_group_id: Option<i64>,
+    timetable_id: i64,
+    search_window_begin: DateTime<Utc>,
+    search_window_end: DateTime<Utc>,
+    enabled_from: DateTime<Utc>,
+    enabled_until: DateTime<Utc>,
+    // TODO: diesel_json should be removed when it will be removed from the model
+    #[schema(value_type = Option<common::geometry::GeoJson>)]
+    active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    operational_points: Option<Vec<i64>>,
+    speed_limits: Option<SpeedLimits>,
 }
 
 impl<'de> Deserialize<'de> for StdcmSearchEnvironmentCreateForm {
@@ -78,6 +107,16 @@ impl<'de> Deserialize<'de> for StdcmSearchEnvironmentCreateForm {
                 create_form.enabled_from, create_form.enabled_until
             )));
         }
+        if let Some(speed_limits) = create_form.speed_limits.as_ref()
+            && let Some(default_value) = &speed_limits.default_speed_limit_tag
+            && !speed_limits.speed_limit_tags.contains_key(default_value)
+        {
+            return Err(SerdeError::custom(format!(
+                "The search environment default speed limit tag '{}' is not present in the speed limit tags '{:?}'",
+                default_value,
+                speed_limits.speed_limit_tags.keys()
+            )));
+        }
         Ok(create_form)
     }
 }
@@ -94,6 +133,7 @@ impl Serialize for StdcmSearchEnvironmentCreateForm {
 
 impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment> {
     fn from(form: StdcmSearchEnvironmentCreateForm) -> Self {
+        let speed_limits = form.speed_limits.unwrap_or_default();
         StdcmSearchEnvironment::changeset()
             .infra_id(form.infra_id)
             .electrical_profile_set_id(form.electrical_profile_set_id)
@@ -105,6 +145,42 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .enabled_from(form.enabled_from)
             .enabled_until(form.enabled_until)
             .active_perimeter(form.active_perimeter.map(diesel_json::Json))
+            .operational_points(form.operational_points.into())
+            .speed_limit_tags(speed_limits.speed_limit_tags)
+            .default_speed_limit_tag(speed_limits.default_speed_limit_tag)
+    }
+}
+
+impl From<StdcmSearchEnvironment> for StdcmSearchEnvironmentResponse {
+    fn from(from: StdcmSearchEnvironment) -> Self {
+        let speed_limits = if !from.speed_limit_tags.is_empty() {
+            Some(SpeedLimits {
+                speed_limit_tags: from.speed_limit_tags,
+                default_speed_limit_tag: from.default_speed_limit_tag,
+            })
+        } else {
+            None
+        };
+
+        StdcmSearchEnvironmentResponse {
+            id: from.id,
+            infra_id: from.infra_id,
+            electrical_profile_set_id: from.electrical_profile_set_id,
+            work_schedule_group_id: from.work_schedule_group_id,
+            temporary_speed_limit_group_id: from.temporary_speed_limit_group_id,
+            timetable_id: from.timetable_id,
+            search_window_begin: from.search_window_begin,
+            search_window_end: from.search_window_end,
+            enabled_from: from.enabled_from,
+            enabled_until: from.enabled_until,
+            active_perimeter: from.active_perimeter,
+            operational_points: if !from.operational_points.is_empty() {
+                Some(from.operational_points.to_vec())
+            } else {
+                None
+            },
+            speed_limits,
+        }
     }
 }
 
@@ -140,7 +216,7 @@ pub(in crate::views) async fn create(
     get, path = "",
     tag = "stdcm_search_environment",
     responses(
-        (status = 200, body = StdcmSearchEnvironment),
+        (status = 200, body = StdcmSearchEnvironmentResponse),
         (status = 204, description = "No search environment was created")
     )
 )]
@@ -159,7 +235,7 @@ pub(in crate::views) async fn retrieve_latest(
     let conn = &mut db_pool.get().await?;
     let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
     if let Some(search_env) = search_env {
-        Ok(Json(search_env).into_response())
+        Ok(Json(StdcmSearchEnvironmentResponse::from(search_env)).into_response())
     } else {
         tracing::error!("STDCM search environment queried but none was created");
         Ok(StatusCode::NO_CONTENT.into_response())
@@ -207,8 +283,8 @@ pub(in crate::views) async fn delete(
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct SdcmSearchEnvListResponse {
-    #[schema(value_type = Vec<StdcmSearchEnvironment>)]
-    results: Vec<StdcmSearchEnvironment>,
+    #[schema(value_type = Vec<StdcmSearchEnvironmentResponse>)]
+    results: Vec<StdcmSearchEnvironmentResponse>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -240,7 +316,7 @@ pub(in crate::views) async fn list(
         .order_by(|| StdcmSearchEnvironment::ID.asc());
     let (listed_envs, stats) = StdcmSearchEnvironment::list_paginated(&mut conn, settings).await?;
     Ok(Json(SdcmSearchEnvListResponse {
-        results: listed_envs,
+        results: listed_envs.into_iter().map_into().collect(),
         stats,
     }))
 }
@@ -285,6 +361,13 @@ pub mod tests {
             search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
             enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
             enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            operational_points: Some(Vec::from([1, 2, 3])),
+            speed_limits: Some(SpeedLimits {
+                speed_limit_tags: vec![("MA80".to_string(), 80), ("MA90".to_string(), 90)]
+                    .into_iter()
+                    .collect::<HashMap<String, i64>>(),
+                default_speed_limit_tag: Some("MA80".to_string()),
+            }),
             active_perimeter: None,
         };
 
@@ -303,6 +386,47 @@ pub mod tests {
                 .expect("Failed to retrieve stdcm search environment")
                 .expect("Stdcm search environment not found");
         assert_eq!(stdcm_search_env, stdcm_search_env_in_db);
+    }
+
+    #[rstest]
+    async fn create_stdcm_search_env_with_bad_default_speed_limit_tag() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let (
+            infra,
+            timetable,
+            work_schedule_group,
+            temporary_speed_limit_group,
+            electrical_profile_set,
+        ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
+
+        let form = StdcmSearchEnvironmentCreateForm {
+            infra_id: infra.id,
+            electrical_profile_set_id: Some(electrical_profile_set.id),
+            work_schedule_group_id: Some(work_schedule_group.id),
+            temporary_speed_limit_group_id: Some(temporary_speed_limit_group.id),
+            timetable_id: timetable.id,
+            search_window_begin: Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap(),
+            search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
+            enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
+            enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            operational_points: Some(Vec::from([1, 2, 3])),
+            speed_limits: Some(SpeedLimits {
+                speed_limit_tags: vec![("MA80".to_string(), 80), ("MA90".to_string(), 90)]
+                    .into_iter()
+                    .collect::<HashMap<String, i64>>(),
+                default_speed_limit_tag: Some("MA100".to_string()),
+            }),
+            active_perimeter: None,
+        };
+
+        let request = app.post("/stdcm/search_environment").json(&form);
+
+        // WHEN
+        app.fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
     #[rstest]
@@ -356,7 +480,7 @@ pub mod tests {
         let stdcm_search_env = app
             .fetch(request)
             .assert_status(StatusCode::OK)
-            .json_into::<StdcmSearchEnvironment>();
+            .json_into::<StdcmSearchEnvironmentResponse>();
 
         // THEN
         assert_eq!(stdcm_search_env.enabled_from, enabled_from);

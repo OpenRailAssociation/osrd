@@ -16,6 +16,7 @@ import type { Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getActivePerimeter,
+  getOperationalPoints,
   getStdcmConf,
   getStdcmDestination,
   getStdcmInfraID,
@@ -110,6 +111,7 @@ const StdcmConfig = ({
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
   const activePerimeter = useSelector(getActivePerimeter);
+  const operationalPoints = useSelector(getOperationalPoints);
 
   const mapSettings = useMapSettings();
 
@@ -370,8 +372,8 @@ const StdcmConfig = ({
             mapId="stdcm-map-config"
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
-            highlightedArea={activePerimeter?.geometry}
-            highlightedOperationalPoints={activePerimeter?.operationalPoints}
+            highlightedArea={activePerimeter}
+            highlightedOperationalPoints={operationalPoints}
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
             updateViewport={updateViewport}
           >

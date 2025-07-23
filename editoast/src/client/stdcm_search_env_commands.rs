@@ -9,9 +9,11 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use diesel_json::Json;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -54,6 +56,43 @@ where
     Ok(())
 }
 
+fn parse_active_perimeter(
+    file_path: Option<PathBuf>,
+) -> anyhow::Result<Option<Json<geos::geojson::Geometry>>> {
+    match file_path {
+        None => Ok(None),
+        Some(perimeter_path) => {
+            let perimeter_file = File::open(perimeter_path)
+                .map_err(|_| anyhow::anyhow!("Perimeter file must exist"))?;
+
+            let geometry: Option<Json<geos::geojson::Geometry>> =
+                serde_json::from_reader(BufReader::new(perimeter_file))
+                    .map_err(|_| anyhow::anyhow!("Perimeter file can't be read"))?;
+
+            Ok(geometry)
+        }
+    }
+}
+
+fn parse_speed_limit_tags(
+    speed_limit_tags: Option<Vec<String>>,
+) -> anyhow::Result<HashMap<String, i64>> {
+    speed_limit_tags
+        .unwrap_or_default()
+        .iter()
+        .map(|tag| match tag.split_once('|') {
+            Some((key, value)) => {
+                let speed_tag_name = key.to_string();
+                let speed_tag_value = value.parse::<i64>().map_err(|_| {
+                    anyhow::anyhow!("Failed to parse speed value as i64 in tag: {}", tag)
+                })?;
+                Ok((speed_tag_name, speed_tag_value))
+            }
+            None => anyhow::bail!("Can't parse speed limit tag, format is MA100|100: {}", tag),
+        })
+        .collect::<Result<HashMap<String, i64>, anyhow::Error>>()
+}
+
 #[derive(Args, Debug)]
 #[command(
     about,
@@ -69,6 +108,14 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
     pub search_window_end: Option<DateTime<Utc>>,
+    /// List of operational points
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operation_points: Option<Vec<i64>>,
+    /// List of speed limit tags defined by tag|speed. ex: `MA100|100`
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub speed_limit_tags: Option<Vec<String>>,
+    #[arg(long)]
+    pub default_speed_limit_tag: Option<String>,
     /// Path to the file that contains the geometry of the active perimeter
     pub active_perimeter_geojson_path: Option<PathBuf>,
 }
@@ -95,14 +142,6 @@ async fn set_stdcm_search_env_from_scenario(
     )
     .await?;
 
-    let active_perimeter = args.active_perimeter_geojson_path.map(|perimeter_path| {
-        let perimeter_file = File::open(perimeter_path).expect("Perimeter file must exist");
-        let geometry: geos::geojson::Geometry =
-            serde_json::from_reader(BufReader::new(perimeter_file))
-                .expect("Perimeter file can't be read");
-        diesel_json::Json(geometry)
-    });
-
     StdcmSearchEnvironment::changeset()
         .infra_id(scenario.infra_id)
         .electrical_profile_set_id(scenario.electrical_profile_set_id)
@@ -112,7 +151,10 @@ async fn set_stdcm_search_env_from_scenario(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
-        .active_perimeter(active_perimeter)
+        .active_perimeter(parse_active_perimeter(args.active_perimeter_geojson_path)?)
+        .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
+        .default_speed_limit_tag(args.default_speed_limit_tag)
+        .operational_points(args.operation_points.into())
         .create(conn)
         .await?;
 
@@ -134,6 +176,14 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     pub work_schedule_group_id: Option<i64>,
     #[arg(long)]
     pub timetable_id: i64,
+    /// List of operational points
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operation_points: Option<Vec<i64>>,
+    /// List of speed limit tags
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub speed_limit_tags: Option<Vec<String>>,
+    #[arg(long)]
+    pub default_speed_limit_tag: Option<String>,
     #[arg(long)]
     /// If omitted, set to the earliest train start time in the timetable
     #[arg(long)]
@@ -175,14 +225,6 @@ async fn set_stdcm_search_env_from_scratch(
     )
     .await?;
 
-    let active_perimeter = args.active_perimeter_geojson_path.map(|perimeter_path| {
-        let perimeter_file = File::open(perimeter_path).expect("Perimeter file must exist");
-        let geometry: geos::geojson::Geometry =
-            serde_json::from_reader(BufReader::new(perimeter_file))
-                .expect("Perimeter file can't be read");
-        diesel_json::Json(geometry)
-    });
-
     StdcmSearchEnvironment::changeset()
         .infra_id(args.infra_id)
         .electrical_profile_set_id(args.electrical_profile_set_id)
@@ -192,7 +234,10 @@ async fn set_stdcm_search_env_from_scratch(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
-        .active_perimeter(active_perimeter)
+        .operational_points(args.operation_points.into())
+        .active_perimeter(parse_active_perimeter(args.active_perimeter_geojson_path)?)
+        .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
+        .default_speed_limit_tag(args.default_speed_limit_tag)
         .create(conn)
         .await?;
 
@@ -416,11 +461,18 @@ mod tests {
             Json(serde_json::from_value(perimeter_json).expect("Failed to parse geometry"));
         let perimeter_file = generate_temp_file(&perimeter);
 
+        let operation_points = Vec::from([1, 2, 3, 4]);
+        let speed_limit_tags = Vec::from(["MA80|80".to_string(), "MA90|90".to_string()]);
+        let default_speed_limit_tag = "MA90".to_string();
+
         let args = SetSTDCMSearchEnvFromScenarioArgs {
             scenario_id: scenario_fixture_set.scenario.id,
             work_schedule_group_id: Some(work_schedule_group.id),
             search_window_begin: None,
             search_window_end: None,
+            operation_points: Some(operation_points.clone()),
+            speed_limit_tags: Some(speed_limit_tags),
+            default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             active_perimeter_geojson_path: Some(perimeter_file.path().into()),
         };
 
@@ -442,6 +494,17 @@ mod tests {
         );
 
         assert_eq!(search_env.active_perimeter, Some(perimeter));
+        assert_eq!(search_env.operational_points.to_vec(), operation_points);
+        assert_eq!(
+            search_env.speed_limit_tags,
+            vec![("MA80".to_string(), 80), ("MA90".to_string(), 90),]
+                .into_iter()
+                .collect::<HashMap<String, i64>>()
+        );
+        assert_eq!(
+            search_env.default_speed_limit_tag,
+            Some(default_speed_limit_tag)
+        );
     }
 
     #[rstest]
@@ -460,6 +523,9 @@ mod tests {
         ];
 
         create_train_schedules_from_start_times(start_times, timetable.id, conn).await;
+        let operation_points = Vec::from([1, 2, 3, 4]);
+        let speed_limit_tags = Vec::from(["MA80|80".to_string(), "MA90|90".to_string()]);
+        let default_speed_limit_tag = "MA90".to_string();
 
         let args = SetSTDCMSearchEnvFromScratchArgs {
             infra_id: infra.id,
@@ -468,6 +534,9 @@ mod tests {
             timetable_id: timetable.id,
             search_window_begin: None,
             search_window_end: None,
+            operation_points: Some(operation_points.clone()),
+            speed_limit_tags: Some(speed_limit_tags),
+            default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             active_perimeter_geojson_path: None,
         };
 
@@ -486,6 +555,18 @@ mod tests {
         assert_eq!(
             search_env.search_window_end,
             make_datetime("2000-02-03 08:00:00Z")
+        );
+
+        assert_eq!(search_env.operational_points.to_vec(), operation_points);
+        assert_eq!(
+            search_env.speed_limit_tags,
+            vec![("MA80".to_string(), 80), ("MA90".to_string(), 90),]
+                .into_iter()
+                .collect::<HashMap<String, i64>>()
+        );
+        assert_eq!(
+            search_env.default_speed_limit_tag,
+            Some(default_speed_limit_tag)
         );
     }
 }

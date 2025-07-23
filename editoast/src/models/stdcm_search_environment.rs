@@ -6,14 +6,49 @@ use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use editoast_models::prelude::*;
 
-#[cfg(test)]
-use serde::Deserialize;
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
+pub struct OperationalPoints(Vec<i64>);
+
+impl OperationalPoints {
+    pub fn new(value: Vec<i64>) -> Self {
+        Self(value)
+    }
+    pub fn to_vec(&self) -> Vec<i64> {
+        self.0.clone()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
+
+impl From<OperationalPoints> for Vec<Option<i64>> {
+    fn from(value: OperationalPoints) -> Self {
+        value.0.into_iter().map(Some).collect()
+    }
+}
+impl From<Vec<Option<i64>>> for OperationalPoints {
+    fn from(value: Vec<Option<i64>>) -> Self {
+        Self(value.into_iter().flatten().collect())
+    }
+}
+impl From<Option<Vec<i64>>> for OperationalPoints {
+    fn from(value: Option<Vec<i64>>) -> Self {
+        Self(value.unwrap_or_default())
+    }
+}
+impl From<Option<Vec<Option<i64>>>> for OperationalPoints {
+    fn from(value: Option<Vec<Option<i64>>>) -> Self {
+        Self(value.unwrap_or_default().into_iter().flatten().collect())
+    }
+}
 
 #[derive(Debug, Clone, Model, ToSchema, Serialize)]
 #[model(table = database::tables::stdcm_search_environment)]
@@ -42,9 +77,16 @@ pub struct StdcmSearchEnvironment {
     /// The time window end point where the environment is enabled.
     /// This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     pub enabled_until: DateTime<Utc>,
+    /// TODO: here we should not use diesel_json::Json, but the #[model(json)] instead
     #[schema(value_type = GeoJson)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    #[model(remote = "Vec<Option<i64>>")]
+    pub operational_points: OperationalPoints,
+    /// Map of speed limit tag with their value
+    #[model(json)]
+    pub speed_limit_tags: HashMap<String, i64>,
+    pub default_speed_limit_tag: Option<String>,
 }
 
 impl StdcmSearchEnvironment {

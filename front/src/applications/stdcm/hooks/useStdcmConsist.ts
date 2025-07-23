@@ -20,6 +20,7 @@ import {
   getTotalLength,
   getMaxSpeed,
   getLoadingGauge,
+  getSpeedLimitTags,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { kgToT } from 'utils/physics';
@@ -29,6 +30,7 @@ import calculateConsistMaxSpeed from '../utils/calculateConsistMaxSpeed';
 const useStdcmConsist = () => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
+  const speedLimitTags = useSelector(getSpeedLimitTags);
 
   const [totalMassChanged, setTotalMassChanged] = useState(false);
   const [totalLengthChanged, setTotalLengthChanged] = useState(false);
@@ -95,7 +97,15 @@ const useStdcmConsist = () => {
     }
     setTotalLengthChanged(false);
 
-    dispatch(updateMaxSpeed(calculateConsistMaxSpeed(rollingStock, towed, maxSpeedTag)));
+    dispatch(
+      updateMaxSpeed(
+        calculateConsistMaxSpeed(
+          rollingStock,
+          towed,
+          maxSpeedTag ? (speedLimitTags || {})[maxSpeedTag] : undefined
+        )
+      )
+    );
     if (maxSpeedChanged && maxSpeed !== undefined) {
       newStatus.maxSpeed = {
         status: 'info',
@@ -120,6 +130,7 @@ const useStdcmConsist = () => {
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
+    speedLimitTags,
   };
 };
 

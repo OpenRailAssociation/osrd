@@ -97,6 +97,7 @@ const StdcmConsist = ({
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
+    speedLimitTags,
   } = useStdcmConsist();
 
   const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
@@ -148,7 +149,15 @@ const StdcmConsist = ({
   };
 
   const onSpeedLimitByTagChange = (newTag: string | null) => {
-    dispatch(updateMaxSpeed(calculateConsistMaxSpeed(rollingStock, towedRollingStock, newTag)));
+    dispatch(
+      updateMaxSpeed(
+        calculateConsistMaxSpeed(
+          rollingStock,
+          towedRollingStock,
+          newTag ? (speedLimitTags || {})[newTag] : undefined
+        )
+      )
+    );
     dispatchUpdateSpeedLimitByTag(newTag);
     setMaxSpeedChanged(false);
   };

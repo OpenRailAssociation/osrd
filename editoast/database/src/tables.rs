@@ -704,6 +704,10 @@ diesel::table! {
         enabled_from -> Timestamptz,
         enabled_until -> Timestamptz,
         active_perimeter -> Nullable<Jsonb>,
+        operational_points -> Array<Nullable<Int8>>,
+        speed_limit_tags -> Jsonb,
+        #[max_length = 25]
+        default_speed_limit_tag -> Nullable<Varchar>,
     }
 }
 

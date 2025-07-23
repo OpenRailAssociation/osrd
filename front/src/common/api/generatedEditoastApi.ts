@@ -2347,7 +2347,8 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type GetStdcmSearchEnvironmentApiResponse = /** status 200  */ StdcmSearchEnvironment;
+export type GetStdcmSearchEnvironmentApiResponse =
+  /** status 200  */ StdcmSearchEnvironmentResponse;
 export type GetStdcmSearchEnvironmentApiArg = void;
 export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
 export type PostStdcmSearchEnvironmentApiArg = {
@@ -2355,7 +2356,7 @@ export type PostStdcmSearchEnvironmentApiArg = {
 };
 export type GetStdcmSearchEnvironmentListApiResponse =
   /** status 200 The paginated list of all existing stdcm search environments */ PaginationStats & {
-    results: StdcmSearchEnvironment[];
+    results: StdcmSearchEnvironmentResponse[];
   };
 export type GetStdcmSearchEnvironmentListApiArg = {
   page?: number;
@@ -4654,8 +4655,32 @@ export type SimilarTrainWaypoint = {
   id: string;
   stop: boolean;
 };
+export type SpeedLimits = {
+  default_speed_limit_tag?: string | null;
+  speed_limit_tags: {
+    [key: string]: number;
+  };
+};
+export type StdcmSearchEnvironmentResponse = {
+  active_perimeter?: null | GeoJson;
+  electrical_profile_set_id?: number | null;
+  enabled_from: string;
+  enabled_until: string;
+  id: number;
+  infra_id: number;
+  operational_points?: number[];
+  search_window_begin: string;
+  search_window_end: string;
+  speed_limits?: null | SpeedLimits;
+  temporary_speed_limit_group_id?: number | null;
+  timetable_id: number;
+  work_schedule_group_id?: number | null;
+};
+export type OperationalPoints = number[];
 export type StdcmSearchEnvironment = {
+  /** TODO: here we should not use diesel_json::Json, but the #[model(json)] instead */
   active_perimeter?: GeoJson;
+  default_speed_limit_tag?: string | null;
   electrical_profile_set_id?: number;
   /** The time window start point where the environment is enabled. */
   enabled_from: string;
@@ -4664,11 +4689,16 @@ export type StdcmSearchEnvironment = {
   enabled_until: string;
   id: number;
   infra_id: number;
+  operational_points: OperationalPoints;
   /** The start of the search time window.
     Usually, trains schedules from the `timetable_id` runs within this window. */
   search_window_begin: string;
   /** The end of the search time window. */
   search_window_end: string;
+  /** Map of speed limit tag with their value */
+  speed_limit_tags: {
+    [key: string]: number;
+  };
   temporary_speed_limit_group_id?: number;
   timetable_id: number;
   work_schedule_group_id?: number;
@@ -4679,8 +4709,10 @@ export type StdcmSearchEnvironmentCreateForm = {
   enabled_from: string;
   enabled_until: string;
   infra_id: number;
+  operational_points?: number[];
   search_window_begin: string;
   search_window_end: string;
+  speed_limits?: null | SpeedLimits;
   temporary_speed_limit_group_id?: number | null;
   timetable_id: number;
   work_schedule_group_id?: number | null;

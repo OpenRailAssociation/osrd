@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useDispatch } from 'react-redux';
 
-import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   resetStdcmSimulations,
@@ -31,20 +30,18 @@ export default function useStdcmEnvironment() {
         updateStdcmEnvironment({
           infraID: data.infra_id,
           timetableID: data.timetable_id,
-          electricalProfileSetId: data.electrical_profile_set_id,
-          workScheduleGroupId: data.work_schedule_group_id,
-          temporarySpeedLimitGroupId: data.temporary_speed_limit_group_id,
+          electricalProfileSetId: data.electrical_profile_set_id ?? undefined,
+          workScheduleGroupId: data.work_schedule_group_id ?? undefined,
+          temporarySpeedLimitGroupId: data.temporary_speed_limit_group_id ?? undefined,
           searchDatetimeWindow: {
             begin: new Date(data.search_window_begin),
             end: new Date(data.search_window_end),
           },
-          activePerimeter: data.active_perimeter
-            ? {
-                geometry: data.active_perimeter,
-                // TODO: this should be removed in a near futur when the operational points for the permimeter will be stored
-                // in the database and served by the API
-                operationalPoints: STDCM_PERIMETER_OPERATIONAL_POINTS,
-              }
+          activePerimeter: data.active_perimeter ?? undefined,
+          operationalPoints: data.operational_points ?? undefined,
+          speedLimitTags: data.speed_limits ? data.speed_limits.speed_limit_tags : undefined,
+          defaultSpeedLimitTag: data.speed_limits
+            ? (data.speed_limits.default_speed_limit_tag ?? undefined)
             : undefined,
         })
       );

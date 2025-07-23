@@ -6,7 +6,7 @@ import type {
   Project,
   ProjectCreateForm,
   RailJson,
-  StdcmSearchEnvironment,
+  StdcmSearchEnvironmentCreateForm,
   Study,
   StudyCreateForm,
 } from 'common/api/osrdEditoastApi';
@@ -210,7 +210,21 @@ export async function createDataForTests(): Promise<void> {
       timetable_id: scenarioWithTimetableItems.timetable_id,
       enabled_from: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // one hour ago
       enabled_until: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // in four hours
-    } as StdcmSearchEnvironment;
+      speed_limits: {
+        speed_limit_tags: {
+          MA80: 80,
+          MA90: 90,
+          MA100: 100,
+          ME100: 100,
+          ME120: 120,
+          ME140: 140,
+          HLP: 100,
+          MV160: 160,
+          MVGV: 200,
+        },
+        default_speed_limit_tag: 'MA100',
+      },
+    } as StdcmSearchEnvironmentCreateForm;
 
     await createStdcmEnvironment(stdcmEnvironment);
     expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
