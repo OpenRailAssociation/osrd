@@ -98,7 +98,7 @@ spec:
               value: "{{ $redis }}"
               {{- end }}
 
-            - name: EDITOAST_OPENFGA_URL
+            - name: FGA_API_URL
               value: "http://{{ include "osrd.fullname" . }}-openfga:{{ .Values.services.openfga.service.port }}"
 
             {{- with .Values.services.editoast.env | default dict }}

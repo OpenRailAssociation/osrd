@@ -479,7 +479,7 @@ pub mod test_utilities {
     ///
     /// Configurable through the `FGA_API_URL`, `OPENFGA_MAX_CHECKS_PER_BATCH_CHECK` and
     /// `OPENFGA_MAX_TUPLES_PER_WRITE` environment variables.
-    /// Defaults to `http://localhost:8091` and OpenFGA default settings.
+    /// Defaults to `http://localhost:8091` and the OpenFGA server default limits.
     pub fn connection_settings() -> client::ConnectionSettings {
         use client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
         use client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
@@ -515,17 +515,40 @@ pub mod test_utilities {
     /// that store.
     macro_rules! test_client {
         () => {
+            $crate::test_client!("")
+        };
+        ($store_prefix:literal) => {
             $crate::client::Client::try_new_store(
-                &stdext::function_name!()
-                    .split("::")
-                    .filter(|x| *x != "{{closure}}")
-                    .collect::<Vec<_>>()
-                    .join("-"),
+                &$crate::test_utilities::sanitize_store_name_length(&format!(
+                    "{}{}",
+                    $store_prefix.to_string(),
+                    stdext::function_name!()
+                        .split("::")
+                        .filter(|x| *x != "{{closure}}")
+                        .collect::<Vec<_>>()
+                        .join("-")
+                )),
                 $crate::test_utilities::connection_settings(),
             )
             .await
             .expect("Failed to initialize client")
         };
+    }
+
+    pub fn sanitize_store_name_length(store_name: &str) -> String {
+        const OPENFGA_STORE_NAME_MIN_LEN: usize = 3;
+        const OPENFGA_STORE_NAME_MAX_LEN: usize = 64;
+        match store_name.to_string() {
+            name if name.len() < OPENFGA_STORE_NAME_MIN_LEN => {
+                let suffix = "_".repeat(OPENFGA_STORE_NAME_MIN_LEN - name.len());
+                name + suffix.as_str()
+            }
+            name if name.len() > OPENFGA_STORE_NAME_MAX_LEN => name
+                .chars()
+                .take(OPENFGA_STORE_NAME_MAX_LEN)
+                .collect::<String>(),
+            name => name,
+        }
     }
 }
 

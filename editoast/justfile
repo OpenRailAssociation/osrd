@@ -9,6 +9,7 @@ run:
     ./assets/sprites/generate-atlas.sh
     ./assets/fonts/generate-glyphs.sh
     diesel migration run --locked-schema
+    cargo run --package fga_migrations -- apply
     @echo 'Authorizing "mock/mocked" user. Make sure the gateway user matches.'
     cargo run -- user add "mock/mocked" "Example User"
     cargo run -- roles add "mock/mocked" Admin

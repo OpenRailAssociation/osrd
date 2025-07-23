@@ -1,0 +1,9 @@
+model
+  schema 1.1
+
+type person
+
+type document
+  relations
+    define can_read: reader
+    define reader: [person, person:*]

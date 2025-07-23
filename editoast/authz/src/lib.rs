@@ -15,41 +15,6 @@ pub use model::Role;
 pub use model::Subject;
 pub use model::User;
 
-use futures::TryStreamExt;
-
-pub const AUTHORIZATION_MODEL: &str = include_str!("../authorization_model.fga");
-
-// big hack
-const MODEL_VERSION: i64 = 1;
-
-pub async fn ensure_latest_authorization_model(
-    client: &mut fga::Client,
-) -> Result<(), fga::client::RequestFailure> {
-    let uploaded_models = client
-        .authorization_models()
-        .try_fold(0i64, |i, _| async move { Ok(i + 1) })
-        .await?;
-    match MODEL_VERSION - uploaded_models {
-        0 => tracing::debug!("OpenFGA authorization model is up to date"),
-        delta if delta > 0 => {
-            let model = fga::compile_model(AUTHORIZATION_MODEL);
-            tracing::info!("uploading OpenFGA authorization model");
-            client.update_authorization_model(&model).await?;
-        }
-        delta => {
-            // This can happen if multiple pods are spawned simultaneously resulting
-            // in a race condition where multiple models are uploaded at the same time.
-            tracing::error!(
-                delta,
-                "OpenFGA authorization model version is ahead of the release version.\n\
-                Using the latest uploaded model. Expect wrong behavior.\n\
-                This will be fixed eventually when a migration system is set up."
-            );
-        }
-    }
-    Ok(())
-}
-
 /// An authorization error that can originate from either the OpenFGA client or the storage driver
 #[derive(Debug, thiserror::Error)]
 pub enum Error<StorageError: std::error::Error> {
@@ -142,11 +107,16 @@ impl<T: Default> Authorization<T> {
 #[cfg(test)]
 macro_rules! authz_client {
     () => {{
-        let mut client = fga::test_client!();
-        crate::ensure_latest_authorization_model(&mut client)
-            .await
-            .expect("Failed to initialize/update the authorization model");
-        client
+        let client_authz = fga::test_client!("authz@");
+        let client_migrations = fga::test_client!("migrations@");
+        fga_migrations::run_migrations(
+            client_authz.clone(),
+            client_migrations,
+            fga_migrations::TargetMigration::Latest,
+        )
+        .await
+        .expect("Failed to initialize/update the authorization model");
+        client_authz
     }};
 }
 

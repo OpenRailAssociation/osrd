@@ -84,7 +84,7 @@ pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
     osrdyne_client: Option<OsrdyneClient>,
-    authorization_model: Option<&'static str>,
+    enable_authorization: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
 }
@@ -96,7 +96,7 @@ impl TestAppBuilder {
             db_pool: None,
             core_client: None,
             osrdyne_client: None,
-            authorization_model: None,
+            enable_authorization: false,
             enable_telemetry: true,
             root_url: None,
         }
@@ -126,7 +126,7 @@ impl TestAppBuilder {
     }
 
     pub fn enable_authorization(mut self, enable_authorization: bool) -> Self {
-        self.authorization_model = enable_authorization.then_some(authz::AUTHORIZATION_MODEL);
+        self.enable_authorization = enable_authorization;
         self
     }
 
@@ -146,7 +146,7 @@ impl TestAppBuilder {
             port: 0,
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),
-            enable_authorization: self.authorization_model.is_some(),
+            enable_authorization: self.enable_authorization,
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {
                 database_url: Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap(),
@@ -221,37 +221,37 @@ impl TestAppBuilder {
             .unwrap_or_else(OsrdyneClient::default_mock);
         let osrdyne_client = Arc::new(osrdyne_client);
 
-        let store_name = {
-            const OPENFGA_STORE_NAME_MIN_LEN: usize = 3;
-            const OPENFGA_STORE_NAME_MAX_LEN: usize = 64;
-            match self.test_name.clone() {
-                name if name.len() < OPENFGA_STORE_NAME_MIN_LEN => {
-                    let suffix = "_".repeat(OPENFGA_STORE_NAME_MIN_LEN - name.len());
-                    name + suffix.as_str()
-                }
-                name if name.len() > OPENFGA_STORE_NAME_MAX_LEN => name
-                    .chars()
-                    .take(OPENFGA_STORE_NAME_MAX_LEN)
-                    .collect::<String>(),
-                name => name,
-            }
-        };
-        let mut openfga = block_on(fga::Client::try_new_store(
+        let store_name =
+            fga::test_utilities::sanitize_store_name_length(&format!("authz@{}", &self.test_name));
+        let fga_connection_settings = fga::client::ConnectionSettings::new(
+            Url::parse("http://localhost:8091").unwrap(),
+            Limits::default(),
+        )
+        .reset_store();
+        let openfga_authz = block_on(fga::Client::try_new_store(
             &store_name,
-            fga::client::ConnectionSettings::new(
-                Url::parse("http://localhost:8091").unwrap(),
-                Limits::default(),
-            )
-            .reset_store(),
+            fga_connection_settings.clone(),
         ))
-        .expect("OpenFGA should be setup properly for testing");
-        if let Some(model) = self.authorization_model {
-            let model = fga::compile_model(model);
-            block_on(openfga.update_authorization_model(&model))
-                .expect("OpenFGA authorization model should be updated");
+        .expect("Failed creating OpenFGA authorization store");
+        if self.enable_authorization {
+            let migrations_store_name = fga::test_utilities::sanitize_store_name_length(&format!(
+                "migrations@{}",
+                self.test_name
+            ));
+            let openfga_migrations = block_on(fga::Client::try_new_store(
+                &migrations_store_name,
+                fga_connection_settings,
+            ))
+            .expect("Failed creating OpenFGA migrations store");
+            block_on(fga_migrations::run_migrations(
+                openfga_authz.clone(),
+                openfga_migrations,
+                fga_migrations::TargetMigration::Latest,
+            ))
+            .expect("OpenFGA authorization model should be updated");
         }
         let driver = PgAuthDriver::new(db_pool_v2.clone());
-        let regulator = Regulator::new(openfga.clone(), driver);
+        let regulator = Regulator::new(openfga_authz.clone(), driver);
 
         let app_state = AppState {
             db_pool: db_pool_v2.clone(),
@@ -284,7 +284,6 @@ impl TestAppBuilder {
             test_name: self.test_name,
             server,
             app_state,
-            authorization_model: self.authorization_model,
             tracing_guard,
         }
     }
@@ -317,7 +316,6 @@ pub(crate) struct TestApp {
     test_name: String,
     server: TestServer,
     app_state: AppState,
-    authorization_model: Option<&'static str>,
     #[expect(unused)] // included here to extend its lifetime, not meant to be used in any way
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
@@ -497,9 +495,7 @@ impl<'a> UserBuilder<'a> {
             infras_grant,
         } = self;
 
-        let authz_disabled =
-            app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
-        if !roles.is_empty() && authz_disabled {
+        if !roles.is_empty() && !app.app_state.config.enable_authorization {
             panic!(
                 "Authorization must be enabled and a model must be provided to grant a user some roles"
             );
@@ -511,7 +507,7 @@ impl<'a> UserBuilder<'a> {
             .ensure_user(&info.clone())
             .await
             .expect("User should be created successfully");
-        if !authz_disabled {
+        if app.app_state.config.enable_authorization {
             regulator
                 .grant_user_roles(&authz::User(user.id), roles)
                 .await
@@ -570,8 +566,7 @@ impl<'a> GroupBuilder<'a> {
             members,
             infras_grant,
         } = self;
-        let authz_disabled =
-            app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
+        let authz_disabled = !app.app_state.config.enable_authorization;
         if !roles.is_empty() && authz_disabled {
             panic!(
                 "Authorization must be enabled and a model must be provided to grant a group some roles"

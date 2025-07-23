@@ -31,20 +31,24 @@ impl Client {
     pub(super) async fn get_stores_read(
         &self,
         store_id: &str,
-        tuple_key: RawTuple,
+        tuple_key: Option<RawTuple>,
         page_size: Option<usize>,
         authorization_model_id: Option<&str>,
         consistency: Option<Consistency>,
+        continuation_token: Option<String>,
     ) -> Result<(Vec<RawTuple>, String), RequestFailure> {
         #[derive(serde::Serialize)]
         struct Request<'a> {
-            tuple_key: RawTuple,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            tuple_key: Option<RawTuple>,
             #[serde(skip_serializing_if = "Option::is_none")]
             page_size: Option<usize>,
             #[serde(skip_serializing_if = "Option::is_none")]
             authorization_model_id: Option<&'a str>,
             #[serde(skip_serializing_if = "Option::is_none")]
             consistency: Option<Consistency>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            continuation_token: Option<String>,
         }
 
         #[derive(serde::Deserialize)]
@@ -76,6 +80,7 @@ impl Client {
                 page_size,
                 authorization_model_id,
                 consistency,
+                continuation_token,
             })
             .send()
             .await?

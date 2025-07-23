@@ -140,11 +140,12 @@ services:
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
       OSRD_MQ_URL: "amqp://osrd:password@rabbitmq:5672/%2f"
-      EDITOAST_OPENFGA_URL: "http://openfga:8091"
+      FGA_API_URL: "http://openfga:8091"
       EDITOAST_ENABLE_AUTHORIZATION: ${EDITOAST_ENABLE_AUTHORIZATION:-true}
       EDITOAST_NO_CACHE: ${EDITOAST_NO_CACHE:-false}
     command: >
       /bin/sh -c "
+        fga_migrations apply &&
         diesel migration run --locked-schema &&
         editoast user add 'mock/mocked' 'Example User' &&
         editoast roles add 'mock/mocked' Admin &&

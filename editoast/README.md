@@ -24,9 +24,11 @@ Additionally, editoast requires the following services to be running:
 ## Steps
 
 ```sh
-# apply database migration
+# apply osrd database migrations
 $ cargo install diesel_cli --no-default-features --features postgres
 $ diesel migration run --locked-schema  # avoids bumping modification date (then rebuild)
+# apply openfga migrations
+$ (cd fga_migrations && cargo run -- apply)
 # build the assets
 $ cargo install spreet
 $ ./assets/sprites/generate-atlas.sh
