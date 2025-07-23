@@ -73,6 +73,7 @@ const buildStdcmConfSelectors = () => {
     getStdcmSelectedLayers: makeOsrdConfSelector('layersSettings'),
     getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
     getActivePerimeter: makeOsrdConfSelector('activePerimeter'),
+    getOperationalPoints: makeOsrdConfSelector('operationalPoints'),
 
     // For some selectors, if data were missing, errors would have been thrown earlier, at startup.
     // The useStdcmEnv hook ensures that.
@@ -115,6 +116,7 @@ export const {
   getSearchDatetimeWindow,
   getActivePerimeter,
   getStdcmSelectedLayers,
+  getOperationalPoints,
 } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;

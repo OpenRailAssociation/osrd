@@ -180,7 +180,8 @@ export const stdcmConfSlice = createSlice({
           | 'projectID'
           | 'studyID'
           | 'scenarioID'
-          | 'activePerimeter',
+          | 'activePerimeter'
+          | 'operationalPoints',
           'infraID' | 'timetableID'
         >
       >
@@ -197,6 +198,7 @@ export const stdcmConfSlice = createSlice({
       state.studyID = action.payload.studyID;
       state.scenarioID = action.payload.scenarioID;
       state.activePerimeter = action.payload.activePerimeter;
+      state.operationalPoints = action.payload.operationalPoints;
 
       // check that the arrival dates are in the search time window
       const origin = state.stdcmPathSteps.at(0) as Extract<StdcmPathStep, { isVia: false }>;

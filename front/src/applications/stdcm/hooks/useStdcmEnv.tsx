@@ -38,6 +38,7 @@ export default function useStdcmEnvironment() {
             end: new Date(data.search_window_end),
           },
           activePerimeter: data.active_perimeter,
+          operationalPoints: data.operational_points ?? undefined,
         })
       );
     } catch (e) {
