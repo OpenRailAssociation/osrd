@@ -90,6 +90,8 @@ pub(in crate::views) async fn pathfinding_view(
     State(AppState {
         db_pool,
         infra_caches,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -129,8 +131,14 @@ pub(in crate::views) async fn pathfinding_view(
     })
     .await?;
 
-    let infra_cache =
-        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(
+        &mut db_pool.get().await?,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
 
     // Check that the starting and ending track locations are valid
     if !infra_cache

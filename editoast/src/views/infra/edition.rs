@@ -102,8 +102,14 @@ pub(in crate::views) async fn edit(
     })
     .await?;
 
-    let mut infra_cache =
-        InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let mut infra_cache = InfraCache::get_or_load_mut(
+        &mut db_pool.get().await?,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
     let operation_results = apply_edit(
         &mut db_pool.get().await?,
         &mut infra,
@@ -177,8 +183,14 @@ pub(in crate::views) async fn split_track_section(
     })
     .await?;
 
-    let mut infra_cache =
-        InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let mut infra_cache = InfraCache::get_or_load_mut(
+        &mut db_pool.get().await?,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?;
 
     // Get tracks cache if it exists
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
@@ -912,11 +924,11 @@ async fn apply_edit(
                 infra_cache.apply_operations(&cache_operations)?;
 
                 infra_cache.infra_version = infra.version;
-                let osrd_version = app_version.unwrap_or("default");
+
                 let mut valkey_conn = valkey_client.get_connection().await?;
                 let _ = valkey_conn
                     .json_zadd(
-                        format!("infra_patches.{osrd_version}.{infra_id})"),
+                        InfraCache::get_patch_key(infra_id, app_version),
                         &cache_operations,
                         infra_cache.infra_version,
                     )
@@ -1113,7 +1125,7 @@ pub mod tests {
             &operations,
             &mut infra_cache,
             app.valkey_client(),
-            None,
+            app.config().app_version.as_deref(),
         )
         .await
         .ok()

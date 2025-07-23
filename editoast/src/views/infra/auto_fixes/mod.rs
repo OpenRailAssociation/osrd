@@ -86,6 +86,8 @@ pub(in crate::views) async fn list_auto_fixes(
     State(AppState {
         infra_caches,
         db_pool,
+        valkey_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -113,9 +115,15 @@ pub(in crate::views) async fn list_auto_fixes(
     .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)
-    let mut infra_cache_clone = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)
-        .await?
-        .clone();
+    let mut infra_cache_clone = InfraCache::get_or_load(
+        &mut conn,
+        &infra_caches,
+        &infra,
+        &valkey_client,
+        config.app_version.as_deref(),
+    )
+    .await?
+    .clone();
 
     let mut fixes = vec![];
     for _ in 0..MAX_AUTO_FIXES_ITERATIONS {

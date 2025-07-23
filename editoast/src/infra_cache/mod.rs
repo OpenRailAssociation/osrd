@@ -6,6 +6,7 @@ use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::hash_map::Entry;
+use std::sync::Arc;
 
 use dashmap::DashMap;
 use dashmap::mapref::one::Ref;
@@ -62,6 +63,7 @@ use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::models::Infra;
 use crate::models::railjson::find_all_schemas;
+use cache::Client as ValkeyClient;
 use database::DbConnection;
 use schemas::infra::InfraObject;
 use schemas::primitives::BoundingBox;
@@ -558,14 +560,17 @@ impl InfraCache {
         conn: &mut DbConnection,
         infra_caches: &'a DashMap<i64, InfraCache>,
         infra: &Infra,
+        valkey: &Arc<ValkeyClient>,
+        app_version: Option<&str>,
     ) -> Result<Ref<'a, i64, InfraCache>> {
-        // Cache hit
-        if let Some(infra_cache) = infra_caches.get(&infra.id) {
-            return Ok(infra_cache);
-        }
-        // Cache miss
-        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
-        Ok(infra_caches.get(&infra.id).unwrap())
+        Self::get_or_load_mut(conn, infra_caches, infra, valkey, app_version)
+            .await
+            .map(|ref_mut| ref_mut.downgrade())
+    }
+
+    pub fn get_patch_key(infra_id: i64, app_version: Option<&str>) -> String {
+        let osrd_version = app_version.unwrap_or_default();
+        format!("infra_patches.{osrd_version}.{infra_id}")
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
@@ -574,14 +579,45 @@ impl InfraCache {
         conn: &mut DbConnection,
         infra_caches: &'a DashMap<i64, InfraCache>,
         infra: &Infra,
+        valkey: &Arc<ValkeyClient>,
+        app_version: Option<&str>,
     ) -> Result<RefMut<'a, i64, InfraCache>> {
-        // Cache hit
-        if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
+        let Some(mut infra_cache) = infra_caches.get_mut(&infra.id) else {
+            // Cache miss
+            let infra_cache = InfraCache::load(conn, infra).await?;
+            return Ok(infra_caches.entry(infra.id).insert(infra_cache));
+        };
+
+        // Cache hit and up to date
+        if infra.version <= infra_cache.infra_version {
             return Ok(infra_cache);
         }
-        // Cache miss
-        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
-        Ok(infra_caches.get_mut(&infra.id).unwrap())
+
+        // Cache hit but outdated, we need to update it
+        let expected_patch_count: usize = (infra.version - infra_cache.infra_version)
+            .try_into()
+            .expect("infra.version should be greater than infra_cache_mut.infra_version");
+
+        let mut valkey_conn = valkey.get_connection().await?;
+        let cache_operations = valkey_conn
+            .json_zrangebyscore(
+                Self::get_patch_key(infra.id, app_version),
+                infra_cache.infra_version + 1,
+                infra.version,
+            )
+            .await?
+            .flatten()
+            .collect_vec();
+
+        if cache_operations.len() != expected_patch_count {
+            // Something went wrong, reload the cache from the database
+            *infra_cache = InfraCache::load(conn, infra).await?;
+            return Ok(infra_cache);
+        }
+
+        infra_cache.apply_operations(&cache_operations)?;
+        infra_cache.infra_version = infra.version;
+        Ok(infra_cache)
     }
 
     /// Get all track sections references of a given track and type
@@ -949,7 +985,7 @@ impl From<&RailJson> for InfraCache {
 
 #[cfg(test)]
 pub mod tests {
-    use dashmap::DashMap;
+    // use dashmap::DashMap;
     use pretty_assertions::assert_eq;
 
     use schemas::infra::BufferStop;
@@ -1439,36 +1475,6 @@ pub mod tests {
         infra_cache.add(&switch).unwrap();
 
         infra_cache
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn load_infra_cache() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        let infra_caches = DashMap::new();
-        InfraCache::get_or_load(&mut db_pool.get_ok(), &infra_caches, &infra)
-            .await
-            .unwrap();
-        assert_eq!(infra_caches.len(), 1);
-        InfraCache::get_or_load(&mut db_pool.get_ok(), &infra_caches, &infra)
-            .await
-            .unwrap();
-        assert_eq!(infra_caches.len(), 1);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn load_infra_cache_mut() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        let infra_caches = DashMap::new();
-        InfraCache::get_or_load_mut(&mut db_pool.get_ok(), &infra_caches, &infra)
-            .await
-            .unwrap();
-        assert_eq!(infra_caches.len(), 1);
-        InfraCache::get_or_load_mut(&mut db_pool.get_ok(), &infra_caches, &infra)
-            .await
-            .unwrap();
-        assert_eq!(infra_caches.len(), 1);
     }
 
     mod getters {

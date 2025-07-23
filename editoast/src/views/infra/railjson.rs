@@ -168,7 +168,12 @@ pub(in crate::views) struct PostRailjsonResponse {
 )]
 pub(in crate::views) async fn post_railjson(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool,
+        infra_caches,
+        valkey_client,
+        regulator,
+        config,
+        ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Query(params): Query<PostRailjsonQueryParams>,
@@ -181,7 +186,6 @@ pub(in crate::views) async fn post_railjson(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra_cache = InfraCache::from(&railjson);
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
@@ -206,6 +210,14 @@ pub(in crate::views) async fn post_railjson(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     if params.generate_data {
+        let infra_cache = InfraCache::get_or_load(
+            &mut db_pool.get().await?,
+            &infra_caches,
+            &infra,
+            &valkey_client,
+            config.app_version.as_deref(),
+        )
+        .await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
     }
 

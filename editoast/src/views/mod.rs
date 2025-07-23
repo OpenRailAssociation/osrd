@@ -35,7 +35,7 @@ use ::authz::StorageDriver;
 use common::Version;
 use fga::client::Limits;
 #[cfg(test)]
-pub(crate) use test_app::test_app;
+use test_app::test_app;
 use tracing::Instrument;
 
 use ::core::str;
