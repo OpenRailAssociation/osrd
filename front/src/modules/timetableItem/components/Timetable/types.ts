@@ -126,7 +126,7 @@ export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 export type PairingItem = {
   id: TimetableItemId;
   name: string;
-  category?: TrainMainCategory | null;
+  category?: TrainCategory | null;
   interval: Duration | null;
   origin: string;
   stops: string[];

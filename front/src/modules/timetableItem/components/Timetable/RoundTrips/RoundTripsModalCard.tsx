@@ -8,6 +8,7 @@ import { BsXCircleFill } from 'react-icons/bs';
 import AnchoredMenu from 'common/AnchoredMenu';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
+import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 
 import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { PairingItem } from '../types';
@@ -99,7 +100,7 @@ const RoundTripsModalCard = ({
         <h3
           className={cx(
             'name',
-            `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category ?? 'None']}`
+            `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category && isMainCategory(category) ? category.main_category : 'None']}`
           )}
         >
           {name}

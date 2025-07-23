@@ -510,7 +510,12 @@ const handleUpdateTimetableItem = async ({
   const { id, ...timetableItemBase } = timetableItem;
 
   const mainCategory = getTrainCategoryFromId(trainrun.categoryId);
-  const timetableItemForUpdate: TrainSchedule = {
+  const category = mainCategory
+    ? {
+        main_category: mainCategory,
+      }
+    : undefined;
+  const timetableItemForUpdate = {
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
@@ -519,11 +524,9 @@ const handleUpdateTimetableItem = async ({
     schedule,
     // Reset margins because they contain references to path items
     margins: undefined,
-    category: mainCategory
-      ? {
-          main_category: mainCategory,
-        }
-      : undefined,
+    paced: undefined,
+    exceptions: undefined,
+    category,
   };
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);

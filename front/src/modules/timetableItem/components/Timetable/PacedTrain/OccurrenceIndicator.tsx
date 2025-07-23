@@ -70,15 +70,17 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
       .map(([changeGroup], i) => {
-        const occurrenceCategory = occurrence.exceptionChangeGroups?.rolling_stock_category?.value
-          ? t(
-              `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value}`,
-              { ns: 'translation', keyPrefix: '' }
-            )
-          : t('rollingStock.categoriesOptions.noCategory', {
-              ns: 'translation',
-              keyPrefix: '',
-            });
+        const occurrenceCategory =
+          occurrence.exceptionChangeGroups?.rolling_stock_category?.value &&
+          isMainCategory(occurrence.exceptionChangeGroups?.rolling_stock_category?.value)
+            ? t(
+                `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value.main_category}`,
+                { ns: 'translation', keyPrefix: '' }
+              )
+            : t('rollingStock.categoriesOptions.noCategory', {
+                ns: 'translation',
+                keyPrefix: '',
+              });
         return (
           <span key={i} className="change-group">
             {changeGroup !== 'rolling_stock_category'
