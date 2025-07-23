@@ -527,6 +527,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['paced_train'],
       }),
+      postPacedTrainProjectPathOp: build.mutation<
+        PostPacedTrainProjectPathOpApiResponse,
+        PostPacedTrainProjectPathOpApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/paced_train/project_path_op`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
       postPacedTrainSimulationSummary: build.query<
         PostPacedTrainSimulationSummaryApiResponse,
         PostPacedTrainSimulationSummaryApiArg
@@ -1846,6 +1857,20 @@ export type PostPacedTrainProjectPathApiResponse = /** status 200 Project Path O
 };
 export type PostPacedTrainProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
+};
+export type PostPacedTrainProjectPathOpApiResponse =
+  /** status 200 Project paced trains on a list of operational points. */ {
+    [key: string]: ProjectPathPacedTrainResult[];
+  };
+export type PostPacedTrainProjectPathOpApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    /** Distances between operational points in mm */
+    operational_points_distances: number[];
+    operational_points_ids: string[];
+    train_ids: number[];
+  };
 };
 export type PostPacedTrainSimulationSummaryApiResponse =
   /** status 200 Associate each paced train id with its simulation summaries */ {

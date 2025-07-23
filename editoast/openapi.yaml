@@ -1774,6 +1774,57 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ProjectPathPacedTrainResult'
+  /paced_train/project_path_op:
+    post:
+      tags:
+      - train_schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - train_ids
+              - operational_points_ids
+              - operational_points_distances
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_points_distances:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    minimum: 0
+                  description: Distances between operational points in mm
+                operational_points_ids:
+                  type: array
+                  items:
+                    type: string
+                train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '200':
+          description: Project paced trains on a list of operational points.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProjectPathPacedTrainResult'
   /paced_train/simulation_summary:
     post:
       tags:
@@ -6112,6 +6163,8 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfDistances'
+      - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfIds'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
@@ -6620,6 +6673,52 @@ components:
           type: string
           enum:
           - editoast:operation:ObjectNotFound
+    EditoastOperationalPointProjectionErrorInvalidNumberOfDistances:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - expected
+          - found
+          properties:
+            expected:
+              type: integer
+            found:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:operationalPointProjection:InvalidNumberOfDistances
+    EditoastOperationalPointProjectionErrorInvalidNumberOfIds:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:operationalPointProjection:InvalidNumberOfIds
     EditoastPacedTrainErrorBatchNotFound:
       type: object
       required:
