@@ -10,8 +10,8 @@ import { RollingStockContextProvider } from 'common/RollingStockContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
+import ScenarioHeader from '../components/ScenarioHeader';
 import type { Board } from '../types';
-import ScenarioHeader from '../v2/components/ScenarioHeader';
 
 const Scenario = () => {
   const { scenario } = useScenario();
