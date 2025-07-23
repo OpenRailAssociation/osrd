@@ -13,7 +13,7 @@ import type {
   Comfort,
   Distribution,
   LoadingGaugeType,
-  OperationalPoint,
+  RelatedOperationalPoint,
   OperationalPointReference,
   PacedTrain,
   PathItemLocation,
@@ -192,4 +192,4 @@ export type TrainBaseWithOccurrenceId = TrainSchedule & {
 export type TimetableItem = TrainScheduleWithTrainId | PacedTrainWithPacedTrainId;
 export type Train = TrainScheduleWithTrainId | TrainBaseWithOccurrenceId;
 
-export type TimetableItemWithPathOps = TimetableItem & { pathOps: OperationalPoint[][] };
+export type TimetableItemWithPathOps = TimetableItem & { pathOps: RelatedOperationalPoint[][] };
