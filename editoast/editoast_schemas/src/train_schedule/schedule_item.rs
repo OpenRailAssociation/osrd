@@ -1,4 +1,5 @@
 use crate::primitives::NonBlankString;
+use chrono::Duration;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -41,6 +42,19 @@ pub struct ScheduleItem {
     /// Whether the schedule item is locked (only for display purposes)
     #[serde(default)]
     pub locked: bool,
+}
+
+#[cfg(feature = "testing")]
+impl ScheduleItem {
+    pub fn new_with_stop(at: &str, duration: Duration) -> Self {
+        Self {
+            at: at.into(),
+            arrival: None,
+            stop_for: Some(PositiveDuration::new(duration)),
+            reception_signal: ReceptionSignal::Open,
+            locked: false,
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for ScheduleItem {

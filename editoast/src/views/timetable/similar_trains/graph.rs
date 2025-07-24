@@ -59,7 +59,7 @@ impl Graph {
             let key = waypoint.codes.clone();
             let node = self.graph.add_node(GraphNode {
                 waypoint,
-                trains: HashSet::new(),
+                trains: HashSet::from([train_name.to_owned()]),
             });
             self.codes_index.insert(key, node);
             node

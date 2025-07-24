@@ -81,13 +81,14 @@ crate::routes! {
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
 struct RollingStockCharacteristics {
     name: String,
     speed_limit_tag: Option<String>,
 }
 
 #[derive(Clone, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Serialize))]
 #[schema(as = SimilarTrainWaypoint)]
 struct Waypoint {
     ci: u64,
@@ -109,6 +110,7 @@ impl std::fmt::Debug for Waypoint {
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
 struct Request {
     #[schema(inline)]
     rolling_stock: RollingStockCharacteristics,
@@ -119,7 +121,7 @@ struct Request {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(test, derive(PartialEq, Deserialize))]
 #[schema(as = SimilarTrainWaypointResponse)]
 struct WaypointResponse {
     ci: i64,
@@ -128,6 +130,7 @@ struct WaypointResponse {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
     #[schema(value_type = String)]
     train_name: past_train::Name,
@@ -139,6 +142,7 @@ struct SimilarTrainItem {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct Response {
     #[schema(inline)]
     similar_trains: Vec<SimilarTrainItem>,
@@ -375,6 +379,8 @@ async fn similar_trains(
             if let Some(((_, prev_end), prev_train)) = trains.last_mut() {
                 if *prev_train == train_name {
                     *prev_end = end;
+                } else {
+                    trains.push(((begin, end), train_name));
                 }
             } else {
                 trains.push(((begin, end), train_name));
@@ -565,20 +571,18 @@ async fn simulate_past_trains(
         paths
             .into_iter()
             .zip(candidate_schedules.iter())
-            .filter_map(
-                |(path, ts)| match Arc::try_unwrap(path).expect("only one reference") {
-                    PathfindingResult::Success(path) => Some(path),
-                    PathfindingResult::Failure(failure) => {
-                        tracing::warn!(
-                            ?failure,
-                            train_schedule = ts.train_name,
-                            train_schedule_id = ts.id,
-                            "failed to compute path for train schedule, skipping it",
-                        );
-                        None
-                    }
-                },
-            )
+            .filter_map(|(path, ts)| match path.as_ref() {
+                PathfindingResult::Success(path) => Some(path.clone()),
+                PathfindingResult::Failure(failure) => {
+                    tracing::warn!(
+                        ?failure,
+                        train_schedule = ts.train_name,
+                        train_schedule_id = ts.id,
+                        "failed to compute path for train schedule, skipping it",
+                    );
+                    None
+                }
+            })
             .collect_vec()
     };
 
@@ -664,10 +668,38 @@ fn decide_best_train_combination(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::str::FromStr;
 
+    use chrono::Duration;
+    use core_client::mocking::MockingClient;
+    use core_client::path_properties::PropertyElectrificationValue;
+    use core_client::path_properties::PropertyElectrificationValues;
+    use core_client::path_properties::PropertyValuesF64;
+    use core_client::path_properties::PropertyZoneValues;
+    use core_client::pathfinding::PathfindingResultSuccess;
+    use editoast_common::geometry::GeoJsonLineString;
+    use editoast_common::geometry::GeoJsonLineStringValue;
+    use editoast_common::geometry::GeoJsonPointValue;
+    use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::train_schedule::Comfort;
+    use editoast_schemas::train_schedule::Distribution;
+    use editoast_schemas::train_schedule::Margins;
+    use editoast_schemas::train_schedule::PathItem;
+    use editoast_schemas::train_schedule::ScheduleItem;
+    use editoast_schemas::train_schedule::TrainScheduleOptions;
     use pretty_assertions::assert_eq;
+    use reqwest::StatusCode;
+    use rstest::rstest;
     use smol_str::ToSmolStr;
+    use uuid::Uuid;
+
+    use crate::models::TrainSchedule;
+    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_timetable;
+    use crate::views::test_app::TestAppBuilder;
+
+    use super::*;
 
     #[test]
     fn test_squash_waypoints() {
@@ -814,5 +846,177 @@ mod tests {
                 "thomas".to_smolstr()
             ])
         );
+    }
+
+    fn pathfinding_result_success() -> PathfindingResultSuccess {
+        PathfindingResultSuccess {
+            blocks: vec![],
+            routes: vec![],
+            track_section_ranges: vec![],
+            length: 1,
+            path_item_positions: vec![0, 10],
+        }
+    }
+
+    fn create_path_properties_response(
+        operational_points: Vec<OperationalPointOnPath>,
+    ) -> core_client::path_properties::PathPropertiesResponse {
+        core_client::path_properties::PathPropertiesResponse {
+            slopes: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
+            curves: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
+            electrifications: PropertyElectrificationValues::new(
+                vec![0, 1],
+                vec![PropertyElectrificationValue::NonElectrified],
+            ),
+            geometry: GeoJsonLineString::LineString(GeoJsonLineStringValue(vec![
+                GeoJsonPointValue(vec![0.0, 0.0]),
+            ])),
+            operational_points,
+            zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
+        }
+    }
+
+    async fn create_train_schedule(
+        conn: &mut DbConnection,
+        timetable_id: i64,
+        train_name: String,
+        rolling_stock_name: String,
+        path: Vec<PathItem>,
+        start_time: DateTime<Utc>,
+        schedule: Vec<ScheduleItem>,
+    ) {
+        let _ = TrainSchedule::changeset()
+            .timetable_id(timetable_id)
+            .train_name(train_name)
+            .rolling_stock_name(rolling_stock_name)
+            .path(path)
+            .labels(Vec::new())
+            .start_time(start_time)
+            .schedule(schedule)
+            .margins(Margins::default())
+            .initial_speed(27.8)
+            .comfort(Comfort::Standard)
+            .constraint_distribution(Distribution::Mareco)
+            .power_restrictions(Vec::new())
+            .options(TrainScheduleOptions {
+                use_electrical_profiles: true,
+                use_speed_limits_for_simulation: true,
+            })
+            .create(conn)
+            .await
+            .expect("Failed to create train schedule");
+    }
+
+    #[rstest]
+    // MWS(33):stop  MES(44):passing_by  NS(55):stop
+    #[case(
+        vec![
+            Waypoint { ci:33, ch:"BV".into(), stop:true },
+            Waypoint { ci:44, ch:"BV".into(), stop:false },
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+        ],
+        WaypointResponse { ci:33, ch:"BV".into() },
+        WaypointResponse { ci:55, ch:"BV".into() },
+    )]
+    // NS(55):stop SS(66):stop
+    #[case(
+        vec![
+            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { ci:66, ch:"BV".into(), stop:true },
+        ],
+        WaypointResponse { ci:55, ch:"BV".into() },
+        WaypointResponse { ci:66, ch:"BV".into() },
+    )]
+    async fn one_similar_train(
+        #[case] waypoints: Vec<Waypoint>,
+        #[case] begin: WaypointResponse,
+        #[case] end: WaypointResponse,
+    ) {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        let operational_points = vec![
+            OperationalPointOnPath::new_test("West_station", 22, "WS"),
+            OperationalPointOnPath::new_test("Mid_West_station", 33, "MWS"),
+            OperationalPointOnPath::new_test("Mid_East_station", 44, "MES"),
+            OperationalPointOnPath::new_test("North_station", 55, "NES"),
+            OperationalPointOnPath::new_test("South_station", 66, "SS"),
+        ];
+        core.stub("/path_properties")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(create_path_properties_response(operational_points))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let train_name = "train_1".to_string();
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("West_station"), // WS
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+            PathItem::new_operational_point("Mid_East_station"), // MES
+            PathItem::new_operational_point("North_station"), // NS
+            PathItem::new_operational_point("South_station"), // SS
+        ];
+        let schedule: Vec<ScheduleItem> = vec![
+            ScheduleItem::new_with_stop(
+                "Mid_West_station",
+                Duration::new(300, 0).expect("Failed to parse duration"),
+            ),
+            ScheduleItem::new_with_stop(
+                "North_station",
+                Duration::new(300, 0).expect("Failed to parse duration"),
+            ),
+            ScheduleItem::new_with_stop(
+                "South_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            ),
+        ];
+        let start_time =
+            DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
+
+        // WS(22):stop  MWS(33):stop  MES(44):passing_by  NS(55):stop  SS(66):stop
+        create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_name.clone(),
+            rolling_stock.name.clone(),
+            path,
+            start_time,
+            schedule,
+        )
+        .await;
+
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: rolling_stock.name.clone(),
+                speed_limit_tag: None,
+            },
+            waypoints,
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let expected_response = Response {
+            similar_trains: vec![SimilarTrainItem {
+                train_name: train_name.clone().into(),
+                start_time,
+                begin,
+                end,
+            }],
+        };
+        assert_eq!(response, expected_response);
     }
 }

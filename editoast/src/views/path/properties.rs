@@ -316,13 +316,7 @@ mod tests {
             geometry: GeoJsonLineString::LineString(GeoJsonLineStringValue(vec![
                 GeoJsonPointValue(vec![0.0, 0.0]),
             ])),
-            operational_points: vec![OperationalPointOnPath::new(
-                "1".into(),
-                "track-1".into(),
-                0.0,
-                0,
-                None,
-            )],
+            operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
         }
     }

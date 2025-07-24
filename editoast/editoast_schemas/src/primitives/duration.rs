@@ -65,6 +65,17 @@ pub enum PositiveDurationError {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PositiveDuration(ChronoDuration);
 
+#[cfg(feature = "testing")]
+impl PositiveDuration {
+    pub fn new(duration: ChronoDuration) -> Self {
+        assert!(
+            duration.num_milliseconds() >= 0,
+            "Duration must be non-negative"
+        );
+        Self(duration)
+    }
+}
+
 impl Default for PositiveDuration {
     fn default() -> Self {
         PositiveDuration(ChronoDuration::zero())

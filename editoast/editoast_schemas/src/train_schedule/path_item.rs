@@ -29,6 +29,22 @@ pub struct PathItem {
     pub location: PathItemLocation,
 }
 
+#[cfg(feature = "testing")]
+impl PathItem {
+    pub fn new_operational_point(id: &str) -> Self {
+        Self {
+            id: id.into(),
+            deleted: false,
+            location: PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: id.into(),
+                },
+                track_reference: None,
+            }),
+        }
+    }
+}
+
 /// The location of a path waypoint
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]

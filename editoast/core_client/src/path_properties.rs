@@ -2,6 +2,7 @@ use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 use editoast_schemas::infra::OperationalPointPartExtension;
+use editoast_schemas::infra::OperationalPointSncfExtension;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
@@ -107,26 +108,20 @@ pub struct OperationalPointOnPath {
 
 #[cfg(feature = "mocking_client")]
 impl OperationalPointOnPath {
-    pub fn new(
-        id: String,
-        track_id: String,
-        position: f64,
-        path_position: u64,
-        weight: Option<u8>,
-    ) -> Self {
+    pub fn new_test(id: &str, ci: i64, trigram: &str) -> Self {
         OperationalPointOnPath {
-            id: Identifier(id),
+            id: Identifier(id.into()),
             part: OperationalPointPart {
-                track: Identifier(track_id),
-                position,
+                track: Identifier("T1".to_string()),
+                position: 0.0,
                 extensions: OperationalPointPartExtension { sncf: None },
             },
             extensions: OperationalPointExtensions {
-                sncf: None,
+                sncf: Some(OperationalPointSncfExtension::new(ci, "BV", trigram)),
                 identifier: None,
             },
-            position: path_position,
-            weight,
+            position: 0,
+            weight: None,
         }
     }
 }
