@@ -39,18 +39,18 @@ const LegacyNavBarSNCF = ({ appName }: Props) => {
   }, [deploymentSettings]);
 
   const userDropdownTitle = (
-    <div className={cx({ 'impersonated-user': impersonatedUser })}>
+    <div className={cx('user-dropdown', { 'impersonated-user': impersonatedUser })}>
       {impersonatedUser ? (
-        <Hubot size="lg" className="mr-xl-2" />
+        <Hubot size="sm" className="mr-2" />
       ) : (
-        <Person variant="fill" size="lg" className="mr-xl-2" />
+        <Person size="sm" className="mr-2" />
       )}
       <span>{username}</span>
     </div>
   );
 
   return (
-    <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : 'mastheader')}>
+    <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : '')}>
       <div
         className={cx(
           'flex-grow-0',

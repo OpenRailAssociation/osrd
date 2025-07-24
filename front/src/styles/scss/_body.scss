@@ -58,6 +58,26 @@ body {
   font-size: 0.7rem;
 }
 
+// Override Bootstrap's default styles
+.mastheader {
+  height: 40px !important;
+  .dropdown-toggle {
+    padding-inline: 0;
+  }
+
+  .user-dropdown,
+  .navbar-breadcrumbs {
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--grey30);
+    cursor: pointer;
+
+    .text-truncate:hover {
+      color: var(--white);
+    }
+  }
+}
+
 /* Make cool transitions for fullscreen mode */
 .mastheader,
 .mastnav,
@@ -70,6 +90,21 @@ body {
 
 .mastheader-impersonated {
   background-color: var(--highlight30) !important;
+
+  .user-dropdown {
+    margin-right: 16px;
+  }
+
+  .navbar-breadcrumbs {
+    .text-truncate,
+    a {
+      color: var(--black50);
+
+      &:hover {
+        color: var(--black100);
+      }
+    }
+  }
 }
 
 .impersonated-user {
