@@ -24,7 +24,7 @@
                 },
                 "identifier": {
                     "name": "op.station_foo",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         },
@@ -47,7 +47,7 @@
                 },
                 "identifier": {
                     "name": "op.station_bar",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         }

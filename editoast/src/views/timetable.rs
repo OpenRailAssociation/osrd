@@ -1122,7 +1122,7 @@ mod tests {
             .bytes();
         assert_eq!(
             &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: [0]: Duplicate exception key: 'duplicated_key_1' at line 1 column 2449"
+            "Failed to deserialize the JSON body into the target type: [0]: Duplicate exception key: 'duplicated_key_1' at line 1 column 2452"
         )
     }
 

@@ -20,7 +20,7 @@
                 },
                 "identifier": {
                     "name": "op.start",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         },
@@ -35,7 +35,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 11,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -43,7 +43,7 @@
                 },
                 "identifier": {
                     "name": "op.center",
-                    "uic": 1
+                    "uic": 8711
                 }
             }
         },
@@ -58,7 +58,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 33,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -66,7 +66,7 @@
                 },
                 "identifier": {
                     "name": "op.takeover",
-                    "uic": 3
+                    "uic": 8733
                 }
             }
         },
@@ -81,7 +81,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 22,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -89,7 +89,7 @@
                 },
                 "identifier": {
                     "name": "op.end",
-                    "uic": 2
+                    "uic": 8722
                 }
             }
         }

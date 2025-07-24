@@ -612,8 +612,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"uic":3,"secondary_code":"BV", "track_reference": {"track_name": "V2"}},
-                    {"uic":8 ,"secondary_code":"BV", "track_reference": {"track_name": "V_INVALID"}},
+                    {"uic":8733,"secondary_code":"BV", "track_reference": {"track_name": "V2"}},
+                    {"uic":8788 ,"secondary_code":"BV", "track_reference": {"track_name": "V_INVALID"}},
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -634,7 +634,7 @@ pub mod tests {
                         path_item: PathItemLocation::OperationalPointReference(
                             OperationalPointReference {
                                 reference: OperationalPointIdentifier::OperationalPointUic {
-                                    uic: 8,
+                                    uic: 8788,
                                     secondary_code: Some("BV".into())
                                 },
                                 track_reference: Some(TrackReference::Name {

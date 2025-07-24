@@ -5,8 +5,8 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-15T03:00:00Z",
     "path": [
-      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
-      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+      { "id": "id227", "deleted": false, "uic": 8766, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {
@@ -32,8 +32,8 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-15T04:00:00Z",
     "path": [
-      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
-      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+      { "id": "id227", "deleted": false, "uic": 8766, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {
@@ -70,9 +70,9 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-15T05:00:00Z",
     "path": [
-      { "id": "id744", "deleted": false, "uic": 3, "secondary_code": "BV" },
-      { "id": "id765", "deleted": false, "uic": 4, "secondary_code": "BV" },
-      { "id": "id745", "deleted": false, "uic": 7, "secondary_code": "BV" }
+      { "id": "id744", "deleted": false, "uic": 8733, "secondary_code": "BV" },
+      { "id": "id765", "deleted": false, "uic": 8744, "secondary_code": "BV" },
+      { "id": "id745", "deleted": false, "uic": 8777, "secondary_code": "BV" }
     ],
     "schedule": [
       {
@@ -149,8 +149,8 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-16T00:00:00Z",
     "path": [
-      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
-      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+      { "id": "id227", "deleted": false, "uic": 8766, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {
@@ -186,8 +186,8 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T11:00:00Z",
     "path": [
-      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
-      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+      { "id": "id227", "deleted": false, "uic": 8766, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {

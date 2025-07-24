@@ -87,7 +87,7 @@ class Infra:
                 parts=parts_per_op[op.label],
                 extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
                     "sncf": infra.OperationalPointSncfExtension(
-                        ci=0,
+                        ci=int(str(op.uic)[2:]),  # remove two first digits of UIC code
                         ch="BV",
                         ch_short_label="BV",
                         ch_long_label="0",

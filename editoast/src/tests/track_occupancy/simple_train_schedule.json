@@ -8,21 +8,21 @@
         {
             "id": "id8",
             "deleted": false,
-            "uic": 1,
+            "uic": 8711,
             "secondary_code": "BV",
             "track_reference": null
         },
         {
             "id": "id5",
             "deleted": false,
-            "uic": 3,
+            "uic": 8733,
             "secondary_code": "BV",
             "track_reference": null
         },
         {
             "id": "id7",
             "deleted": false,
-            "uic": 8,
+            "uic": 8788,
             "secondary_code": "BV",
             "track_reference": null
         }

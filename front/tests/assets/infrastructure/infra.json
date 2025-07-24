@@ -6754,7 +6754,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 4,
+          "uic": 8744,
           "name": "Mid_East_station"
         }
       }
@@ -6800,7 +6800,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 3,
+          "uic": 8733,
           "name": "Mid_West_station"
         }
       }
@@ -6832,7 +6832,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 7,
+          "uic": 8777,
           "name": "North_East_station"
         }
       }
@@ -6914,7 +6914,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 5,
+          "uic": 8755,
           "name": "North_station"
         }
       }
@@ -6939,7 +6939,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 8,
+          "uic": 8788,
           "name": "South_East_station"
         }
       }
@@ -6964,7 +6964,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 1,
+          "uic": 8711,
           "name": "South_West_station"
         }
       }
@@ -6989,7 +6989,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 6,
+          "uic": 8766,
           "name": "South_station"
         }
       }
@@ -7028,7 +7028,7 @@
           "ch_short_label": "BV"
         },
         "identifier": {
-          "uic": 2,
+          "uic": 8722,
           "name": "West_station"
         }
       }
