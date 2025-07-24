@@ -44,6 +44,7 @@ test.describe('Rollingstock editor page tests', () => {
 
       // Navigate to the rolling stock editor page
       await rollingStockEditorPage.navigateToRollingStockPage();
+      await rollingStockEditorPage.verifyFirstRollingStockCardVisibility();
     }
   );
 

@@ -91,7 +91,7 @@ class RollingStockSelector extends CommonPage {
     confirmSelection?: boolean;
   }): Promise<void> {
     const rollingstockCard = this.getRollingstockCardByName(name);
-
+    await expect(rollingstockCard).toBeVisible();
     await rollingstockCard.click();
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
     if (selectComfort) await this.comfortACButton.click();

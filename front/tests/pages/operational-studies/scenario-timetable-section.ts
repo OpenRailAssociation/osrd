@@ -183,6 +183,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async verifyTimetableItemsCount(timetableItemsCount: number): Promise<void> {
+    await expect(this.timetableItems.first()).toBeVisible();
     await expect(this.timetableItems).toHaveCount(timetableItemsCount);
   }
 
@@ -194,6 +195,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     }
   ): Promise<void> {
     const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
+    await expect(this.timetableItems.first()).toBeVisible();
     await expect(this.timetableTotalItemLabel).toBeVisible();
 
     // Total items label has the syntax : "X services and Y trains"
@@ -309,6 +311,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.filterTrainTypeAndVerifyTrainCount('Service', pacedTrainCount);
     for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
       const pacedTrain = this.timetableItems.nth(pacedTrainIndex);
+      await expect(pacedTrain).toBeVisible();
 
       await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // opens
 
@@ -327,6 +330,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   // Iterate over each trainSchedule and verify the visibility of simulation results
   async verifyEachTrainScheduleSimulation(trainScheduleCount: number): Promise<void> {
+    await expect(this.timetableItems.first()).toBeVisible();
     const timetableItemsCount = await this.timetableItems.count();
     for (
       let currentTrainScheduleIndex = trainScheduleCount;
@@ -344,12 +348,15 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async editTimetableItem(index = 0) {
+    await expect(this.timetableItems.nth(index)).toBeVisible();
     await this.timetableItems.nth(index).click();
     await this.editItemButton.nth(index).click();
   }
 
   private async projectTrain(index = 0) {
-    await this.timetableItems.nth(index).hover();
+    const item = this.timetableItems.nth(index);
+    await item.scrollIntoViewIfNeeded();
+    await item.hover();
     await expect(this.projectItemButton.nth(index)).toBeVisible();
     await this.projectItemButton.nth(index).click();
   }

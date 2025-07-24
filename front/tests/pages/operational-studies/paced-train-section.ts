@@ -203,7 +203,7 @@ class PacedTrainSection extends CommonPage {
     const item = isPacedTrain
       ? this.pacedTrainItem.nth(itemIndex)
       : this.testedPacedTrainOccurrences.nth(itemIndex);
-
+    await expect(item).toBeVisible();
     await item.hover({ force: true });
 
     const actionButtons: Record<string, Locator> = {
@@ -250,7 +250,7 @@ class PacedTrainSection extends CommonPage {
     }
   ) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
-
+    await expect(occurrenceItem.root).toBeVisible();
     await this.verifyOccurrenceName(occurrenceIndex, occurrenceData.name, {
       copyTranslation: duplicate?.copyTranslation,
     });
@@ -303,6 +303,7 @@ class PacedTrainSection extends CommonPage {
       itemIndex: index,
       itemType: 'paced-train',
     });
+    await expect(actionButtons.editItem).toBeVisible();
     await actionButtons.editItem.click();
     await expect(this.manageTimetableItemPage).toBeVisible();
   }
@@ -313,6 +314,7 @@ class PacedTrainSection extends CommonPage {
     pacedTrainData?: PacedTrainDetails
   ) {
     const timetableItemToDelete = await this.getPacedTrainToClickableZone(index);
+    await expect(timetableItemToDelete).toBeVisible();
     await timetableItemToDelete.click();
 
     const pacedTrainActionButtons = await this.getActionButtonsLocators({
@@ -350,6 +352,7 @@ class PacedTrainSection extends CommonPage {
     ...changeGroups: ChangeGroup[]
   ) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await expect(occurrenceItem.indicator).toBeVisible();
     await occurrenceItem.indicator.hover();
 
     const expectedExceptionText = title + changeGroups.join('');
@@ -359,6 +362,7 @@ class PacedTrainSection extends CommonPage {
 
   async checkOccurrenceMenuIcon(occurrenceIndex: number) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await expect(occurrenceItem.root).toBeVisible();
     await occurrenceItem.root.hover();
     await expect(occurrenceItem.menuIcon).toBeVisible();
   }
@@ -373,6 +377,7 @@ class PacedTrainSection extends CommonPage {
     translations: TimetableFilterTranslations;
   }) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await expect(occurrenceItem.menuIcon).toBeVisible();
     await occurrenceItem.menuIcon.click();
     for (const buttonName of expectedButtons) {
       const button = this.portalOccurrenceMenu[buttonName];
@@ -395,6 +400,7 @@ class PacedTrainSection extends CommonPage {
 
   async resetAllPacedTrainExceptions(pacedTrainIndex: number) {
     const timetableItemToReset = await this.getPacedTrainToClickableZone(pacedTrainIndex);
+    await expect(timetableItemToReset).toBeVisible();
     await timetableItemToReset.click();
 
     const { resetExceptions } = await this.getActionButtonsLocators({
@@ -411,6 +417,7 @@ class PacedTrainSection extends CommonPage {
   }
 
   async expectOccurrencesListLength(length: number) {
+    await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
     await expect(this.testedPacedTrainOccurrences).toHaveCount(length);
   }
 }

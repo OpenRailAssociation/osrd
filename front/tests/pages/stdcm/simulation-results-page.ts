@@ -131,6 +131,7 @@ class SimulationResultPage extends STDCMPage {
     await this.page.waitForLoadState('networkidle');
 
     // Get the download link element and suggested filename
+    await expect(this.downloadLink).toBeVisible();
     const suggestedFilename = await this.downloadLink.getAttribute('download');
     expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
 
