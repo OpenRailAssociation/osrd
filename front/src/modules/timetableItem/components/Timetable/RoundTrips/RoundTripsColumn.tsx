@@ -10,12 +10,14 @@ import type { PairingItem } from '../types';
 type RoundTripsColumnProps = {
   setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;
   pairingItems: { pair: [PairingItem, PairingItem]; isValid: boolean }[];
+  hideColumn: boolean;
   subCategories: SubCategory[];
 };
 
 const RoundTripsColumn = ({
   setPairingItems,
   pairingItems,
+  hideColumn,
   subCategories,
 }: RoundTripsColumnProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
@@ -35,41 +37,49 @@ const RoundTripsColumn = ({
   };
 
   return (
-    <section className="round-trips-modal-column round-trips-column">
-      <h2 className="column-title">
-        <ArrowSwitch />
-        <span>{t('roundTrips')}</span>
-        <div className="item-count">{pairingItems.length}</div>
-      </h2>
-      <div className="column-wrapper">
-        {pairingItems.length === 0 ? (
-          <div className="round-trip-pair">
-            <div className="card-placeholder" />
-            <div className="separator" />
-            <div className="card-placeholder" />
+    <section
+      className={cx('round-trips-modal-column-wrapper round-trips-column', {
+        'hide-column': hideColumn,
+      })}
+    >
+      <div className="scroll-container">
+        <div className="round-trips-modal-column">
+          <h2 className="column-title">
+            <ArrowSwitch />
+            <span>{t('roundTrips')}</span>
+            <div className="item-count">{pairingItems.length}</div>
+          </h2>
+          <div className="column-wrapper">
+            {pairingItems.length === 0 ? (
+              <div className="round-trip-pair">
+                <div className="card-placeholder" />
+                <div className="separator" />
+                <div className="card-placeholder" />
+              </div>
+            ) : (
+              pairingItems.map(({ pair: [pairA, pairB], isValid }) => (
+                <div className="round-trip-pair" key={`${pairA.id}-${pairB.id}`}>
+                  <RoundTripsModalCard
+                    pairingItem={pairA}
+                    restoreItems={() => restoreItems([pairA, pairB])}
+                    subCategories={subCategories}
+                  />
+                  <div
+                    className={cx('separator', {
+                      valid: isValid,
+                      invalid: !isValid,
+                    })}
+                  />
+                  <RoundTripsModalCard
+                    pairingItem={pairB}
+                    restoreItems={() => restoreItems([pairA, pairB])}
+                    subCategories={subCategories}
+                  />
+                </div>
+              ))
+            )}
           </div>
-        ) : (
-          pairingItems.map(({ pair: [pairA, pairB], isValid }) => (
-            <div className="round-trip-pair" key={`${pairA.id}-${pairB.id}`}>
-              <RoundTripsModalCard
-                pairingItem={pairA}
-                restoreItems={() => restoreItems([pairA, pairB])}
-                subCategories={subCategories}
-              />
-              <div
-                className={cx('separator', {
-                  valid: isValid,
-                  invalid: !isValid,
-                })}
-              />
-              <RoundTripsModalCard
-                pairingItem={pairB}
-                restoreItems={() => restoreItems([pairA, pairB])}
-                subCategories={subCategories}
-              />
-            </div>
-          ))
-        )}
+        </div>
       </div>
     </section>
   );

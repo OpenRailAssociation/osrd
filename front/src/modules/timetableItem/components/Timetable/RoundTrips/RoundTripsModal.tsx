@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import OneWaysColumn from './OneWaysColumn';
@@ -37,6 +38,7 @@ const RoundTripsModal = ({
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
+  const [itemIdToPair, setItemIdToPair] = useState<TimetableItemId>();
 
   const { data: { results: subCategories } = { results: [] } } =
     osrdEditoastApi.endpoints.getSubCategory.useQuery({
@@ -94,20 +96,24 @@ const RoundTripsModal = ({
       <div className="round-trips-modal-header">
         <h1 className="title">{t('roundTripsModal.roundTripsManagement')}</h1>
       </div>
-      <div className="round-trips-modal-body">
+      <div className={cx('round-trips-modal-body', { 'pairing-body': !!itemIdToPair })}>
         <TodoColumn
           pairingItems={pairingItemsByColumn.todo}
           setPairingItems={setPairingItems}
+          itemIdToPair={itemIdToPair}
+          setItemIdToPair={setItemIdToPair}
           subCategories={subCategories}
         />
         <OneWaysColumn
           pairingItems={pairingItemsByColumn.oneWays}
           setPairingItems={setPairingItems}
+          hideColumn={!!itemIdToPair}
           subCategories={subCategories}
         />
         <RoundTripsColumn
           pairingItems={pairingItemsByColumn.roundTrips}
           setPairingItems={setPairingItems}
+          hideColumn={!!itemIdToPair}
           subCategories={subCategories}
         />
       </div>

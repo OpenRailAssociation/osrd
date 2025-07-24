@@ -1,4 +1,5 @@
 import { ArrowRight } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
@@ -9,10 +10,16 @@ import type { PairingItem } from '../types';
 type OneWaysColumnProps = {
   setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;
   pairingItems: PairingItem[];
+  hideColumn: boolean;
   subCategories: SubCategory[];
 };
 
-const OneWaysColumn = ({ setPairingItems, pairingItems, subCategories }: OneWaysColumnProps) => {
+const OneWaysColumn = ({
+  setPairingItems,
+  pairingItems,
+  hideColumn,
+  subCategories,
+}: OneWaysColumnProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
 
   const restoreItems = (itemToMove: PairingItem) => {
@@ -23,25 +30,34 @@ const OneWaysColumn = ({ setPairingItems, pairingItems, subCategories }: OneWays
   };
 
   return (
-    <section className="round-trips-modal-column">
-      <h2 className="column-title">
-        <ArrowRight />
-        <span>{t('oneWays')}</span>
-        <div className="item-count">{pairingItems.length}</div>
-      </h2>
-      <div className="column-wrapper">
-        {pairingItems.length === 0 ? (
-          <div className="card-placeholder" />
-        ) : (
-          pairingItems.map((pairingItem) => (
-            <RoundTripsModalCard
-              key={pairingItem.id}
-              pairingItem={pairingItem}
-              restoreItems={() => restoreItems(pairingItem)}
-              subCategories={subCategories}
-            />
-          ))
-        )}
+    <section
+      className={cx('round-trips-modal-column-wrapper', {
+        'hide-column': hideColumn,
+      })}
+    >
+      <div className="scroll-container">
+        <div className="round-trips-modal-column">
+          <h2 className="column-title">
+            <ArrowRight />
+            <span>{t('oneWays')}</span>
+            <div className="item-count">{pairingItems.length}</div>
+          </h2>
+          <div className="column-wrapper">
+            {pairingItems.length === 0 ? (
+              <div className="card-placeholder" />
+            ) : (
+              pairingItems.map((pairingItem) => (
+                <div className="round-trips-card-wrapper" key={pairingItem.id}>
+                  <RoundTripsModalCard
+                    pairingItem={pairingItem}
+                    restoreItems={() => restoreItems(pairingItem)}
+                    subCategories={subCategories}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
