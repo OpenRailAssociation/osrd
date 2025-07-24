@@ -67,9 +67,7 @@ fun generatePreviousSimulationSegments(
         if (currentEdge.endAtStop) break
 
         val envelope = currentEdge.originalEnvelope
-        val edgeEndTime = currentEdge.timeData.earliestReachableTime + currentEdge.totalTime
-        val maxAddedDelay =
-            currentEdge.timeData.timeOfNextConflictAtLocation - edgeEndTime - alreadyAddedDelay
+        val maxAddedDelay = currentEdge.getMaxAddedDelay(alreadyAddedDelay)
         if (maxAddedDelay <= 0.0) break
 
         val backwardsPointPairs =
@@ -103,8 +101,7 @@ fun generatePreviousSimulationSegments(
                 )
             )
         }
-        currentEdge.engineeringAllowance?.let { alreadyAddedDelay += it.extraDuration }
-        alreadyAddedDelay += currentEdge.timeData.delayAddedToLastDeparture
+        alreadyAddedDelay += currentEdge.getTotalAddedDelayOnEdge()
         currentEdge = currentEdge.previousNode.previousEdge
     }
 }

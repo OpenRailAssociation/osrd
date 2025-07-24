@@ -92,7 +92,7 @@ data class STDCMEdge(
                     stopDuration,
                     graph.delayManager.getMaxAdditionalStopDuration(
                         infraExplorerWithNewEnvelope,
-                        timeData.earliestReachableTime + totalTime
+                        getEdgeEndTime(),
                     )
                 ),
                 endSpeed,
@@ -171,5 +171,24 @@ data class STDCMEdge(
      */
     fun fromTravelledOffset(travelledPathOffset: Offset<TravelledPath>): Offset<BlockPath> {
         return infraExplorer.getIncrementalPath().fromTravelledPath(travelledPathOffset)
+    }
+
+    /** Return the time at which the train quits this edge and moves on to the next. */
+    private fun getEdgeEndTime(): Double {
+        return timeData.earliestReachableTime + totalTime
+    }
+
+    /**
+     * Return how much delay we can add on this edge. We need to be given the time added on the next
+     * edges (both departure delaying and allowances), as they carry over previous edges.
+     */
+    fun getMaxAddedDelay(addedAllowanceOnNextEdges: Double): Double {
+        val maxAddedDelay = timeData.timeOfNextConflictAtLocation - getEdgeEndTime()
+        return maxAddedDelay - addedAllowanceOnNextEdges
+    }
+
+    /** Return all delay added to this edge, engineering + departure delay */
+    fun getTotalAddedDelayOnEdge(): Double {
+        return timeData.delayAddedToLastDeparture + (engineeringAllowance?.extraDuration ?: 0.0)
     }
 }

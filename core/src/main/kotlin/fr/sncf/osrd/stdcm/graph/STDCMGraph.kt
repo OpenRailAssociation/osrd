@@ -162,6 +162,8 @@ class STDCMGraph(
         while (true) {
             val edge = node.previousEdge ?: return maxTime
 
+            // TODO: this is wrong, we should use `edge.getMaxAddedDelay` instead.
+            // But doing so can lead to infinite loops, especially in the unit test "infraWithLoop".
             val latestTimeWithMaxShift =
                 edge.timeData.earliestReachableTime +
                     edge.totalTime +
