@@ -159,7 +159,7 @@ export default function useSearchOperationalPoint({
         }).unwrap()) as SearchResultItemOperationalPoint[];
         const deduplicatedResults = results.filter((item) => !trigramResultsIds.has(item.obj_id));
         const sortedResults = [...deduplicatedResults];
-        sortedResults.sort(sortOperationalPointsFromNameAndUicSearch(searchTerm));
+        sortedResults.sort(sortOperationalPointsFromNameAndUicSearch(searchQuery));
 
         const allResults = [...sortedTrigramResults, ...sortedResults];
         return allResults;
