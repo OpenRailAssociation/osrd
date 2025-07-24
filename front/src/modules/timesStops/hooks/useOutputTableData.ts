@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { keyBy } from 'lodash';
-import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
@@ -29,7 +28,6 @@ const useOutputTableData = (
   selectedTrain?: Train,
   path?: PathfindingResultSuccess
 ): TimesStopsRow[] => {
-  const { t } = useTranslation();
   const { getTrackSectionsByIds } = useScenarioContext();
 
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
@@ -80,7 +78,6 @@ const useOutputTableData = (
 
         const pathStepRow = {
           pathStepId: pathStep.id,
-          name: t('timeStopTable.waypoint', { id: pathStep.id }),
           ch: undefined,
 
           arrival,
