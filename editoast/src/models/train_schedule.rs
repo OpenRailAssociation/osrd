@@ -6,6 +6,7 @@ use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas;
 use editoast_schemas::rolling_stock::TrainCategory;
+use editoast_schemas::train_schedule;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
@@ -85,6 +86,31 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .train_name(train_name)
             .options(options)
             .main_category(main_category)
+    }
+}
+
+impl From<TrainSchedule> for train_schedule::TrainSchedule {
+    fn from(train_schedule: TrainSchedule) -> Self {
+        Self {
+            train_name: train_schedule.train_name,
+            labels: train_schedule.labels.into_iter().flatten().collect(),
+            rolling_stock_name: train_schedule.rolling_stock_name,
+            start_time: train_schedule.start_time,
+            schedule: train_schedule.schedule,
+            margins: train_schedule.margins,
+            initial_speed: train_schedule.initial_speed,
+            comfort: train_schedule.comfort,
+            path: train_schedule.path,
+            constraint_distribution: train_schedule.constraint_distribution,
+            speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
+            power_restrictions: train_schedule.power_restrictions,
+            options: train_schedule.options,
+            category: paced_train
+                .main_category
+                .as_deref()
+                .copied()
+                .map(TrainCategory::from), // TODO: or sub category when it's going to exist
+        }
     }
 }
 
