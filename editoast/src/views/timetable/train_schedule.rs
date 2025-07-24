@@ -26,6 +26,7 @@ use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::TrainSchedule;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -481,10 +482,12 @@ async fn etcs_braking_curves(
 
     // Build schedule items and power restrictions
     let path_items_to_position =
-        build_path_items_to_position(&train_schedule, &path.path_item_positions);
-    let schedule = build_sim_schedule_items(&train_schedule, &path_items_to_position);
-    let power_restrictions =
-        build_sim_power_restriction_items(&train_schedule, &path_items_to_position);
+        build_path_items_to_position(train_schedule.path(), &path.path_item_positions);
+    let schedule = build_sim_schedule_items(train_schedule.schedule(), &path_items_to_position);
+    let power_restrictions = build_sim_power_restriction_items(
+        train_schedule.power_restrictions(),
+        &path_items_to_position,
+    );
 
     let etcs_braking_curves_request = core_client::etcs_braking_curves::Request {
         infra: infra.id,
@@ -581,8 +584,7 @@ async fn simulation_summary(
 
     // Transform simulations to simulation summary
     let mut simulation_summaries = HashMap::new();
-    for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
-        let (sim, _) = sim;
+    for (train_schedule, (sim, _)) in train_schedules.iter().zip(simulations) {
         let simulation_summary_result = SummaryResponse::from(Arc::unwrap_or_clone(sim));
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
@@ -772,7 +774,7 @@ async fn project_path_op(
 
     let conn = &mut db_pool.get().await?;
 
-    let trains_schedules: Vec<models::TrainSchedule> =
+    let train_schedules: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
@@ -780,7 +782,7 @@ async fn project_path_op(
         })
         .await?;
 
-    let path_item_locations: Vec<&PathItemLocation> = trains_schedules
+    let path_item_locations: Vec<&PathItemLocation> = train_schedules
         .iter()
         .flat_map(|ts| ts.path.iter().map(|p| &p.location))
         .collect();
@@ -805,14 +807,14 @@ async fn project_path_op(
         conn,
         valkey_client.clone(),
         core_client.clone(),
-        &trains_schedules,
+        &train_schedules,
         infra,
         electrical_profile_set_id,
     )
     .await?;
 
     let mut to_compute = HashMap::new();
-    for (ts, (sim, _)) in trains_schedules.into_iter().zip(simulations.into_iter()) {
+    for (ts, (sim, _)) in train_schedules.into_iter().zip(simulations.into_iter()) {
         let train_id = ts.id;
         to_compute
             .entry(Arc::as_ptr(&sim))
@@ -883,7 +885,7 @@ async fn occupancy_blocks(
 
     let conn = &mut db_pool.get().await?;
 
-    let trains_schedules: Vec<models::TrainSchedule> =
+    let train_schedules: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
@@ -897,7 +899,7 @@ async fn occupancy_blocks(
         valkey_client,
         path,
         infra,
-        &trains_schedules,
+        &train_schedules,
         electrical_profile_set_id,
     )
     .await?;
@@ -906,7 +908,7 @@ async fn occupancy_blocks(
 
     occupancy_blocks_result
         .into_iter()
-        .zip(trains_schedules)
+        .zip(train_schedules)
         .for_each(|(occupancy_blocks, train_schedule)| {
             results.insert(train_schedule.id, Arc::unwrap_or_clone(occupancy_blocks));
         });
@@ -1640,7 +1642,6 @@ pub mod tests {
             path_item_times: vec![0, 1000],
         };
         let train_schedule = models::TrainSchedule::default();
-
         let result = interpolate_track_occupancy(
             &train_schedule,
             &path_projection,
@@ -1755,6 +1756,7 @@ pub mod tests {
         };
 
         // Call the function
+
         let (track, occupancy) = track_occupancy_on_path_item(
             &train_schedule,
             path_item_id,

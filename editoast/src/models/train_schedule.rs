@@ -11,6 +11,7 @@ use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 use crate::models::prelude::*;
@@ -80,6 +81,52 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .train_name(train_name)
             .options(options)
             .main_category(category.map(TrainMainCategory))
+    }
+}
+
+impl TrainScheduleLike for TrainSchedule {
+    fn rolling_stock_name(&self) -> &str {
+        &self.rolling_stock_name
+    }
+
+    fn start_time(&self) -> DateTime<Utc> {
+        self.start_time
+    }
+
+    fn path(&self) -> &[PathItem] {
+        &self.path
+    }
+
+    fn schedule(&self) -> &[ScheduleItem] {
+        &self.schedule
+    }
+
+    fn margins(&self) -> &Margins {
+        &self.margins
+    }
+
+    fn initial_speed(&self) -> f64 {
+        self.initial_speed
+    }
+
+    fn comfort(&self) -> Comfort {
+        self.comfort
+    }
+
+    fn constraint_distribution(&self) -> Distribution {
+        self.constraint_distribution
+    }
+
+    fn speed_limit_tag(&self) -> Option<&String> {
+        self.speed_limit_tag.as_ref()
+    }
+
+    fn power_restrictions(&self) -> &[PowerRestrictionItem] {
+        &self.power_restrictions
+    }
+
+    fn options(&self) -> &TrainScheduleOptions {
+        &self.options
     }
 }
 

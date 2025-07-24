@@ -41,6 +41,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::TrainSchedule;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use itertools::Either;
 use itertools::Itertools;
 use paced_train::PacedTrainResponse;
@@ -683,11 +684,11 @@ async fn retrieve_trains_and_paced_trains(
     Ok((trains, paced_trains))
 }
 
-async fn retrieve_simulations(
+async fn retrieve_simulations<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
-    trains: &[models::TrainSchedule],
+    trains: &[T],
     paced_trains: &[models::PacedTrain],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,

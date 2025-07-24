@@ -10,6 +10,7 @@ use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,7 +25,6 @@ use utoipa::ToSchema;
 use super::path::path_item_cache::PathItemCache;
 use crate::ValkeyClient;
 use crate::client::get_app_version;
-use crate::models;
 use crate::models::infra::Infra;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
@@ -345,13 +345,13 @@ pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64
     }
 }
 
-pub async fn compute_projected_train_paths(
+pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
     valkey_client: Arc<ValkeyClient>,
     track_section_ranges: Vec<TrackRange>,
     infra: &Infra,
-    train_schedules: &[models::TrainSchedule],
+    train_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<Arc<SpaceTimeCurves>>> {
     let path_projection = PathProjection::new(&track_section_ranges);
@@ -465,9 +465,9 @@ pub struct TrainToProjectOnOperationalPoint {
 }
 
 impl TrainToProjectOnOperationalPoint {
-    pub fn new(ts: models::TrainSchedule, sim: simulation::Response) -> Self {
+    pub fn new<T: TrainScheduleLike>(ts: T, sim: simulation::Response) -> Self {
         let stops_input: HashMap<_, _> = ts
-            .schedule
+            .schedule()
             .iter()
             .filter_map(|schedule| {
                 schedule
@@ -476,11 +476,12 @@ impl TrainToProjectOnOperationalPoint {
                     .map(|stop_for| (&schedule.at, stop_for.num_milliseconds() as u64))
             })
             .collect();
+
         let simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) = sim
         else {
             // Handle non-simulated trains
             let arrival_inputs = ts
-                .schedule
+                .schedule()
                 .iter()
                 .filter_map(|schedule| {
                     schedule
@@ -490,7 +491,7 @@ impl TrainToProjectOnOperationalPoint {
                 })
                 .collect::<HashMap<_, _>>();
 
-            let mut refs = ts.path.iter().map(|path_item| match &path_item.location {
+            let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
                 PathItemLocation::OperationalPointReference(op_ref) => {
                     Some((&op_ref.reference, &path_item.id))
                 }
@@ -531,15 +532,15 @@ impl TrainToProjectOnOperationalPoint {
             times: report_train.times,
         });
         let refs = ts
-            .path
-            .into_iter()
+            .path()
+            .iter()
             .zip(report_train.path_item_times)
-            .flat_map(|(path_item, arrival_time)| match path_item.location {
+            .flat_map(|(path_item, arrival_time)| match &path_item.location {
                 PathItemLocation::OperationalPointReference(op_ref) => {
                     Some(OperationalPointRefAndTime {
                         arrival_time,
                         stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
-                        op_ref: op_ref.reference,
+                        op_ref: op_ref.reference.clone(),
                     })
                 }
                 PathItemLocation::TrackOffset(_) => None,

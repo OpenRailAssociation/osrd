@@ -12,6 +12,11 @@ use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SpeedLimitProperties;
 use editoast_models::DbConnection;
+use editoast_schemas::train_schedule::Margins;
+use editoast_schemas::train_schedule::PathItem;
+use editoast_schemas::train_schedule::PowerRestrictionItem;
+use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -30,7 +35,6 @@ use crate::ValkeyClient;
 use crate::client::get_app_version;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models;
 use crate::models::RollingStock;
 use crate::views::CoreClient;
 use crate::views::path::pathfinding::PathfindingFailure;
@@ -199,11 +203,11 @@ impl From<simulation::Response> for SummaryResponse {
 /// Compute in batch the simulation of a list of train schedule
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
-pub async fn train_simulation_batch(
+pub async fn train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
-    train_schedules: &[models::TrainSchedule],
+    train_schedules: &[T],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
@@ -213,7 +217,7 @@ pub async fn train_simulation_batch(
 
     let rolling_stocks_ids = train_schedules
         .iter()
-        .map::<String, _>(|t| t.rolling_stock_name.clone());
+        .map::<String, _>(|t| t.rolling_stock_name().to_string());
 
     let rolling_stocks: Vec<_> =
         RollingStock::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids)
@@ -232,7 +236,7 @@ pub async fn train_simulation_batch(
             let core = core.clone();
             let consists = consists.clone();
             let infra = <Infra as Clone>::clone(infra);
-            let chunk = chunk.to_vec();
+            let chunk = chunk.to_vec(); // TODO: avoid cloning the chunk
             tokio::spawn(
                 async move {
                     consist_train_simulation_batch(
@@ -259,12 +263,12 @@ pub async fn train_simulation_batch(
 }
 
 #[tracing::instrument(skip_all, fields(nb_trains = train_schedules.len()))]
-pub async fn consist_train_simulation_batch(
+pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedules: &[models::TrainSchedule],
+    train_schedules: &[T],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
@@ -285,7 +289,7 @@ pub async fn consist_train_simulation_batch(
 
     let consists: HashMap<_, _> = consists
         .iter()
-        .map(|consist| (&consist.traction_engine.name, consist))
+        .map(|consist| (consist.traction_engine.name.as_str(), consist))
         .collect();
 
     let mut simulation_results = vec![None::<Arc<simulation::Response>>; train_schedules.len()];
@@ -320,7 +324,7 @@ pub async fn consist_train_simulation_batch(
         };
 
         // Build simulation request
-        let physics_consist_parameters = consists[&train_schedule.rolling_stock_name].clone();
+        let physics_consist_parameters = consists[train_schedule.rolling_stock_name()].clone();
 
         let simulation_request = build_simulation_request(
             infra,
@@ -413,44 +417,47 @@ pub async fn consist_train_simulation_batch(
         .collect())
 }
 
-fn build_simulation_request(
+fn build_simulation_request<T: TrainScheduleLike>(
     infra: &Infra,
-    train_schedule: &models::TrainSchedule,
+    train_schedule: &T,
     path_item_positions: &[u64],
     path: SimulationPath,
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
 ) -> core_client::simulation::Request {
-    let path_items_to_position = build_path_items_to_position(train_schedule, path_item_positions);
-    let schedule = build_sim_schedule_items(train_schedule, &path_items_to_position);
-    let margins = build_sim_margins(train_schedule, &path_items_to_position);
-    let power_restrictions =
-        build_sim_power_restriction_items(train_schedule, &path_items_to_position);
+    let path_items_to_position =
+        build_path_items_to_position(train_schedule.path(), path_item_positions);
+    let schedule = build_sim_schedule_items(train_schedule.schedule(), &path_items_to_position);
+    let margins = build_sim_margins(train_schedule.margins(), &path_items_to_position);
+    let power_restrictions = build_sim_power_restriction_items(
+        train_schedule.power_restrictions(),
+        &path_items_to_position,
+    );
     core_client::simulation::Request {
         infra: infra.id,
         expected_version: infra.version,
         path,
         schedule,
         margins,
-        initial_speed: train_schedule.initial_speed,
-        comfort: train_schedule.comfort,
-        constraint_distribution: train_schedule.constraint_distribution,
-        speed_limit_tag: train_schedule.speed_limit_tag.clone(),
+        initial_speed: train_schedule.initial_speed(),
+        comfort: train_schedule.comfort(),
+        constraint_distribution: train_schedule.constraint_distribution(),
+        speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
         power_restrictions,
-        options: train_schedule.options.clone(),
+        options: train_schedule.options().clone(),
         physics_consist,
         electrical_profile_set_id,
     }
 }
 
 pub fn build_path_items_to_position<'t>(
-    train_schedule: &'t models::TrainSchedule,
+    path_items: &'t [PathItem],
     path_item_positions: &[u64],
 ) -> HashMap<&'t editoast_schemas::primitives::NonBlankString, u64> {
-    assert_eq!(path_item_positions.len(), train_schedule.path.len());
+    assert_eq!(path_item_positions.len(), path_items.len());
     // Project path items to path offset
-    train_schedule
-        .path
+
+    path_items
         .iter()
         .map(|p| &p.id)
         .zip(path_item_positions.iter().copied())
@@ -458,11 +465,10 @@ pub fn build_path_items_to_position<'t>(
 }
 
 pub fn build_sim_schedule_items(
-    train_schedule: &models::TrainSchedule,
+    schedule_items: &[ScheduleItem],
     path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
 ) -> Vec<SimulationScheduleItem> {
-    train_schedule
-        .schedule
+    schedule_items
         .iter()
         .map(|schedule_item| SimulationScheduleItem {
             path_offset: path_items_to_position[&schedule_item.at],
@@ -480,26 +486,24 @@ pub fn build_sim_schedule_items(
 }
 
 fn build_sim_margins(
-    train_schedule: &models::TrainSchedule,
+    margins: &Margins,
     path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
 ) -> SimulationMargins {
     SimulationMargins {
-        boundaries: train_schedule
-            .margins
+        boundaries: margins
             .boundaries
             .iter()
             .map(|at| path_items_to_position[at])
             .collect(),
-        values: train_schedule.margins.values.clone(),
+        values: margins.values.clone(),
     }
 }
 
 pub fn build_sim_power_restriction_items(
-    train_schedule: &models::TrainSchedule,
+    power_restrictions: &[PowerRestrictionItem],
     path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
 ) -> Vec<SimulationPowerRestrictionItem> {
-    train_schedule
-        .power_restrictions
+    power_restrictions
         .iter()
         .map(|item| SimulationPowerRestrictionItem {
             from: path_items_to_position[&item.from],

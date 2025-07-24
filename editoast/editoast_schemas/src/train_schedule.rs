@@ -96,6 +96,66 @@ pub struct TrainSchedule {
     pub category: Option<TrainMainCategory>,
 }
 
+pub trait TrainScheduleLike: Clone + Send + Sync + 'static {
+    fn rolling_stock_name(&self) -> &str;
+    fn start_time(&self) -> DateTime<Utc>;
+    fn path(&self) -> &[PathItem];
+    fn schedule(&self) -> &[ScheduleItem];
+    fn margins(&self) -> &Margins;
+    fn initial_speed(&self) -> f64;
+    fn comfort(&self) -> Comfort;
+    fn constraint_distribution(&self) -> Distribution;
+    fn speed_limit_tag(&self) -> Option<&String>;
+    fn power_restrictions(&self) -> &[PowerRestrictionItem];
+    fn options(&self) -> &TrainScheduleOptions;
+}
+
+impl TrainScheduleLike for TrainSchedule {
+    fn rolling_stock_name(&self) -> &str {
+        &self.rolling_stock_name
+    }
+
+    fn start_time(&self) -> DateTime<Utc> {
+        self.start_time
+    }
+
+    fn path(&self) -> &[PathItem] {
+        &self.path
+    }
+
+    fn schedule(&self) -> &[ScheduleItem] {
+        &self.schedule
+    }
+
+    fn margins(&self) -> &Margins {
+        &self.margins
+    }
+
+    fn initial_speed(&self) -> f64 {
+        self.initial_speed
+    }
+
+    fn comfort(&self) -> Comfort {
+        self.comfort
+    }
+
+    fn constraint_distribution(&self) -> Distribution {
+        self.constraint_distribution
+    }
+
+    fn speed_limit_tag(&self) -> Option<&String> {
+        self.speed_limit_tag.as_ref().map(|s| &s.0)
+    }
+
+    fn power_restrictions(&self) -> &[PowerRestrictionItem] {
+        &self.power_restrictions
+    }
+
+    fn options(&self) -> &TrainScheduleOptions {
+        &self.options
+    }
+}
+
 impl<'de> Deserialize<'de> for TrainSchedule {
     fn deserialize<D>(deserializer: D) -> Result<TrainSchedule, D::Error>
     where

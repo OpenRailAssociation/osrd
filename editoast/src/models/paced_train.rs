@@ -14,12 +14,12 @@ use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainSchedule;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 use itertools::Itertools;
 
 use super::Tags;
 use crate::models::prelude::*;
-use crate::models::train_schedule::TrainSchedule;
 use crate::views::timetable::TrainId;
 
 #[derive(Debug, Clone, Model)]
@@ -71,13 +71,13 @@ impl PacedTrain {
             train_schedule.rolling_stock_name = change_group.rolling_stock_name.clone();
         }
         if let Some(change_group) = &exception.rolling_stock_category {
-            train_schedule.main_category = change_group.value.clone().map(TrainMainCategory);
+            train_schedule.category = change_group.value.clone();
         }
         if let Some(change_group) = &exception.labels {
-            train_schedule.labels = change_group.value.iter().cloned().map(Some).collect();
+            train_schedule.labels = change_group.value.clone();
         }
         if let Some(change_group) = &exception.speed_limit_tag {
-            train_schedule.speed_limit_tag = change_group.value.clone().map(|value| value.0);
+            train_schedule.speed_limit_tag = change_group.value.clone();
         }
         if let Some(change_group) = &exception.start_time {
             train_schedule.start_time = change_group.value
@@ -108,11 +108,9 @@ impl PacedTrain {
 
     pub fn into_train_schedule(self) -> TrainSchedule {
         TrainSchedule {
-            id: self.id,
             train_name: self.train_name,
-            labels: self.labels.into(),
+            labels: self.labels.to_vec(),
             rolling_stock_name: self.rolling_stock_name,
-            timetable_id: self.timetable_id,
             path: self.path,
             start_time: self.start_time,
             schedule: self.schedule,
@@ -120,10 +118,10 @@ impl PacedTrain {
             initial_speed: self.initial_speed,
             comfort: self.comfort,
             constraint_distribution: self.constraint_distribution,
-            speed_limit_tag: self.speed_limit_tag,
+            speed_limit_tag: self.speed_limit_tag.map(|s| s.into()),
             power_restrictions: self.power_restrictions,
             options: self.options,
-            main_category: self.main_category,
+            category: self.main_category.map(|category| category.0),
         }
     }
 
@@ -270,6 +268,11 @@ impl From<PacedTrain> for paced_train::PacedTrain {
 mod tests {
     use std::str::FromStr;
 
+    use crate::models::PacedTrain;
+    use crate::models::Tags;
+    use crate::models::fixtures::create_created_exception_with_change_groups;
+    use crate::models::fixtures::create_modified_exception_with_change_groups;
+    use crate::views::timetable::TrainId;
     use chrono::DateTime;
     use chrono::Utc;
     use editoast_models::rolling_stock::TrainMainCategory;
@@ -281,13 +284,6 @@ mod tests {
     use editoast_schemas::train_schedule::TrainScheduleOptions;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-
-    use crate::models;
-    use crate::models::PacedTrain;
-    use crate::models::Tags;
-    use crate::models::fixtures::create_created_exception_with_change_groups;
-    use crate::models::fixtures::create_modified_exception_with_change_groups;
-    use crate::views::timetable::TrainId;
 
     pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> PacedTrain {
         PacedTrain {
@@ -342,12 +338,8 @@ mod tests {
             exception.initial_speed.unwrap().value
         );
         assert_eq!(
-            paced_train_exception.main_category,
-            exception
-                .rolling_stock_category
-                .unwrap()
-                .value
-                .map(TrainMainCategory)
+            paced_train_exception.category,
+            exception.rolling_stock_category.unwrap().value
         );
         assert_eq!(
             paced_train_exception.constraint_distribution,
@@ -355,13 +347,7 @@ mod tests {
         );
         assert_eq!(
             paced_train_exception.labels,
-            exception
-                .labels
-                .unwrap()
-                .value
-                .into_iter()
-                .map(Some)
-                .collect::<Vec<Option<String>>>()
+            exception.labels.unwrap().value
         );
         assert_eq!(
             paced_train_exception.margins,
@@ -385,11 +371,7 @@ mod tests {
         );
         assert_eq!(
             paced_train_exception.speed_limit_tag,
-            exception
-                .speed_limit_tag
-                .unwrap()
-                .value
-                .map(|v| v.to_string())
+            exception.speed_limit_tag.unwrap().value
         );
         assert_eq!(
             paced_train_exception.options,
@@ -421,7 +403,7 @@ mod tests {
 
         let paced_train =
             create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<(TrainId, models::TrainSchedule)> =
+        let occurrences: Vec<(TrainId, editoast_schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 5);
@@ -492,7 +474,7 @@ mod tests {
         });
 
         let paced_train = create_paced_train(vec![exception_1.clone()]);
-        let occurrences: Vec<(TrainId, models::TrainSchedule)> =
+        let occurrences: Vec<(TrainId, editoast_schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 4);
