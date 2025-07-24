@@ -213,6 +213,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   /** *************** Test 3 **************** */
   test('Duplicate and delete a paced train', async ({ page }) => {
     await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
+    await waitForTrainSchedulesAndPacedTrains(scenario.timetable_id);
 
     // to trigger list of paced train initialization for this e2e test, which isn't needed locally
     await page.reload();

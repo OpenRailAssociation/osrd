@@ -15,6 +15,10 @@ const frTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
 ).rollingStock;
 
 class RollingstockEditorPage extends CommonPage {
+  private readonly rollingstockEditorList: Locator;
+
+  private readonly rollingstockCard: Locator;
+
   private readonly newRollingstockButton: Locator;
 
   private readonly submitRollingstockButton: Locator;
@@ -57,6 +61,8 @@ class RollingstockEditorPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
+    this.rollingstockEditorList = page.getByTestId('rollingstock-editor-list');
+    this.rollingstockCard = this.rollingstockEditorList.getByTestId(/^rollingstock-/);
     this.newRollingstockButton = page.getByTestId('new-rollingstock-button');
     this.submitRollingstockButton = page.getByTestId('submit-rollingstock-button');
     this.rollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
@@ -96,6 +102,10 @@ class RollingstockEditorPage extends CommonPage {
 
   async openNewRollingStockForm() {
     await this.newRollingstockButton.click();
+  }
+
+  async verifyFirstRollingStockCardVisibility() {
+    await expect(this.rollingstockCard.first()).toBeVisible();
   }
 
   async searchRollingStock(rollingStockName: string) {
