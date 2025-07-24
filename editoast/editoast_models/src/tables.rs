@@ -462,6 +462,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    paced_train_round_trips (id) {
+        id -> Int8,
+        left_id -> Int8,
+        right_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     project (id) {
         id -> Int8,
         #[max_length = 128]
@@ -817,6 +828,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    train_schedule_round_trips (id) {
+        id -> Int8,
+        left_id -> Int8,
+        right_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     work_schedule (id) {
         id -> Int8,
         start_date_time -> Timestamptz,
@@ -926,6 +948,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_track_section,
     macro_node,
     paced_train,
+    paced_train_round_trips,
     project,
     rolling_stock,
     rolling_stock_livery,
@@ -946,6 +969,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     timetable,
     towed_rolling_stock,
     train_schedule,
+    train_schedule_round_trips,
     work_schedule,
     work_schedule_group,
 );
