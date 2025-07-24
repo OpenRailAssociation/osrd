@@ -273,10 +273,11 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
                 power_restrictions: paced_train.power_restrictions,
                 options: paced_train.options,
-                category: TrainCategory::from_main_or_sub_category(
-                    paced_train.main_category.map(|c| c.0),
-                    None,
-                ),
+                category: paced_train
+                    .main_category
+                    .as_deref()
+                    .copied()
+                    .map(TrainCategory::from), // TODO: or sub category when it's going to exist
             },
             exceptions: paced_train.exceptions,
             paced: Paced {
