@@ -75,6 +75,19 @@ pub struct OperationalPointSncfExtension {
     pub trigram: String,
 }
 
+#[cfg(feature = "testing")]
+impl OperationalPointSncfExtension {
+    pub fn new(ci: i64, ch: &str, trigram: &str) -> Self {
+        Self {
+            ci,
+            ch: ch.into(),
+            ch_short_label: ch.into(),
+            ch_long_label: ch.into(),
+            trigram: trigram.into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
