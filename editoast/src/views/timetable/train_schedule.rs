@@ -162,10 +162,11 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
                 speed_limit_tag: value.speed_limit_tag.map(Into::into),
                 power_restrictions: value.power_restrictions,
                 options: value.options,
-                category: TrainCategory::from_main_or_sub_category(
-                    value.main_category.map(|c| c.0),
-                    None,
-                ),
+                category: value
+                    .main_category
+                    .as_deref()
+                    .copied()
+                    .map(TrainCategory::from), // TODO: or sub category when it's going to exist
             },
         }
     }
