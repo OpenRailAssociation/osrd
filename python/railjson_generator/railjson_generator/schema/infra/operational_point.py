@@ -16,7 +16,7 @@ class OperationalPoint:
         self,
         label: str,
         trigram: Optional[str] = None,
-        uic: int = 0,
+        uic: int = 8700,
         weight: Optional[int] = None,
     ):
         self.label = label

@@ -55,8 +55,8 @@ test.describe('Times and Stops Tab Verification', () => {
 
   // Waypoints data for route verification
   const expectedViaValues = [
-    { name: 'Mid_West_station', ch: 'BV', uic: '3', km: 'KM 12.050' },
-    { name: 'Mid_East_station', ch: 'BV', uic: '4', km: 'KM 26.500' },
+    { name: 'Mid_West_station', ch: 'BV', uic: '33', km: 'KM 12.050' },
+    { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
   ];
 
   test.beforeAll('Fetch infrastructure and get translation', async () => {

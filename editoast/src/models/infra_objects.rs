@@ -358,7 +358,7 @@ mod tests_retrieve {
     async fn from_uic() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let uic = vec![1, 2];
+        let uic = vec![8711, 8722];
         let res =
             OperationalPointModel::retrieve_from_uic(&mut db_pool.get_ok(), small_infra.id, &uic)
                 .await

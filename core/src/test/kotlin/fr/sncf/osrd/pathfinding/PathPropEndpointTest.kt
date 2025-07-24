@@ -62,8 +62,8 @@ class PathPropEndpointTest : ApiTest() {
                     "West_station",
                     OperationalPointPartResponse("TA0", 700.0, null),
                     OperationalPointExtensions(
-                        OperationalPointSncfExtension(0, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 2)
+                        OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
+                        OperationalPointIdentifierExtension("West_station", 8722)
                     ),
                     Offset(650.meters),
                     null
@@ -72,8 +72,8 @@ class PathPropEndpointTest : ApiTest() {
                     "West_station",
                     OperationalPointPartResponse("TA1", 500.0, null),
                     OperationalPointExtensions(
-                        OperationalPointSncfExtension(0, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 2)
+                        OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
+                        OperationalPointIdentifierExtension("West_station", 8722)
                     ),
                     Offset(2450.meters),
                     null

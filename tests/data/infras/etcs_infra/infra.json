@@ -20,7 +20,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 22,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -28,7 +28,7 @@
                 },
                 "identifier": {
                     "name": "West_station",
-                    "uic": 2
+                    "uic": 8722
                 }
             }
         },
@@ -43,7 +43,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 11,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -51,7 +51,7 @@
                 },
                 "identifier": {
                     "name": "South_West_station",
-                    "uic": 1
+                    "uic": 8711
                 }
             }
         },
@@ -78,7 +78,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 33,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -86,7 +86,7 @@
                 },
                 "identifier": {
                     "name": "Mid_West_station",
-                    "uic": 3
+                    "uic": 8733
                 }
             }
         },
@@ -105,7 +105,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 44,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -113,7 +113,7 @@
                 },
                 "identifier": {
                     "name": "Mid_East_station",
-                    "uic": 4
+                    "uic": 8744
                 }
             }
         },
@@ -132,7 +132,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 55,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -140,7 +140,7 @@
                 },
                 "identifier": {
                     "name": "North_station",
-                    "uic": 5
+                    "uic": 8755
                 }
             }
         },
@@ -155,7 +155,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 66,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -163,7 +163,7 @@
                 },
                 "identifier": {
                     "name": "South_station",
-                    "uic": 6
+                    "uic": 8766
                 }
             }
         },
@@ -182,7 +182,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 77,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -190,7 +190,7 @@
                 },
                 "identifier": {
                     "name": "North_East_station",
-                    "uic": 7
+                    "uic": 8777
                 }
             }
         },
@@ -205,7 +205,7 @@
             "weight": null,
             "extensions": {
                 "sncf": {
-                    "ci": 0,
+                    "ci": 88,
                     "ch": "BV",
                     "ch_short_label": "BV",
                     "ch_long_label": "0",
@@ -213,7 +213,7 @@
                 },
                 "identifier": {
                     "name": "South_East_station",
-                    "uic": 8
+                    "uic": 8788
                 }
             }
         }

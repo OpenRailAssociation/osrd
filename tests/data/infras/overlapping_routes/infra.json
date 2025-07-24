@@ -20,7 +20,7 @@
                 },
                 "identifier": {
                     "name": "op.a1",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         },
@@ -43,7 +43,7 @@
                 },
                 "identifier": {
                     "name": "op.a2",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         },
@@ -66,7 +66,7 @@
                 },
                 "identifier": {
                     "name": "op.b1",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         },
@@ -89,7 +89,7 @@
                 },
                 "identifier": {
                     "name": "op.b2",
-                    "uic": 0
+                    "uic": 8700
                 }
             }
         }

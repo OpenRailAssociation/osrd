@@ -33,14 +33,16 @@ def _build_scenario_data():
     builder = InfraBuilder()
 
     # Create operational points
-    op_start = builder.add_operational_point("op.start", trigram="STA", uic=0, weight=1)
+    op_start = builder.add_operational_point(
+        "op.start", trigram="STA", uic=8700, weight=1
+    )
     op_center = builder.add_operational_point(
-        "op.center", trigram="CEN", uic=1, weight=0.5
+        "op.center", trigram="CEN", uic=8711, weight=0.5
     )
     op_takeover = builder.add_operational_point(
-        "op.takeover", trigram="TAK", uic=3, weight=0.5
+        "op.takeover", trigram="TAK", uic=8733, weight=0.5
     )
-    op_end = builder.add_operational_point("op.end", trigram="END", uic=2, weight=1)
+    op_end = builder.add_operational_point("op.end", trigram="END", uic=8722, weight=1)
 
     # Create track sections
 
