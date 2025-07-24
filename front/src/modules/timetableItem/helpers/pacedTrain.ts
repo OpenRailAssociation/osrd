@@ -35,9 +35,13 @@ export const extractOccurrenceDetailsFromPacedTrain = <
   T extends Omit<PacedTrain, 'paced' | 'exceptions'>,
 >(
   pacedTrain: T,
-  exceptionChangeGroups: ExceptionChangeGroups
+  exceptionChangeGroups: ExceptionChangeGroups | undefined
 ) => {
   const occurrence = { ...pacedTrain };
+
+  if (!exceptionChangeGroups) {
+    return occurrence;
+  }
 
   if (exceptionChangeGroups.train_name) {
     occurrence.train_name = exceptionChangeGroups.train_name.value;
