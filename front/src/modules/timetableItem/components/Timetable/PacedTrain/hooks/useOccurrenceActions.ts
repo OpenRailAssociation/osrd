@@ -59,32 +59,30 @@ const useOccurrenceActions = ({
         editedOccurrence.id
       );
 
-      if (occurrenceToUpdateException) {
-        const rawPacedTrain: Omit<PacedTrain, 'paced'> = {
-          ...pacedTrain,
-          train_name: editedOccurrence.trainName,
-          speed_limit_tag: pacedTrain.speedLimitTag,
-          rolling_stock_name: editedOccurrence.rollingStock?.name || '',
-          start_time: editedOccurrence.startTime.toISOString(),
-        };
+      const rawPacedTrain: Omit<PacedTrain, 'paced'> = {
+        ...pacedTrain,
+        train_name: editedOccurrence.trainName,
+        speed_limit_tag: pacedTrain.speedLimitTag,
+        rolling_stock_name: editedOccurrence.rollingStock?.name || '',
+        start_time: editedOccurrence.startTime.toISOString(),
+      };
 
-        const {
-          train_name,
-          start_time,
-          speed_limit_tag,
-          rolling_stock_name: _rollingStockName,
-          ...occurrenceProps
-        } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
+      const {
+        train_name,
+        start_time,
+        speed_limit_tag,
+        rolling_stock_name: _rollingStockName,
+        ...occurrenceProps
+      } = extractOccurrenceDetailsFromPacedTrain(rawPacedTrain, occurrenceToUpdateException);
 
-        occurrenceWithDetails = {
-          ...pacedTrain,
-          ...occurrenceProps,
-          name: train_name,
-          startTime: new Date(start_time),
-          speedLimitTag: speed_limit_tag ?? null,
-          rollingStock: editedOccurrence.rollingStock,
-        };
-      }
+      occurrenceWithDetails = {
+        ...pacedTrain,
+        ...occurrenceProps,
+        name: train_name,
+        startTime: new Date(start_time),
+        speedLimitTag: speed_limit_tag ?? null,
+        rollingStock: editedOccurrence.rollingStock,
+      };
 
       selectPacedTrainToEdit(occurrenceWithDetails, pacedTrain, editedOccurrence.id);
     },
