@@ -1,7 +1,6 @@
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::HashMap;
 use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
@@ -28,7 +27,7 @@ pub struct SignalUpdatesRequest<'a> {
     /// Path description as block ids
     pub blocks: &'a [Identifier],
     /// List of signal critical positions and zone updates for each train
-    pub train_simulations: HashMap<usize, TrainSimulation<'a>>,
+    pub train_simulations: Vec<TrainSimulation<'a>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -63,7 +62,7 @@ pub struct TrainSimulation<'a> {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct SignalUpdatesResponse {
-    pub signal_updates: HashMap<usize, Vec<SignalUpdate>>,
+    pub signal_updates: Vec<Vec<SignalUpdate>>,
 }
 
 impl AsCoreRequest<Json<SignalUpdatesResponse>> for SignalUpdatesRequest<'_> {

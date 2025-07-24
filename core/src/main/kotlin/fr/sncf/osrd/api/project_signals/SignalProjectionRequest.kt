@@ -14,7 +14,7 @@ class SignalProjectionRequest(
     val blocks: List<String>,
     @Json(name = "track_section_ranges") var trackSectionRanges: List<DirectionalTrackRange>,
     var routes: List<String>,
-    @Json(name = "train_simulations") var trainSimulations: Map<Long, TrainSimulation>,
+    @Json(name = "train_simulations") var trainSimulations: List<TrainSimulation>,
     var infra: String,
     /** The expected infrastructure version */
     @Json(name = "expected_version") var expectedVersion: Int,

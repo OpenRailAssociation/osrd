@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 
 class SignalProjectionResponse(
-    @Json(name = "signal_updates") val signalUpdates: Map<Long, Collection<SignalUpdate>>
+    @Json(name = "signal_updates") val signalUpdates: List<List<SignalUpdate>>
 )
 
 class SignalUpdate(

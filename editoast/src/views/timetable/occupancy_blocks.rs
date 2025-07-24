@@ -57,16 +57,10 @@ pub(super) async fn compute_batch_signal_updates<'a>(
         blocks: path_blocks,
         train_simulations: trains_details
             .iter()
-            .enumerate()
-            .map(|(index, train_details)| {
-                (
-                    index,
-                    TrainSimulation {
-                        signal_critical_positions: &train_details.signal_critical_positions,
-                        zone_updates: &train_details.zone_updates,
-                        simulation_end_time: train_details.times[train_details.times.len() - 1],
-                    },
-                )
+            .map(|train_details| TrainSimulation {
+                signal_critical_positions: &train_details.signal_critical_positions,
+                zone_updates: &train_details.zone_updates,
+                simulation_end_time: train_details.times[train_details.times.len() - 1],
             })
             .collect(),
     };

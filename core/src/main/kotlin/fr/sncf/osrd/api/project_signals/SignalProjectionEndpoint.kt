@@ -33,8 +33,8 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
             val blockPath = infra.blockInfra.convertBlockPath(request.blocks)
             val routePath = infra.rawInfra.convertRoutePath(request.routes)
 
-            val signalProjections = mutableMapOf<Long, List<SignalUpdate>>()
-            for ((id, trainSimulation) in request.trainSimulations) {
+            val signalProjections = mutableListOf<List<SignalUpdate>>()
+            for (trainSimulation in request.trainSimulations) {
                 val signalProjection =
                     projectSignals(
                         infra,
@@ -45,13 +45,13 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
                         trainSimulation.zoneUpdates,
                         trainSimulation.simulationEndTime
                     )
-                signalProjections[id] = signalProjection
+                signalProjections.add(signalProjection)
             }
 
             RsJson(
                 RsWithBody(
                     signalProjectionResponseAdapter.toJson(
-                        SignalProjectionResponse(signalProjections.toMap())
+                        SignalProjectionResponse(signalProjections)
                     )
                 )
             )
