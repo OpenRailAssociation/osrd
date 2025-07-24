@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::views::projection::TrainToProjectOnOperationalPoint;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -23,7 +22,6 @@ use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::PositiveDuration;
-use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::TrainSchedule;
@@ -34,7 +32,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-
 use crate::error::Result;
 use crate::models;
 use crate::models::OperationalPointModel;
@@ -52,13 +49,13 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::ProjectPathForm;
-use crate::views::projection::SpaceTimeCurves;
-use crate::views::projection::project_train_path_op;
-
 use crate::views::projection::ProjectPathOperationalPointForm;
+use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::TrainToProjectOnOperationalPoint;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
 use crate::views::projection::linear_interpolate;
+use crate::views::projection::project_train_path_op;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::SimulationResponseSuccess;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;

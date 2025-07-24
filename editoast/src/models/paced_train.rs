@@ -75,7 +75,7 @@ impl PacedTrain {
         if let Some(change_group) = &exception.rolling_stock_category {
             match &change_group.value {
                 Some(TrainCategory::Main { main_category }) => {
-                    train_schedule.main_category = Some(TrainMainCategory(main_category.clone()));
+                    train_schedule.main_category = Some(TrainMainCategory(*main_category));
                 }
                 Some(TrainCategory::Sub {
                     sub_category_code: _,

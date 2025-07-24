@@ -3,7 +3,23 @@ from typing import Annotated, List, Literal, Union
 
 from pydantic import BaseModel, Field, RootModel, StringConstraints
 
+from .rolling_stock import TrainMainCategory
+
 # Labels
+
+
+class TrainCategoryMain(BaseModel):
+    main_category: TrainMainCategory
+
+
+class TrainCategorySub(BaseModel):
+    sub_category_code: str
+
+
+TrainCategory = Annotated[
+    Union[TrainCategoryMain, TrainCategorySub],
+    Field(description="A train category: either main or sub"),
+]
 
 
 class TrainScheduleLabels(RootModel):

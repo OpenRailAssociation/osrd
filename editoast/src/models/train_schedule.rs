@@ -105,7 +105,7 @@ impl From<TrainSchedule> for train_schedule::TrainSchedule {
             speed_limit_tag: train_schedule.speed_limit_tag.map(Into::into),
             power_restrictions: train_schedule.power_restrictions,
             options: train_schedule.options,
-            category: paced_train
+            category: train_schedule
                 .main_category
                 .as_deref()
                 .copied()
