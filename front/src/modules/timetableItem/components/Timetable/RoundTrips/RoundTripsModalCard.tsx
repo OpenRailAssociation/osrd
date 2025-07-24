@@ -10,21 +10,26 @@ import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
+  isItemToPair?: boolean;
   restoreItems?: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
+  openPairingMode?: (itemId: TimetableItemId) => void | undefined;
   subCategories: SubCategory[];
 };
 
 const RoundTripsModalCard = ({
   pairingItem,
+  isItemToPair,
   restoreItems,
   moveItemToOneWays,
+  openPairingMode,
   subCategories,
 }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
@@ -34,6 +39,7 @@ const RoundTripsModalCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const {
+    id,
     name,
     category,
     interval,
@@ -81,6 +87,7 @@ const RoundTripsModalCard = ({
       title: t('pickReturn'),
       icon: <ArrowSwitch />,
       onClick: () => {
+        openPairingMode?.(id);
         closeMenu();
       },
     },
@@ -111,7 +118,11 @@ const RoundTripsModalCard = ({
       : undefined;
 
   return (
-    <div className="round-trips-card">
+    <div
+      className={cx('round-trips-card', {
+        'pairing-item': isItemToPair,
+      })}
+    >
       <div className="round-trips-card-header">
         <h3
           className={cx(

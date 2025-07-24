@@ -151,11 +151,13 @@
       "manageRoundTrips": "Manage round trips",
       "oneWays": "One-ways",
       "openRoundTripsMenu": "Open round trips management menu",
+      "others": "Others",
       "pickReturn": "Pick a return",
       "restore": "Move to todo",
       "roundTrips": "Round trips",
       "roundTripsManagement": "Round trips management",
       "setOneWay": "Set as one way",
+      "suggestions": "Suggestions",
       "todo": "Todo"
     },
     "scenarioCancel": "Cancel",

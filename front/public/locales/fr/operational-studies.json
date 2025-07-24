@@ -151,11 +151,13 @@
       "manageRoundTrips": "Gérer les aller-retours",
       "oneWays": "Aller simples",
       "openRoundTripsMenu": "Ouvrir le menu de gestion des aller-retours",
+      "others": "Autres",
       "pickReturn": "Sélectionner un retour",
       "restore": "Remettre à traiter",
       "roundTrips": "Aller-retours",
       "roundTripsManagement": "Gestion des aller-retours",
       "setOneWay": "Forcer un aller simple",
+      "suggestions": "Suggestions",
       "todo": "À traiter"
     },
     "scenarioCancel": "Annuler",
