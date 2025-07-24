@@ -21,6 +21,7 @@ use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use educe::Educe;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
@@ -36,7 +37,6 @@ use crate::error::Result;
 use crate::models::Infra;
 use crate::models::Retrieve;
 use crate::models::RollingStock;
-use crate::models::train_schedule::TrainSchedule;
 use crate::valkey_utils::ValkeyConnection;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -396,16 +396,16 @@ fn build_pathfinding_request(
 }
 
 /// Compute a path given a train schedule and an infrastructure.
-pub async fn pathfinding_from_train(
+pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedule: TrainSchedule,
+    train_schedule: T,
 ) -> Result<PathfindingResult> {
     #[expect(deprecated)]
     let rolling_stock: Vec<_> =
-        RollingStock::retrieve(conn, train_schedule.rolling_stock_name.clone())
+        RollingStock::retrieve(conn, train_schedule.rolling_stock_name().to_string())
             .await?
             .into_iter()
             .map_into()
@@ -420,12 +420,12 @@ pub async fn pathfinding_from_train(
 }
 
 /// Compute a path given a batch of trainschedule and an infrastructure.
-pub async fn pathfinding_from_train_batch(
+pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
-    train_schedules: &[TrainSchedule],
+    train_schedules: &[T],
     rolling_stocks: &[editoast_schemas::RollingStock],
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let initial_value = Arc::new(PathfindingResult::Failure(
@@ -433,15 +433,18 @@ pub async fn pathfinding_from_train_batch(
     ));
     let mut results = vec![initial_value; train_schedules.len()];
 
-    let rolling_stocks: HashMap<_, _> = rolling_stocks.iter().map(|rs| (&rs.name, rs)).collect();
+    let rolling_stocks: HashMap<_, _> = rolling_stocks
+        .iter()
+        .map(|rs| (rs.name.as_str(), rs))
+        .collect();
 
     let mut to_compute = vec![];
     let mut to_compute_index = vec![];
     for (index, train_schedule) in train_schedules.iter().enumerate() {
         // Retrieve rolling stock
-        let rolling_stock_name = &train_schedule.rolling_stock_name;
+        let rolling_stock_name = train_schedule.rolling_stock_name();
         let Some(rolling_stock) = rolling_stocks.get(rolling_stock_name) else {
-            let rolling_stock_name = rolling_stock_name.clone();
+            let rolling_stock_name = rolling_stock_name.into();
             results[index] = Arc::new(PathfindingResult::Failure(
                 PathfindingFailure::PathfindingInputError(
                     PathfindingInputError::RollingStockNotFound { rolling_stock_name },
@@ -466,10 +469,9 @@ pub async fn pathfinding_from_train_batch(
             )),
             rolling_stock_length: OrderedFloat(units::meter::from(rolling_stock.length)),
             path_items: train_schedule
-                .path
-                .clone()
-                .into_iter()
-                .map(|item| item.location)
+                .path()
+                .iter()
+                .map(|item| item.location.clone())
                 .collect(),
         };
         to_compute.push(path_input);

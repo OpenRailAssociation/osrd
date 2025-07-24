@@ -7,6 +7,7 @@ use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
+use editoast_schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -15,7 +16,6 @@ use utoipa::ToSchema;
 
 use crate::ValkeyClient;
 use crate::error::Result;
-use crate::models;
 use crate::models::infra::Infra;
 use crate::views::projection::ProjectPathInput;
 use crate::views::projection::extract_train_details;
@@ -73,25 +73,18 @@ pub(super) async fn compute_batch_signal_updates<'a>(
 
     let response = request.fetch(&core).await?;
 
-    let mut results = vec![vec![]; trains_details.len()];
-    response
-        .signal_updates
-        .into_iter()
-        .for_each(|(index, signal_updates)| results[index] = signal_updates);
-
-    Ok(results)
+    Ok(response.signal_updates)
 }
 
-pub(super) async fn compute_occupancy_blocks(
+pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
     valkey_client: Arc<ValkeyClient>,
     path: ProjectPathInput,
     infra: &Infra,
-    trains_schedules: &[models::TrainSchedule],
+    trains_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
-) -> Result<Vec<Arc<OccupancyBlocks>>> // TODO: Use schemas::TrainSchedule instead
-{
+) -> Result<Vec<Arc<OccupancyBlocks>>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     // 1. Get train simulations

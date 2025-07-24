@@ -25,7 +25,6 @@ use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
-use crate::models::train_schedule::TrainSchedule;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -247,7 +246,7 @@ struct PacedTrainSummaryResponse {
 struct SimulationContext {
     paced_train_id: i64,
     exception_key: Option<String>,
-    train_schedule: TrainSchedule,
+    train_schedule: editoast_schemas::TrainSchedule,
 }
 
 /// Associate each paced train id with its simulation summaries response
@@ -325,7 +324,7 @@ async fn simulation_summary(
             })
             .collect();
 
-    let schedules: Vec<TrainSchedule> = simulation_contexts
+    let schedules: Vec<editoast_schemas::TrainSchedule> = simulation_contexts
         .iter()
         .map(|ctx| ctx.train_schedule.clone())
         .collect();
