@@ -12,7 +12,8 @@ import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-import useSearchOperationalPoint, { MAIN_OP_CH_CODES } from './useSearchOperationalPoint';
+import { MAIN_OP_CH_CODES } from './consts';
+import useSearchOperationalPoint from './useSearchOperationalPoint';
 
 const MAX_DISPLAYABLE_RESULTS = 100;
 

@@ -12,7 +12,7 @@ import type {
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { MAIN_OP_CH_CODES } from 'common/Map/Search/useSearchOperationalPoint';
+import { MAIN_OP_CH_CODES } from 'common/Map/Search/consts';
 import { useInfraID } from 'common/osrdContext';
 import { useDebounce } from 'utils/helpers';
 import {
