@@ -10,7 +10,10 @@ import type {
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type {
+  SimulationSummary,
+  TimetableItemWithDetails,
+} from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -23,7 +26,7 @@ import { type ScheduleEntry, type TimesStopsRow } from '../types';
 
 const useOutputTableData = (
   simulatedTrain?: SimulationResponseSuccess['final_output'],
-  timetableItemWithDetails?: TimetableItemWithDetails,
+  simulationSummary?: SimulationSummary,
   operationalPoints?: PathPropertiesFormatted['operationalPoints'],
   selectedTrain?: Train,
   path?: PathfindingResultSuccess
@@ -39,9 +42,8 @@ const useOutputTableData = (
   const startDatetime = selectedTrain ? new Date(selectedTrain.start_time) : undefined;
 
   const pathStepRows = useMemo(() => {
-    if (!path || !selectedTrain || !timetableItemWithDetails?.summary?.isValid || !startDatetime)
-      return [];
-    const { pathItemTimes } = timetableItemWithDetails.summary;
+    if (!path || !selectedTrain || !simulationSummary?.isValid || !startDatetime) return [];
+    const { pathItemTimes } = simulationSummary;
 
     let lastReferenceDate = startDatetime;
 
@@ -98,7 +100,7 @@ const useOutputTableData = (
         positionOnPath: path.path_item_positions[index],
       };
     });
-  }, [selectedTrain, path, timetableItemWithDetails?.summary]);
+  }, [selectedTrain, path, simulationSummary]);
 
   useEffect(() => {
     const formatRows = async () => {

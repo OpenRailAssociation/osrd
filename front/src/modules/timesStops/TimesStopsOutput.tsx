@@ -5,7 +5,7 @@ import type {
   PathfindingResultSuccess,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
@@ -15,7 +15,7 @@ import { TableType, type TimesStopsRow } from './types';
 
 type TimesStopsOutputProps = {
   simulatedTimetableItem?: SimulationResponseSuccess;
-  timetableItemWithDetails?: TimetableItemWithDetails;
+  simulationSummary?: SimulationSummary;
   operationalPoints?: PathPropertiesFormatted['operationalPoints'];
   selectedTrain?: Train;
   path?: PathfindingResultSuccess;
@@ -23,14 +23,14 @@ type TimesStopsOutputProps = {
 
 const TimesStopsOutput = ({
   simulatedTimetableItem,
-  timetableItemWithDetails,
+  simulationSummary,
   operationalPoints,
   selectedTrain,
   path,
 }: TimesStopsOutputProps) => {
   const enrichedOperationalPoints = useOutputTableData(
     simulatedTimetableItem?.final_output,
-    timetableItemWithDetails,
+    simulationSummary,
     operationalPoints,
     selectedTrain,
     path
@@ -52,7 +52,7 @@ const TimesStopsOutput = ({
         });
       }}
       headerRowHeight={40}
-      dataIsLoading={!timetableItemWithDetails || !operationalPoints || !selectedTrain}
+      dataIsLoading={!simulationSummary || !operationalPoints || !selectedTrain}
     />
   );
 };
