@@ -1,6 +1,16 @@
 import { useMemo, useRef, useState } from 'react';
 
-import { KebabHorizontal, Moon, Pencil, Play, Reverse, Skip, Trash } from '@osrd-project/ui-icons';
+import {
+  Clock,
+  Flame,
+  KebabHorizontal,
+  Moon,
+  Pencil,
+  Play,
+  Reverse,
+  Skip,
+  Trash,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
@@ -176,6 +186,7 @@ const OccurrenceItem = ({
         'next-after-midnight': isNextAfterMidnight,
         selected: isSelected,
         disabled,
+        invalid: summary && !summary.isValid,
       })}
       role="button"
       tabIndex={0}
@@ -184,7 +195,13 @@ const OccurrenceItem = ({
         selectOccurrence(occurrence.id);
       }}
     >
-      <div className="main">
+      <div
+        className={cx('main', {
+          warning: !disabled && summary && (!summary.isValid || !!summary.notHonoredReason),
+          invalid: !disabled && summary && !summary.isValid,
+          'not-honored': !disabled && summary?.isValid && !!summary.notHonoredReason,
+        })}
+      >
         <div className="title-img">
           <div className="indicator-title">
             <OccurrenceIndicator occurrence={occurrence} />
@@ -210,6 +227,16 @@ const OccurrenceItem = ({
           </div>
           <div className="occurrence-item-time departure-time">
             {roundAndFormatToNearestMinute(startTime)}
+          </div>
+          <div
+            className={cx('status-icon', {
+              'not-honored-or-too-fast': summary?.isValid && summary.notHonoredReason,
+            })}
+          >
+            {!occurrence.disabled &&
+              summary?.isValid &&
+              summary.notHonoredReason &&
+              (summary.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
           </div>
           <div className="occurrence-item-time arrival-time">
             {arrivalTime && roundAndFormatToNearestMinute(arrivalTime)}
