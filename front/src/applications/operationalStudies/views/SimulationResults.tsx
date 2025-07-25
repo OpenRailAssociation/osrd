@@ -37,6 +37,7 @@ import {
 import BoardWrapper from '../components/Scenario/BoardWrapper';
 import { useScenarioContext } from '../hooks/useScenarioContext';
 import useSimulationResults from '../hooks/useSimulationResults';
+import type { Board } from '../types';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -47,6 +48,7 @@ type SimulationResultsProps = {
   projectionData?: ProjectionData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
   conflicts?: Conflict[];
+  activeBoards: Set<Board>;
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
   isMapDisplayed?: boolean;
 };
@@ -56,6 +58,7 @@ const SimulationResults = ({
   projectionData,
   timetableItemsWithDetails,
   conflicts = [],
+  activeBoards,
   updateTrainDepartureTime,
   isMapDisplayed,
 }: SimulationResultsProps) => {
@@ -289,30 +292,31 @@ const SimulationResults = ({
             </div>
           </BoardWrapper>
 
-          {/* TIME STOPS TABLE */}
-          <div className="time-stop-outputs">
-            <p className="mt-2 mb-3 ml-3 font-weight-bold">
-              {t('simulationResults.timetableOutput')}
-            </p>
-            <TimesStopsOutput
-              simulatedTimetableItem={simulationResults.simulation}
-              simulationSummary={simulationSummary}
-              operationalPoints={simulationResults.pathProperties.operationalPoints}
-              selectedTrain={simulationResults.train}
-              path={simulationResults.path}
-            />
-          </div>
-
-          {/* SIMULATION EXPORT BUTTONS */}
-          <SimulationResultExport
-            path={simulationResults.path}
-            scenarioData={scenarioData}
-            train={simulationResults.train}
-            simulation={simulationResults.simulation}
-            pathProperties={simulationResults.pathProperties}
-            rollingStock={simulationResults.rollingStock}
-            mapCanvas={mapCanvas}
-          />
+          <BoardWrapper
+            hidden={!activeBoards.has('tables')}
+            name={t('simulationResults.timetableOutput')}
+          >
+            <div className="time-stop-outputs">
+              {/* TIME STOPS TABLE */}
+              <TimesStopsOutput
+                simulatedTimetableItem={simulationResults.simulation}
+                simulationSummary={simulationSummary}
+                operationalPoints={simulationResults.pathProperties.operationalPoints}
+                selectedTrain={simulationResults.train}
+                path={simulationResults.path}
+              />
+              {/* SIMULATION EXPORT BUTTONS */}
+              <SimulationResultExport
+                path={simulationResults.path}
+                scenarioData={scenarioData}
+                train={simulationResults.train}
+                simulation={simulationResults.simulation}
+                pathProperties={simulationResults.pathProperties}
+                rollingStock={simulationResults.rollingStock}
+                mapCanvas={mapCanvas}
+              />
+            </div>
+          </BoardWrapper>
         </>
       )}
     </div>
