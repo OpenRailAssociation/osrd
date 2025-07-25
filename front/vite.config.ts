@@ -21,9 +21,7 @@ export default defineConfig(({ mode }) => {
       react(),
       viteTsconfigPaths(),
       checker({
-        typescript: {
-          buildMode: true,
-        },
+        typescript: true,
         eslint: {
           lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src scripts tests *.ts --max-warnings 0',
         },
@@ -46,13 +44,6 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'build',
       sourcemap: true,
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          api: 'modern',
-        },
-      },
     },
     server: {
       open: false,
