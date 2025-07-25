@@ -78,6 +78,7 @@ const FieldWrapper = ({
         {/* STATUS MESSAGE */}
         {statusWithMessage && (
           <StatusMessage
+            testIdPrefix="status-message"
             small={small}
             statusWithMessage={{
               ...statusWithMessage,

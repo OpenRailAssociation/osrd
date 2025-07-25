@@ -18,6 +18,7 @@ type SettingsPanelProps = {
   setStore: React.Dispatch<React.SetStateAction<Store>>;
   setIsMouseHoveringSettingsPanel: React.Dispatch<React.SetStateAction<boolean>>;
   translations?: SpeedSpaceChartProps['translations'];
+  testIdPrefix?: string;
 };
 
 const SettingsPanel = ({
@@ -27,6 +28,7 @@ const SettingsPanel = ({
   setStore,
   setIsMouseHoveringSettingsPanel,
   translations,
+  testIdPrefix,
 }: SettingsPanelProps) => {
   const [height, setHeight] = useState(`${SETTINGS_PANEL_BASE_HEIGHT}px`);
   const closeSettingsPanel = () => {
@@ -62,6 +64,7 @@ const SettingsPanel = ({
         {LAYERS_SELECTION.map((selection) => (
           <div key={selection} className="selection">
             <Checkbox
+              data-testid={testIdPrefix ? `${testIdPrefix}-layer-${selection}` : undefined}
               label={translations?.layersDisplay[selection] || selection}
               checked={store.layersDisplay[selection]}
               disabled={!isLayerActive(store, selection)}
@@ -100,7 +103,11 @@ const SettingsPanel = ({
           </div>
         ))}
       </div>
-      <button id="close-settings-panel" onClick={() => closeSettingsPanel()}>
+      <button
+        id="close-settings-panel"
+        data-testid={testIdPrefix ? `${testIdPrefix}-close` : undefined}
+        onClick={() => closeSettingsPanel()}
+      >
         <span>
           <X />
         </span>

@@ -13,12 +13,18 @@ To build and start the storybook:
 3. Run `npm run build-ui`
 4. Run `cd storybook` and `npm start`
 
-While developing on a package, you need to run the following commands to rebuild the package when a file changes:
+While developing on a package, you need to run the following commands to rebuild the package when a
+file changes:
 
 1. Run `cd ui-<name-of-the-project>`
 2. Run `npm run watch`
 
 ## Testing
+
+Some components in `osrd-ui` accept a `testIdPrefix` prop to make automated testing easier.
+
+This prop enables stable data-testid attributes inside the component, useful for E2E (e.g.,
+Playwright) or integration tests.
 
 To execute the test suite, run `npm run test`.
 
@@ -26,12 +32,10 @@ To execute the test suite, run `npm run test`.
 
 1. Go to the [new release page](//github.com/OpenRailAssociation/osrd/releases/new).
 2. In "Choose a tag", type `ui-vX.Y.Z` and click "Create new tag".
-3. In "Previous tag", pick the latest osrd-ui release and click "Generate
-   release notes".
+3. In "Previous tag", pick the latest osrd-ui release and click "Generate release notes".
 4. In "Release title", type "osrd-ui vX.Y.Z".
-5. Trim down the release notes by filtering out OSRD PRs, only keeping ui-*
-   material. Organize the changelog by package and highlight breaking API
-   changes.
+5. Trim down the release notes by filtering out OSRD PRs, only keeping ui-\* material. Organize the
+   changelog by package and highlight breaking API changes.
 6. Untick "Set as latest release".
 7. Publish the release.
 

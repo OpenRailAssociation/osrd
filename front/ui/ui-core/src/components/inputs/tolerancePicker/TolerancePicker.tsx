@@ -16,6 +16,7 @@ export type TolerancePickerProps = Omit<InputProps, 'value'> & {
   onToleranceChange: (toleranceValues: ToleranceValues) => void;
   toleranceValues?: ToleranceValues;
   translateWarningMessage?: (invalidTolerance: number) => string;
+  testIdPrefix?: string;
 };
 
 const TolerancePicker = ({
@@ -25,6 +26,7 @@ const TolerancePicker = ({
     plusTolerance: TOLERANCE_RANGES[0].value,
   },
   translateWarningMessage,
+  testIdPrefix,
   ...inputProps
 }: TolerancePickerProps) => {
   const formatToleranceValue = (minusIndex: number, plusIndex: number) =>
@@ -56,9 +58,10 @@ const TolerancePicker = ({
   }, [minusTolerance, plusTolerance]);
 
   return (
-    <div className="tolerance-picker">
+    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="tolerance-picker">
       <div>
         <Input
+          testIdPrefix={testIdPrefix}
           {...inputProps}
           value={inputValue}
           statusWithMessage={warningStatus}
@@ -68,7 +71,12 @@ const TolerancePicker = ({
         />
       </div>
 
-      <Modal inputRef={inputRef} isOpen={showPicker} onClose={() => setShowPicker(false)}>
+      <Modal
+        testIdPrefix="modal"
+        inputRef={inputRef}
+        isOpen={showPicker}
+        onClose={() => setShowPicker(false)}
+      >
         <div className="time-tolerance">
           <ToleranceRangeGrid
             onSelection={(e) => onToleranceChange({ minusTolerance: e, plusTolerance })}

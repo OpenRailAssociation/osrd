@@ -51,6 +51,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
     trailingContent?: InputAffixContent | InputAffixContentWithCallback;
     inputFieldWrapperClassname?: string;
     withIcons?: IconConfig[];
+    testIdPrefix?: string;
   };
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -73,6 +74,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onKeyUp,
       onBlur,
       onCloseStatusMessage,
+      testIdPrefix,
       ...rest
     },
     ref
@@ -109,6 +111,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           })}
         >
           <input
+            data-testid={testIdPrefix ? `${testIdPrefix}-input` : undefined}
             ref={ref}
             className={cx('input', {
               'with-leading-only': leadingContent && !trailingContent,
@@ -131,7 +134,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             })}
           >
             {withIcons.map((iconConfig, index) => (
-              <span key={index} className={iconConfig?.className} onClick={iconConfig.action}>
+              <span
+                key={index}
+                className={iconConfig?.className}
+                onClick={iconConfig.action}
+                data-testid={testIdPrefix ? `${testIdPrefix}-icon` : undefined}
+              >
                 {iconConfig.icon}
               </span>
             ))}

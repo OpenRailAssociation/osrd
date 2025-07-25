@@ -21,6 +21,7 @@ const TimePickerStory = (props: TimePickerProps) => {
   }, [props.hours, props.minutes, props.seconds]);
   return (
     <TimePicker
+      testIdPrefix="time-picker"
       {...props}
       hours={selectedHour}
       minutes={selectedMinute}
