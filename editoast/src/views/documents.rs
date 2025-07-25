@@ -15,7 +15,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::*;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 
 use super::AuthenticationExt;
 use super::AuthorizationError;

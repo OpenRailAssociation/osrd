@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use clap::Args;
 use colored::Colorize as _;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 use validator::ValidationErrorsKind;
 
 use crate::CliError;
@@ -147,8 +147,8 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
+        use database::DbConnectionPoolV2;
         use editoast_common::units;
-        use editoast_models::DbConnectionPoolV2;
         use rstest::rstest;
 
         fn get_fast_rolling_stock_schema(name: &str) -> editoast_schemas::RollingStock {
@@ -400,7 +400,7 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
-        use editoast_models::DbConnectionPoolV2;
+        use database::DbConnectionPoolV2;
         use rstest::rstest;
 
         #[rstest]

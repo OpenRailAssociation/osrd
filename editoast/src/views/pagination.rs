@@ -1,4 +1,4 @@
-use editoast_models::DbConnection;
+use database::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 

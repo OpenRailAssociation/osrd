@@ -8,6 +8,7 @@ edition.workspace = true
 members = [
   ".",
   "core_client",
+  "database",
   "editoast_common",
   "editoast_derive",
   "editoast_models",
@@ -35,6 +36,7 @@ chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 core_client = { path = "./core_client" }
 darling = "0.20"
+database = { path = "./database" }
 deadpool = { version = "0.12.2", features = [
   "managed",
   "rt_tokio_1",
@@ -141,6 +143,7 @@ clap.workspace = true
 colored = "3.0.0"
 core_client = { workspace = true, features = ["mocking_client"] }
 dashmap = "6.1.0"
+database.workspace = true
 deadpool.workspace = true
 deadpool-redis = { version = "0.22.0", features = [
   "tokio-comp",
@@ -242,6 +245,7 @@ axum = { version = "0.8.4", default-features = false, features = [
   "tracing",
 ] }
 core_client = { workspace = true, features = ["mocking_client"] }
+database = { workspace = true, features = ["testing"] }
 editoast_authz = { workspace = true }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }

@@ -1,10 +1,10 @@
 use chrono::DateTime;
 use chrono::Utc;
+use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use editoast_models::DbConnection;
 use serde::Serialize;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
@@ -17,7 +17,7 @@ use editoast_models::model;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Model, ToSchema, Serialize)]
-#[model(table = editoast_models::tables::stdcm_search_environment)]
+#[model(table = database::tables::stdcm_search_environment)]
 #[model(gen(ops = crd, list))]
 #[cfg_attr(test, derive(Deserialize, PartialEq), model(changeset(derive(Clone))))]
 pub struct StdcmSearchEnvironment {
@@ -52,7 +52,7 @@ impl StdcmSearchEnvironment {
     /// Retrieve the enabled search environment. If no env is enabled returns the most recent `enabled_until`.
     /// In case of multiple enabled environments, the one with the highest `id` is returned.
     pub async fn retrieve_latest_enabled(conn: &mut DbConnection) -> Option<Self> {
-        use editoast_models::tables::stdcm_search_environment::dsl::*;
+        use database::tables::stdcm_search_environment::dsl::*;
         // Search for enabled env
         let enabled_env = stdcm_search_environment
             .order_by(id.desc())
@@ -80,7 +80,7 @@ impl StdcmSearchEnvironment {
     /// Delete all existing search environments.
     #[cfg(test)]
     pub async fn delete_all(conn: &mut DbConnection) -> Result<(), model::Error> {
-        use editoast_models::tables::stdcm_search_environment::dsl::*;
+        use database::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
             .execute(conn.write().await.deref_mut())
             .await?;
@@ -109,7 +109,7 @@ pub mod tests {
     use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
     use crate::models::timetable::Timetable;
     use crate::models::work_schedules::WorkScheduleGroup;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     pub async fn stdcm_search_env_fixtures(
         conn: &mut DbConnection,

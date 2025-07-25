@@ -2,6 +2,7 @@ use std::io::Write;
 use std::ops::Deref;
 use std::str::FromStr;
 
+use database::tables::sql_types;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
@@ -13,10 +14,10 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression)]
-#[diesel(sql_type = crate::tables::sql_types::TrainMainCategory)]
+#[diesel(sql_type = sql_types::TrainMainCategory)]
 pub struct TrainMainCategory(pub editoast_schemas::rolling_stock::TrainMainCategory);
 
-impl FromSql<crate::tables::sql_types::TrainMainCategory, Pg> for TrainMainCategory {
+impl FromSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
     fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
         let s = std::str::from_utf8(value.as_bytes()).map_err(|_| "Invalid UTF-8 data")?;
         editoast_schemas::rolling_stock::TrainMainCategory::from_str(s)
@@ -25,7 +26,7 @@ impl FromSql<crate::tables::sql_types::TrainMainCategory, Pg> for TrainMainCateg
     }
 }
 
-impl ToSql<crate::tables::sql_types::TrainMainCategory, Pg> for TrainMainCategory {
+impl ToSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
     fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
         let variant: &str = &self.0.to_string();
         out.write_all(variant.as_bytes())?;

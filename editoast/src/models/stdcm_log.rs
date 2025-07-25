@@ -2,8 +2,8 @@ use chrono::DateTime;
 use chrono::Utc;
 use core_client::stdcm::Request;
 use core_client::stdcm::Response;
+use database::DbConnection;
 use editoast_derive::Model;
-use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -27,7 +27,7 @@ pub enum StdcmResponseOrError {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema)]
-#[model(table = editoast_models::tables::stdcm_logs)]
+#[model(table = database::tables::stdcm_logs)]
 #[model(gen(ops = crd, list))]
 pub struct StdcmLog {
     pub id: i64,

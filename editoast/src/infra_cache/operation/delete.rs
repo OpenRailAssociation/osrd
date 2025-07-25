@@ -1,8 +1,8 @@
+use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 use serde::Deserialize;
@@ -65,7 +65,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use diesel::sql_types::BigInt;
 
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;

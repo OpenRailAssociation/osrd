@@ -6,8 +6,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::models::prelude::*;
-use editoast_models::DbConnection;
-use editoast_models::tables::*;
+use database::DbConnection;
+use database::tables::*;
 use editoast_schemas::primitives::ObjectType;
 
 pub trait ModelBackedSchema: Sized {
@@ -252,11 +252,11 @@ impl OperationalPointModel {
         infra_id: i64,
         uic: &[u32],
     ) -> crate::error::Result<Vec<Self>> {
+        use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::infra_object_operational_point::dsl;
         let uic: Vec<i64> = uic.iter().map(|&u| i64::from(u)).collect();
 
         Ok(dsl::infra_object_operational_point
@@ -277,11 +277,11 @@ impl OperationalPointModel {
         infra_id: i64,
         trigrams: &[String],
     ) -> crate::error::Result<Vec<Self>> {
+        use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::infra_object_operational_point::dsl;
 
         Ok(dsl::infra_object_operational_point
             .filter(dsl::infra_id.eq(infra_id))
@@ -305,7 +305,7 @@ mod tests_persist {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
-                    let db_pool =  editoast_models::DbConnectionPoolV2::for_tests();
+                    let db_pool =  database::DbConnectionPoolV2::for_tests();
                     let infra =  crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                     let schemas = (0..10).map(|_| Default::default());
                     let changesets = $obj::from_infra_schemas(infra.id, schemas);
@@ -330,7 +330,7 @@ mod tests_persist {
 
 #[cfg(test)]
 mod tests_retrieve {
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 

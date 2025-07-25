@@ -41,7 +41,7 @@ editoast_common::schemas! {
 
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]
-#[model(table = editoast_models::tables::rolling_stock)]
+#[model(table = database::tables::rolling_stock)]
 #[model(error(create = Error, update = Error))]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(derive(Deserialize), public))]
@@ -301,7 +301,7 @@ pub mod tests {
     use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::rolling_stock_with_energy_sources_changeset;
     use crate::models::prelude::*;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn update_rolling_stock() {

@@ -39,7 +39,7 @@ impl ToTokens for CreateImpl {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                 ) -> std::result::Result<#model, Self::Error> {
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;

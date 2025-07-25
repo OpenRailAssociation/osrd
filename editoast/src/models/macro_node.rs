@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 use crate::models::Tags;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
-#[model(table = editoast_models::tables::macro_node)]
+#[model(table = database::tables::macro_node)]
 #[model(gen(ops = crud, batch_ops = c, list))]
 pub struct MacroNode {
     pub id: i64,
@@ -29,7 +29,7 @@ pub mod test {
     use super::*;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::models::prelude::*;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn macro_node_create_and_get() {

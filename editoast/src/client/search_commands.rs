@@ -6,9 +6,9 @@ use std::sync::Arc;
 use clap::Args;
 use clap::Subcommand;
 use colored::Colorize as _;
+use database::DbConnectionPoolV2;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl as _;
-use editoast_models::DbConnectionPoolV2;
 use editoast_search::SearchConfigStore as _;
 
 use crate::CliError;

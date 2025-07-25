@@ -1,3 +1,4 @@
+use database::DbConnection;
 use diesel::QueryResult;
 use diesel::QueryableByName;
 use diesel::pg::Pg;
@@ -8,7 +9,6 @@ use diesel::query_builder::QueryId;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use std::ops::DerefMut;
 
 use crate::error::Result;

@@ -1,5 +1,7 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
+use database::tables::infra_layer_electrification::dsl;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
@@ -7,8 +9,6 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
-use editoast_models::tables::infra_layer_electrification::dsl;
 use editoast_schemas::primitives::ObjectType;
 
 use super::GeneratedData;

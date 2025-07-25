@@ -17,7 +17,7 @@ editoast_common::schemas! {
 
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, utoipa::ToSchema)]
-#[model(table = editoast_models::tables::towed_rolling_stock)]
+#[model(table = database::tables::towed_rolling_stock)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(public))]
 pub struct TowedRollingStock {

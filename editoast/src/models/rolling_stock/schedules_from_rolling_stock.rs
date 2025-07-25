@@ -10,12 +10,12 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::rolling_stock::RollingStock;
-use editoast_models::DbConnection;
-use editoast_models::tables::project;
-use editoast_models::tables::rolling_stock;
-use editoast_models::tables::scenario;
-use editoast_models::tables::study;
-use editoast_models::tables::train_schedule;
+use database::DbConnection;
+use database::tables::project;
+use database::tables::rolling_stock;
+use database::tables::scenario;
+use database::tables::study;
+use database::tables::train_schedule;
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Eq, PartialOrd, Ord, Deserialize))]

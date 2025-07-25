@@ -11,7 +11,7 @@ use core_client::simulation::SimulationPath;
 use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SpeedLimitProperties;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;

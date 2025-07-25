@@ -29,9 +29,9 @@ use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::timetables_commands::*;
 use client::user;
 use client::user::UserCommand;
+use database::DbConnectionPoolV2;
 use editoast_common::tracing::TracingConfig;
 use editoast_common::tracing::create_tracing_subscriber;
-use editoast_models::DbConnectionPoolV2;
 use tracing_subscriber::util::SubscriberInitExt;
 pub use views::AppState;
 

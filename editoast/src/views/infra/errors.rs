@@ -23,7 +23,7 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 
 use super::InfraApiError;
 
@@ -128,7 +128,7 @@ enum ListErrorsErrors {
 
 #[cfg(test)]
 pub(in crate::views) async fn query_errors(
-    conn: &mut editoast_models::DbConnection,
+    conn: &mut database::DbConnection,
     infra: &Infra,
 ) -> (Vec<InfraError>, u64) {
     infra

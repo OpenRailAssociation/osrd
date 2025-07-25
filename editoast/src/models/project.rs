@@ -14,7 +14,7 @@ use crate::models::Study;
 use crate::models::Tags;
 use crate::models::prelude::*;
 use crate::views::project::ProjectError;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_models::model;
 
 editoast_common::schemas! {
@@ -22,7 +22,7 @@ editoast_common::schemas! {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
-#[model(table = editoast_models::tables::project)]
+#[model(table = database::tables::project)]
 #[model(gen(ops = crud, list))]
 pub struct Project {
     pub id: i64,
@@ -35,7 +35,7 @@ pub struct Project {
     pub last_modification: DateTime<Utc>,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
-    #[model(column = editoast_models::tables::project::image_id)]
+    #[model(column = database::tables::project::image_id)]
     pub image: Option<i64>,
 }
 
@@ -190,7 +190,7 @@ pub mod tests {
     use crate::models::Model;
     use crate::models::fixtures::create_project;
     use crate::models::prelude::*;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn project_creation() {

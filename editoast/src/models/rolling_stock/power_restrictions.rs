@@ -1,9 +1,9 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

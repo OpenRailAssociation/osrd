@@ -1,9 +1,9 @@
+use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
@@ -53,7 +53,7 @@ pub mod tests {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_create_ $obj:snake>]() {
-                    let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
+                    let db_pool = database::DbConnectionPoolV2::for_tests();
                     let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                     let infra_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),

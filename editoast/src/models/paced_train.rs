@@ -24,7 +24,7 @@ use crate::views::timetable::TrainId;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
-#[model(table = editoast_models::tables::paced_train)]
+#[model(table = database::tables::paced_train)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 pub struct PacedTrain {
     pub id: i64,

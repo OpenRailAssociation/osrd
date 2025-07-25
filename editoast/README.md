@@ -86,6 +86,7 @@ To setup `grcov`, please see [its documentation](https://github.com/mozilla/grco
 ## No-cache mode
 
 Running editoast with deactivated cache can help repeating calls when debugging.
+
 ```sh
 EDITOAST_NO_CACHE=true cargo run -- runserver
 ```
@@ -97,7 +98,6 @@ EDITOAST_NO_CACHE=true ./osrd-compose up -d
 ```
 
 ## Authorization
-
 
 ### How to disable authorizations
 
@@ -129,6 +129,7 @@ Where `mock/mocked` is the **identity** of the user and `Example User` its **nam
 In development, the default user `mock/mocked` which is given by the gateway.
 
 If you run the stack with docker, you can use:
+
 ```sh
 docker exec osrd-editoast editoast user add 'mock/mocked' 'Example User'
 docker exec osrd-editoast editoast roles add 'mock/mocked' Admin
@@ -146,7 +147,8 @@ export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'
 
 ## Editoast diesel tables model update
 
-After creating a new migration, one should update `editoast_models/src/tables.rs` with
+After creating a new migration, one should update `database/src/tables.rs` with
+
 ```sh
 $ diesel migration run  # without locking schema
 ```
@@ -172,6 +174,7 @@ We define some custom procedural macros in the `editoast_derive` crate. These re
 
 > [!TIP]
 > You can use [`cargo-insta`](https://insta.rs/docs/cli/) to review pending snapshots and accept them conveniently.
+>
 > ```sh
 > $ cargo insta review
 > ```

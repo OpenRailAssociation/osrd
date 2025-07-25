@@ -40,7 +40,7 @@ impl ToTokens for UpdateImpl {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn update(
                     self,
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                     #id_ident: #ty,
                 ) -> std::result::Result<Option<#model>, Self::Error> {
                     use diesel::prelude::*;

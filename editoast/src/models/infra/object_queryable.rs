@@ -1,5 +1,6 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -8,7 +9,6 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;

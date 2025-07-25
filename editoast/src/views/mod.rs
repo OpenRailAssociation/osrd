@@ -64,9 +64,9 @@ use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::mq_client;
 use core_client::version::CoreVersionRequest;
+use database::DbConnectionPoolV2;
+use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
-use editoast_models::DbConnectionPoolV2;
-use editoast_models::db_connection_pool::ping_database;
 use thiserror::Error;
 use tokio::time::timeout;
 use tower::Layer as _;
@@ -380,7 +380,7 @@ pub enum AuthorizationError {
     AuthError(#[from] AuthorizerError),
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    DbError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
+    DbError(#[from] database::db_connection_pool::DatabasePoolError),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -389,7 +389,7 @@ pub enum AppHealthError {
     #[error("Timeout error")]
     Timeout,
     #[error(transparent)]
-    Database(#[from] editoast_models::db_connection_pool::PingError),
+    Database(#[from] database::db_connection_pool::PingError),
     #[error(transparent)]
     Valkey(anyhow::Error),
     #[error(transparent)]
@@ -533,7 +533,7 @@ pub type Regulator = editoast_authz::Regulator<PgAuthDriver>;
 
 /// The state of the whole Editoast service, available to all handlers
 ///
-/// If only the database is needed, use `State<editoast_models::DbConnectionPoolV2>`.
+/// If only the database is needed, use `State<database::DbConnectionPoolV2>`.
 #[derive(Clone)]
 pub struct AppState {
     pub config: Arc<ServerConfig>,
@@ -749,7 +749,7 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
     use rstest::rstest;
     use serde_json::json;
 

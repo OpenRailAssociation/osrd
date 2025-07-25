@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use clap::Args;
 use clap::Subcommand;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 use crate::models::electrical_profiles::ElectricalProfileSet;

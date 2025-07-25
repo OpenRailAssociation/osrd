@@ -209,7 +209,7 @@ impl DbConnectionPoolV2 {
     /// ```no_run
     /// # #[tokio::main]
     /// # async fn main() {
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// let conn = pool.get_ok();
     /// // Do something with conn
     ///
@@ -226,7 +226,7 @@ impl DbConnectionPoolV2 {
     /// ```no_run
     /// # #[tokio::main]
     /// # async fn main() {
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// let conn_futures = (0..10).map(|_| async { pool.get() });
     /// let deadlock = futures::future::join_all(conn_futures).await;
     /// # }
@@ -247,13 +247,13 @@ impl DbConnectionPoolV2 {
     /// - Don't declare a variable for a single-use connection:
     ///
     /// ```
-    /// # async fn my_function_using_conn(conn: &mut editoast_models::DbConnection) {
+    /// # async fn my_function_using_conn(conn: &mut database::DbConnection) {
     /// #   // Do something with the connection
     /// # }
     /// #
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// # async fn main() -> Result<(), database::db_connection_pool::DatabasePoolError> {
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// // do
     /// my_function_using_conn(&mut pool.get().await?).await;
     /// // instead of
@@ -266,15 +266,15 @@ impl DbConnectionPoolV2 {
     /// - If a connection is used repeatedly, prefer using explicit scoping:
     ///
     /// ```
-    /// # async fn foo(conn: &mut editoast_models::DbConnection) -> u8 {
+    /// # async fn foo(conn: &mut database::DbConnection) -> u8 {
     /// #   0
     /// # }
-    /// # async fn bar(conn: &mut editoast_models::DbConnection) -> u8 {
+    /// # async fn bar(conn: &mut database::DbConnection) -> u8 {
     /// #   42
     /// # }
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// # async fn main() -> Result<(), database::db_connection_pool::DatabasePoolError> {
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// let my_results = {
     ///     let conn = &mut pool.get().await?;
     ///     foo(conn).await + bar(conn).await
@@ -290,7 +290,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: &mut editoast_models::DbConnection) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
+    /// #   async fn do_something(self, conn: &mut database::DbConnection) -> Result<(), database::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -299,7 +299,7 @@ impl DbConnectionPoolV2 {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     /// # let items = vec![0_u8; 2];
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
@@ -335,7 +335,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: &mut editoast_models::DbConnection) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
+    /// #   async fn do_something(self, conn: &mut database::DbConnection) -> Result<(), database::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -344,7 +344,7 @@ impl DbConnectionPoolV2 {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     /// # let items = vec![0_u8; 2];
-    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
+    /// let pool = database::DbConnectionPoolV2::for_tests();
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())

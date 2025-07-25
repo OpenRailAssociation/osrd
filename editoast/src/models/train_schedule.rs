@@ -18,7 +18,7 @@ use crate::models::prelude::*;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default))]
-#[model(table = editoast_models::tables::train_schedule)]
+#[model(table = database::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 #[model(row(derive(diesel::QueryableByName)))]
 pub struct TrainSchedule {

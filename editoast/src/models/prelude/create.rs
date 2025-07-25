@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::result::Result;
 
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_models::model;
 
 use crate::error::EditoastError;

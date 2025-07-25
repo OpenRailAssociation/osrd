@@ -39,8 +39,8 @@ use track_section::TrackSectionLayer;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnection;
+use database::DbConnectionPoolV2;
 
 editoast_common::schemas! {
     error::schemas(),
@@ -168,7 +168,7 @@ pub mod tests {
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
     use crate::models::fixtures::create_empty_infra;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     // Slow test

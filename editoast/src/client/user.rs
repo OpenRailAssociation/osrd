@@ -1,11 +1,11 @@
 use anyhow::anyhow;
 use clap::Args;
 use clap::Subcommand;
+use database::DbConnectionPoolV2;
 use editoast_authz as authz;
 use editoast_authz::StorageDriver;
 use editoast_authz::identity::GroupInfo;
 use editoast_authz::identity::UserInfo;
-use editoast_models::DbConnectionPoolV2;
 use futures::TryStreamExt;
 use futures::future::try_join_all;
 use std::collections::HashSet;

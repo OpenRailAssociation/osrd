@@ -8,7 +8,7 @@ use diesel::sql_types::Bool;
 use diesel::sql_types::SqlType;
 use std::sync::Arc;
 
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 use super::Model;
 
