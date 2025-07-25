@@ -19,9 +19,16 @@ export type StatusMessageProps = {
   showIcon?: boolean;
   small?: boolean;
   onClose?: () => void;
+  testIdPrefix?: string;
 };
 
-const StatusMessage = ({ statusWithMessage, showIcon, small, onClose }: StatusMessageProps) => {
+const StatusMessage = ({
+  statusWithMessage,
+  showIcon,
+  small,
+  onClose,
+  testIdPrefix,
+}: StatusMessageProps) => {
   const { tooltip, status, message } = statusWithMessage;
   if (message === undefined) return null;
 
@@ -36,7 +43,12 @@ const StatusMessage = ({ statusWithMessage, showIcon, small, onClose }: StatusMe
       })}
     >
       {showIcon && <InputStatusIcon status={status} small={small} />}
-      <span className={cx('status-message', { [status]: status })}>{message}</span>
+      <span
+        data-testid={testIdPrefix ? `${testIdPrefix}-${status}` : undefined}
+        className={cx('status-message', { [status]: status })}
+      >
+        {message}
+      </span>
       {status === 'info' && tooltip && (
         <button className="status-close" onClick={onClose}>
           <X size="sm" />

@@ -22,6 +22,7 @@ export type TimePickerProps = Omit<
     minutes: number;
     seconds?: number;
   }) => void;
+  testIdPrefix?: string;
 };
 
 type TimeRangeProps = {
@@ -55,6 +56,7 @@ const TimePicker = ({
   minutes = 0,
   seconds = 0,
   displaySeconds = false,
+  testIdPrefix,
   ...otherProps
 }: TimePickerProps) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -132,8 +134,9 @@ const TimePicker = ({
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   return (
-    <div className="time-picker">
+    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="time-picker">
       <Input
+        testIdPrefix={testIdPrefix ? `${testIdPrefix}` : undefined}
         {...otherProps}
         className={cx('input', 'time-input', otherProps.className)}
         type="time"
@@ -144,7 +147,12 @@ const TimePicker = ({
         ref={inputRef}
         step={displaySeconds ? 1 : 60}
       />
-      <InputModal inputRef={inputRef} isOpen={isModalOpen} onClose={closeModal}>
+      <InputModal
+        inputRef={inputRef}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        testIdPrefix={testIdPrefix ? `${testIdPrefix}-modal` : undefined}
+      >
         <div className="time-picker-container">
           <TimeRange
             range={hoursRange}
@@ -163,10 +171,18 @@ const TimePicker = ({
               onSelectItem={(m) => onTimeChange({ hours, minutes: m, seconds })}
             />
             <div className="minute-buttons">
-              <button onClick={() => incrementMinute(-1)} className="minute-button">
+              <button
+                data-testid={testIdPrefix ? `${testIdPrefix}-decrement-minute` : undefined}
+                onClick={() => incrementMinute(-1)}
+                className="minute-button"
+              >
                 -1mn
               </button>
-              <button onClick={() => incrementMinute(1)} className="minute-button">
+              <button
+                data-testid={testIdPrefix ? `${testIdPrefix}-increment-minute` : undefined}
+                onClick={() => incrementMinute(1)}
+                className="minute-button"
+              >
                 +1mn
               </button>
             </div>

@@ -15,6 +15,7 @@ type BaseDatePickerProps = {
   calendarPickerProps?: CalendarPickerPublicProps;
   errorMessages?: { invalidInput?: string; invalidDate?: string };
   width?: number;
+  testIdPrefix?: string;
 };
 
 export type SingleDatePickerProps = BaseDatePickerProps & {
@@ -48,11 +49,13 @@ export const DatePicker = (props: DatePickerProps) => {
 
   const { inputFieldWrapperClassname, ...otherInputProps } = props.inputProps;
   const { selectableSlot } = props;
+  const { testIdPrefix } = props;
 
   return (
-    <div className="date-picker">
+    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="date-picker">
       <div>
         <Input
+          testIdPrefix={testIdPrefix}
           {...otherInputProps}
           ref={inputRef}
           value={inputValue}
@@ -70,7 +73,12 @@ export const DatePicker = (props: DatePickerProps) => {
           statusWithMessage={statusWithMessage}
         />
       </div>
-      <InputModal inputRef={inputRef} isOpen={showPicker} onClose={() => setShowPicker(false)}>
+      <InputModal
+        inputRef={inputRef}
+        isOpen={showPicker}
+        onClose={() => setShowPicker(false)}
+        testIdPrefix="modal"
+      >
         <div className="calendar-picker-wrapper">
           <CalendarPicker
             {...props.calendarPickerProps}

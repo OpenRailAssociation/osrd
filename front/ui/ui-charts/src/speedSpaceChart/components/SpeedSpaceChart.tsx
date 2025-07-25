@@ -146,7 +146,12 @@ const SpeedSpaceChart = ({
         className="flex justify-end absolute base-margin-top"
         style={{ width: adjustedWidthRightAxis }}
       >
-        <InteractionButtons reset={reset} openSettingsPanel={openSettingsPanel} store={store} />
+        <InteractionButtons
+          reset={reset}
+          openSettingsPanel={openSettingsPanel}
+          store={store}
+          testIdPrefix="interaction"
+        />
       </div>
       {store.isSettingsPanelOpened && (
         <div
@@ -160,6 +165,7 @@ const SpeedSpaceChart = ({
             setStore={setStore}
             setIsMouseHoveringSettingsPanel={setIsMouseHoveringSettingsPanel}
             translations={translations}
+            testIdPrefix="settings-panel"
           />
         </div>
       )}

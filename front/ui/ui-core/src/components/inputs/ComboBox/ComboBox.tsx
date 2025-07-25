@@ -24,6 +24,7 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
   getSuggestionLabel: (option: T) => string;
   onSelectSuggestion: (option: T | undefined) => void;
   resetSuggestions: () => void;
+  testIdPrefix?: string;
 };
 
 /**
@@ -42,6 +43,7 @@ const ComboBox = <T,>({
   onChange,
   onSelectSuggestion,
   resetSuggestions,
+  testIdPrefix,
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -165,12 +167,14 @@ const ComboBox = <T,>({
 
   return (
     <div
+      data-testid={testIdPrefix ? `${testIdPrefix}` : undefined}
       className="combo-box"
       style={{ '--number-of-suggestions': numberOfSuggestionsToShow } as React.CSSProperties}
       ref={wrapperRef}
     >
       {customLabel && <label htmlFor={inputProps.id}>{customLabel}</label>}
       <Input
+        testIdPrefix={inputProps.id}
         {...inputProps}
         ref={inputRef}
         value={inputValue}
@@ -181,7 +185,10 @@ const ComboBox = <T,>({
         small={small}
       />
       {showSuggestions && (
-        <ul className="suggestions-list">
+        <ul
+          className="suggestions-list"
+          data-testid={testIdPrefix ? `${testIdPrefix}-list` : undefined}
+        >
           {suggestions.map((suggestion, index) => (
             <li
               ref={(el) => {
@@ -190,6 +197,7 @@ const ComboBox = <T,>({
                 }
               }}
               key={`${getSuggestionLabel(suggestion)}-${index}`}
+              data-testid={testIdPrefix ? `${testIdPrefix}-item` : undefined}
               className={cx('suggestion-item', {
                 active: index === activeSuggestionIndex,
                 selected: value && getSuggestionLabel(value) === getSuggestionLabel(suggestion),
