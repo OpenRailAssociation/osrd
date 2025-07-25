@@ -118,7 +118,6 @@ test.describe('Paced trains and exception management', () => {
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
     await waitForInfraStateToBeCached(infra.id);
-    await page.waitForLoadState('networkidle');
   });
 
   test.afterAll('Delete the created scenario', async () => {
@@ -287,7 +286,7 @@ test.describe('Paced trains and exception management', () => {
     });
   });
 
-  test('Edit an indexed occurrence', async ({ page }) => {
+  test('Edit an indexed occurrence', async () => {
     await pacedTrainSection.clickOnPacedTrain(0);
     await pacedTrainSection.checkOccurrenceMenuIcon(0);
     await pacedTrainSection.checkOccurrenceActionMenu({
@@ -301,8 +300,6 @@ test.describe('Paced trains and exception management', () => {
     await operationalStudiesPage.checkToastHasBeenLaunched(
       frTranslations.timetable.pacedTrainUpdated
     );
-
-    await page.waitForLoadState('networkidle');
 
     await pacedTrainSection.checkExceptionTooltip(
       0,

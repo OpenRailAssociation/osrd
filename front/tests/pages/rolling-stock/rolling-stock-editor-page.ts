@@ -95,8 +95,6 @@ class RollingstockEditorPage extends CommonPage {
 
   async navigateToRollingStockPage() {
     await this.page.goto('/rolling-stock-editor/');
-    // Wait for the page to reach the network idle state
-    await this.page.waitForLoadState('networkidle');
     await this.removeViteOverlay();
   }
 

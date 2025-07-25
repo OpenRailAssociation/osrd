@@ -69,7 +69,6 @@ test.describe('Verify train schedule elements and filters', () => {
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
     await waitForInfraStateToBeCached(infra.id);
-    await page.waitForLoadState('networkidle');
   });
 
   test('Duplicate and delete a paced train', async ({ page }) => {
@@ -93,7 +92,6 @@ test.describe('Verify train schedule elements and filters', () => {
       TOTAL_TIMETABLE_ITEMS,
       frTranslations
     );
-    await page.waitForLoadState('networkidle');
     // Verify timetable is empty and total label is empty
     await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
   });

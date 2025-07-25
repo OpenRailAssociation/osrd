@@ -45,7 +45,6 @@ test.describe('Verify stdcm missing fields', () => {
     ];
 
     await page.goto('/stdcm');
-    await page.waitForLoadState('networkidle');
     await stdcmPage.removeViteOverlay();
 
     // Wait for infra to be in 'CACHED' state before proceeding

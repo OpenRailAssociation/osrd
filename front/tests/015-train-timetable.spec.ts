@@ -79,10 +79,7 @@ test.describe('Verify train schedule elements and filters', () => {
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
     await operationalStudiesPage.removeViteOverlay();
-    // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
-
-    await page.waitForLoadState('networkidle');
   });
 
   /** *************** Test 1 **************** */

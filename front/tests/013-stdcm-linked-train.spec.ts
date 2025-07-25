@@ -69,7 +69,6 @@ test.describe('Verify stdcm simulation page', () => {
     ];
     // Navigate to STDCM page
     await page.goto('/stdcm');
-    await page.waitForLoadState('networkidle');
     await stdcmPage.removeViteOverlay();
 
     // Wait for infra to be in 'CACHED' state before proceeding
