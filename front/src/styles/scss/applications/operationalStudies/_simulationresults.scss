@@ -4,6 +4,10 @@
   flex-direction: column;
   gap: 16px;
 
+  > :last-child {
+    margin-bottom: 16px;
+  }
+
   .osrd-simulation-container {
     position: relative;
     border-radius: 4px;
@@ -20,10 +24,6 @@
       0 2px 4px rgba(0, 0, 0, 0.22);
   }
 
-  .time-stop-outputs {
-    margin: 0 30px 28px 38px;
-  }
-
   .driver-train-schedule {
     background-color: white;
     padding: 16px;
@@ -34,7 +34,12 @@
   .simulation-sheet-container {
     display: flex;
     justify-content: space-between;
-    padding: 0 33.5px 75px 42.5px;
+    padding: 16px;
+    width: 100%;
+    box-shadow: 0 1px 0 0 inset var(--black10);
+    border-radius: 0 0 8px 8px;
+    background-color: var(--ambiantB15);
+
     button {
       background-color: var(--black5);
       font-weight: 500;

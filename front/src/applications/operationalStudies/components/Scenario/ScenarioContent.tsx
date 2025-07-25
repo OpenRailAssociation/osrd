@@ -235,6 +235,7 @@ const ScenarioContent = ({
                 projectionData={projectionData}
                 conflicts={conflicts}
                 timetableItemsWithDetails={timetableItemsWithDetails}
+                activeBoards={activeBoards}
                 updateTrainDepartureTime={updateTrainDepartureTime}
                 isMapDisplayed={activeBoards.has('map')}
               />
