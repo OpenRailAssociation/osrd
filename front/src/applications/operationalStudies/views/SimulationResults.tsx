@@ -123,15 +123,15 @@ const SimulationResults = ({
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
-  const selectedTimetableItemSummary = useMemo(() => {
+  const simulationSummary = useMemo(() => {
     if (!simulationResults) return undefined;
     const selectedTimetableItemId = isTrainScheduleId(simulationResults.train.id)
       ? simulationResults.train.id
       : extractPacedTrainIdFromOccurrenceId(simulationResults.train.id);
     return timetableItemsWithDetails.find(
       (timetableItem) => timetableItem.id === selectedTimetableItemId
-    );
-  }, [timetableItemsWithDetails, simulationResults?.train]);
+    )?.summary;
+  }, [timetableItemsWithDetails, simulationResults?.train.id]);
 
   const handleTrainDrag = async ({
     draggedTrainId,
@@ -288,7 +288,7 @@ const SimulationResults = ({
             </p>
             <TimesStopsOutput
               simulatedTimetableItem={simulationResults.simulation}
-              timetableItemWithDetails={selectedTimetableItemSummary}
+              simulationSummary={simulationSummary}
               operationalPoints={simulationResults.pathProperties.operationalPoints}
               selectedTrain={simulationResults.train}
               path={simulationResults.path}
