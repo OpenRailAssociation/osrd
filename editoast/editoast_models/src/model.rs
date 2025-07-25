@@ -1,10 +1,10 @@
 use std::sync::LazyLock;
 
+use database::DatabaseError;
+
 use diesel::result::DatabaseErrorInformation;
 use diesel::result::DatabaseErrorKind;
 use regex::Regex;
-
-use crate::DatabaseError;
 
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
@@ -89,7 +89,7 @@ impl From<diesel::result::Error> for Error {
                         error = %e,
                         "failed to parse PostgreSQL details message"
                     );
-                    Self::DatabaseError(DatabaseError(e))
+                    Self::DatabaseError(e.into())
                 })
             }
             diesel::result::Error::DatabaseError(DatabaseErrorKind::CheckViolation, inner) => {
@@ -99,7 +99,7 @@ impl From<diesel::result::Error> for Error {
                         error = %e,
                         "failed to parse PostgreSQL details message"
                     );
-                    Self::DatabaseError(DatabaseError(e))
+                    Self::DatabaseError(e.into())
                 })
             }
             diesel::result::Error::DatabaseError(DatabaseErrorKind::ForeignKeyViolation, inner) => {
@@ -109,10 +109,10 @@ impl From<diesel::result::Error> for Error {
                         error = %e,
                         "failed to parse PostgreSQL details message"
                     );
-                    Self::DatabaseError(DatabaseError(e))
+                    Self::DatabaseError(e.into())
                 })
             }
-            _ => Self::DatabaseError(DatabaseError(e)),
+            _ => Self::DatabaseError(e.into()),
         }
     }
 }

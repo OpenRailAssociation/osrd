@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
+use database::DbConnection;
 use diesel::result::Error::NotFound;
-use editoast_models::DbConnection;
 
 use crate::models::PreferredId;
 

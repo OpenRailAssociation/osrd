@@ -8,7 +8,7 @@ use editoast_authz::StorageDriver;
 use editoast_authz::identity::GroupInfo;
 use editoast_authz::identity::UserInfo;
 
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 use futures::TryStreamExt;
 use std::collections::HashSet;
 use std::sync::Arc;

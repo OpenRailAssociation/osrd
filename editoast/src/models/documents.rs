@@ -5,7 +5,7 @@
 use editoast_derive::Model;
 
 #[derive(Debug, Default, Clone, Model)]
-#[model(table = editoast_models::tables::document)]
+#[model(table = database::tables::document)]
 #[model(gen(ops = crd))]
 pub struct Document {
     pub id: i64,

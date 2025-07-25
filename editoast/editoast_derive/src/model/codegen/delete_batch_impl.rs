@@ -56,7 +56,7 @@ impl ToTokens for DeleteBatchImpl {
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send>(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<usize, Self::Error> {
                     use #table_mod::dsl;

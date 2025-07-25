@@ -149,7 +149,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 ///
 /// ```ignore
 /// #[derive(Debug, Default, Clone, Model)]
-/// #[model(table = editoast_models::tables::osrd_infra_document)]
+/// #[model(table = database::tables::osrd_infra_document)]
 /// pub struct Document {
 ///     pub id: i64,
 ///     pub content_type: String,

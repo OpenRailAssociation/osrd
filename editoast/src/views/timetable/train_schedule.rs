@@ -19,9 +19,9 @@ use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationPath;
 
+use database::DbConnectionPoolV2;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
-use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;

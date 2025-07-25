@@ -6,10 +6,10 @@ use std::str::FromStr;
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
+use database::DbConnectionPoolV2;
 use editoast_common::units;
-use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
 use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
 use editoast_schemas::infra::Direction;

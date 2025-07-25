@@ -92,7 +92,7 @@ impl ToTokens for RetrieveBatchImpl {
                     I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
                     use crate::models::Model;
@@ -111,7 +111,7 @@ impl ToTokens for RetrieveBatchImpl {
                     I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send + std::fmt::Debug,
                 >(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
                     use crate::models::Identifiable;

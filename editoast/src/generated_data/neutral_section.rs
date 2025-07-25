@@ -1,9 +1,9 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 
 use super::GeneratedData;
 use crate::error::Result;

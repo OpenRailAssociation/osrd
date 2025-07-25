@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use crate::models::Infra;
 use crate::models::prelude::Exists;
+use database::DbConnectionPoolV2;
 use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
@@ -13,19 +14,18 @@ use editoast_authz::identity::GroupName;
 use editoast_authz::identity::User;
 use editoast_authz::identity::UserIdentity;
 use editoast_authz::identity::UserInfo;
-use editoast_models::DbConnectionPoolV2;
 
-use editoast_models::tables::*;
+use database::tables::*;
 use futures::StreamExt;
 use tracing::Level;
 
 #[derive(Debug, thiserror::Error, derive_more::From)]
 pub enum AuthDriverError {
     #[error(transparent)]
-    #[from(editoast_models::DatabaseError)]
+    #[from(database::DatabaseError)]
     Database(#[from] editoast_models::model::Error),
     #[error(transparent)]
-    DatabaseUnavailable(#[from] editoast_models::db_connection_pool::DatabasePoolError),
+    DatabaseUnavailable(#[from] database::db_connection_pool::DatabasePoolError),
     #[error("Subject with id {subject_id} not found")]
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
@@ -253,7 +253,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest::rstest]
     async fn test_auth_driver() {

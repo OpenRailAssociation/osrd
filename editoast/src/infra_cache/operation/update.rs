@@ -1,5 +1,6 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::QueryableByName;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
@@ -8,7 +9,6 @@ use diesel::sql_types::Json;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
@@ -139,7 +139,7 @@ mod tests {
     use crate::infra_cache::operation::OperationError;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_infra_object;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;

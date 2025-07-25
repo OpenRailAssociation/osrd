@@ -48,7 +48,7 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::infra::InfraObject;
 
 crate::routes! {

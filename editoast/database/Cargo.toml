@@ -1,5 +1,5 @@
 [package]
-name = "editoast_models"
+name = "database"
 license.workspace = true
 version.workspace = true
 edition.workspace = true
@@ -8,31 +8,16 @@ edition.workspace = true
 testing = []
 
 [dependencies]
-database.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
-editoast_common.workspace = true
-editoast_derive.workspace = true
-editoast_schemas.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
 postgres-openssl.workspace = true
-regex.workspace = true
-serde.workspace = true
-strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true
 tracing.workspace = true
 url.workspace = true
-utoipa.workspace = true
-
-[dev-dependencies]
-# The feature 'testing' is needed for all of the doc-tests
-editoast_models = { path = "./", features = ["testing"] }
-
-[lints]
-workspace = true

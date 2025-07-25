@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::pin::Pin;
 
+use database::DbConnection;
 use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -21,7 +22,6 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 use futures_util::Future;
@@ -304,7 +304,7 @@ async fn retrieve_current_errors_hash(
     conn: &mut DbConnection,
     infra_id: i64,
 ) -> Result<Vec<ErrorHash>> {
-    use editoast_models::tables::infra_layer_error::dsl;
+    use database::tables::infra_layer_error::dsl;
     Ok(dsl::infra_layer_error
         .filter(dsl::infra_id.eq(infra_id))
         .select(dsl::info_hash)
@@ -318,7 +318,7 @@ async fn remove_errors_from_hashes(
     infra_id: i64,
     errors_hash: &Vec<&ErrorHash>,
 ) -> Result<()> {
-    use editoast_models::tables::infra_layer_error::dsl;
+    use database::tables::infra_layer_error::dsl;
     let nb_deleted = diesel::delete(
         dsl::infra_layer_error
             .filter(dsl::infra_id.eq(infra_id))

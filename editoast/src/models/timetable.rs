@@ -1,5 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
+use database::DatabaseError;
 use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -7,18 +8,17 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Timestamptz;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use editoast_models::DatabaseError;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
-#[model(table = editoast_models::tables::timetable)]
+#[model(table = database::tables::timetable)]
 #[model(gen(ops = crd, list))]
 pub struct Timetable {
     pub id: i64,
@@ -32,7 +32,7 @@ impl From<Timetable> for Option<i64> {
 
 impl Timetable {
     pub async fn trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
-        use editoast_models::tables::train_schedule::dsl;
+        use database::tables::train_schedule::dsl;
 
         dsl::train_schedule
             .filter(dsl::timetable_id.eq(timetable_id))
@@ -43,7 +43,7 @@ impl Timetable {
     }
 
     pub async fn paced_trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
-        use editoast_models::tables::paced_train::dsl;
+        use database::tables::paced_train::dsl;
 
         dsl::paced_train
             .filter(dsl::timetable_id.eq(timetable_id))
@@ -57,7 +57,7 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<DateTime<Utc>>> {
-        use editoast_models::tables::train_schedule::dsl;
+        use database::tables::train_schedule::dsl;
 
         dsl::train_schedule
             .select(dsl::start_time)
@@ -176,7 +176,7 @@ pub mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_train_schedule_base;
     use crate::models::train_schedule::TrainScheduleChangeset;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn test_schedules_in_time_window() {

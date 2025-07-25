@@ -10,7 +10,7 @@ use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::models::pagination::load_for_pagination;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "lowercase")]
@@ -31,11 +31,11 @@ impl Infra {
         page: u64,
         page_size: u64,
     ) -> Result<(Vec<InfraError>, u64)> {
+        use database::tables::infra_layer_error::dsl;
+        use database::tables::infra_layer_error::table;
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
-        use editoast_models::tables::infra_layer_error::dsl;
-        use editoast_models::tables::infra_layer_error::table;
 
         type Filter = Box<dyn BoxableExpression<table, Pg, SqlType = Bool>>;
         fn sql_true() -> Filter {
@@ -82,12 +82,12 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
     ) -> Result<HashMap<(String, String), u64>> {
+        use database::tables::infra_layer_error::dsl;
         use diesel::dsl::count_star;
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::Text;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::infra_layer_error::dsl;
 
         let query = dsl::infra_layer_error
             .select((

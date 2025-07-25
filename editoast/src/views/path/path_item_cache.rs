@@ -1,6 +1,6 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::NonBlankString;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;

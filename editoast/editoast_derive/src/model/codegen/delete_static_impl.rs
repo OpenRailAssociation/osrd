@@ -33,7 +33,7 @@ impl ToTokens for DeleteStaticImpl {
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn delete_static(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &mut database::DbConnection,
                     #id_ident: #ty,
                 ) -> std::result::Result<bool, Self::Error> {
                     use diesel::prelude::*;

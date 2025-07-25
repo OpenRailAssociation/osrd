@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::ops::DerefMut;
 
+use database::DbConnection;
+use database::tables::infra_layer_operational_point::dsl;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
@@ -10,8 +12,6 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use editoast_common::geometry::GeoJsonPoint;
-use editoast_models::DbConnection;
-use editoast_models::tables::infra_layer_operational_point::dsl;
 use editoast_schemas::primitives::ObjectType;
 
 use super::GeneratedData;

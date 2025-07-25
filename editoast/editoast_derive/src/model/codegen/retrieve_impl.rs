@@ -37,7 +37,7 @@ impl ToTokens for RetrieveImpl {
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn retrieve_real(
-                    conn: editoast_models::DbConnection,
+                    conn: database::DbConnection,
                     #id_ident: #ty,
                 ) -> std::result::Result<Option<#model>, Self::Error> {
                     use diesel::prelude::*;

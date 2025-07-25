@@ -1053,6 +1053,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
+name = "database"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "diesel-async",
+ "futures 0.3.31",
+ "futures-util",
+ "openssl",
+ "opentelemetry-semantic-conventions",
+ "postgis_diesel",
+ "postgres-openssl",
+ "thiserror 2.0.12",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "deadpool"
 version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1299,6 +1318,7 @@ dependencies = [
  "colored",
  "core_client",
  "dashmap",
+ "database",
  "deadpool",
  "deadpool-redis",
  "derive_more",
@@ -1427,6 +1447,7 @@ dependencies = [
 name = "editoast_models"
 version = "0.1.0"
 dependencies = [
+ "database",
  "diesel",
  "diesel-async",
  "editoast_common",

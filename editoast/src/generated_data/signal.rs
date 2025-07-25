@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::ops::DerefMut;
 
+use database::DbConnection;
+use database::tables::infra_layer_signal::dsl;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
@@ -8,8 +10,6 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-use editoast_models::DbConnection;
-use editoast_models::tables::infra_layer_signal::dsl;
 use editoast_schemas::infra::LogicalSignal;
 use editoast_schemas::primitives::ObjectType;
 

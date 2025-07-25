@@ -37,9 +37,9 @@ use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
 use crate::models::prelude::*;
 use crate::models::railjson::persist_railjson;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
-use editoast_models::tables::infra::dsl;
+use database::DbConnection;
+use database::DbConnectionPoolV2;
+use database::tables::infra::dsl;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::ObjectType;
@@ -57,7 +57,7 @@ editoast_common::schemas! {
 pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
 #[derive(Debug, Clone, Educe, Serialize, Deserialize, Model, utoipa::ToSchema)]
-#[model(table = editoast_models::tables::infra)]
+#[model(table = database::tables::infra)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[educe(Default)]
 pub struct Infra {
@@ -258,8 +258,8 @@ impl Infra {
     ///
     /// Note: Everything is done in one transaction for consistency.
     pub async fn fast_delete_static(conn: DbConnection, infra_id: i64) -> Result<bool> {
-        use editoast_models::tables::infra_object_track_section::dsl as track_section_dsl;
-        use editoast_models::tables::search_track::dsl as search_track_dsl;
+        use database::tables::infra_object_track_section::dsl as track_section_dsl;
+        use database::tables::search_track::dsl as search_track_dsl;
 
         conn.transaction(|conn| {
             Box::pin(async move {
@@ -330,7 +330,7 @@ pub mod tests {
     use crate::models::prelude::*;
     use crate::models::railjson::RailJsonError;
     use crate::models::railjson::find_all_schemas;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn create_infra() {

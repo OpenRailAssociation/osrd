@@ -64,8 +64,8 @@ editoast_common::schemas! {
 mod tests {
     use std::collections::HashSet;
 
+    use database::DbConnectionPoolV2;
     use editoast_derive::Model;
-    use editoast_models::DbConnectionPoolV2;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -73,7 +73,7 @@ mod tests {
     use super::prelude::*;
 
     #[derive(Debug, Default, Clone, Model, PartialEq, Eq)]
-    #[model(table = editoast_models::tables::document, error = DocError)]
+    #[model(table = database::tables::document, error = DocError)]
     #[model(gen(ops = crud, batch_ops = crud, list))]
     struct Document {
         id: i64,
@@ -184,7 +184,7 @@ mod tests {
         }
 
         #[derive(Debug, Clone, Model)]
-        #[model(table = editoast_models::tables::document)]
+        #[model(table = database::tables::document)]
         #[model(gen(ops = r, batch_ops = c))]
         struct Document {
             id: i64,

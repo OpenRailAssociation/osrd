@@ -2,10 +2,10 @@ use chrono::DateTime;
 use chrono::NaiveDate;
 use chrono::Utc;
 
+use database::DbConnection;
 use diesel_async::scoped_futures::ScopedBoxFuture;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
-use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -20,7 +20,7 @@ use crate::views::study::StudyError;
 use super::Project;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
-#[model(table = editoast_models::tables::study)]
+#[model(table = database::tables::study)]
 #[model(gen(ops = crud, list))]
 pub struct Study {
     pub id: i64,
@@ -140,7 +140,7 @@ pub mod tests {
     use super::*;
     use crate::models::fixtures::create_project;
     use crate::models::fixtures::create_study;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn study_retrieve() {

@@ -1,11 +1,11 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use geos::geojson::Geometry;
 use geos::geojson::Value as GeoJsonValue;
 use mvt::Feature;
@@ -35,7 +35,7 @@ impl GeoJsonAndData {
         view: &View,
         infra: i64,
         (x, y, z): (u64, u64, u64),
-    ) -> Result<Vec<GeoJsonAndData>, editoast_models::DatabaseError> {
+    ) -> Result<Vec<GeoJsonAndData>, database::DatabaseError> {
         let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
         let records = sql_query(geo_json_query)
             .bind::<Integer, _>(z as i32)

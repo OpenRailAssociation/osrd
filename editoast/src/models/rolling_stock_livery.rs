@@ -2,7 +2,7 @@ use editoast_derive::Model;
 
 use super::Document;
 use crate::error::Result;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -20,7 +20,7 @@ use serde::Deserialize;
 ///
 #[derive(Debug, Clone, Default, Model)]
 #[cfg_attr(test, derive(Deserialize))]
-#[model(table = editoast_models::tables::rolling_stock_livery)]
+#[model(table = database::tables::rolling_stock_livery)]
 #[model(gen(ops = crd, list))]
 pub struct RollingStockLivery {
     pub id: i64,
@@ -60,7 +60,7 @@ pub mod tests {
     use crate::models::Document;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::models::prelude::*;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn create_delete_rolling_stock_livery() {

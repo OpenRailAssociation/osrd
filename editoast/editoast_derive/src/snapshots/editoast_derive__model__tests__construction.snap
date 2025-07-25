@@ -5,7 +5,7 @@ source: editoast_derive/src/model.rs
 // -----------------------------------------------------------------------------
 
 #[derive(Clone, Model)]
-#[model(table = editoast_models::tables::osrd_infra_document)]
+#[model(table = database::tables::osrd_infra_document)]
 #[model(row(type_name = "DocumentRow", derive(Debug)))]
 #[model(changeset(type_name = "DocumentChangeset", public, derive(Debug)))]
 #[model(gen(ops = crud, batch_ops = crud, list))]
@@ -24,17 +24,16 @@ struct Document {
 impl crate::models::Model for Document {
     type Row = DocumentRow;
     type Changeset = DocumentChangeset;
-    type Table = editoast_models::tables::osrd_infra_document::table;
+    type Table = database::tables::osrd_infra_document::table;
 }
 paste::paste! {
     impl Document { pub const [< id_ : snake : upper >] : crate ::models::ModelField <
     Document, i64, id > = crate ::models::ModelField::new(); pub const [< content_type :
     snake : upper >] : crate ::models::ModelField < Document, String,
-    editoast_models::tables::osrd_infra_document::content_type > = crate
+    database::tables::osrd_infra_document::content_type > = crate
     ::models::ModelField::new(); pub const [< data : snake : upper >] : crate
     ::models::ModelField < Document, Vec < u8 >,
-    editoast_models::tables::osrd_infra_document::data > = crate
-    ::models::ModelField::new(); }
+    database::tables::osrd_infra_document::data > = crate ::models::ModelField::new(); }
 }
 impl crate::models::prelude::ModelField<Document, i64, id> {
     pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Document> {
@@ -60,13 +59,13 @@ impl crate::models::prelude::ModelField<Document, i64, id> {
 impl crate::models::prelude::ModelField<
     Document,
     String,
-    editoast_models::tables::osrd_infra_document::content_type,
+    database::tables::osrd_infra_document::content_type,
 > {
     pub fn eq(&self, value: String) -> crate::models::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         let value: diesel_json::Json<String> = diesel_json::Json(value);
         crate::models::prelude::FilterSetting::new(
-            editoast_models::tables::osrd_infra_document::content_type.eq(value),
+            database::tables::osrd_infra_document::content_type.eq(value),
         )
     }
     pub fn eq_any(
@@ -79,31 +78,31 @@ impl crate::models::prelude::ModelField<
             .map(|value| diesel_json::Json(value))
             .collect();
         crate::models::prelude::FilterSetting::new(
-            editoast_models::tables::osrd_infra_document::content_type.eq_any(values),
+            database::tables::osrd_infra_document::content_type.eq_any(values),
         )
     }
     pub fn asc(&self) -> crate::models::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::SortSetting(
-            Box::new(editoast_models::tables::osrd_infra_document::content_type.asc()),
+            Box::new(database::tables::osrd_infra_document::content_type.asc()),
         )
     }
     pub fn desc(&self) -> crate::models::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::SortSetting(
-            Box::new(editoast_models::tables::osrd_infra_document::content_type.desc()),
+            Box::new(database::tables::osrd_infra_document::content_type.desc()),
         )
     }
 }
 impl crate::models::prelude::ModelField<
     Document,
     Vec<u8>,
-    editoast_models::tables::osrd_infra_document::data,
+    database::tables::osrd_infra_document::data,
 > {
     pub fn eq(&self, value: Vec<u8>) -> crate::models::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::FilterSetting::new(
-            editoast_models::tables::osrd_infra_document::data.eq(value),
+            database::tables::osrd_infra_document::data.eq(value),
         )
     }
     pub fn eq_any(
@@ -112,24 +111,24 @@ impl crate::models::prelude::ModelField<
     ) -> crate::models::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::FilterSetting::new(
-            editoast_models::tables::osrd_infra_document::data.eq_any(values),
+            database::tables::osrd_infra_document::data.eq_any(values),
         )
     }
     pub fn asc(&self) -> crate::models::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::SortSetting(
-            Box::new(editoast_models::tables::osrd_infra_document::data.asc()),
+            Box::new(database::tables::osrd_infra_document::data.asc()),
         )
     }
     pub fn desc(&self) -> crate::models::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::SortSetting(
-            Box::new(editoast_models::tables::osrd_infra_document::data.desc()),
+            Box::new(database::tables::osrd_infra_document::data.desc()),
         )
     }
 }
 #[derive(Queryable, Debug)]
-#[diesel(table_name = editoast_models::tables::osrd_infra_document)]
+#[diesel(table_name = database::tables::osrd_infra_document)]
 struct DocumentRow {
     #[diesel(column_name = "id")]
     id_: i64,
@@ -139,7 +138,7 @@ struct DocumentRow {
     data: Vec<u8>,
 }
 #[derive(Debug, Default, Queryable, AsChangeset, Insertable, Debug)]
-#[diesel(table_name = editoast_models::tables::osrd_infra_document)]
+#[diesel(table_name = database::tables::osrd_infra_document)]
 struct DocumentChangeset {
     #[diesel(deserialize_as = diesel_json::Json<String>, column_name = "content_type")]
     pub content_type: Option<diesel_json::Json<String>>,
@@ -244,13 +243,13 @@ impl crate::models::Exists<(String)> for Document {
         fields(query_id)
     )]
     async fn exists(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         content_type: (String),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current()
             .record("query_id", tracing::field::debug(&content_type));
         diesel::select(
@@ -274,13 +273,13 @@ impl crate::models::Exists<(i64)> for Document {
         fields(query_id)
     )]
     async fn exists(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         id_: (i64),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id_));
         diesel::select(
                 diesel::dsl::exists(dsl::osrd_infra_document.filter(dsl::id.eq(id_))),
@@ -300,12 +299,12 @@ impl crate::models::Retrieve<(String)> for Document {
         fields(query_id)
     )]
     async fn retrieve_real(
-        conn: editoast_models::DbConnection,
+        conn: database::DbConnection,
         content_type: (String),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         tracing::Span::current()
             .record("query_id", tracing::field::debug(&content_type));
@@ -329,12 +328,12 @@ impl crate::models::Retrieve<(i64)> for Document {
         fields(query_id)
     )]
     async fn retrieve_real(
-        conn: editoast_models::DbConnection,
+        conn: database::DbConnection,
         id_: (i64),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         tracing::Span::current().record("query_id", tracing::field::debug(&id_));
         dsl::osrd_infra_document
@@ -358,13 +357,13 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
     )]
     async fn update(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         content_type: (String),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current()
             .record("query_id", tracing::field::debug(&content_type));
         diesel::update(
@@ -390,13 +389,13 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
     )]
     async fn update(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         id_: (i64),
     ) -> std::result::Result<Option<Document>, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id_));
         diesel::update(dsl::osrd_infra_document.filter(dsl::id.eq(id_)))
             .set(&self)
@@ -419,13 +418,13 @@ impl crate::models::DeleteStatic<(String)> for Document {
         fields(query_id)
     )]
     async fn delete_static(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         content_type: (String),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current()
             .record("query_id", tracing::field::debug(&content_type));
         diesel::delete(
@@ -448,13 +447,13 @@ impl crate::models::DeleteStatic<(i64)> for Document {
         fields(query_id)
     )]
     async fn delete_static(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         id_: (i64),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id_));
         diesel::delete(dsl::osrd_infra_document.filter(dsl::id.eq(id_)))
             .execute(conn.write().await.deref_mut())
@@ -469,12 +468,12 @@ impl crate::models::Create<Document> for DocumentChangeset {
     #[tracing::instrument(name = "model:create<Document>", skip_all, err)]
     async fn create(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
     ) -> std::result::Result<Document, Self::Error> {
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
-        diesel::insert_into(editoast_models::tables::osrd_infra_document::table)
+        diesel::insert_into(database::tables::osrd_infra_document::table)
             .values(&self)
             .returning((dsl::id, dsl::content_type, dsl::data))
             .get_result::<DocumentRow>(conn.write().await.deref_mut())
@@ -495,14 +494,14 @@ impl crate::models::Delete for Document {
     )]
     async fn delete(
         &self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         let id = self.id_;
-        diesel::delete(editoast_models::tables::osrd_infra_document::table.find(id))
+        diesel::delete(database::tables::osrd_infra_document::table.find(id))
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
@@ -524,15 +523,15 @@ impl crate::models::prelude::List for Document {
         )
     )]
     async fn list(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
     ) -> crate::error::Result<Vec<Self>> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
-        let mut query = editoast_models::tables::osrd_infra_document::table.into_boxed();
+        let mut query = database::tables::osrd_infra_document::table.into_boxed();
         for filter_fun in settings.filters {
             let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
@@ -574,14 +573,14 @@ impl crate::models::prelude::Count for Document {
         )
     )]
     async fn count(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
     ) -> crate::error::Result<u64> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
         use std::ops::DerefMut;
-        let mut query = editoast_models::tables::osrd_infra_document::table
+        let mut query = database::tables::osrd_infra_document::table
             .select(diesel::dsl::count_star())
             .into_boxed();
         for filter_fun in settings.filters {
@@ -609,11 +608,11 @@ impl crate::models::CreateBatch for Document {
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<Self> + Send + std::fmt::Debug,
     >(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -656,13 +655,13 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<((String), Self)> + Send + std::fmt::Debug,
     >(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -707,13 +706,13 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<((i64), Self)> + Send + std::fmt::Debug,
     >(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -762,12 +761,9 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (String)> + Send,
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
-    >(
-        conn: &mut editoast_models::DbConnection,
-        ids: I,
-    ) -> std::result::Result<C, Self::Error> {
+    >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -814,13 +810,10 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (String)> + Send,
         C: Default + std::iter::Extend<((String), Document)> + Send + std::fmt::Debug,
-    >(
-        conn: &mut editoast_models::DbConnection,
-        ids: I,
-    ) -> std::result::Result<C, Self::Error> {
+    >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -874,12 +867,9 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
-    >(
-        conn: &mut editoast_models::DbConnection,
-        ids: I,
-    ) -> std::result::Result<C, Self::Error> {
+    >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -926,13 +916,10 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Document)> + Send + std::fmt::Debug,
-    >(
-        conn: &mut editoast_models::DbConnection,
-        ids: I,
-    ) -> std::result::Result<C, Self::Error> {
+    >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -988,11 +975,11 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
     >(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt as _;
@@ -1046,12 +1033,12 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         C: Default + std::iter::Extend<((String), Document)> + Send,
     >(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1112,11 +1099,11 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
     >(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt as _;
@@ -1170,12 +1157,12 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         C: Default + std::iter::Extend<((i64), Document)> + Send,
     >(
         self,
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1233,10 +1220,10 @@ impl crate::models::DeleteBatch<(String)> for Document {
         fields(query_ids)
     )]
     async fn delete_batch<I: std::iter::IntoIterator<Item = (String)> + Send>(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> std::result::Result<usize, Self::Error> {
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -1280,10 +1267,10 @@ impl crate::models::DeleteBatch<(i64)> for Document {
         fields(query_ids)
     )]
     async fn delete_batch<I: std::iter::IntoIterator<Item = (i64)> + Send>(
-        conn: &mut editoast_models::DbConnection,
+        conn: &mut database::DbConnection,
         ids: I,
     ) -> std::result::Result<usize, Self::Error> {
-        use editoast_models::tables::osrd_infra_document::dsl;
+        use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;

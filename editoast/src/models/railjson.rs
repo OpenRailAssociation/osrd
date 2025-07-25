@@ -7,7 +7,7 @@ use editoast_schemas::infra::major_version;
 use crate::error::Result;
 use crate::models::infra_objects::*;
 use crate::models::prelude::*;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 use super::Infra;
 

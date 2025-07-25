@@ -5,7 +5,7 @@ use core_client::pathfinding::TrackRange;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;

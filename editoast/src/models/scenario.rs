@@ -17,14 +17,14 @@ use crate::models::Tags;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::views::scenario::ScenarioError;
+use database::DbConnection;
 use editoast_derive::Model;
-use editoast_models::DbConnection;
 
 use super::Project;
 use super::Study;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
-#[model(table = editoast_models::tables::scenario)]
+#[model(table = database::tables::scenario)]
 #[model(gen(ops = crud, list))]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Scenario {
@@ -45,7 +45,7 @@ pub struct Scenario {
 
 impl Scenario {
     pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
-        use editoast_models::tables::infra::dsl as infra_dsl;
+        use database::tables::infra::dsl as infra_dsl;
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
             .select(infra_dsl::name)

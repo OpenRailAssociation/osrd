@@ -292,10 +292,10 @@ mod tests {
     use core_client::path_properties::PropertyElectrificationValues;
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
+    use database::DbConnectionPoolV2;
     use editoast_common::geometry::GeoJsonLineString;
     use editoast_common::geometry::GeoJsonLineStringValue;
     use editoast_common::geometry::GeoJsonPointValue;
-    use editoast_models::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;

@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use axum::http::StatusCode;
-use editoast_models::DbConnection;
+use database::DbConnection;
 
 use crate::error::EditoastError;
 use crate::error::InternalError;

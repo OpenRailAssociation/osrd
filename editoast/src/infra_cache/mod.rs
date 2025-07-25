@@ -58,7 +58,7 @@ use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::models::Infra;
 use crate::models::railjson::find_all_schemas;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::BoundingBox;
 
@@ -902,7 +902,7 @@ pub mod tests {
     use crate::infra_cache::object_cache::TrackSectionCache;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_infra_object;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Direction;

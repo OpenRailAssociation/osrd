@@ -19,7 +19,7 @@ use crate::error::Result;
 use crate::infra_cache::ObjectCache;
 use crate::models::Infra;
 use crate::models::prelude::*;
-use editoast_models::DbConnection;
+use database::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;

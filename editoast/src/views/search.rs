@@ -235,7 +235,7 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnectionPoolV2;
 
 crate::routes! {
     "/search" => search,

@@ -7,8 +7,8 @@ use std::sync::Arc;
 use clap::Args;
 use clap::Subcommand;
 use colored::Colorize as _;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
+use database::DbConnection;
+use database::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
 
 use crate::CliError;

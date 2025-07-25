@@ -1,5 +1,6 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
 use diesel::OptionalExtension;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
@@ -7,7 +8,6 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_models::DbConnection;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;

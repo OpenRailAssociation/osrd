@@ -1,9 +1,9 @@
 use std::ops::DerefMut;
 
+use database::DbConnection;
+use database::tables::electrical_profile_set;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use editoast_models::DbConnection;
-use editoast_models::tables::electrical_profile_set;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use serde::Deserialize;
 use serde::Serialize;
@@ -13,7 +13,7 @@ use crate::diesel::QueryDsl;
 use crate::error::Result;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema)]
-#[model(table = editoast_models::tables::electrical_profile_set)]
+#[model(table = database::tables::electrical_profile_set)]
 #[model(changeset(derive(Deserialize)))]
 #[model(gen(ops = crd))]
 pub struct ElectricalProfileSet {
@@ -25,7 +25,7 @@ pub struct ElectricalProfileSet {
 
 impl ElectricalProfileSet {
     pub async fn list_light(conn: &mut DbConnection) -> Result<Vec<LightElectricalProfileSet>> {
-        use editoast_models::tables::electrical_profile_set::dsl::*;
+        use database::tables::electrical_profile_set::dsl::*;
         let result = electrical_profile_set
             .select((id, name))
             .load(conn.write().await.deref_mut())
@@ -47,7 +47,7 @@ mod tests {
 
     use super::*;
     use crate::models::fixtures::create_electrical_profile_set;
-    use editoast_models::DbConnectionPoolV2;
+    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn test_list_light() {

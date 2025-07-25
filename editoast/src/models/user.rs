@@ -1,7 +1,7 @@
 use editoast_derive::Model;
 
 #[derive(Debug, Clone, Model)]
-#[model(table = editoast_models::tables::authn_user)]
+#[model(table = database::tables::authn_user)]
 #[model(gen(ops = r, list))]
 pub struct User {
     pub id: i64,

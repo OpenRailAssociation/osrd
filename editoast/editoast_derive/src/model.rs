@@ -96,7 +96,7 @@ mod tests {
             model,
             syn::parse_quote! {
                 #[derive(Clone, Model)]
-                #[model(table = editoast_models::tables::osrd_infra_document)]
+                #[model(table = database::tables::osrd_infra_document)]
                 #[model(row(type_name = "DocumentRow", derive(Debug)))]
                 #[model(changeset(type_name = "DocumentChangeset", public, derive(Debug)))] // fields are public
                 #[model(gen(ops = crud, batch_ops = crud, list))]
@@ -118,7 +118,7 @@ mod tests {
             model,
             syn::parse_quote! {
                 #[derive(Clone, Model)]
-                #[model(table = editoast_models::tables::timetable)]
+                #[model(table = database::tables::timetable)]
                 #[model(gen(ops = u))]
                 struct Timetable {
                     id: i64,
@@ -134,7 +134,7 @@ mod tests {
             model,
             syn::parse_quote! {
                 #[derive(Clone, Model)]
-                #[model(table = editoast_models::tables::timetable)]
+                #[model(table = database::tables::timetable)]
                 #[model(gen(batch_ops = c))]
                 struct Timetable {
                     id: i64,
@@ -150,7 +150,7 @@ mod tests {
             model,
             syn::parse_quote! {
                 #[derive(Clone, Model)]
-                #[model(table = editoast_models::tables::timetable)]
+                #[model(table = database::tables::timetable)]
                 #[model(gen(batch_ops = u))]
                 struct Timetable {
                     id: i64,
@@ -165,7 +165,7 @@ mod tests {
             model,
             syn::parse_quote! {
                 #[derive(Clone, Model)]
-                #[model(table = editoast_models::tables::timetable)]
+                #[model(table = database::tables::timetable)]
                 #[model(gen(ops = crd, batch_ops = rd, list))]
                 struct Timetable {
                     id: i64,
