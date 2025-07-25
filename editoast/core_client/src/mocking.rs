@@ -1,4 +1,7 @@
+use std::collections::VecDeque;
+use std::ops::Deref;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use http::StatusCode;
 use reqwest::Body;
@@ -84,14 +87,22 @@ impl MockingClient {
             .as_ref()
             .and_then(|r| r.body.as_ref())
             .map(|b| {
-                b.as_bytes()
+                b.deref()
+                    .lock()
+                    .unwrap()
+                    .pop_front()
                     .expect("mocked response body should not be empty when specified")
+                    .as_bytes()
+                    .expect("mocked response body should deserialize faultlessly")
+                    .to_vec()
             });
         match stub.response {
             None => Ok(None),
             Some(StubResponse { code, .. }) if code.is_success() => Ok(Some(
                 R::from_bytes(
-                    response.expect("mocked response body should not be empty when specified"),
+                    response
+                        .expect("mocked response body should not be empty when specified")
+                        .as_slice(),
                 )
                 .expect("mocked response body should deserialize faultlessly"),
             )),
@@ -133,7 +144,7 @@ pub struct StubResponse {
     // properly handle response error cases (and Deserialize the error)
     #[allow(unused)]
     code: StatusCode,
-    body: Option<Arc<Body>>,
+    body: Option<Arc<Mutex<VecDeque<Body>>>>,
 }
 
 #[derive(Debug)]
@@ -147,7 +158,7 @@ pub struct StubRequestBuilder<'a> {
 #[derive(Debug)]
 pub struct StubResponseBuilder<'a> {
     code: StatusCode,
-    body: Option<Body>,
+    body: Option<VecDeque<Body>>,
     request_builder: StubRequestBuilder<'a>,
 }
 
@@ -217,7 +228,14 @@ impl StubResponseBuilder<'_> {
     /// If none is set, `AsCoreRequest::fetch` will return an `Err(CoreError::NoResponseContent)`
     #[must_use = "call .finish() to register the stub request"]
     pub fn body<B: Into<Body>>(mut self, body: B) -> Self {
-        self.body = Some(body.into());
+        match &mut self.body {
+            Some(vec) => vec.push_back(body.into()),
+            None => {
+                let mut vec = VecDeque::new();
+                vec.push_back(body.into());
+                self.body = Some(vec);
+            }
+        }
         self
     }
 
@@ -225,7 +243,14 @@ impl StubResponseBuilder<'_> {
     #[must_use = "call .finish() to register the stub request"]
     pub fn json<T: Serialize>(mut self, body: T) -> Self {
         let json_body = serde_json::to_string(&body).expect("Failed to serialize JSON");
-        self.body = Some(Body::from(json_body));
+        match &mut self.body {
+            Some(vec) => vec.push_back(Body::from(json_body)),
+            None => {
+                let mut vec = VecDeque::new();
+                vec.push_back(Body::from(json_body));
+                self.body = Some(vec);
+            }
+        }
         self
     }
 
@@ -233,7 +258,7 @@ impl StubResponseBuilder<'_> {
     pub fn finish(self) {
         self.request_builder.finish_with_response(StubResponse {
             code: self.code,
-            body: self.body.map(Arc::new),
+            body: self.body.map(Mutex::new).map(Arc::new),
         })
     }
 }
