@@ -100,7 +100,6 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
     // Delete a paced train in the first tab and verify the update
     await firstPage.bringToFront();
     await pacedTrainSection.deletePacedTrain(1, frTranslations);
-    await firstPage.waitForLoadState('networkidle');
     await firstTimetableSection.verifyTotalItemsLabel(frTranslations, {
       totalPacedTrainCount: 1,
       totalTrainScheduleCount: 2,

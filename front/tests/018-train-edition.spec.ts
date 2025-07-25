@@ -97,7 +97,6 @@ test.describe('Edit train schedules and paced trains', () => {
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
       await waitForInfraStateToBeCached(infra.id);
-      await page.waitForLoadState('networkidle');
     }
   );
 

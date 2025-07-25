@@ -127,9 +127,6 @@ class SimulationResultPage extends STDCMPage {
   }
 
   async downloadSimulation(downloadDir: string): Promise<void> {
-    // Wait until there are no network requests for stability
-    await this.page.waitForLoadState('networkidle');
-
     // Get the download link element and suggested filename
     await expect(this.downloadLink).toBeVisible();
     const suggestedFilename = await this.downloadLink.getAttribute('download');
