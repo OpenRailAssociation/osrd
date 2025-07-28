@@ -8,17 +8,26 @@ import type {
   PathItemLocation,
   PathProperties,
   RelatedOperationalPoint,
+  RoundTrips,
   SimulationResponseSuccess,
   SimulationSummaryResult,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
-import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import type {
+  TimetableItem,
+  TimetableItemId,
+  TimetableItemWithPathOps,
+} from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import {
+  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
+  isPacedTrainResponseWithPacedTrainId,
+} from 'utils/trainId';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -30,6 +39,7 @@ import type {
   ElectrificationValue,
   PathPropertiesFormatted,
   PositionData,
+  TimetableItemRoundTripGroups,
 } from './types';
 
 /**
@@ -446,4 +456,43 @@ export const checkRoundTripCompatible = (
   }
 
   return true;
+};
+
+/**
+ * Group timetable items in three columns: one-ways, round-trips and others.
+ */
+export const groupRoundTrips = (
+  timetableItemsById: Map<TimetableItemId, TimetableItemWithPathOps>,
+  rawRoundTrips: { trainSchedules: RoundTrips; pacedTrains: RoundTrips }
+): TimetableItemRoundTripGroups => {
+  const oneWayIds = [
+    ...(rawRoundTrips.trainSchedules.one_ways ?? []).map(formatEditoastIdToTrainScheduleId),
+    ...(rawRoundTrips.pacedTrains.one_ways ?? []).map(formatEditoastIdToPacedTrainId),
+  ];
+  const roundTripIds = [
+    ...(rawRoundTrips.trainSchedules.round_trips ?? []).map(
+      ([leftId, rightId]) =>
+        [
+          formatEditoastIdToTrainScheduleId(leftId),
+          formatEditoastIdToTrainScheduleId(rightId),
+        ] as const
+    ),
+    ...(rawRoundTrips.pacedTrains.round_trips ?? []).map(
+      ([leftId, rightId]) =>
+        [formatEditoastIdToPacedTrainId(leftId), formatEditoastIdToPacedTrainId(rightId)] as const
+    ),
+  ];
+
+  const oneWays = oneWayIds.map((id) => timetableItemsById.get(id)!);
+  const roundTrips = roundTripIds.map(
+    ([leftId, rightId]) =>
+      [timetableItemsById.get(leftId)!, timetableItemsById.get(rightId)!] as const
+  );
+
+  const oneWayOrRoundTripIds = new Set<TimetableItemId>([...oneWayIds, ...roundTripIds.flat()]);
+  const others = [...timetableItemsById.values()].filter(
+    (timetableItem) => !oneWayOrRoundTripIds.has(timetableItem.id)
+  );
+
+  return { oneWays, roundTrips, others };
 };
