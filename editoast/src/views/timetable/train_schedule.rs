@@ -79,6 +79,7 @@ crate::routes! {
         "/project_path_op" => project_path_op,
         "/occupancy_blocks" => occupancy_blocks,
         "/track_occupancy" => track_occupancy,
+        "/simulation_batch" => simulation_batch,
         "/simulation_summary" => simulation_summary,
         "/{id}" => {
             get,
@@ -370,6 +371,82 @@ async fn simulation(
     .unwrap();
 
     Ok(Json(Arc::unwrap_or_clone(simulation)))
+}
+
+/// Associate each train id with its corresponding simulation response
+#[utoipa::path(
+    post, path = "",
+    tag = "train_schedule",
+    request_body = inline(SimulationBatchForm),
+    responses(
+        (status = 200, description = "Associate each train id with its simulation", body = HashMap<i64, SimulationResponse>),
+    ),
+)]
+async fn simulation_batch(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client: core,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(SimulationBatchForm {
+        infra_id,
+        electrical_profile_set_id,
+        ids: train_schedule_ids,
+    }): Json<SimulationBatchForm>,
+) -> Result<Json<HashMap<i64, simulation::Response>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    #[expect(deprecated)]
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra_read(&authz::Infra(infra_id))
+            .await
+    })
+    .await?;
+
+    let train_schedules: Vec<models::TrainSchedule> =
+        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
+
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client,
+        core,
+        &train_schedules,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    Ok(Json(
+        train_schedules
+            .into_iter()
+            .zip(simulations.into_iter())
+            .map(|(train_schedule, (simulation, _))| {
+                (train_schedule.id, Arc::unwrap_or_clone(simulation))
+            })
+            .collect(),
+    ))
 }
 
 /// Retrieve the etcs braking curves of an etcs train on etcs portions of the path
@@ -1434,6 +1511,17 @@ pub mod tests {
         let request = app.get(
             format!("/train_schedule/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
+        app.fetch(request).assert_status(StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn train_schedule_simulation_batch() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_train_schedule_id_for_simulation_tests().await;
+        let request = app.post("/train_schedule/simulation_batch").json(&json!({
+            "infra_id": infra_id,
+            "ids": vec![train_schedule_id],
+        }));
         app.fetch(request).assert_status(StatusCode::OK);
     }
 

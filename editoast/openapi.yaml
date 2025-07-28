@@ -4149,6 +4149,43 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/SpaceTimeCurve'
+  /train_schedule/simulation_batch:
+    post:
+      tags:
+      - train_schedule
+      summary: Associate each train id with its corresponding simulation response
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - ids
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                infra_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '200':
+          description: Associate each train id with its simulation
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/SimulationResponse'
   /train_schedule/simulation_summary:
     post:
       tags:

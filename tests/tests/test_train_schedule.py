@@ -93,6 +93,25 @@ def test_get_and_update_schedule_result(
     )
 
 
+def test_simulation_batch(
+    west_to_south_east_simulations: Sequence[Any],
+    small_infra: Infra,
+    session: Session,
+):
+    schedule_ids = [schedule["id"] for schedule in west_to_south_east_simulations]
+    response = session.post(
+        f"{EDITOAST_URL}train_schedule/simulation_batch",
+        json={
+            "infra_id": small_infra.id,
+            "ids": schedule_ids,
+        },
+    )
+    simulation_batch = response.json()
+    assert len(simulation_batch) == len(schedule_ids)
+    for schedule_id in schedule_ids:
+        assert simulation_batch[f"{schedule_id}"]["status"] == "success"
+
+
 def test_editoast_delete(
     west_to_south_east_simulations: Sequence[Any], session: Session
 ):

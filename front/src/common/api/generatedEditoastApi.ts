@@ -1242,6 +1242,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule'],
       }),
+      postTrainScheduleSimulationBatch: build.mutation<
+        PostTrainScheduleSimulationBatchApiResponse,
+        PostTrainScheduleSimulationBatchApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/simulation_batch`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
       postTrainScheduleSimulationSummary: build.query<
         PostTrainScheduleSimulationSummaryApiResponse,
         PostTrainScheduleSimulationSummaryApiArg
@@ -2401,6 +2412,17 @@ export type PostTrainScheduleProjectPathOpApiArg = {
     operational_points_distances: number[];
     operational_points_ids: string[];
     train_ids: number[];
+  };
+};
+export type PostTrainScheduleSimulationBatchApiResponse =
+  /** status 200 Associate each train id with its simulation */ {
+    [key: string]: SimulationResponse;
+  };
+export type PostTrainScheduleSimulationBatchApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    ids: number[];
+    infra_id: number;
   };
 };
 export type PostTrainScheduleSimulationSummaryApiResponse =
