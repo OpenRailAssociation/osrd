@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { Dictionary } from 'lodash';
+import { type Dictionary, isEqual } from 'lodash';
 
 import type {
   OperationalPoint,
@@ -18,6 +18,7 @@ import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -363,4 +364,86 @@ export const addPathOpsToTimetableItems = (
     );
     return { ...timetableItem, pathOps };
   });
+};
+
+/**
+ * Check whether a timetable item can be seen as the return of another
+ * timetable item. If this function returns true, we can draw a single line to
+ * represent the round-trip in the macro editor.
+ */
+export const checkRoundTripCompatible = (
+  timetableItemA: TimetableItemWithPathOps,
+  timetableItemB: TimetableItemWithPathOps
+): boolean => {
+  if (
+    isPacedTrainResponseWithPacedTrainId(timetableItemA) !==
+    isPacedTrainResponseWithPacedTrainId(timetableItemB)
+  ) {
+    return false;
+  }
+  if (
+    isPacedTrainResponseWithPacedTrainId(timetableItemA) &&
+    isPacedTrainResponseWithPacedTrainId(timetableItemB) &&
+    timetableItemA.paced.interval !== timetableItemB.paced.interval
+  ) {
+    return false;
+  }
+  if (!isEqual(timetableItemA.category, timetableItemB.category)) {
+    return false;
+  }
+  if (timetableItemA.pathOps.length !== timetableItemB.pathOps.length) {
+    return false;
+  }
+
+  for (const [indexA, opsA] of timetableItemA.pathOps.entries()) {
+    const indexB = timetableItemA.pathOps.length - indexA - 1;
+    const opsB = timetableItemB.pathOps[indexB];
+
+    const pathItemA = timetableItemA.path[indexA];
+    const pathItemB = timetableItemB.path[indexB];
+
+    const aExists = opsA.length > 0;
+    const bExists = opsB.length > 0;
+    if (aExists !== bExists) {
+      return false;
+    }
+    if (aExists && bExists) {
+      const stationA = getStationFromOps(opsA)!;
+      const stationB = getStationFromOps(opsB)!;
+      if (stationA.id !== stationB.id) {
+        return false;
+      }
+    } else {
+      // id is specific to each timetable item
+      // track_reference is ignored because we don't want to take tracks into account
+      // Only take into account uic/trigram/opId of the path items
+      const opRefA = {
+        ...pathItemA,
+        id: undefined,
+        deleted: undefined,
+        track_reference: undefined,
+      };
+      const opRefB = {
+        ...pathItemB,
+        id: undefined,
+        deleted: undefined,
+        track_reference: undefined,
+      };
+
+      if (!isEqual(opRefA, opRefB)) {
+        return false;
+      }
+    }
+
+    const scheduleItemA = timetableItemA.schedule?.find(({ at }) => at === pathItemA.id);
+    const scheduleItemB = timetableItemB.schedule?.find(({ at }) => at === pathItemB.id);
+
+    const isStopA = indexA === 0 || Boolean(scheduleItemA?.stop_for);
+    const isStopB = indexB === 0 || Boolean(scheduleItemB?.stop_for);
+    if (isStopA !== isStopB) {
+      return false;
+    }
+  }
+
+  return true;
 };
