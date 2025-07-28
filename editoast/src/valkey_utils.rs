@@ -18,6 +18,7 @@ use deadpool_redis::redis::aio::ConnectionLike;
 use deadpool_redis::redis::cmd;
 use futures::FutureExt;
 use futures::future;
+use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use tracing::Level;
@@ -97,6 +98,19 @@ impl ConnectionLike for ValkeyConnection {
             ValkeyConnection::NoCache => 0,
         }
     }
+}
+
+#[derive(Clone, Serialize)]
+struct ZaddWrapper<'a, M: Serialize> {
+    member: &'a M,
+    nonce: u64,
+}
+
+#[derive(Clone, Deserialize)]
+struct ZrangebyscoreWrapper<M> {
+    member: M,
+    #[expect(dead_code)]
+    nonce: u64,
 }
 
 impl ValkeyConnection {
@@ -278,14 +292,18 @@ impl ValkeyConnection {
     pub async fn json_zadd<
         K: Debug + ToRedisArgs + Send + Sync,
         S: ToRedisArgs + Send + Sync,
-        M: Serialize,
+        M: Serialize + ToOwned,
     >(
         &mut self,
         key: K,
         member: &M,
         score: S,
     ) -> Result<()> {
-        let str_member = match serde_json::to_string(member) {
+        let member = ZaddWrapper {
+            member,
+            nonce: rand::random(),
+        };
+        let str_member = match serde_json::to_string(&member) {
             Ok(member) => member,
             Err(_) => {
                 return Err(RedisError::from((
@@ -314,19 +332,18 @@ impl ValkeyConnection {
         let serialized_members = self
             .zrangebyscore::<_, _, _, Vec<String>>(key, min, max)
             .await?;
-        let deserialized_members =
-            serialized_members
-                .into_iter()
-                .filter_map(|value| match serde_json::from_str(&value) {
-                    Ok(value) => Some(value),
-                    Err(e) => {
-                        tracing::warn!(
-                            "the cached value is not a valid JSON for type '{}': {e}",
-                            std::any::type_name::<T>()
-                        );
-                        None
-                    }
-                });
+        let deserialized_members = serialized_members.into_iter().map(|value| {
+            match serde_json::from_str::<ZrangebyscoreWrapper<T>>(&value) {
+                Ok(value) => Some(value.member),
+                Err(e) => {
+                    tracing::warn!(
+                        "the cached value is not a valid JSON for type '{}': {e}",
+                        std::any::type_name::<T>()
+                    );
+                    None
+                }
+            }
+        });
         Ok(deserialized_members)
     }
 }
