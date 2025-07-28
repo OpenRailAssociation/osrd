@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { TRAIN_MAIN_CATEGORY_CLASS } from 'modules/timetableItem/components/Timetable/consts';
 
 import type { ConflictWithTrainNames } from '../types';
-import TrainNameCardSVG from './TrainNameCardSVG';
 
 const formatToLocalTime = (dateString: string) => dayjs.utc(dateString).local().format('HH:mm:ss');
 
@@ -27,24 +26,37 @@ const ConflictCard = ({
       role="button"
       tabIndex={0}
     >
-      <div className="conflict-header">
+      <div className="conflict-info">
         <div className="conflict-type">{t(conflict.conflict_type)}</div>
-        <div className="trains-name">
-          {conflict.trainNames.map((trainName, idx) => {
-            const category = conflict.trainCategories[idx];
-            const categoryClass = category
-              ? TRAIN_MAIN_CATEGORY_CLASS[category]
-              : TRAIN_MAIN_CATEGORY_CLASS.None;
-
-            return (
-              <TrainNameCardSVG
-                key={`train-${idx}-${trainName}`}
-                text={trainName}
-                categoryClass={categoryClass}
-              />
-            );
-          })}
+        <div className="start-and-end-time">
+          <div className="start-time" title={start_time}>
+            {start_time}
+          </div>
+          <div className="end-time" title={end_time}>
+            {end_time}
+          </div>
         </div>
+        <div className="departure-date" title={start_date}>
+          {start_date}
+        </div>
+      </div>
+
+      <div className="trains-name" title={conflict.trainNames.join(', ')}>
+        {conflict.trainNames.map((trainName, idx) => {
+          const category = conflict.trainCategories[idx];
+          const categoryClass = category
+            ? TRAIN_MAIN_CATEGORY_CLASS[category]
+            : TRAIN_MAIN_CATEGORY_CLASS.None;
+
+          return (
+            <div
+              key={`train-${idx}-${trainName}`}
+              className={`train-name-card train-category-text-${categoryClass}`}
+            >
+              {trainName}
+            </div>
+          );
+        })}
       </div>
 
       <div className="conflict-details">

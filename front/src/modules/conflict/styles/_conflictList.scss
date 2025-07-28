@@ -1,69 +1,19 @@
-.conflicts-list {
-  border-radius: 8px;
-  height: calc(100vh - 64px);
-  box-shadow:
-    0 1px 2px 0 rgba(0, 0, 0, 0.16),
-    0 2px 2px -1px rgba(255, 171, 107, 0.27);
+.conflicts-container {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 
-  .conflicts-list-header {
-    background-color: var(--ambientB5);
-    color: var(--white100);
-    height: 22px;
-    display: flex;
-    border-radius: 8px 8px 0px 0px;
-    align-items: center;
+  .conflict-card {
     position: relative;
-    box-shadow: 0 1px 0 0 inset rgba(255, 255, 255, 1);
+    background-color: var(--ambientB10);
+    display: flex;
+    gap: 12px;
+    min-height: 88px;
+    padding: 8px 8px 12px 12px;
     flex-shrink: 0;
 
-    h2 {
-      color: var(--grey50);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      padding: 3px 32px 3px 8px !important;
-      margin: 0 !important;
-    }
-
-    // Double separator under header (dark gray then white)
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 1px;
-      background: var(--black100);
-      opacity: 0.15;
-    }
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: -1px;
-      width: 100%;
-      height: 1px;
-      background: var(--white100);
-      opacity: 1;
-    }
-  }
-
-  .conflicts-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    .conflict-card {
-      position: relative;
-      background-color: var(--ambientB10);
-      display: flex;
-      flex-direction: column;
-      min-height: 88px;
-      padding: 8px 8px 12px 12px;
+    .conflict-info {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
