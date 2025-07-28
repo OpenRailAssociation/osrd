@@ -12,7 +12,7 @@ default-members = [".", "actix_auth", "actix_proxy"]
 
 [workspace.dependencies]
 # common utils
-dyn-clone = "1.0.19"
+dyn-clone = "1.0.20"
 either = "1"
 env_logger = "0.11"
 futures = "0.3"
