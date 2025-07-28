@@ -14,7 +14,7 @@ import type {
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
-import type { Train } from 'reducers/osrdconf/types';
+import type { Train, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
@@ -126,4 +126,10 @@ export type OperationalPointWithTimeAndSpeed = {
   line_name: string | null;
   track_name: string | null;
   ch?: string | null;
+};
+
+export type TimetableItemRoundTripGroups = {
+  oneWays: TimetableItemWithPathOps[];
+  roundTrips: (readonly [TimetableItemWithPathOps, TimetableItemWithPathOps])[];
+  others: TimetableItemWithPathOps[];
 };
