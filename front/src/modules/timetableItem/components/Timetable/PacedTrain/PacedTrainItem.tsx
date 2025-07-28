@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -18,6 +18,7 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
+import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -199,6 +200,11 @@ const PacedTrainItem = ({
     );
   };
 
+  const worstCase = useMemo(
+    () => getOccurrencesWorstStatus(pacedTrain),
+    [pacedTrain.summary, pacedTrain.exceptions]
+  );
+
   const content = (
     <div
       data-testid="scenario-timetable-item"
@@ -211,9 +217,9 @@ const PacedTrainItem = ({
       <div
         data-testid="paced-train"
         className={cx('base-info', {
-          warning: summary && (!summary.isValid || summary.notHonoredReason),
           invalid: summary && !summary.isValid,
-          'not-honored': summary?.isValid && summary.notHonoredReason,
+          warning: !!worstCase,
+          [`warning-${worstCase}`]: !!worstCase,
         })}
       >
         <div className="checkbox-title">

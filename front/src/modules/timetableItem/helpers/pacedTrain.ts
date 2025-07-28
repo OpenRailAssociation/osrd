@@ -85,3 +85,34 @@ export const extractOccurrenceDetailsFromPacedTrain = <
   }
   return occurrence;
 };
+
+/** Return the worst status of the model train and its occurrences */
+export const getOccurrencesWorstStatus = ({
+  summary,
+  exceptions,
+}: Pick<PacedTrainWithDetails, 'summary' | 'exceptions'>):
+  | 'invalid'
+  | 'scheduleNotHonored'
+  | 'trainTooFast'
+  | '' => {
+  let className: '' | 'scheduleNotHonored' | 'trainTooFast' = '';
+
+  if (summary) {
+    if (!summary.isValid) {
+      return 'invalid';
+    }
+    if (summary.notHonoredReason) {
+      className = summary.notHonoredReason;
+    }
+  }
+
+  for (const exception of exceptions) {
+    if (exception.summary && !exception.disabled) {
+      if (!exception.summary.isValid) return 'invalid';
+      if (exception.summary.notHonoredReason && className !== 'scheduleNotHonored') {
+        className = exception.summary.notHonoredReason;
+      }
+    }
+  }
+  return className;
+};
