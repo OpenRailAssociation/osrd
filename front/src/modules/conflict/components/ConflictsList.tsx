@@ -24,22 +24,10 @@ const ConflictsList = ({ conflicts, timetableItems, onConflictClick }: Conflicts
     return null;
   }
   return (
-    <div className={cx('conflicts-list')}>
-      <div className="conflicts-list-header">
-        <h2>
-          {t('conflictsCount', {
-            count: conflicts.length,
-          })}
-        </h2>
-      </div>
-
-      <div className={cx('conflicts-container')}>
-        {enrichedConflicts.map((conflict, index) => (
-          <ConflictCard key={index} conflict={conflict} onConflictClick={onConflictClick} />
-        ))}
-        <div className="conflicts-list-empty-placeholder" />
-      </div>
-      <div className="bottom-conflicts-list" />
+    <div className={cx('conflicts-container')}>
+      {enrichedConflicts.map((conflict, index) => (
+        <ConflictCard key={index} conflict={conflict} onConflictClick={onConflictClick} />
+      ))}
     </div>
   );
 };
