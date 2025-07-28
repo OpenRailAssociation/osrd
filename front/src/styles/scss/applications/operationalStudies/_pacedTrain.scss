@@ -1,4 +1,28 @@
 .paced-train {
+  @mixin right-side-status-indicator {
+    .warning {
+      &:before {
+        content: '';
+        position: absolute;
+        top: 24px;
+        right: 7px;
+        width: 4px;
+        height: 16px;
+        transform: translate(0, -50%);
+        border-radius: 5px;
+        background-color: var(--warning30);
+      }
+    }
+    .warning-invalid,
+    .invalid {
+      &:before {
+        background-color: var(--error60);
+      }
+    }
+  }
+
+  @include right-side-status-indicator;
+
   &:not(.closed) {
     padding-bottom: 16px;
   }
@@ -125,6 +149,8 @@
     padding-left: 32px - 2px;
 
     .occurrence-item {
+      @include right-side-status-indicator;
+
       position: relative;
       width: 100%;
       padding-left: 4px;
@@ -174,7 +200,6 @@
       .main {
         display: flex;
         align-items: center;
-        padding-top: 4px;
         min-height: 48px;
         width: 100%;
         flex-wrap: nowrap;
