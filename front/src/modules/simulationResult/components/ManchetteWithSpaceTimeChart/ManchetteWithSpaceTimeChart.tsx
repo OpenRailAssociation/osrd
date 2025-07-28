@@ -462,7 +462,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     // if dragging
     if (draggingState) {
       const { draggedTrain, initialDepartureTime } = draggingState;
-      dispatch(updateSelectedTrainId(draggedTrain.id));
+
+      if (draggedTrain.id !== selectedTrainId) {
+        dispatch(updateSelectedTrainId(draggedTrain.id));
+      }
 
       const timeDiff = payload.data.time - payload.initialData.time;
 
