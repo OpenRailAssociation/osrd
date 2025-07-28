@@ -35,6 +35,7 @@ import { extractPacedTrainIdFromOccurrenceId, isTrainScheduleId } from 'utils/tr
 import BoardWrapper from '../components/Scenario/BoardWrapper';
 import { useScenarioContext } from '../hooks/useScenarioContext';
 import useSimulationResults from '../hooks/useSimulationResults';
+import type { Board } from '../types';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -46,7 +47,7 @@ type SimulationResultsProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
   conflicts?: Conflict[];
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
-  isMapDisplayed?: boolean;
+  activeBoards: Set<Board>;
 };
 
 const SimulationResults = ({
@@ -55,7 +56,7 @@ const SimulationResults = ({
   timetableItemsWithDetails,
   conflicts = [],
   updateTrainDepartureTime,
-  isMapDisplayed,
+  activeBoards,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -271,7 +272,7 @@ const SimulationResults = ({
           </div>
 
           {/* SIMULATION : MAP */}
-          <BoardWrapper hidden={!isMapDisplayed} name={t('boards.map')} withFooter>
+          <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
             <div data-testid="simulation-map" className="simulation-map">
               <SimulationResultsMap
                 geometry={simulationResults.pathProperties.geometry}

@@ -236,7 +236,7 @@ const ScenarioContent = ({
                 conflicts={conflicts}
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 updateTrainDepartureTime={updateTrainDepartureTime}
-                isMapDisplayed={activeBoards.has('map')}
+                activeBoards={activeBoards}
               />
             )}
             <BoardWrapper hidden={!activeBoards.has('macro')} name="MACRO">
