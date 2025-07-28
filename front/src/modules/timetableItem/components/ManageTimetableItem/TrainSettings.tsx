@@ -75,7 +75,7 @@ const TrainSettings = () => {
           : null
       )
     );
-  }, [trainCategory]);
+  }, [trainCategory?.id]);
 
   useEffect(() => {
     if (categoryFromStore) {
