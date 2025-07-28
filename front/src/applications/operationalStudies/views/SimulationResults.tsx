@@ -253,23 +253,25 @@ const SimulationResults = ({
       {simulationResults && (
         <>
           {/* SIMULATION : SPEED SPACE CHART */}
-          <div className="osrd-simulation-container speedspacechart-container">
-            <div
-              className="chart-container"
-              style={{
-                height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
-              }}
-            >
-              <SpeedSpaceChartContainer
-                timetableItemSimulation={simulationResults.simulation}
-                selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
-                rollingStock={simulationResults.rollingStock}
-                pathProperties={simulationResults.pathProperties}
-                heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
-                setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-              />
+          <BoardWrapper hidden={!activeBoards.has('sdd')} name={t('boards.sdd')} withFooter>
+            <div className="osrd-simulation-container speedspacechart-container">
+              <div
+                className="chart-container"
+                style={{
+                  height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+                }}
+              >
+                <SpeedSpaceChartContainer
+                  timetableItemSimulation={simulationResults.simulation}
+                  selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                  rollingStock={simulationResults.rollingStock}
+                  pathProperties={simulationResults.pathProperties}
+                  heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+                  setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
+                />
+              </div>
             </div>
-          </div>
+          </BoardWrapper>
 
           {/* SIMULATION : MAP */}
           <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
