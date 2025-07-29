@@ -7,7 +7,11 @@ import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { STUDY_STATES, STUDY_TYPES, studyStates } from 'applications/operationalStudies/consts';
+import {
+  STUDY_STATES,
+  studyStates,
+  STUDY_TYPES,
+} from 'applications/operationalStudies/views/Study/consts';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { ScenarioWithDetails, StudyCreateForm } from 'common/api/osrdEditoastApi';

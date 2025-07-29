@@ -1,10 +1,11 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { StudyState } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi, type StudyResponse } from 'common/api/osrdEditoastApi';
 import { setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
+
+import type { StudyState } from '../consts';
 
 type Props = {
   study: StudyResponse;
