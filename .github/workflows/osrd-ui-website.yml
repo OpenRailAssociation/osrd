@@ -31,7 +31,6 @@ concurrency:
 
 # Set environment variables
 env:
-  hugo_version: "0.147.9"
   source_dir: "./front/ui/storybook/storybook-static"
   artifact_name: "public"
   preview_domain: web-preview.openrailassociation.org
