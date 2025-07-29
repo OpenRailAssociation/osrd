@@ -23,8 +23,8 @@ import {
   osrdEditoastApi,
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromTrainId } from 'utils/trainId';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import { extractEditoastIdFromTimeTableItemId, extractEditoastIdFromTrainId } from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -121,7 +121,7 @@ const useTrackOccupancy = ({
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const trainsDict = useMemo(
-    () => keyBy(trains, ({ id }) => extractEditoastIdFromTrainId(id)),
+    () => keyBy(trains, ({ id }) => extractEditoastIdFromTimeTableItemId(id)),
     [trains]
   );
 
@@ -419,7 +419,7 @@ const useTrackOccupancy = ({
       return;
 
     const previousTrainsDict = keyBy(previousTrains, (train) =>
-      extractEditoastIdFromTrainId(train.id)
+      extractEditoastIdFromTimeTableItemId(train.id)
     );
 
     const addedTrainIDs = new Set<number>();
@@ -427,7 +427,7 @@ const useTrackOccupancy = ({
     const modifiedTrainIDs = new Set<number>();
 
     trains.forEach((train) => {
-      const id = extractEditoastIdFromTrainId(train.id);
+      const id = extractEditoastIdFromTimeTableItemId(train.id);
       const previousTrain = previousTrainsDict[id];
       if (!previousTrain) addedTrainIDs.add(id);
       else if (!isEqual(train, previousTrain) && !draggedTrains.current.has(train.id)) {
@@ -446,7 +446,7 @@ const useTrackOccupancy = ({
     });
 
     previousTrains.forEach((train) => {
-      const id = extractEditoastIdFromTrainId(train.id);
+      const id = extractEditoastIdFromTimeTableItemId(train.id);
       if (!trainsDict[id]) {
         removedTrainIDs.add(id);
         // Remove cached station labels for this train:
@@ -512,7 +512,7 @@ const useTrackOccupancy = ({
     const fetchOperationalPoints = async () => {
       try {
         const requests: {
-          trainId: TrainId;
+          timetableItemId: TimetableItemId;
           side: Side;
           opReference: OperationalPointReference;
         }[] = [];
@@ -534,13 +534,13 @@ const useTrackOccupancy = ({
             } else if ('operational_point' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: train.id,
                 opReference: { operational_point: itemLocation.operational_point },
               });
             } else if ('trigram' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: train.id,
                 opReference: {
                   trigram: itemLocation.trigram,
                   secondary_code: itemLocation.secondary_code,
@@ -549,7 +549,7 @@ const useTrackOccupancy = ({
             } else if ('uic' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: train.id,
                 opReference: { uic: itemLocation.uic, secondary_code: itemLocation.secondary_code },
               });
             }
@@ -565,10 +565,10 @@ const useTrackOccupancy = ({
           },
         }).unwrap();
 
-        requests.forEach(({ side, trainId }, i) => {
+        requests.forEach(({ side, timetableItemId }, i) => {
           const op = data.related_operational_points[i].at(0);
-          trainsStationLabels[trainId] = {
-            ...trainsStationLabels[trainId],
+          trainsStationLabels[timetableItemId] = {
+            ...trainsStationLabels[timetableItemId],
             [side]: {
               type: 'label',
               label: op?.extensions?.sncf?.trigram || op?.extensions?.identifier?.name || undefined,

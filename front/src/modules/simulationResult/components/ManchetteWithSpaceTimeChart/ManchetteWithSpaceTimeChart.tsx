@@ -42,10 +42,12 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
+import makeProjectedItems from 'modules/simulationResult/helpers/makeProjectedItems';
 import type {
   AspectLabel,
   LayerRangeData,
   PathOperationalPoint,
+  IndividualTrainProjection,
   TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
@@ -141,7 +143,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<{
-    draggedTrain: TrainSpaceTimeData;
+    draggedTrain: IndividualTrainProjection;
     initialDepartureTime: Date;
   }>();
 
@@ -155,36 +157,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     });
 
   const projectedTrains = useMemo(
-    () =>
-      projectPathTrainResult.flatMap<TrainSpaceTimeData>((train) => {
-        if (isTrainScheduleProjection(train)) {
-          return train;
-        }
-        // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
-        const occurrencesCount = getOccurrencesNb(train.paced);
-        const occurrences = [];
-        for (let i = 0; i < occurrencesCount; i += 1) {
-          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
-          const correspondingException = findExceptionWithOccurrenceId(
-            train.exceptions,
-            occurrenceId
-          );
-          // Disabled occurrences should not be projected
-          if (correspondingException?.disabled) continue;
-
-          const occurrenceStartTime = dayjs(train.departureTime)
-            .add(i * train.paced.interval.ms, 'ms')
-            .toDate();
-          occurrences.push({
-            ...train,
-            id: occurrenceId,
-            name: computeOccurrenceName(train.name, i),
-            departureTime: occurrenceStartTime,
-          });
-        }
-        return occurrences;
-      }),
+    () => makeProjectedItems(projectPathTrainResult),
     [projectPathTrainResult]
   );
 
