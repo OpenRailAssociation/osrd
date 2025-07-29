@@ -117,6 +117,7 @@ export type Occurrence = {
   stopsCount: number;
   exceptionChangeGroups?: ExceptionChangeGroups;
   summary?: SimulationSummary;
+  key?: string;
 };
 
 export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;

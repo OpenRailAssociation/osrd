@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
-import type { ProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
+import type { RawProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
@@ -34,7 +34,7 @@ const useLazyProjectTrains = ({
   >(new Map());
   const projectionType = useSelector(getProjectionType);
 
-  const onProgress = useCallback((results: Map<TimetableItemId, ProjectionResult>) => {
+  const onProgress = useCallback((results: Map<TimetableItemId, RawProjectionResult>) => {
     setProjectedTrainsById((prev) =>
       upsertNewProjectedTrains(prev, results, timetableItemsByIdRef.current)
     );

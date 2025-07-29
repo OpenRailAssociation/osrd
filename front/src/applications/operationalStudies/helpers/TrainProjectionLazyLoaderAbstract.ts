@@ -8,9 +8,10 @@ import type { AppDispatch } from 'store';
 
 const BATCH_SIZE = 20;
 
-export type ProjectionResult = {
+export type RawProjectionResult = {
   space_time_curves: SpaceTimeCurve[];
   signal_updates?: SignalUpdate[];
+  exceptions?: Map<string, { space_time_curves: SpaceTimeCurve[]; signal_updates: SignalUpdate[] }>;
 };
 
 export type TrainProjectionLazyLoaderOptions = {
@@ -18,7 +19,7 @@ export type TrainProjectionLazyLoaderOptions = {
   infraId: number;
   path: PathfindingResultSuccess;
   electricalProfileSetId?: number;
-  onProgress: (results: Map<TimetableItemId, ProjectionResult>) => void;
+  onProgress: (results: Map<TimetableItemId, RawProjectionResult>) => void;
 };
 
 export default abstract class TrainProjectionLazyLoaderAbstract {

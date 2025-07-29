@@ -17,7 +17,7 @@ import {
 } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract, {
-  type ProjectionResult,
+  type RawProjectionResult,
   type TrainProjectionLazyLoaderOptions,
 } from './TrainProjectionLazyLoaderAbstract';
 
@@ -147,7 +147,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    const rawResults = new Map<TimetableItemId, ProjectionResult>();
+    const rawResults = new Map<TimetableItemId, RawProjectionResult>();
 
     for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
       const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));

@@ -154,7 +154,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [projectedTrainsById]
   );
 
-  const trainScheduleUsedForProjection = useMemo(
+  const timetableItemUsedForProjection = useMemo(
     () => (trainUsedForProjection ? timetableItemsById.get(trainUsedForProjection.id) : undefined),
     [trainUsedForProjection, timetableItems]
   );
@@ -355,9 +355,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       timetableItemsWithDetails,
       timetableItems,
       projectionData:
-        trainUsedForProjection && trainScheduleUsedForProjection && projectionPath
+        trainUsedForProjection && timetableItemUsedForProjection && projectionPath
           ? {
-              trainSchedule: trainScheduleUsedForProjection,
+              timetableItem: timetableItemUsedForProjection,
               ...('exceptionKey' in trainUsedForProjection && {
                 exceptionKeyUsedForProjection: trainUsedForProjection.exceptionKey,
               }),
@@ -378,7 +378,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [
       timetableItemsWithDetails,
       timetableItems,
-      trainScheduleUsedForProjection,
+      timetableItemUsedForProjection,
       projectionPath,
       projectedTrains,
       allTrainsProjected,

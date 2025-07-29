@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
@@ -121,9 +122,7 @@ export function generatePacedTrainOccurrences(
 
     const startTime = correspondingException?.start_time?.value
       ? new Date(correspondingException.start_time.value)
-      : dayjs(pacedTrain.startTime)
-          .add(i * paced.interval.ms, 'ms')
-          .toDate();
+      : makeOccurrenceTime(pacedTrain.startTime, paced.interval, i);
 
     computedOccurrences.push({
       id: occurrenceId,
@@ -139,6 +138,7 @@ export function generatePacedTrainOccurrences(
         ? correspondingException.rolling_stock_category.value
         : pacedTrainCategory,
       occurrenceIndex: i,
+      key: correspondingException?.key,
       exceptionChangeGroups: correspondingException
         ? omit(correspondingException, ['key', 'occurrence_index', 'disabled', 'summary'])
         : undefined,
@@ -161,6 +161,7 @@ export function generatePacedTrainOccurrences(
 
     computedOccurrences.push({
       id: formatPacedTrainIdToExceptionId(id, exception.key),
+      key: exception.key,
       trainName: exception.train_name?.value ?? `${name}/+`,
       rollingStock: occurrenceRollingStock,
       // An added exception will always have a least a start time in its exceptions
@@ -178,4 +179,17 @@ export function generatePacedTrainOccurrences(
   });
 
   return sortBy(computedOccurrences, 'startTime');
+}
+
+/**
+ * refTime + index × interval
+ */
+export function makeOccurrenceTime(
+  pacedTrainRefTime: Date | null,
+  interval: Duration,
+  index: number
+) {
+  return dayjs(pacedTrainRefTime)
+    .add(index * interval.ms, 'ms')
+    .toDate();
 }

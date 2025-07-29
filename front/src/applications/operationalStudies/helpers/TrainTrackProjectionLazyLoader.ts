@@ -1,10 +1,12 @@
-import type {
-  PostPacedTrainOccupancyBlocksApiResponse,
-  PostPacedTrainProjectPathApiResponse,
-  PostTrainScheduleOccupancyBlocksApiResponse,
-  PostTrainScheduleProjectPathApiResponse,
+import { isEmpty } from 'lodash';
+
+import {
+  osrdEditoastApi,
+  type PostTrainScheduleProjectPathApiResponse,
+  type PostTrainScheduleOccupancyBlocksApiResponse,
+  type PostPacedTrainProjectPathApiResponse,
+  type PostPacedTrainOccupancyBlocksApiResponse,
 } from 'common/api/osrdEditoastApi';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -15,7 +17,7 @@ import {
 } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract from './TrainProjectionLazyLoaderAbstract';
-import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
+import type { RawProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
 export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
   async processBatch(batch: TimetableItemId[]) {
@@ -116,7 +118,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
       return;
     }
 
-    const rawResults = new Map<TimetableItemId, ProjectionResult>();
+    const rawResults = new Map<TimetableItemId, RawProjectionResult>();
 
     for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
       const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));
@@ -126,14 +128,29 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
       });
     }
 
+    // paced train
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
-      const { paced_train: space_time_curves } = result;
+
+      const { paced_train: space_time_curves, exceptions } = result;
       const { paced_train: signal_updates } = rawPacedTrainOccupancyBlocks[id];
-      rawResults.set(pacedTrainId, {
+      const pacedTrainProjectionResult: RawProjectionResult = {
         space_time_curves,
         signal_updates,
-      });
+      };
+
+      // exceptions with separate projection.
+      if (!isEmpty(exceptions)) {
+        pacedTrainProjectionResult.exceptions = new Map();
+        for (const [exceptionKey, exception] of Object.entries(exceptions)) {
+          pacedTrainProjectionResult.exceptions.set(exceptionKey, {
+            space_time_curves: exception,
+            signal_updates: [],
+          });
+        }
+      }
+
+      rawResults.set(pacedTrainId, pacedTrainProjectionResult);
     }
 
     this.options.onProgress(rawResults);

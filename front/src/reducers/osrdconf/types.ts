@@ -166,6 +166,9 @@ export type OccurrenceId = IndexedOccurrenceId | AddedExceptionId;
  */
 export type PacedTrainId = string & { readonly __type: unique symbol };
 
+/**
+ * an individual train run
+ */
 export type TrainId = TrainScheduleId | OccurrenceId;
 export type TimetableItemId = TrainScheduleId | PacedTrainId;
 export type TimetableItemToEditData =

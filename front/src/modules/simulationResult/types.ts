@@ -13,7 +13,12 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OccurrenceId,
+  PacedTrainId,
+  TimetableItem,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -30,11 +35,8 @@ export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id'> & {
 };
 
 // Space Time Chart
-/**
- * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
- */
-// TODO: reuse the type from osrd-ui/ui-manchette
-export type TrainSpaceTimeData = {
+
+export type BaseTrainProjection = {
   name: string;
   spaceTimeCurves: {
     positions: number[];
@@ -42,10 +44,38 @@ export type TrainSpaceTimeData = {
   }[];
   departureTime: Date;
   signalUpdates: SignalUpdate[];
-} & (
-  | { id: TrainScheduleId }
-  | { id: OccurrenceId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
-);
+};
+
+export type TrainScheduleProjection = BaseTrainProjection & { id: TrainScheduleId };
+
+/**
+ * contains the paced train model projection, which can be used by the occurrences
+ * and the possible occurrences projections if they are path_and_schedule exceptions
+ */
+export type PacedTrainProjection = BaseTrainProjection & {
+  id: PacedTrainId;
+  paced: PacedTrainWithDetails['paced'];
+  exceptions: PacedTrainException[];
+  exceptionProjections: OccurrenceProjection[];
+};
+
+export type OccurrenceProjection = BaseTrainProjection & {
+  id: OccurrenceId;
+  isStartTimeException?: boolean;
+  pacedTrainDepartureTime: Date;
+};
+
+/**
+ * projection data of a train schedule or a paced train with its exceptions projection
+ * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
+ */
+// TODO: reuse the type from osrd-ui/ui-manchette
+export type TrainSpaceTimeData = TrainScheduleProjection | PacedTrainProjection;
+
+/**
+ * Contains an individual train, either a trainschedule or an occurrences (not a paced train, which is a group of trains)
+ */
+export type IndividualTrainProjection = TrainScheduleProjection | OccurrenceProjection;
 
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
@@ -58,7 +88,7 @@ export type SpeedSpaceChartData = {
 };
 
 export type ProjectionData = {
-  trainSchedule: TimetableItem;
+  timetableItem: TimetableItem;
   exceptionKeyUsedForProjection?: string;
   projectedTrains: TrainSpaceTimeData[];
   path: PathfindingResultSuccess;
