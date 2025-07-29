@@ -5,7 +5,7 @@ import {
   getUniqueOpRefsFromTimetableItems,
   addPathOpsToTimetableItems,
 } from 'applications/operationalStudies/utils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -44,6 +44,8 @@ import {
   type LabelDto,
   type TrainrunCategory,
 } from '../NGE/types';
+
+type ScheduleItem = NonNullable<TrainSchedule['schedule']>[number];
 
 /**
  * Get the TrainrunFrequencies from the TimetableItems.
@@ -349,6 +351,35 @@ const getNgeTrainruns = (
       };
     });
 
+const createTimeLock = (time: Date, startTime: Date): TimeLockDto => ({
+  time: time.getMinutes(),
+  // getTime() is in milliseconds, consecutiveTime is in minutes
+  consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
+  lock: false,
+  warning: null,
+  timeFormatter: null,
+});
+
+const createArrivalTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: Date) => {
+  if (!scheduleItem?.arrival) {
+    return { ...DEFAULT_TIME_LOCK };
+  }
+  const arrival = Duration.parse(scheduleItem.arrival);
+  return createTimeLock(addDurationToDate(startTime, arrival), startTime);
+};
+
+const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTime: Date) => {
+  if (!scheduleItem?.arrival) {
+    return { ...DEFAULT_TIME_LOCK };
+  }
+  const arrival = Duration.parse(scheduleItem.arrival);
+  const stopFor = scheduleItem.stop_for ? Duration.parse(scheduleItem.stop_for) : Duration.zero;
+  return createTimeLock(
+    addDurationToDate(addDurationToDate(startTime, arrival), stopFor),
+    startTime
+  );
+};
+
 /**
  * Translate the TimetableItem in NGE "TrainrunSection" & "Nodes".
  * It is needed to return the nodes as well, because we add ports & transitions on them.
@@ -393,14 +424,6 @@ const getNgeTrainrunSectionsWithNodes = (
     });
 
     const startTime = new Date(timetableItem.start_time);
-    const createTimeLock = (time: Date): TimeLockDto => ({
-      time: time.getMinutes(),
-      // getTime() is in milliseconds, consecutiveTime is in minutes
-      consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
-      lock: false,
-      warning: null,
-      timeFormatter: null,
-    });
 
     // OSRD describes the path in terms of nodes, NGE describes it in terms
     // of sections between nodes. Iterate over path items two-by-two to
@@ -450,24 +473,14 @@ const getNgeTrainrunSectionsWithNodes = (
       }
       prevPort = targetPort;
 
-      let sourceDeparture = { ...DEFAULT_TIME_LOCK };
+      let sourceDeparture;
       if (i === 0) {
-        sourceDeparture = createTimeLock(startTime);
-      } else if (sourceScheduleEntry && sourceScheduleEntry.arrival) {
-        const arrival = Duration.parse(sourceScheduleEntry.arrival);
-        const stopFor = sourceScheduleEntry.stop_for
-          ? Duration.parse(sourceScheduleEntry.stop_for)
-          : Duration.zero;
-        sourceDeparture = createTimeLock(
-          addDurationToDate(addDurationToDate(startTime, arrival), stopFor)
-        );
+        sourceDeparture = createTimeLock(startTime, startTime);
+      } else {
+        sourceDeparture = createDepartureTimeLock(sourceScheduleEntry, startTime);
       }
 
-      let targetArrival = { ...DEFAULT_TIME_LOCK };
-      if (targetScheduleEntry && targetScheduleEntry.arrival) {
-        const arrival = Duration.parse(targetScheduleEntry.arrival);
-        targetArrival = createTimeLock(addDurationToDate(startTime, arrival));
-      }
+      const targetArrival = createArrivalTimeLock(targetScheduleEntry, startTime);
 
       const travelTime = { ...DEFAULT_TIME_LOCK };
       if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
