@@ -12,38 +12,16 @@ import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rol
 import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types';
 import { geti18nKeyForNull } from 'utils/strings';
 
-import { getCurveName } from '../helpers/curves';
+import {
+  curveColor,
+  getCurveName,
+  getCurvesByComfortState,
+  initialComfortsState,
+  parseData,
+  setupCurvesVisibility,
+} from '../helpers/curves';
 
 type CustomPointTooltipProps = PointTooltipProps<LineSeries>;
-
-// Format RollingStock Curves to NIVO format
-const parseData = (
-  label: string,
-  color: string,
-  curve: TransformedCurves['index']
-): ParsedCurve => {
-  // Have to transform data, will change when we'll have multiples curves,
-  // so initial transformation is commented :
-  // const curveFormatted = curve.map((item)
-  // => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
-
-  const curveFormatted = curve.speeds.map((speed: number, index: number) => ({
-    x: speed * 3.6,
-    y: curve.max_efforts[index] / 1000,
-  }));
-
-  const curveFormattedSorted = curveFormatted.sort((a, b) => (a.x > b.x ? 1 : -1));
-
-  return {
-    id: label,
-    color,
-    mode: curve.mode,
-    comfort: curve.comfort,
-    data: curveFormattedSorted,
-    electrical_profile_level: geti18nKeyForNull(curve.electricalProfile),
-    power_restriction: geti18nKeyForNull(curve.powerRestriction),
-  };
-};
 
 function LegendComfortSwitches(props: {
   curvesComfortList: Comfort[];
@@ -110,59 +88,6 @@ function Legend(props: {
         </span>
       ))}
     </span>
-  );
-}
-
-const hoveredOpacityCode = 'B3'; // 70% opacity
-const lowOpacityCode = '40'; // 25% opacity
-const colorsListLength = Object.keys(COLORS).length;
-
-/** Choose cyclic color for curves depending on curve number */
-function curveColor(
-  index: number,
-  electricalReferenceForOpacity: string | null,
-  hoveredElectricalParam?: string | null,
-  selectedElectricalParam?: string | null
-) {
-  const indexShort = index % colorsListLength;
-  if (hoveredElectricalParam) {
-    const isHovered = electricalReferenceForOpacity === hoveredElectricalParam;
-    const isSelected = electricalReferenceForOpacity === selectedElectricalParam;
-
-    return `${Object.keys(COLORS)[indexShort]}${
-      isHovered && !isSelected ? hoveredOpacityCode : ''
-    }${!isHovered && !isSelected ? lowOpacityCode : ''}`;
-  }
-  return Object.keys(COLORS)[indexShort];
-}
-
-function setupCurvesVisibility(
-  data: TransformedCurves,
-  previousCurvesVisibility: { [key: string]: boolean } = {}
-) {
-  const nextCurvesVisibility: { [key: string]: boolean } = {};
-  Object.keys(data).forEach((id) => {
-    nextCurvesVisibility[id] = id in previousCurvesVisibility ? previousCurvesVisibility[id] : true;
-  });
-  return nextCurvesVisibility;
-}
-
-function initialComfortsState(curvesComfortList: string[]) {
-  const comfortsState: { [key: string]: boolean } = {};
-  curvesComfortList.forEach((id) => {
-    comfortsState[id] = true;
-  });
-  return comfortsState;
-}
-
-function getCurvesByComfortState(
-  transformedData: TransformedCurves,
-  comfortsStates: {
-    [key: string]: boolean;
-  }
-) {
-  return Object.keys(transformedData).filter(
-    (curve) => comfortsStates[transformedData[curve].comfort]
   );
 }
 
