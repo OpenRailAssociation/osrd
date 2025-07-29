@@ -59,8 +59,9 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
 
     return {
       ...timetableItem,
-      start_time: startTime,
       ...(exception ? extractOccurrenceDetailsFromPacedTrain(timetableItem, exception) : {}),
+      // overwrite start_time from extractOccurrenceDetailsFromPacedTrain
+      start_time: startTime,
       id: selectedTrainId,
     };
   }, [selectedTrainId, timetableItem]);
