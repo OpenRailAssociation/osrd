@@ -1,9 +1,12 @@
 import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
+import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
 import {
   getUniqueOpRefsFromTimetableItems,
   addPathOpsToTimetableItems,
+  groupRoundTrips,
+  checkRoundTripCompatible,
 } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
@@ -330,13 +333,14 @@ export const loadAndIndexNge = async (
  */
 const getNgeTrainruns = (
   state: MacroEditorState,
-  timetableItems: TimetableItem[],
+  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
   labels: LabelDto[]
 ): TrainrunDto[] =>
-  timetableItems
+  groupedTimetableItems
+    .map(([a, b]) => ({ ...a, returnId: b?.id ?? null }))
     .filter((timetableItem) => timetableItem.path.length >= 2)
     .map((timetableItem, index) => {
-      state.timetableItemIdByNgeId.set(index + 1, [timetableItem.id, null]);
+      state.timetableItemIdByNgeId.set(index + 1, [timetableItem.id, timetableItem.returnId]);
       const trainrunFrequency = getTrainrunFrequencyFromTimetableItem(timetableItem, state);
       return {
         id: index + 1,
@@ -347,7 +351,7 @@ const getNgeTrainruns = (
         labelIds: (timetableItem.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
-        trainrunDirection: 'one_way',
+        trainrunDirection: timetableItem.returnId ? 'round_trip' : 'one_way',
       };
     });
 
@@ -386,7 +390,7 @@ const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTi
  */
 const getNgeTrainrunSectionsWithNodes = (
   state: MacroEditorState,
-  timetableItems: TimetableItem[],
+  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
   labels: LabelDto[]
 ) => {
   let portId = 1;
@@ -416,104 +420,133 @@ const getNgeTrainrunSectionsWithNodes = (
   // Track nge nodes
   const ngeNodesByPathKey: Record<string, NetzgrafikDto['nodes'][0]> = {};
   let trainrunSectionId = 0;
-  const trainrunSections: TrainrunSectionDto[] = timetableItems.flatMap((timetableItem, index) => {
-    // Figure out the primary node key for each path item
-    const pathNodeKeys = timetableItem.path.map((pathItem) => {
-      const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
-      return node!.path_item_key;
-    });
+  const trainrunSections: TrainrunSectionDto[] = groupedTimetableItems.flatMap(
+    ([timetableItem, returnTimetableItem], index) => {
+      // Figure out the primary node key for each path item
+      const pathNodeKeys = timetableItem.path.map((pathItem) => {
+        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
+        return node!.path_item_key;
+      });
 
-    const startTime = new Date(timetableItem.start_time);
+      const startTime = new Date(timetableItem.start_time);
+      const returnStartTime = returnTimetableItem ? new Date(returnTimetableItem.start_time) : null;
 
-    // OSRD describes the path in terms of nodes, NGE describes it in terms
-    // of sections between nodes. Iterate over path items two-by-two to
-    // convert them.
-    let prevPort: PortDto | null = null;
-    return pathNodeKeys.slice(0, -1).map((sourceNodeKey, i) => {
-      // Get the source node or created it
-      if (!ngeNodesByPathKey[sourceNodeKey]) {
-        ngeNodesByPathKey[sourceNodeKey] = castNodeToNge(
-          state,
-          state.getNodeByKey(sourceNodeKey)!,
-          labels
+      // OSRD describes the path in terms of nodes, NGE describes it in terms
+      // of sections between nodes. Iterate over path items two-by-two to
+      // convert them.
+      let prevPort: PortDto | null = null;
+      return pathNodeKeys.slice(0, -1).map((sourceNodeKey, i) => {
+        // returnTimetableItem contains the same path as timetableItem but in
+        // reverse order. `timetableItem.path.length - 1` is the index of the
+        // last path item, subtracting `i` will iterate from the end of the
+        // list to the start.
+        const returnIndex = timetableItem.path.length - 1 - i;
+
+        // Get the source node or created it
+        if (!ngeNodesByPathKey[sourceNodeKey]) {
+          ngeNodesByPathKey[sourceNodeKey] = castNodeToNge(
+            state,
+            state.getNodeByKey(sourceNodeKey)!,
+            labels
+          );
+        }
+        const sourceNode = ngeNodesByPathKey[sourceNodeKey];
+
+        // Get the target node or created it
+        const targetNodeKey = pathNodeKeys[i + 1];
+        if (!ngeNodesByPathKey[targetNodeKey]) {
+          ngeNodesByPathKey[targetNodeKey] = castNodeToNge(
+            state,
+            state.getNodeByKey(targetNodeKey)!,
+            labels
+          );
+        }
+        const targetNode = ngeNodesByPathKey[targetNodeKey];
+
+        // Adding port
+        const sourcePort = createPort(trainrunSectionId);
+        sourceNode.ports.push(sourcePort);
+        const targetPort = createPort(trainrunSectionId);
+        targetNode.ports.push(targetPort);
+
+        // Adding schedule
+        const sourceScheduleEntry = timetableItem.schedule!.find(
+          (entry) => entry.at === timetableItem.path[i].id
         );
-      }
-      const sourceNode = ngeNodesByPathKey[sourceNodeKey];
-
-      // Get the target node or created it
-      const targetNodeKey = pathNodeKeys[i + 1];
-      if (!ngeNodesByPathKey[targetNodeKey]) {
-        ngeNodesByPathKey[targetNodeKey] = castNodeToNge(
-          state,
-          state.getNodeByKey(targetNodeKey)!,
-          labels
+        const targetScheduleEntry = timetableItem.schedule!.find(
+          (entry) => entry.at === timetableItem.path[i + 1].id
         );
-      }
-      const targetNode = ngeNodesByPathKey[targetNodeKey];
+        const returnSourceScheduleEntry = returnTimetableItem?.schedule?.find(
+          (entry) => entry.at === returnTimetableItem.path[returnIndex].id
+        );
+        const returnTargetScheduleEntry = returnTimetableItem?.schedule?.find(
+          (entry) => entry.at === returnTimetableItem.path[returnIndex - 1].id
+        );
 
-      // Adding port
-      const sourcePort = createPort(trainrunSectionId);
-      sourceNode.ports.push(sourcePort);
-      const targetPort = createPort(trainrunSectionId);
-      targetNode.ports.push(targetPort);
+        // Create a transition between the previous section and the one we're creating
+        if (prevPort) {
+          const transition = createTransition(prevPort.id, sourcePort.id);
+          transition.isNonStopTransit = !sourceScheduleEntry?.stop_for;
+          sourceNode.transitions.push(transition);
+        }
+        prevPort = targetPort;
 
-      // Adding schedule
-      const sourceScheduleEntry = timetableItem.schedule!.find(
-        (entry) => entry.at === timetableItem.path[i].id
-      );
-      const targetScheduleEntry = timetableItem.schedule!.find(
-        (entry) => entry.at === timetableItem.path[i + 1].id
-      );
+        let sourceDeparture;
+        if (i === 0) {
+          sourceDeparture = createTimeLock(startTime, startTime);
+        } else {
+          sourceDeparture = createDepartureTimeLock(sourceScheduleEntry, startTime);
+        }
 
-      // Create a transition between the previous section and the one we're creating
-      if (prevPort) {
-        const transition = createTransition(prevPort.id, sourcePort.id);
-        transition.isNonStopTransit = !sourceScheduleEntry?.stop_for;
-        sourceNode.transitions.push(transition);
-      }
-      prevPort = targetPort;
+        const targetArrival = createArrivalTimeLock(targetScheduleEntry, startTime);
 
-      let sourceDeparture;
-      if (i === 0) {
-        sourceDeparture = createTimeLock(startTime, startTime);
-      } else {
-        sourceDeparture = createDepartureTimeLock(sourceScheduleEntry, startTime);
-      }
+        let targetDeparture = { ...DEFAULT_TIME_LOCK };
+        if (returnStartTime) {
+          if (returnIndex === 1) {
+            targetDeparture = createTimeLock(returnStartTime, returnStartTime);
+          } else {
+            targetDeparture = createDepartureTimeLock(returnTargetScheduleEntry, returnStartTime);
+          }
+        }
 
-      const targetArrival = createArrivalTimeLock(targetScheduleEntry, startTime);
+        let sourceArrival = { ...DEFAULT_TIME_LOCK };
+        if (returnStartTime) {
+          sourceArrival = createArrivalTimeLock(returnSourceScheduleEntry, returnStartTime);
+        }
 
-      const travelTime = { ...DEFAULT_TIME_LOCK };
-      if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
-        travelTime.time = targetArrival.consecutiveTime - sourceDeparture.consecutiveTime;
-        travelTime.consecutiveTime = travelTime.time;
-      }
+        const travelTime = { ...DEFAULT_TIME_LOCK };
+        if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
+          travelTime.time = targetArrival.consecutiveTime - sourceDeparture.consecutiveTime;
+          travelTime.consecutiveTime = travelTime.time;
+        }
 
-      const trainrunSection = {
-        id: trainrunSectionId,
-        sourceNodeId: sourceNode.id,
-        sourcePortId: sourcePort.id,
-        targetNodeId: targetNode.id,
-        targetPortId: targetPort.id,
-        travelTime,
-        sourceDeparture,
-        sourceArrival: { ...DEFAULT_TIME_LOCK },
-        targetDeparture: { ...DEFAULT_TIME_LOCK },
-        targetArrival,
-        numberOfStops: 0,
-        trainrunId: index + 1,
-        resourceId: state.ngeResource.id,
-        path: {
-          path: [],
-          textPositions: [],
-        },
-        specificTrainrunSectionFrequencyId: 0,
-        warnings: [],
-      };
+        const trainrunSection = {
+          id: trainrunSectionId,
+          sourceNodeId: sourceNode.id,
+          sourcePortId: sourcePort.id,
+          targetNodeId: targetNode.id,
+          targetPortId: targetPort.id,
+          travelTime,
+          sourceDeparture,
+          sourceArrival,
+          targetDeparture,
+          targetArrival,
+          numberOfStops: 0,
+          trainrunId: index + 1,
+          resourceId: state.ngeResource.id,
+          path: {
+            path: [],
+            textPositions: [],
+          },
+          specificTrainrunSectionFrequencyId: 0,
+          warnings: [],
+        };
 
-      trainrunSectionId += 1;
-      return trainrunSection;
-    });
-  });
+        trainrunSectionId += 1;
+        return trainrunSection;
+      });
+    }
+  );
 
   return {
     trainrunSections,
@@ -540,12 +573,12 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
  */
 export const getNgeDto = (
   state: MacroEditorState,
-  timetableItems: TimetableItem[]
+  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[]
 ): NetzgrafikDto => {
   const labels = getNgeLabels(state);
   return {
-    ...getNgeTrainrunSectionsWithNodes(state, timetableItems, labels),
-    trainruns: getNgeTrainruns(state, timetableItems, labels),
+    ...getNgeTrainrunSectionsWithNodes(state, groupedTimetableItems, labels),
+    trainruns: getNgeTrainruns(state, groupedTimetableItems, labels),
     resources: [state.ngeResource],
     metadata: {
       netzgrafikColors: getNetzgrafikColors(),
@@ -578,6 +611,24 @@ const fetchTimetableItemPathOps = async (
     )
   ).unwrap();
   return addPathOpsToTimetableItems(timetableItems, opRefs, ops);
+};
+
+const groupCompatibleRoundTrips = (
+  roundTripGroups: TimetableItemRoundTripGroups
+): (readonly [TimetableItemWithPathOps, TimetableItemWithPathOps | null])[] => {
+  const incompatible = [];
+  const compatible = [];
+  for (const [a, b] of roundTripGroups.roundTrips) {
+    if (checkRoundTripCompatible(a, b)) {
+      compatible.push([a, b] as const);
+    } else {
+      incompatible.push(a, b);
+    }
+  }
+  const oneWays = [...roundTripGroups.oneWays, ...roundTripGroups.others, ...incompatible].map(
+    (timetableItem) => [timetableItem, null] as const
+  );
+  return [...oneWays, ...compatible];
 };
 
 export const loadNgeDto = async (
@@ -618,6 +669,30 @@ export const loadNgeDto = async (
     dispatch
   );
 
+  const timetableItemsById = new Map(
+    timetableItems.map((timetableItem) => [timetableItem.id, timetableItem])
+  );
+
+  const trainScheduleRoundTripsPromise = dispatch(
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.initiate(
+      { id: timetableId },
+      { subscribe: false }
+    )
+  );
+  const pacedTrainRoundTripsPromise = dispatch(
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.initiate(
+      { id: timetableId },
+      { subscribe: false }
+    )
+  );
+  const { results: trainScheduleRoundTrips } = await trainScheduleRoundTripsPromise.unwrap();
+  const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
+  const roundTripGroups = groupRoundTrips(timetableItemsById, {
+    trainSchedules: trainScheduleRoundTrips,
+    pacedTrains: pacedTrainRoundTrips,
+  });
+  const groupedTimetableItems = groupCompatibleRoundTrips(roundTripGroups);
+
   await loadAndIndexNge(state, timetableItems, dispatch, t);
-  return getNgeDto(state, timetableItems);
+  return getNgeDto(state, groupedTimetableItems);
 };
