@@ -15,12 +15,6 @@ import type { TabProps } from 'common/Tabs';
 import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
-import {
-  RollingStockEditorCategoryForm,
-  RollingStockEditorMetadataForm,
-  RollingStockEditorOnboardSystemEquipmentForm,
-  RollingStockEditorParameterForm,
-} from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormHelpers';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import {
@@ -35,6 +29,11 @@ import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
+
+import CategoryForm from './CategoryForm';
+import MetadataForm from './MetadataForm';
+import OnboardSystemEquipmentForm from './OnboardSystemEquipmentForm';
+import ParametersForm from './ParametersForm';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
@@ -246,23 +245,23 @@ const RollingStockEditorForm = ({
     label: t('rollingStock.tabs.rollingStockDetails'),
     content: (
       <>
-        <RollingStockEditorMetadataForm
+        <MetadataForm
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
         />
 
-        <RollingStockEditorParameterForm
+        <ParametersForm
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
           effortCurves={effortCurves}
         />
 
-        <RollingStockEditorOnboardSystemEquipmentForm
+        <OnboardSystemEquipmentForm
           rsSignalingSystemsList={rollingStockValues.supportedSignalingSystems}
           setRollingStockValues={setRollingStockValues}
         />
 
-        <RollingStockEditorCategoryForm
+        <CategoryForm
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
         />
