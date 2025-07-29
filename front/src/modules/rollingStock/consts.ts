@@ -1,297 +1,32 @@
 import type { Comfort, TrainMainCategory } from 'common/api/osrdEditoastApi';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
-import type {
-  ElectricalProfileByMode,
-  MultiUnit,
-  RollingStockParametersValidValues,
-  RollingStockParametersValues,
-  SchemaProperty,
-} from 'modules/rollingStock/types';
+
+import type { MultiUnit } from './types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
 export const STANDARD_COMFORT_LEVEL: Comfort = 'STANDARD';
 
-export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
-
-export const newRollingStockValues: RollingStockParametersValues = {
-  railjsonVersion: '',
-  name: '',
-  detail: '',
-  family: '',
-  grouping: '',
-  number: '',
-  reference: '',
-  series: '',
-  subseries: '',
-  type: '',
-  unit: '',
-  mass: {
-    min: 0.1,
-    max: 10000,
-    unit: 't',
-    value: 0.1,
-  },
-  maxSpeed: {
-    min: 1,
-    max: 600,
-    unit: 'km/h',
-    value: 1,
-  },
-  rollingResistanceA: {
-    min: 0,
-    max: 20,
-    unit: 'kN',
-    value: 0,
-  },
-  rollingResistanceB: {
-    min: 0,
-    max: 0.5,
-    unit: 'kN/(km/h)',
-    value: 0,
-  },
-  rollingResistanceC: {
-    min: 0,
-    max: 0.01,
-    unit: 'kN/(km/h)²',
-    value: 0,
-  },
-  loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
-  electricalPowerStartupTime: null,
-  raisePantographTime: null,
-  basePowerClass: null,
-  powerRestrictions: {},
-  supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
-  primaryCategory: undefined,
-  categories: new Set(),
+export const ComfortLevels: Record<Comfort, Comfort> = {
+  STANDARD: 'STANDARD',
+  AIR_CONDITIONING: 'AIR_CONDITIONING',
+  HEATING: 'HEATING',
 };
 
-// This contains a list of required fields, as well as defaults values that are auto-filled in case they are missing
-// However the form can not be user submitted at all if name or primaryCategory (or effort curve params) are missing
-export const RS_REQUIRED_FIELDS: Partial<RollingStockParametersValidValues> = Object.freeze({
-  name: '', // Default value that should not end up being used
-  length: 1,
-  mass: newRollingStockValues.mass,
-  maxSpeed: newRollingStockValues.maxSpeed,
-  startupAcceleration: 0,
-  comfortAcceleration: 0,
-  startupTime: 0,
-  constGamma: 0.01,
-  inertiaCoefficient: 1,
-  rollingResistanceA: newRollingStockValues.rollingResistanceA,
-  rollingResistanceB: newRollingStockValues.rollingResistanceB,
-  rollingResistanceC: newRollingStockValues.rollingResistanceC,
-  electricalPowerStartupTime: 0,
-  raisePantographTime: 15,
-  primaryCategory: 'FREIGHT_TRAIN', // Default value that should not end up being used
-});
+export const COMFORTS = Object.keys(ComfortLevels) as Comfort[];
 
-export enum RollingStockEditorMetadata {
-  name = 'name',
-  detail = 'detail',
-  family = 'family',
-  grouping = 'grouping',
-  number = 'number',
-  reference = 'reference',
-  series = 'series',
-  subseries = 'subseries',
-  type = 'type',
-  unit = 'unit',
-}
-
-export enum RollingStockEditorParameter {
-  length = 'length',
-  mass = 'mass',
-  maxSpeed = 'maxSpeed',
-  startupTime = 'startupTime',
-  startupAcceleration = 'startupAcceleration',
-  electricalPowerStartupTime = 'electricalPowerStartupTime',
-  comfortAcceleration = 'comfortAcceleration',
-  constGamma = 'constGamma',
-  inertiaCoefficient = 'inertiaCoefficient',
-  loadingGauge = 'loadingGauge',
-  basePowerClass = 'basePowerClass',
-  raisePantographTime = 'raisePantographTime',
-  rollingResistanceA = 'rollingResistanceA',
-  rollingResistanceB = 'rollingResistanceB',
-  rollingResistanceC = 'rollingResistanceC',
-}
-
-export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
-  {
-    title: 'name',
-    type: 'string',
-    side: 'left',
-  },
-  {
-    title: 'detail',
-    type: 'string',
-    side: 'left',
-  },
-  {
-    title: 'family',
-    type: 'string',
-    side: 'left',
-  },
-  {
-    title: 'grouping',
-    type: 'string',
-    side: 'left',
-  },
-  {
-    title: 'number',
-    type: 'string',
-    side: 'middle',
-  },
-  {
-    title: 'reference',
-    type: 'string',
-    side: 'middle',
-  },
-  {
-    title: 'series',
-    type: 'string',
-    side: 'middle',
-  },
-  {
-    title: 'subseries',
-    type: 'string',
-    side: 'right',
-  },
-  {
-    title: 'type',
-    type: 'string',
-    side: 'right',
-  },
-  {
-    title: 'unit',
-    type: 'string',
-    side: 'right',
-  },
-  {
-    title: 'length',
-    type: 'number',
-    min: 1,
-    max: 6000,
-    unit: 'm',
-    side: 'left',
-  },
-  {
-    title: 'mass',
-    type: 'number',
-    min: 0.1,
-    max: 10000,
-    units: ['t', 'kg'],
-    side: 'left',
-  },
-  {
-    title: 'maxSpeed',
-    type: 'number',
-    min: 1,
-    max: 600,
-    units: ['km/h', 'm/s'],
-    side: 'left',
-  },
-  {
-    title: 'startupTime',
-    type: 'number',
-    min: 0,
-    max: 60,
-    unit: 's',
-    side: 'left',
-  },
-  {
-    title: 'startupAcceleration',
-    type: 'number',
-    min: 0,
-    max: 0.2,
-    unit: 'm/s²',
-    side: 'left',
-  },
-  {
-    title: 'comfortAcceleration',
-    type: 'number',
-    min: 0,
-    max: 1,
-    unit: 'm/s²',
-    side: 'middle',
-  },
-  {
-    title: 'inertiaCoefficient',
-    type: 'number',
-    min: 1,
-    max: 1.5,
-    side: 'middle',
-  },
-  {
-    title: 'constGamma',
-    type: 'number',
-    min: 0.01,
-    max: 2,
-    unit: 'm/s²',
-    side: 'middle',
-  },
-  {
-    title: 'loadingGauge',
-    type: 'select',
-    enum: ['G1', 'G2', 'GA', 'GB', 'GB1', 'GC', 'FR3.3', 'FR3.3/GB/G2', 'GLOTT'],
-    side: 'middle',
-  },
-  {
-    title: 'basePowerClass',
-    type: 'string',
-    side: 'middle',
-  },
-  {
-    title: 'rollingResistanceA',
-    type: 'number',
-    min: 0,
-    max: 20,
-    units: ['kN', 'N', 'kN/t'],
-    side: 'right',
-    margin: 'mb-3',
-  },
-  {
-    title: 'rollingResistanceB',
-    type: 'number',
-    min: 0,
-    max: 0.5,
-    units: ['kN/(km/h)', 'N/(m/s)', 'N/(km/h)', 'kN/(km/h)/t'],
-    side: 'right',
-    margin: 'mb-3',
-  },
-  {
-    title: 'rollingResistanceC',
-    type: 'number',
-    min: 0,
-    max: 0.01,
-    units: ['kN/(km/h)²', 'N/(m/s)²', 'N/(km/h)²', 'kN/(km/h)²/t'],
-    side: 'right',
-  },
-  {
-    title: 'electricalPowerStartupTime',
-    type: 'number',
-    min: 0,
-    max: 60,
-    unit: 's',
-    side: 'left',
-    condition: isElectric,
-  },
-  {
-    title: 'raisePantographTime',
-    type: 'number',
-    min: 0,
-    max: 60,
-    unit: 's',
-    side: 'middle',
-    condition: isElectric,
-  },
-  {
-    title: 'supportedSignalingSystems',
-    type: 'checkboxes',
-    enum: [],
-    side: 'left',
-  },
-];
+// This dict is passthrough as we actually only need a list of categories, but using a dict lets typescript check
+// that the keys perfectly corresponds to the API-provided keys or raise a type error, thus enforcing consistency
+export const TrainMainCategoryDict: Record<TrainMainCategory, TrainMainCategory> = {
+  HIGH_SPEED_TRAIN: 'HIGH_SPEED_TRAIN',
+  INTERCITY_TRAIN: 'INTERCITY_TRAIN',
+  REGIONAL_TRAIN: 'REGIONAL_TRAIN',
+  COMMUTER_TRAIN: 'COMMUTER_TRAIN',
+  FREIGHT_TRAIN: 'FREIGHT_TRAIN',
+  FAST_FREIGHT_TRAIN: 'FAST_FREIGHT_TRAIN',
+  NIGHT_TRAIN: 'NIGHT_TRAIN',
+  TRAM_TRAIN: 'TRAM_TRAIN',
+  TOURISTIC_TRAIN: 'TOURISTIC_TRAIN',
+  WORK_TRAIN: 'WORK_TRAIN',
+};
 
 export const CONVERSION_FACTORS_SCHEMA: Partial<
   Record<MultiUnit, Partial<Record<MultiUnit, number>>>
@@ -308,53 +43,4 @@ export const CONVERSION_FACTORS_SCHEMA: Partial<
   'N/(m/s)²': { 'N/(km/h)²': 1 / 3.6 ** 2, 'kN/(km/h)²': 1 / (1000 * 3.6 ** 2) },
   'N/(km/h)²': { 'N/(m/s)²': 3.6 ** 2, 'kN/(km/h)²': 1 / 1000 },
   'kN/(km/h)²': { 'N/(m/s)²': 1000 * 3.6 ** 2, 'N/(km/h)²': 1000 },
-};
-
-export const ComfortLevels: Record<Comfort, Comfort> = {
-  STANDARD: 'STANDARD',
-  AIR_CONDITIONING: 'AIR_CONDITIONING',
-  HEATING: 'HEATING',
-};
-
-export const COMFORTS = Object.keys(ComfortLevels) as Comfort[];
-
-export const EP_BY_MODE: ElectricalProfileByMode = {
-  '1500V': [
-    null,
-    'O',
-    'A',
-    'A1',
-    'B',
-    'B1',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-  ],
-  '25000V': [null, '25000V', '22500V', '20000V'],
-  other: [null],
-  thermal: [null],
-};
-
-// This dict is passthrough as we actually only need a list of categories, but using a dict lets typescript check
-// that the keys perfectly corresponds to the API-provided keys or raise a type error, thus enforcing consistency
-export const TrainMainCategoryDict: Record<TrainMainCategory, TrainMainCategory> = {
-  HIGH_SPEED_TRAIN: 'HIGH_SPEED_TRAIN',
-  INTERCITY_TRAIN: 'INTERCITY_TRAIN',
-  REGIONAL_TRAIN: 'REGIONAL_TRAIN',
-  COMMUTER_TRAIN: 'COMMUTER_TRAIN',
-  FREIGHT_TRAIN: 'FREIGHT_TRAIN',
-  FAST_FREIGHT_TRAIN: 'FAST_FREIGHT_TRAIN',
-  NIGHT_TRAIN: 'NIGHT_TRAIN',
-  TRAM_TRAIN: 'TRAM_TRAIN',
-  TOURISTIC_TRAIN: 'TOURISTIC_TRAIN',
-  WORK_TRAIN: 'WORK_TRAIN',
 };

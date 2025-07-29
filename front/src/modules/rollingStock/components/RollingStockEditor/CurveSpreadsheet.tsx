@@ -10,15 +10,11 @@ import {
 import '@sdziadkowiec/react-datasheet-grid/dist/style.css';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  ConditionalEffortCurveForm,
-  DataSheetCurve,
-  EffortCurveForms,
-} from 'modules/rollingStock/types';
 import { replaceElementAtIndex } from 'utils/array';
 import { msToKmh } from 'utils/physics';
 
 import formatCurve from './formatSpreadSheetCurve';
+import type { ConditionalEffortCurveForm, DataSheetCurve, EffortCurveForms } from './types';
 
 type CurveSpreadsheetProps = {
   selectedCurve: ConditionalEffortCurveForm;

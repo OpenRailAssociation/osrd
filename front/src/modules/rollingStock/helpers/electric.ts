@@ -1,6 +1,5 @@
-/* eslint-disable import/prefer-default-export */
 import type { RollingStock } from 'common/api/osrdEditoastApi';
-import type { EffortCurveForms } from 'modules/rollingStock/types';
+import type { EffortCurveForms } from 'modules/rollingStock/components/RollingStockEditor/types';
 
 export function isElectric(effortCurves: EffortCurveForms | null) {
   if (!effortCurves) {
