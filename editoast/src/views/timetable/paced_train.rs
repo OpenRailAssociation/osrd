@@ -652,7 +652,7 @@ async fn project_path(
     .into_iter()
     .collect::<Vec<_>>();
 
-    let mut base_project_path = project_path_result[0].clone();
+    let mut base_project_path = Default::default();
 
     let results = simulation_contexts.into_iter().enumerate().fold(
         HashMap::<i64, ProjectPathPacedTrainResult>::new(),
