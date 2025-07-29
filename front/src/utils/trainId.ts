@@ -1,6 +1,11 @@
 import { isEmpty } from 'lodash';
 
-import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
+import type {
+  IndividualTrainProjection,
+  OccurrenceProjection,
+  TrainScheduleProjection,
+  TrainSpaceTimeData,
+} from 'modules/simulationResult/types';
 import type {
   TimetableItemWithDetails,
   PacedTrainWithDetails,
@@ -13,6 +18,7 @@ import type {
   PacedTrainId,
   PacedTrainWithPacedTrainId,
   TimetableItem,
+  TimetableItemId,
   TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -255,5 +261,11 @@ export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): 
  */
 export const isTrainScheduleProjection = (
   timetableItem: TrainSpaceTimeData
-): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
-  isTrainScheduleId(timetableItem.id);
+): timetableItem is TrainScheduleProjection => isTrainScheduleId(timetableItem.id);
+
+/**
+ * make out the occurrence projections from the train schedule projections
+ */
+export const isOccurrenceProjection = (
+  trainProjection: IndividualTrainProjection
+): trainProjection is OccurrenceProjection => isOccurrenceId(trainProjection.id);

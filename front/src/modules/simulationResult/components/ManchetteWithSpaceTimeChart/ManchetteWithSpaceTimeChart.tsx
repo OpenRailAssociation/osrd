@@ -32,7 +32,6 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import { compact, keyBy, sortBy } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
@@ -42,6 +41,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
+import makeDraggingState from 'modules/simulationResult/helpers/makeDraggingState';
 import makeProjectedItems from 'modules/simulationResult/helpers/makeProjectedItems';
 import type {
   AspectLabel,
@@ -52,21 +52,13 @@ import type {
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import {
-  findExceptionWithOccurrenceId,
-  getOccurrencesNb,
-} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  isTrainScheduleProjection,
   isOccurrenceId,
-  extractOccurrenceIndexFromOccurrenceId,
   isTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
@@ -408,6 +400,13 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   });
 
+  /**
+   * mains cases:
+   * 1) a train is already being dragged (we have something in draggingState)
+   * 2) no train is being dragged, but we are hovering a train and clicked it
+   *    => we add the train and initialTime in draggingState
+   * 3) mouse not over a train
+   */
   const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
     const { isPanning } = payload;
 
@@ -417,7 +416,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       return;
     }
 
-    // if dragging
+    // 1) a train is already being dragged
     if (draggingState) {
       const { draggedTrain, initialDepartureTime } = draggingState;
 
@@ -427,23 +426,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
       const timeDiff = payload.data.time - payload.initialData.time;
 
-      let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
-      let draggedTrainId = draggedTrain.id;
-
-      // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
-      if (isOccurrenceId(draggedTrain.id)) {
-        const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const firstOccurrence = projectPathTrainResult.find(
-          ({ id }) => isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId
-        );
-        if (firstOccurrence && 'paced' in firstOccurrence) {
-          newDepartureTime = dayjs(newDepartureTime)
-            .add(occurrencesIndex * -firstOccurrence.paced.interval.ms, 'ms')
-            .toDate();
-          draggedTrainId = firstOccurrence.id;
-        }
-      }
+      const newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
 
       // stop dragging if necessary
       if (!isPanning) {
@@ -451,7 +434,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       }
 
       await handleTrainDrag({
-        draggedTrainId,
+        draggedTrainId: draggedTrain.id,
         initialDepartureTime,
         newDepartureTime,
         stopPanning: !isPanning,
@@ -459,7 +442,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       return;
     }
 
-    // if not dragging, we check if we should start dragging
+    // 2) no train is being dragged,
+    // we check if we should start dragging
     // Only a mouse hover that starts already over a path should register
     // if we start panning, and then the mouse hovers over the path,
     // it should continue just sliding the chart, not start dragging the train path
@@ -470,20 +454,17 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const hoveredTrainId = hoveredItem.element.pathId;
-      if (!isTrainId(hoveredTrainId)) return;
-      const train = projectedTrains.find((projectedTrain) => projectedTrain.id === hoveredTrainId);
-      if (train) {
-        setDraggingState({
-          draggedTrain: train,
-          initialDepartureTime: train.departureTime,
-        });
-      } else {
-        console.error(`No train found with id ${hoveredTrainId}`);
+      const newDraggingState = makeDraggingState(
+        hoveredItem,
+        projectedTrains,
+        projectPathTrainResult
+      );
+      if (newDraggingState) {
+        setDraggingState(newDraggingState);
       }
     }
 
-    // if no hovered train, we pan normally
+    // 3) if no hovered train, we pan normally
     spaceTimeChartProps.onPan?.(payload);
 
     if (isPanning !== previousPanning) {

@@ -31,6 +31,7 @@ import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
   isPacedTrainWithDetails,
+  isOccurrenceId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -87,15 +88,14 @@ const SimulationResults = ({
     OccupancyTrainSpaceTimeData[]
   >([]);
 
+  /** Populate projectPathTrainResult from useLayProjectTrain data */
   useEffect(() => {
     if (projectionData?.projectedTrains) {
       const timetableItemDict = keyBy(timetableItemsWithDetails, 'id');
       setProjectPathTrainResult(
         projectionData.projectedTrains.map((train) => {
-          const timetableItem =
-            timetableItemDict[
-              isTrainScheduleId(train.id) ? train.id : extractPacedTrainIdFromOccurrenceId(train.id)
-            ];
+          // TODO: handle exception in track occupancy diagram
+          const timetableItem = timetableItemDict[train.id];
           return {
             ...train,
             originPathItemLocation: timetableItem?.path.at(0),
@@ -156,7 +156,10 @@ const SimulationResults = ({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => {
-    const draggedTrain = projectPathTrainResult.find((train) => train.id === draggedTrainId);
+    const timetableItemId = isOccurrenceId(draggedTrainId)
+      ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+      : draggedTrainId;
+    const draggedTrain = projectPathTrainResult.find((train) => train.id === timetableItemId);
     if (!draggedTrain) return;
 
     const newTrainData = { ...draggedTrain, departureTime: newDepartureTime };
@@ -186,7 +189,7 @@ const SimulationResults = ({
     } else {
       // update in the state
       setProjectPathTrainResult(
-        projectPathTrainResult.map((train) => (train.id === draggedTrainId ? newTrainData : train))
+        projectPathTrainResult.map((train) => (train.id === timetableItemId ? newTrainData : train))
       );
     }
   };
