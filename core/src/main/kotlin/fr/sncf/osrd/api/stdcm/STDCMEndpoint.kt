@@ -114,8 +114,11 @@ class STDCMEndpoint(
             request.trainsRequirements = mapOf() // Free up the RAM taken by raw requirements
             val steps = parseSteps(infra, request.pathItems, request.startTime)
             val requirements = runBlocking {
-                // TODO: work schedules!
-                timetableCacheManager.get(infra.rawInfra, request.timetableId)
+                // note: we could parallelize infra loading if it were in a coroutine as well
+                timetableCacheManager.get(
+                    infra.rawInfra,
+                    CacheEntry(request.timetableId, request.workScheduleGroupId)
+                )
             }
 
             // Run the STDCM pathfinding

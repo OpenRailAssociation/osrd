@@ -120,9 +120,7 @@ class IncrementalConflictDetector(private val spacingZoneUses: ParsedRequirement
     }
 }
 
-fun generateSpacingZoneUses(
-    requirements: List<Requirements>
-): Map<ZoneId, TreeMap<Double, Range<Double>>> {
+fun generateSpacingZoneUses(requirements: List<Requirements>): ParsedRequirements {
     // We first create RangeSets to handle the overlaps, but then
     // convert them to TreeMaps (`.higherEntry` is extremely convenient here)
     val rangeSets = mutableMapOf<ZoneId, RangeSet<Double>>()

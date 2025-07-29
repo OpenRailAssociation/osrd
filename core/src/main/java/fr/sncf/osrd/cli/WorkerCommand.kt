@@ -51,7 +51,8 @@ class WorkerCommand : CliCommand {
     val WORKER_REQUESTS_QUEUE: String
     val WORKER_ACTIVITY_EXCHANGE: String
     val ALL_INFRA: Boolean
-    val PRELOAD_TIMETABLES: List<Int>
+    val PRELOAD_TIMETABLE: Int?
+    val PRELOAD_WORK_SCHEDULE_GROUP: Int?
     val WORKER_THREADS: Int
 
     init {
@@ -78,8 +79,8 @@ class WorkerCommand : CliCommand {
             } else {
                 System.getenv("WORKER_ID")
             }
-        PRELOAD_TIMETABLES =
-            (System.getenv("PRELOAD_TIMETABLES") ?: "").split(";").map { it.toInt() }
+        PRELOAD_TIMETABLE = System.getenv("PRELOAD_TIMETABLES").toIntOrNull()
+        PRELOAD_WORK_SCHEDULE_GROUP = System.getenv("PRELOAD_WORK_SCHEDULE_GROUP").toIntOrNull()
     }
 
     private fun getBooleanEnvvar(name: String): Boolean {
@@ -154,11 +155,16 @@ class WorkerCommand : CliCommand {
         connection.use {
             it.createChannel().use { channel -> reportActivity(channel, "started") }
 
+            val preloadTimetableEntry =
+                if (PRELOAD_TIMETABLE != null || PRELOAD_WORK_SCHEDULE_GROUP != null)
+                    CacheEntry(PRELOAD_TIMETABLE, PRELOAD_WORK_SCHEDULE_GROUP)
+                else null
+
             if (!ALL_INFRA) {
                 try {
                     val infra = infraManager.load(infraId, null, diagnosticRecorder)
-                    if (PRELOAD_TIMETABLES.isNotEmpty())
-                        timetableCache.startLoading(infra.rawInfra, PRELOAD_TIMETABLES)
+                    if (preloadTimetableEntry != null)
+                        timetableCache.startLoading(infra.rawInfra, preloadTimetableEntry)
                 } catch (e: OSRDError) {
                     val isInfraLoadError =
                         setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)
@@ -183,7 +189,7 @@ class WorkerCommand : CliCommand {
                     throw t
                 }
             }
-            if (ALL_INFRA && PRELOAD_TIMETABLES.isNotEmpty())
+            if (ALL_INFRA && preloadTimetableEntry != null)
                 logger.warn("Timetables can't be preloaded when not specialized on an infra")
 
             connection.createChannel().use { channel -> reportActivity(channel, "ready") }

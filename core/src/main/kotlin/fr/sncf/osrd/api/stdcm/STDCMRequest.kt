@@ -24,6 +24,7 @@ class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
     @Json(name = "timetable_id") var timetableId: Int,
+    @Json(name = "work_schedule_group_id") var workScheduleGroupId: Int,
 
     // Rolling stock
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
