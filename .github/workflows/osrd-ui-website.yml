@@ -33,6 +33,7 @@ concurrency:
 env:
   hugo_version: "0.147.9"
   source_dir: "./front/ui/storybook/storybook-static"
+  artifact_name: "public"
   preview_domain: web-preview.openrailassociation.org
   preview_segment: osrdui-pr-${{ github.event.number }}
   uberspace_host: uberspace1.openrailassociation.org
@@ -81,7 +82,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: public
+          name: ${{ env.artifact_name }}
           path: ${{ env.source_dir }}
           include-hidden-files: true
           retention-days: 1
@@ -97,7 +98,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: public
+          name: ${{ env.artifact_name }}
           path: .
 
       - name: Link Checker
@@ -121,8 +122,8 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: public
-          path: ./public
+          name: ${{ env.artifact_name }}
+          path: ./${{ env.artifact_name }}
 
       - name: Copy website to host
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
@@ -134,7 +135,7 @@ jobs:
           timeout: 1m
           command_timeout: 2m
           target: ${{ env.uberspace_virtual_base }}/${{ env.uberspace_user }}/${{ env.uberspace_prod_dir }}/
-          source: "."
+          source: "${{ env.artifact_name }}/*"
           rm: true
           strip_components: 1
 
@@ -149,8 +150,8 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: public
-          path: ./public
+          name: ${{ env.artifact_name }}
+          path: ./${{ env.artifact_name }}
 
       - name: Copy website to host
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
@@ -162,7 +163,7 @@ jobs:
           timeout: 1m
           command_timeout: 2m
           target: ${{ env.uberspace_virtual_base }}/${{ env.uberspace_user }}/${{ env.preview_domain }}/${{ env.preview_segment }}
-          source: "."
+          source: "${{ env.artifact_name }}/*"
           rm: true
           strip_components: 1
 
@@ -184,7 +185,7 @@ jobs:
     if: github.event.pull_request && needs.vars.outputs.pr_closed_merged != 'false'
     steps:
       - name: Create deletion notice
-        run: mkdir -p public && echo "This PR has been closed or merged. The preview has been removed." > public/index.html
+        run: mkdir -p ${{ env.artifact_name }} && echo "This PR has been closed or merged. The preview has been removed." > ${{ env.artifact_name }}/index.html
 
       - name: Copy empty folder to host
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
@@ -196,7 +197,7 @@ jobs:
           timeout: 1m
           command_timeout: 2m
           target: ${{ env.uberspace_virtual_base }}/${{ env.uberspace_user }}/${{ env.preview_domain }}/${{ env.preview_segment }}
-          source: "public/*"
+          source: "${{ env.artifact_name }}/*"
           rm: true
           strip_components: 1
 
