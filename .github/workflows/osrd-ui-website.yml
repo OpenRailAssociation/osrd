@@ -116,8 +116,8 @@ jobs:
     needs:
       - vars
       - build
-    # Only deploy if on main branch
-    if: github.ref == 'refs/heads/main'
+    # Only deploy for tagged UI release
+    if: ${{ startsWith(github.ref, 'refs/tags/ui-v') }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
