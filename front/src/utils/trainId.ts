@@ -1,6 +1,5 @@
 import { isEmpty } from 'lodash';
 
-import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type {
   TimetableItemWithDetails,
   PacedTrainWithDetails,
@@ -204,7 +203,7 @@ export const extractEditoastIdFromTrainId = (id: TrainId): number =>
     : extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
 
 /**
- * Given a train id with a TimetableItemId format (either TrainScheduleId or PacedTrainId),
+ * Given a timetable item id with a TimetableItemId format (either TrainScheduleId or PacedTrainId),
  * returns the Editoast id (used for api).
  */
 export const extractEditoastIdFromTimetableItemId = (id: TimetableItemId): number =>
@@ -248,12 +247,3 @@ export const extractExceptionIdFromOccurrenceId = (occurrenceId: OccurrenceId): 
   // Handle the case where exceptionId contains "_" itself
   return exceptionId.join('_');
 };
-
-/**
- * Check if the given timetable item is a TrainScheduleProjection.
- * @param timetableItem - The timetable item to check.
- */
-export const isTrainScheduleProjection = (
-  timetableItem: TrainSpaceTimeData
-): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
-  isTrainScheduleId(timetableItem.id);

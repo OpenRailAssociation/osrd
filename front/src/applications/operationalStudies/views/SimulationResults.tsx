@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
-import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -33,6 +32,7 @@ import {
   isPacedTrainWithDetails,
   isTrainScheduleId,
 } from 'utils/trainId';
+import { mapBy } from 'utils/types';
 
 import BoardWrapper from '../components/Scenario/BoardWrapper';
 import { useScenarioContext } from '../hooks/useScenarioContext';
@@ -91,10 +91,10 @@ const SimulationResults = ({
 
   useEffect(() => {
     if (projectionData?.projectedTrains) {
-      const timetableItemDict = keyBy(timetableItemsWithDetails, 'id');
+      const timetableItemsById = mapBy(timetableItemsWithDetails, 'id');
       setProjectPathTrainResult(
         projectionData.projectedTrains.map((train) => {
-          const timetableItem = timetableItemDict[train.id];
+          const timetableItem = timetableItemsById.get(train.id);
           return {
             ...train,
             originPathItemLocation: timetableItem?.path.at(0),

@@ -13,7 +13,12 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import type { OccurrenceId, PacedTrainId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OccurrenceId,
+  PacedTrainId,
+  TimetableItem,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -33,30 +38,40 @@ export type PathOperationalPoint = Omit<EditoastPathOperationalPoint, 'id'> & {
 /**
  * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
  */
-// TODO: reuse the type from osrd-ui/ui-manchette
-export type TrainSpaceTimeData = {
-  name: string;
+export type BaseTrainProjection = {
   spaceTimeCurves: {
     positions: number[];
     times: number[];
   }[];
-  departureTime: Date;
   signalUpdates: SignalUpdate[];
-} & (
-  | { id: TrainScheduleId }
-  | { id: PacedTrainId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
-);
+};
+
+export type TrainSpaceTimeData = {
+  name: string;
+  departureTime: Date;
+} & BaseTrainProjection &
+  (
+    | { id: TrainScheduleId }
+    | {
+        id: PacedTrainId;
+        paced: PacedTrainWithDetails['paced'];
+        exceptions: PacedTrainException[];
+        exceptionProjections: Map<string, BaseTrainProjection>;
+      }
+  );
 
 /** Contains an individual projection, either of a trainSchedule or an occurrence */
 export type IndividualTrainProjection = {
   name: string;
-  spaceTimeCurves: {
-    positions: number[];
-    times: number[];
-  }[];
   departureTime: Date;
-  signalUpdates: SignalUpdate[];
-} & ({ id: TrainScheduleId } | { id: OccurrenceId });
+} & BaseTrainProjection &
+  (
+    | { id: TrainScheduleId }
+    | {
+        id: OccurrenceId;
+        exception?: PacedTrainException;
+      }
+  );
 
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;

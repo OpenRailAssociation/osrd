@@ -39,7 +39,10 @@ import { createPortal } from 'react-dom';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
+import {
+  cutSpaceTimeRect,
+  isIndividualOccurrenceProjection,
+} from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,
@@ -57,10 +60,10 @@ import {
   isTrainId,
   extractPacedTrainIdFromOccurrenceId,
   isOccurrenceId,
-  extractOccurrenceIndexFromOccurrenceId,
   isTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
+  extractOccurrenceIndexFromOccurrenceId,
   isPacedTrainId,
 } from 'utils/trainId';
 
@@ -439,7 +442,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
 
       // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
-      if (isOccurrenceId(draggedTrain.id)) {
+      if (
+        isIndividualOccurrenceProjection(draggedTrain) &&
+        (!draggedTrain.exception || !draggedTrain.exception.start_time)
+      ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
         const pacedTrain = projectPathTrainResult.find(
