@@ -9,7 +9,7 @@ import ProjectList from 'applications/operationalStudies/views/ProjectList';
 import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
-import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
+import RollingStockEditor from 'applications/rollingStockEditor/RollingStockEditorView';
 import StdcmView from 'applications/stdcm/views/StdcmView';
 import Error403 from 'common/authorization/components/Error403';
 import InitialRedirect from 'common/authorization/components/InitialRedirect';
@@ -76,7 +76,7 @@ const router = createBrowserRouter([
   },
   {
     path: 'rolling-stock-editor/*',
-    element: <HomeRollingStockEditor />,
+    element: <RollingStockEditor />,
   },
   {
     path: 'operational-studies/',

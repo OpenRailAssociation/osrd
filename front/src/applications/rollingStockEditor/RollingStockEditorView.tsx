@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Loader } from 'common/Loaders/Loader';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor';
@@ -126,66 +128,69 @@ const RollingStockEditor = () => {
   }, [ref2scroll.current]);
 
   return (
-    <div className="d-flex rollingstock-editor">
-      <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
-        {(isEditing || isAdding) && (
-          <div
-            className="rollingstock-editor-disablelist"
-            role="button"
-            tabIndex={0}
-            onClick={() => {
-              openModal(
-                <RollingStockEditorFormModal
-                  mainText={t('common.leaveEditionMode')}
-                  request={() => {
-                    setIsAdding(false);
-                    setIsEditing(false);
-                  }}
-                  buttonText={t('common.confirm')}
-                />
-              );
-            }}
-          >
-            <span>{t('rollingStock.listDisabled')}</span>
+    <ModalProvider>
+      <NavBarSNCF appName={<>{t('rollingStockEditor')}</>} />
+      <div className="d-flex rollingstock-editor">
+        <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
+          {(isEditing || isAdding) && (
+            <div
+              className="rollingstock-editor-disablelist"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                openModal(
+                  <RollingStockEditorFormModal
+                    mainText={t('common.leaveEditionMode')}
+                    request={() => {
+                      setIsAdding(false);
+                      setIsEditing(false);
+                    }}
+                    buttonText={t('common.confirm')}
+                  />
+                );
+              }}
+            >
+              <span>{t('rollingStock.listDisabled')}</span>
+            </div>
+          )}
+          <div className="d-flex justify-content-center w-100">
+            <button
+              type="button"
+              className="btn btn-primary mb-4"
+              data-testid="new-rollingstock-button"
+              onClick={() => {
+                setIsAdding(true);
+                setOpenedRollingStockCardId(undefined);
+              }}
+            >
+              {t('rollingStock.addNewRollingStock')}
+            </button>
           </div>
-        )}
-        <div className="d-flex justify-content-center w-100">
-          <button
-            type="button"
-            className="btn btn-primary mb-4"
-            data-testid="new-rollingstock-button"
-            onClick={() => {
-              setIsAdding(true);
-              setOpenedRollingStockCardId(undefined);
-            }}
-          >
-            {t('rollingStock.addNewRollingStock')}
-          </button>
+          {isAdding && (
+            <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+              <RollingStockEditorForm
+                isAdding={isAdding}
+                setAddOrEditState={setIsAdding}
+                setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+              />
+            </div>
+          )}
+          <SearchRollingStock
+            filteredRollingStockList={filteredRollingStockList}
+            filters={filters}
+            searchRollingStock={searchRollingStock}
+            toggleFilter={toggleFilter}
+            hasWhiteBackground
+          />
+          {displayList()}
         </div>
-        {isAdding && (
-          <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-            <RollingStockEditorForm
-              isAdding={isAdding}
-              setAddOrEditState={setIsAdding}
-              setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-            />
-          </div>
+        {!openedRollingStockCardId && !isAdding && (
+          <p className="rollingstock-editor-unselected pt-1 px-5">
+            {t('rollingStock.chooseRollingStock')}
+          </p>
         )}
-        <SearchRollingStock
-          filteredRollingStockList={filteredRollingStockList}
-          filters={filters}
-          searchRollingStock={searchRollingStock}
-          toggleFilter={toggleFilter}
-          hasWhiteBackground
-        />
-        {displayList()}
       </div>
-      {!openedRollingStockCardId && !isAdding && (
-        <p className="rollingstock-editor-unselected pt-1 px-5">
-          {t('rollingStock.chooseRollingStock')}
-        </p>
-      )}
-    </div>
+    </ModalProvider>
   );
 };
 
