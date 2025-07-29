@@ -9,21 +9,18 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { ConditionalEffortCurve, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import Selector from 'common/Selector';
-import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingStockEditor/PowerRestrictionGridModal';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import {
   COMFORTS,
   STANDARD_COMFORT_LEVEL,
   THERMAL_TRACTION_IDENTIFIER,
 } from 'modules/rollingStock/consts';
-import {
-  createEmptyCurve,
-  createEmptyCurves,
-  sortSelectedModeCurves,
-  translateItemsList,
-} from 'modules/rollingStock/helpers/utils';
 
 import { EP_BY_MODE } from './consts';
+import { sortSelectedModeCurves } from './helpers/curves';
+import { createEmptyCurve, createEmptyCurves } from './helpers/defaultValues';
+import { translateItemsList } from './helpers/utils';
+import PowerRestrictionGridModal from './PowerRestrictionGridModal';
+import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,

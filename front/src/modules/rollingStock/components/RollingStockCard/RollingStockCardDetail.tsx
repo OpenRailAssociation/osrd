@@ -11,7 +11,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
 import type { EffortCurveForms } from 'modules/rollingStock/components/RollingStockEditor/types';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
-import { convertUnits } from 'modules/rollingStock/helpers/utils';
+import convertUnits from 'modules/rollingStock/helpers/convertUnits';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

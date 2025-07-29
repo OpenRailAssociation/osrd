@@ -2,9 +2,10 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import { DEFAULT_SIGNALING_SYSTEMS } from 'modules/rollingStock/components/RollingStockEditor/consts';
-import type { RollingStockParametersValues } from 'modules/rollingStock/components/RollingStockEditor/types';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
+
+import { DEFAULT_SIGNALING_SYSTEMS } from './consts';
+import type { RollingStockParametersValues } from './types';
 
 type RollingStockEditorOnboardSystemEquipmentFormProps = {
   rsSignalingSystemsList: RollingStockParametersValues['supportedSignalingSystems'];

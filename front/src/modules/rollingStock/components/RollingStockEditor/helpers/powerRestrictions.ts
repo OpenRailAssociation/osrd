@@ -1,4 +1,5 @@
-/* eslint-disable import/prefer-default-export */
+import { isNull } from 'lodash';
+
 import type { Comfort } from 'common/api/osrdEditoastApi';
 import type {
   EffortCurveForms,
@@ -35,3 +36,10 @@ export const getElectricalProfilesAndPowerRestrictions = (
     },
     { electricalProfiles: [], powerRestrictions: [] }
   );
+
+export const orderSelectorList = (list: (string | null)[]) => {
+  const index = list.includes('O') ? 2 : 1;
+  return isNull(list[0]) || list[0] === 'O'
+    ? list.slice(0, index).concat(list.slice(index).sort())
+    : list.sort();
+};

@@ -4,7 +4,7 @@ import type { RollingStock } from 'common/api/osrdEditoastApi';
 
 import { getSupportedElectrification } from '../electric';
 
-describe('electric helpers', () => {
+describe('getSupportedElectrification', () => {
   it('should return only supported electrifications', () => {
     const mockedCurves: RollingStock['effort_curves']['modes'] = {
       '1500V': {
