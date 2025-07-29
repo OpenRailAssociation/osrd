@@ -13,7 +13,6 @@ import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingSt
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import {
   COMFORTS,
-  EP_BY_MODE,
   STANDARD_COMFORT_LEVEL,
   THERMAL_TRACTION_IDENTIFIER,
 } from 'modules/rollingStock/consts';
@@ -23,12 +22,14 @@ import {
   sortSelectedModeCurves,
   translateItemsList,
 } from 'modules/rollingStock/helpers/utils';
+
+import { EP_BY_MODE } from './consts';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,
   ElectricalProfileByMode,
   RollingStockSelectorParams,
-} from 'modules/rollingStock/types';
+} from './types';
 
 const addNewCurveToMode = (
   effortCurves: EffortCurveForms,

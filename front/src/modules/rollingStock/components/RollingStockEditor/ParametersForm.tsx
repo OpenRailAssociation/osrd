@@ -7,7 +7,15 @@ import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import { RollingStockEditorParameter, RS_REQUIRED_FIELDS } from 'modules/rollingStock/consts';
+import {
+  RollingStockEditorParameter,
+  RS_REQUIRED_FIELDS,
+} from 'modules/rollingStock/components/RollingStockEditor/consts';
+import type {
+  RollingStockParametersValues,
+  SchemaProperty,
+  EffortCurveForms,
+} from 'modules/rollingStock/components/RollingStockEditor/types';
 import {
   handleUnitValue,
   isMultiUnitsParam,
@@ -15,13 +23,7 @@ import {
   rescaleMassDependentParam,
   splitRollingStockProperties,
 } from 'modules/rollingStock/helpers/utils';
-import type {
-  RollingStockParametersValues,
-  SchemaProperty,
-  MultiUnit,
-  MultiUnitsParameter,
-  EffortCurveForms,
-} from 'modules/rollingStock/types';
+import type { MultiUnit, MultiUnitsParameter } from 'modules/rollingStock/types';
 
 type RollingStockEditorParameterFormProps = {
   rollingStockValues: RollingStockParametersValues;

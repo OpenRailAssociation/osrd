@@ -6,7 +6,8 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
-import type { RollingStockParametersValues } from 'modules/rollingStock/types';
+
+import type { RollingStockParametersValues } from './types';
 
 type CategoryOption = { id?: TrainMainCategory; label: string };
 

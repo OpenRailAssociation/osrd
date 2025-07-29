@@ -16,6 +16,10 @@ import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import type {
+  EffortCurveForms,
+  RollingStockParametersValues,
+} from 'modules/rollingStock/components/RollingStockEditor/types';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import {
   checkRollingStockFormValidity,
@@ -23,7 +27,6 @@ import {
   getRollingStockEditorDefaultValues,
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
-import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
 import { handleFileReadingError } from 'modules/timetableItem/components/ManageTimetableItem/helpers/handleParseFiles';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';

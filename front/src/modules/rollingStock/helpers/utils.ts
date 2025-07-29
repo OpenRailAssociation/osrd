@@ -11,26 +11,25 @@ import type {
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import {
   RS_REQUIRED_FIELDS,
-  THERMAL_TRACTION_IDENTIFIER,
   EP_BY_MODE,
   RS_SCHEMA_PROPERTIES,
-  CONVERSION_FACTORS_SCHEMA,
   newRollingStockValues,
-} from 'modules/rollingStock/consts';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
+} from 'modules/rollingStock/components/RollingStockEditor/consts';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForm,
   EffortCurveForms,
-  MultiUnit,
-  MultiUnitsParameter,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
   SchemaProperty,
-} from 'modules/rollingStock/types';
+} from 'modules/rollingStock/components/RollingStockEditor/types';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import { kmhToMs, msToKmh } from 'utils/physics';
 import { getTranslationKey } from 'utils/strings';
 import type { ValueOf } from 'utils/types';
+
+import { CONVERSION_FACTORS_SCHEMA, THERMAL_TRACTION_IDENTIFIER } from '../consts';
+import type { MultiUnitsParameter, MultiUnit } from '../types';
 
 export const filterNullValueInCurve = (curve: EffortCurveForm) =>
   curve.speeds.reduce<EffortCurve>(

@@ -4,6 +4,10 @@ import { describe, it, expect } from 'vitest';
 
 import type { EffortCurves } from 'common/api/osrdEditoastApi';
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+import type {
+  EffortCurveForms,
+  RollingStockParametersValues,
+} from 'modules/rollingStock/components/RollingStockEditor/types';
 import {
   checkRollingStockFormValidity,
   convertUnits,
@@ -13,12 +17,7 @@ import {
   makeEffortCurve,
   rescaleMassDependentParam,
 } from 'modules/rollingStock/helpers/utils';
-import type {
-  EffortCurveForms,
-  MultiUnit,
-  MultiUnitsParameter,
-  RollingStockParametersValues,
-} from 'modules/rollingStock/types';
+import type { MultiUnit, MultiUnitsParameter } from 'modules/rollingStock/types';
 
 function setupEffortCurve(tractionMode: string, max_efforts: number[], speeds: number[]) {
   const curves = makeEffortCurve(tractionMode);
