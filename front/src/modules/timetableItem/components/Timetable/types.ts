@@ -5,8 +5,8 @@ import type {
   PathfindingInputError,
   PathfindingNotFound,
   SimulationSummaryResult,
-  TrainMainCategory,
   TrainScheduleResponse,
+  TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,

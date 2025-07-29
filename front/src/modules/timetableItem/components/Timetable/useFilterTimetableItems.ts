@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { uniq } from 'lodash';
 
+import type { TrainCategory } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import { useDebounce } from 'utils/helpers';
@@ -144,21 +145,33 @@ const useFilterTimetableItems = (
         if (trainCategoryFilter !== 'all') {
           const exceptionsCategories = isPacedTrainWithDetails(timetableItem)
             ? timetableItem.exceptions
-                .map(
-                  (exception) =>
-                    exception.rolling_stock_category?.value &&
-                    isMainCategory(exception.rolling_stock_category.value) &&
-                    extractTagCode(exception.rolling_stock_category.value.main_category)
-                )
-                .filter((tagCode) => !!tagCode)
+                .map((exception) => {
+                  const value = exception.rolling_stock_category?.value;
+                  if (value && isMainCategory(value)) {
+                    return extractTagCode(value.main_category);
+                  }
+                  return null;
+                })
+                .filter((tagCode): tagCode is string => !!tagCode)
             : [];
-          const allCategories = uniq([timetableItem.category, ...exceptionsCategories]);
-          if (
-            !allCategories.some((category) =>
-              trainCategoryFilter === 'noCategory' ? !category : category === trainCategoryFilter
-            )
-          )
-            return false;
+
+          const baseCategory = timetableItem.category ?? null;
+          const allCategories = uniq([baseCategory, ...exceptionsCategories]).filter(
+            (cat): cat is string | TrainCategory =>
+              (!!cat && typeof cat === 'object') || typeof cat === 'string'
+          );
+
+          const match = allCategories.some((category) => {
+            if (typeof category === 'object' && 'main_category' in category) {
+              return trainCategoryFilter === extractTagCode(category.main_category);
+            }
+            if (typeof category === 'string') {
+              return trainCategoryFilter === category;
+            }
+            return trainCategoryFilter === 'noCategory';
+          });
+
+          if (!match) return false;
         }
 
         return true;

@@ -4,9 +4,9 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
-import useCategoryOptions, {
-  type CategoryOptionWithId,
-} from 'modules/rollingStock/hooks/useCategoryOptions';
+import useMainCategoryOptions, {
+  type MainCategoryOptionWithId,
+} from 'modules/rollingStock/hooks/useMainCategoryOptions';
 
 import type {
   ValidityFilter,
@@ -22,7 +22,7 @@ type FilterPanelProps = {
 
 const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
-  const categoryOptions = useCategoryOptions(false);
+  const categoryOptions = useMainCategoryOptions(false);
 
   const {
     nameLabelFilter,
@@ -61,13 +61,13 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
   ];
 
   const formattedCategoryOptions: {
-    id: TrainMainCategory | 'all' | 'noCategory';
+    id: 'all' | 'noCategory' | TrainMainCategory;
     label: string;
   }[] = [
     { id: 'all', label: t('timetable.showAllCategories') },
     { id: 'noCategory', label: t('timetable.showTrainsWithNoCategory') },
     ...categoryOptions.map((option) => ({
-      id: (option as CategoryOptionWithId).id,
+      id: (option as MainCategoryOptionWithId).id,
       label: option.label,
     })),
   ];

@@ -23,8 +23,8 @@ import {
   splitRollingStockProperties,
   rescaleMassDependentParam,
 } from 'modules/rollingStock/helpers/utils';
-import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
+import useMainCategoryOptions from 'modules/rollingStock/hooks/useMainCategoryOptions';
 import type {
   EffortCurveForms,
   MultiUnit,
@@ -424,7 +424,7 @@ export const RollingStockEditorCategoryForm = ({
 }: RollingStockEditorParameterFormProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
 
-  const categoryOptions = useCategoryOptions();
+  const categoryOptions = useMainCategoryOptions();
 
   const handlePrimaryCategoryChange = (selectedCategory?: CategoryOption) => {
     setRollingStockValues((prevValues) => {
