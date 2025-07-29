@@ -4,114 +4,24 @@ import cx from 'classnames';
 import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import {
-  DEFAULT_SIGNALING_SYSTEMS,
-  TrainMainCategoryDict,
-  RollingStockEditorMetadata,
-  RollingStockEditorParameter,
-  RS_REQUIRED_FIELDS,
-} from 'modules/rollingStock/consts';
+import { RollingStockEditorParameter, RS_REQUIRED_FIELDS } from 'modules/rollingStock/consts';
 import {
   handleUnitValue,
-  isMassDependentUnit,
   isMultiUnitsParam,
-  splitRollingStockProperties,
+  isMassDependentUnit,
   rescaleMassDependentParam,
+  splitRollingStockProperties,
 } from 'modules/rollingStock/helpers/utils';
-import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
-import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
-  EffortCurveForms,
-  MultiUnit,
-  MultiUnitsParameter,
   RollingStockParametersValues,
   SchemaProperty,
+  MultiUnit,
+  MultiUnitsParameter,
+  EffortCurveForms,
 } from 'modules/rollingStock/types';
-import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-
-type RollingStockMetadataFormProps = {
-  rollingStockValues: RollingStockParametersValues;
-  setRollingStockValues: (
-    rollingStockValue: React.SetStateAction<RollingStockParametersValues>
-  ) => void;
-};
-
-const RollingStockEditorMetadataFormColumn = ({
-  propertiesList,
-  rollingStockValues,
-  setRollingStockValues,
-}: RollingStockMetadataFormProps & { propertiesList: SchemaProperty[] }) => {
-  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-  return (
-    <>
-      {propertiesList.map((property, index) => {
-        const titleKey = `metadata.${property.title}`;
-        return (
-          <InputSNCF
-            containerClass="col-6 px-0"
-            id={property.title}
-            name={property.title}
-            label={property.title in RS_REQUIRED_FIELDS ? `${t(titleKey)}\u00a0*` : t(titleKey)}
-            type={property.type}
-            value={rollingStockValues[property.title] as string | number}
-            onChange={(e) =>
-              setRollingStockValues({ ...rollingStockValues, [property.title]: e.target.value })
-            }
-            sm
-            isFlex
-            key={index}
-            inputProps={{
-              maxLength: SMALL_INPUT_MAX_LENGTH,
-            }}
-          />
-        );
-      })}
-    </>
-  );
-};
-
-export const RollingStockEditorMetadataForm = ({
-  rollingStockValues,
-  setRollingStockValues,
-}: RollingStockMetadataFormProps) => {
-  const refListOfProperties = Object.keys(RollingStockEditorMetadata);
-  const {
-    left: leftSideList,
-    middle: middleSideList,
-    right: rightSideList,
-  } = splitRollingStockProperties(refListOfProperties);
-
-  return (
-    <div className="d-xl-flex justify-content-center mb-2 px-1">
-      <div className="col-xl-4 rollingstock-editor-input-container">
-        <RollingStockEditorMetadataFormColumn
-          propertiesList={leftSideList}
-          rollingStockValues={rollingStockValues}
-          setRollingStockValues={setRollingStockValues}
-        />
-      </div>
-      <div className="col-xl-4 rollingstock-editor-input-container">
-        <RollingStockEditorMetadataFormColumn
-          propertiesList={middleSideList}
-          rollingStockValues={rollingStockValues}
-          setRollingStockValues={setRollingStockValues}
-        />
-      </div>
-      <div className="col-xl-4 rollingstock-editor-input-container">
-        <RollingStockEditorMetadataFormColumn
-          propertiesList={rightSideList}
-          rollingStockValues={rollingStockValues}
-          setRollingStockValues={setRollingStockValues}
-        />
-      </div>
-    </div>
-  );
-};
 
 type RollingStockEditorParameterFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -311,7 +221,7 @@ const RollingStockEditorParameterFormColumn = ({
   );
 };
 
-export const RollingStockEditorParameterForm = ({
+const RollingStockEditorParameterForm = ({
   rollingStockValues,
   setRollingStockValues,
   effortCurves,
@@ -358,143 +268,4 @@ export const RollingStockEditorParameterForm = ({
   );
 };
 
-type RollingStockEditorOnboardSystemEquipmentFormProps = {
-  rsSignalingSystemsList: RollingStockParametersValues['supportedSignalingSystems'];
-  setRollingStockValues: (
-    rollingStockValues: React.SetStateAction<RollingStockParametersValues>
-  ) => void;
-};
-
-export const RollingStockEditorOnboardSystemEquipmentForm = ({
-  rsSignalingSystemsList,
-  setRollingStockValues,
-}: RollingStockEditorOnboardSystemEquipmentFormProps) => {
-  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-
-  const rollingStockSchemasProperties = useCompleteRollingStockSchemasProperties();
-
-  const sigSystemProperty = rollingStockSchemasProperties.filter(
-    (property) => property.title === 'supportedSignalingSystems'
-  )[0];
-
-  const updateSigSystemsList = (sigSystem: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newList = e.target.checked
-      ? [...rsSignalingSystemsList, sigSystem]
-      : rsSignalingSystemsList.filter((v) => v !== sigSystem);
-    setRollingStockValues((prevRollingStockValues) => ({
-      ...prevRollingStockValues,
-      supportedSignalingSystems: newList,
-    }));
-  };
-
-  const signalingSystemCheckboxes = sigSystemProperty.enum!.map((sigSystem, index) => {
-    const checked = rsSignalingSystemsList.includes(sigSystem);
-    return (
-      <div key={`${index}-${sigSystem}`} className={cx('col-6', 'col-xl-3')}>
-        <CheckboxRadioSNCF
-          type="checkbox"
-          id={sigSystem}
-          name={sigSystem}
-          label={sigSystem}
-          checked={checked}
-          onChange={updateSigSystemsList(sigSystem)}
-          disabled={DEFAULT_SIGNALING_SYSTEMS.includes(sigSystem)}
-        />
-      </div>
-    );
-  });
-
-  return (
-    <div className="d-lg-flex rollingstock-editor-input-container px-1 pb-3">
-      <div className="d-flex justify-content-space-around mr-2">
-        <label className="signaling-systems-label col-xl-3" htmlFor="supportedSignalingSystems">
-          {t('supportedSignalingSystems')}
-        </label>
-        <div className="d-flex flex-wrap col-xl-9 ">{signalingSystemCheckboxes}</div>
-      </div>
-    </div>
-  );
-};
-
-type CategoryOption = { id?: TrainMainCategory; label: string };
-
-export const RollingStockEditorCategoryForm = ({
-  rollingStockValues,
-  setRollingStockValues,
-}: RollingStockEditorParameterFormProps) => {
-  const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-
-  const categoryOptions = useCategoryOptions();
-
-  const handlePrimaryCategoryChange = (selectedCategory?: CategoryOption) => {
-    setRollingStockValues((prevValues) => {
-      if (selectedCategory?.id) {
-        prevValues.categories.add(selectedCategory.id);
-      }
-      return {
-        ...prevValues,
-        primaryCategory: selectedCategory?.id,
-      };
-    });
-  };
-
-  const handleOtherCategoryChange =
-    (category: TrainMainCategory) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setRollingStockValues((prevValues) => {
-        if (e.target.checked) {
-          prevValues.categories.add(category);
-        } else {
-          prevValues.categories.delete(category);
-        }
-        return { ...prevValues };
-      });
-    };
-
-  return (
-    <div className="rollingstock-editor-input-container px-1 pb-3">
-      {/* Primary Category Selection */}
-      <div className="d-flex align-items-center justify-content-between col rollingstock-editor-select mb-4">
-        <SelectSNCF
-          sm
-          id="primary-category-selector"
-          data-testid="primary-category-selector"
-          name="primary-category-selector"
-          label={t('primaryCategory')}
-          value={
-            rollingStockValues.primaryCategory
-              ? {
-                  id: rollingStockValues.primaryCategory,
-                  label: t(`categoriesOptions.${rollingStockValues.primaryCategory}`),
-                }
-              : { label: t('categoriesOptions.choose') }
-          }
-          options={categoryOptions}
-          onChange={handlePrimaryCategoryChange}
-        />
-      </div>
-
-      {/* Other Categories Selection */}
-      <div className="col">
-        <label className="form-label" htmlFor="rs_category_checkboxes">
-          {t('otherCategories')}
-        </label>
-        <div className="d-flex flex-wrap" id="rs_category_checkboxes">
-          {Object.values(TrainMainCategoryDict).map((category) => (
-            <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
-              <CheckboxRadioSNCF
-                type="checkbox"
-                id={`category-checkbox-${category}`}
-                data-testid={`category-checkbox-${category}`}
-                name={`category-checkbox-${category}`}
-                label={t(`categoriesOptions.${category}`)}
-                checked={rollingStockValues.categories.has(category)}
-                onChange={handleOtherCategoryChange(category)}
-                disabled={rollingStockValues.primaryCategory === category}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+export default RollingStockEditorParameterForm;
