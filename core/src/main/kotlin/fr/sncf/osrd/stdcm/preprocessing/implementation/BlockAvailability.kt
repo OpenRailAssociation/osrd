@@ -1,9 +1,13 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
+import com.google.common.collect.Range
+import com.google.common.collect.RangeSet
+import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
@@ -11,6 +15,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -360,6 +365,44 @@ fun makeBlockAvailability(
         listOf(
             Requirements(RequirementId("0", RequirementType.TRAIN), spacingRequirements, listOf())
         )
+
+    // Only keep steps with planned timing data
+    return BlockAvailability(
+        IncrementalConflictDetector(generateSpacingZoneUses(requirements)),
+        gridMarginBeforeTrain,
+        gridMarginAfterTrain,
+        timeStep
+    )
+}
+
+fun makeBlockAvailability(
+    parsedRequirements: ParsedRequirements,
+    gridMarginBeforeTrain: Double = 0.0,
+    gridMarginAfterTrain: Double = 0.0,
+    timeStep: Double = 2.0,
+): BlockAvailabilityInterface {
+    var requirements = parsedRequirements
+    if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
+        // The margin expected *after* the new train is added *before* the other train resource uses
+        val rangeSets = mutableMapOf<ZoneId, RangeSet<Double>>()
+        for ((zoneId, map) in parsedRequirements) {
+            val set = rangeSets.computeIfAbsent(zoneId) { TreeRangeSet.create() }
+            for (range in map.values) {
+                set.add(
+                    Range.closedOpen(
+                        range.lowerEndpoint() - gridMarginAfterTrain,
+                        range.upperEndpoint() + gridMarginBeforeTrain
+                    )
+                )
+            }
+        }
+        requirements =
+            rangeSets
+                .map {
+                    it.key to TreeMap(it.value.asRanges().associate { it.upperEndpoint() to it })
+                }
+                .toMap()
+    }
 
     // Only keep steps with planned timing data
     return BlockAvailability(

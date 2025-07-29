@@ -23,6 +23,7 @@ import java.time.ZonedDateTime
 class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
+    @Json(name = "timetable_id") var timetableId: Int,
 
     // Rolling stock
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,

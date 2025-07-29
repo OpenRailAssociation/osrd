@@ -38,13 +38,15 @@ class IncrementalConflictDetectorTests {
 
     fun makeDetector(vararg requirements: SimpleRequirement): IncrementalConflictDetector {
         return IncrementalConflictDetector(
-            listOf(
-                Requirements(
-                    RequirementId("0", RequirementType.TRAIN),
-                    requirements.map {
-                        SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
-                    },
-                    listOf()
+            generateSpacingZoneUses(
+                listOf(
+                    Requirements(
+                        RequirementId("0", RequirementType.TRAIN),
+                        requirements.map {
+                            SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
+                        },
+                        listOf()
+                    )
                 )
             )
         )

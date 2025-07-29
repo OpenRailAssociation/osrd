@@ -133,7 +133,7 @@ class WorkerCommand : CliCommand {
                 "/etcs_braking_curves" to
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
                 "/version" to VersionEndpoint(),
-                "/stdcm" to STDCMEndpoint(infraManager),
+                "/stdcm" to STDCMEndpoint(infraManager, timetableCache),
                 "/infra_load" to InfraLoadEndpoint(infraManager),
             )
 

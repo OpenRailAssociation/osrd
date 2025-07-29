@@ -26,6 +26,10 @@ data class NoConflictResponse(
     val timeOfNextConflict: Double,
 ) : IncrementalConflictResponse
 
+// Zone name -> (end time -> Range(start time, end time)).
+// The range is partially redundant, but it makes for easier and clearer processing.
+typealias ParsedRequirements = Map<ZoneId, TreeMap<Double, Range<Double>>>
+
 /**
  * This class takes a list of requirements as input, and can only be used to compare them to a *new*
  * set of requirements. The initial requirements cannot be modified. Conflicts between initial
@@ -34,32 +38,7 @@ data class NoConflictResponse(
  * In practice, this is used for STDCM, where the initial requirements represent the timetable
  * trains, and new requirements come from the train we are trying to fit in the timetable.
  */
-class IncrementalConflictDetector(requirements: List<Requirements>) {
-    // Zone name -> (end time -> Range(start time, end time)).
-    // The range is partially redundant, but it makes for easier and clearer processing.
-    private val spacingZoneUses: Map<ZoneId, TreeMap<Double, Range<Double>>>
-
-    init {
-        spacingZoneUses = generateSpacingZoneUses(requirements)
-    }
-
-    private fun generateSpacingZoneUses(
-        requirements: List<Requirements>
-    ): Map<ZoneId, TreeMap<Double, Range<Double>>> {
-        // We first create RangeSets to handle the overlaps, but then
-        // convert them to TreeMaps (`.higherEntry` is extremely convenient here)
-        val rangeSets = mutableMapOf<ZoneId, RangeSet<Double>>()
-        for (req in requirements) {
-            for (spacingReq in req.spacingRequirements) {
-                val set = rangeSets.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
-            }
-        }
-        return rangeSets
-            .map { it.key to TreeMap(it.value.asRanges().associate { it.upperEndpoint() to it }) }
-            .toMap()
-    }
-
+class IncrementalConflictDetector(private val spacingZoneUses: ParsedRequirements) {
     /**
      * Checks for any conflict between the initial requirements and the ones given here as method
      * input. Returns a polymorphic response with different extra data for either case (conflict /
@@ -139,4 +118,23 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
             if (!hasIncreasedDelay || minDelay.isInfinite()) return minDelay
         }
     }
+}
+
+fun generateSpacingZoneUses(
+    requirements: List<Requirements>
+): Map<ZoneId, TreeMap<Double, Range<Double>>> {
+    // We first create RangeSets to handle the overlaps, but then
+    // convert them to TreeMaps (`.higherEntry` is extremely convenient here)
+    val rangeSets = mutableMapOf<ZoneId, RangeSet<Double>>()
+    for (req in requirements) {
+        for (spacingReq in req.spacingRequirements) {
+            val set = rangeSets.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+            set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+        }
+    }
+    return rangeSets
+        .map { range ->
+            range.key to TreeMap(range.value.asRanges().associateBy { it.upperEndpoint() })
+        }
+        .toMap()
 }

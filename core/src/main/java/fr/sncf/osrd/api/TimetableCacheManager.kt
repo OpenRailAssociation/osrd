@@ -6,6 +6,7 @@ import com.google.common.collect.TreeRangeSet
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -17,8 +18,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
-
-private typealias ParsedRequirements = Map<ZoneId, TreeMap<Double, Range<Double>>>
 
 private typealias TimetableId = Int
 
@@ -81,8 +80,8 @@ class TimetableCacheManager(
 
         val res =
             rangeSets
-                .map {
-                    it.key to TreeMap(it.value.asRanges().associate { it.upperEndpoint() to it })
+                .map { entry ->
+                    entry.key to TreeMap(entry.value.asRanges().associateBy { it.upperEndpoint() })
                 }
                 .toMap()
 
