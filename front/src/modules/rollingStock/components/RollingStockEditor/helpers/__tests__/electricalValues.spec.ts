@@ -1,11 +1,16 @@
 import { describe, it, expect } from 'vitest';
 
-import {
-  getDefaultRollingStockMode,
-  getRollingStockEditorDefaultValues,
-} from 'modules/rollingStock/helpers/utils';
+import { getRollingStockEditorDefaultValues, getDefaultRollingStockMode } from '../defaultValues';
+import { modifyRollingStockElectricalValues, orderElectricalProfils } from '../electricalValues';
 
-import { modifyRollingStockElectricalValues } from '../RollingStockEditorForm';
+describe('orderElectricalProfils', () => {
+  it('should order the list of electrical profiles', () => {
+    const result = orderElectricalProfils(['B', 'C', 'A', null, 'O'], '1500V');
+    const expected = [null, 'O', 'A', 'B', 'C'];
+
+    expect(result).toEqual(expected);
+  });
+});
 
 const newEmptyRollingStock = getRollingStockEditorDefaultValues();
 const rsEffortCurve1000 = getDefaultRollingStockMode('1000');

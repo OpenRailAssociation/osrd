@@ -8,19 +8,20 @@ import { getCurvesComforts } from 'modules/rollingStock/components/RollingStockC
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import CurveParamSelectors from 'modules/rollingStock/components/RollingStockEditor/CurveParamSelectors';
 import CurveSpreadsheet from 'modules/rollingStock/components/RollingStockEditor/CurveSpreadsheet';
+import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import { removeDuplicates } from 'utils/array';
+
+import { filterNullValueInCurve } from './helpers/curves';
+import { orderElectricalProfils } from './helpers/electricalValues';
+import {
+  getElectricalProfilesAndPowerRestrictions,
+  orderSelectorList,
+} from './helpers/powerRestrictions';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,
   RollingStockParametersValues,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
-import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
-import { getElectricalProfilesAndPowerRestrictions } from 'modules/rollingStock/helpers/rollingStockEditor';
-import {
-  filterNullValueInCurve,
-  orderElectricalProfils,
-  orderSelectorList,
-} from 'modules/rollingStock/helpers/utils';
-import { removeDuplicates } from 'utils/array';
+} from './types';
 
 const EMPTY_PARAMS = {
   comfortLevels: [STANDARD_COMFORT_LEVEL],

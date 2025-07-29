@@ -16,17 +16,6 @@ import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import type {
-  EffortCurveForms,
-  RollingStockParametersValues,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
-import {
-  checkRollingStockFormValidity,
-  getDefaultRollingStockMode,
-  getRollingStockEditorDefaultValues,
-  rollingStockEditorQueryArg,
-} from 'modules/rollingStock/helpers/utils';
 import { handleFileReadingError } from 'modules/timetableItem/components/ManageTimetableItem/helpers/handleParseFiles';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -34,9 +23,17 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import CategoryForm from './CategoryForm';
+import {
+  getDefaultRollingStockMode,
+  getRollingStockEditorDefaultValues,
+} from './helpers/defaultValues';
+import { modifyRollingStockElectricalValues } from './helpers/electricalValues';
+import isRollingStockFormValid from './helpers/isRollingStockFormValid';
+import { rollingStockEditorQueryArg } from './helpers/utils';
 import MetadataForm from './MetadataForm';
 import OnboardSystemEquipmentForm from './OnboardSystemEquipmentForm';
 import ParametersForm from './ParametersForm';
+import type { EffortCurveForms, RollingStockParametersValues } from './types';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
@@ -44,21 +41,6 @@ type RollingStockParametersProps = {
   setOpenedRollingStockCardId?: React.Dispatch<React.SetStateAction<number | undefined>>;
   isAdding?: boolean;
 };
-
-export function modifyRollingStockElectricalValues(
-  currentRollingStockValues: RollingStockParametersValues,
-  effortCurves: EffortCurveForms | null
-) {
-  const isCurrentElectric = isElectric(effortCurves);
-  if (!isCurrentElectric) {
-    return {
-      ...currentRollingStockValues,
-      electricalPowerStartupTime: null,
-      raisePantographTime: null,
-    };
-  }
-  return currentRollingStockValues;
-}
 
 const RollingStockEditorForm = ({
   rollingStockData,
@@ -176,8 +158,11 @@ const RollingStockEditorForm = ({
       return;
     }
 
-    const { invalidFields, validRollingStockForm, invalidEffortCurves } =
-      checkRollingStockFormValidity(data, effortCurves, rollingStockT);
+    const { invalidFields, validRollingStockForm, invalidEffortCurves } = isRollingStockFormValid(
+      data,
+      effortCurves,
+      rollingStockT
+    );
     if (invalidFields.length) {
       setRollingStockValues(validRollingStockForm);
       setErrorMessage(

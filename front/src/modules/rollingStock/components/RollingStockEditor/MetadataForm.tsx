@@ -1,16 +1,11 @@
 import { useTranslation } from 'react-i18next';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import {
-  RS_REQUIRED_FIELDS,
-  RollingStockEditorMetadata,
-} from 'modules/rollingStock/components/RollingStockEditor/consts';
-import type {
-  RollingStockParametersValues,
-  SchemaProperty,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
-import { splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
+
+import { RS_REQUIRED_FIELDS, RollingStockEditorMetadata } from './consts';
+import { splitRollingStockProperties } from './helpers/utils';
+import type { RollingStockParametersValues, SchemaProperty } from './types';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
