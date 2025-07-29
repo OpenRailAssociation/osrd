@@ -181,8 +181,7 @@ const OccurrenceItem = ({
       tabIndex={0}
       onClick={() => {
         if (isMenuOpen || disabled) return;
-        // TODO exceptions : adapt this in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        if (getExceptionType(occurrence) !== 'added') selectOccurrence(occurrence.id);
+        selectOccurrence(occurrence.id);
       }}
     >
       <div className="main">
