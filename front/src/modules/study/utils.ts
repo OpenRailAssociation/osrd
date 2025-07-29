@@ -1,8 +1,8 @@
 import { isEmpty, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { StudyState } from 'applications/operationalStudies/consts';
 import { isInvalidName } from 'applications/operationalStudies/utils';
+import type { StudyState } from 'applications/operationalStudies/views/Study/consts';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { SMALL_INPUT_MAX_LENGTH, SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 

@@ -7,9 +7,6 @@ import { useParams } from 'react-router-dom';
 import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import DateBox from 'applications/operationalStudies/components/Study/DateBox';
-import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import { type StudyState, studyStates } from 'applications/operationalStudies/consts';
 import {
   type PostSearchApiArg,
   osrdEditoastApi,
@@ -21,12 +18,15 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
-import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
-import useMultiSelection from '../hooks/useMultiSelection';
+import DateBox from './components/DateBox';
+import ScenarioCard from './components/ScenarioCard';
+import StateStep from './components/StateStep';
+import { type StudyState, studyStates } from './consts';
+import useMultiSelection from '../../hooks/useMultiSelection';
 
 type SortOptions =
   | 'NameAsc'
