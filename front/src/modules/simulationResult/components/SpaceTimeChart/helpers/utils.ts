@@ -1,9 +1,14 @@
 import { chunk, noop, omit } from 'lodash';
 
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type {
+  IndividualTrainProjection,
+  LayerRangeData,
+  TrainSpaceTimeData,
+} from 'modules/simulationResult/types';
+import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
+import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
 import type { MovableOccupancyZone } from './zones';
-import type { LayerRangeData } from '../../../types';
 
 export const cutSpaceTimeRect = (
   range: LayerRangeData,
@@ -97,3 +102,17 @@ export function batchFetchTrackOccupancy(
 
   return handleAbort;
 }
+
+/**
+ * Check if the given timetable item is a TrainScheduleProjection.
+ * @param timetableItem - The timetable item to check.
+ */
+export const isTrainScheduleProjection = (
+  timetableItem: TrainSpaceTimeData
+): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
+  isTrainScheduleId(timetableItem.id);
+
+export const isIndividualOccurrenceProjection = (
+  trainProjection: IndividualTrainProjection
+): trainProjection is Extract<IndividualTrainProjection, { id: OccurrenceId }> =>
+  isOccurrenceId(trainProjection.id);

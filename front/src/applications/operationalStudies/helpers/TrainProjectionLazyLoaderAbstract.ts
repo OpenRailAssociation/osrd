@@ -11,6 +11,7 @@ const BATCH_SIZE = 20;
 export type ProjectionResult = {
   space_time_curves: SpaceTimeCurve[];
   signal_updates?: SignalUpdate[];
+  exceptions?: Map<string, { space_time_curves: SpaceTimeCurve[]; signal_updates: SignalUpdate[] }>;
 };
 
 export type TrainProjectionLazyLoaderOptions = {
