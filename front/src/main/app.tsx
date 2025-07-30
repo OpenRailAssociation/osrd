@@ -10,7 +10,7 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
 import RollingStockEditor from 'applications/rollingStockEditor/RollingStockEditorView';
-import StdcmView from 'applications/stdcm/views/StdcmView';
+import Stdcm from 'applications/stdcm/StdcmView';
 import Error403 from 'common/authorization/components/Error403';
 import InitialRedirect from 'common/authorization/components/InitialRedirect';
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -70,7 +70,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '*',
-        element: <StdcmView />,
+        element: <Stdcm />,
       },
     ],
   },

@@ -12,7 +12,6 @@ import {
 import { isEqual, isNil } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { LoaderFill } from 'common/Loaders';
 import { selectSimulation } from 'reducers/osrdconf/stdcmConf';
 import {
@@ -25,14 +24,15 @@ import {
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
-import StdcmConfig from '../components/StdcmForm/StdcmConfig';
-import StdcmHeader from '../components/StdcmHeader';
-import StdcmHelpModule from '../components/StdcmHelpModule';
-import StdcmResults from '../components/StdcmResults';
-import StdcmStatusBanner from '../components/StdcmStatusBanner';
-import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
-import useStdcmForm from '../hooks/useStdcmForm';
+import StdcmEmptyConfigError from './components/StdcmEmptyConfigError';
+import StdcmConfig from './components/StdcmForm/StdcmConfig';
+import StdcmHeader from './components/StdcmHeader';
+import StdcmHelpModule from './components/StdcmHelpModule';
+import StdcmResults from './components/StdcmResults';
+import StdcmStatusBanner from './components/StdcmStatusBanner';
+import useStdcm from './hooks/useStdcm';
+import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from './hooks/useStdcmEnv';
+import useStdcmForm from './hooks/useStdcmForm';
 
 const StdcmViewContent = ({
   isDebugMode,
