@@ -1,12 +1,14 @@
 import dayjs from 'dayjs';
 
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import {
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
+  extractPacedTrainIdFromOccurrenceId,
   isIndexedOccurrenceId,
+  isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
 import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../components/Timetable/types';
@@ -128,4 +130,24 @@ export const getOccurrencesWorstStatus = ({
     }
   }
   return className;
+};
+
+export const getExceptionFromOccurrenceId = (
+  timetableItemsById: Map<TimetableItemId, TimetableItem>,
+  occurrenceId: OccurrenceId
+) => {
+  const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
+  const pacedTrain = timetableItemsById.get(pacedTrainId);
+  if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain))
+    throw new Error(`No paced train found for id ${pacedTrainId}`);
+
+  let exception: PacedTrainException | undefined;
+  if (isIndexedOccurrenceId(occurrenceId)) {
+    const index = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+    exception = pacedTrain.exceptions.find((e) => e.occurrence_index === index);
+  } else {
+    const key = extractExceptionIdFromOccurrenceId(occurrenceId);
+    exception = pacedTrain.exceptions.find((e) => e.key === key);
+  }
+  return exception;
 };

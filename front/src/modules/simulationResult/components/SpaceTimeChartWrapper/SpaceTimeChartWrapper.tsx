@@ -40,13 +40,13 @@ import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type {
-  IndividualTrainProjection,
   PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
+  DraggingState,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
@@ -58,6 +58,7 @@ import {
   extractEditoastIdFromPacedTrainId,
   extractOccurrenceIndexFromOccurrenceId,
   isPacedTrainId,
+  formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
@@ -106,7 +107,7 @@ type SpaceTimeChartWrapperBaseProps = {
   }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
-  selectedProjectionId: TimetableItemId;
+  selectedProjectionId: TrainScheduleId | PacedTrainId | OccurrenceId;
   timetableItemsWithDetails?: TimetableItemWithDetails[];
 };
 
@@ -150,10 +151,7 @@ const SpaceTimeChartWrapper = ({
   const activeWaypointRef = useRef<HTMLDivElement>(null);
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
-  const [draggingState, setDraggingState] = useState<{
-    draggedTrain: IndividualTrainProjection;
-    initialDepartureTime: Date;
-  }>();
+  const [draggingState, setDraggingState] = useState<DraggingState>();
 
   const isTimetableItemValid = useMemo(() => {
     const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
@@ -309,9 +307,10 @@ const SpaceTimeChartWrapper = ({
   });
 
   useEffect(() => {
-    const trainUsedForProjection = projectPathTrainResult.find((train) =>
-      train.id.includes(selectedProjectionId)
-    );
+    const trainId = isPacedTrainId(selectedProjectionId)
+      ? formatPacedTrainIdToIndexedOccurrenceId(selectedProjectionId, 0)
+      : selectedProjectionId;
+    const trainUsedForProjection = projectedTrains.find((train) => train.id === trainId);
     if (trainUsedForProjection) {
       setTimeOrigin(+trainUsedForProjection.departureTime);
     } else {
