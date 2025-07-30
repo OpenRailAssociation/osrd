@@ -19,13 +19,7 @@ const ModalHeaderSNCF = ({
       <div className="modal-header">
         {children}
         {withCloseButton && (
-          <button
-            data-testid="modal-close-button"
-            type="button"
-            className="close"
-            aria-label="Close"
-            onClick={closeModal}
-          >
+          <button type="button" className="close" aria-label="Close" onClick={closeModal}>
             <span aria-hidden="true">&times;</span>
           </button>
         )}

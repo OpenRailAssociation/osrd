@@ -98,7 +98,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
       <div className="grid-template">
         <div id="train-validity-and-label">
           <Input
-            data-testid="timetable-label-filter"
+            testIdPrefix="timetable-label-filter"
             type="text"
             id="timetable-label-filter"
             name="timetable-label-filter"
@@ -152,7 +152,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
         </div>
         <div id="schedule-point-honored-and-rollingstock">
           <Input
-            data-testid="timetable-rollingstock-filter"
+            testIdPrefix="timetable-rollingstock-filter"
             type="text"
             id="timetable-rollingstock-filter"
             name="timetable-rollingstock-filter"

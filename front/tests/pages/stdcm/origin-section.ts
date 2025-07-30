@@ -35,7 +35,7 @@ class OriginSection extends STDCMPage {
     this.originArrival = page.locator('#select-origin-arrival');
     this.dateOriginArrival = page.getByTestId('date-origin-arrival-input');
     this.timeOriginArrival = page.getByTestId('time-origin-arrival-input');
-    this.toleranceOriginArrival = page.getByTestId('stdcm-tolerance-origin-arrival-input');
+    this.toleranceOriginArrival = page.getByTestId('tolerance-origin-arrival-input');
     this.dynamicOriginCi = this.originCard.getByTestId('operational-point-ci');
     this.dynamicOriginCh = this.originCard.getByTestId('operational-point-ch');
     this.suggestionNWS = this.suggestionItems.filter({
@@ -108,11 +108,12 @@ class OriginSection extends STDCMPage {
       await expect(this.originArrival).toHaveValue(arrivalType);
       await this.dateOriginArrival.fill(arrivalDate);
       await this.timeOriginArrival.fill(arrivalTimeOverride || arrivalTime);
-      await this.fillToleranceField(
-        this.toleranceOriginArrival,
-        tolerance.negative,
-        tolerance.positive
-      );
+      await this.fillToleranceField({
+        toleranceInput: this.toleranceOriginArrival,
+        minusValue: tolerance.negative,
+        plusValue: tolerance.positive,
+        toleranceOp: 'origin',
+      });
     }
   }
 }

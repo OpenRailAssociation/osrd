@@ -227,6 +227,7 @@ const StdcmConsist = ({
     >
       <div className="traction-engine">
         <ComboBox
+          testIdPrefix="traction-engine"
           id="tractionEngine"
           label={t('consist.tractionEngine')}
           value={rollingStock}
@@ -240,6 +241,7 @@ const StdcmConsist = ({
       </div>
       <div className="towed-rolling-stock">
         <ComboBox
+          testIdPrefix="towed-rolling-stock"
           id="towedRollingStock"
           label={t('consist.towedRollingStock')}
           value={towedRollingStock}
@@ -271,6 +273,7 @@ const StdcmConsist = ({
       </div>
       <div className="stdcm-consist__properties">
         <Input
+          testIdPrefix="tonnage"
           id="tonnage"
           label={t('consist.tonnage')}
           trailingContent="t"
@@ -287,6 +290,7 @@ const StdcmConsist = ({
           narrow
         />
         <Input
+          testIdPrefix="length"
           id="length"
           label={t('consist.length')}
           trailingContent="m"
@@ -313,6 +317,7 @@ const StdcmConsist = ({
           narrow
         />
         <Input
+          testIdPrefix="maxSpeed"
           id="maxSpeed"
           label={t('consist.maxSpeed')}
           trailingContent="km/h"

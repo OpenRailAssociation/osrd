@@ -30,7 +30,11 @@ class DestinationSection extends STDCMPage {
 
   private readonly suggestionSS: Locator;
 
+  private readonly closeDestinationTimePickerButton: Locator;
+
   private readonly clearButton: Locator;
+
+  private readonly destinationIncrementTimeButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -40,15 +44,19 @@ class DestinationSection extends STDCMPage {
     this.destinationArrival = page.locator('#select-destination-arrival');
     this.dateDestinationArrival = page.getByTestId('date-destination-arrival-input');
     this.timeDestinationArrival = page.getByTestId('time-destination-arrival-input');
-    this.toleranceDestinationArrival = page.getByTestId(
-      'stdcm-tolerance-destination-arrival-input'
-    );
+    this.toleranceDestinationArrival = page.getByTestId('tolerance-destination-arrival-input');
     this.dynamicDestinationCh = this.destinationCard.getByTestId('operational-point-ch');
     this.dynamicDestinationCi = this.destinationCard.getByTestId('operational-point-ci');
     this.suggestionSS = this.suggestionItems.filter({
       hasText: 'SS South_station',
     });
     this.clearButton = this.destinationCard.locator('.clear-icon');
+    this.destinationIncrementTimeButton = page.getByTestId(
+      'time-destination-arrival-increment-minute'
+    );
+    this.closeDestinationTimePickerButton = page.getByTestId(
+      'time-destination-arrival-modal-close-button'
+    );
   }
 
   private async setMinuteLocator(minuteValue: string) {
@@ -112,16 +120,18 @@ class DestinationSection extends STDCMPage {
     await this.timeDestinationArrival.click();
     await this.setHourLocator(updatedDetails.hour);
     await this.setMinuteLocator(updatedDetails.minute);
-    await this.incrementButton.dblclick(); // Double-click the +1 minute button to reach 37
-    await this.closeTimePickerButton.click();
+    await this.destinationIncrementTimeButton.dblclick(); // Double-click the +1 minute button to reach 37
+    await this.closeDestinationTimePickerButton.click();
     await expect(this.timeDestinationArrival).toHaveValue(updatedDetails.timeValue);
 
     // Update tolerance and verify warning box
-    await this.fillToleranceField(
-      this.toleranceDestinationArrival,
-      updatedDetails.tolerance.negative,
-      updatedDetails.tolerance.positive
-    );
+    await this.fillToleranceField({
+      toleranceInput: this.toleranceDestinationArrival,
+      minusValue: updatedDetails.tolerance.negative,
+      plusValue: updatedDetails.tolerance.positive,
+      toleranceOp: 'destination',
+    });
+
     await expect(this.warningBox).not.toBeVisible();
   }
 

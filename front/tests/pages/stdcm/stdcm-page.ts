@@ -23,11 +23,7 @@ class STDCMPage extends HomePage {
 
   readonly addViaButton: Locator;
 
-  readonly closeTimePickerButton: Locator;
-
   readonly warningBox: Locator;
-
-  readonly incrementButton: Locator;
 
   private readonly debugButton: Locator;
 
@@ -35,7 +31,9 @@ class STDCMPage extends HomePage {
 
   readonly launchSimulationButton: Locator;
 
-  private readonly closeTolerancePickerButton: Locator;
+  private readonly closeOriginTolerancePickerButton: Locator;
+
+  private readonly closeDestinationTolerancePickerButton;
 
   private readonly suggestionList: Locator;
 
@@ -72,12 +70,15 @@ class STDCMPage extends HomePage {
     );
     this.launchSimulationButton = page.getByTestId('launch-simulation-button');
 
-    this.closeTolerancePickerButton = page
-      .getByTestId('tolerance-picker')
+    this.closeOriginTolerancePickerButton = page
+      .getByTestId('tolerance-origin-arrival')
+      .getByTestId('modal-close-button');
+    this.closeDestinationTolerancePickerButton = page
+      .getByTestId('tolerance-destination-arrival')
       .getByTestId('modal-close-button');
 
     this.suggestionList = page.getByTestId('suggestions-list');
-    this.suggestionItems = this.suggestionList.getByTestId('suggestion-item');
+    this.suggestionItems = this.suggestionList.getByTestId('suggestions-item');
 
     this.simulationStatus = page.getByTestId('simulation-status');
 
@@ -85,9 +86,8 @@ class STDCMPage extends HomePage {
     this.destinationMarker = this.mapContainer.locator('img[alt="destination"]');
     this.viaMarker = this.mapContainer.locator('img[alt="via"]');
 
-    this.closeTimePickerButton = page.getByTestId('time-picker').getByTestId('modal-close-button');
     this.warningBox = page.getByTestId('warning-box');
-    this.incrementButton = page.getByTestId('increment-minute');
+
     this.pathfindingStatusMessage = page.getByTestId('pathfinding-status-message');
   }
 
@@ -117,12 +117,33 @@ class STDCMPage extends HomePage {
     }
   }
 
-  async fillToleranceField(toleranceLocator: Locator, minusValue: string, plusValue: string) {
-    await toleranceLocator.click();
-    await this.page.getByRole('button', { name: minusValue, exact: true }).click();
-    await this.page.getByRole('button', { name: plusValue, exact: true }).click();
-    await expect(toleranceLocator).toHaveValue(`${minusValue}/${plusValue}`);
-    await this.closeTolerancePickerButton.click();
+  async fillToleranceField({
+    toleranceInput,
+    minusValue,
+    plusValue,
+    toleranceOp,
+  }: {
+    toleranceInput: Locator;
+    minusValue: string;
+    plusValue: string;
+    toleranceOp: 'origin' | 'destination';
+  }): Promise<void> {
+    await toleranceInput.click();
+
+    const minusButton = this.page.getByRole('button', { name: minusValue, exact: true });
+    const plusButton = this.page.getByRole('button', { name: plusValue, exact: true });
+
+    await minusButton.click();
+    await plusButton.click();
+
+    await expect(toleranceInput).toHaveValue(`${minusValue}/${plusValue}`);
+
+    const closeButton =
+      toleranceOp === 'origin'
+        ? this.closeOriginTolerancePickerButton
+        : this.closeDestinationTolerancePickerButton;
+
+    await closeButton.click();
   }
 
   // Launch the simulation and check if simulation-related elements are visible

@@ -130,7 +130,7 @@ class ScenarioPage extends CommonPage {
     isUpdating?: boolean;
   }) {
     await expect(this.scenarioName).toBeVisible();
-    expect(await this.scenarioName.textContent()).toContain(name);
+    await expect.poll(async () => this.scenarioName.textContent()).toContain(name);
     // Wait for the scenario name to be clickable if not updating
     // this is to prevent the description panel from being hidden
     if (!isUpdating) await this.scenarioNameContainer.click();

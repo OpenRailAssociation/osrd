@@ -110,6 +110,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
       {pathStep.arrivalType === 'preciseTime' && (
         <div className="schedule">
           <DatePicker
+            testIdPrefix={`date-${opId}`}
             inputProps={{
               id: `date-${opId}`,
               label: t('trainPath.date'),
@@ -129,6 +130,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             errorMessages={datePickerErrorMessages}
           />
           <TimePicker
+            testIdPrefix={`time-${opId}`}
             id={`time-${opId}`}
             label={t('trainPath.time')}
             hours={arrivalTimeHours}
@@ -145,6 +147,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             narrow
           />
           <TolerancePicker
+            testIdPrefix={`tolerance-${opId}`}
             id={`stdcm-tolerance-${opId}`}
             label={t('trainPath.tolerance')}
             toleranceValues={tolerances}
