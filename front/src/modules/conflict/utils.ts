@@ -64,8 +64,7 @@ function getConflictTrainCategories(
   const timetableItemCategories: (TrainMainCategory | null)[] = conflict.train_schedule_ids.map(
     (id) => {
       const train = trainMap.get(formatEditoastIdToTrainScheduleId(id));
-      const category = train?.category;
-      return category && 'main_category' in category ? category.main_category : null;
+      return train?.category ?? null;
     }
   );
 
@@ -73,8 +72,7 @@ function getConflictTrainCategories(
     conflict.paced_train_occurrence_ids.map((occurrence) => {
       const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
       if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return null;
-      const { category } = pacedTrain;
-      return category && 'main_category' in category ? category.main_category : null;
+      return pacedTrain?.category ?? null;
     });
 
   return [...timetableItemCategories, ...occurrenceCategories];
