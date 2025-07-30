@@ -1129,4 +1129,165 @@ mod tests {
             }
         );
     }
+
+    #[rstest]
+    async fn compound_similar_trains() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        let operational_points_for_train_1 = vec![
+            OperationalPointOnPath::new_test("West_station", 22, "WS"),
+            OperationalPointOnPath::new_test("Mid_West_station", 33, "MWS"),
+            OperationalPointOnPath::new_test("Mid_East_station", 44, "MES"),
+        ];
+        let operational_points_for_train_2 = vec![
+            OperationalPointOnPath::new_test("Mid_East_station", 44, "MES"),
+            OperationalPointOnPath::new_test("North_station", 55, "NES"),
+            OperationalPointOnPath::new_test("South_station", 66, "SS"),
+        ];
+        core.stub("/path_properties")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(create_path_properties_response(
+                operational_points_for_train_1,
+            ))
+            .json(create_path_properties_response(
+                operational_points_for_train_2,
+            ))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let train_name_1 = "train_name_1".to_string();
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("West_station"), // WS
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+            PathItem::new_operational_point("Mid_East_station"), // MES
+        ];
+        let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
+            "South_station",
+            Duration::new(0, 0).expect("Failed to parse duration"),
+        )];
+        let start_time_1 =
+            DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
+
+        // WS(22):stop  MWS(33):passing_by  MES(44):stop
+        create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_name_1.clone(),
+            rolling_stock.name.clone(),
+            path,
+            start_time_1,
+            schedule,
+            Some("MA100".to_string()),
+        )
+        .await;
+
+        let train_name_2 = "train_name_2".to_string();
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("Mid_East_station"), // MES
+            PathItem::new_operational_point("North_station"),    // NS
+            PathItem::new_operational_point("South_station"),    // SS
+        ];
+        let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
+            "Mid_East_station",
+            Duration::new(0, 0).expect("Failed to parse duration"),
+        )];
+        let start_time_2 =
+            DateTime::from_str("2025-01-01T12:00:00Z").expect("Failed to parse datetime");
+
+        // MES(44):passing_by  NS(55):stop  SS(66):stop
+        create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_name_2.clone(),
+            rolling_stock.name.clone(),
+            path,
+            start_time_2,
+            schedule,
+            Some("MA100".to_string()),
+        )
+        .await;
+
+        // WS(22):stop  MWS(33):passing_by  MES(44):stop NS(55):passing_by  SS(66):stop
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: rolling_stock.name,
+                speed_limit_tag: Some("MA100".to_string()),
+            },
+            waypoints: vec![
+                Waypoint {
+                    ci: 22,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 33,
+                    ch: "BV".into(),
+                    stop: false,
+                },
+                Waypoint {
+                    ci: 44,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 55,
+                    ch: "BV".into(),
+                    stop: false,
+                },
+                Waypoint {
+                    ci: 66,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+            ],
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let expected_response = Response {
+            similar_trains: vec![
+                SimilarTrainItem {
+                    train_name: train_name_1.into(),
+                    start_time: start_time_1,
+                    begin: WaypointResponse {
+                        ci: 22,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 44,
+                        ch: "BV".into(),
+                    },
+                },
+                SimilarTrainItem {
+                    train_name: train_name_2.into(),
+                    start_time: start_time_2,
+                    begin: WaypointResponse {
+                        ci: 44,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 66,
+                        ch: "BV".into(),
+                    },
+                },
+            ],
+        };
+        assert_eq!(response, expected_response);
+    }
 }
