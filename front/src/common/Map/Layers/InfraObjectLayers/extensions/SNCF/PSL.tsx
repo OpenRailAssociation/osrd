@@ -7,6 +7,11 @@ import { Source } from 'react-map-gl/maplibre';
 import type { LineLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
+import {
+  DEFAULT_HALO_WIDTH,
+  getAllowOverlap,
+  getDynamicTextSize,
+} from 'common/Map/Layers/commonLayers';
 import type { LayersSettings } from 'reducers/globalMap/types';
 import type { MapState } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
@@ -41,7 +46,7 @@ export function getPSLSpeedValueLayerProps({
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'text-font': ['Roboto Bold'],
+      'text-font': ['IBMPlexSans-Bold'],
       'symbol-placement': 'line-center',
       'text-field': [
         'concat',
@@ -50,16 +55,16 @@ export function getPSLSpeedValueLayerProps({
         ['to-string', getSpeedSectionsName(layersSettings)],
         'km/h',
       ],
-      'text-size': 10,
+      'text-size': getDynamicTextSize(),
       'text-justify': 'left',
-      'text-allow-overlap': false,
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': false,
       'text-offset': [0, -1],
     },
     paint: {
       'text-color': colors.psl.text,
       'text-halo-color': colors.psl.halo,
-      'text-halo-width': 1,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-opacity': 1,
     },
   };

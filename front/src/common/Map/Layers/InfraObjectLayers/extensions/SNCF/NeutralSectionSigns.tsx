@@ -3,6 +3,7 @@ import { isNil } from 'lodash';
 import { type LayerProps, Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
+import { getAllowOverlap } from 'common/Map/Layers/commonLayers';
 import type { LayerContext } from 'common/Map/Layers/types';
 import type { Theme } from 'types';
 
@@ -42,7 +43,7 @@ export function getNeutralSectionSignsLayerProps({
       ],
       'icon-rotation-alignment': 'map',
       'icon-rotate': ['get', 'angle'],
-      'icon-allow-overlap': true,
+      'icon-allow-overlap': getAllowOverlap(),
       'icon-ignore-placement': false,
     },
   };

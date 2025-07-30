@@ -7,6 +7,7 @@ import type {
 import { INFRA_ERRORS } from 'applications/editor/components/InfraErrors';
 import type { OmitLayer } from 'types';
 
+import { getDynamicTextSize } from './commonLayers';
 import type { LayerContext } from './types';
 
 const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];
@@ -48,8 +49,8 @@ export function getLineTextErrorsLayerProps(
     ],
     layout: {
       'symbol-placement': 'line',
-      'text-font': ['Roboto Condensed'],
-      'text-size': 12,
+      'text-font': ['IBMPlexSansCondensed-Regular'],
+      'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
       'text-offset': [0, -0.75],
       'text-field': '{error_type}',
     },
@@ -106,9 +107,9 @@ export function getPointTextErrorsLayerProps(
     ],
     layout: {
       'symbol-placement': 'point',
-      'text-font': ['Roboto Condensed'],
+      'text-font': ['IBMPlexSansCondensed-Regular'],
       'text-field': '{error_type}',
-      'text-size': 12,
+      'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
       'text-offset': [0, -0.75],
     },
     paint: {

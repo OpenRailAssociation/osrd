@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { get } from 'lodash';
 import { type LayerProps } from 'react-map-gl/maplibre';
 
-import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
-import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
-import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import getOSMDarkStyle from 'common/Map/Layers/OSMLayers/mapstyles/dark';
+import getOSMMinimalStyle from 'common/Map/Layers/OSMLayers/mapstyles/minimal';
+import getOSMNormalStyle from 'common/Map/Layers/OSMLayers/mapstyles/normal';
 import type { MapStyle } from 'reducers/globalMap/types';
 
 type OSMProps = {
@@ -16,16 +16,14 @@ type OSMProps = {
   showOSM3dBuildings?: boolean;
 };
 
-function getMapStyle(mapStyle: string): LayerProps[] {
+function getMapStyle(mapStyle: MapStyle): LayerProps[] {
   switch (mapStyle) {
-    case 'empty':
-      return [] as LayerProps[];
     case 'dark':
-      return mapStyleDarkJson as LayerProps[];
+      return getOSMDarkStyle(mapStyle);
     case 'minimal':
-      return mapStyleMinimalJson as LayerProps[];
+      return getOSMMinimalStyle(mapStyle);
     default:
-      return mapStyleJson as LayerProps[];
+      return getOSMNormalStyle(mapStyle);
   }
 }
 
@@ -40,7 +38,7 @@ const filters: Record<string, string> = {
 };
 
 export function genOSMLayerProps(
-  mapStyle: string,
+  mapStyle: MapStyle,
   toggledLayers: ToggledLayers,
   layerOrder?: number
 ): FullLayerProps[] {
@@ -62,7 +60,11 @@ export function genOSMLayerProps(
   }, []);
 }
 
-export function genOSMLayers(mapStyle: string, toggledLayers: ToggledLayers, layerOrder?: number) {
+export function genOSMLayers(
+  mapStyle: MapStyle,
+  toggledLayers: ToggledLayers,
+  layerOrder?: number
+) {
   return genOSMLayerProps(mapStyle, toggledLayers, layerOrder).map((props) => (
     <OrderedLayer key={`${props.id}-${mapStyle}`} {...props} />
   ));

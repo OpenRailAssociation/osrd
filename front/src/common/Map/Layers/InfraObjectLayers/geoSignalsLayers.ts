@@ -1,6 +1,7 @@
 import type { Geometry } from 'geojson';
 import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
+import { DEFAULT_HALO_WIDTH, getDynamicTextSize } from 'common/Map/Layers/commonLayers';
 import type { OmitLayer } from 'types';
 
 import type { SignalContext } from '../types';
@@ -51,7 +52,7 @@ export function getSignalLayerProps(
     layout: {
       'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
-      'text-size': 8,
+      'text-size': getDynamicTextSize({ fromSize: 8, toSize: 14 }),
       'text-offset': [
         'case',
         ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
@@ -81,9 +82,8 @@ export function getSignalLayerProps(
     filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
       'text-color': colors.signal.text,
-      'text-halo-width': 3,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': colors.signal.halo,
-      'text-halo-blur': 0,
     },
   };
 

@@ -40,7 +40,6 @@ function TracksGeographic({ colors, layerOrder, infraID, highlightedArea }: Trac
           layout: {
             ...trackNameLayer(colors, highlightedArea).layout,
             'text-field': '{extensions_sncf_track_name}',
-            'text-size': 11,
           },
         }}
         id="chartis/tracks-geo/track-name"

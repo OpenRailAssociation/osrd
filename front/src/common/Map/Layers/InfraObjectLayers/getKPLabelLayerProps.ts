@@ -2,6 +2,7 @@ import type { Geometry } from 'geojson';
 import type { ExpressionFilterSpecification } from 'maplibre-gl';
 import type { SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
+import { getAllowOverlap, getDynamicTextSize } from 'common/Map/Layers/commonLayers';
 import type { OmitLayer, Theme } from 'types';
 
 import type { LayerProps } from '../types';
@@ -69,19 +70,16 @@ export default function getKPLabelLayerProps(params: {
     minzoom,
     layout: {
       'text-field': ['get', PKFieldName],
-      'text-font': ['Roboto Medium'],
-      'text-size': 9,
+      'text-font': ['IBMPlexSans'],
+      'text-size': getDynamicTextSize({ fromSize: 9, toSize: 15 }),
       'text-anchor': 'right',
-      'text-allow-overlap': isSignalisation, // allow signal's kp to be displayed, they are very closed
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': false,
 
       ...signallingLabeling,
     },
     paint: {
       'text-color': colors.kp.text,
-      'text-halo-width': 0,
-      'text-halo-color': colors.kp.halo,
-      'text-halo-blur': 1,
     },
   };
 

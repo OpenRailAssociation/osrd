@@ -1,4 +1,5 @@
 import type { Geometry } from 'geojson';
+import type { PropertyValueSpecification } from 'maplibre-gl';
 import type {
   SymbolLayerSpecification,
   LineLayerSpecification,
@@ -7,37 +8,62 @@ import type {
 
 import type { Theme, OmitLayer } from 'types';
 
+// Default symbol spacing (see https://maplibre.org/maplibre-style-spec/layers/#symbol-spacing)
+export const DEFAULT_SYMBOL_SPACING: PropertyValueSpecification<number> = 500;
+
+export const DEFAULT_HALO_WIDTH = 3;
+
+/**
+ * Generate the text-allow-overlap/icon-allow-overlap that avoid collision till a level, on which we display everything
+ */
+export function getAllowOverlap(falseAtZoomLevel = 20.5): PropertyValueSpecification<boolean> {
+  return ['step', ['zoom'], false, falseAtZoomLevel, true];
+}
+
+/**
+ * Generate the text-size for having a dynamic size which grows with the zoom level.
+ */
+export function getDynamicTextSize(opts?: {
+  fromZoom?: number;
+  fromSize?: number;
+  toZoom?: number;
+  toSize?: number;
+}): PropertyValueSpecification<number> {
+  return [
+    'interpolate',
+    ['linear'],
+    ['zoom'],
+    opts?.fromZoom || 15,
+    opts?.fromSize || 10,
+    opts?.toZoom || 22,
+    opts?.toSize || 16,
+  ];
+}
+
 export function trackNameLayer(
   colors: Theme,
   highlightedArea: Geometry | undefined = undefined
 ): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
+    minzoom: 17,
     layout: {
-      'text-font': ['Roboto Condensed'],
+      'text-font': ['IBMPlexSansCondensed-Medium'],
       'symbol-placement': 'line',
-      'text-size': 12,
-      // [jacomyal]
-      // According to TS types, 'text-allow-overlap' should be a boolean or
-      // nothing. But I don't dare yet to switch it.
-      // eslint-disable-next-line
-      // @ts-ignore
-      'text-allow-overlap': {
-        stops: [
-          [13.5, false],
-          [14, true],
-        ],
-      },
+      'text-allow-overlap': true,
+      'text-offset': [0, 0],
+      'text-rotation-alignment': 'viewport',
+      'text-size': getDynamicTextSize({ fromSize: 11 }),
+      'symbol-spacing': DEFAULT_SYMBOL_SPACING,
     },
     paint: {
       'text-color': highlightedArea
         ? ['case', ['within', highlightedArea], colors.trackname.text, colors.muted.color]
         : colors.trackname.text,
-      'text-halo-width': 2,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': highlightedArea
         ? ['case', ['within', highlightedArea], colors.trackname.halo, colors.muted.color]
         : colors.trackname.halo,
-      'text-halo-blur': 1,
     },
   };
 }
@@ -49,19 +75,20 @@ export function lineNameLayer(
   return {
     type: 'symbol',
     layout: {
-      'text-font': ['Roboto Condensed'],
-      'symbol-placement': 'line-center',
       'text-field': '{line_name}',
-      'text-size': 10,
-      'text-offset': [0, 0.75],
+      'text-font': ['IBMPlexSansCondensed-Medium'],
+      'text-offset': [10, 1],
+      'text-allow-overlap': getAllowOverlap(),
+      'text-size': getDynamicTextSize(),
+      'symbol-placement': 'line',
+      'symbol-spacing': DEFAULT_SYMBOL_SPACING,
     },
     paint: {
       'text-color': highlightedArea
         ? ['case', ['within', highlightedArea], colors.linename.text, colors.muted.color]
         : colors.linename.text,
-      'text-halo-width': 2,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': colors.linename.halo,
-      'text-halo-blur': 1,
     },
   };
 }
@@ -74,18 +101,19 @@ export function lineNumberLayer(
     type: 'symbol',
     minzoom: 11,
     layout: {
-      'text-font': ['Roboto Condensed'],
+      'text-font': ['IBMPlexSans'],
+      'text-offset': [-10, -1],
+      'text-allow-overlap': getAllowOverlap(),
+      'text-size': getDynamicTextSize(),
       'symbol-placement': 'line',
-      'text-size': 10,
-      'text-offset': [0, 0.5],
+      'symbol-spacing': DEFAULT_SYMBOL_SPACING,
     },
     paint: {
       'text-color': highlightedArea
         ? ['case', ['within', highlightedArea], colors.line.text, colors.muted.color]
         : colors.line.text,
-      'text-halo-width': 2,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': colors.line.halo,
-      'text-halo-blur': 2,
     },
   };
 }
