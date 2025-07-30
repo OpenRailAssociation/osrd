@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
-
+import ScenarioExplorer from './ScenarioExplorer';
 import StdcmAllowances from './StdcmAllowances';
 import StdcmCard from './StdcmForm/StdcmCard';
 
