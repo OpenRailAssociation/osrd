@@ -47,9 +47,9 @@ import type {
   AspectLabel,
   LayerRangeData,
   PathOperationalPoint,
-  IndividualTrainProjection,
   TrainSpaceTimeData,
   WaypointsPanelData,
+  DraggingState,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -134,10 +134,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const activeWaypointRef = useRef<HTMLDivElement>(null);
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
-  const [draggingState, setDraggingState] = useState<{
-    draggedTrain: IndividualTrainProjection;
-    initialDepartureTime: Date;
-  }>();
+  const [draggingState, setDraggingState] = useState<DraggingState>();
 
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
@@ -454,11 +451,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
-      const newDraggingState = makeDraggingState(
-        hoveredItem,
-        projectedTrains,
-        projectPathTrainResult
-      );
+      const newDraggingState = makeDraggingState(hoveredItem, projectedTrains);
       if (newDraggingState) {
         setDraggingState(newDraggingState);
       }

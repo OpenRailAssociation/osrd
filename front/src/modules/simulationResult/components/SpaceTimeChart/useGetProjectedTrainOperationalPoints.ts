@@ -22,10 +22,12 @@ const useGetProjectedTrainOperationalPoints = ({
   infraId,
   timetableId,
   timetableItemUsedForProjection,
+  exceptionKeyUsedForProjection,
 }: {
   infraId: number;
   timetableId: number | undefined;
   timetableItemUsedForProjection?: TimetableItem;
+  exceptionKeyUsedForProjection?: string;
 }) => {
   const { t } = useTranslation('operational-studies');
   const projectionType = useSelector(getProjectionType);
@@ -52,8 +54,10 @@ const useGetProjectedTrainOperationalPoints = ({
           infraId,
         }).unwrap();
       } else {
+        // paced train
         path = await getPacedTrainPath({
           id: extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
+          exceptionKey: exceptionKeyUsedForProjection,
           infraId,
         }).unwrap();
       }
@@ -115,7 +119,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
-  }, [timetableItemUsedForProjection, infraId, t, projectionType]);
+  }, [timetableItemUsedForProjection, exceptionKeyUsedForProjection, infraId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };
 };
