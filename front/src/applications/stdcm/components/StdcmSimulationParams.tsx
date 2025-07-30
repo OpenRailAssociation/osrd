@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
-import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 
+import StdcmAllowances from './StdcmAllowances';
 import StdcmCard from './StdcmForm/StdcmCard';
 
 type StdcmSimulationParamsProps = {
