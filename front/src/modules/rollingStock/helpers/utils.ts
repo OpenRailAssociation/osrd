@@ -569,3 +569,7 @@ export const rescaleMassDependentParam = (
 export function isMainCategory(category: TrainCategory) {
   return 'main_category' in category;
 }
+
+export function isSubCategory(category: TrainCategory) {
+  return 'sub_category_code' in category;
+}
