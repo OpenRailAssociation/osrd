@@ -17,6 +17,7 @@ import {
 } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   type OperationalPointReference,
   osrdEditoastApi,
@@ -108,6 +109,8 @@ const useTrackOccupancy = ({
   const { t, i18n } = useTranslation('operational-studies');
   const draggedTrains = useRef(new Set<string>());
   const previousTrains = usePrevious(trains);
+
+  const { getTrackSectionsByIds } = useScenarioContext();
 
   const pathOperationalPointsDict = useMemo(
     () => keyBy(pathOperationalPoints, 'waypointId'),
@@ -354,38 +357,46 @@ const useTrackOccupancy = ({
     const pathOperationalPointsWithoutTracks = pathOperationalPoints.filter(
       (op) => !(tracksState.data || {})[op.waypointId]
     );
-    const loadAllTracks = async (
-      operationalPointReferences: {
-        operational_point: string;
-      }[]
-    ) => {
+    const loadAllTracks = async (operationalPointReferences: { operational_point: string }[]) => {
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
       try {
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
-          body: {
-            operational_point_references: operationalPointReferences,
-          },
+          body: { operational_point_references: operationalPointReferences },
         }).unwrap();
 
         if (aborted) return;
 
-        setTracksState({
-          type: 'ok',
-          data: fromPairs(
-            operationalPointReferences.map(({ operational_point }, i) => [
-              operational_point,
-              uniqBy(
-                data.related_operational_points[i][0].parts.map((part) => ({
+        const allTrackIds = data.related_operational_points.flatMap(([points]) =>
+          points.parts.map((part) => part.track)
+        );
+        const fetchedTrackSections = await getTrackSectionsByIds(allTrackIds);
+
+        const trackSectionByTrackId = new Map();
+        for (const trackSections of Object.values(fetchedTrackSections)) {
+          if (trackSections.id) trackSectionByTrackId.set(trackSections.id, trackSections);
+        }
+
+        const loadedTracks = fromPairs(
+          operationalPointReferences.map(({ operational_point }, i) => [
+            operational_point,
+            uniqBy(
+              data.related_operational_points[i][0].parts.map((part) => {
+                const trackPart = trackSectionByTrackId.get(part.track);
+                return {
                   id: part.track,
                   name: data.track_names[part.track] || undefined,
-                  line: undefined,
-                })),
-                (track) => track.id
-              ),
-            ])
-          ),
+                  line: trackPart?.extensions?.sncf?.line_code,
+                };
+              }),
+              (track) => track.id
+            ),
+          ])
+        );
+        setTracksState({
+          type: 'ok',
+          data: loadedTracks,
         });
       } catch (e) {
         console.error(e);
