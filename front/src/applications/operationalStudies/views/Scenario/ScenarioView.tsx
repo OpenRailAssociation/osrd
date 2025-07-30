@@ -34,11 +34,11 @@ const Scenario = () => {
   if (!scenario || !infra) return null;
 
   return (
-    <ScenarioContextProvider infra={infra}>
-      <ScenarioHeader scenario={scenario} activeBoards={activeBoards} toggleBoard={toggleBoard} />
+    <ScenarioContextProvider infra={infra} infraId={infra.id} scenario={scenario}>
+      <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
       <RollingStockContextProvider>
         <SubCategoryContextProvider>
-          <ScenarioContent scenario={scenario} activeBoards={activeBoards} />
+          <ScenarioContent activeBoards={activeBoards} />
         </SubCategoryContextProvider>
       </RollingStockContextProvider>
     </ScenarioContextProvider>

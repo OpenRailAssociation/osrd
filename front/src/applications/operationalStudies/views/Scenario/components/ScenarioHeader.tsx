@@ -5,8 +5,8 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
-import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UserActionsDropdown from 'common/UserActionsDropdown';
@@ -18,16 +18,15 @@ import InfraLoadingState from './InfraLoadingState';
 const BOARDS: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
 
 type ScenarioHeaderProps = {
-  scenario: ScenarioResponse;
   activeBoards: Set<Board>;
   toggleBoard: (board: Board) => void;
 };
 
-const ScenarioHeader = ({ scenario, activeBoards, toggleBoard }: ScenarioHeaderProps) => {
+const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
-
+  const { scenario } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
 
   const [isTruncated, setIsTruncated] = useState({

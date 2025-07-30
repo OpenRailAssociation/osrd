@@ -4,13 +4,13 @@ import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
   type PacedTrain,
   type TrainSchedule,
-  type ScenarioResponse,
   type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
@@ -47,7 +47,6 @@ function LoadingIfSearching({
 type ImportTimetableItemTrainsListProps = {
   trainsList: GraouTrainSchedule[];
   isLoading: boolean;
-  scenario: ScenarioResponse;
   trainsJsonData: TimetableJsonPayload;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
@@ -55,12 +54,11 @@ type ImportTimetableItemTrainsListProps = {
 const ImportTimetableItemTrainsList = ({
   trainsList,
   isLoading,
-  scenario,
   trainsJsonData,
   upsertTimetableItems,
 }: ImportTimetableItemTrainsListProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
-
+  const { scenario } = useScenarioContext();
   const {
     train_schedules: trainSchedulesFromJsonData,
     paced_trains: pacedTrainsFromJsonData,
