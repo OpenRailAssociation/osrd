@@ -191,6 +191,10 @@
         overflow-y: scroll;
         z-index: 9999;
 
+        .filter-input-icon {
+          color: var(--grey30);
+        }
+
         section {
           display: flex;
           flex-direction: column;
