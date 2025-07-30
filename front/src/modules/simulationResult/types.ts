@@ -125,3 +125,8 @@ export type AspectLabel =
   | '160A'
   | '080A'
   | '000';
+
+export type DraggingState = {
+  draggedTrain: IndividualTrainProjection;
+  initialDepartureTime: Date;
+};

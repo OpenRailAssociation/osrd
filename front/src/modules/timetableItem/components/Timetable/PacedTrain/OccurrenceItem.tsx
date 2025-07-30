@@ -65,6 +65,7 @@ const OccurrenceItem = ({
   nextOccurrence,
   occurrenceActions: {
     selectOccurrence,
+    selectOccurrenceForProjection,
     editOccurrence,
     updateOccurrenceStatus,
     resetOccurrenceExceptions,
@@ -136,6 +137,7 @@ const OccurrenceItem = ({
       title: t('occurrenceMenu.project'),
       icon: <GiPathDistance />,
       onClick: () => {
+        selectOccurrenceForProjection(occurrence.id);
         closeMenu();
       },
       dataTestID: 'occurrence-project-button',

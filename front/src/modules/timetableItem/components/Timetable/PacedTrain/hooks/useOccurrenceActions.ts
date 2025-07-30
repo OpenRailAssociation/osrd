@@ -13,7 +13,7 @@ import {
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
@@ -46,6 +46,10 @@ const useOccurrenceActions = ({
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
+  }, []);
+
+  const selectOccurrenceForProjection = useCallback((occurrenceId: OccurrenceId) => {
+    dispatch(updateTrainIdUsedForProjection(occurrenceId));
   }, []);
 
   // We build a new timetable item to edit with the current paced train modified with
@@ -218,6 +222,7 @@ const useOccurrenceActions = ({
 
   return {
     selectOccurrence,
+    selectOccurrenceForProjection,
     editOccurrence,
     updateOccurrenceStatus,
     resetOccurrenceExceptions,

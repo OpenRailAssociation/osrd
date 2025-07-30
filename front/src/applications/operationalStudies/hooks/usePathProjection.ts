@@ -5,35 +5,53 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithStatus } from 'modules/infra/types';
+import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  extractPacedTrainIdFromOccurrenceId,
   isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
-const usePathProjection = (infra: InfraWithStatus) => {
+const usePathProjection = (
+  infra: InfraWithStatus,
+  timetableItemsById: Map<TimetableItemId, TimetableItem>
+) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const trainScheduleId =
-    trainIdUsedForProjection && isTrainScheduleId(trainIdUsedForProjection)
-      ? extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection)
-      : undefined;
+  let rawTrainScheduleId: number | undefined;
+  let rawPacedTrainId: number | undefined;
+  let exceptionKey: string | undefined;
+  if (trainIdUsedForProjection) {
+    if (isTrainScheduleId(trainIdUsedForProjection)) {
+      rawTrainScheduleId = extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection);
+    } else if (isPacedTrainId(trainIdUsedForProjection)) {
+      rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
+    } else {
+      const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);
+      rawPacedTrainId = extractEditoastIdFromPacedTrainId(pacedTrainId);
+      exceptionKey = getExceptionFromOccurrenceId(
+        timetableItemsById,
+        trainIdUsedForProjection
+      )?.key;
+    }
+  }
 
-  const pacedTrainId =
-    trainIdUsedForProjection && isPacedTrainId(trainIdUsedForProjection)
-      ? extractEditoastIdFromPacedTrainId(trainIdUsedForProjection)
-      : undefined;
-
-  const scheduleArg = trainScheduleId ? { id: trainScheduleId, infraId: infra.id } : skipToken;
-  const pacedArg = pacedTrainId ? { id: pacedTrainId, infraId: infra.id } : skipToken;
+  const scheduleArg = rawTrainScheduleId
+    ? { id: rawTrainScheduleId, infraId: infra.id }
+    : skipToken;
+  const pacedArg = rawPacedTrainId
+    ? { id: rawPacedTrainId, infraId: infra.id, exceptionKey }
+    : skipToken;
 
   const { data: schedulePath } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
   const { data: pacedPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
 
-  const pathfinding = trainScheduleId ? schedulePath : pacedPath;
+  const pathfinding = rawTrainScheduleId ? schedulePath : pacedPath;
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(

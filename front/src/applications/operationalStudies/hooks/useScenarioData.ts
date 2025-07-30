@@ -11,6 +11,7 @@ import {
   formatPacedTrainWithDetails,
   formatTrainScheduleWithDetails,
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
+import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -22,6 +23,7 @@ import {
   extractEditoastIdFromPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
   isOccurrenceId,
+  extractPacedTrainIdFromOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -40,13 +42,14 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
+  const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
-  const projectionPath = usePathProjection(infra);
+  const projectionPath = usePathProjection(infra, timetableItemsById);
 
   useEffect(() => {
     const trainSchedulesResult = dispatch(
@@ -86,8 +89,6 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
       pacedTrainsResult?.unsubscribe();
     };
   }, [scenario.timetable_id]);
-
-  const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
   const {
     projectedTrainsById,
@@ -153,8 +154,15 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   );
 
   const pathUsedForProjection = useMemo(() => {
-    if (!trainIdUsedForProjection || isOccurrenceId(trainIdUsedForProjection)) return undefined;
-    return timetableItemsById.get(trainIdUsedForProjection)?.path;
+    if (!trainIdUsedForProjection) return undefined;
+    if (!isOccurrenceId(trainIdUsedForProjection)) {
+      return timetableItemsById.get(trainIdUsedForProjection)?.path;
+    }
+    const pacedTrain = timetableItemsById.get(
+      extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+    );
+    const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
+    return exception?.path_and_schedule?.path ?? pacedTrain!.path;
   }, [trainIdUsedForProjection, timetableItems]);
 
   const timetableItemIds = useMemo(
