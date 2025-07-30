@@ -192,11 +192,20 @@
         z-index: 9999;
 
         section {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          &:first-of-type {
+            margin-block: 32px 48px;
+          }
+
           .title {
             align-self: flex-start;
             font-size: 1rem;
             font-weight: 600;
             color: var(--grey80);
+            margin-bottom: 0;
           }
         }
       }

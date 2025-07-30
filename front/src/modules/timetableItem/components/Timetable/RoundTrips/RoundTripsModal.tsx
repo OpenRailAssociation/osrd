@@ -8,6 +8,7 @@ import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { mapBy } from 'utils/types';
 
 import OneWaysColumn from './OneWaysColumn';
 import RoundTripsColumn from './RoundTripsColumn';
@@ -46,6 +47,13 @@ const RoundTripsModal = ({
     });
 
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
+
+  const timetableItemsWithOpsById = useMemo(
+    () => mapBy(timetableItemsWithOps, 'id'),
+    [timetableItemsWithOps]
+  );
+
+  const pairingItemsById = useMemo(() => mapBy(pairingItems, 'id'), [pairingItems]);
 
   const pairingItemsByColumn = useMemo(
     () =>
@@ -102,6 +110,8 @@ const RoundTripsModal = ({
           setPairingItems={setPairingItems}
           itemIdToPair={itemIdToPair}
           setItemIdToPair={setItemIdToPair}
+          timetableItemsWithOpsById={timetableItemsWithOpsById}
+          pairingItemsById={pairingItemsById}
           subCategories={subCategories}
         />
         <OneWaysColumn
