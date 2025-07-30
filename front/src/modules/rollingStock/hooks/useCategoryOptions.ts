@@ -8,7 +8,13 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
-export type CategoryOptionWithId = { id: string; label: string; category: TrainCategory | null };
+export type CategoryOptionWithId = {
+  id: string;
+  label: string;
+  category: TrainCategory | null;
+  color?: string;
+  main_category?: TrainMainCategory;
+};
 
 export type CategoryOption = { id?: string; label: string };
 
@@ -83,6 +89,8 @@ export default function useCategoryOptions(withPlaceholder = true) {
         id: `sub:${sub.code}`,
         label: sub.name,
         category: { sub_category_code: sub.code },
+        color: sub.color,
+        main_category: sub.main_category,
       }))
     );
   }
