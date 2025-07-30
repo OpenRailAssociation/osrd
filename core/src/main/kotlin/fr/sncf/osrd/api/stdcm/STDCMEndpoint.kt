@@ -70,18 +70,47 @@ class STDCMEndpoint(
         // Parse request input
         val request = readRequest(req) ?: return RsWithStatus(RsText("missing request body"), 400)
 
-        val logRequest = System.getenv("LOG_STDCM_REQUESTS")
-        if (logRequest?.equals("true", ignoreCase = true) == true) {
-            val time = LocalDateTime.now()
-            val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
-            val filename = "stdcm-$formatted.json"
-            Span.current()?.setAttribute("request-file", filename)
-            File(filename).printWriter().use {
-                it.println(stdcmRequestAdapter.indent("    ").toJson(request))
-            }
+        val logRequestEnv = System.getenv("LOG_STDCM_REQUESTS")
+        if (logRequestEnv?.equals("true", ignoreCase = true) == true) {
+            logRequest(request)
         }
 
         return run(request)
+    }
+
+    /**
+     * Log the stdcm payload for easy reproducibility. All requirements are included after being
+     * fetched from editoast.
+     */
+    private fun logRequest(request: STDCMRequest) {
+        val time = LocalDateTime.now()
+        val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH-mm-ss-SSS"))
+        val filename = "stdcm-$formatted.json"
+        Span.current()?.setAttribute("request-file", filename)
+
+        // Save all requirements directly into the request
+        val infra =
+            infraManager.getInfra(
+                request.infra,
+                request.expectedVersion,
+                DiagnosticRecorderImpl(false)
+            )
+        val requirements = runBlocking {
+            // note: we could parallelize infra loading if it were in a coroutine as well
+            timetableCacheManager.get(
+                infra.rawInfra,
+                CacheEntry(request.timetableId, request.workScheduleGroupId)
+            )
+        }
+        val requestCopy =
+            request.copy(
+                fullRequirementMap =
+                    RJSRequirementMap.fromRequirements(infra.rawInfra, requirements)
+            )
+
+        File(filename).printWriter().use {
+            it.println(stdcmRequestAdapter.indent("    ").toJson(requestCopy))
+        }
     }
 
     @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
@@ -113,13 +142,16 @@ class STDCMEndpoint(
                 )
             request.trainsRequirements = mapOf() // Free up the RAM taken by raw requirements
             val steps = parseSteps(infra, request.pathItems, request.startTime)
-            val requirements = runBlocking {
-                // note: we could parallelize infra loading if it were in a coroutine as well
-                timetableCacheManager.get(
-                    infra.rawInfra,
-                    CacheEntry(request.timetableId, request.workScheduleGroupId)
-                )
-            }
+            val requirements =
+                request.fullRequirementMap?.toRequirements(infra.rawInfra)
+                    ?: runBlocking {
+                        // note: we could parallelize infra loading if it were in a coroutine as
+                        // well
+                        timetableCacheManager.get(
+                            infra.rawInfra,
+                            CacheEntry(request.timetableId, request.workScheduleGroupId)
+                        )
+                    }
 
             // Run the STDCM pathfinding
             val path =

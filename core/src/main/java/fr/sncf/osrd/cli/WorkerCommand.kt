@@ -79,8 +79,8 @@ class WorkerCommand : CliCommand {
             } else {
                 System.getenv("WORKER_ID")
             }
-        PRELOAD_TIMETABLE = System.getenv("PRELOAD_TIMETABLES").toIntOrNull()
-        PRELOAD_WORK_SCHEDULE_GROUP = System.getenv("PRELOAD_WORK_SCHEDULE_GROUP").toIntOrNull()
+        PRELOAD_TIMETABLE = getIntEnvvar("PRELOAD_TIMETABLES")
+        PRELOAD_WORK_SCHEDULE_GROUP = getIntEnvvar("PRELOAD_WORK_SCHEDULE_GROUP")
     }
 
     private fun getBooleanEnvvar(name: String): Boolean {

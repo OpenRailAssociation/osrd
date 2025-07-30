@@ -20,7 +20,7 @@ import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import java.time.ZonedDateTime
 
-class STDCMRequest(
+data class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
     @Json(name = "timetable_id") var timetableId: Int,
@@ -60,6 +60,9 @@ class STDCMRequest(
     /// Temporary speed limits which are active between the train departure and arrival.
     @Json(name = "temporary_speed_limits")
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
+
+    /// If set, replaces the requirement fetching. Used to save and reproduce requests.
+    @Json(name = "full_requirement_map") val fullRequirementMap: RJSRequirementMap? = null,
 )
 
 data class STDCMTemporarySpeedLimit(
