@@ -21,6 +21,7 @@ type RoundTripsModalCardProps = {
   restoreItems?: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
   openPairingMode?: (itemId: TimetableItemId) => void | undefined;
+  isCandidate?: boolean;
   subCategories: SubCategory[];
 };
 
@@ -30,6 +31,7 @@ const RoundTripsModalCard = ({
   restoreItems,
   moveItemToOneWays,
   openPairingMode,
+  isCandidate,
   subCategories,
 }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
@@ -142,6 +144,7 @@ const RoundTripsModalCard = ({
           type="button"
           className="card-menu"
           title={t('openRoundTripsMenu')}
+          disabled={isCandidate}
           onClick={(e) => {
             e.stopPropagation();
             setIsMenuOpen(true);

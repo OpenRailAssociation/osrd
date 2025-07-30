@@ -60,6 +60,7 @@ const RoundTripsModalPairingColumn = ({
                 <RoundTripsModalCard
                   key={item.id}
                   pairingItem={item}
+                  isCandidate
                   subCategories={subCategories}
                 />
               ))}
@@ -74,6 +75,7 @@ const RoundTripsModalPairingColumn = ({
                 <RoundTripsModalCard
                   key={item.id}
                   pairingItem={item}
+                  isCandidate
                   subCategories={subCategories}
                 />
               ))}
