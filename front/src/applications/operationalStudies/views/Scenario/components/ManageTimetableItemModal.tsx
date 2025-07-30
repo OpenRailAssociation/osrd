@@ -1,7 +1,6 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
-import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import TimetableManageItem, {
   type TimetableManageItemProps,
 } from 'modules/timetableItem/components/ManageTimetableItem/TimetableManageItem';
@@ -11,7 +10,6 @@ import ManageTimetableItem from './ManageTimetableItem';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 
 type ManageTimetableItemModalProps = TimetableManageItemProps & {
-  scenario: ScenarioResponse;
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
 };
@@ -23,7 +21,6 @@ const ManageTimetableItemModal = ({
   removeTimetableItems,
   timetableItemToEditData,
   setTimetableItemToEditData,
-  scenario,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
 }: ManageTimetableItemModalProps) => (
@@ -60,7 +57,7 @@ const ManageTimetableItemModal = ({
 
     {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.import && (
       <div className="scenario-manage-timetable-item">
-        <ImportTimetableItem scenario={scenario} upsertTimetableItems={upsertTimetableItems} />
+        <ImportTimetableItem upsertTimetableItems={upsertTimetableItems} />
       </div>
     )}
   </div>

@@ -8,7 +8,7 @@ import useScenarioData from 'applications/operationalStudies/hooks/useScenarioDa
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItemModal';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
-import type { Conflict, ScenarioResponse } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
@@ -32,15 +32,15 @@ import NGE from './NGE';
 import type { NetzgrafikDto, NGEEvent } from './NGE/types';
 
 type ScenarioContentProps = {
-  scenario: ScenarioResponse;
   activeBoards: Set<Board>;
 };
 
 const MACRO_EDITOR_HEIGHT = 776; // px
 
-const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
+const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
+  const { scenario } = useScenarioContext();
 
   const { infra, isInfraLoaded } = useScenarioContext();
 
@@ -153,7 +153,6 @@ const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
           removeTimetableItems={removeTimetableItemsWithNge}
           timetableItemToEditData={timetableItemToEditData}
           setTimetableItemToEditData={setTimetableItemToEditData}
-          scenario={scenario}
           setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
           collapsedTimetableEdit={collapsedTimetableEdit}
         />
