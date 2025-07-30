@@ -82,8 +82,7 @@ const AnchoredMenu = ({
   if (!shouldDisplayMenu) return null;
 
   return createPortal(
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div className="menu-overlay" onClick={handleClick}>
+    <div className="menu-overlay" role="menu" tabIndex={-1} onClick={handleClick}>
       <div
         style={{
           top: menuPosition?.top,
