@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import useMultiSelection from 'applications/operationalStudies/hooks/useMultiSelection';
 import { getDocument } from 'common/api/documentApi';
 import {
   type PostSearchApiArg,
@@ -24,10 +25,9 @@ import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
-import StudyCard from 'modules/study/components/StudyCard';
 import { budgetFormat } from 'utils/numbers';
 
-import useMultiSelection from '../hooks/useMultiSelection';
+import StudyCard from './StudyCard';
 
 type SortOptions =
   | 'NameAsc'
@@ -41,7 +41,7 @@ type ProjectParams = {
   projectId: string;
 };
 
-const Project = () => {
+const ProjectView = () => {
   const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
   const [filter, setFilter] = useState('');
@@ -356,4 +356,4 @@ const Project = () => {
   );
 };
 
-export default Project;
+export default ProjectView;
