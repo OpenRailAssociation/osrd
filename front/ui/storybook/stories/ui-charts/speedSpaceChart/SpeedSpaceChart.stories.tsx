@@ -26,7 +26,7 @@ const SpeedSpaceChartStory = ({
   data,
   translations,
 }: SpeedSpaceChartProps) => {
-  const [containerHeight, setContainerHeight] = useState(521.5);
+  const [containerHeight, setContainerHeight] = useState(460);
 
   useEffect(() => {
     setContainerHeight(height);

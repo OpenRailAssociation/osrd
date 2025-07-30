@@ -1,8 +1,8 @@
 # ui-speedspacechart
 
-The `speed-space-chart` is a specialized chart component designed to visualize speed and
-space data in a dynamic and interactive way. It leverages modern web technologies to offer
-a rich user experience for data analysis and presentation.
+The `speed-space-chart` is a specialized chart component designed to visualize speed and space data
+in a dynamic and interactive way. It leverages modern web technologies to offer a rich user
+experience for data analysis and presentation.
 
 ## Features
 
@@ -24,7 +24,7 @@ const App = () => {
   return (
     <SpeedSpaceChart
       width={1440}
-      height={521.5}
+      height={460}
       backgroundColor="rgb(247, 246, 238)"
       data={yourData}
       translations={yourTranslations}
@@ -61,23 +61,19 @@ contained in the layer. It is defined as follows:
 Specific types for LayerData values:
 
 - `PowerRestrictionValues`
-
   - `powerRestriction`: string
   - `handled`: boolean
 
 - `ElectricalProfileValues`
-
   - `electricalProfile`: string
   - `color?`: string (optional)
   - `heightLevel?`: number (optional)
 
 - `SpeedLimitTagValues`
-
   - `tag`: string
   - `color`: string
 
 - `ElectrificationValues`
-
   - `type`: 'electrification' | 'neutral_section'
   - `voltage?`: '1500V' | '25000V' (optional)
   - `lowerPantograph?`: boolean (optional)
