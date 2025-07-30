@@ -42,6 +42,7 @@
     .round-trips-modal-column-wrapper {
       position: relative;
       width: 344px;
+      min-width: 0;
 
       // Pseudo-element to create a rounded effect
       // at the top right corner of the pairing item
@@ -71,7 +72,6 @@
 
         .round-trips-modal-column {
           height: fit-content;
-          min-width: 0;
           display: flex;
           flex-direction: column;
 
@@ -156,154 +156,6 @@
                   z-index: 1;
                 }
               }
-
-              .round-trips-card {
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-                min-width: 0;
-                min-height: 67px;
-                border-radius: 8px;
-                border: 1px solid var(--grey30);
-
-                &.pairing-item {
-                  border: 1px solid var(--grey60);
-                  outline: 4px solid var(--ambientB15);
-                  z-index: 2;
-
-                  // Pseudo-element to create a rounded effect
-                  // at the bottom right corner of the pairing item
-                  // to visually connect it with the pairing column
-                  &::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -25px;
-                    left: calc(100% - 6px);
-                    width: 20px;
-                    height: 20px;
-                    background: radial-gradient(
-                      circle at 0 100%,
-                      transparent 20px,
-                      var(--ambientB15) 20px
-                    );
-                    z-index: -1;
-                  }
-                }
-
-                &:hover {
-                  border: 1px solid var(--grey60);
-                }
-
-                .round-trips-card-header {
-                  display: flex;
-                  align-items: center;
-                  height: 26px;
-                  color: var(--black100);
-                  background-color: var(--white100);
-                  border-top-left-radius: 8px;
-                  border-top-right-radius: 8px;
-                  border-bottom: 1px solid var(--grey30);
-
-                  .name {
-                    flex: 1;
-                    font-size: 14px;
-                    font-weight: 600;
-                    margin-bottom: 0;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    padding-inline: 12px 4px;
-                  }
-
-                  .interval {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    width: 28px;
-                    height: 100%;
-                    font-size: 12px;
-                    color: var(--info60);
-                    border-left: 1px solid var(--grey30);
-                    border-right: 1px solid var(--grey30);
-                  }
-
-                  .status {
-                    width: 32px;
-                    height: 100%;
-                    padding-inline: 8px;
-                    color: var(--info30);
-                    border-right: 1px solid var(--grey30);
-                  }
-
-                  .card-menu {
-                    width: 32px;
-                    padding-inline: 8px;
-                    color: var(--grey40);
-                  }
-                }
-                .round-trips-card-body {
-                  display: flex;
-                  align-items: center;
-                  flex: 1;
-                  font-size: 14px;
-                  color: var(--black60);
-                  background-color: var(--ambientB10);
-                  border-bottom-left-radius: 8px;
-                  border-bottom-right-radius: 8px;
-                  padding-right: 4px;
-
-                  .stops {
-                    display: flex;
-                    justify-content: end;
-                    align-items: center;
-                    min-width: 36px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    text-align: end;
-
-                    span:first-child {
-                      color: var(--primary60);
-                      margin-top: 2px; // Vertical alignment with icon
-
-                      &.no-stops {
-                        color: var(--grey30);
-                      }
-                    }
-
-                    .stops-icon svg {
-                      color: var(--purple50);
-                      margin-left: -2px;
-                    }
-                  }
-
-                  .od-infos {
-                    min-width: 0;
-
-                    .extremity {
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-
-                      .times {
-                        width: 20px;
-                        font-size: 10px;
-                        color: var(--info60);
-                        text-align: end;
-                        padding-inline: 4px;
-                      }
-
-                      .location {
-                        font-size: 12px;
-                        color: var(--grey80);
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      }
-                    }
-                  }
-                }
-              }
             }
 
             .card-placeholder {
@@ -333,9 +185,10 @@
         height: calc(100% + var(--body-padding-top));
         display: flex;
         flex-direction: column;
-        padding-top: 48px;
+        padding-block: 48px 40px;
         padding-inline: 32px;
         background-color: var(--ambientB15);
+        overflow-y: scroll;
         z-index: 9999;
 
         section {
@@ -344,6 +197,148 @@
             font-size: 1rem;
             font-weight: 600;
             color: var(--grey80);
+          }
+        }
+      }
+
+      .round-trips-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        min-height: 67px;
+        border-radius: 8px;
+        border: 1px solid var(--grey30);
+
+        &.pairing-item {
+          border: 1px solid var(--grey60);
+          outline: 4px solid var(--ambientB15);
+          z-index: 2;
+
+          // Pseudo-element to create a rounded effect
+          // at the bottom right corner of the pairing item
+          // to visually connect it with the pairing column
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: calc(100% - 6px);
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 0 100%, transparent 20px, var(--ambientB15) 20px);
+            z-index: -1;
+          }
+        }
+
+        &:hover {
+          border: 1px solid var(--grey60);
+        }
+
+        .round-trips-card-header {
+          display: flex;
+          align-items: center;
+          height: 26px;
+          color: var(--black100);
+          background-color: var(--white100);
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
+          border-bottom: 1px solid var(--grey30);
+
+          .name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-inline: 12px 4px;
+          }
+
+          .interval {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 100%;
+            font-size: 12px;
+            color: var(--info60);
+            border-left: 1px solid var(--grey30);
+            border-right: 1px solid var(--grey30);
+          }
+
+          .status {
+            width: 32px;
+            height: 100%;
+            padding-inline: 8px;
+            color: var(--info30);
+            border-right: 1px solid var(--grey30);
+          }
+
+          .card-menu {
+            width: 32px;
+            padding-inline: 8px;
+            color: var(--grey40);
+          }
+        }
+        .round-trips-card-body {
+          display: flex;
+          align-items: center;
+          flex: 1;
+          font-size: 14px;
+          color: var(--black60);
+          background-color: var(--ambientB10);
+          border-bottom-left-radius: 8px;
+          border-bottom-right-radius: 8px;
+          padding-right: 4px;
+
+          .stops {
+            display: flex;
+            justify-content: end;
+            align-items: center;
+            min-width: 36px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: end;
+
+            span:first-child {
+              color: var(--primary60);
+              margin-top: 2px; // Vertical alignment with icon
+
+              &.no-stops {
+                color: var(--grey30);
+              }
+            }
+
+            .stops-icon svg {
+              color: var(--purple50);
+              margin-left: -2px;
+            }
+          }
+
+          .od-infos {
+            .extremity {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+
+              .times {
+                width: 20px;
+                font-size: 10px;
+                color: var(--info60);
+                text-align: end;
+                padding-inline: 4px;
+              }
+
+              .location {
+                font-size: 12px;
+                color: var(--grey80);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
+            }
           }
         }
       }
