@@ -20,7 +20,8 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import { isMainCategory } from 'modules/rollingStock/helpers/utils';
+import { isMainCategory, isSubCategory } from 'modules/rollingStock/helpers/utils';
+import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import { Map } from 'modules/timetableItem/components/ManageTimetableItem';
 import {
@@ -227,13 +228,33 @@ const ManageTimetableItem = () => {
     },
     []
   );
+  const categoryOptions = useCategoryOptions();
+
+  const subCategoriesOptions = categoryOptions.filter(
+    (option) => option.category && isSubCategory(option.category)
+  );
+
+  const currentSubCategory = useMemo(() => {
+    if (currentCategory && isSubCategory(currentCategory)) {
+      return subCategoriesOptions.find(
+        (option) =>
+          option.category !== null &&
+          isSubCategory(option.category) &&
+          option.category.sub_category_code === currentCategory.sub_category_code
+      );
+    }
+    return undefined;
+  }, [currentCategory, subCategoriesOptions]);
 
   const showCategoryWarning =
     rollingStock &&
     currentCategory &&
-    isMainCategory(currentCategory) &&
-    currentCategory.main_category !== rollingStock.primary_category &&
-    !rollingStock.other_categories.includes(currentCategory.main_category);
+    ((isMainCategory(currentCategory) &&
+      currentCategory.main_category !== rollingStock.primary_category &&
+      !rollingStock.other_categories.includes(currentCategory.main_category)) ||
+      (isSubCategory(currentCategory) &&
+        currentSubCategory &&
+        currentSubCategory.main_category !== rollingStock.primary_category));
   const categoryWarning = showCategoryWarning ? t('categoryMismatch') : undefined;
 
   return (
