@@ -119,16 +119,22 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   });
 
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
-  const { data: conflicts, refetch: refetchConflicts } =
-    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-      {
-        id: scenario.timetable_id,
-        infraId: scenario.infra_id,
-      },
-      {
-        skip: !allTrainsSimulated,
-      }
-    );
+  const {
+    data: conflicts,
+    refetch: refetchConflicts,
+    isLoading,
+    isFetching,
+  } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+    {
+      id: scenario.timetable_id,
+      infraId: scenario.infra_id,
+    },
+    {
+      skip: !allTrainsSimulated,
+    }
+  );
+
+  const isConflictsLoading = isLoading || isFetching;
 
   const timetableItemsWithDetails = useMemo(() => {
     const items = (timetableItems || []).map((timetableItem) => {
@@ -352,6 +358,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
             }
           : undefined,
       conflicts,
+      isConflictsLoading,
       removeTimetableItems: removeTimetableItemsWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
@@ -365,6 +372,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       allTrainsProjected,
       timetableItems?.length ?? 0,
       conflicts,
+      isConflictsLoading,
       rollingStocks,
       removeTimetableItemsWithBroadcast,
       upsertTimetableItemsWithBroadcast,

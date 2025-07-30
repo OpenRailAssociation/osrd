@@ -63,6 +63,7 @@ const ScenarioContent = ({
     timetableItems,
     projectionData,
     conflicts,
+    isConflictsLoading,
     upsertTimetableItems,
     removeTimetableItems,
     updateTrainDepartureTime,
@@ -270,16 +271,15 @@ const ScenarioContent = ({
             name={`${conflicts?.length ?? ''} CONFLICTS`}
           >
             <div className="conflicts-wrapper">
-              {!conflicts && (
+              {isConflictsLoading ? (
                 <Loader
                   msg={t('main.loadingConflicts')}
                   className="scenario-loader"
                   childClass="scenario-loader-msg"
                 />
-              )}
-              {conflicts && (
+              ) : (
                 <ConflictsList
-                  conflicts={conflicts}
+                  conflicts={conflicts ?? []}
                   timetableItems={timetableItemsWithDetails}
                   onConflictClick={handleConflictClick}
                 />
