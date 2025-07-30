@@ -141,3 +141,8 @@ export type PairingItem = {
       status: 'todo' | 'oneWays';
     }
 );
+
+export type PairingCandidates = {
+  suggestions: PairingItem[];
+  others: PairingItem[];
+};

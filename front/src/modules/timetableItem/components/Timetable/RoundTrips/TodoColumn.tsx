@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
+import { isPacedTrainId } from 'utils/trainId';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import RoundTripsModalPairingColumn from './RoundTripsModalPairingColumn';
@@ -15,6 +17,8 @@ type TodoColumnProps = {
   pairingItems: PairingItem[];
   itemIdToPair?: TimetableItemId;
   setItemIdToPair: (itemToPair?: TimetableItemId) => void;
+  timetableItemsWithOpsById: Map<TimetableItemId, TimetableItemWithPathOps>;
+  pairingItemsById: Map<TimetableItemId, PairingItem>;
   subCategories: SubCategory[];
 };
 
@@ -26,12 +30,40 @@ const TodoColumn = ({
   pairingItems,
   itemIdToPair,
   setItemIdToPair,
+  timetableItemsWithOpsById,
+  pairingItemsById,
   subCategories,
 }: TodoColumnProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
 
   const columnWrapperRef = useRef<HTMLDivElement>(null);
   const [pairingIndicatorTop, setPairingIndicatorTop] = useState<number>();
+
+  const pairingCandidates = useMemo(() => {
+    if (!itemIdToPair) return undefined;
+
+    const suggestions: PairingItem[] = [];
+    const others: PairingItem[] = [];
+    const timetableItemToPair = timetableItemsWithOpsById.get(itemIdToPair)!;
+
+    for (const candidate of timetableItemsWithOpsById.values()) {
+      if (
+        candidate.id === itemIdToPair ||
+        isPacedTrainId(candidate.id) !== isPacedTrainId(itemIdToPair)
+      )
+        continue;
+
+      const matchingPairingItem = pairingItemsById.get(candidate.id)!;
+
+      if (checkRoundTripCompatible(timetableItemToPair, candidate)) {
+        suggestions.push(matchingPairingItem);
+      } else {
+        others.push(matchingPairingItem);
+      }
+    }
+
+    return { suggestions, others };
+  }, [timetableItemsWithOpsById, pairingItemsById, itemIdToPair]);
 
   const moveItemToOneWays = (itemToMove: PairingItem) => {
     setPairingItems((prevData) => [
@@ -40,7 +72,9 @@ const TodoColumn = ({
     ]);
   };
 
-  const openPairingMode = (itemId: TimetableItemId) => setItemIdToPair(itemId);
+  const openPairingMode = (itemId: TimetableItemId) => {
+    setItemIdToPair(itemId);
+  };
 
   // Logic to check if the pairing item is the first visible item of the column
   // and display a round effect above the pairing item to visually connect it
@@ -131,14 +165,14 @@ const TodoColumn = ({
           </div>
         </div>
       </div>
-      {itemIdToPair && (
+      {itemIdToPair && pairingCandidates && (
         <RoundTripsModalPairingColumn
           closePairingMode={() => {
             setItemIdToPair(undefined);
             setPairingIndicatorTop(undefined);
           }}
-          suggestions={[]}
-          others={[]}
+          suggestions={pairingCandidates.suggestions}
+          others={pairingCandidates.others}
           subCategories={subCategories}
         />
       )}
