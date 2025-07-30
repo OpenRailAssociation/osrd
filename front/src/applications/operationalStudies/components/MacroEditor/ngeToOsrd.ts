@@ -40,7 +40,7 @@ import {
   createMacroNode,
   deleteMacroNodeByNgeId,
   getFrequencyFromFrequencyId,
-  getTrainCategoryFromId,
+  getTrainMainCategoryFromId,
   updateMacroNode,
 } from './utils';
 import type {
@@ -434,7 +434,7 @@ const handleCreateTimetableItem = async (
     startDate
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
-  const category = getTrainCategoryFromId(trainrun.categoryId);
+  const category = getTrainMainCategoryFromId(trainrun.categoryId);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
@@ -509,7 +509,7 @@ const handleUpdateTimetableItem = async ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = timetableItem;
 
-  const mainCategory = getTrainCategoryFromId(trainrun.categoryId);
+  const mainCategory = getTrainMainCategoryFromId(trainrun.categoryId);
   const category = mainCategory
     ? {
         main_category: mainCategory,
