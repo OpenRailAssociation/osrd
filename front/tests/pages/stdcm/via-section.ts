@@ -61,7 +61,7 @@ class ViaSection extends STDCMPage {
   }
 
   private getViaStopTime(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).getByTestId('stdcm-via-stop-time');
+    return this.getViaCard(viaNumber).getByTestId('stdcm-via-stop-time-input');
   }
 
   private getViaWarning(viaNumber: number): Locator {

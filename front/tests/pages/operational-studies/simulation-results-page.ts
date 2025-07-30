@@ -28,8 +28,8 @@ class OpSimulationResultPage extends CommonPage {
     this.spaceTimeChart = page.getByTestId('space-time-chart-container');
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.getByTestId('simulation-map');
-    this.speedSpaceChartSettingsButton = page.getByTestId('settings-button');
-    this.speedSpaceChartCloseSettingsButton = page.getByTestId('close-settings-panel');
+    this.speedSpaceChartSettingsButton = page.getByTestId('interaction-settings');
+    this.speedSpaceChartCloseSettingsButton = page.getByTestId('settings-panel-close');
     this.speedSpaceChartCheckboxItems = page.locator('#settings-panel .selection .checkmark');
     this.speedSpaceChartTabindexElement = page.locator(
       '#container-SpeedSpaceChart > div[tabindex="0"]'

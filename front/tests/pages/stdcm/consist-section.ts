@@ -21,12 +21,12 @@ class ConsistSection {
 
   constructor(page: Page) {
     this.page = page;
-    this.towedRollingStockField = page.locator('#towedRollingStock');
+    this.towedRollingStockField = page.getByTestId('towedRollingStock-input');
     this.tonnageField = page.getByTestId('tonnage-input');
     this.lengthField = page.getByTestId('length-input');
     this.speedLimitTagField = page.locator('#speed-limit-by-tag-selector');
     this.maxSpeedField = page.getByTestId('maxSpeed-input');
-    this.tractionEngineField = page.locator('#tractionEngine');
+    this.tractionEngineField = page.getByTestId('tractionEngine-input');
   }
 
   async verifyDefaultConsistFields() {

@@ -73,6 +73,7 @@ const StdcmLinkedTrainSearch = ({
         >
           <div className="linked-train-inputs">
             <Input
+              testIdPrefix="linked-train-id"
               id="linked-train-id"
               type="text"
               value={trainNameInput}
@@ -84,6 +85,7 @@ const StdcmLinkedTrainSearch = ({
               narrow
             />
             <DatePicker
+              testIdPrefix="linked-train-date"
               inputProps={{
                 id: 'linked-train-date',
                 label: 'Date',

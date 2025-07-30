@@ -182,6 +182,7 @@ const StdcmOperationalPoint = ({
         <ComboBox
           id={`${pathStepId}-ci`}
           data-testid="operational-point-ci"
+          testIdPrefix="suggestions"
           label={t('trainPath.ci')}
           value={selectedCi}
           suggestions={ciSuggestions}

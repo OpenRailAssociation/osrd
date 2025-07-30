@@ -84,11 +84,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
     this.timetableLabelFilterInputLabel = page.locator('label[for="timetable-label-filter"]');
-    this.timetableLabelFilterInput = page.getByTestId('timetable-label-filter');
+    this.timetableLabelFilterInput = page.getByTestId('timetable-label-filter-input');
     this.timetableRollingStockFilterInputLabel = page.locator(
       'label[for="timetable-rollingstock-filter"]'
     );
-    this.timetableRollingStockFilterInput = page.getByTestId('timetable-rollingstock-filter');
+    this.timetableRollingStockFilterInput = page.getByTestId('timetable-rollingstock-filter-input');
     this.timetableValidityFilterSelectLabel = page.locator(
       'label[for="timetable-train-validity-filter"]'
     );

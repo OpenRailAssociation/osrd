@@ -133,11 +133,12 @@ class LinkedTrainSection extends STDCMPage {
     await expect(this.originPage.dateOriginArrival).toHaveValue(dateOriginArrival);
     await expect(this.originPage.timeOriginArrival).toHaveValue(timeOriginArrival);
     await expect(this.originPage.toleranceOriginArrival).toHaveValue(toleranceOriginArrival);
-    await this.fillToleranceField(
-      this.originPage.toleranceOriginArrival,
-      toleranceFields.min,
-      toleranceFields.max
-    );
+    await this.fillToleranceField({
+      toleranceInput: this.originPage.toleranceOriginArrival,
+      minusValue: toleranceFields.min,
+      plusValue: toleranceFields.max,
+      toleranceOp: 'origin',
+    });
   }
 
   // Add an posterior linked train and fill the path fields
@@ -169,11 +170,12 @@ class LinkedTrainSection extends STDCMPage {
     await expect(this.destinationPage.toleranceDestinationArrival).toHaveValue(
       toleranceDestinationArrival
     );
-    await this.fillToleranceField(
-      this.destinationPage.toleranceDestinationArrival,
-      toleranceFields.min,
-      toleranceFields.max
-    );
+    await this.fillToleranceField({
+      toleranceInput: this.destinationPage.toleranceDestinationArrival,
+      minusValue: toleranceFields.min,
+      plusValue: toleranceFields.max,
+      toleranceOp: 'destination',
+    });
   }
 }
 export default LinkedTrainSection;
