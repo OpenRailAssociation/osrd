@@ -60,7 +60,8 @@ export default function useCategoryOptions(withPlaceholder = true) {
   });
 
   // todo: remove mocked data when backend is ready
-  const subCategoriesFromApiOrMocked = data?.results ?? subCategoriesMocked;
+  const subCategoriesFromApiOrMocked =
+    data && data.results && data.results.length > 0 ? data.results : subCategoriesMocked;
 
   const validMainCategories = Object.keys(TrainMainCategoryDict) as TrainMainCategory[];
 
