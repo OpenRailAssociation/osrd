@@ -58,14 +58,14 @@ mod tests {
     #[rstest]
     async fn test_font() {
         let app = TestAppBuilder::default_app();
-        let request = app.get("/fonts/Roboto%20Bold/0-255.pbf");
+        let request = app.get("/fonts/IBMPlexSans/0-255.pbf");
         let response = app.fetch(request).assert_status(StatusCode::OK);
         assert_eq!("application/octet-stream", response.content_type());
         let response = response.bytes();
         let expected = std::fs::read(
             app.config()
                 .dynamic_assets_path
-                .join("fonts/glyphs/Roboto Bold/0-255.pbf"),
+                .join("fonts/glyphs/IBMPlexSans/0-255.pbf"),
         )
         .unwrap();
         assert_eq!(response, expected);

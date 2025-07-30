@@ -1,3 +1,4 @@
+import chroma from 'chroma-js';
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
@@ -6,21 +7,36 @@ import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-m
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
 
+import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
+
+export const DETECTOR_CIRCLES_DEF = [
+  { radius: 6.5, stroke: 1, alpha: 0.5 },
+  { radius: 3, stroke: 1.25, alpha: 0.75 },
+  { radius: 0, stroke: 2, alpha: 1 },
+];
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
   highlightedArea?: Geometry;
+  radius?: number;
+  stroke?: number;
+  alpha?: number;
 }): OmitLayer<CircleLayerSpecification> {
   const res: OmitLayer<CircleLayerSpecification> = {
     type: 'circle',
     minzoom: 8,
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
-      'circle-stroke-color': params.colors.detectors.circle,
-      'circle-color': params.colors.detectors.circle,
-      'circle-radius': 4,
+      'circle-stroke-color': chroma(params.colors.detectors.circle)
+        .alpha(params.alpha !== undefined ? params.alpha : 0)
+        .css(),
+      'circle-stroke-width': params.stroke !== undefined ? params.stroke : 2,
+      'circle-color': chroma(params.colors.detectors.circleOther)
+        .alpha(params.alpha !== undefined ? params.alpha : 0)
+        .css(),
+      'circle-radius': params.radius !== undefined ? params.radius : 3,
     },
   };
 
@@ -38,20 +54,17 @@ export function getDetectorsNameLayerProps(params: {
     minzoom: 8,
     layout: {
       'text-field': '{extensions_sncf_kp}',
-      'text-font': ['Roboto Condensed'],
-      'text-size': 10,
+      'text-font': ['IBMPlexSansCondensed-Medium'],
+      'text-size': getDynamicTextSize(),
       'text-anchor': 'left',
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'text-offset': [0.5, 0.2],
-      visibility: 'visible',
+      'text-allow-overlap': getAllowOverlap(),
+      'text-offset': [0.75, 0],
     },
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': params.colors.detectors.text,
-      'text-halo-width': 1,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': params.colors.detectors.halo,
-      'text-halo-blur': 1,
     },
   };
 
@@ -67,7 +80,24 @@ type DetectorsProps = {
 };
 
 const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsProps) => {
-  const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors', highlightedArea });
+  const layerPoint3 = getDetectorsLayerProps({
+    colors,
+    sourceTable: 'detectors',
+    highlightedArea,
+    ...DETECTOR_CIRCLES_DEF[0],
+  });
+  const layerPoint2 = getDetectorsLayerProps({
+    colors,
+    sourceTable: 'detectors',
+    highlightedArea,
+    ...DETECTOR_CIRCLES_DEF[1],
+  });
+  const layerPoint1 = getDetectorsLayerProps({
+    colors,
+    sourceTable: 'detectors',
+    highlightedArea,
+    ...DETECTOR_CIRCLES_DEF[2],
+  });
   const layerName = getDetectorsNameLayerProps({
     colors,
     sourceTable: 'detectors',
@@ -81,8 +111,20 @@ const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsPr
       type="vector"
       url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer {...layerPoint} id="chartis/osrd_detectors/geo" layerOrder={layerOrder} />
       <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...layerPoint3}
+        id="chartis/osrd_detectors/geo-3"
+        beforeId="chartis/osrd_detectors/geo-2"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...layerPoint2}
+        id="chartis/osrd_detectors/geo-2"
+        beforeId="chartis/osrd_detectors/geo-1"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer {...layerPoint1} id="chartis/osrd_detectors/geo-1" layerOrder={layerOrder} />
     </Source>
   );
 };

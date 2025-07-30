@@ -16,7 +16,7 @@ export default function geoMainLayer(
       'line-color': highlightedArea
         ? ['case', ['within', highlightedArea], theme.track.major, theme.muted.color]
         : theme.track.major,
-      'line-width': bigger ? 4 : 1,
+      'line-width': bigger ? 4 : ['interpolate', ['linear'], ['zoom'], 5, 0.5, 7.5, 1],
     },
   };
 }

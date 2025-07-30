@@ -10,6 +10,7 @@ import type {
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
 
+import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 type RoutesProps = {
@@ -77,12 +78,12 @@ export function getRoutesTextLayerProps(params: {
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'text-font': ['Roboto Bold'],
+      'text-font': ['IBMPlexSans-Bold'],
       'symbol-placement': 'line-center',
       'text-field': ['slice', ['get', 'id'], 6],
-      'text-size': 12,
+      'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
       'text-justify': 'center',
-      'text-allow-overlap': true,
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': true,
       'text-offset': [0, -0.5],
     },
@@ -90,8 +91,7 @@ export function getRoutesTextLayerProps(params: {
     paint: {
       'text-color': params.colors.routes.text,
       'text-halo-color': params.colors.routes.halo,
-      'text-halo-width': 1,
-      'text-opacity': 1,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
     },
   };
 

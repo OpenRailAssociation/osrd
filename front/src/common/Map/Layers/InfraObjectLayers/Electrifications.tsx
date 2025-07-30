@@ -6,6 +6,7 @@ import type { LayerProps } from 'react-map-gl/maplibre';
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'types';
 
+import { getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 type ElectrificationsProps = {
@@ -84,12 +85,12 @@ export function getElectrificationsTextParams({
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'text-font': ['Roboto Medium'],
+      'text-font': ['IBMPlexSans'],
       'symbol-placement': 'line-center',
       'text-field': '{voltage}',
       'text-offset': [0, -1],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 10, 9, 14, 10],
-      'text-allow-overlap': false,
+      'text-size': getDynamicTextSize({ fromSize: 9, fromZoom: 10, toSize: 10, toZoom: 14 }),
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': false,
       'text-pitch-alignment': 'auto',
       'text-rotation-alignment': 'auto',

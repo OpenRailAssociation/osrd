@@ -6,6 +6,7 @@ import type { SymbolLayerSpecification, CircleLayerSpecification } from 'react-m
 import { MAP_URL } from 'common/Map/const';
 import type { Theme, OmitLayer } from 'types';
 
+import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 export function getSwitchesLayerProps(params: {
@@ -19,8 +20,8 @@ export function getSwitchesLayerProps(params: {
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'circle-stroke-color': params.colors.switches.circle,
-      'circle-stroke-width': 2,
-      'circle-color': 'rgba(255, 255, 255, 0)',
+      'circle-stroke-width': 1,
+      'circle-color': params.colors.switches.circleFill,
       'circle-radius': 3,
     },
   };
@@ -38,11 +39,16 @@ export function getSwitchesNameLayerProps(params: {
     type: 'symbol',
     minzoom: 8,
     layout: {
-      'text-field': '{label}',
-      'text-font': ['Roboto Condensed'],
-      'text-size': 12,
+      'text-field': [
+        'case',
+        ['==', ['get', 'extensions_sncf_label'], 'N/A'],
+        '',
+        ['get', 'extensions_sncf_label'],
+      ],
+      'text-font': ['IBMPlexSansCondensed-Regular'],
+      'text-size': getDynamicTextSize(),
       'text-anchor': 'left',
-      'text-allow-overlap': false,
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.1],
       visibility: 'visible',
@@ -50,9 +56,8 @@ export function getSwitchesNameLayerProps(params: {
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'text-color': params.colors.switches.text,
-      'text-halo-width': 2,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': params.colors.switches.halo,
-      'text-halo-blur': 1,
     },
   };
 

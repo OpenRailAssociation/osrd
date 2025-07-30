@@ -7,17 +7,16 @@ import { uniqBy } from 'lodash';
 import { createPortal } from 'react-dom';
 import type {
   BackgroundLayerSpecification,
-  LayerProps,
   LayerSpecification,
   MapRef,
 } from 'react-map-gl/maplibre';
 import ReactMapGL, { Source } from 'react-map-gl/maplibre';
 
 import type { Layer } from 'applications/editor/consts';
-import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs, OrderedLayer, useMapBlankStyle } from 'common/Map/Layers';
+import getOSMNormalStyle from 'common/Map/Layers/OSMLayers/mapstyles/normal';
 import { simplifyFeature, type BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings } from 'reducers/globalMap';
@@ -51,7 +50,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');
   const osmLayers = useMemo(() => {
-    const osmStyle = (mapStyleJson as LayerProps[]).filter(
+    const osmStyle = getOSMNormalStyle('normal').filter(
       (layer) => layer.id && OSM_LAYERS.has(layer.id)
     );
     return osmStyle.map((layer) => ({

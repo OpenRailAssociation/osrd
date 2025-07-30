@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="13.714" style="fill:none;fill-opacity:1;stroke:#a1006b;stroke-width:4.57143;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="6px" height="6px" viewBox="0 0 6 6" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Assets/Infrastructure/Switch_</title>
+    <defs>
+        <path d="M0,0 L6,0 L6,6 L0,6 L0,0 Z" id="path-1"/>
+    </defs>
+    <g id="Assets/Infrastructure/Switch_" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <use fill="#FFFFFF" xlink:href="#path-1"/>
+        <circle id="Oval-2" stroke="#B500FF" stroke-width="1" fill-opacity="0.497104458" fill="#E7B6FF" cx="3" cy="3" r="2.5"/>
+    </g>
+</svg>

@@ -1,11 +1,12 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
+import type { ExpressionSpecification } from 'maplibre-gl';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'types';
 
-import getKPLabelLayerProps from './getKPLabelLayerProps';
+import { DEFAULT_HALO_WIDTH, getDynamicTextSize, getAllowOverlap } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 type OperationalPointsProps = {
@@ -30,117 +31,153 @@ const OperationalPointsLayer = ({
     'source-layer': 'operational_points',
     minzoom: 8,
     paint: {
-      'circle-stroke-color': highlightedArea
-        ? ['case', ['within', highlightedArea], colors.op.circle, colors.muted.color]
-        : colors.op.circle,
-      'circle-stroke-width': 2,
-      'circle-color': 'rgba(255, 255, 255, 0)',
+      'circle-stroke-color': colors.op.stroke,
+      'circle-stroke-width': 1.5,
+      'circle-color': highlightedArea
+        ? [
+            'case',
+            ['within', highlightedArea],
+            [
+              'case',
+              ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+              colors.op.circleBV,
+              colors.op.circle,
+            ],
+            colors.muted.color,
+          ]
+        : [
+            'case',
+            ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+            colors.op.circleBV,
+            colors.op.circle,
+          ],
       'circle-radius': 3,
     },
   };
 
+  // There is a bug on the color, see https://github.com/maplibre/maplibre-gl-js/issues/5833
+  const LABEL_SECTIONS: Array<{
+    id: string;
+    textFormat: Array<
+      | ExpressionSpecification
+      | {
+          'font-scale'?: number;
+          'text-color'?: string | ExpressionSpecification;
+          'text-font'?: ExpressionSpecification;
+        }
+    >;
+  }> = [
+    {
+      id: 'pk',
+      textFormat: [
+        ['concat', ['get', 'kp'], '\n'],
+        {
+          'font-scale': 1,
+          'text-color': highlightedArea
+            ? ['case', ['within', highlightedArea], colors.op.textTrigram, colors.muted.color]
+            : colors.op.textTrigram,
+        },
+      ],
+    },
+    {
+      id: 'trigram',
+      textFormat: [
+        [
+          'concat',
+          ['get', 'extensions_sncf_trigram'],
+          ' ',
+          [
+            'case',
+            ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+            '',
+            ['get', 'extensions_sncf_ch'],
+          ],
+          '\n',
+        ],
+        {
+          'font-scale': 1.1,
+          'text-color': highlightedArea
+            ? ['case', ['within', highlightedArea], colors.op.textTrigram, colors.muted.color]
+            : colors.op.textTrigram,
+        },
+      ],
+    },
+    {
+      id: 'name',
+      textFormat: [
+        ['concat', ['get', 'extensions_identifier_name'], '\n'],
+        {
+          'font-scale': 1.1,
+          'text-color': highlightedArea
+            ? ['case', ['within', highlightedArea], colors.op.textName, colors.muted.color]
+            : colors.op.textName,
+        },
+      ],
+    },
+    {
+      id: 'yard',
+      textFormat: [
+        [
+          'case',
+          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+          '',
+          ['concat', ' ', ['get', 'extensions_sncf_ch_long_label']],
+        ],
+        {
+          'font-scale': 1,
+          'text-color': highlightedArea
+            ? ['case', ['within', highlightedArea], colors.op.textYard, colors.muted.color]
+            : colors.op.textYard,
+          'text-font': ['literal', ['IBMPlexSansCondensed-Medium']],
+        },
+      ],
+    },
+  ];
+
+  function getText(filter?: string[]) {
+    return LABEL_SECTIONS.filter((s) => (filter ? filter?.includes(s.id) : true)).flatMap(
+      (s) => s.textFormat
+    );
+  }
+
   const name: LayerProps = {
     type: 'symbol',
     'source-layer': 'operational_points',
-    minzoom: 9.5,
-    layout: {
-      'text-field': [
-        'concat',
-        ['get', 'extensions_identifier_name'],
-        ' / ',
-        ['get', 'extensions_sncf_trigram'],
-        [
-          'case',
-          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
-          '',
-          ['concat', ' ', ['get', 'extensions_sncf_ch']],
-        ],
-      ],
-      'text-font': [
-        'case',
-        ['==', ['get', 'id'], operationnalPointId || ''],
-        ['literal', ['Roboto Bold']],
-        ['literal', ['Roboto Condensed']],
-      ],
-      'text-size': 12,
-      'text-anchor': 'left',
-      'text-justify': 'left',
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'text-offset': [0.75, 0.1],
-      'text-max-width': 32,
-    },
-    paint: {
-      'text-color': highlightedArea
-        ? ['case', ['within', highlightedArea], colors.op.text, colors.muted.color]
-        : colors.op.text,
-      'text-halo-width': 2,
-      'text-halo-color': colors.op.halo,
-      'text-halo-blur': 1,
-    },
-  };
-
-  const yardName: LayerProps = {
-    type: 'symbol',
-    'source-layer': 'operational_points',
-    minzoom: 9.5,
-    filter: ['!', ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]]],
-    layout: {
-      'text-field': '{extensions_sncf_ch_long_label}',
-      'text-font': ['Roboto Condensed'],
-      'text-size': 10,
-      'text-anchor': 'left',
-      'text-justify': 'left',
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'text-offset': [0.85, 1.9],
-      'text-max-width': 32,
-    },
-    paint: {
-      'text-color': highlightedArea
-        ? ['case', ['within', highlightedArea], colors.op.minitext, colors.muted.color]
-        : colors.op.minitext,
-      'text-halo-width': 2,
-      'text-halo-color': colors.op.halo,
-      'text-halo-blur': 1,
-    },
-  };
-
-  const trigram: LayerProps = {
-    type: 'symbol',
-    'source-layer': 'operational_points',
-    maxzoom: 9.5,
     minzoom: 7,
     layout: {
       'text-field': [
-        'concat',
-        ['get', 'extensions_sncf_trigram'],
-        ' ',
-        [
-          'case',
-          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
-          '',
-          ['get', 'extensions_sncf_ch'],
-        ],
+        'step',
+        ['zoom'],
+        ['format', ...getText()],
+        7,
+        ['format', ...getText(['trigram'])],
+        9,
+        ['format', ...getText(['pk', 'trigram'])],
+        10,
+        ['format', ...getText(['pk', 'trigram', 'name'])],
+        17,
+        ['format', ...getText()],
       ],
       'text-font': [
         'case',
         ['==', ['get', 'id'], operationnalPointId || ''],
-        ['literal', ['Roboto Bold']],
-        ['literal', ['Roboto Condensed']],
+        ['literal', ['IBMPlexSans']],
+        ['literal', ['IBMPlexSansCondensed-Medium']],
       ],
-      'text-size': 11,
-      'text-anchor': 'left',
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-      'text-offset': [0.75, 0.1],
+      'text-letter-spacing': 0.05,
+      'text-size': getDynamicTextSize(),
+      'text-anchor': 'top-left',
+      'text-allow-overlap': getAllowOverlap(),
+      'text-justify': 'left',
+      'text-offset': [0.75, -1],
+      'text-max-width': 32,
     },
-    filter: highlightedArea ? ['within', highlightedArea] : true,
     paint: {
-      'text-color': colors.op.text,
-      'text-halo-width': 2,
+      'text-color': highlightedArea
+        ? ['case', ['within', highlightedArea], colors.op.textName, colors.muted.color]
+        : colors.op.textName,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': colors.op.halo,
-      'text-halo-blur': 1,
     },
   };
 
@@ -152,28 +189,8 @@ const OperationalPointsLayer = ({
     >
       <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
       <OrderedLayer
-        {...yardName}
-        id="chartis/osrd_operational_point_yardname/geo"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
         {...name}
-        id="chartis/osrd_operational_point_name_short/geo"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...trigram}
         id="chartis/osrd_operational_point_name/geo"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...getKPLabelLayerProps({
-          colors,
-          minzoom: 9.5,
-          sourceTable: 'operational_points',
-          highlightedArea,
-        })}
-        id="chartis/osrd_operational_point_kp/geo"
         layerOrder={layerOrder}
       />
     </Source>

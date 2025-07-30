@@ -184,7 +184,6 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
       layout: {
         ...trackNameLayer(context.colors).layout,
         'text-field': '{extensions_sncf_track_name}',
-        'text-size': 11,
       },
       id: `${prefix}geo/track-name`,
     },

@@ -9,6 +9,7 @@ import type { LayersSettings } from 'reducers/globalMap/types';
 import type { MapState } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
+import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
 type SpeedLimitsProps = {
@@ -115,20 +116,20 @@ export function getSpeedSectionsPointLayerProps({
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'text-font': ['Roboto Bold'],
+      'text-font': ['IBMPlexSans-Bold'],
       'symbol-placement': 'point',
       'text-field': ['to-string', getSpeedSectionsName(layersSettings)],
-      'text-size': 12,
-      'icon-allow-overlap': ['step', ['zoom'], false, 15, true],
+      'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
+      'icon-allow-overlap': getAllowOverlap(15),
       'icon-ignore-placement': false,
       'text-justify': 'left',
-      'text-allow-overlap': ['step', ['zoom'], false, 15, true],
+      'text-allow-overlap': getAllowOverlap(15),
       'text-ignore-placement': false,
     },
     paint: {
       'text-color': colors.speed.pointtext,
       'text-halo-color': colors.speed.pointhalo,
-      'text-halo-width': 5,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-opacity': 1,
     },
   };
@@ -153,18 +154,18 @@ export function getSpeedSectionsTextLayerProps({
     maxzoom: 24,
     layout: {
       visibility: 'visible',
-      'text-font': ['Roboto Bold'],
+      'text-font': ['IBMPlexSans-Bold'],
       'symbol-placement': 'line',
       'text-field': ['concat', ['to-string', getSpeedSectionsName(layersSettings)], 'km/h'],
-      'text-size': 9,
+      'text-size': getDynamicTextSize({ fromSize: 9, toSize: 15 }),
       'text-justify': 'left',
-      'text-allow-overlap': false,
+      'text-allow-overlap': getAllowOverlap(),
       'text-ignore-placement': false,
     },
     paint: {
       'text-color': colors.speed.text,
       'text-halo-color': colors.speed.halo,
-      'text-halo-width': 1,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-opacity': 1,
     },
   };
