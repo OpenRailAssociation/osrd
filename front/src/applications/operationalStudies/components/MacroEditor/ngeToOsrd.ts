@@ -434,7 +434,6 @@ const handleCreateTimetableItem = async (
     startDate
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
-  const category = getTrainCategoryFromId(trainrun.categoryId);
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
@@ -443,11 +442,7 @@ const handleCreateTimetableItem = async (
     path,
     start_time: startDate.toISOString(),
     schedule,
-    category: category
-      ? {
-          main_category: category,
-        }
-      : undefined,
+    category: getTrainCategoryFromId(trainrun.categoryId),
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -508,13 +503,6 @@ const handleUpdateTimetableItem = async ({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = timetableItem;
-
-  const mainCategory = getTrainCategoryFromId(trainrun.categoryId);
-  const category = mainCategory
-    ? {
-        main_category: mainCategory,
-      }
-    : undefined;
   const timetableItemForUpdate = {
     ...timetableItemBase,
     train_name: trainrun.name,
@@ -526,7 +514,7 @@ const handleUpdateTimetableItem = async ({
     margins: undefined,
     paced: undefined,
     exceptions: undefined,
-    category,
+    category: getTrainCategoryFromId(trainrun.categoryId),
   };
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);

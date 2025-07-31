@@ -4,7 +4,6 @@ import { uniqBy } from 'lodash';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint, TrainSchedule } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
-import { isMainCategory } from 'modules/rollingStock/helpers/utils';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -373,11 +372,7 @@ const getNgeTrainruns = (
       return {
         id: index + 1,
         name: timetableItem.train_name,
-        categoryId: getTrainrunCategoryId(
-          timetableItem.category && isMainCategory(timetableItem.category)
-            ? timetableItem.category.main_category
-            : undefined
-        ),
+        categoryId: getTrainrunCategoryId(timetableItem.category),
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
         labelIds: (timetableItem.labels || []).map((l) =>

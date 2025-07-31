@@ -44,9 +44,6 @@ mod sub_category;
 pub use sub_category::SubCategory;
 pub use sub_category::SubCategoryColor;
 
-mod train_category;
-pub use train_category::TrainCategory;
-
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
@@ -69,7 +66,6 @@ editoast_common::schemas! {
     supported_signaling_systems::schemas(),
     train_main_category::schemas(),
     sub_category::schemas(),
-    train_category::schemas(),
 }
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
