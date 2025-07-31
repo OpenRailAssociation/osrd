@@ -701,7 +701,7 @@ enum BaseOrExceptionId {
     tag = "train_schedule",
     request_body = inline(ProjectPathOperationalPointForm),
     responses(
-        (status = 200, description = "Project paced trains on a list of operational points.", body = HashMap<i64, Vec<ProjectPathPacedTrainResult>>),
+        (status = 200, description = "Project paced trains on a list of operational points.", body = HashMap<i64,ProjectPathPacedTrainResult>),
     ),
 )]
 async fn project_path_op(
