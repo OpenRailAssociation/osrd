@@ -5,12 +5,12 @@ import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.runPathfinding
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.sim_infra.api.NeutralSection
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra

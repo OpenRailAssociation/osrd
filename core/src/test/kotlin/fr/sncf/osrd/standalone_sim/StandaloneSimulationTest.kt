@@ -14,14 +14,14 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
+import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
-import fr.sncf.osrd.sim_infra.api.TravelledPath
-import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.*

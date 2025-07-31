@@ -2,10 +2,12 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.getRoutePathStartOffset

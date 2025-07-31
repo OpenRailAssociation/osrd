@@ -1,8 +1,10 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.implementations.buildChunkPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance

@@ -2,8 +2,8 @@ package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
-import fr.sncf.osrd.sim_infra.api.BlockPath
-import fr.sncf.osrd.sim_infra.api.TravelledPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep

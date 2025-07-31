@@ -2,9 +2,11 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.*

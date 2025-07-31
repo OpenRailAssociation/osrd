@@ -1,12 +1,12 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.PathfindingResultId
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.train.TrainStop
 
 /**

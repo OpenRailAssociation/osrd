@@ -1,9 +1,9 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.sim_infra.api.BlockPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.units.Offset
 
 interface IncrementalRequirementCallbacks {

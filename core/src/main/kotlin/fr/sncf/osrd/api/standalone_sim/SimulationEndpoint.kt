@@ -1,9 +1,9 @@
 package fr.sncf.osrd.api.standalone_sim
 
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
-import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.utils.*
 import io.opentelemetry.api.trace.Span

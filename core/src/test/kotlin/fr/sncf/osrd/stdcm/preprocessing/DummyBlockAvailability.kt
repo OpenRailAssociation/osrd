@@ -1,9 +1,9 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import com.google.common.collect.Multimap
+import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface

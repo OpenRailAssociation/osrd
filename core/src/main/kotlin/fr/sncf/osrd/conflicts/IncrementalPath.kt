@@ -1,5 +1,7 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry

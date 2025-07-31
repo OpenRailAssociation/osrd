@@ -9,9 +9,9 @@ import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.sim_infra.api.BlockPath
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData

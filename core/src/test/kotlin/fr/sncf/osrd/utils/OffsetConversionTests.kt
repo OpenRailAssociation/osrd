@@ -1,6 +1,6 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
+import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals

@@ -3,11 +3,11 @@ package fr.sncf.osrd.pathfinding
 import com.google.common.collect.Iterables
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.BlockPath
-import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance

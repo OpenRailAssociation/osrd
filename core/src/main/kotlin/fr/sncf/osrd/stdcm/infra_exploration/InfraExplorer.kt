@@ -6,10 +6,12 @@ import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.implementations.PathPropertiesView
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.STDCMStep

@@ -1,8 +1,11 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.implementations.buildChunkPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.buildPathPropertiesFrom
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance

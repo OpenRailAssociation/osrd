@@ -4,13 +4,13 @@ import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration

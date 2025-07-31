@@ -3,6 +3,8 @@ package fr.sncf.osrd.api.pathfinding
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
