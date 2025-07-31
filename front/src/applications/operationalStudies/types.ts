@@ -105,14 +105,17 @@ export type ElectrificationVoltage = {
   voltage?: string;
 };
 
-export type SimulationResults = {
-  train: Train;
-  rollingStock: RollingStockWithLiveries;
-  simulation: SimulationResponseSuccess;
-  path: PathfindingResultSuccess;
-  pathProperties: PathPropertiesFormatted;
-  powerRestrictions: LayerData<PowerRestrictionValues>[];
-};
+export type SimulationResults =
+  | { isValid: false; train: Train; rollingStock?: RollingStockWithLiveries }
+  | {
+      isValid: true;
+      train: Train;
+      rollingStock: RollingStockWithLiveries;
+      simulation: SimulationResponseSuccess;
+      path: PathfindingResultSuccess;
+      pathProperties: PathPropertiesFormatted;
+      powerRestrictions: LayerData<PowerRestrictionValues>[];
+    };
 
 export type OperationalPointWithTimeAndSpeed = {
   id: string | null;
