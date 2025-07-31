@@ -72,7 +72,7 @@ impl CoreClient {
         method: reqwest::Method,
         path: &str,
         body: Option<&B>,
-        infra_id: Option<i64>,
+        worker_id: Option<String>,
     ) -> Result<R::Response, Error> {
         trace!(
             target: "editoast::coreclient",
@@ -81,12 +81,12 @@ impl CoreClient {
         match self {
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
-                let infra_id = infra_id.unwrap_or(1); // FIXME: don't do that!!!
+                let worker_id = worker_id.unwrap_or_default(); // FIXME: don't do that!!!
                 //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
                 // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response(infra_id.to_string(), path, &body, true, None)
+                    .call_with_response(worker_id, path, &body, true, None)
                     .await
                     .map_err(Error::MqClientError)?;
 
@@ -134,7 +134,7 @@ impl CoreClient {
 /// impl AsCoreRequest<Json<Response>> for TestReq {
 ///     const METHOD: reqwest::Method = reqwest::Method::POST;
 ///     const URL_PATH: &'static str = "/some/path";
-///     fn infra_id(&self) -> std::option::Option<i64> { Some(42) }
+///     fn worker_id(&self) -> std::option::Option<String> { Some("42".into()) }
 /// }
 ///
 /// # let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
@@ -167,8 +167,8 @@ where
         Self::URL_PATH
     }
 
-    /// Returns the infra id used for the request. Must be provided.
-    fn infra_id(&self) -> Option<i64>;
+    /// Returns the worker id used for the request. Must be provided.
+    fn worker_id(&self) -> Option<String>;
 
     /// Returns whether or not `self` should be serialized as JSON and used as
     /// the request body
@@ -192,7 +192,7 @@ where
             self.method(),
             self.url(),
             if self.has_body() { Some(self) } else { None },
-            self.infra_id(),
+            self.worker_id(),
         )
         .await
     }
@@ -322,7 +322,7 @@ mod tests {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
-            fn infra_id(&self) -> Option<i64> {
+            fn worker_id(&self) -> Option<String> {
                 None
             }
         }
@@ -344,7 +344,7 @@ mod tests {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
-            fn infra_id(&self) -> Option<i64> {
+            fn worker_id(&self) -> Option<String> {
                 None
             }
         }
@@ -366,7 +366,7 @@ mod tests {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
-            fn infra_id(&self) -> Option<i64> {
+            fn worker_id(&self) -> Option<String> {
                 None
             }
         }

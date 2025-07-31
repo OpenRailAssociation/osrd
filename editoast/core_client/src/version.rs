@@ -12,7 +12,7 @@ impl AsCoreRequest<Json<Version>> for CoreVersionRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/version";
 
-    fn infra_id(&self) -> Option<i64> {
+    fn worker_id(&self) -> Option<String> {
         None
     }
 }
