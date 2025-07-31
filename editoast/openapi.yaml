@@ -6292,7 +6292,9 @@ components:
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastSubCategoryErrorCodeAlreadyUsed'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorDatabase'
+      - $ref: '#/components/schemas/EditoastSubCategoryErrorNotFound'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
@@ -7990,6 +7992,30 @@ components:
           type: string
           enum:
           - editoast:study:StartDateAfterEndDate
+    EditoastSubCategoryErrorCodeAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - code
+          properties:
+            code:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:sub_categories:CodeAlreadyUsed
     EditoastSubCategoryErrorDatabase:
       type: object
       required:
@@ -8009,6 +8035,30 @@ components:
           type: string
           enum:
           - editoast:sub_categories:Database
+    EditoastSubCategoryErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - code
+          properties:
+            code:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:sub_categories:NotFound
     EditoastTemporarySpeedLimitErrorDatabase:
       type: object
       required:

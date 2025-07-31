@@ -39,6 +39,7 @@ use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use editoast_schemas::rolling_stock::SubCategoryColor;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::rolling_stock::TrainMainCategories;
 use editoast_schemas::rolling_stock::TrainMainCategory;
@@ -66,10 +67,12 @@ use crate::models::Project;
 use crate::models::RollingStock;
 use crate::models::Scenario;
 use crate::models::Study;
+use crate::models::SubCategory;
 use crate::models::Tags;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLivery;
+use crate::models::sub_category::SubCategoryChangeset;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
@@ -525,4 +528,17 @@ pub async fn create_work_schedules_fixture_set(
 pub struct PartialProjectPathTrainResult {
     pub departure_time: DateTime<Utc>,
     // Ignore the rest of the payload
+}
+
+pub fn simple_sub_category(
+    code: &str,
+    main_category: editoast_models::rolling_stock::TrainMainCategory,
+) -> SubCategoryChangeset {
+    SubCategory::changeset()
+        .code(code.to_string())
+        .name(code.to_uppercase())
+        .main_category(main_category)
+        .color("#ff0000".parse::<SubCategoryColor>().unwrap())
+        .background_color("#ff2200".parse::<SubCategoryColor>().unwrap())
+        .hovered_color("#ff4400".parse::<SubCategoryColor>().unwrap())
 }

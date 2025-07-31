@@ -229,7 +229,9 @@
       "StartDateAfterEndDate": "La date de début de l'étude doit commencer avant sa date de fin"
     },
     "sub_categories": {
-      "Database": "Erreur interne (base de données)"
+      "CodeAlreadyUsed": "Le code de la sous-catégorie '{{code}}' est déjà utilisé",
+      "Database": "Erreur interne (base de données)",
+      "NotFound": "Sous catégorie '{{code}}' non trouvée"
     },
     "temporary_speed_limit": {
       "Database": "Erreur interne (base de données)",

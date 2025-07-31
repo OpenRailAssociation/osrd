@@ -516,6 +516,7 @@ impl VirtualTrainRun {
             power_restrictions: vec![],
             options: Default::default(),
             main_category: None,
+            sub_category: None,
         };
 
         // Compute simulation of a train schedule

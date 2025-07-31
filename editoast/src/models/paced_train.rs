@@ -26,7 +26,7 @@ use crate::views::timetable::TrainId;
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
 #[model(table = database::tables::paced_train)]
-#[model(gen(ops = crud, batch_ops = crd, list))]
+#[model(gen(ops = crud, batch_ops = crud, list))]
 pub struct PacedTrain {
     pub id: i64,
     pub train_name: String,
@@ -56,6 +56,8 @@ pub struct PacedTrain {
     /// Time between two occurrences
     pub interval: ChronoDuration,
     pub main_category: Option<TrainMainCategory>,
+    /// Sub category code
+    pub sub_category: Option<String>,
     #[model(json)]
     pub exceptions: Vec<PacedTrainException>,
 }
@@ -122,9 +124,10 @@ impl PacedTrain {
             speed_limit_tag: self.speed_limit_tag.map(|s| s.into()),
             power_restrictions: self.power_restrictions,
             options: self.options,
-            category: self.main_category.map(|category| TrainCategory::Main {
-                main_category: category.0,
-            }),
+            category: self
+                .main_category
+                .map(|main_category| TrainCategory::main(main_category.0))
+                .xor(self.sub_category.map(TrainCategory::sub)),
         }
     }
 
@@ -218,11 +221,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             exceptions,
         }: paced_train::PacedTrain,
     ) -> Self {
-        let main_category = match train_schedule_base.category {
-            Some(TrainCategory::Main { main_category }) => Some(TrainMainCategory(main_category)),
-            _ => None,
-        };
-        PacedTrain::changeset()
+        let changeset = PacedTrain::changeset()
             .comfort(train_schedule_base.comfort)
             .constraint_distribution(train_schedule_base.constraint_distribution)
             .initial_speed(train_schedule_base.initial_speed)
@@ -238,8 +237,17 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
-            .main_category(main_category)
-            .exceptions(exceptions)
+            .exceptions(exceptions);
+
+        match train_schedule_base.category {
+            Some(TrainCategory::Main { main_category }) => {
+                changeset.main_category(Some(TrainMainCategory(main_category)))
+            }
+            Some(TrainCategory::Sub { sub_category_code }) => {
+                changeset.sub_category(Some(sub_category_code))
+            }
+            None => changeset,
+        }
     }
 }
 
@@ -262,9 +270,8 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 options: paced_train.options,
                 category: paced_train
                     .main_category
-                    .as_deref()
-                    .copied()
-                    .map(TrainCategory::main), // TODO: or sub category when it's going to exist
+                    .map(|main_category| TrainCategory::main(main_category.0))
+                    .xor(paced_train.sub_category.map(TrainCategory::sub)),
             },
             exceptions: paced_train.exceptions,
             paced: Paced {
@@ -283,9 +290,14 @@ mod tests {
     use crate::models::Tags;
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_modified_exception_with_change_groups;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::models::fixtures::simple_sub_category;
+    use crate::models::prelude::*;
     use crate::views::timetable::TrainId;
     use chrono::DateTime;
     use chrono::Utc;
+    use database::DbConnectionPoolV2;
     use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::RollingStockCategoryChangeGroup;
@@ -322,6 +334,7 @@ mod tests {
             start_time: DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
             time_window: chrono::Duration::try_hours(2).unwrap(),
             interval: chrono::Duration::try_minutes(30).unwrap(),
+            sub_category: None,
             exceptions,
         }
     }
@@ -561,6 +574,38 @@ mod tests {
                     index: 3
                 },
             ]
+        );
+    }
+
+    #[rstest]
+    async fn paced_train_both_categories_check_post() {
+        let pool = DbConnectionPoolV2::for_tests();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train_changeset = simple_paced_train_changeset(timetable.id);
+        let created_sub_category = simple_sub_category(
+            "tjv",
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let train_schedule_changeset = paced_train_changeset
+            .sub_category(Some(created_sub_category.code))
+            .main_category(Some(TrainMainCategory(
+                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+            )));
+        let error = train_schedule_changeset
+            .create(&mut pool.get_ok())
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            error,
+            editoast_models::model::Error::CheckViolation {
+                constraint: "only_one_category".to_string(),
+            }
         );
     }
 }

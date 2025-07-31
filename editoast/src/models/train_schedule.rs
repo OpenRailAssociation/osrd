@@ -21,7 +21,7 @@ use crate::models::prelude::*;
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default))]
 #[model(table = database::tables::train_schedule)]
-#[model(gen(ops = crud, batch_ops = crd, list))]
+#[model(gen(ops = crud, batch_ops = crud, list))]
 #[model(row(derive(diesel::QueryableByName)))]
 pub struct TrainSchedule {
     pub id: i64,
@@ -47,6 +47,8 @@ pub struct TrainSchedule {
     #[model(json)]
     pub options: TrainScheduleOptions,
     pub main_category: Option<TrainMainCategory>,
+    /// Sub category code
+    pub sub_category: Option<String>,
 }
 
 impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
@@ -68,11 +70,7 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             category,
         }: editoast_schemas::TrainSchedule,
     ) -> Self {
-        let main_category = match category {
-            Some(TrainCategory::Main { main_category }) => Some(TrainMainCategory(main_category)),
-            _ => None,
-        };
-        TrainSchedule::changeset()
+        let changeset = TrainSchedule::changeset()
             .comfort(comfort)
             .constraint_distribution(constraint_distribution)
             .initial_speed(initial_speed)
@@ -85,8 +83,17 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             .speed_limit_tag(speed_limit_tag.map(|s| s.0))
             .start_time(start_time)
             .train_name(train_name)
-            .options(options)
-            .main_category(main_category)
+            .options(options);
+
+        match category {
+            Some(TrainCategory::Main { main_category }) => {
+                changeset.main_category(Some(TrainMainCategory(main_category)))
+            }
+            Some(TrainCategory::Sub { sub_category_code }) => {
+                changeset.sub_category(Some(sub_category_code))
+            }
+            None => changeset,
+        }
     }
 }
 
@@ -154,9 +161,8 @@ impl From<TrainSchedule> for train_schedule::TrainSchedule {
             options: train_schedule.options,
             category: train_schedule
                 .main_category
-                .as_deref()
-                .copied()
-                .map(TrainCategory::main), // TODO: or sub category when it's going to exist
+                .map(|category| TrainCategory::main(category.0))
+                .xor(train_schedule.sub_category.map(TrainCategory::sub)),
         }
     }
 }
@@ -189,5 +195,50 @@ impl TrainSchedule {
                     None
                 }
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use database::DbConnectionPoolV2;
+    use editoast_models::rolling_stock::TrainMainCategory;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_sub_category;
+    use crate::models::fixtures::simple_train_schedule_changeset;
+    use crate::models::prelude::*;
+
+    #[rstest]
+    async fn train_schedule_both_categories_check_post() {
+        let pool = DbConnectionPoolV2::for_tests();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule_changeset = simple_train_schedule_changeset(timetable.id);
+        let created_sub_category = simple_sub_category(
+            "tjv",
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let train_schedule_changeset = train_schedule_changeset
+            .sub_category(Some(created_sub_category.code))
+            .main_category(Some(TrainMainCategory(
+                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+            )));
+        let error = train_schedule_changeset
+            .create(&mut pool.get_ok())
+            .await
+            .unwrap_err();
+
+        assert_eq!(
+            error,
+            editoast_models::model::Error::CheckViolation {
+                constraint: "only_one_category".to_string(),
+            }
+        );
     }
 }
