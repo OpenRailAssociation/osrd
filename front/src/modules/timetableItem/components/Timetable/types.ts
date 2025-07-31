@@ -131,10 +131,13 @@ export type PairingItem = {
   destination: string;
   startTime: Date;
   requestedArrivalTime: Date | null;
-};
-
-export type RoundTripsModalColumnsData = {
-  todo: PairingItem[];
-  oneWays: PairingItem[];
-  roundTrips: [PairingItem, PairingItem][];
-};
+} & (
+  | {
+      status: 'roundTrips';
+      pairedItemId: TimetableItemId;
+      isValidPair: boolean;
+    }
+  | {
+      status: 'todo' | 'oneWays';
+    }
+);

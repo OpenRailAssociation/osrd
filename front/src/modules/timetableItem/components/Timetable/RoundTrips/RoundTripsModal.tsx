@@ -9,7 +9,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import RoundTripsModalColumn from './RoundTripsModalColumn';
 import formatPairingItems from './utils';
-import type { RoundTripsModalColumnsData } from '../types';
+import type { PairingItem } from '../types';
 
 type RoundTripsModalProps = {
   roundTripsModalIsOpen: boolean;
@@ -33,11 +33,7 @@ const RoundTripsModal = ({
 
   const modalRef = useRef<HTMLDialogElement>(null);
 
-  const [columnsData, setColumnsData] = useState<RoundTripsModalColumnsData>({
-    todo: [],
-    oneWays: [],
-    roundTrips: [],
-  });
+  const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
 
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
 
@@ -54,7 +50,7 @@ const RoundTripsModal = ({
 
   // TODO : Handle format with pairing items when back is ready in issue https://github.com/OpenRailAssociation/osrd/issues/12376
   useEffect(() => {
-    setColumnsData(formatPairingItems(timetableItemsWithOps, t));
+    setPairingItems(formatPairingItems(timetableItemsWithOps, t));
   }, [timetableItemsWithOps, t]);
 
   useEffect(() => {
@@ -71,15 +67,19 @@ const RoundTripsModal = ({
       <div className="round-trips-modal-body">
         <RoundTripsModalColumn
           type="todo"
-          pairingItems={columnsData.todo}
-          setColumnData={setColumnsData}
+          pairingItems={pairingItems.filter((item) => item.status === 'todo')}
+          setPairingItems={setPairingItems}
         />
         <RoundTripsModalColumn
           type="oneWays"
-          pairingItems={columnsData.oneWays}
-          setColumnData={setColumnsData}
+          pairingItems={pairingItems.filter((item) => item.status === 'oneWays')}
+          setPairingItems={setPairingItems}
         />
-        <RoundTripsModalColumn type="roundTrips" pairingItems={[]} setColumnData={setColumnsData} />
+        <RoundTripsModalColumn
+          type="roundTrips"
+          pairingItems={[]}
+          setPairingItems={setPairingItems}
+        />
       </div>
       <div className="round-trips-modal-footer">
         <Button label={commonT('cancel')} variant="Cancel" size="medium" onClick={closeModal} />

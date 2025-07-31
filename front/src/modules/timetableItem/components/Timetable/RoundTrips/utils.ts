@@ -13,7 +13,7 @@ import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
-import type { RoundTripsModalColumnsData } from '../types';
+import type { PairingItem } from '../types';
 
 const getInvalidStepLabel = (step: OperationalPointReference) => {
   if ('uic' in step) {
@@ -54,40 +54,38 @@ const getStepLabels = (
 const formatPairingItems = (
   items: TimetableItemWithPathOps[],
   t: TFunction<'operational-studies', 'main'>
-): RoundTripsModalColumnsData => {
+): PairingItem[] => {
   const sortedItems = items.sort((a, b) =>
     a.train_name.toLowerCase().localeCompare(b.train_name.toLowerCase())
   );
 
-  return sortedItems.reduce<RoundTripsModalColumnsData>(
-    (acc, item) => {
-      const stepLabels = getStepLabels(item.pathOps, item.path, t);
+  // TODO : handle status with round-trips data in issue https://github.com/OpenRailAssociation/osrd/issues/12376
+  return sortedItems.map((item) => {
+    const stepLabels = getStepLabels(item.pathOps, item.path, t);
 
-      const arrivalStepId = item.path.at(-1)?.id;
-      const destinationSchedule = item.schedule?.find(
-        (scheduleStep) => scheduleStep.at === arrivalStepId
-      );
-      const requestedArrivalTime = destinationSchedule?.arrival
-        ? addDurationToDate(new Date(item.start_time), Duration.parse(destinationSchedule.arrival))
-        : null;
+    const arrivalStepId = item.path.at(-1)?.id;
+    const destinationSchedule = item.schedule?.find(
+      (scheduleStep) => scheduleStep.at === arrivalStepId
+    );
+    const requestedArrivalTime = destinationSchedule?.arrival
+      ? addDurationToDate(new Date(item.start_time), Duration.parse(destinationSchedule.arrival))
+      : null;
 
-      acc.todo.push({
-        id: item.id,
-        name: item.train_name,
-        category: item.category,
-        interval: isPacedTrainResponseWithPacedTrainId(item)
-          ? Duration.parse(item.paced.interval)
-          : null,
-        origin: stepLabels.at(0)!,
-        stops: stepLabels.slice(1, -1),
-        destination: stepLabels.at(-1)!,
-        startTime: new Date(item.start_time),
-        requestedArrivalTime,
-      });
-      return acc;
-    },
-    { todo: [], oneWays: [], roundTrips: [] }
-  );
+    return {
+      id: item.id,
+      name: item.train_name,
+      category: item.category,
+      interval: isPacedTrainResponseWithPacedTrainId(item)
+        ? Duration.parse(item.paced.interval)
+        : null,
+      origin: stepLabels.at(0)!,
+      stops: stepLabels.slice(1, -1),
+      destination: stepLabels.at(-1)!,
+      startTime: new Date(item.start_time),
+      requestedArrivalTime,
+      status: 'todo',
+    };
+  });
 };
 
 export default formatPairingItems;
