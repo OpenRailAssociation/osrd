@@ -287,7 +287,13 @@ const injectedRtkApi = api
         PostInfraByInfraIdLoadApiResponse,
         PostInfraByInfraIdLoadApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/load`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/load`,
+          method: 'POST',
+          params: {
+            timetable: queryArg.timetable,
+          },
+        }),
         invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdLock: build.mutation<
@@ -1644,6 +1650,7 @@ export type PostInfraByInfraIdLoadApiResponse = unknown;
 export type PostInfraByInfraIdLoadApiArg = {
   /** An existing infra ID */
   infraId: number;
+  timetable?: number | null;
 };
 export type PostInfraByInfraIdLockApiResponse = unknown;
 export type PostInfraByInfraIdLockApiArg = {
