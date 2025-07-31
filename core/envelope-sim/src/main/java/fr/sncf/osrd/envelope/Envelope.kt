@@ -3,10 +3,10 @@ package fr.sncf.osrd.envelope
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope.part.minEnvelopeParts
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_utils.DoubleUtils
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.areSpeedsEqual
 import java.util.*
 import java.util.stream.Stream
 
@@ -47,8 +47,7 @@ class Envelope(parts: Array<EnvelopePart>) :
         for (i in 0 until parts.size - 1) {
             if (parts[i].endPos != parts[i + 1].beginPos)
                 throw OSRDError(ErrorType.EnvelopePartsNotContiguous)
-            if (!TrainPhysicsIntegrator.areSpeedsEqual(parts[i].endSpeed, parts[i + 1].beginSpeed))
-                continuous = false
+            if (!areSpeedsEqual(parts[i].endSpeed, parts[i + 1].beginSpeed)) continuous = false
         }
 
         // find the minimum and maximum speeds for all envelope parts

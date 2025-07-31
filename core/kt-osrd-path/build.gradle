@@ -23,6 +23,7 @@ dependencies {
     api project(":osrd-reporting")
     implementation project(':osrd-geom')
 
+    implementation libs.guava
     implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test

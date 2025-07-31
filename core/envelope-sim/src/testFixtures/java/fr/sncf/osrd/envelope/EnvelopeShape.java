@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+import static fr.sncf.osrd.utils.UnitEqualityKt.areSpeedsEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;

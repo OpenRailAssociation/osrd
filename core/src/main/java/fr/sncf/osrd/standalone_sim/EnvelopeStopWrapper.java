@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
+import static fr.sncf.osrd.utils.UnitEqualityKt.arePositionsEqual;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeInterpolate;

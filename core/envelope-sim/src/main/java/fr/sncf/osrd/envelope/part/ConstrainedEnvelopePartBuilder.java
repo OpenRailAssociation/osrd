@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope.part;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+import static fr.sncf.osrd.utils.UnitEqualityKt.areSpeedsEqual;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopePhysics;

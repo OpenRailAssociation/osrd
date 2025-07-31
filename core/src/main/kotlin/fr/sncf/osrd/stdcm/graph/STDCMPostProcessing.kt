@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.pipelines.SimStop
@@ -9,6 +8,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
+import fr.sncf.osrd.path.implementations.EnvelopeSimPath
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -25,6 +25,9 @@ import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.arePositionsEqual
+import fr.sncf.osrd.utils.areSpeedsEqual
+import fr.sncf.osrd.utils.isTimeStrictlyPositive
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind

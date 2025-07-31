@@ -1,9 +1,9 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.envelope_sim.electrification.Electrification
 import fr.sncf.osrd.envelope_sim.electrification.Electrified
 import fr.sncf.osrd.envelope_sim.electrification.Neutral
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified
+import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.utils.units.Distance

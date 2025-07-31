@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -12,6 +11,7 @@ import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllo
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.areSpeedsEqual
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
@@ -45,12 +45,7 @@ class StopTests {
         val expectedOffset = 150.0
 
         // Check that we stop
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areSpeedsEqual(
-                0.0,
-                res.envelope.interpolateSpeed(expectedOffset)
-            )
-        )
+        Assertions.assertTrue(areSpeedsEqual(0.0, res.envelope.interpolateSpeed(expectedOffset)))
 
         // Check that the stop is properly returned
         Assertions.assertEquals(
@@ -92,10 +87,7 @@ class StopTests {
 
         // Check that we stop
         for (offset in stopsOffsets) Assertions.assertTrue(
-            TrainPhysicsIntegrator.areSpeedsEqual(
-                0.0,
-                res.envelope.interpolateSpeed(100.0 + offset.distance.meters)
-            )
+            areSpeedsEqual(0.0, res.envelope.interpolateSpeed(100.0 + offset.distance.meters))
         )
     }
 
@@ -829,10 +821,7 @@ class StopTests {
 
             // Check that we stop
             for (stop in expectedStops) Assertions.assertTrue(
-                TrainPhysicsIntegrator.areSpeedsEqual(
-                    0.0,
-                    res.envelope.interpolateSpeed(stop.position)
-                )
+                areSpeedsEqual(0.0, res.envelope.interpolateSpeed(stop.position))
             )
         }
     }

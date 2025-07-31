@@ -4,9 +4,9 @@ import static fr.sncf.osrd.train.RollingStock.InfraConditions;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.path.implementations.EnvelopeSimPath;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import java.util.Arrays;
 import java.util.List;

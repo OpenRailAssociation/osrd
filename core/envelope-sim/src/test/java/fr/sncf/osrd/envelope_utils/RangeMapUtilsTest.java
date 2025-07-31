@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.TreeRangeMap;
+import fr.sncf.osrd.utils.RangeMapUtils;
 import org.junit.jupiter.api.Test;
 
 public class RangeMapUtilsTest {

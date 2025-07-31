@@ -1,9 +1,10 @@
 package fr.sncf.osrd.envelope_sim.electrification;
 
+import fr.sncf.osrd.path.interfaces.Electrification;
 import java.util.Objects;
 
 /** Electrification conditions at a point in the path */
-public non-sealed class Electrified implements Electrification {
+public class Electrified implements Electrification {
     /** Tractive mode the train should use */
     public final String mode;
 
