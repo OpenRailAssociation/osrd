@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { uniq } from 'lodash';
 
@@ -56,111 +56,113 @@ const useFilterTimetableItems = (
     [timetableItems]
   );
 
-  const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
-    () =>
-      timetableItems.filter((timetableItem) => {
-        if (!keepItem(timetableItem, debouncedNameLabelFilter)) return false;
+  const filterTimetableItem = useCallback(
+    (timetableItem: TimetableItemWithDetails) => {
+      if (!keepItem(timetableItem, debouncedNameLabelFilter)) return false;
 
-        const { summary } = timetableItem;
+      const { summary } = timetableItem;
 
-        // Apply validity filter
-        if (validityFilter !== 'both') {
-          if (validityFilter === 'valid' && !summary?.isValid) return false;
-          if (validityFilter === 'invalid' && summary?.isValid) return false;
+      // Apply validity filter
+      if (validityFilter !== 'both') {
+        if (validityFilter === 'valid' && !summary?.isValid) return false;
+        if (validityFilter === 'invalid' && summary?.isValid) return false;
+      }
+
+      // Apply scheduled points honored filter
+      if (scheduledPointsHonoredFilter !== 'both') {
+        if (!summary || !summary.isValid) {
+          return false;
+        }
+        const { notHonoredReason } = summary;
+        if (
+          (scheduledPointsHonoredFilter === 'honored' && !!notHonoredReason) ||
+          (scheduledPointsHonoredFilter === 'notHonored' && !notHonoredReason)
+        ) {
+          return false;
+        }
+      }
+
+      // Apply train type filter
+      if (trainTypeFilter !== 'both') {
+        if (trainTypeFilter === 'pacedTrain' && isTrainScheduleId(timetableItem.id)) return false;
+        if (trainTypeFilter === 'trainSchedule' && isPacedTrainId(timetableItem.id)) return false;
+      }
+
+      // Apply tag filter
+      if (selectedTags.size > 0) {
+        const itemTag = extractTagCode(timetableItem.speedLimitTag);
+        const exceptionTags = isPacedTrainWithDetails(timetableItem)
+          ? timetableItem.exceptions
+              .filter((exception) => exception.speed_limit_tag)
+              .map((exception) => extractTagCode(exception.speed_limit_tag!.value))
+          : [];
+        const allTags = uniq([itemTag, ...exceptionTags]);
+
+        if (!allTags.some((tag) => selectedTags.has(tag))) {
+          return false;
+        }
+      }
+
+      // Apply rolling stock filter
+      if (debouncedRollingstockFilter) {
+        const rollingStockMetadata = [];
+        const {
+          detail = '',
+          family = '',
+          reference = '',
+          series = '',
+          subseries = '',
+        } = timetableItem.rollingStock?.metadata || {};
+        rollingStockMetadata.push(detail, family, reference, series, subseries);
+
+        if (isPacedTrainWithDetails(timetableItem)) {
+          timetableItem.exceptions.forEach((exception) => {
+            if (!exception.rolling_stock) return;
+            const exceptionRollingStock = rollingStocks?.find(
+              (rollingStock) => rollingStock.name === exception.rolling_stock?.rolling_stock_name
+            );
+            const {
+              detail: _detail = '',
+              family: _family = '',
+              reference: _reference = '',
+              series: _series = '',
+              subseries: _subseries = '',
+            } = exceptionRollingStock?.metadata || {};
+            rollingStockMetadata.push(_detail, _family, _reference, _series, _subseries);
+          });
         }
 
-        // Apply scheduled points honored filter
-        if (scheduledPointsHonoredFilter !== 'both') {
-          if (!summary || !summary.isValid) {
-            return false;
-          }
-          const { notHonoredReason } = summary;
-          if (
-            (scheduledPointsHonoredFilter === 'honored' && !!notHonoredReason) ||
-            (scheduledPointsHonoredFilter === 'notHonored' && !notHonoredReason)
-          ) {
-            return false;
-          }
-        }
-
-        // Apply train type filter
-        if (trainTypeFilter !== 'both') {
-          if (trainTypeFilter === 'pacedTrain' && isTrainScheduleId(timetableItem.id)) return false;
-          if (trainTypeFilter === 'trainSchedule' && isPacedTrainId(timetableItem.id)) return false;
-        }
-
-        // Apply tag filter
-        if (selectedTags.size > 0) {
-          const itemTag = extractTagCode(timetableItem.speedLimitTag);
-          const exceptionTags = isPacedTrainWithDetails(timetableItem)
-            ? timetableItem.exceptions
-                .filter((exception) => exception.speed_limit_tag)
-                .map((exception) => extractTagCode(exception.speed_limit_tag!.value))
-            : [];
-          const allTags = uniq([itemTag, ...exceptionTags]);
-
-          if (!allTags.some((tag) => selectedTags.has(tag))) {
-            return false;
-          }
-        }
-
-        // Apply rolling stock filter
-        if (debouncedRollingstockFilter) {
-          const rollingStockMetadata = [];
-          const {
-            detail = '',
-            family = '',
-            reference = '',
-            series = '',
-            subseries = '',
-          } = timetableItem.rollingStock?.metadata || {};
-          rollingStockMetadata.push(detail, family, reference, series, subseries);
-
-          if (isPacedTrainWithDetails(timetableItem)) {
-            timetableItem.exceptions.forEach((exception) => {
-              if (!exception.rolling_stock) return;
-              const exceptionRollingStock = rollingStocks?.find(
-                (rollingStock) => rollingStock.name === exception.rolling_stock?.rolling_stock_name
-              );
-              const {
-                detail: _detail = '',
-                family: _family = '',
-                reference: _reference = '',
-                series: _series = '',
-                subseries: _subseries = '',
-              } = exceptionRollingStock?.metadata || {};
-              rollingStockMetadata.push(_detail, _family, _reference, _series, _subseries);
-            });
-          }
-
-          if (
-            !rollingStockMetadata.some((v) =>
-              v.toLowerCase().includes(debouncedRollingstockFilter.toLowerCase())
-            )
+        if (
+          !rollingStockMetadata.some((v) =>
+            v.toLowerCase().includes(debouncedRollingstockFilter.toLowerCase())
           )
-            return false;
-        }
+        )
+          return false;
+      }
 
-        // Apply train category filter
-        if (trainCategoryFilter !== 'all') {
-          const exceptionsCategories = isPacedTrainWithDetails(timetableItem)
-            ? timetableItem.exceptions
-                .filter((exception) => exception.rolling_stock_category)
-                .map((exception) => extractTagCode(exception.rolling_stock_category!.value))
-            : [];
-          const allCategories = uniq([timetableItem.category, ...exceptionsCategories]);
-          if (
-            !allCategories.some((category) =>
-              trainCategoryFilter === 'noCategory' ? !category : category === trainCategoryFilter
-            )
+      // Apply train category filter
+      if (trainCategoryFilter !== 'all') {
+        const exceptionsCategories = isPacedTrainWithDetails(timetableItem)
+          ? timetableItem.exceptions
+              .map(
+                (exception) =>
+                  exception.rolling_stock_category?.value &&
+                  extractTagCode(exception.rolling_stock_category.value)
+              )
+              .filter((tagCode) => !!tagCode)
+          : [];
+        const allCategories = uniq([timetableItem.category, ...exceptionsCategories]);
+        if (
+          !allCategories.some((category) =>
+            trainCategoryFilter === 'noCategory' ? !category : category === trainCategoryFilter
           )
-            return false;
-        }
+        )
+          return false;
+      }
 
-        return true;
-      }),
+      return true;
+    },
     [
-      timetableItems,
       debouncedNameLabelFilter,
       debouncedRollingstockFilter,
       validityFilter,
@@ -169,6 +171,11 @@ const useFilterTimetableItems = (
       selectedTags,
       trainCategoryFilter,
     ]
+  );
+
+  const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
+    () => timetableItems.filter((timetableItem) => filterTimetableItem(timetableItem)),
+    [timetableItems, filterTimetableItem]
   );
 
   return {
