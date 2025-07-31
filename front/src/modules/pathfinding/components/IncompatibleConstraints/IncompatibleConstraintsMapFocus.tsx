@@ -5,9 +5,8 @@ import bbox from '@turf/bbox';
 import type { FeatureCollection, LineString } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useMap } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
   geojson?: FeatureCollection<LineString>;
@@ -15,7 +14,7 @@ interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
 
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
-  const { smoothTravel } = useSelector(getMap);
+  const { smoothTravel } = useMapSettings();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { geojson, ...attrs } = props;
 

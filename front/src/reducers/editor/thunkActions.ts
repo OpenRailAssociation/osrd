@@ -15,15 +15,17 @@ import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
-import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
 import type { AppDispatch, GetState } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import { type EditorState, editorSliceActions } from '.';
-
-const { loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
-  editorSliceActions;
+import {
+  type EditorState,
+  loadDataModelAction,
+  updateFiltersIssueAction,
+  updateIssuesSettings,
+  updateTotalsIssueAction,
+} from '.';
 
 export function loadDataModel() {
   return async (dispatch: AppDispatch, getState: GetState) => {

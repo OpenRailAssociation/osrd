@@ -25,7 +25,8 @@ import {
   getSwitchesNameLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -42,7 +43,11 @@ const SwitchEditionLayers = () => {
   const { entity, hovered, portEditionState, mousePosition } = state;
 
   const { switchType } = useSwitch();
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
   const layerProps = useMemo(
     () =>
       getSwitchesLayerProps({

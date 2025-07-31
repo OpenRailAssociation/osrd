@@ -30,7 +30,8 @@ import {
   getRoutesTextLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
 
@@ -41,7 +42,11 @@ const RouteEditionLayers = () => {
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
   const infraID = useInfraID();
 
   const selectedRouteIndex =

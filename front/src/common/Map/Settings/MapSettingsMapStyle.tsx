@@ -1,45 +1,36 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import { updateMapStyle } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettingsActions } from 'reducers/globalMap';
+import type { MapStyle } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 
-const MapSettingsMapStyle = () => {
+const MapSettingsMapStyle = ({ mapStyle }: { mapStyle: MapStyle }) => {
   const { t } = useTranslation();
-  const { mapStyle } = useSelector(getMap);
   const dispatch = useAppDispatch();
+  const { updateMapSettings } = useMapSettingsActions();
+  const styles = [
+    { key: 'normal', image: picNormalMode, label: t('mapSettings.mapstyles.normal') },
+    { key: 'minimal', image: picMinimalMode, label: t('mapSettings.mapstyles.minimal') },
+    { key: 'dark', image: picDarkMode, label: t('mapSettings.mapstyles.darkmode') },
+  ] as const;
 
   return (
     <div className="row ml-1 mapstyle">
-      <button
-        className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'normal' && 'active')}
-        type="button"
-        onClick={() => dispatch(updateMapStyle('normal'))}
-      >
-        <img src={picNormalMode} alt="normal mode" />
-        <span>{t('mapSettings.mapstyles.normal')}</span>
-      </button>
-      <button
-        className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'minimal' && 'active')}
-        type="button"
-        onClick={() => dispatch(updateMapStyle('minimal'))}
-      >
-        <img src={picMinimalMode} alt="minimal mode" />
-        <span>{t('mapSettings.mapstyles.minimal')}</span>
-      </button>
-      <button
-        className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'dark' && 'active')}
-        type="button"
-        onClick={() => dispatch(updateMapStyle('dark'))}
-      >
-        <img src={picDarkMode} alt="dark mode" />
-        <span>{t('mapSettings.mapstyles.darkmode')}</span>
-      </button>
+      {styles.map(({ key, image, label }) => (
+        <button
+          key={key}
+          className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === key && 'active')}
+          type="button"
+          onClick={() => dispatch(updateMapSettings({ mapStyle: key }))}
+        >
+          <img src={image} alt={`${key} mode`} />
+          <span>{label}</span>
+        </button>
+      ))}
     </div>
   );
 };

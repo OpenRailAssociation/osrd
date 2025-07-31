@@ -3,6 +3,7 @@ import type {
   CustomLayerInterface,
 } from 'react-map-gl/maplibre';
 
+import type { EditorState } from 'reducers/editor';
 import type { MapState } from 'reducers/map';
 import type { Theme } from 'types';
 
@@ -18,8 +19,8 @@ export type LayerContext = SignalContext & {
   sourceTable?: string;
   isEmphasized: boolean;
   showIGNBDORTHO: boolean;
-  layersSettings: MapState['layersSettings'];
-  issuesSettings?: MapState['issuesSettings'];
+  layersSettings: MapState['mapSettings']['layersSettings'];
+  issuesSettings?: EditorState['issuesSettings'];
 };
 
 export type LayerProps = Exclude<LayerPropsWithCustom, CustomLayerInterface>;

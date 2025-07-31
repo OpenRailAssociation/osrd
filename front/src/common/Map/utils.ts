@@ -6,46 +6,16 @@ import type {
   SearchResultItemOperationalPoint,
   SearchResultItemSignal,
 } from 'common/api/osrdEditoastApi';
-import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map/index';
-import type { MapState, Viewport } from 'reducers/map/index';
-import type { AppDispatch } from 'store';
 
 export const getCoordinates = (result: SearchResultItemSignal | SearchResultItemOperationalPoint) =>
   result.geographic;
 
-type OnResultSearchClickType = {
-  result: SearchResultItemSignal | SearchResultItemOperationalPoint;
-  map: MapState;
-  updateExtViewport: (viewport: Partial<Viewport>) => void;
-  dispatch: AppDispatch;
-  setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
-  title: string;
-};
-
-export const onResultSearchClick = ({
-  result,
-  map,
-  updateExtViewport,
-  dispatch,
-  title,
-}: OnResultSearchClickType) => {
+export const computeCoordinatesOnClick = (
+  result: SearchResultItemSignal | SearchResultItemOperationalPoint
+) => {
   const coordinates = getCoordinates(result);
-
   const center = turfCenter(coordinates as AllGeoJSON);
-
-  const newViewport = {
-    ...map.viewport,
-    longitude: center.geometry.coordinates[0],
-    latitude: center.geometry.coordinates[1],
-    zoom: 16,
-  };
-  updateExtViewport(newViewport);
-  dispatch(
-    updateMapSearchMarker({
-      title,
-      lonlat: center.geometry.coordinates,
-    })
-  );
+  return center.geometry.coordinates;
 };
 
 /** This function will build a query based on the type of __searchState__.
@@ -68,9 +38,4 @@ export function createTrackSystemQuery(trackSystem: string) {
     ];
   }
   return ['contains', ['list', trackSystem], ['signaling_systems']];
-}
-
-export function removeSearchItemMarkersOnMap(dispatch: AppDispatch) {
-  dispatch(updateMapSearchMarker(undefined));
-  dispatch(updateLineSearchCode(undefined));
 }

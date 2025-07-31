@@ -5,12 +5,12 @@ import type { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, mapValues, omit } from 'lodash';
 import type { FilterSpecification } from 'maplibre-gl';
 import { Layer, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { RootState } from 'reducers';
+import type { EditorState } from 'reducers/editor';
+import { useMapSettings } from 'reducers/globalMap';
 import type { MapState } from 'reducers/map';
 import type { Theme } from 'types';
 
@@ -435,8 +435,8 @@ export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps
 
 interface GeoJSONsProps {
   colors: Theme;
-  layersSettings: MapState['layersSettings'];
-  issuesSettings?: MapState['issuesSettings'];
+  layersSettings: MapState['mapSettings']['layersSettings'];
+  issuesSettings?: EditorState['issuesSettings'];
   hidden?: string[];
   selection?: string[];
   prefix?: string;
@@ -471,7 +471,7 @@ const GeoJSONs = ({
       ),
     [colors]
   );
-
+  const { mapStyle, showIGNBDORTHO } = useMapSettings();
   // This flag is used to unmount sources before mounting the new ones, when
   // fingerprint is updated;
   const [skipSources, setSkipSources] = useState(true);
@@ -482,8 +482,6 @@ const GeoJSONs = ({
       clearTimeout(timeout);
     };
   }, [fingerprint]);
-
-  const { mapStyle, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
 
   const layerContext: LayerContext = useMemo(
     () => ({

@@ -4,7 +4,7 @@ import { isEqual } from 'lodash';
 
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
-import type { Viewport } from 'reducers/map';
+import type { Viewport } from 'reducers/globalMap/types';
 
 const captureMap = async (
   mapViewport: Viewport,

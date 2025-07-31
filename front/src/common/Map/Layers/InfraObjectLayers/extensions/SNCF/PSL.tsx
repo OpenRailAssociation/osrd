@@ -7,7 +7,8 @@ import { Source } from 'react-map-gl/maplibre';
 import type { LineLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import type { LayersSettings } from 'reducers/map';
+import type { LayersSettings } from 'reducers/globalMap/types';
+import type { MapState } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
@@ -19,7 +20,7 @@ interface SNCF_PSLProps {
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
-  layersSettings: LayersSettings;
+  layersSettings: MapState['mapSettings']['layersSettings'];
   highlightedArea?: Geometry;
 }
 

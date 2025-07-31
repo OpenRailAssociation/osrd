@@ -7,6 +7,7 @@ import type {
   TrainScheduleWithDetails,
 } from 'modules/timetableItem/components/Timetable/types';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
+import { buildMapStateReducer } from 'reducers/globalMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -43,6 +44,8 @@ export const operationalStudiesConfSlice = createSlice({
   initialState: operationalStudiesInitialConf,
   reducers: {
     ...buildCommonConfReducers<OperationalStudiesConfState>(),
+    ...buildMapStateReducer<OperationalStudiesConfState>(),
+
     ...powerRestrictionReducer,
     ...trainSettingsReducer,
     ...itineraryReducer,

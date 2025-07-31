@@ -12,7 +12,6 @@ import type {
   MapRef,
 } from 'react-map-gl/maplibre';
 import ReactMapGL, { Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
@@ -21,7 +20,7 @@ import colors from 'common/Map/Consts/colors';
 import { GeoJSONs, OrderedLayer, useMapBlankStyle } from 'common/Map/Layers';
 import { simplifyFeature, type BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 
@@ -47,7 +46,7 @@ interface DataLoaderProps {
 
 const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
   const mapBlankStyle = useMapBlankStyle();
-  const { mapStyle, layersSettings } = useSelector(getMap);
+  const { mapStyle, layersSettings } = useMapSettings();
   const infraID = useInfraID();
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');

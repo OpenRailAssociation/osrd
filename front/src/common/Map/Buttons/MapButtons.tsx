@@ -12,20 +12,19 @@ import {
 import cx from 'classnames';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import LayersModal from 'applications/editor/components/LayersModal';
+import EditorLayersModal from 'applications/editor/components/EditorLayersModal';
 import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { PartialOrReducer, Tool } from 'applications/editor/types';
-import StdcmLayersModal from 'applications/stdcm/components/StdcmLayersModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
+import LayersModal from 'common/Map/components/LayersModal';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
-import type { EditorState } from 'reducers/editor';
-import { updateViewport, type LayersSettings, type Viewport } from 'reducers/map';
-import { stdcmConfInitialState, updateStdcmLayers } from 'reducers/osrdconf/stdcmConf';
+import { type EditorState } from 'reducers/editor';
+import { useMapSettingsActions } from 'reducers/globalMap';
+import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
@@ -49,10 +48,10 @@ type MapButtonsProps = {
     editorState: EditorState;
     activeTool: Tool<CommonToolState>;
   };
-  compact?: boolean;
+  compactModal?: boolean;
   viewPort: Viewport;
   isNewButtons?: boolean;
-  layersSettings?: LayersSettings;
+  mapSettings: MapSettings;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -73,10 +72,12 @@ export default function MapButtons({
   zoomIn: zoomInProps,
   zoomOut: zoomOutProps,
   isNewButtons = false,
-  compact,
-  layersSettings,
+  compactModal = false,
+  mapSettings,
 }: MapButtonsProps) {
   const dispatch = useAppDispatch();
+  const { updateViewport } = useMapSettingsActions();
+
   const { isOpen, openModal } = useContext(ModalContext);
   const [openedPopover, setOpenedPopover] = useState<string | undefined>(undefined);
   const [viewport, setViewport] = useState(viewportProps);
@@ -85,7 +86,6 @@ export default function MapButtons({
     transform: `translate(-40%, 0) rotate(${-bearing}deg)`,
     transformOrigin: 'center',
   };
-
   const toggleMapModal = useCallback((keyModal: string) => {
     setOpenedPopover((prevOpenedPopover) =>
       keyModal !== prevOpenedPopover ? keyModal : undefined
@@ -96,7 +96,7 @@ export default function MapButtons({
     if (editorProps) {
       const { activeTool, setToolState, editorState, toolState } = editorProps;
       openModal(
-        <LayersModal
+        <EditorLayersModal
           initialLayers={editorState.editorLayers}
           frozenLayers={activeTool.requiredLayers}
           selection={
@@ -118,20 +118,10 @@ export default function MapButtons({
         />,
         'lg'
       );
-    } else if (compact) {
-      openModal(
-        <StdcmLayersModal
-          initialLayers={layersSettings ?? stdcmConfInitialState.layersSettings}
-          onChange={(newLayers) => {
-            dispatch(updateStdcmLayers(newLayers));
-          }}
-        />,
-        'lg'
-      );
     } else {
-      toggleMapModal('SETTINGS');
+      openModal(<LayersModal compactModal={compactModal} />, 'lg');
     }
-  }, [editorProps, openModal, toggleMapModal, dispatch, layersSettings]);
+  }, [editorProps, openModal, toggleMapModal, dispatch, mapSettings]);
 
   const mapButtonsRef = useRef<HTMLDivElement>(null);
 
@@ -152,29 +142,11 @@ export default function MapButtons({
   useOutsideClick(mapButtonsRef, () => setOpenedPopover(undefined));
 
   const zoomIn = useCallback(() => {
-    setViewport((prevViewport) => ({
-      ...prevViewport,
-      zoom: (prevViewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
-    }));
-    dispatch(
-      updateViewport({
-        ...viewport,
-        zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
-      })
-    );
+    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA }));
   }, [dispatch, viewport]);
 
   const zoomOut = useCallback(() => {
-    setViewport((prevViewport) => ({
-      ...prevViewport,
-      zoom: (prevViewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
-    }));
-    dispatch(
-      updateViewport({
-        ...viewport,
-        zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
-      })
-    );
+    dispatch(updateViewport({ zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA }));
   }, [dispatch, viewport]);
 
   return (
@@ -240,10 +212,11 @@ export default function MapButtons({
         {editorProps && <ButtonMapInfraErrors editorState={editorProps.editorState} />}
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
-        <MapSearch map={map} closeMapSearchPopUp={() => setOpenedPopover(undefined)} />
-      )}
-      {openedPopover === MAP_POPOVERS.SETTINGS && (
-        <MapSettings closeMapSettingsPopUp={() => setOpenedPopover(undefined)} />
+        <MapSearch
+          map={map}
+          closeMapSearchPopUp={() => setOpenedPopover(undefined)}
+          mapSettings={mapSettings}
+        />
       )}
       {openedPopover === MAP_POPOVERS.KEY && (
         <MapKey closeMapKeyPopUp={() => setOpenedPopover(undefined)} />

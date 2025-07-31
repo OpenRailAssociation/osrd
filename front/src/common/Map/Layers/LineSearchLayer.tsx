@@ -1,20 +1,17 @@
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import { getMap } from 'reducers/map/selectors';
 
 import OrderedLayer from './OrderedLayer';
 
 interface TracksGeographicProps {
   layerOrder?: number;
   infraID: number | undefined;
+  lineSearchCode?: number;
 }
 
-const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
-  const { lineSearchCode } = useSelector(getMap);
-
+const LineSearchLayer = ({ layerOrder, infraID, lineSearchCode }: TracksGeographicProps) => {
   if (isNil(infraID)) return null;
   return (
     <Source

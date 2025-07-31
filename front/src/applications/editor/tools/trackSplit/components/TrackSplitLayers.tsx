@@ -16,7 +16,8 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs } from 'common/Map/Layers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 import type { TrackSplitState } from '../types';
 import { isOffsetValid } from '../utils';
@@ -39,7 +40,11 @@ function getSplitPoint(state: TrackSplitState): Feature<Point> {
 }
 
 const TrackSplitLayers = () => {
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
   const infraID = useInfraID();
   const {
     state,

@@ -16,7 +16,8 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs, EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 import { NULL_GEOMETRY } from 'types';
 
 interface BasePointEditionLayersProps {
@@ -39,7 +40,11 @@ export const BasePointEditionLayers = ({
     state: { nearestPoint, mousePosition, entity, objType },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
 
   const [showPopup, setShowPopup] = useState(true);
 

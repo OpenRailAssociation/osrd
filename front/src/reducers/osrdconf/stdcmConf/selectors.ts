@@ -70,7 +70,7 @@ const buildStdcmConfSelectors = () => {
     getSelectedSimulationIndex,
     getSelectedSimulation,
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
-    getStdcmSelectedLayers: makeOsrdConfSelector('layersSettings'),
+    getMapSettings: makeOsrdConfSelector('mapSettings'),
     getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
     getActivePerimeter: makeOsrdConfSelector('activePerimeter'),
 
@@ -114,7 +114,6 @@ export const {
   getWorkScheduleGroupId,
   getSearchDatetimeWindow,
   getActivePerimeter,
-  getStdcmSelectedLayers,
 } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;

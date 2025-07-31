@@ -10,6 +10,7 @@ import {
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
+import { buildMapStateReducer } from 'reducers/globalMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
@@ -21,21 +22,6 @@ const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   ...defaultCommonConf,
-  layersSettings: {
-    buffer_stops: false,
-    electrifications: false,
-    neutral_sections: false,
-    detectors: false,
-    operational_points: true,
-    routes: false,
-    signals: false,
-    sncf_psl: false,
-    speed_limits: false,
-    speedlimittag: null,
-    switches: false,
-    platforms: false,
-    tvds: false,
-  },
   stdcmPathSteps: [
     {
       id: uuidV4(),
@@ -86,12 +72,8 @@ export const stdcmConfSlice = createSlice({
   initialState: stdcmConfInitialState,
   reducers: {
     ...buildCommonConfReducers<OsrdStdcmConfState>(),
-    updateStdcmLayers(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['layersSettings']>
-    ) {
-      state.layersSettings = action.payload;
-    },
+    ...buildMapStateReducer<OsrdStdcmConfState>(),
+
     resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
       state.rollingStockID = stdcmConfInitialState.rollingStockID;
       state.stdcmPathSteps = stdcmConfInitialState.stdcmPathSteps;
@@ -344,9 +326,9 @@ export const {
   updateLinkedTrainExtremity,
   selectSimulation,
   retainSimulation,
-  updateStdcmLayers,
   addStdcmSimulations,
   resetStdcmSimulations,
+  updateMapSettings,
 } = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;

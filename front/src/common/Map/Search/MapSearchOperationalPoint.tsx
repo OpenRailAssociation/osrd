@@ -2,14 +2,12 @@ import { useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { onResultSearchClick } from 'common/Map/utils';
-import type { Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { computeCoordinatesOnClick } from 'common/Map/utils';
+import { useMapSettingsActions } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 
 import { MAIN_OP_CH_CODES } from './consts';
@@ -18,16 +16,10 @@ import useSearchOperationalPoint from './useSearchOperationalPoint';
 const MAX_DISPLAYABLE_RESULTS = 100;
 
 type MapSearchOperationalPointProps = {
-  updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
 };
 
-const MapSearchOperationalPoint = ({
-  updateExtViewport,
-  closeMapSearchPopUp,
-}: MapSearchOperationalPointProps) => {
-  const map = useSelector(getMap);
-
+const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperationalPointProps) => {
   const {
     searchTerm,
     chCodeFilter,
@@ -39,18 +31,19 @@ const MapSearchOperationalPoint = ({
     setSearchResults,
     setMainOperationalPointsOnly,
   } = useSearchOperationalPoint({ pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
-  const dispatch = useAppDispatch();
 
   const { t } = useTranslation();
+  const { selectSearchResult } = useMapSettingsActions();
+  const dispatch = useAppDispatch();
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
-    onResultSearchClick({
-      result,
-      map,
-      updateExtViewport,
-      dispatch,
-      title: result.name,
-    });
+    const lonlat = computeCoordinatesOnClick(result);
+    dispatch(
+      selectSearchResult({
+        label: result.name,
+        coordinates: lonlat,
+      })
+    );
     closeMapSearchPopUp();
   };
 

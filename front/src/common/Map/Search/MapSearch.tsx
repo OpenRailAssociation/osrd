@@ -2,15 +2,13 @@ import { useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
 import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
 import Tabs from 'common/Tabs';
-import type { Viewport } from 'reducers/map';
-import { updateViewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettingsActions } from 'reducers/globalMap';
+import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 
 import MapModalHeader from '../MapModalHeader';
@@ -18,11 +16,13 @@ import MapModalHeader from '../MapModalHeader';
 type MapSearchProps = {
   map?: MapRef;
   closeMapSearchPopUp: () => void;
+  mapSettings: MapSettings;
 };
 
-const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
+const MapSearch = ({ map, closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
+  const { smoothTravel } = mapSettings;
+  const { updateViewport } = useMapSettingsActions();
   const dispatch = useAppDispatch();
-  const { smoothTravel } = useSelector(getMap);
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
@@ -38,7 +38,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
       }
       dispatch(updateViewport(value));
     },
-    [dispatch, map]
+    [map, smoothTravel]
   );
 
   const { t } = useTranslation();
@@ -51,12 +51,7 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
           {
             id: 'station',
             label: t('mapSearch.operational-point'),
-            content: (
-              <MapSearchOperationalPoint
-                updateExtViewport={updateViewportChange}
-                closeMapSearchPopUp={closeMapSearchPopUp}
-              />
-            ),
+            content: <MapSearchOperationalPoint closeMapSearchPopUp={closeMapSearchPopUp} />,
           },
           {
             id: 'line',
@@ -65,18 +60,14 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
               <MapSearchLine
                 updateExtViewport={updateViewportChange}
                 closeMapSearchPopUp={closeMapSearchPopUp}
+                mapSettings={mapSettings}
               />
             ),
           },
           {
             id: 'signal',
             label: t('mapSearch.signal'),
-            content: (
-              <MapSearchSignal
-                updateExtViewport={updateViewportChange}
-                closeMapSearchPopUp={closeMapSearchPopUp}
-              />
-            ),
+            content: <MapSearchSignal closeMapSearchPopUp={closeMapSearchPopUp} />,
           },
         ]}
       />

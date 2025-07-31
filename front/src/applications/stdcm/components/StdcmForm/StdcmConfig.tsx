@@ -10,6 +10,8 @@ import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { MapSettings } from 'reducers/globalMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getActivePerimeter,
@@ -21,7 +23,6 @@ import {
   getStdcmProjectID,
   getStdcmRollingStockID,
   getStdcmScenarioID,
-  getStdcmSelectedLayers,
   getStdcmStudyID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
@@ -92,8 +93,14 @@ const StdcmConfig = ({
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
-  const stdcmLayers = useSelector(getStdcmSelectedLayers);
   const activePerimeter = useSelector(getActivePerimeter);
+
+  const mapSettings = useMapSettings();
+  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+
+  const updateMapSettings = (partialMapSettings: Partial<MapSettings>) => {
+    dispatch(updateMapSettingsAction(partialMapSettings));
+  };
 
   const [showMessage, setShowMessage] = useState(false);
 
@@ -334,8 +341,9 @@ const StdcmConfig = ({
             mapId="stdcm-map-config"
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
-            layersSettings={stdcmLayers}
             highlightedArea={activePerimeter}
+            mapSettings={mapSettings}
+            updateMapSettings={updateMapSettings}
           >
             <StdcmMapActivePerimeter />
           </DefaultBaseMap>

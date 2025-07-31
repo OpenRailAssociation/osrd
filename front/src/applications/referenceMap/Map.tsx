@@ -1,33 +1,30 @@
 import { useCallback, useMemo, useRef } from 'react';
 
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
-import type { Viewport } from 'reducers/map';
-import { updateViewport } from 'reducers/map';
-import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { Viewport } from 'reducers/globalMap/types';
+import { updateMapViewerViewport } from 'reducers/mapViewer';
 import { useAppDispatch } from 'store';
 
 const REFERENCE_MAP_ID = 'reference-map';
 
 const Map = () => {
   const dispatch = useAppDispatch();
-  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+  const mapSettings = useMapSettings();
+  const { layersSettings, viewport } = mapSettings;
+  const { removeMapSearchMarker } = useMapSettingsActions();
+
   const infraID = useInfraID();
-  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
 
   const mapRef = useRef<MapRef | null>(null);
 
-  const updateViewportChange = useCallback(
-    (value: Partial<Viewport>, { updateRouter } = { updateRouter: false }) => {
-      dispatch(updateViewport(value, `/map`, updateRouter));
-    },
-    [dispatch]
-  );
+  const updateViewportChange = useCallback((value: Partial<Viewport>) => {
+    dispatch(updateMapViewerViewport(value));
+  }, []);
 
   const resetPitchBearing = () => {
     updateViewportChange({
@@ -38,7 +35,7 @@ const Map = () => {
 
   const interactiveLayerIds = useMemo(
     () => (layersSettings.tvds ? ['chartis/osrd_tvd_section/geo'] : []),
-    [layersSettings]
+    [layersSettings.tvds]
   );
 
   return (
@@ -50,7 +47,7 @@ const Map = () => {
         viewPort={viewport}
         withInfraButton
         withMapKeyButton
-        layersSettings={layersSettings}
+        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={REFERENCE_MAP_ID}
@@ -58,16 +55,11 @@ const Map = () => {
         cursor="normal"
         infraId={infraID}
         interactiveLayerIds={interactiveLayerIds}
-        mapSearchMarker={mapSearchMarker}
-        mapStyle={mapStyle}
+        mapSettings={mapSettings}
         onClick={() => {
-          removeSearchItemMarkersOnMap(dispatch);
+          dispatch(removeMapSearchMarker());
         }}
-        showOSM={showOSM}
-        viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
-        terrain3DExaggeration={terrain3DExaggeration}
-        layersSettings={layersSettings}
       />
     </main>
   );

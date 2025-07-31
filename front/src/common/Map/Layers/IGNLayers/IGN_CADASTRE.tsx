@@ -1,12 +1,10 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
-
-import type { RootState } from 'reducers';
 
 import OrderedLayer from '../OrderedLayer';
 
 interface IGN_Cadastre_Props {
   layerOrder?: number;
+  showIGNCadastre?: boolean;
 }
 
 const IGN_Cadastre_Params: LayerProps = {
@@ -21,8 +19,7 @@ const IGN_Cadastre_Params: LayerProps = {
 };
 
 export default function IGN_CADASTRE(props: IGN_Cadastre_Props) {
-  const { layerOrder } = props;
-  const { showIGNCadastre } = useSelector((state: RootState) => state.map);
+  const { layerOrder, showIGNCadastre } = props;
 
   if (!showIGNCadastre) return null;
   return (

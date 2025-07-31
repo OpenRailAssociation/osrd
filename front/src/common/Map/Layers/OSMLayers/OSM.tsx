@@ -2,19 +2,18 @@ import { useEffect, useState } from 'react';
 
 import { get } from 'lodash';
 import { type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
-import { getShowOSM3dBuildings } from 'reducers/map/selectors';
-
-import OrderedLayer, { type OrderedLayerProps } from '../OrderedLayer';
+import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import type { MapStyle } from 'reducers/globalMap/types';
 
 interface OSMProps {
-  mapStyle: string;
   mapIsLoaded?: boolean;
   layerOrder?: number;
+  mapStyle: MapStyle;
+  showOSM3dBuildings?: boolean;
 }
 
 function getMapStyle(mapStyle: string): LayerProps[] {
@@ -69,11 +68,10 @@ export function genOSMLayers(mapStyle: string, toggledLayers: ToggledLayers, lay
   ));
 }
 
-function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
+function OSM({ layerOrder, mapIsLoaded, mapStyle, showOSM3dBuildings }: OSMProps) {
   // Hack to full reload layers to avoid glitches
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
-  const showOSM3dBuildings = useSelector(getShowOSM3dBuildings);
 
   useEffect(() => setReload(true), [mapStyle, mapIsLoaded]);
   useEffect(() => {

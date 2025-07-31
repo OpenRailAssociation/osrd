@@ -1,7 +1,6 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 import OrderedLayer from './OrderedLayer';
 
@@ -19,12 +18,10 @@ const hillshadeParams: LayerProps = {
 };
 
 const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
-  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
-
-  if (mapStyle !== 'normal' || terrain3DExaggeration === 0) {
+  const { terrain3DExaggeration } = useMapSettings();
+  if (mapStyle !== 'normal' || !terrain3DExaggeration) {
     return null;
   }
-
   return <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />;
 };
 

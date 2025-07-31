@@ -1,18 +1,13 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
-
-import type { RootState } from 'reducers';
 
 import OrderedLayer from '../OrderedLayer';
 
 interface IGN_SCAN25_Props {
   layerOrder?: number;
+  showIGNSCAN25?: boolean;
 }
 
-export default function IGN_SCAN25(props: IGN_SCAN25_Props) {
-  const { layerOrder } = props;
-  const { showIGNSCAN25 } = useSelector((state: RootState) => state.map);
-
+export default function IGN_SCAN25({ layerOrder, showIGNSCAN25 }: IGN_SCAN25_Props) {
   const IGN_SCAN25_Params: LayerProps = {
     source: 'orthophoto',
     type: 'raster',

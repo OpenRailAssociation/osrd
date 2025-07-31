@@ -48,7 +48,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
       const newViewport = {
-        ...map.viewport,
+        ...map.mapSettings.viewport,
         longitude: lngLat[0],
         latitude: lngLat[1],
         zoom: 16,
@@ -59,7 +59,10 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
 
   const seeWholeItinerary = () => {
     if (pathProperties) {
-      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), map.viewport);
+      const newViewport = computeBBoxViewport(
+        bbox(pathProperties.geometry),
+        map.mapSettings.viewport
+      );
       dispatch(updateViewport(newViewport));
     }
   };
