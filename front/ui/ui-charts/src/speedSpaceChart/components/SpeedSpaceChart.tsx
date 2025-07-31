@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Slider } from '@osrd-project/ui-core';
+
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
-import { LINEAR_LAYERS_HEIGHTS, MARGINS } from './const';
-import { resetZoom } from './helpers/layersManager';
+import { LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
+import { computeLeftOffsetOnZoom, resetZoom } from './helpers/layersManager';
 import {
   AxisLayerY,
   CurveLayer,
@@ -18,7 +20,7 @@ import {
   TickLayerX,
   TickLayerYRight,
 } from './layers/index';
-import { getGraphOffsets } from './utils';
+import { clamp, getGraphOffsets } from './utils';
 import type { Data, Store } from '../types';
 
 export type SpeedSpaceChartProps = {
@@ -196,9 +198,31 @@ const SpeedSpaceChart = ({
         width: `${width}px`,
         height: `${height}px`,
         backgroundColor: `${backgroundColor}`,
+        position: 'relative',
       }}
       tabIndex={0}
     >
+      <div className="speed-space-slider-container">
+        <Slider
+          className="speed-space-slider"
+          width={ZOOM_CONFIG.SLIDER_WIDTH}
+          min={Math.log(ZOOM_CONFIG.MIN_RATIO) / Math.log(1.1)}
+          max={Math.log(ZOOM_CONFIG.MAX_RATIO) / Math.log(1.1)}
+          value={Math.log(store.ratioX) / Math.log(1.1)}
+          onChange={(e) => {
+            const value = clamp(
+              Math.pow(1.1, Number(e.target.value)),
+              ZOOM_CONFIG.MIN_RATIO,
+              ZOOM_CONFIG.MAX_RATIO
+            );
+            setStore((prev) => ({
+              ...prev,
+              ratioX: value,
+              leftOffset: computeLeftOffsetOnZoom(value),
+            }));
+          }}
+        />
+      </div>
       <div
         className="flex justify-end absolute base-margin-top"
         style={{ width: adjustedWidthRightAxis }}

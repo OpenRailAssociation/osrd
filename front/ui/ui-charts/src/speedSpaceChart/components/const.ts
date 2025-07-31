@@ -87,3 +87,9 @@ export const COLOR_DICTIONARY: ColorDictionary = {
   '#EAA72B': '#EAA72B',
   '#94918E': '#94918E',
 };
+
+export const ZOOM_CONFIG = {
+  MIN_RATIO: 1,
+  MAX_RATIO: 50,
+  SLIDER_WIDTH: 100,
+};

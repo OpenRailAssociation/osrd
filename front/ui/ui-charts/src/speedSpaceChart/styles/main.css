@@ -191,3 +191,12 @@
   font-weight: 400;
   line-height: 1.25rem;
 }
+
+.speed-space-slider-container {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  line-height: normal;
+  padding: 14px 12px 14px 9px;
+}
