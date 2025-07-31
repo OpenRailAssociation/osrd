@@ -323,7 +323,7 @@ impl AsCoreRequest<Json<Response>> for Request {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/standalone_simulation";
 
-    fn infra_id(&self) -> Option<i64> {
-        Some(self.infra)
+    fn worker_id(&self) -> Option<String> {
+        Some(self.infra.to_string())
     }
 }
