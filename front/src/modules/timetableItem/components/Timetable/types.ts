@@ -142,6 +142,8 @@ export type PairingItem = {
     }
 );
 
+export type RoundTripsColumnPair = { pair: [PairingItem, PairingItem]; isValid: boolean };
+
 export type PairingCandidates = {
   suggestions: PairingItem[];
   others: PairingItem[];
