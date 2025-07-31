@@ -644,6 +644,7 @@
       "tvds": "Circuits de voie"
     },
     "map-layers": "Couches de données",
+    "map-style": "Style de la carte",
     "mapSettings": "Paramètres cartographie",
     "mapstyles": {
       "darkmode": "Sombre",

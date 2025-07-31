@@ -22,7 +22,7 @@ import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapTheme';
 import { useInfraID } from 'common/osrdContext';
 import { editorSliceActions } from 'reducers/editor';
 import { updateLayersSettings } from 'reducers/map';

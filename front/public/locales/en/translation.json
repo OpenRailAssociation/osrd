@@ -644,6 +644,7 @@
       "tvds": "Track circuits"
     },
     "map-layers": "Data layers",
+    "map-style": "Map style",
     "mapSettings": "Map settings",
     "mapstyles": {
       "darkmode": "Dark",
