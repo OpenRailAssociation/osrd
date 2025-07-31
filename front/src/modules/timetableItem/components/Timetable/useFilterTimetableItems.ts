@@ -82,12 +82,6 @@ const useFilterTimetableItems = (
         }
       }
 
-      // Apply train type filter
-      if (trainTypeFilter !== 'both') {
-        if (trainTypeFilter === 'pacedTrain' && isTrainScheduleId(timetableItem.id)) return false;
-        if (trainTypeFilter === 'trainSchedule' && isPacedTrainId(timetableItem.id)) return false;
-      }
-
       // Apply tag filter
       if (selectedTags.size > 0) {
         const itemTag = extractTagCode(timetableItem.speedLimitTag);
@@ -174,7 +168,16 @@ const useFilterTimetableItems = (
   );
 
   const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
-    () => timetableItems.filter((timetableItem) => filterTimetableItem(timetableItem)),
+    () =>
+      timetableItems.filter((timetableItem) => {
+        if (!isPacedTrainWithDetails(timetableItem)) {
+          if (trainTypeFilter === 'pacedTrain') return false;
+          return filterTimetableItem(timetableItem);
+        }
+
+        if (trainTypeFilter === 'trainSchedule') return false;
+        return filterTimetableItem(timetableItem);
+      }),
     [timetableItems, filterTimetableItem]
   );
 
