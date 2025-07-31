@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
+import { type PropsWithChildren, useCallback, useEffect, useRef } from 'react';
 
 import bbox from '@turf/bbox';
 import type { Geometry } from 'geojson';
@@ -14,8 +14,7 @@ import ItineraryLayer from 'modules/timetableItem/components/ManageTimetableItem
 import ItineraryMarkers, {
   type MarkerInformation,
 } from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
-import { mapInitialState } from 'reducers/map';
-import type { Viewport, LayersSettings } from 'reducers/map';
+import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 
 type DefaultBaseMapProps = {
   mapId: string;
@@ -23,7 +22,8 @@ type DefaultBaseMapProps = {
   geometry?: GeoJsonLineString;
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
-  layersSettings: LayersSettings;
+  mapSettings: MapSettings;
+  updateMapSettings: (mapSettings: Partial<MapSettings>) => void;
   highlightedArea?: Geometry;
 };
 
@@ -41,23 +41,22 @@ const DefaultBaseMap = ({
   pathStepMarkers = [],
   isFeasible = true,
   children,
-  layersSettings,
+  mapSettings,
+  updateMapSettings,
   highlightedArea,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
   const mapRef = useRef<MapRef | null>(null);
-  const [viewPort, setViewPort] = useState(mapInitialState.viewport);
-  const updateViewportChange = useCallback(
-    (partialViewPort: Partial<Viewport>) =>
-      setViewPort((prev) => ({
-        ...prev,
-        ...partialViewPort,
-      })),
-    []
-  );
+  const { viewport } = mapSettings;
 
+  const updateViewportChange = useCallback(
+    (partialViewPort: Partial<Viewport>) => {
+      updateMapSettings({ viewport: { ...viewport, ...partialViewPort } });
+    },
+    [updateMapSettings, viewport]
+  );
   const resetPitchBearing = () => {
     updateViewportChange({
-      ...viewPort,
+      ...viewport,
       bearing: 0,
       pitch: 0,
     });
@@ -65,14 +64,14 @@ const DefaultBaseMap = ({
 
   const zoomIn = () => {
     updateViewportChange({
-      ...viewPort,
-      zoom: (viewPort.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
+      ...viewport,
+      zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
     });
   };
   const zoomOut = () => {
     updateViewportChange({
-      ...viewPort,
-      zoom: (viewPort.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
+      ...viewport,
+      zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
     });
   };
 
@@ -82,7 +81,7 @@ const DefaultBaseMap = ({
       type: 'LineString',
     };
     if (points.coordinates.length >= 2) {
-      const newViewport = computeBBoxViewport(bbox(points), viewPort);
+      const newViewport = computeBBoxViewport(bbox(points), viewport);
       updateViewportChange(newViewport);
     }
   }, [geometry, pathStepMarkers]);
@@ -94,25 +93,22 @@ const DefaultBaseMap = ({
         zoomOut={zoomOut}
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
-        bearing={viewPort.bearing}
+        bearing={viewport.bearing}
         withMapKeyButton={false}
         withSearchButton={false}
-        viewPort={viewPort}
+        viewPort={viewport}
         isNewButtons
-        compact
-        layersSettings={layersSettings}
+        compactModal
+        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={mapId}
         mapRef={mapRef}
         infraId={infraId}
         interactiveLayerIds={[]}
-        mapStyle={mapInitialState.mapStyle}
-        viewPort={viewPort}
         updatePartialViewPort={updateViewportChange}
         hideAttribution
-        showOSM
-        layersSettings={layersSettings}
+        mapSettings={mapSettings}
         highlightedArea={highlightedArea}
       >
         <ItineraryLayer

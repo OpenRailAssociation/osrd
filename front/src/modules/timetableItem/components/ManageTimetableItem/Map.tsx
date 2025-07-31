@@ -5,21 +5,18 @@ import type { Feature, Point } from 'geojson';
 import { compact } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { SnappedMarker } from 'common/Map/Layers';
-import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import AddPathStepPopup from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/AddPathStepPopup';
-import { updateViewport } from 'reducers/map';
-import type { Viewport } from 'reducers/map';
-import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -56,9 +53,13 @@ const Map = ({
   isFeasible = true,
   children,
 }: PropsWithChildren<MapProps>) => {
+  const dispatch = useAppDispatch();
+
   const infraID = useInfraID();
-  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
-  const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+  const mapSettings = useMapSettings();
+  const { viewport, layersSettings } = mapSettings;
+  const { removeMapSearchMarker, updateViewport } = useMapSettingsActions();
+
   const mapRef = useRef<MapRef | null>(null);
   const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
 
@@ -66,9 +67,11 @@ const Map = ({
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
-  const dispatch = useAppDispatch();
+
   const updateViewportChange = useCallback(
-    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => {
+      dispatch(updateViewport(value));
+    },
     [dispatch]
   );
 
@@ -110,7 +113,7 @@ const Map = ({
     } else {
       setFeatureInfoClick(undefined);
     }
-    removeSearchItemMarkersOnMap(dispatch);
+    dispatch(removeMapSearchMarker());
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
@@ -184,6 +187,7 @@ const Map = ({
         withMapKeyButton
         viewPort={viewport}
         isNewButtons
+        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={mapId}
@@ -193,18 +197,13 @@ const Map = ({
         hoveredOperationalPointId={hoveredOperationalPointId}
         infraId={infraID}
         interactiveLayerIds={interactiveLayerIds}
-        mapSearchMarker={mapSearchMarker}
-        mapStyle={mapStyle}
         onClick={onFeatureClick}
         onIdle={() => {
           captureMap(viewport, mapId, setMapCanvas, pathGeometry);
         }}
         onMouseMove={onMoveGetFeature}
-        showOSM={showOSM}
-        viewPort={viewport}
+        mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
-        terrain3DExaggeration={terrain3DExaggeration}
-        layersSettings={layersSettings}
       >
         {!showStdcmAssets && featureInfoClick && (
           <AddPathStepPopup

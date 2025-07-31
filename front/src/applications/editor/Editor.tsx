@@ -29,13 +29,13 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import useInfra from 'modules/infra/useInfra';
-import type { EditorSliceActions } from 'reducers/editor';
+import { type EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { Viewport } from 'reducers/globalMap/types';
 import { setFailure } from 'reducers/main';
 import { getIsLoading } from 'reducers/main/mainSelector';
-import { updateViewport, type Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -50,6 +50,9 @@ const Editor = () => {
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
   const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;
+
+  const { updateViewport: updateViewportAction } = useMapSettingsActions();
+
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
   const infraID = useInfraID();
@@ -106,11 +109,11 @@ const Editor = () => {
     forceRender();
   }, [switchTool, forceRender]);
 
-  const { mapStyle, viewport } = useSelector(getMap);
+  const { mapStyle, viewport } = useMapSettings();
 
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {
-      dispatch(updateViewport(value));
+      dispatch(updateViewportAction(value));
     },
     [dispatch]
   );
@@ -474,6 +477,7 @@ const Editor = () => {
                 <MapSearch
                   map={mapRef.current!}
                   closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
+                  mapSettings={editorState.mapSettings}
                 />
               )}
 
@@ -489,6 +493,7 @@ const Editor = () => {
                   activeTool: toolAndState.tool,
                 }}
                 viewPort={viewport}
+                mapSettings={editorState.mapSettings}
               />
 
               {mapRef.current &&

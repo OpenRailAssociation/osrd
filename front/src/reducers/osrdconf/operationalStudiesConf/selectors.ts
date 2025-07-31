@@ -56,6 +56,8 @@ const buildOperationalStudiesConfSelectors = () => {
     getTimeWindow: makeOsrdConfSelector('timeWindow'),
     getInterval: makeOsrdConfSelector('interval'),
     getAddedExceptions: makeOsrdConfSelector('addedExceptions'),
+
+    getMapSettings: makeOsrdConfSelector('mapSettings'),
   };
 };
 
@@ -90,6 +92,8 @@ export const {
   getTimeWindow,
   getInterval,
   getAddedExceptions,
+
+  getMapSettings,
 } = selectors;
 
 export type OperationalStudiesConfSelectors = typeof selectors;

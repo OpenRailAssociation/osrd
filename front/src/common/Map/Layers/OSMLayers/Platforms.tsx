@@ -1,7 +1,6 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
-import type { RootState } from 'reducers';
+import { useMapSettings } from 'reducers/globalMap';
 import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
@@ -28,7 +27,7 @@ export function Platforms(props: PlatformsProps) {
 }
 
 function PlatformsState(props: PlatformsProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const { layersSettings } = useMapSettings();
 
   if (!layersSettings.platforms) return null;
   return <Platforms {...props} />;

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -12,15 +11,14 @@ import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapMarkers, { type MapMarker } from 'common/Map/components/MapMarkers';
-import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { MARKER_TYPE } from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
-import { updateViewport, type Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 
 import Itinerary from './RenderItinerary';
@@ -42,8 +40,10 @@ const SimulationResultMap = ({
 
   const infraID = useInfraID();
   const { getTrackSectionsByIds } = useScenarioContext();
-  const { viewport, mapSearchMarker, mapStyle, showOSM, terrain3DExaggeration, layersSettings } =
-    useSelector(getMap);
+
+  const mapSettings = useMapSettings();
+  const { removeMapSearchMarker, updateViewport } = useMapSettingsActions();
+  const { viewport } = mapSettings;
 
   const mapRef = React.useRef<MapRef>(null);
 
@@ -90,7 +90,9 @@ const SimulationResultMap = ({
   );
 
   const updateViewportChange = useCallback(
-    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => {
+      dispatch(updateViewport(value));
+    },
     [dispatch]
   );
 
@@ -117,6 +119,7 @@ const SimulationResultMap = ({
         withMapKeyButton
         viewPort={viewport}
         isNewButtons
+        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={MAP_ID}
@@ -124,19 +127,14 @@ const SimulationResultMap = ({
         cursor="pointer"
         infraId={infraID}
         interactiveLayerIds={interactiveLayerIds}
-        mapSearchMarker={mapSearchMarker}
-        mapStyle={mapStyle}
         onClick={() => {
-          removeSearchItemMarkersOnMap(dispatch);
+          dispatch(removeMapSearchMarker());
         }}
         onIdle={() => {
           captureMap(viewport, MAP_ID, setMapCanvas, geometry);
         }}
-        showOSM={showOSM}
-        viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
-        terrain3DExaggeration={terrain3DExaggeration}
-        layersSettings={layersSettings}
+        mapSettings={mapSettings}
       >
         {geojsonPath && (
           <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />

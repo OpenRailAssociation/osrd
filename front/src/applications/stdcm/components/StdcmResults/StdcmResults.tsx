@@ -13,12 +13,14 @@ import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { MapSettings } from 'reducers/globalMap/types';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
   getStdcmInfraID,
-  getStdcmSelectedLayers,
 } from 'reducers/osrdconf/stdcmConf/selectors';
+import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import StdcmDebugResults from './StdcmDebugResults';
@@ -49,13 +51,19 @@ const StdcmResults = ({
   displayInfoMessage,
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
+  const dispatch = useAppDispatch();
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
 
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
-  const layersSettings = useSelector(getStdcmSelectedLayers);
+  const mapSettings = useMapSettings();
+  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+
+  const updateMapSettings = (partialMapSettings: Partial<MapSettings>) => {
+    dispatch(updateMapSettingsAction(partialMapSettings));
+  };
 
   const { outputs, alternativePath } = selectedSimulation;
 
@@ -210,7 +218,8 @@ const StdcmResults = ({
                 geometry={outputs?.pathProperties?.geometry}
                 pathStepMarkers={markersInfo}
                 isFeasible={!hasConflictResults}
-                layersSettings={layersSettings}
+                mapSettings={mapSettings}
+                updateMapSettings={updateMapSettings}
               />
             </div>
           </div>

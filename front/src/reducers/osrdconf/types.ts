@@ -22,8 +22,8 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { MapSettings } from 'reducers/globalMap/types';
 import type { InfraState } from 'reducers/infra';
-import type { LayersSettings } from 'reducers/map';
 import type { Duration } from 'utils/duration';
 
 export type OsrdConfState = InfraState & {
@@ -34,6 +34,7 @@ export type OsrdConfState = InfraState & {
   electricalProfileSetId?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
+  mapSettings: MapSettings;
 };
 
 export type StandardAllowance = {
@@ -63,7 +64,6 @@ export type OperationalStudiesConfState = OsrdConfState & {
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {
-  layersSettings: LayersSettings;
   stdcmPathSteps: StdcmPathStep[];
   margins: {
     standardAllowance?: StandardAllowance;

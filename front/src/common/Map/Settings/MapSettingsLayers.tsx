@@ -3,7 +3,6 @@ import { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
-import { useSelector } from 'react-redux';
 
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
@@ -11,12 +10,11 @@ import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
-import type { RootState } from 'reducers';
-import { updateLayersSettings } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { MapState } from 'reducers/map';
 import { useAppDispatch } from 'store';
 
-type LayerSettings = RootState['map']['layersSettings'];
+type LayerSettings = MapState['mapSettings']['layersSettings'];
 
 interface FormatSwitchProps {
   name: keyof Omit<LayerSettings, 'speedlimittag'>;
@@ -27,13 +25,13 @@ interface FormatSwitchProps {
 export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { layersSettings } = useSelector(getMap);
+  const { layersSettings } = useMapSettings();
+  const { updateLayersSettings } = useMapSettingsActions();
 
   const setLayerSettings = useCallback(
     (setting: keyof LayerSettings) => {
       dispatch(
         updateLayersSettings({
-          ...layersSettings,
           [setting]: !layersSettings[setting],
         })
       );

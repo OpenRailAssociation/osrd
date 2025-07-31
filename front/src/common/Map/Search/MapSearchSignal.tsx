@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
@@ -15,18 +14,16 @@ import SignalCard from 'common/Map/Search/SignalCard';
 import {
   createMapSearchQuery,
   createTrackSystemQuery,
-  onResultSearchClick,
+  computeCoordinatesOnClick,
 } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
+import { useMapSettingsActions } from 'reducers/globalMap';
 import { setFailure } from 'reducers/main';
-import { updateLayersSettings, type Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
 
 type MapSearchSignalProps = {
-  updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
 };
 
@@ -35,9 +32,10 @@ export type SortType = {
   asc: boolean;
 };
 
-const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSignalProps) => {
-  const map = useSelector(getMap);
+const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
   const infraID = useInfraID();
+  const { selectSearchResult, updateLayersSettings } = useMapSettingsActions();
+
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
   const { t } = useTranslation();
@@ -128,7 +126,6 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     // display signals
     dispatch(
       updateLayersSettings({
-        ...map.layersSettings,
         signals: true,
       })
     );
@@ -169,13 +166,14 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
   }, [debouncedSearchTerm, debouncedSearchLine, signalSystem, selectedSettings]);
 
   const onResultClick = (result: SearchResultItemSignal) => {
-    onResultSearchClick({
-      result,
-      map,
-      updateExtViewport,
-      dispatch,
-      title: result.label,
-    });
+    const lonlat = computeCoordinatesOnClick(result);
+
+    dispatch(
+      selectSearchResult({
+        label: result.label,
+        coordinates: lonlat,
+      })
+    );
 
     closeMapSearchPopUp();
   };

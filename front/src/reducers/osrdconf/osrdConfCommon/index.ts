@@ -1,6 +1,7 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
+import { defaultMapSettings, buildMapStateReducer } from 'reducers/globalMap';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import type {
   OperationalStudiesConfSlice,
@@ -19,6 +20,7 @@ export const defaultCommonConf: OsrdConfState = {
   electricalProfileSetId: undefined,
   rollingStockID: undefined,
   speedLimitByTag: undefined,
+  mapSettings: defaultMapSettings,
   ...infraState,
 };
 
@@ -35,6 +37,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
   return {
     ...buildInfraStateReducers<S>(),
+    ...buildMapStateReducer<OsrdConfState>(),
     updateProjectID(state: Draft<S>, action: PayloadAction<S['projectID']>) {
       state.projectID = action.payload;
     },

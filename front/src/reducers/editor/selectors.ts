@@ -17,6 +17,7 @@ const selectors = {
   getEditorLayers: makeEditorSelector('editorLayers'),
   getEditorSchema: makeEditorSelector('editorSchema'),
   getInfraLockStatus,
+  getMapSettings: makeEditorSelector('mapSettings'),
 };
 
 export type EditorSelectors = typeof selectors;

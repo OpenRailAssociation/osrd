@@ -31,7 +31,8 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 
 const emptyFeatureCollection = featureCollection([]);
@@ -58,7 +59,11 @@ export const SpeedSectionEditionLayers = () => {
   const isPermanentSpeedLimit = speedSectionIsPsl(entity);
   const isSpeedRestriction = speedSectionIsSpeedRestriction(entity);
 
-  const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle, showIGNBDORTHO } = useMapSettings();
   const infraID = useInfraID();
   const selection = useMemo(() => {
     const res: string[] = [entity.properties.id];

@@ -2,29 +2,33 @@ import { useEffect, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { BoundingBox, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
-import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
-import type { Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettingsActions } from 'reducers/globalMap';
+import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
+  mapSettings: MapSettings;
 };
 
-const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLineProps) => {
+const MapSearchLine = ({
+  updateExtViewport,
+  closeMapSearchPopUp,
+  mapSettings,
+}: MapSearchLineProps) => {
   const infraID = useInfraID();
-  const map = useSelector(getMap);
-  const { t } = useTranslation();
   const dispatch = useAppDispatch();
+
+  const { t } = useTranslation();
+  const { updateMapSettings } = useMapSettingsActions();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<SearchResultItemTrack[]>([]);
@@ -64,8 +68,8 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   const coordinates = (search: BoundingBox) => search;
 
   const onResultClick = async (searchResultItem: SearchResultItemTrack) => {
-    if (map.mapSearchMarker) {
-      dispatch(updateMapSearchMarker(undefined));
+    if (mapSettings.mapSearchMarker) {
+      dispatch(updateMapSettings({ mapSearchMarker: undefined }));
     }
     await getTrackPath({ infraId: infraID!, lineCode: searchResultItem.line_code })
       .unwrap()
@@ -74,13 +78,13 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
           type: 'LineString',
           coordinates: coordinates(trackPath),
         });
-        const newViewport = computeBBoxViewport(boundaries, map.viewport);
+        const newViewport = computeBBoxViewport(boundaries, mapSettings.viewport);
         updateExtViewport(newViewport);
       })
       .catch(() => {
-        dispatch(updateLineSearchCode(undefined));
+        dispatch(updateMapSettings({ lineSearchCode: undefined }));
       });
-    dispatch(updateLineSearchCode(searchResultItem.line_code));
+    dispatch(updateMapSettings({ lineSearchCode: searchResultItem.line_code }));
     closeMapSearchPopUp();
   };
 

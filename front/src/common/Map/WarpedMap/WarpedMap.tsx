@@ -5,7 +5,6 @@ import type { Feature, FeatureCollection, LineString } from 'geojson';
 import { groupBy, map, omit } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
 import colors from 'common/Map/Consts/colors';
@@ -22,7 +21,7 @@ import {
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 type WarpedMapProps = {
   bbox: BBox2d;
@@ -50,7 +49,7 @@ const WarpedMap = ({
 
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
-  const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
+  const { mapStyle, layersSettings, showIGNBDORTHO } = useMapSettings();
 
   // Main OSM and OSRD data:
   const layerContext: LayerContext = useMemo(

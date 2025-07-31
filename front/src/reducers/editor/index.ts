@@ -5,11 +5,17 @@ import type { InfraErrorLevel } from 'applications/editor/components/InfraErrors
 import type { Layer } from 'applications/editor/consts';
 import type { EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { InfraErrorTypeLabel } from 'common/api/osrdEditoastApi';
+import { buildMapStateReducer, defaultMapSettings } from 'reducers/globalMap';
+import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 
 export interface EditorState extends InfraState {
   editorSchema: EditorSchema;
+  mapSettings: MapSettings;
   editorLayers: Set<Layer>;
+  issuesSettings?: {
+    types: Array<InfraErrorTypeLabel>;
+  };
   issues: {
     total: number;
     filterTotal: number;
@@ -21,6 +27,7 @@ export interface EditorState extends InfraState {
 export const editorInitialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
+  mapSettings: defaultMapSettings,
   // ID of selected layers on which we are working
   editorLayers: new Set(['operational_points', 'track_sections']),
   // Editor issue management
@@ -38,6 +45,13 @@ export const editorSlice = createSlice({
   initialState: editorInitialState,
   reducers: {
     ...buildInfraStateReducers<EditorState>(),
+    ...buildMapStateReducer<EditorState>(),
+    updateEditorViewportAction: (state, action: PayloadAction<Partial<Viewport>>) => {
+      state.mapSettings.viewport = { ...state.mapSettings.viewport, ...action.payload };
+    },
+    updateIssuesSettings: (state, action: PayloadAction<EditorState['issuesSettings']>) => {
+      state.issuesSettings = action.payload;
+    },
     selectLayers(state, action: PayloadAction<EditorState['editorLayers']>) {
       state.editorLayers = action.payload;
     },
@@ -65,6 +79,14 @@ export const editorSlice = createSlice({
   },
 });
 export const editorSliceActions = editorSlice.actions;
+
+export const {
+  updateIssuesSettings,
+  selectLayers,
+  loadDataModelAction,
+  updateTotalsIssueAction,
+  updateFiltersIssueAction,
+} = editorSliceActions;
 
 export type EditorSliceActions = typeof editorSlice.actions;
 

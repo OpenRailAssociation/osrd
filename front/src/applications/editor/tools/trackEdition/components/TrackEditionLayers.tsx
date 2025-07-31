@@ -12,7 +12,8 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs } from 'common/Map/Layers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 export const TRACK_COLOR = '#666';
 export const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
@@ -23,7 +24,11 @@ const TrackEditionLayers = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
 

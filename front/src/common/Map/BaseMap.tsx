@@ -17,17 +17,16 @@ import {
   useMapBlankStyle,
 } from 'common/Map/Layers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { MapState, Viewport } from 'reducers/map';
+import type { Viewport } from 'reducers/globalMap/types';
+import type { MapState } from 'reducers/map';
 
 import { CUSTOM_ATTRIBUTION } from './const';
 
-type MapProps = Pick<MapState, 'layersSettings' | 'mapSearchMarker' | 'mapStyle' | 'showOSM'> & {
+type MapProps = Pick<MapState, 'mapSettings'> & {
   mapId: string;
   mapRef: MutableRefObject<MapRef | null>;
   interactiveLayerIds: string[];
   infraId?: number;
-  terrain3DExaggeration?: number;
-  viewPort: Viewport;
   updatePartialViewPort: (
     newPartialViewPort: Partial<Viewport>,
     options?: { updateRouter: boolean }
@@ -52,21 +51,16 @@ const BaseMap = ({
   mapRef,
   children,
   interactiveLayerIds,
-  viewPort,
   infraId,
-  mapSearchMarker,
-  mapStyle,
-  showOSM,
+  mapSettings,
   cursor = 'default',
   hideAttribution = false,
   hoveredOperationalPointId,
-  terrain3DExaggeration,
   updatePartialViewPort,
   onClick,
   onMouseEnter,
   onMouseMove,
   onIdle,
-  layersSettings,
   highlightedArea,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
@@ -75,6 +69,18 @@ const BaseMap = ({
 
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
 
+  const {
+    viewport,
+    mapStyle,
+    layersSettings,
+    showOSM,
+    terrain3DExaggeration,
+    mapSearchMarker,
+    lineSearchCode,
+    showIGNBDORTHO,
+    showIGNSCAN25,
+    showIGNCadastre,
+  } = mapSettings;
   useEffect(() => {
     if (urlLat) {
       updatePartialViewPort({
@@ -92,7 +98,7 @@ const BaseMap = ({
     <ReactMapGL
       id={mapId}
       ref={mapRef}
-      {...viewPort}
+      {...viewport}
       interactiveLayerIds={interactiveLayerIds}
       canvasContextAttributes={{ preserveDrawingBuffer: true }}
       cursor={cursor}
@@ -155,11 +161,16 @@ const BaseMap = ({
         mapStyle={mapStyle}
         showOSM={showOSM && mapIsLoaded}
       />
-      <IGNLayers />
+      <IGNLayers
+        showIGNBDORTHO={showIGNBDORTHO}
+        showIGNCadastre={showIGNCadastre}
+        showIGNSCAN25={showIGNSCAN25}
+      />
 
       <LineSearchLayer
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
         infraID={infraId}
+        lineSearchCode={lineSearchCode}
       />
 
       {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}

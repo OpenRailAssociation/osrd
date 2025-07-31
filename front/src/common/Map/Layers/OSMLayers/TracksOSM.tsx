@@ -1,7 +1,5 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
-import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
@@ -9,12 +7,10 @@ import OrderedLayer from '../OrderedLayer';
 interface TracksOSMProps {
   colors: Theme;
   layerOrder: number;
+  showOSMtracksections?: boolean;
 }
 
-function TracksOSM(props: TracksOSMProps) {
-  const { showOSMtracksections } = useSelector((state: RootState) => state.map);
-  const { colors, layerOrder } = props;
-
+function TracksOSM({ colors, layerOrder, showOSMtracksections }: TracksOSMProps) {
   const railwayMinor: LayerProps = {
     id: 'railwayMinor',
     type: 'line',

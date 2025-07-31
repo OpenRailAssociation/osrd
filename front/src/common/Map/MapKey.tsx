@@ -1,16 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import colors from 'common/Map/Consts/colors';
-import { getMapStyle } from 'reducers/map/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 
 import { electrificationMapKey, type MapKeyProps, speedLimitMapKey } from './const';
 import MapModalHeader from './MapModalHeader';
 
 const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
   const { t } = useTranslation();
-  const mapStyle = useSelector(getMapStyle);
-
+  const { mapStyle } = useMapSettings();
   const speedLimits = speedLimitMapKey.map((key) => (
     <div className="mapkey-item" key={key.text}>
       <div className="mapkey-icon">

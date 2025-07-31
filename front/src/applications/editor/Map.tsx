@@ -29,11 +29,10 @@ import {
   VirtualLayers,
   useMapBlankStyle,
 } from 'common/Map/Layers';
-import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { getEditorState } from 'reducers/editor/selectors';
-import type { MapStyle, Viewport } from 'reducers/map';
-import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { MapStyle, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -70,6 +69,7 @@ const MapUnplugged = ({
   infraID,
 }: PropsWithChildren<MapProps>) => {
   const dispatch = useAppDispatch();
+  const { removeMapSearchMarker } = useMapSettingsActions();
   const mapBlankStyle = useMapBlankStyle();
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
@@ -79,9 +79,15 @@ const MapUnplugged = ({
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const { data: switchTypes } = useSwitchTypes(infraID);
   const editorState = useSelector(getEditorState);
-  const showOSM = useSelector(getShowOSM);
-  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
-
+  const {
+    showOSM,
+    terrain3DExaggeration,
+    mapSearchMarker,
+    lineSearchCode,
+    showIGNBDORTHO,
+    showIGNCadastre,
+    showIGNSCAN25,
+  } = useMapSettings();
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -109,8 +115,6 @@ const MapUnplugged = ({
     () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
     [activeTool, extendedContext, mapState]
   );
-
-  const { mapSearchMarker } = useSelector(getMap);
 
   return (
     <>
@@ -275,7 +279,7 @@ const MapUnplugged = ({
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);
             }
-            removeSearchItemMarkersOnMap(dispatch);
+            dispatch(removeMapSearchMarker());
           }}
         >
           <VirtualLayers />
@@ -290,11 +294,16 @@ const MapUnplugged = ({
           />
 
           <OSMLayers mapStyle={mapStyle} showOSM={showOSM} hidePlatforms />
-          <IGNLayers />
+          <IGNLayers
+            showIGNBDORTHO={showIGNBDORTHO}
+            showIGNCadastre={showIGNCadastre}
+            showIGNSCAN25={showIGNSCAN25}
+          />
 
           <LineSearchLayer
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
             infraID={infraID}
+            lineSearchCode={lineSearchCode}
           />
 
           {editorState.editorLayers.has('platforms') && (

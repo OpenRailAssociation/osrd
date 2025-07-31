@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
-import { useSelector } from 'react-redux';
 
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
 import type { Layer, EditoastType } from 'applications/editor/consts';
@@ -25,8 +24,7 @@ import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
 import { editorSliceActions } from 'reducers/editor';
-import { updateLayersSettings } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 
 export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }> = [
@@ -52,20 +50,28 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }
   },
 ];
 
-type LayersModalProps = {
+type EditorLayersModalProps = {
   initialLayers: Set<Layer>;
   selection?: EditorEntity[];
   frozenLayers?: Set<Layer>;
   onChange: (args: { newLayers: Set<Layer> }) => void;
 };
 
-const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: LayersModalProps) => {
+const EditorLayersModal = ({
+  initialLayers,
+  selection,
+  frozenLayers,
+  onChange,
+}: EditorLayersModalProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { layersSettings } = useSelector(getMap);
-  const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
 
   const infraID = useInfraID();
+  const mapSettings = useMapSettings();
+  const { mapStyle, layersSettings } = mapSettings;
+  const { updateLayersSettings } = useMapSettingsActions();
+
+  const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
@@ -192,14 +198,11 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
             id="speedLimitTag"
             className="form-control"
             value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
-            disabled={!isArray(allSpeedLimitTags)}
+            disabled={!isArray(allSpeedLimitTags) || !selectedLayers.has('speed_sections')}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               dispatch(
-                updateLayersSettings({
-                  ...layersSettings,
-                  speedlimittag: newTag,
-                })
+                updateLayersSettings({ ...mapSettings.layersSettings, speedlimittag: newTag })
               );
             }}
           >
@@ -214,8 +217,8 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
         <div>
           <h4>{t('Editor.nav.map-layers')}</h4>
         </div>
-        <MapSettingsMapStyle />
-        <MapSettingsBackgroundSwitches />
+        <MapSettingsMapStyle mapStyle={mapStyle} />
+        <MapSettingsBackgroundSwitches mapSettings={mapSettings} />
       </div>
 
       <div className="text-right">
@@ -229,4 +232,4 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
   );
 };
 
-export default LayersModal;
+export default EditorLayersModal;

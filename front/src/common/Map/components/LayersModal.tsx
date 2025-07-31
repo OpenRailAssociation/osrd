@@ -15,9 +15,13 @@ import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
+import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
-import type { LayersSettings } from 'reducers/map';
+import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
+import type { LayersSettings } from 'reducers/globalMap/types';
+import { useAppDispatch } from 'store';
 
 const LAYERS = [
   { layer: 'signals', icon: signalsIcon },
@@ -38,14 +42,18 @@ const LAYERS = [
   { layer: 'speed_limits', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
 ];
 
-type StdcmLayersModalProps = {
-  initialLayers: LayersSettings;
-  onChange: (args: LayersSettings) => void;
+type LayersModalProps = {
+  compactModal: boolean;
 };
 
-const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) => {
+const LayersModal = ({ compactModal }: LayersModalProps) => {
   const { t } = useTranslation();
-  const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(initialLayers);
+  const dispatch = useAppDispatch();
+
+  const mapSettings = useMapSettings();
+  const { layersSettings, mapStyle } = mapSettings;
+  const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
+  const { updateLayersSettings } = useMapSettingsActions();
 
   const infraID = useInfraID();
 
@@ -60,6 +68,7 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
     const allSpeedLimitTags = uniq(speedLimitTagsByInfraId).sort();
     return [t('Editor.layers-modal.noSpeedLimitByTag'), ...allSpeedLimitTags];
   }, [t, speedLimitTagsByInfraId]);
+
   const toggleLayer = useCallback(
     (layer: keyof LayersSettings) => {
       const isEnabled = !selectedLayers[layer];
@@ -70,9 +79,9 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
       };
 
       setSelectedLayers(updatedLayers);
-      onChange(updatedLayers);
+      dispatch(updateLayersSettings(updatedLayers));
     },
-    [selectedLayers, onChange]
+    [selectedLayers, dispatch, updateLayersSettings]
   );
 
   return (
@@ -115,7 +124,7 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               const newLayers = { ...selectedLayers, speedlimittag: newTag };
-              onChange(newLayers);
+              dispatch(updateLayersSettings(newLayers));
               setSelectedLayers(newLayers);
             }}
           >
@@ -127,9 +136,15 @@ const StdcmLayersModal = ({ initialLayers, onChange }: StdcmLayersModalProps) =>
           </select>
         </div>
         <hr />
+        {!compactModal && (
+          <>
+            <MapSettingsMapStyle mapStyle={mapStyle} />
+            <MapSettingsBackgroundSwitches mapSettings={mapSettings} />
+          </>
+        )}
       </div>
     </Modal>
   );
 };
 
-export default StdcmLayersModal;
+export default LayersModal;

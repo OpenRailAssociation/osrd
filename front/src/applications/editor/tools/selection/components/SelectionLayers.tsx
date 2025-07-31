@@ -10,7 +10,8 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import { GeoJSONs } from 'common/Map/Layers';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
+import { getEditorState } from 'reducers/editor/selectors';
+import { useMapSettings } from 'reducers/globalMap';
 import type { Zone } from 'types';
 import { zoneToFeature } from 'utils/mapHelper';
 
@@ -26,7 +27,11 @@ const SelectionLayers = () => {
     editorState: { editorLayers },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
-  const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
+  const {
+    mapSettings: { layersSettings },
+    issuesSettings,
+  } = useSelector(getEditorState);
+  const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
 

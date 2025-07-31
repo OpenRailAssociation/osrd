@@ -5,6 +5,7 @@ import type {
   TrainCategory,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
+import { defaultMapSettings } from 'reducers/globalMap';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,
@@ -61,6 +62,7 @@ describe('formatTimetableItemPayload', () => {
         uic: 6,
       },
     ],
+    mapSettings: defaultMapSettings,
     constraintDistribution: 'MARECO',
     usingElectricalProfiles: true,
     usingSpeedLimits: true,
