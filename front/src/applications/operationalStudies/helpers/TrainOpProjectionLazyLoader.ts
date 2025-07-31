@@ -1,6 +1,8 @@
 import {
   osrdEditoastApi,
   type PathProperties,
+  type PostPacedTrainOccupancyBlocksApiResponse,
+  type PostPacedTrainProjectPathOpApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostTrainScheduleProjectPathOpApiResponse,
 } from 'common/api/osrdEditoastApi';
@@ -8,6 +10,7 @@ import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -49,8 +52,6 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];
 
-    // TODO: handle paced trains in operational point projection when the endpoint is delivered
-
     for (const id of batch) {
       if (isTrainScheduleId(id)) {
         rawTrainScheduleIds.push(extractEditoastIdFromTrainScheduleId(id));
@@ -64,7 +65,6 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     );
     let trainScheduleOccupancyBlocksPromise: Promise<PostTrainScheduleOccupancyBlocksApiResponse> =
       Promise.resolve({});
-
     if (rawTrainScheduleIds.length > 0) {
       trainSchedulePromise = this.options
         .dispatch(
@@ -99,8 +99,48 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
         .unwrap();
     }
 
+    let pacedTrainPromise: Promise<PostPacedTrainProjectPathOpApiResponse> = Promise.resolve({});
+    let pacedTrainOccupancyBlocksPromise: Promise<PostPacedTrainOccupancyBlocksApiResponse> =
+      Promise.resolve({});
+    if (rawPacedTrainIds.length > 0) {
+      pacedTrainPromise = this.options
+        .dispatch(
+          osrdEditoastApi.endpoints.postPacedTrainProjectPathOp.initiate(
+            {
+              body: {
+                infra_id: infraId,
+                train_ids: rawPacedTrainIds,
+                operational_points_ids: this.opIds,
+                operational_points_distances: this.opDistances,
+              },
+            },
+
+            { subscribe: false }
+          )
+        )
+        .unwrap();
+
+      pacedTrainOccupancyBlocksPromise = this.options
+        .dispatch(
+          osrdEditoastApi.endpoints.postPacedTrainOccupancyBlocks.initiate(
+            {
+              occupancyBlockForm: {
+                infra_id: infraId,
+                path,
+                ids: rawPacedTrainIds,
+                electrical_profile_set_id: electricalProfileSetId,
+              },
+            },
+            { subscribe: false }
+          )
+        )
+        .unwrap();
+    }
+
     const rawTrainScheduleResults = await trainSchedulePromise;
+    const rawPacedTrainResults = await pacedTrainPromise;
     const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
+    const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
 
     if (this.cancelled) {
       return;
@@ -113,6 +153,16 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       rawResults.set(trainScheduleId, {
         space_time_curves: result,
         signal_updates: rawTrainScheduleOccupancyBlocks[id],
+      });
+    }
+
+    for (const [id, result] of Object.entries(rawPacedTrainResults)) {
+      const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
+      const { paced_train: space_time_curves } = result;
+      const { paced_train: signal_updates } = rawPacedTrainOccupancyBlocks[id];
+      rawResults.set(pacedTrainId, {
+        space_time_curves,
+        signal_updates,
       });
     }
 
