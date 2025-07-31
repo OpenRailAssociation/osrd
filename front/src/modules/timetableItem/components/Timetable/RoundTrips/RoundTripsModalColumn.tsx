@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-import type { PairingItem, RoundTripsModalColumnsData } from '../types';
 import RoundTripsModalCard from './RoundTripsModalCard';
+import type { PairingItem } from '../types';
 
 type RoundTripsModalColumnProps = {
-  setColumnData: React.Dispatch<React.SetStateAction<RoundTripsModalColumnsData>>;
+  setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;
 } & (
   | {
       type: 'todo' | 'oneWays';
@@ -21,29 +21,31 @@ type RoundTripsModalColumnProps = {
 );
 
 const RoundTripsModalColumn = ({
-  setColumnData,
+  setPairingItems,
   type,
   pairingItems,
 }: RoundTripsModalColumnProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
 
-  const restoreItems = (itemsToMove: [PairingItem] | [PairingItem, PairingItem]) => {
-    setColumnData((prevData) => ({
-      // TODO : handle restore for items in round trips column in issue https://github.com/OpenRailAssociation/osrd/issues/12374
-      ...prevData,
-      todo: [...itemsToMove, ...prevData.todo],
-      oneWays: prevData.oneWays.filter(
-        (item) => !itemsToMove.some((moved) => moved.id === item.id)
-      ),
-    }));
+  const restoreItems = (itemsToMove: [PairingItem, PairingItem | null]) => {
+    const formattedItems: PairingItem[] = itemsToMove
+      .filter((item) => item !== null)
+      .map((item) => ({
+        ...item,
+        status: 'todo',
+      }));
+
+    setPairingItems((prevData) => [
+      ...formattedItems,
+      ...prevData.filter((item) => !formattedItems.some((itemToMove) => itemToMove.id === item.id)),
+    ]);
   };
 
   const moveItemToOneWays = (itemToMove: PairingItem) => {
-    setColumnData((prevData) => ({
-      ...prevData,
-      todo: prevData.todo.filter((item) => item.id !== itemToMove.id),
-      oneWays: [itemToMove, ...prevData.oneWays],
-    }));
+    setPairingItems((prevData) => [
+      { ...itemToMove, status: 'oneWays' },
+      ...prevData.filter((item) => itemToMove.id !== item.id),
+    ]);
   };
 
   const { data: { results: subCategories } = { results: [] } } =
@@ -72,8 +74,7 @@ const RoundTripsModalColumn = ({
               <RoundTripsModalCard
                 key={pairingItem.id}
                 pairingItem={pairingItem}
-                status={type}
-                restoreItems={() => restoreItems([pairingItem])}
+                restoreItems={() => restoreItems([pairingItem, null])}
                 moveItemToOneWays={moveItemToOneWays}
                 subCategories={subCategories}
               />
@@ -87,12 +88,11 @@ const RoundTripsModalColumn = ({
               <div className="card-placeholder" />
             </div>
           ) : (
-            pairingItems.map(({ pair, isValid }) => (
-              <div className="round-trip-pair" key={`${pair[0].id}-${pair[1].id}`}>
+            pairingItems.map(({ pair: [pairA, pairB], isValid }) => (
+              <div className="round-trip-pair" key={`${pairA.id}-${pairB.id}`}>
                 <RoundTripsModalCard
-                  pairingItem={pair[0]}
-                  status={type}
-                  restoreItems={() => restoreItems(pair)}
+                  pairingItem={pairA}
+                  restoreItems={() => restoreItems([pairA, pairB])}
                   subCategories={subCategories}
                 />
                 <div
@@ -102,9 +102,8 @@ const RoundTripsModalColumn = ({
                   })}
                 />
                 <RoundTripsModalCard
-                  pairingItem={pair[1]}
-                  status={type}
-                  restoreItems={() => restoreItems(pair)}
+                  pairingItem={pairB}
+                  restoreItems={() => restoreItems([pairA, pairB])}
                   subCategories={subCategories}
                 />
               </div>

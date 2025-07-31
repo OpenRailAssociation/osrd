@@ -16,7 +16,6 @@ import type { PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
-  status: 'todo' | 'oneWays' | 'roundTrips';
   restoreItems: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
   subCategories: SubCategory[];
@@ -24,7 +23,6 @@ type RoundTripsModalCardProps = {
 
 const RoundTripsModalCard = ({
   pairingItem,
-  status,
   restoreItems,
   moveItemToOneWays,
   subCategories,
@@ -35,8 +33,17 @@ const RoundTripsModalCard = ({
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { name, category, interval, origin, stops, destination, startTime, requestedArrivalTime } =
-    pairingItem;
+  const {
+    name,
+    category,
+    interval,
+    origin,
+    stops,
+    destination,
+    startTime,
+    requestedArrivalTime,
+    status,
+  } = pairingItem;
 
   const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrips') => {
     if (itemStatus === 'todo') {
