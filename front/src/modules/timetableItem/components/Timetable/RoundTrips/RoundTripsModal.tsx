@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
+import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -14,7 +15,7 @@ import OneWaysColumn from './OneWaysColumn';
 import RoundTripsColumn from './RoundTripsColumn';
 import TodoColumn from './TodoColumn';
 import formatPairingItems from './utils';
-import type { PairingItem } from '../types';
+import type { PairingItem, RoundTripsColumnPair } from '../types';
 
 type RoundTripsModalProps = {
   roundTripsModalIsOpen: boolean;
@@ -57,10 +58,10 @@ const RoundTripsModal = ({
 
   const pairingItemsByColumn = useMemo(
     () =>
-      pairingItems.reduce<{
+      pairingItemsById.values().reduce<{
         todo: PairingItem[];
         oneWays: PairingItem[];
-        roundTrips: { pair: [PairingItem, PairingItem]; isValid: boolean }[];
+        roundTrips: RoundTripsColumnPair[];
       }>(
         (acc, item) => {
           if (item.status === 'todo') {
@@ -69,12 +70,26 @@ const RoundTripsModal = ({
           if (item.status === 'oneWays') {
             acc.oneWays.push(item);
           }
-          // TODO : handle roundtrips column
+          if (
+            item.status !== 'roundTrips' ||
+            acc.roundTrips.some(
+              ({ pair: [pairA, pairB] }) => pairA.id === item.id || pairB.id === item.id
+            )
+          ) {
+            return acc;
+          }
+
+          const timetableItemA = timetableItemsWithOpsById.get(item.id)!;
+          const timetableItemB = timetableItemsWithOpsById.get(item.pairedItemId)!;
+          const pairingItemB = pairingItemsById.get(item.pairedItemId)!;
+          const isValid = checkRoundTripCompatible(timetableItemA, timetableItemB);
+
+          acc.roundTrips.push({ pair: [item, pairingItemB], isValid });
           return acc;
         },
         { todo: [], oneWays: [], roundTrips: [] }
       ),
-    [pairingItems]
+    [pairingItemsById, timetableItemsWithOpsById]
   );
 
   const openModal = () => {

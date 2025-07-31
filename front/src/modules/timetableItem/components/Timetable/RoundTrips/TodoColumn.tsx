@@ -76,6 +76,55 @@ const TodoColumn = ({
     setItemIdToPair(itemId);
   };
 
+  const pairItems = (itemB: PairingItem) => {
+    if (!itemIdToPair) return;
+    // This item is always in todo
+    const itemA = pairingItemsById.get(itemIdToPair);
+    const timetableItemA = timetableItemsWithOpsById.get(itemIdToPair);
+    const timetableItemB = timetableItemsWithOpsById.get(itemB.id);
+
+    if (!itemA || !timetableItemA || !timetableItemB) {
+      throw new Error('Item to pair not found in todo column');
+    }
+
+    const isValidPair = checkRoundTripCompatible(timetableItemA, timetableItemB);
+
+    setPairingItems((prevData) => {
+      // If the candidate item is already paired, we need to move its old pair to todo column
+      let orphanItem: PairingItem | undefined;
+
+      if (itemB.status === 'roundTrips') {
+        const orphanPairingItem = pairingItemsById.get(itemB.pairedItemId)!;
+        if (!orphanPairingItem || orphanPairingItem.status !== 'roundTrips')
+          throw new Error('Orphan pairing item not found or wrong status');
+        const { pairedItemId: _, isValidPair: __, ...orphanItemProps } = orphanPairingItem;
+        orphanItem = { ...orphanItemProps, status: 'todo' };
+      }
+
+      const updatedPairingItems: PairingItem[] = [
+        {
+          ...itemA,
+          status: 'roundTrips',
+          pairedItemId: itemB.id,
+          isValidPair,
+        },
+        {
+          ...itemB,
+          status: 'roundTrips',
+          pairedItemId: itemIdToPair,
+          isValidPair,
+        },
+        ...prevData.filter(
+          (item) => item.id !== orphanItem?.id && item.id !== itemA.id && item.id !== itemB.id
+        ),
+      ];
+
+      return orphanItem ? [orphanItem, ...updatedPairingItems] : updatedPairingItems;
+    });
+
+    setItemIdToPair(undefined);
+  };
+
   // Logic to check if the pairing item is the first visible item of the column
   // and display a round effect above the pairing item to visually connect it
   // with the pairing column
@@ -173,6 +222,7 @@ const TodoColumn = ({
           }}
           suggestions={pairingCandidates.suggestions}
           others={pairingCandidates.others}
+          pairItems={pairItems}
           subCategories={subCategories}
         />
       )}

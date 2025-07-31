@@ -14,6 +14,7 @@ type RoundTripsModalPairingColumnProps = {
   closePairingMode: () => void;
   suggestions: PairingItem[];
   others: PairingItem[];
+  pairItems: (candidate: PairingItem) => void;
   subCategories: SubCategory[];
 };
 
@@ -21,6 +22,7 @@ const RoundTripsModalPairingColumn = ({
   closePairingMode,
   suggestions,
   others,
+  pairItems,
   subCategories,
 }: RoundTripsModalPairingColumnProps) => {
   const { t } = useTranslation('operational-studies', {
@@ -56,13 +58,19 @@ const RoundTripsModalPairingColumn = ({
             <h3 className="title">{t('suggestions')}</h3>
             {suggestions
               .filter((item) => item.name.toLowerCase().includes(filter.toLowerCase()))
-              .map((item) => (
-                <RoundTripsModalCard
+              .map((item, index) => (
+                <div
                   key={item.id}
-                  pairingItem={item}
-                  isCandidate
-                  subCategories={subCategories}
-                />
+                  role="button"
+                  tabIndex={index + 1}
+                  onClick={() => pairItems(item)}
+                >
+                  <RoundTripsModalCard
+                    pairingItem={item}
+                    isCandidate
+                    subCategories={subCategories}
+                  />
+                </div>
               ))}
           </section>
         )}
@@ -71,13 +79,19 @@ const RoundTripsModalPairingColumn = ({
             <h3 className="title">{t('others')}</h3>
             {others
               .filter((item) => item.name.toLowerCase().includes(filter.toLowerCase()))
-              .map((item) => (
-                <RoundTripsModalCard
+              .map((item, index) => (
+                <div
                   key={item.id}
-                  pairingItem={item}
-                  isCandidate
-                  subCategories={subCategories}
-                />
+                  role="button"
+                  tabIndex={suggestions.length + index}
+                  onClick={() => pairItems(item)}
+                >
+                  <RoundTripsModalCard
+                    pairingItem={item}
+                    isCandidate
+                    subCategories={subCategories}
+                  />
+                </div>
               ))}
           </section>
         )}
