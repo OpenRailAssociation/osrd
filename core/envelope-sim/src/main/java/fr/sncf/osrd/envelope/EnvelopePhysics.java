@@ -1,7 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.GRAVITY_ACCELERATION;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areAccelerationsEqual;
+import static fr.sncf.osrd.utils.UnitEqualityKt.areAccelerationsEqual;
 import static java.lang.Math.max;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;

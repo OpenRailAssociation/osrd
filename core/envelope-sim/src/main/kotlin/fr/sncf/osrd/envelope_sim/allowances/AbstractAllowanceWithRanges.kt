@@ -14,7 +14,6 @@ import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.FixedTime
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
@@ -22,6 +21,8 @@ import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.areSpeedsEqual
+import fr.sncf.osrd.utils.areTimesEqual
 import kotlin.math.abs
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -185,7 +186,7 @@ protected constructor(
                     envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
                     range.endPos - range.beginPos
                 )
-            if (TrainPhysicsIntegrator.areTimesEqual(0.0, addedTime)) {
+            if (areTimesEqual(0.0, addedTime)) {
                 imposedTransitionSpeeds[i] = envelopeRegion.interpolateSpeed(range.beginPos)
                 imposedTransitionSpeeds[i + 1] = envelopeRegion.interpolateSpeed(range.endPos)
             }
@@ -253,7 +254,7 @@ protected constructor(
         val baseDistance = envelopeRange.totalDistance
         val addedTime = value.getAllowanceTime(baseTime, baseDistance)
         // if no time is added, just return the base envelope without performing binary search
-        if (TrainPhysicsIntegrator.areTimesEqual(0.0, addedTime)) {
+        if (areTimesEqual(0.0, addedTime)) {
             return envelopeRange
         }
         assert(addedTime > 0) {
@@ -456,17 +457,12 @@ protected constructor(
         if (leftPart != null) {
             builder.addPart(leftPart)
             leftPartEndSpeed = leftPart.endSpeed
-            assert(
-                TrainPhysicsIntegrator.areSpeedsEqual(
-                    coreEnvelope.interpolateSpeed(leftPartEndPos),
-                    leftPartEndSpeed
-                )
-            )
+            assert(areSpeedsEqual(coreEnvelope.interpolateSpeed(leftPartEndPos), leftPartEndSpeed))
         }
         if (rightPart != null) {
             rightPartBeginSpeed = rightPart.beginSpeed
             assert(
-                TrainPhysicsIntegrator.areSpeedsEqual(
+                areSpeedsEqual(
                     coreEnvelope.interpolateSpeed(rightPartBeginPos),
                     rightPartBeginSpeed
                 )

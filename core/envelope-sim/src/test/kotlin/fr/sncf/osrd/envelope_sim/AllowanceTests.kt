@@ -17,6 +17,7 @@ import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.reporting.exceptions.ErrorCause
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.areSpeedsEqual
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -44,8 +45,7 @@ class AllowanceTests {
                     val newSpeed = envelope.interpolateSpeed(position)
                     val prevSpeed = previousEnvelope.interpolateSpeed(position)
                     Assertions.assertTrue(
-                        prevSpeed < newSpeed ||
-                            TrainPhysicsIntegrator.areSpeedsEqual(prevSpeed, newSpeed)
+                        prevSpeed < newSpeed || areSpeedsEqual(prevSpeed, newSpeed)
                     )
                 }
             }

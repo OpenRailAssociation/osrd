@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope_utils;
+package fr.sncf.osrd.utils;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;

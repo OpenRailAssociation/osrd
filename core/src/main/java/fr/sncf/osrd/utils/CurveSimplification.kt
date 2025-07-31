@@ -1,7 +1,6 @@
 package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate.EnvelopePoint
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs

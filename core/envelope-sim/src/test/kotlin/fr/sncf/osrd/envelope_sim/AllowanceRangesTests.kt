@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.areTimesEqual
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -85,9 +86,7 @@ class AllowanceRangesTests {
         val baseTime2 =
             maxEffortEnvelope.getTimeBetween(rangesTransition.toDouble(), length.toDouble())
         val totalBaseTime = maxEffortEnvelope.totalTime
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areTimesEqual(totalBaseTime, baseTime1 + baseTime2)
-        )
+        Assertions.assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2))
         val distance = getDistance(allowance)
         val targetTime1 =
             baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransition.toDouble())
@@ -128,9 +127,7 @@ class AllowanceRangesTests {
         val baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2])
         val baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3])
         val totalBaseTime = maxEffortEnvelope.totalTime
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3)
-        )
+        Assertions.assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3))
         val targetTime1 =
             baseTime1 +
                 value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0])
@@ -176,9 +173,7 @@ class AllowanceRangesTests {
         val baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2])
         val baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3])
         val totalBaseTime = maxEffortEnvelope.totalTime
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3)
-        )
+        Assertions.assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3))
         val targetTime1 =
             baseTime1 +
                 value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0])
@@ -279,9 +274,7 @@ class AllowanceRangesTests {
         val baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1])
         val baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2])
         val totalBaseTime = maxEffortEnvelope.totalTime
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areTimesEqual(totalBaseTime, baseTime1 + baseTime2)
-        )
+        Assertions.assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2))
         val targetTime1 =
             baseTime1 +
                 value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0])
@@ -323,9 +316,7 @@ class AllowanceRangesTests {
         val baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2])
         val baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3])
         val totalBaseTime = maxEffortEnvelope.totalTime
-        Assertions.assertTrue(
-            TrainPhysicsIntegrator.areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3)
-        )
+        Assertions.assertTrue(areTimesEqual(totalBaseTime, baseTime1 + baseTime2 + baseTime3))
         val targetTime1 =
             baseTime1 +
                 value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0])

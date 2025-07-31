@@ -2,8 +2,8 @@ package fr.sncf.osrd.envelope
 
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.part.EnvelopePart
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual
+import fr.sncf.osrd.utils.arePositionsEqual
+import fr.sncf.osrd.utils.areSpeedsEqual
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

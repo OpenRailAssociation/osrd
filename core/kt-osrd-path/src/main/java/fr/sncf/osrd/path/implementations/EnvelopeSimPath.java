@@ -1,14 +1,14 @@
-package fr.sncf.osrd.envelope_sim;
+package fr.sncf.osrd.path.implementations;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
-import static fr.sncf.osrd.envelope_utils.RangeMapUtils.fullyCovers;
+import static fr.sncf.osrd.utils.UnitEqualityKt.arePositionsEqual;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import fr.sncf.osrd.envelope_sim.electrification.Electrification;
+import fr.sncf.osrd.path.interfaces.Electrification;
 import fr.sncf.osrd.path.interfaces.PhysicsPath;
+import fr.sncf.osrd.utils.RangeMapUtils;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -60,10 +60,11 @@ public final class EnvelopeSimPath implements PhysicsPath {
         this.gradeValues = gradeValues;
         this.length = length;
         this.gradeCumSum = initCumSum(gradePositions, gradeValues);
-        assert fullyCovers(defaultElectrificationMap, length) : "default electrification map does not cover path";
+        assert RangeMapUtils.fullyCovers(defaultElectrificationMap, length)
+                : "default electrification map does not cover path";
         this.defaultElectrificationMap = defaultElectrificationMap;
         for (var entry : electrificationMapByPowerClass.entrySet())
-            assert fullyCovers(entry.getValue(), length)
+            assert RangeMapUtils.fullyCovers(entry.getValue(), length)
                     : "electrification map for power class " + entry.getKey() + " does not cover path";
         this.electrificationMapByPowerClass = electrificationMapByPowerClass;
     }

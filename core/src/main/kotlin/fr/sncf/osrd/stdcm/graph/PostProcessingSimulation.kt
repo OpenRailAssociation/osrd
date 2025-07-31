@@ -2,12 +2,11 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
+import fr.sncf.osrd.path.implementations.EnvelopeSimPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -16,6 +15,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -340,9 +340,7 @@ private fun findConflictOffsets(
                     edges.stream().mapToLong { edge -> edge.length.distance.millimeters }.sum()
             )
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
-    assert(
-        TrainPhysicsIntegrator.arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters)
-    )
+    assert(arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters))
     val availability =
         blockAvailability.getAvailability(
             explorer,

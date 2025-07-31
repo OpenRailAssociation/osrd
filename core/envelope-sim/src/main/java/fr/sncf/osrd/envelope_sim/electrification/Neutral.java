@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.electrification;
 
+import fr.sncf.osrd.path.interfaces.Electrification;
 import java.util.Objects;
 
 /** Neutral electrification conditions at a point in the path */

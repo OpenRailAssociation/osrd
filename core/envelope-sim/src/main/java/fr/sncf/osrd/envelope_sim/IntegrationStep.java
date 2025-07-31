@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+import static fr.sncf.osrd.utils.UnitEqualityKt.areSpeedsEqual;
 
 public class IntegrationStep {
     public final double timeDelta;

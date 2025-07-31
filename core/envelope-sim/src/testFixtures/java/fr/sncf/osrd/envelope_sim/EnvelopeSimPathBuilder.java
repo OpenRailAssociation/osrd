@@ -1,14 +1,15 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_utils.RangeMapUtils.updateRangeMap;
+import static fr.sncf.osrd.utils.RangeMapUtils.updateRangeMap;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
+import fr.sncf.osrd.path.implementations.EnvelopeSimPath;
+import fr.sncf.osrd.path.interfaces.Electrification;
 import java.util.HashMap;
 
 /**

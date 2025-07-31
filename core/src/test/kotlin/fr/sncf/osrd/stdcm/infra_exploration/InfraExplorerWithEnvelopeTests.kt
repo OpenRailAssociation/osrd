@@ -4,11 +4,11 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.arePositionsEqual
+import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals

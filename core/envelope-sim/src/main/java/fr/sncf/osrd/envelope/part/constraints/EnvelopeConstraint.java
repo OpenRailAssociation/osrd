@@ -3,7 +3,7 @@ package fr.sncf.osrd.envelope.part.constraints;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+import static fr.sncf.osrd.utils.UnitEqualityKt.areSpeedsEqual;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;

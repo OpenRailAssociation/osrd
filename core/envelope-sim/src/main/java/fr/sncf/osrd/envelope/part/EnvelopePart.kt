@@ -5,9 +5,9 @@ import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.SearchableEnvelope
 import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.arePositionsEqual
 import java.lang.Double.isNaN
 import java.util.*
 import java.util.stream.Collectors

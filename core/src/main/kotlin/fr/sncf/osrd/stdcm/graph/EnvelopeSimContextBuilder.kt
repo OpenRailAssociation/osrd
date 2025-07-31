@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
+import fr.sncf.osrd.path.implementations.EnvelopeSimPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.train.RollingStock
 

@@ -4,12 +4,12 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeCursor
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.PS
 import fr.sncf.osrd.envelope_sim.pipelines.increase
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -239,16 +239,8 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         for (stop in orderedStops) {
             var stopOffset = stop.first
             val isStopSignalRestrictive = stop.second
-            val isBeginPos =
-                TrainPhysicsIntegrator.arePositionsEqual(
-                    stopOffset.distance.meters,
-                    envelope.beginPos
-                )
-            val isEndPos =
-                TrainPhysicsIntegrator.arePositionsEqual(
-                    stopOffset.distance.meters,
-                    envelope.endPos
-                )
+            val isBeginPos = arePositionsEqual(stopOffset.distance.meters, envelope.beginPos)
+            val isEndPos = arePositionsEqual(stopOffset.distance.meters, envelope.endPos)
             val isOutOfBounds =
                 stopOffset.distance.meters < envelope.beginPos ||
                     stopOffset.distance.meters > envelope.endPos

@@ -12,6 +12,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting
+import fr.sncf.osrd.utils.areSpeedsEqual
 
 object CoastingGenerator {
     /** Generate a coasting envelope part which starts at startPos */
@@ -63,9 +64,7 @@ object CoastingGenerator {
 
         var position = endPos
         var speed = envelope.interpolateSpeed(position)
-        assert(
-            speed >= lowSpeedLimit || TrainPhysicsIntegrator.areSpeedsEqual(speed, lowSpeedLimit)
-        ) {
+        assert(speed >= lowSpeedLimit || areSpeedsEqual(speed, lowSpeedLimit)) {
             "start coasting below min speed"
         }
         val initInter = constrainedBuilder.initEnvelopePart(position, speed, -1.0)
@@ -75,10 +74,7 @@ object CoastingGenerator {
             val step = TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, -1.0)
             position += step.positionDelta
             speed = step.endSpeed
-            if (
-                !TrainPhysicsIntegrator.areSpeedsEqual(speed, lowSpeedLimit) &&
-                    speed < lowSpeedLimit
-            ) {
+            if (!areSpeedsEqual(speed, lowSpeedLimit) && speed < lowSpeedLimit) {
                 speed = lowSpeedLimit
                 reachedLowLimit = true
             }

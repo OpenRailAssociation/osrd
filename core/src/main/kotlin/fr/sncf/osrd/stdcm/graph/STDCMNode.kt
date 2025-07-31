@@ -1,11 +1,11 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.SoftLazy
+import fr.sncf.osrd.utils.areTimesEqual
 import fr.sncf.osrd.utils.cacheable
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.min

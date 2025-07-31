@@ -9,6 +9,8 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortPlateau
 import fr.sncf.osrd.envelope_utils.DistanceAverage
+import fr.sncf.osrd.utils.arePositionsEqual
+import fr.sncf.osrd.utils.areSpeedsEqual
 import java.lang.Double.isNaN
 import kotlin.math.max
 import kotlin.math.min
@@ -199,10 +201,8 @@ private constructor(
             previousPosition: Double
         ): Double {
             assert(!isNaN(previousAcceleration))
-            if (TrainPhysicsIntegrator.arePositionsEqual(currentPosition, previousPosition))
-                return currentPosition
-            if (TrainPhysicsIntegrator.areSpeedsEqual(currentAcceleration, previousAcceleration))
-                return currentPosition
+            if (arePositionsEqual(currentPosition, previousPosition)) return currentPosition
+            if (areSpeedsEqual(currentAcceleration, previousAcceleration)) return currentPosition
             val factor =
                 (previousAcceleration - currentAcceleration) / (previousPosition - currentPosition)
             val y0 = previousAcceleration - factor * previousPosition

@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope_sim.electrification;
 
-public non-sealed class NonElectrified implements Electrification {
+import fr.sncf.osrd.path.interfaces.Electrification;
+
+public class NonElectrified implements Electrification {
     @Override
     public Electrification withElectricalProfile(String profile) {
         return this;

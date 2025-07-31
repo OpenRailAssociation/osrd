@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import com.google.common.collect.Range
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
+import fr.sncf.osrd.utils.areTimesEqual
 
 /**
  * This interface is used to express a time range that's considered already visited under some

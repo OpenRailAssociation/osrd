@@ -2,6 +2,8 @@ package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope_sim.PhysicsRollingStock.getGradientAcceleration;
 import static fr.sncf.osrd.envelope_sim.PhysicsRollingStock.getMaxEffort;
+import static fr.sncf.osrd.utils.UnitEqualityKt.POSITION_EPSILON;
+import static fr.sncf.osrd.utils.UnitEqualityKt.SPEED_EPSILON;
 
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType;
@@ -16,16 +18,6 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath;
 public final class TrainPhysicsIntegrator {
     // Gravity acceleration, in m/s²
     public static final double GRAVITY_ACCELERATION = 9.81;
-
-    // A position delta lower than this value will be considered zero
-    // Going back and forth with Distance and double (meters) often causes 1e-3 errors,
-    // we need the tolerance to be higher than this
-    private static final double POSITION_EPSILON = 1E-2;
-    // A speed lower than this value will be considered zero
-    private static final double SPEED_EPSILON = 1E-5;
-    // An acceleration lower than this value will be considered zero
-    private static final double ACCELERATION_EPSILON = 1E-5;
-    private static final double TIME_EPSILON = 1E-2;
 
     private final PhysicsRollingStock rollingStock;
     private final PhysicsPath path;
@@ -198,33 +190,5 @@ public final class TrainPhysicsIntegrator {
                 timeStep, positionDelta,
                 currentSpeed, newSpeed,
                 acceleration, directionSign);
-    }
-
-    /** Returns true if the positions' difference is lower than epsilon */
-    public static boolean arePositionsEqual(double a, double b) {
-        return areDoublesEqual(a, b, POSITION_EPSILON);
-    }
-
-    /** Returns true if the speeds' difference is lower than an epsilon */
-    public static boolean areSpeedsEqual(double a, double b) {
-        return areDoublesEqual(a, b, SPEED_EPSILON);
-    }
-
-    /** Returns true if the accelerations' difference is lower than an epsilon */
-    public static boolean areAccelerationsEqual(double a, double b) {
-        return areDoublesEqual(a, b, ACCELERATION_EPSILON);
-    }
-
-    /** Returns true if the times' difference is lower than an epsilon */
-    public static boolean areTimesEqual(double a, double b) {
-        return areDoublesEqual(a, b, TIME_EPSILON);
-    }
-
-    public static boolean isTimeStrictlyPositive(double time) {
-        return time > TIME_EPSILON;
-    }
-
-    private static boolean areDoublesEqual(double a, double b, double delta) {
-        return Math.abs(a - b) < delta;
     }
 }
