@@ -8,6 +8,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope_sim.electrification.Electrification;
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
 import java.util.Arrays;
 import java.util.Map;
 

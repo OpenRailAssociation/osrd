@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
+
 public class FlatPath implements PhysicsPath {
     private final double length;
     private final double slope;

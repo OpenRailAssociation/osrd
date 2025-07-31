@@ -22,7 +22,7 @@ class EnvelopeSimPathTest {
                 doubleArrayOf(0.0, 3.0, 6.0, 9.0, 10.0),
                 doubleArrayOf(0.0, 2.0, -2.0, 0.0)
             )
-        Assertions.assertEquals(10.0, path.getLength())
+        Assertions.assertEquals(10.0, path.length)
         Assertions.assertEquals(0.0, path.getAverageGrade(0.0, 3.0))
         Assertions.assertEquals(0.0, path.getAverageGrade(0.0, 10.0))
         Assertions.assertEquals(0.0, path.getAverageGrade(9.0, 10.0))
