@@ -1096,7 +1096,7 @@ pub mod tests {
 
     #[rstest]
     async fn infra_delete() {
-        let pool = DbConnectionPoolV2::for_tests_no_transaction();
+        let pool = DbConnectionPoolV2::for_tests();
         let app = TestAppBuilder::new()
             .db_pool(pool)
             .core_client(CoreClient::Mocked(MockingClient::default()))
