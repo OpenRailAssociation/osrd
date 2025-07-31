@@ -455,6 +455,8 @@ diesel::table! {
         interval -> Interval,
         main_category -> Nullable<TrainMainCategory>,
         exceptions -> Jsonb,
+        #[max_length = 255]
+        sub_category -> Nullable<Varchar>,
     }
 }
 
@@ -737,6 +739,27 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::TrainMainCategory;
+
+    sub_categories (id) {
+        id -> Int8,
+        #[max_length = 255]
+        name -> Varchar,
+        #[max_length = 255]
+        code -> Varchar,
+        main_category -> TrainMainCategory,
+        #[max_length = 7]
+        color -> Varchar,
+        #[max_length = 7]
+        background_color -> Varchar,
+        #[max_length = 7]
+        hovered_color -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
 
     temporary_speed_limit (id) {
         id -> Int8,
@@ -821,6 +844,8 @@ diesel::table! {
         power_restrictions -> Jsonb,
         options -> Jsonb,
         main_category -> Nullable<TrainMainCategory>,
+        #[max_length = 255]
+        sub_category -> Nullable<Varchar>,
     }
 }
 
@@ -964,6 +989,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     stdcm_logs,
     stdcm_search_environment,
     study,
+    sub_categories,
     temporary_speed_limit,
     temporary_speed_limit_group,
     timetable,

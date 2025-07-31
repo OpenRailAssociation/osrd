@@ -985,6 +985,7 @@ mod tests {
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
+    use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
     use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
     use editoast_schemas::paced_train::InitialSpeedChangeGroup;
@@ -993,6 +994,7 @@ mod tests {
     use editoast_schemas::paced_train::PacedTrainException;
     use editoast_schemas::paced_train::RollingStockChangeGroup;
     use editoast_schemas::paced_train::TrainNameChangeGroup;
+    use editoast_schemas::rolling_stock::TrainCategory;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::TrainSchedule;
     use pretty_assertions::assert_eq;
@@ -1009,6 +1011,7 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::models::fixtures::simple_sub_category;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
     use crate::views::path::pathfinding::PathfindingFailure;
@@ -1041,6 +1044,56 @@ mod tests {
     }
 
     #[rstest]
+    async fn paced_train_with_sub_category() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let created_sub_category = simple_sub_category(
+            "tjv",
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let mut paced_train_base = simple_paced_train_base();
+        paced_train_base.train_schedule_base.category = Some(TrainCategory::Sub {
+            sub_category_code: created_sub_category.code.clone(),
+        });
+
+        // Insert paced_train
+        let request = app
+            .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
+            .json(&json!(vec![paced_train_base]));
+
+        let response: Vec<PacedTrainResponse> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(response.len(), 1);
+
+        let created_paced_train =
+            models::PacedTrain::retrieve_real(pool.get_ok(), response.first().unwrap().id)
+                .await
+                .expect("Failed to retrieve updated paced train")
+                .expect("Updated paced train not found");
+
+        assert_eq!(
+            created_paced_train.sub_category,
+            Some(created_sub_category.code.clone())
+        );
+        let created_paced_train: editoast_schemas::paced_train::PacedTrain =
+            created_paced_train.into();
+
+        assert_eq!(
+            created_paced_train.train_schedule_base.category,
+            Some(TrainCategory::Sub {
+                sub_category_code: created_sub_category.code.clone()
+            })
+        );
+    }
+
+    #[rstest]
     async fn update_paced_train_exception() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1065,16 +1118,16 @@ mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let updated_paced_train =
+        let created_paced_train =
             models::PacedTrain::retrieve_real(pool.get_ok(), simple_paced_train.id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
 
-        assert_eq!(updated_paced_train.exceptions.len(), 1);
+        assert_eq!(created_paced_train.exceptions.len(), 1);
         assert_eq!(
             simple_paced_train.exceptions,
-            updated_paced_train.exceptions
+            created_paced_train.exceptions
         );
     }
 

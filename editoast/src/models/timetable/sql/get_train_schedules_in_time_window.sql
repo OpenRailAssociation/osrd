@@ -34,7 +34,8 @@ SELECT train_schedule.id,
     train_schedule.speed_limit_tag,
     train_schedule.power_restrictions,
     train_schedule.options,
-    train_schedule.main_category
+    train_schedule.main_category,
+    train_schedule.sub_category
 FROM train_schedule
     LEFT JOIN arrival_time ON train_schedule.id = arrival_time.id
 WHERE train_schedule.start_time <= $2

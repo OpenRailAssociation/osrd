@@ -229,7 +229,9 @@
       "StartDateAfterEndDate": "The study start date must be before the end date"
     },
     "sub_categories": {
-      "Database": "Internal error (database)"
+      "CodeAlreadyUsed": "The code of the sub-category '{{code}}' is already used",
+      "Database": "Internal error (database)",
+      "NotFound": "Sub-category '{{code}}' could not be found"
     },
     "temporary_speed_limit": {
       "Database": "Internal error (database)",

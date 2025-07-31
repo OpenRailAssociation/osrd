@@ -1228,8 +1228,10 @@ pub mod tests {
     #[cfg(test)]
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrackRange;
+    use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::primitives::Identifier;
+    use editoast_schemas::rolling_stock::TrainCategory;
     use editoast_schemas::train_schedule::OperationalPointReference;
     use editoast_schemas::train_schedule::PathItem;
     use editoast_schemas::train_schedule::ReceptionSignal;
@@ -1244,6 +1246,7 @@ pub mod tests {
     use crate::models::fixtures::create_simple_train_schedule;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_base;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
@@ -1315,6 +1318,55 @@ pub mod tests {
         let response: Vec<TrainScheduleResponse> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
+    }
+
+    #[rstest]
+    async fn train_schedule_with_sub_category() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let created_sub_category = simple_sub_category(
+            "tjv",
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let mut train_schedule_base = simple_train_schedule_base();
+        train_schedule_base.category = Some(TrainCategory::Sub {
+            sub_category_code: created_sub_category.code.clone(),
+        });
+
+        // Insert train_schedule
+        let request = app
+            .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())
+            .json(&json!(vec![train_schedule_base]));
+
+        let response: Vec<TrainScheduleResponse> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(response.len(), 1);
+
+        let created_train_schedule =
+            models::TrainSchedule::retrieve_real(pool.get_ok(), response.first().unwrap().id)
+                .await
+                .expect("Failed to retrieve updated train schedule")
+                .expect("Updated train schedule not found");
+
+        assert_eq!(
+            created_train_schedule.sub_category,
+            Some(created_sub_category.code.clone())
+        );
+        let created_train_schedule: editoast_schemas::TrainSchedule = created_train_schedule.into();
+
+        assert_eq!(
+            created_train_schedule.category,
+            Some(TrainCategory::Sub {
+                sub_category_code: created_sub_category.code.clone()
+            })
+        );
     }
 
     #[rstest]
