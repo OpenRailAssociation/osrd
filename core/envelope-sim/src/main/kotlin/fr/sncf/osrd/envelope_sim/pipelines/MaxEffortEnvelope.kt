@@ -142,9 +142,9 @@ private fun accelerate(
         val err = OSRDError(ErrorType.ImpossibleSimulationError)
         val offset = cursor.getPosition()
         err.context.put("offset", String.format("%.0fm", offset))
-        val headPosition = min(max(0.0, offset), context.path.getLength())
+        val headPosition = min(max(0.0, offset), context.path.length)
         val tailPosition =
-            min(max(0.0, headPosition - context.rollingStock.getLength()), context.path.getLength())
+            min(max(0.0, headPosition - context.rollingStock.getLength()), context.path.length)
         val grade = context.path.getAverageGrade(headPosition, tailPosition)
         err.context.put("grade", String.format("%.2fm/km", grade))
         val map = context.tractiveEffortCurveMap[cursor.getPosition()]!!

@@ -5,9 +5,9 @@ import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areAccelerationsE
 import static java.lang.Math.max;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_utils.DoubleUtils;
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
 
 public class EnvelopePhysics {
     /** Compute the constant acceleration between two space / speed points. */

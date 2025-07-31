@@ -5,6 +5,7 @@ import static fr.sncf.osrd.envelope_sim.PhysicsRollingStock.getMaxEffort;
 
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType;
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
 
 /**
  * A utility class to help simulate the train, using numerical integration. It's used when

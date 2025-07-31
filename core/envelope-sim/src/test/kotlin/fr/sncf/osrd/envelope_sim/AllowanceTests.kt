@@ -647,7 +647,7 @@ class AllowanceTests {
         val stops = doubleArrayOf(50000.0, length)
         val maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops)
         val allowanceValue = AllowanceValue.Percentage(10.0)
-        val allowance = makeStandardMarecoAllowance(0.0, testPath.getLength(), 1.0, allowanceValue)
+        val allowance = makeStandardMarecoAllowance(0.0, testPath.length, 1.0, allowanceValue)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
         val targetTime = allowance.getTargetTime(maxEffortEnvelope)
         val marginTime = marecoEnvelope.totalTime
