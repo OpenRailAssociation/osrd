@@ -6,6 +6,8 @@ use super::AsCoreRequest;
 #[derive(Debug, Serialize)]
 pub struct InfraLoadRequest {
     pub infra: i64,
+    /// If provided, will load a core with this infra and this timetable loaded in cache
+    pub timetable: Option<i64>,
     pub expected_version: i64,
 }
 
@@ -14,6 +16,9 @@ impl AsCoreRequest<()> for InfraLoadRequest {
     const URL_PATH: &'static str = "/infra_load";
 
     fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+        match self.timetable {
+            Some(timetable) => Some(format!("{}#{}", self.infra, timetable)),
+            None => Some(self.infra.to_string()),
+        }
     }
 }
