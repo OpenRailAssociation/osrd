@@ -1829,9 +1829,7 @@ paths:
               schema:
                 type: object
                 additionalProperties:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ProjectPathPacedTrainResult'
+                  $ref: '#/components/schemas/ProjectPathPacedTrainResult'
   /paced_train/simulation_summary:
     post:
       tags:

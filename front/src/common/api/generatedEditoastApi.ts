@@ -1867,7 +1867,7 @@ export type PostPacedTrainProjectPathApiArg = {
 };
 export type PostPacedTrainProjectPathOpApiResponse =
   /** status 200 Project paced trains on a list of operational points. */ {
-    [key: string]: ProjectPathPacedTrainResult[];
+    [key: string]: ProjectPathPacedTrainResult;
   };
 export type PostPacedTrainProjectPathOpApiArg = {
   body: {
