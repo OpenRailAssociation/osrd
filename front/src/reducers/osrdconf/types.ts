@@ -10,7 +10,6 @@ import type {
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type {
-  TrainCategory,
   Comfort,
   Distribution,
   LoadingGaugeType,
@@ -19,6 +18,7 @@ import type {
   PacedTrain,
   PathItemLocation,
   ReceptionSignal,
+  TrainMainCategory,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
@@ -43,7 +43,7 @@ export type StandardAllowance = {
 
 export type OperationalStudiesConfState = OsrdConfState & {
   name: string;
-  category: TrainCategory | null;
+  category: TrainMainCategory | null;
   startTime: Date;
   initialSpeed?: number;
   labels: string[];

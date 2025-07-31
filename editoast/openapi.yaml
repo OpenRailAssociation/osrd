@@ -11565,7 +11565,7 @@ components:
       properties:
         value:
           allOf:
-          - $ref: '#/components/schemas/TrainCategory'
+          - $ref: '#/components/schemas/TrainMainCategory'
           nullable: true
     RollingStockChangeGroup:
       type: object
@@ -13729,16 +13729,10 @@ components:
       - code
       - main_category
       - color
-      - background_color
-      - hovered_color
       properties:
-        background_color:
-          $ref: '#/components/schemas/SubCategoryColor'
         code:
           type: string
         color:
-          $ref: '#/components/schemas/SubCategoryColor'
-        hovered_color:
           $ref: '#/components/schemas/SubCategoryColor'
         main_category:
           $ref: '#/components/schemas/TrainMainCategory'
@@ -14172,20 +14166,6 @@ components:
           items:
             $ref: '#/components/schemas/Slope'
       additionalProperties: false
-    TrainCategory:
-      oneOf:
-      - type: object
-        required:
-        - main_category
-        properties:
-          main_category:
-            $ref: '#/components/schemas/TrainMainCategory'
-      - type: object
-        required:
-        - sub_category_code
-        properties:
-          sub_category_code:
-            type: string
     TrainMainCategories:
       type: array
       items:
@@ -14221,7 +14201,7 @@ components:
       properties:
         category:
           allOf:
-          - $ref: '#/components/schemas/TrainCategory'
+          - $ref: '#/components/schemas/TrainMainCategory'
           nullable: true
         comfort:
           $ref: '#/components/schemas/Comfort'

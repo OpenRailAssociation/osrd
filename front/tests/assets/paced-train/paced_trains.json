@@ -169,9 +169,7 @@
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true },
     "paced": { "time_window": "PT2H", "interval": "PT1H" },
-    "category": {
-      "main_category": "FREIGHT_TRAIN"
-    },
+    "category": "FREIGHT_TRAIN",
     "exceptions": [
       {
         "key": "e0f2d454-ccaa-4df6-8a57-39c28c904976",

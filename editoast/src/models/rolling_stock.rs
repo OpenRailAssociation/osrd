@@ -1,6 +1,7 @@
 mod power_restrictions;
 
 use std::collections::HashMap;
+use std::ops::Deref;
 
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
@@ -237,12 +238,12 @@ impl From<RollingStock> for editoast_schemas::RollingStock {
             electrical_power_startup_time: rolling_stock.electrical_power_startup_time,
             raise_pantograph_time: rolling_stock.raise_pantograph_time,
             supported_signaling_systems: rolling_stock.supported_signaling_systems,
-            primary_category: *rolling_stock.primary_category,
+            primary_category: rolling_stock.primary_category.deref().clone(),
             other_categories: editoast_schemas::rolling_stock::TrainMainCategories(
                 rolling_stock
                     .other_categories
                     .iter()
-                    .map(|c| *c.clone())
+                    .map(|c| c.deref().clone())
                     .collect::<Vec<_>>(),
             ),
         }

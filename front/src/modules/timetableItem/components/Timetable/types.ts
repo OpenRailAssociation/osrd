@@ -1,5 +1,4 @@
 import type {
-  TrainCategory,
   LightRollingStockWithLiveries,
   PacedTrainException,
   PathfindingInputError,
@@ -109,7 +108,7 @@ export type Occurrence = {
    * An added exception can only be deleted, not disabled.
    */
   disabled?: boolean;
-  category?: TrainCategory | null;
+  category?: TrainMainCategory | null;
   occurrenceIndex?: number; // Optional, only if not created
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
@@ -124,7 +123,7 @@ export type ExceptionChangeGroupName = keyof ExceptionChangeGroups;
 export type PairingItem = {
   id: TimetableItemId;
   name: string;
-  category?: TrainCategory | null;
+  category?: TrainMainCategory | null;
   interval: Duration | null;
   origin: string;
   stops: string[];
