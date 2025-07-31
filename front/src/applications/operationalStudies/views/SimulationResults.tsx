@@ -260,7 +260,7 @@ const SimulationResults = ({
         </div>
       </ResizableSection>
 
-      {simulationResults && (
+      {simulationResults?.isValid && (
         <>
           {/* SIMULATION : SPEED SPACE CHART */}
           <div className="osrd-simulation-container speedspacechart-container">
@@ -291,34 +291,45 @@ const SimulationResults = ({
               />
             </div>
           </BoardWrapper>
-
-          <BoardWrapper
-            hidden={!activeBoards.has('tables')}
-            name={t('simulationResults.timetableOutput')}
-          >
-            <div className="time-stop-outputs">
-              {/* TIME STOPS TABLE */}
-              <TimesStopsOutput
-                simulatedTimetableItem={simulationResults.simulation}
-                simulationSummary={simulationSummary}
-                operationalPoints={simulationResults.pathProperties.operationalPoints}
-                selectedTrain={simulationResults.train}
-                path={simulationResults.path}
-              />
-              {/* SIMULATION EXPORT BUTTONS */}
-              <SimulationResultExport
-                path={simulationResults.path}
-                scenarioData={scenarioData}
-                train={simulationResults.train}
-                simulation={simulationResults.simulation}
-                pathProperties={simulationResults.pathProperties}
-                rollingStock={simulationResults.rollingStock}
-                mapCanvas={mapCanvas}
-              />
-            </div>
-          </BoardWrapper>
         </>
       )}
+
+      {/* TIME STOPS TABLE */}
+      <BoardWrapper
+        hidden={!activeBoards.has('tables')}
+        name={t('simulationResults.timetableOutput')}
+      >
+        <div className="time-stop-outputs">
+          <TimesStopsOutput
+            simulatedTimetableItem={
+              simulationResults?.isValid ? simulationResults.simulation : undefined
+            }
+            simulationSummary={simulationSummary}
+            operationalPoints={
+              simulationResults?.isValid
+                ? simulationResults.pathProperties.operationalPoints
+                : undefined
+            }
+            selectedTrain={simulationResults?.train}
+            path={simulationResults?.isValid ? simulationResults.path : undefined}
+          />
+        </div>
+
+        {simulationResults?.isValid && (
+          <div className="time-stop-outputs">
+            {/* SIMULATION EXPORT BUTTONS */}
+            <SimulationResultExport
+              path={simulationResults.path}
+              scenarioData={scenarioData}
+              train={simulationResults.train}
+              simulation={simulationResults.simulation}
+              pathProperties={simulationResults.pathProperties}
+              rollingStock={simulationResults.rollingStock}
+              mapCanvas={mapCanvas}
+            />
+          </div>
+        )}
+      </BoardWrapper>
     </div>
   );
 };
