@@ -847,11 +847,17 @@ async fn unlock(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[derive(Deserialize, Debug, Clone, IntoParams)]
+#[into_params(parameter_in = Query)]
+struct TimetableQueryParam {
+    timetable: Option<i64>,
+}
+
 /// Instructs Core to load an infra
 #[utoipa::path(
     post, path = "",
     tag = "infra",
-    params(InfraIdParam),
+    params(InfraIdParam, TimetableQueryParam),
     responses(
         (status = 204, description = "The infra was loaded successfully"),
         (status = 404, description = "The infra was not found"),
@@ -865,6 +871,7 @@ async fn load(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    Query(TimetableQueryParam { timetable }): Query<TimetableQueryParam>,
 ) -> Result<impl IntoResponse> {
     // Check user roles
     let has_role = auth
@@ -890,6 +897,7 @@ async fn load(
 
     let infra_request = InfraLoadRequest {
         infra: infra.id,
+        timetable,
         expected_version: infra.version,
     };
     infra_request.fetch(core_client.as_ref()).await?;

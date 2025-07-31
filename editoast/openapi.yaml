@@ -959,6 +959,13 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: timetable
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          nullable: true
       responses:
         '204':
           description: The infra was loaded successfully
