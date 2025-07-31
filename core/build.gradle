@@ -25,6 +25,7 @@ dependencies {
     implementation project(':osrd-reporting')
     implementation project(':envelope-sim')
     implementation project(':osrd-geom')
+    implementation project(':kt-osrd-path')
     testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin

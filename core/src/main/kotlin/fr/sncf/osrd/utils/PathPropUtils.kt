@@ -2,6 +2,12 @@ package fr.sncf.osrd.utils
 
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.implementations.buildChunkPath
+import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.buildPathPropertiesFrom
+import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
@@ -9,8 +15,6 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList

@@ -1,7 +1,7 @@
 package fr.sncf.osrd
 
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra

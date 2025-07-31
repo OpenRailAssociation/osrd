@@ -4,12 +4,13 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.ZoneUpdate
 import fr.sncf.osrd.api.project_signals.SignalUpdate
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.PathSignal
 import fr.sncf.osrd.standalone_sim.pathSignalsInRange

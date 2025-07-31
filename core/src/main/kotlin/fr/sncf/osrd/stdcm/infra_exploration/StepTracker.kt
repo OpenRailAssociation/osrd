@@ -1,9 +1,9 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.units.Offset
 

@@ -1,8 +1,8 @@
 package fr.sncf.osrd.standalone_sim
 
+import fr.sncf.osrd.path.implementations.buildChunkPath
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.dirIter
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers.tinyInfra
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf

@@ -7,7 +7,7 @@ import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.electrification.Electrification
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
-import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.buildElectrificationMap

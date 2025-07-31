@@ -1,7 +1,7 @@
 package fr.sncf.osrd.external_generated_inputs
 
+import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
-import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.utils.DistanceRangeMap

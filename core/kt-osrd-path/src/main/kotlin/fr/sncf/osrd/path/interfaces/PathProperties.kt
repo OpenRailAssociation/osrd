@@ -1,10 +1,11 @@
-package fr.sncf.osrd.sim_infra.api
+package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.geom.LineString
-import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl
+import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.implementations.PathPropertiesImpl
+import fr.sncf.osrd.path.implementations.buildChunkPath
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
-import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
