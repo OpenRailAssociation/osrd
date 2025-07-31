@@ -122,6 +122,9 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       { skip: pathfinding?.status !== 'success' }
     );
 
+  if ((pathfinding?.status !== 'success' || simulation?.status !== 'success') && train)
+    return { isValid: false, train, rollingStock };
+
   if (
     !train ||
     pathfinding?.status !== 'success' ||
@@ -149,6 +152,7 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
     }) ?? [];
 
   return {
+    isValid: true,
     train,
     rollingStock,
     simulation,
