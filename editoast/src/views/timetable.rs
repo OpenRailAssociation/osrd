@@ -29,6 +29,7 @@ use core_client::conflict_detection::ConflictDetectionRequest;
 use core_client::conflict_detection::ConflictRequirement;
 use core_client::conflict_detection::ConflictType;
 use core_client::conflict_detection::TrainRequirements;
+use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::PhysicsConsist;
 use database::DbConnection;
@@ -55,7 +56,8 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::infra::InfraIdQueryParam;
-use super::pagination::PaginatedList as _;
+use super::pagination::ConcatenatedPaginatedList;
+use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
@@ -553,14 +555,14 @@ impl FromStr for TrainId {
     }
 }
 
-/// Retrieve the list of conflict of the timetable (invalid trains are ignored)
+/// Retrieve the list of conflicts of the timetable (invalid trains are ignored)
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
     params(TimetableIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
-        (status = 200, description = "List of conflict", body = Vec<Conflict>),
+        (status = 200, description = "List of conflicts", body = Vec<Conflict>),
     ),
 )]
 pub(in crate::views) async fn conflicts(
@@ -722,6 +724,126 @@ fn build_conflict_core_request(
         trains_requirements,
         work_schedules: None,
     }
+}
+
+/// Retrieve the list of requirements of the timetable (invalid trains are ignored)
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "timetable",
+    params(TimetableIdParam, PaginationQueryParams<200>, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
+    responses(
+        (status = 200, description = "The paginated list of timetable requirements", body = inline(TrainRequirementsPage)),
+    ),
+)]
+pub(in crate::views) async fn requirements(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Query(page_settings): Query<PaginationQueryParams<200>>,
+    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
+    Query(ElectricalProfileSetIdQueryParam {
+        electrical_profile_set_id,
+    }): Query<ElectricalProfileSetIdQueryParam>,
+) -> Result<Json<TrainRequirementsPage>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .await
+    })
+    .await?;
+
+    let conn = &mut db_pool.get().await?;
+
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || TimetableError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    // List trains and paced trains
+    let (trains, stats) = <(models::TrainSchedule, models::PacedTrain)>::list_concatenated(
+        conn,
+        (
+            page_settings
+                .into_selection_settings()
+                .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id)),
+            page_settings
+                .into_selection_settings()
+                .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id)),
+        ),
+    )
+    .await?;
+    let (train_ids, trains): (Vec<_>, Vec<_>) = trains
+        .flat_map(|train| match train {
+            Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],
+            Either::Right(pt) => pt.iter_occurrences().collect(),
+        })
+        .unzip();
+
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client.clone(),
+        core_client.clone(),
+        &trains,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?
+    .into_iter()
+    .map(|(sim, _)| Arc::unwrap_or_clone(sim));
+    let start_times = trains.iter().map(|ts| ts.start_time());
+    let results =
+        build_trains_requirements(train_ids.into_iter(), start_times, simulations).collect();
+
+    Ok(Json(TrainRequirementsPage { results, stats }))
+}
+
+fn build_trains_requirements(
+    train_ids: impl Iterator<Item = TrainId>,
+    start_times: impl Iterator<Item = DateTime<Utc>>,
+    simulations: impl Iterator<Item = simulation::Response>,
+) -> impl Iterator<Item = TrainRequirementsById> {
+    izip!(train_ids, start_times, simulations).filter_map(|(train_id, start_time, sim)| {
+        let CompleteReportTrain {
+            spacing_requirements,
+            routing_requirements,
+            ..
+        } = match sim {
+            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
+                Some(final_output)
+            }
+            _ => None,
+        }?;
+        Some(TrainRequirementsById {
+            train_id: train_id.to_string(),
+            start_time,
+            spacing_requirements,
+            routing_requirements,
+        })
+    })
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct TrainRequirementsPage {
+    #[schema(value_type = Vec<TrainRequirementsById>)]
+    results: Vec<TrainRequirementsById>,
+    #[serde(flatten)]
+    stats: PaginationStats,
 }
 
 #[derive(Debug, Clone)]

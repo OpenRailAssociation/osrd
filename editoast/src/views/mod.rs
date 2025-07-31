@@ -193,6 +193,7 @@ fn service_router() -> router::DocumentedRouter {
                     .nests("/{id}", |path| {
                         path.route("/", delete!(timetable::delete))
                             .route("/conflicts", get!(timetable::conflicts))
+                            .route("/requirements", get!(timetable::requirements))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
                             .nests("/paced_trains", |path| {
                                 path.route("/", get!(timetable::get_paced_trains))
