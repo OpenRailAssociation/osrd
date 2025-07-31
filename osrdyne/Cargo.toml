@@ -22,7 +22,7 @@ kube = { version = "0.99", default-features = false, features = [
   "derive",
   "rustls-tls",
 ] }
-lapin = "2.5.3"
+lapin = "3.1.0"
 opentelemetry = "0.30.0"
 opentelemetry-otlp = { version = "0.30.0", features = ["grpc-tonic"] }
 opentelemetry-semantic-conventions = "0.30.0"
