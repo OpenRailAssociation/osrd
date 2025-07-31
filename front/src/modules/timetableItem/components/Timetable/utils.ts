@@ -2,51 +2,20 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { getOccurrencesNb } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId, isPacedTrainWithDetails } from 'utils/trainId';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import { specialCodeDictionary } from './consts';
 import type { TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */
-export const keepItem = (item: TimetableItemWithDetails, searchString: string): boolean => {
-  if (searchString) {
-    let hasMatchingExceptions = false;
-    const namesToCheck = [item.name];
-
-    if (isPacedTrainWithDetails(item)) {
-      hasMatchingExceptions = item.exceptions.some(
-        (exception) =>
-          exception.train_name?.value.toLowerCase().includes(searchString.toLowerCase()) ||
-          exception.labels?.value.some((label) =>
-            label.toLowerCase().includes(searchString.toLowerCase())
-          )
-      );
-
-      // handle occurrence names
-      const occurrencesCount = getOccurrencesNb(item.paced);
-      for (let i = 0; i < occurrencesCount; i += 1) {
-        const occurrenceName = computeOccurrenceName(item.name, i);
-        namesToCheck.push(occurrenceName);
-      }
-      const hasAddedExceptionNotRenamed = item.exceptions.some(
-        (exception) => exception.occurrence_index === undefined && !exception.train_name
-      );
-      if (hasAddedExceptionNotRenamed) namesToCheck.push(`${item.name}/+`); // default added exception name
-    }
-
-    const isNameFilterInTimetable = namesToCheck.some((n) =>
-      n.toLowerCase().includes(searchString.toLowerCase())
-    );
-    const searchStringInTags = item.labels
-      ? item.labels.join('').toLowerCase().includes(searchString.toLowerCase())
-      : false;
-    return isNameFilterInTimetable || searchStringInTags || hasMatchingExceptions;
-  }
-  return true;
+export const keepItem = (name: string | undefined, labels: string[], searchString: string) => {
+  if (!searchString) return true;
+  if (!name) return false;
+  const isNameFilterInTimetable = name.toLowerCase().includes(searchString.toLowerCase());
+  const searchStringInTags = labels.join('').toLowerCase().includes(searchString.toLowerCase());
+  return isNameFilterInTimetable || searchStringInTags;
 };
 
 export const extractTagCode = (tag?: string | null) => {
