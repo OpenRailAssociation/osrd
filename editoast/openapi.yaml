@@ -3526,7 +3526,7 @@ paths:
     get:
       tags:
       - timetable
-      summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
+      summary: Retrieve the list of conflicts of the timetable (invalid trains are ignored)
       parameters:
       - name: id
         in: path
@@ -3550,7 +3550,7 @@ paths:
           nullable: true
       responses:
         '200':
-          description: List of conflict
+          description: List of conflicts
           content:
             application/json:
               schema:
@@ -3636,6 +3636,66 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PacedTrainResponse'
+  /timetable/{id}/requirements:
+    get:
+      tags:
+      - timetable
+      summary: Retrieve the list of requirements of the timetable (invalid trains are ignored)
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 200
+          nullable: true
+          maximum: 200
+          minimum: 1
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      responses:
+        '200':
+          description: The paginated list of timetable requirements
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TrainRequirementsById'
   /timetable/{id}/round_trips/paced_trains:
     get:
       tags:
@@ -14407,6 +14467,45 @@ components:
       - value
       properties:
         value:
+          type: string
+    TrainRequirements:
+      type: object
+      required:
+      - start_time
+      - spacing_requirements
+      - routing_requirements
+      properties:
+        routing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRequirement'
+        spacing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacingRequirement'
+        start_time:
+          type: string
+          format: date-time
+    TrainRequirementsById:
+      type: object
+      required:
+      - train_id
+      - start_time
+      - spacing_requirements
+      - routing_requirements
+      properties:
+        routing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRequirement'
+        spacing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacingRequirement'
+        start_time:
+          type: string
+          format: date-time
+        train_id:
           type: string
     TrainSchedule:
       type: object

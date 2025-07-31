@@ -125,45 +125,49 @@ where
 {
 }
 
-pub trait InterleavedPaginatedList: Sized {
+pub trait ConcatenatedPaginatedList: Sized {
     type Item;
     type Settings;
+    type Error;
 
-    async fn list_interleaved(
+    async fn list_concatenated(
         conn: &mut DbConnection,
         settings: Self::Settings,
-    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats)>;
+    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats), Self::Error>;
 }
 
-impl<T: ListAndCount + 'static, U: ListAndCount + 'static> InterleavedPaginatedList for (T, U) {
+impl<T, U> ConcatenatedPaginatedList for (T, U)
+where
+    T: ListAndCount + 'static,
+    <T as List>::Error: From<<T as Count>::Error> + From<<U as List>::Error>,
+    U: ListAndCount + 'static,
+    <U as List>::Error: From<<U as Count>::Error>,
+{
     type Item = Either<T, U>;
     type Settings = (SelectionSettings<T>, SelectionSettings<U>);
+    type Error = <T as List>::Error;
 
-    async fn list_interleaved(
+    async fn list_concatenated(
         conn: &mut DbConnection,
         (ts, us): Self::Settings,
-    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats)> {
+    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats), Self::Error> {
         let ((t_page, t_page_size), (u_page, u_page_size)) = ts
             .get_pagination_settings()
             .zip(us.get_pagination_settings())
             .unwrap();
+        assert_eq!((t_page, t_page_size), (u_page, u_page_size));
         let (t_results, t_count) = T::list_and_count(conn, ts).await?;
         let (u_results, u_count) = U::list_and_count(
             conn,
             // in case some Ts are missing to reach t_page_size, we need to fetch more Us to reach the target page size
-            us.limit(u_page_size + (t_page_size - t_results.len() as u64)),
+            us.limit(t_page_size - t_results.len() as u64),
         )
         .await?;
 
-        let ts_behind = t_page * t_page_size + t_results.len() as u64;
-        let us_behind = u_page * u_page_size + u_results.len() as u64;
-
         let current_page_count = t_results.len() as u64 + u_results.len() as u64;
         let total_count = t_count + u_count;
-        let page_size = t_page_size + u_page_size;
-        let page = (ts_behind + us_behind).div_ceil(page_size);
 
-        let stats = PaginationStats::new(current_page_count, total_count, page, page_size);
+        let stats = PaginationStats::new(current_page_count, total_count, t_page, t_page_size);
         Ok((
             t_results
                 .into_iter()
@@ -261,19 +265,6 @@ impl<const MAX_PAGE_SIZE: u64> PaginationQueryParams<MAX_PAGE_SIZE> {
     /// that can then be used to list or count models
     pub fn into_selection_settings<M: Model + 'static>(self) -> SelectionSettings<M> {
         self.into()
-    }
-
-    pub fn interleaved(self) -> (Self, Self) {
-        let Self { page, page_size } = self;
-        let first = Self {
-            page,
-            page_size: page_size.div_ceil(2),
-        };
-        let second = Self {
-            page,
-            page_size: page_size / 2,
-        };
-        (first, second)
     }
 }
 

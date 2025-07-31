@@ -23,8 +23,19 @@ pub struct ConflictDetectionRequest {
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainRequirements {
+    pub start_time: DateTime<Utc>,
+    pub spacing_requirements: Vec<SpacingRequirement>,
+    pub routing_requirements: Vec<RoutingRequirement>,
+}
+
+// TODO: use struct in conflict detection instead of a Map<String, TrainRequirements>.
+#[editoast_derive::openapi_schema]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct TrainRequirementsById {
+    pub train_id: String,
     pub start_time: DateTime<Utc>,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,

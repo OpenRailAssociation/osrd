@@ -1101,6 +1101,21 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
+      getTimetableByIdRequirements: build.query<
+        GetTimetableByIdRequirementsApiResponse,
+        GetTimetableByIdRequirementsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/requirements`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+          },
+        }),
+        providesTags: ['timetable'],
+      }),
       getTimetableByIdRoundTripsPacedTrains: build.query<
         GetTimetableByIdRoundTripsPacedTrainsApiResponse,
         GetTimetableByIdRoundTripsPacedTrainsApiArg
@@ -2269,7 +2284,7 @@ export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
 };
-export type GetTimetableByIdConflictsApiResponse = /** status 200 List of conflict */ Conflict[];
+export type GetTimetableByIdConflictsApiResponse = /** status 200 List of conflicts */ Conflict[];
 export type GetTimetableByIdConflictsApiArg = {
   /** A timetable ID */
   id: number;
@@ -2292,6 +2307,18 @@ export type PostTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
   id: number;
   body: PacedTrain[];
+};
+export type GetTimetableByIdRequirementsApiResponse =
+  /** status 200 The paginated list of timetable requirements */ PaginationStats & {
+    results: TrainRequirementsById[];
+  };
+export type GetTimetableByIdRequirementsApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number | null;
+  infraId: number;
+  electricalProfileSetId?: number | null;
 };
 export type GetTimetableByIdRoundTripsPacedTrainsApiResponse =
   /** status 200  */ PaginationStats & {
@@ -4575,6 +4602,12 @@ export type SubCategoryPage = PaginationStats & {
 };
 export type TimetableResult = {
   timetable_id: number;
+};
+export type TrainRequirementsById = {
+  routing_requirements: RoutingRequirement[];
+  spacing_requirements: SpacingRequirement[];
+  start_time: string;
+  train_id: string;
 };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
