@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import { TRAIN_MAIN_CATEGORY_CLASS } from 'modules/timetableItem/components/Timetable/consts';
 
 import type { ConflictWithTrainNames } from '../types';
@@ -44,9 +45,10 @@ const ConflictCard = ({
       <div className="trains-name" title={conflict.trainNames.join(', ')}>
         {conflict.trainNames.map((trainName, idx) => {
           const category = conflict.trainCategories[idx];
-          const categoryClass = category
-            ? TRAIN_MAIN_CATEGORY_CLASS[category]
-            : TRAIN_MAIN_CATEGORY_CLASS.None;
+          const categoryClass =
+            category && isMainCategory(category)
+              ? TRAIN_MAIN_CATEGORY_CLASS[category.main_category]
+              : TRAIN_MAIN_CATEGORY_CLASS.None;
 
           return (
             <div

@@ -9,6 +9,7 @@ import {
   checkRoundTripCompatible,
 } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi, type TrainSchedule } from 'common/api/osrdEditoastApi';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -345,7 +346,11 @@ const getNgeTrainruns = (
       return {
         id: index + 1,
         name: timetableItem.train_name,
-        categoryId: getTrainrunCategoryId(timetableItem.category),
+        categoryId: getTrainrunCategoryId(
+          timetableItem.category && isMainCategory(timetableItem.category)
+            ? timetableItem.category.main_category
+            : undefined
+        ),
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
         labelIds: (timetableItem.labels || []).map((l) =>

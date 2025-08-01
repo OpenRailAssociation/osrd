@@ -20,11 +20,25 @@ pub struct SubCategory {
     pub code: String,
     pub main_category: TrainMainCategory,
     pub color: SubCategoryColor,
+    pub background_color: SubCategoryColor,
+    pub hovered_color: SubCategoryColor,
 }
 
 /// Represents a color for a sub-category in hexadecimal format #RRGGBB.
 #[derive(Clone, Debug, PartialEq, Serialize, ToSchema)]
 pub struct SubCategoryColor(String);
+
+impl From<String> for SubCategoryColor {
+    fn from(color: String) -> Self {
+        SubCategoryColor(color)
+    }
+}
+
+impl From<SubCategoryColor> for String {
+    fn from(color: SubCategoryColor) -> Self {
+        color.0
+    }
+}
 
 static COLOR_REGEX: OnceLock<Regex> = OnceLock::new();
 impl FromStr for SubCategoryColor {

@@ -8,6 +8,7 @@ use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::ExceptionType;
 use editoast_schemas::paced_train::Paced;
 use editoast_schemas::paced_train::PacedTrainException;
+use editoast_schemas::rolling_stock::TrainCategory;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
@@ -121,7 +122,9 @@ impl PacedTrain {
             speed_limit_tag: self.speed_limit_tag.map(|s| s.into()),
             power_restrictions: self.power_restrictions,
             options: self.options,
-            category: self.main_category.map(|category| category.0),
+            category: self.main_category.map(|category| TrainCategory::Main {
+                main_category: category.0,
+            }),
         }
     }
 
@@ -215,6 +218,10 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             exceptions,
         }: paced_train::PacedTrain,
     ) -> Self {
+        let main_category = match train_schedule_base.category {
+            Some(TrainCategory::Main { main_category }) => Some(TrainMainCategory(main_category)),
+            _ => None,
+        };
         PacedTrain::changeset()
             .comfort(train_schedule_base.comfort)
             .constraint_distribution(train_schedule_base.constraint_distribution)
@@ -231,7 +238,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
-            .main_category(train_schedule_base.category.map(TrainMainCategory))
+            .main_category(main_category)
             .exceptions(exceptions)
     }
 }
@@ -253,7 +260,11 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                 speed_limit_tag: paced_train.speed_limit_tag.map(Into::into),
                 power_restrictions: paced_train.power_restrictions,
                 options: paced_train.options,
-                category: paced_train.main_category.as_deref().cloned(),
+                category: paced_train
+                    .main_category
+                    .as_deref()
+                    .copied()
+                    .map(TrainCategory::main), // TODO: or sub category when it's going to exist
             },
             exceptions: paced_train.exceptions,
             paced: Paced {
@@ -277,6 +288,7 @@ mod tests {
     use chrono::Utc;
     use editoast_models::rolling_stock::TrainMainCategory;
     use editoast_schemas::paced_train::PacedTrainException;
+    use editoast_schemas::paced_train::RollingStockCategoryChangeGroup;
     use editoast_schemas::paced_train::StartTimeChangeGroup;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::Distribution;
@@ -315,6 +327,29 @@ mod tests {
     }
 
     #[rstest]
+    async fn paced_train_main_category_apply_exception() {
+        let mut exception = create_created_exception_with_change_groups("key_1");
+
+        exception.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
+            value: Some(editoast_schemas::rolling_stock::TrainCategory::Main {
+                main_category: editoast_schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+            }),
+        });
+
+        // The paced train has HighSpeedTrain
+        let paced_train = create_paced_train(vec![exception.clone()]);
+        let paced_train_exception = paced_train.apply_exception(&exception);
+
+        // Check if it get replaced by exception category
+        assert_eq!(
+            paced_train_exception.category,
+            Some(editoast_schemas::rolling_stock::TrainCategory::Main {
+                main_category: editoast_schemas::rolling_stock::TrainMainCategory::FastFreightTrain
+            })
+        );
+    }
+
+    #[rstest]
     #[case::created(create_created_exception_with_change_groups("key_1"))]
     #[case::modified(create_modified_exception_with_change_groups("key_2", 0))]
     async fn paced_train_apply_exception(#[case] exception: PacedTrainException) {
@@ -337,10 +372,8 @@ mod tests {
             paced_train_exception.initial_speed,
             exception.initial_speed.unwrap().value
         );
-        assert_eq!(
-            paced_train_exception.category,
-            exception.rolling_stock_category.unwrap().value
-        );
+        // Check if the category of the paced train that has a category is removed by an exception.
+        assert_eq!(paced_train_exception.category, None);
         assert_eq!(
             paced_train_exception.constraint_distribution,
             exception.constraint_distribution.unwrap().value

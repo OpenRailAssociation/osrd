@@ -147,7 +147,7 @@ export const PATHS: PathDisplay[] = [
       {
         position: positionKmToMm(50),
         time: +START_DATE + 10 * MIN,
-      }
+      },
     ],
     color: '#C75300',
   },
