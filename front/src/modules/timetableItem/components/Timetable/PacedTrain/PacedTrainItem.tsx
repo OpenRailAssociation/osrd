@@ -312,7 +312,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          isTimetableItemValid={summary && !summary.isValid}
+          isTimetableItemValid={summary?.isValid}
           showResetExceptionsButton={pacedTrain.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(
