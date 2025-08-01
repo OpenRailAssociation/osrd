@@ -37,6 +37,7 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
 
     companion object {
         val ZERO = Distance(millimeters = 0L)
+        val MAX = Distance(millimeters = Long.MAX_VALUE)
 
         fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
 

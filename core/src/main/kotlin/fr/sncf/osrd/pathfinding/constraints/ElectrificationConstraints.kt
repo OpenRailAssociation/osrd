@@ -4,11 +4,11 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.path.implementations.buildTrainPath
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import java.util.stream.Collectors
@@ -19,7 +19,7 @@ data class ElectrificationConstraints(
     val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
-        val path = makePathProps(blockInfra, rawInfra, edge)
+        val path = buildTrainPath(rawInfra, blockInfra, edge)
         return getBlockedRanges(path, compatibleElectrification)
     }
 
