@@ -2,10 +2,9 @@
   border-radius: 4px;
   background-color: var(--white);
   height: 124px;
-  padding: 8px;
   transition: 0.4s;
-  cursor: pointer;
-  margin-bottom: 8px;
+  padding: 8px 48px 8px 0;
+
   .scenario-explorator-card-noscenario {
     display: flex;
     align-items: center;
@@ -13,7 +12,7 @@
     text-align: center;
     height: 100%;
     width: 100%;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
   .scenario-explorator-card-head {
     height: 108px;

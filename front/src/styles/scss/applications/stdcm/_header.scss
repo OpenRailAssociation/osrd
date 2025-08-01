@@ -102,18 +102,4 @@
   .impersonated-bg {
     background-color: var(--white100);
   }
-
-  .scenario-explorator-card {
-    height: 112px;
-    margin-bottom: 0;
-
-    &-noscenario {
-      font-size: 1.2rem;
-    }
-
-    &-head-img,
-    &-head {
-      height: 96px;
-    }
-  }
 }
