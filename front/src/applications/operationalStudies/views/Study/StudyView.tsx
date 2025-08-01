@@ -41,7 +41,7 @@ type studyParams = {
   studyId: string;
 };
 
-const Study = () => {
+const StudyView = () => {
   const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
@@ -381,4 +381,4 @@ const Study = () => {
   );
 };
 
-export default Study;
+export default StudyView;
