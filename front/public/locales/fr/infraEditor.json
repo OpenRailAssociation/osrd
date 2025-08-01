@@ -1,20 +1,20 @@
 {
   "ApplicableDirections": {
-    "description": "Utilisé pour connaître le sens d'application de certains objets.",
+    "description": "Utilisé pour connaître le sens d'application de certains objets",
     "title": "Directions applicables"
   },
   "ApplicableDirectionsTrackRange": {
     "description": "Intervalle sur une section de voie avec directions associées.",
     "properties": {
       "applicable_directions": {
-        "description": "Direction dans laquelle l'objet correspondant est appliqué."
+        "description": "Direction dans laquelle l'objet correspondant est appliqué"
       },
       "begin": {
-        "description": "Distance par rapport au début de la section de voie correspondante (en mètres).",
+        "description": "Distance par rapport au début de la section de voie correspondante (en mètres)",
         "title": "Début"
       },
       "end": {
-        "description": "Décalage par rapport à la fin de la section de voie correspondante (en mètres).",
+        "description": "Décalage par rapport à la fin de la section de voie correspondante (en mètres)",
         "title": "Fin"
       },
       "track": {
@@ -22,7 +22,7 @@
         "title": "Voie"
       }
     },
-    "title": "ApplicableDirectionsTrackRange"
+    "title": "Section de voie orientée"
   },
   "BalSystem": {
     "properties": {
@@ -34,7 +34,7 @@
         "description": "Paramètres du signal BAL"
       },
       "next_signaling_systems": {
-        "description": "La liste des systèmes de signalisation d'entrée autorisés.",
+        "description": "La liste des systèmes de signalisation d'entrée autorisés",
         "title": "Systèmes de signalisation suivants"
       },
       "settings": {
@@ -53,7 +53,7 @@
         "title": "Paramètres conditionnels"
       },
       "next_signaling_systems": {
-        "description": "La liste des systèmes de signalisation d'entrée autorisés.",
+        "description": "La liste des systèmes de signalisation d'entrée autorisés",
         "title": "Systèmes de signalisation suivants"
       },
       "parameters": {
@@ -76,7 +76,7 @@
         "title": "Identifiant"
       },
       "position": {
-        "description": "Distance par rapport au début de la section de voie correspondante (en mètres).",
+        "description": "Distance par rapport au début de la section de voie correspondante (en mètres)",
         "title": "Position"
       },
       "track": {
@@ -104,7 +104,7 @@
   "BufferStopSncfExtension": {
     "properties": {
       "kp": {
-        "description": "Point kilométrique auquel se situe le heurtoir.",
+        "description": "Point kilométrique auquel se situe le heurtoir",
         "title": "PK"
       }
     },
@@ -212,7 +212,7 @@
     "title": "Intervalle directionnel sur une section de voie"
   },
   "Electrification": {
-    "description": "Une caténaire est un ensemble de câbles permettant d’alimenter les trains en utilisant un pantographe. La caténaire est repérable par son identifiant",
+    "description": "Une caténaire est un ensemble de câbles permettant d’alimenter les trains en utilisant un pantographe.\nLa caténaire est repérable par son identifiant.",
     "properties": {
       "id": {
         "description": "Identifiant unique de l'objet",
@@ -355,7 +355,11 @@
         "title": "Annonce"
       },
       "end": {
-        "description": "Fin de la section neutre pb/cc"
+        "description": "Fin de la section neutre pb/cc",
+        "title": "Fin"
+      },
+      "exe": {
+        "description": "Début des bp/cc zone neutre"
       }
     }
   },
@@ -405,19 +409,19 @@
   "OperationalPointSncfExtension": {
     "properties": {
       "ch": {
-        "description": " // THOR site code of the operational point",
+        "description": "THOR site code of the operational point",
         "title": "Ch"
       },
       "ch_long_label": {
-        "description": " // THOR site code long label of the operational point",
-        "title": "Ch Long Label"
+        "description": "THOR site code long label of the operational point",
+        "title": "Libellé CH long"
       },
       "ch_short_label": {
-        "description": " // THOR site code short label of the operational point",
-        "title": "Ch Short Label"
+        "description": "THOR site code short label of the operational point",
+        "title": "Libellé CH court"
       },
       "ci": {
-        "description": " // THOR immutable code of the operational point",
+        "description": "THOR immutable code of the operational point",
         "title": "Ci"
       },
       "trigram": {
@@ -707,11 +711,11 @@
     "properties": {
       "id": {
         "description": "Identifiant de l'élément dans la source",
-        "title": "Source ID"
+        "title": "ID"
       },
       "name": {
         "description": "Nom de la source",
-        "title": "Source"
+        "title": "Nom"
       }
     }
   },
