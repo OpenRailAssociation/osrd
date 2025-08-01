@@ -1,4 +1,4 @@
-import type { Conflict, TrainMainCategory } from 'common/api/osrdEditoastApi';
+import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
@@ -60,20 +60,21 @@ function getConflictTrainNames(
 function getConflictTrainCategories(
   conflict: Conflict,
   trainMap: Map<TimetableItemId, TimetableItemWithDetails>
-): (TrainMainCategory | null)[] {
-  const timetableItemCategories: (TrainMainCategory | null)[] = conflict.train_schedule_ids.map(
+): (TrainCategory | null)[] {
+  const timetableItemCategories: (TrainCategory | null)[] = conflict.train_schedule_ids.map(
     (id) => {
       const train = trainMap.get(formatEditoastIdToTrainScheduleId(id));
       return train?.category ?? null;
     }
   );
 
-  const occurrenceCategories: (TrainMainCategory | null)[] =
-    conflict.paced_train_occurrence_ids.map((occurrence) => {
+  const occurrenceCategories: (TrainCategory | null)[] = conflict.paced_train_occurrence_ids.map(
+    (occurrence) => {
       const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
       if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return null;
       return pacedTrain?.category ?? null;
-    });
+    }
+  );
 
   return [...timetableItemCategories, ...occurrenceCategories];
 }

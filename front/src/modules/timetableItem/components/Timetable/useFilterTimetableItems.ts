@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { uniq } from 'lodash';
 
 import { useRollingStockContext } from 'common/RollingStockContext';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import { useDebounce } from 'utils/helpers';
 import { isPacedTrainWithDetails } from 'utils/trainId';
 
@@ -123,7 +124,10 @@ const useFilterTimetableItems = (
           if (category) {
             return false;
           }
-        } else if (!category || category !== trainCategoryFilter) {
+        } else if (
+          !category ||
+          (isMainCategory(category) && category.main_category !== trainCategoryFilter)
+        ) {
           return false;
         }
       }

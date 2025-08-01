@@ -18,6 +18,7 @@ import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -247,7 +248,7 @@ const PacedTrainItem = ({
             data-testid="occurrences-count"
             className={cx(
               'occurrences-count',
-              `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+              `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category && isMainCategory(pacedTrain.category) ? pacedTrain.category.main_category : 'None']}`
             )}
           >
             {occurrencesCount}
@@ -262,7 +263,7 @@ const PacedTrainItem = ({
               data-testid="paced-train-name"
               className={cx(
                 'train-name',
-                `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category ?? 'None']}`
+                `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category && isMainCategory(pacedTrain.category) ? pacedTrain.category.main_category : 'None']}`
               )}
             >
               {pacedTrain.name}

@@ -14,7 +14,16 @@ editoast_common::schemas! {
 // Any changes made to this enum must be reflected in the corresponding Postgres enum,
 // and vice versa, to ensure consistency between the application and the database.
 #[derive(
-    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, EnumString, IntoStaticStr, Display,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    ToSchema,
+    EnumString,
+    IntoStaticStr,
+    Display,
 )]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]

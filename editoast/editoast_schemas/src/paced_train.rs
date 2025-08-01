@@ -14,7 +14,7 @@ use utoipa::openapi::schema::Schema;
 
 use crate::primitives::NonBlankString;
 use crate::primitives::PositiveDuration;
-use crate::rolling_stock::TrainMainCategory;
+use crate::rolling_stock::TrainCategory;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
 use crate::train_schedule::Margins;
@@ -189,7 +189,7 @@ pub struct RollingStockChangeGroup {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct RollingStockCategoryChangeGroup {
-    pub value: Option<TrainMainCategory>,
+    pub value: Option<TrainCategory>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

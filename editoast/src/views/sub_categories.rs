@@ -106,6 +106,8 @@ async fn create_sub_categories(
             name: d.name,
             main_category: d.main_category,
             color: d.color,
+            background_color: d.background_color,
+            hovered_color: d.hovered_color,
         })
         .collect();
 

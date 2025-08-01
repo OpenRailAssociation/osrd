@@ -19,6 +19,7 @@ import PowerRestrictionsSelector from 'modules/powerRestriction/components/Power
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import { Map } from 'modules/timetableItem/components/ManageTimetableItem';
@@ -230,8 +231,9 @@ const ManageTimetableItem = () => {
   const showCategoryWarning =
     rollingStock &&
     currentCategory &&
-    currentCategory !== rollingStock.primary_category &&
-    !rollingStock.other_categories.includes(currentCategory);
+    isMainCategory(currentCategory) &&
+    currentCategory.main_category !== rollingStock.primary_category &&
+    !rollingStock.other_categories.includes(currentCategory.main_category);
   const categoryWarning = showCategoryWarning ? t('categoryMismatch') : undefined;
 
   return (
