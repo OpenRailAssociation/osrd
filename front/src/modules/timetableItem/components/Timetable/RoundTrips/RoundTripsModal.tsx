@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@osrd-project/ui-core';
+import { Button, Input } from '@osrd-project/ui-core';
+import { Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +9,7 @@ import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/
 import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import { useDebounce } from 'utils/helpers';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mapBy } from 'utils/types';
 
@@ -41,6 +43,8 @@ const RoundTripsModal = ({
 
   const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
   const [itemIdToPair, setItemIdToPair] = useState<TimetableItemId>();
+  const [filter, setFilter] = useState('');
+  const debouncedFilter = useDebounce(filter, 300);
 
   const { data: { results: subCategories } = { results: [] } } =
     osrdEditoastApi.endpoints.getSubCategory.useQuery({
@@ -64,6 +68,12 @@ const RoundTripsModal = ({
         roundTrips: RoundTripsColumnPair[];
       }>(
         (acc, item) => {
+          if (
+            item.status !== 'roundTrips' &&
+            !item.name.toLowerCase().includes(debouncedFilter.toLowerCase())
+          ) {
+            return acc;
+          }
           if (item.status === 'todo') {
             acc.todo.push(item);
           }
@@ -84,12 +94,19 @@ const RoundTripsModal = ({
           const pairingItemB = pairingItemsById.get(item.pairedItemId)!;
           const isValid = checkRoundTripCompatible(timetableItemA, timetableItemB);
 
+          if (
+            !item.name.toLowerCase().includes(debouncedFilter.toLowerCase()) &&
+            !pairingItemB.name.toLowerCase().includes(debouncedFilter.toLowerCase())
+          ) {
+            return acc;
+          }
+
           acc.roundTrips.push({ pair: [item, pairingItemB], isValid });
           return acc;
         },
         { todo: [], oneWays: [], roundTrips: [] }
       ),
-    [pairingItemsById, timetableItemsWithOpsById]
+    [pairingItemsById, timetableItemsWithOpsById, debouncedFilter]
   );
 
   const openModal = () => {
@@ -118,6 +135,21 @@ const RoundTripsModal = ({
     <dialog ref={modalRef} className="round-trips-modal">
       <div className="round-trips-modal-header">
         <h1 className="title">{t('roundTripsModal.roundTripsManagement')}</h1>
+        <Input
+          id="candidates-filter"
+          small
+          narrow
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          withIcons={[
+            {
+              icon: <Filter size="sm" />,
+              action: () => {},
+              className: cx('filter-input-icon', { disabled: !!itemIdToPair }),
+            },
+          ]}
+          disabled={!!itemIdToPair}
+        />
       </div>
       <div className={cx('round-trips-modal-body', { 'pairing-body': !!itemIdToPair })}>
         <TodoColumn

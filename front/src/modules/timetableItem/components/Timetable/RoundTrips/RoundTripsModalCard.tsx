@@ -127,6 +127,7 @@ const RoundTripsModalCard = ({
     >
       <div className="round-trips-card-header">
         <h3
+          title={name}
           className={cx(
             'name',
             `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category && isMainCategory(category) ? category.main_category : 'None']}`
