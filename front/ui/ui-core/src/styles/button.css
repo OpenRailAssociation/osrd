@@ -1,7 +1,7 @@
 .button {
   height: 2.5rem;
   font-size: 1.125rem;
-  font-weight: 400;
+  font-weight: 500;
   @apply text-grey-5;
   padding: 0.5rem 0.875rem 0.688rem 0.875rem;
   background: linear-gradient(#2c6ef9, #1844ef);
