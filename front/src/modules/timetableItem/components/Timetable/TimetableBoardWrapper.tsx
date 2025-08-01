@@ -121,15 +121,21 @@ const TimetableBoardWrapper = ({
     if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0)
       return t('main.timetable.noItem');
 
-    const pacedTrainLabel = t('main.pacedTrainCountSelected', {
-      count: selectedPacedTrainIds.length,
-      totalCount: totalPacedTrainCount,
-    });
+    const pacedTrainLabel =
+      selectedPacedTrainIds.length > 0
+        ? t('main.pacedTrainCountSelected', {
+            count: selectedPacedTrainIds.length,
+            totalCount: totalPacedTrainCount,
+          })
+        : t('main.pacedTrain', { count: totalPacedTrainCount });
 
-    const trainScheduleLabel = t('main.trainCountSelected', {
-      count: selectedTrainScheduleIds.length,
-      totalCount: totalTrainScheduleCount,
-    });
+    const trainScheduleLabel =
+      selectedTrainScheduleIds.length > 0
+        ? t('main.trainCountSelected', {
+            count: selectedTrainScheduleIds.length,
+            totalCount: totalTrainScheduleCount,
+          })
+        : t('main.train', { count: totalTrainScheduleCount });
 
     if (totalTrainScheduleCount === 0) {
       return pacedTrainLabel;
