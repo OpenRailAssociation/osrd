@@ -2,7 +2,7 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;

@@ -27,6 +27,7 @@ dependencies {
     implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
+    implementation libs.hppc
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
