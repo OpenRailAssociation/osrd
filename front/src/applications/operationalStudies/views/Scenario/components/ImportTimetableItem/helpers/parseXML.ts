@@ -304,10 +304,19 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   });
 
   const trainElementsById: Record<string, Element> = {};
+  const trainPartToTypeMap: Record<string, string> = {};
+
   Array.from(xmlDoc.getElementsByTagName('train')).forEach((train) => {
     const id = train.getAttribute('id');
+    const trainType = train.getAttribute('type');
+    const trainPartRef = train.querySelector('trainPartRef')?.getAttribute('ref');
+
     if (id) {
       trainElementsById[id] = train;
+    }
+
+    if (trainPartRef && trainType) {
+      trainPartToTypeMap[trainPartRef] = trainType;
     }
   });
 
@@ -364,12 +373,22 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     }
   });
 
+  // Filter train schedules to only include operational trains
+  const operationalTrainSchedules = trainSchedules.filter((schedule) => {
+    const trainPartEntry = Object.entries(trainSchedulesByTrainPartId).find(
+      ([_, trainSchedule]) => trainSchedule === schedule
+    );
+    const trainPartId = trainPartEntry?.[0];
+    const trainType = trainPartId ? trainPartToTypeMap[trainPartId] : undefined;
+    return trainType === 'operational';
+  });
+
   const trainSchedulesInPacedTrain = new Set(
     Object.values(pacedTrains)
       .flat()
       .map((schedule) => schedule.train_name)
   );
-  const singleTrainSchedules = trainSchedules.filter(
+  const singleTrainSchedules = operationalTrainSchedules.filter(
     (schedule) => !trainSchedulesInPacedTrain.has(schedule.train_name)
   );
 
