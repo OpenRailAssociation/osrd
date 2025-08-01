@@ -268,7 +268,7 @@
         "end": "Arrivée",
         "endpoint": "Extrémité :",
         "from": "de",
-        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire.",
+        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire",
         "help": {
           "actions-on-edit-route": "Vous pouvez supprimer l'itinéraire, le modifier, ou en créer un nouveau.",
           "select-endpoints": "L'itinéraire doit avoir un point de départ et un point d'arrivée.",
