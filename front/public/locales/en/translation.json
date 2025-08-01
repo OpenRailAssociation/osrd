@@ -460,10 +460,10 @@
   "authorization": {
     "addGrantToUser": "Add grant to user",
     "grants": {
-      "edit": "write",
-      "full": "full access",
-      "none": "no access",
-      "read": "read"
+      "edit": "Write",
+      "full": "Full access",
+      "none": "No access",
+      "read": "Read"
     },
     "permission": "Permission",
     "permissionDenied": "You don't have permission to perform this action",
