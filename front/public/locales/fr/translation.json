@@ -99,7 +99,7 @@
       "infra-readonly": "Attention, vous êtes en lecture seule sur cette infra",
       "label": {
         "title-with-filter_many": "",
-        "title-with-filter_one": "{{count}} anomalie sur {{total}}",
+        "title-with-filter_one": "{{count}} anomali.e DO NOT MERGE sur {{total}}",
         "title-with-filter_other": "{{count}} anomalies sur {{total}}",
         "title_many": "",
         "title_one": "{{count}} anomalie",
