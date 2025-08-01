@@ -18,7 +18,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 56px;
+    padding-inline: 56px 24px;
 
     .title {
       font-size: 24px;
@@ -26,6 +26,19 @@
       letter-spacing: -0.2px;
       line-height: 24px;
       margin-bottom: 0;
+    }
+
+    .input-field-wrapper {
+      width: 320px;
+
+      .filter-input-icon {
+        color: var(--grey30);
+
+        // TODO : probably extend the disable prop to the icon when there is one in ui/core
+        &.disabled {
+          opacity: 0.2;
+        }
+      }
     }
   }
 
