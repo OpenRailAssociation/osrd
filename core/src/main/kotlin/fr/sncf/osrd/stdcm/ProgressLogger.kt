@@ -1,9 +1,9 @@
 package fr.sncf.osrd.stdcm
 
+import fr.sncf.osrd.path.implementations.buildTrainPath
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.logger
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.seconds
 import java.time.Duration.*
@@ -36,7 +36,7 @@ data class ProgressLogger(
         }
         if (progress >= thresholdDistance * nSamplesReached) {
             val block = node.infraExplorer.getCurrentBlock()
-            val geo = makePathProps(graph.blockInfra, graph.rawInfra, block).getGeo().points[0]
+            val geo = buildTrainPath(graph.rawInfra, graph.blockInfra, block).getGeo().points[0]
             val str =
                 "node sample for progress $nSamplesReached/$nStepsProgress: " +
                     "time=${node.timeData.earliestReachableTime.toInt()}s, " +

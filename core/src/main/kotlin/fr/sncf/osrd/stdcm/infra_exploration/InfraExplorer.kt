@@ -7,6 +7,7 @@ import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.PathPropertiesView
+import fr.sncf.osrd.path.implementations.buildTrainPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
@@ -21,7 +22,6 @@ import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.appendOnlyMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -131,7 +131,7 @@ fun initInfraExplorer(
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
-    val pathProps = makePathProps(blockInfra, rawInfra, block)
+    val pathProps: PathProperties = buildTrainPath(rawInfra, blockInfra, block)
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
@@ -186,7 +186,7 @@ private class InfraExplorerImpl(
         // So we have to correct that here now that we now which route we're on.
         val path =
             pathPropertiesCache.getOrElse(getCurrentBlock()) {
-                val res = makePathProps(blockInfra, rawInfra, getCurrentBlock())
+                val res = buildTrainPath(rawInfra, blockInfra, getCurrentBlock())
                 pathPropertiesCache[getCurrentBlock()] = res
                 res
             }
