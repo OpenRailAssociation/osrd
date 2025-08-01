@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED
+import fr.sncf.osrd.path.implementations.buildTrainPath
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
@@ -19,7 +20,6 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.Helpers.getExampleInfra
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 import java.io.IOException
 import java.net.URISyntaxException
@@ -151,11 +151,11 @@ class MRSPTest {
         // Compute paths
         val infra = fullInfraFromRJS(rjsInfra)
         val blockInfra = infra.blockInfra
-        path = makePathProps(blockInfra, infra.rawInfra, BlockId(0U), routes = listOf())
+        path = buildTrainPath(infra.rawInfra, blockInfra, BlockId(0U), routes = listOf())
         val block30 = Helpers.getBlocksOnRoutes(infra, listOf(route1.id))[0]
-        path30 = makePathProps(blockInfra, infra.rawInfra, block30, routes = listOf(route1.id))
+        path30 = buildTrainPath(infra.rawInfra, blockInfra, block30, routeNames = listOf(route1.id))
         val block60 = Helpers.getBlocksOnRoutes(infra, listOf(route2.id))[0]
-        path60 = makePathProps(blockInfra, infra.rawInfra, block60, routes = listOf(route2.id))
+        path60 = buildTrainPath(infra.rawInfra, blockInfra, block60, routeNames = listOf(route2.id))
     }
 
     private fun setUpOnNestedSwitches() {
@@ -171,7 +171,7 @@ class MRSPTest {
         fun makePathFromRoute(route: String, speed: Double): TestPath {
             val block = Helpers.getBlocksOnRoutes(infra, listOf(route)).last()
             val pathProps =
-                makePathProps(infra.blockInfra, infra.rawInfra, block, routes = listOf(route))
+                buildTrainPath(infra.rawInfra, infra.blockInfra, block, routeNames = listOf(route))
             val pathLen = routeLen(route)
             val envelope =
                 Envelope.make(
@@ -193,7 +193,7 @@ class MRSPTest {
         val block = Helpers.getBlocksOnRoutes(infra, listOf(ROUTES[0])).last()
         pathTo1NoRoutes =
             TestPath(
-                makePathProps(infra.blockInfra, infra.rawInfra, block, routes = listOf()),
+                buildTrainPath(infra.rawInfra, infra.blockInfra, block, routes = listOf()),
                 Envelope.make(
                     EnvelopeTestUtils.makeFlatPart(
                         LimitKind.SPEED_LIMIT,

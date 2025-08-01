@@ -3,13 +3,13 @@ package fr.sncf.osrd.pathfinding
 import com.google.common.collect.Iterables
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.path.implementations.buildTrainPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.Helpers
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
@@ -32,7 +32,7 @@ class RemainingDistanceEstimatorTest {
     fun setUp() {
         smallInfra = Helpers.smallInfra
         block = Helpers.getBlocksOnRoutes(smallInfra!!, listOf("rt.DA2->DA5"))[0]
-        path = makePathProps(smallInfra!!.blockInfra, smallInfra!!.rawInfra, block!!)
+        path = buildTrainPath(smallInfra!!.rawInfra, smallInfra!!.blockInfra, block!!)
     }
 
     @ParameterizedTest
