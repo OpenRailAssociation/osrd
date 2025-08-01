@@ -143,7 +143,7 @@
     "pacedTrainCount_zero": "0/{{totalCount}} mission",
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
-    "pacedTrain_zero": "",
+    "pacedTrain_zero": "0 mission",
     "requestedPoint": "point demandé ({{ count }})",
     "requestedPointUnknown": "point demandé",
     "roundTripsModal": {
@@ -260,7 +260,7 @@
     "trainCount_zero": "0/{{totalCount}} train",
     "train_one": "1 train",
     "train_other": "{{count}} trains",
-    "train_zero": ""
+    "train_zero": "0 train"
   },
   "manageTimetableItem": {
     "addPacedTrain": "Ajouter une mission",
