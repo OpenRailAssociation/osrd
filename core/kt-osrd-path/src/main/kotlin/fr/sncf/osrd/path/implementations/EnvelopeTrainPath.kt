@@ -1,16 +1,15 @@
-package fr.sncf.osrd.envelope_sim_infra
+package fr.sncf.osrd.path.implementations
 
 import com.carrotsearch.hppc.DoubleArrayList
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeMap
-import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
-import fr.sncf.osrd.path.implementations.EnvelopeSimPath
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
+import fr.sncf.osrd.path.legacy_objects.buildElectrificationMap
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.buildElectrificationMap
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 
 object EnvelopeTrainPath {

@@ -1,11 +1,13 @@
-package fr.sncf.osrd.utils
+package fr.sncf.osrd.path.legacy_objects
 
-import fr.sncf.osrd.envelope_sim.electrification.Electrified
-import fr.sncf.osrd.envelope_sim.electrification.Neutral
-import fr.sncf.osrd.envelope_sim.electrification.NonElectrified
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
+import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
+import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.sim_infra.api.NeutralSection
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.units.Distance
 
 /** Builds the ElectrificationMap */

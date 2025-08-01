@@ -2,12 +2,12 @@ package fr.sncf.osrd.sim_infra_adapter
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
-import fr.sncf.osrd.envelope_sim.electrification.Electrified
-import fr.sncf.osrd.envelope_sim.electrification.Neutral
-import fr.sncf.osrd.envelope_sim.electrification.NonElectrified
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
+import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.Electrification
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
+import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
+import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
+import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope_sim.electrification;
+package fr.sncf.osrd.path.legacy_objects.electrification;
 
 import fr.sncf.osrd.path.interfaces.Electrification;
 import java.util.Objects;

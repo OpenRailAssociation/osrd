@@ -1,4 +1,4 @@
-package fr.sncf.osrd.external_generated_inputs
+package fr.sncf.osrd.path.legacy_objects
 
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet

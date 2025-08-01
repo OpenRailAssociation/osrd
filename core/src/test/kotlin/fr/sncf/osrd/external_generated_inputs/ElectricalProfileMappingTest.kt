@@ -1,5 +1,6 @@
 package fr.sncf.osrd.external_generated_inputs
 
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions.assertThat
