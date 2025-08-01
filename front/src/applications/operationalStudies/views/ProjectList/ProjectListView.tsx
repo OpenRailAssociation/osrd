@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import useMultiSelection from 'applications/operationalStudies/hooks/useMultiSelection';
 import {
   osrdEditoastApi,
   type PostSearchApiArg,
@@ -15,13 +17,11 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
-import ProjectCard from 'modules/project/components/ProjectCard';
 import cleanLocalStorageByProject from 'modules/project/helpers/cleanLocalStorageByProject';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
-import AddNewCard from './components/AddNewCard';
-import useMultiSelection from './hooks/useMultiSelection';
+import ProjectCard from './ProjectCard';
 
 type SortOptions =
   | 'NameAsc'
@@ -31,7 +31,7 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-const HomeOperationalStudies = () => {
+const ProjectListView = () => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const safeWord = useSelector(getUserSafeWord);
@@ -202,4 +202,4 @@ const HomeOperationalStudies = () => {
   );
 };
 
-export default HomeOperationalStudies;
+export default ProjectListView;

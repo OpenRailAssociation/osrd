@@ -4,8 +4,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
 
 import HomeEditor from 'applications/editor/Home';
-import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import Project from 'applications/operationalStudies/views/Project';
+import ProjectList from 'applications/operationalStudies/views/ProjectList';
 import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
@@ -91,7 +91,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: 'projects',
-        element: <HomeOperationalStudies />,
+        element: <ProjectList />,
       },
       {
         path: 'projects/:projectId',
