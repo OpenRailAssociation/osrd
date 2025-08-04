@@ -36,9 +36,9 @@ pub enum DriverError {
 impl Display for DriverError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            DriverError::DockerError(e) => write!(f, "Docker error: {}", e),
-            DriverError::KubernetesError(e) => write!(f, "Kubernetes error: {}", e),
-            DriverError::ProcessComposeError(e) => write!(f, "process-compose error: {}", e),
+            DriverError::DockerError(e) => write!(f, "Docker error: {e}"),
+            DriverError::KubernetesError(e) => write!(f, "Kubernetes error: {e}"),
+            DriverError::ProcessComposeError(e) => write!(f, "process-compose error: {e}"),
         }
     }
 }
