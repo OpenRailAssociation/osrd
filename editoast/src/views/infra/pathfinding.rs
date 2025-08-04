@@ -212,10 +212,10 @@ impl PathfindingStep {
 
     /// Check if the step or a previous step is using the given switch
     fn is_using_switch(&self, switch_id: &String) -> bool {
-        if let Some((switch, _)) = &self.switch_direction {
-            if switch.0 == *switch_id {
-                return true;
-            }
+        if let Some((switch, _)) = &self.switch_direction
+            && switch.0 == *switch_id
+        {
+            return true;
         }
 
         self.previous

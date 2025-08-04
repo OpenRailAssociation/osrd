@@ -323,14 +323,14 @@ impl Request {
                 .unwrap_or_default();
         let consist_mass = consist_mass.floor::<kilogram>();
 
-        if let Some(request_total_mass) = self.total_mass {
-            if request_total_mass < consist_mass {
-                return Err(StdcmError::InvalidConsistMass {
-                    expected_min: consist_mass.value,
-                    provided_consist_mass: request_total_mass.value,
-                }
-                .into());
+        if let Some(request_total_mass) = self.total_mass
+            && request_total_mass < consist_mass
+        {
+            return Err(StdcmError::InvalidConsistMass {
+                expected_min: consist_mass.value,
+                provided_consist_mass: request_total_mass.value,
             }
+            .into());
         }
 
         Ok(())
@@ -348,14 +348,14 @@ impl Request {
                 .unwrap_or_default();
         let consist_length = consist_length.floor::<meter>();
 
-        if let Some(request_total_length) = self.total_length {
-            if request_total_length < consist_length {
-                return Err(StdcmError::InvalidConsistLength {
-                    expected_min: consist_length.value,
-                    provided_consist_length: request_total_length.value,
-                }
-                .into());
+        if let Some(request_total_length) = self.total_length
+            && request_total_length < consist_length
+        {
+            return Err(StdcmError::InvalidConsistLength {
+                expected_min: consist_length.value,
+                provided_consist_length: request_total_length.value,
             }
+            .into());
         }
 
         Ok(())
@@ -368,28 +368,28 @@ impl<'de> Deserialize<'de> for Request {
         D: Deserializer<'de>,
     {
         let request = Request::deserialize(deserializer)?;
-        if let Some(mass) = request.total_mass {
-            if mass <= units::kilogram::new(0.0) {
-                return Err(serde::de::Error::custom(
-                    "the total mass must be strictly positive",
-                ));
-            }
+        if let Some(mass) = request.total_mass
+            && mass <= units::kilogram::new(0.0)
+        {
+            return Err(serde::de::Error::custom(
+                "the total mass must be strictly positive",
+            ));
         }
 
-        if let Some(total_length) = request.total_length {
-            if total_length <= units::meter::new(0.0) {
-                return Err(serde::de::Error::custom(
-                    "the length mass must be strictly positive",
-                ));
-            }
+        if let Some(total_length) = request.total_length
+            && total_length <= units::meter::new(0.0)
+        {
+            return Err(serde::de::Error::custom(
+                "the length mass must be strictly positive",
+            ));
         }
 
-        if let Some(max_speed) = request.max_speed {
-            if max_speed <= units::meter_per_second::new(0.0) {
-                return Err(serde::de::Error::custom(
-                    "the max_speed must be strictly positive",
-                ));
-            }
+        if let Some(max_speed) = request.max_speed
+            && max_speed <= units::meter_per_second::new(0.0)
+        {
+            return Err(serde::de::Error::custom(
+                "the max_speed must be strictly positive",
+            ));
         }
 
         Ok(request)

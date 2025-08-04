@@ -106,10 +106,10 @@ impl Project {
                 let old_doc_id = self.image;
                 self.image = new_doc_id;
                 self.save(&mut conn).await?;
-                if new_doc_id != old_doc_id {
-                    if let Some(old_doc_id) = old_doc_id {
-                        try_delete_document(&conn, old_doc_id).await?;
-                    }
+                if new_doc_id != old_doc_id
+                    && let Some(old_doc_id) = old_doc_id
+                {
+                    try_delete_document(&conn, old_doc_id).await?;
                 }
                 Ok::<_, model::Error>(())
             }

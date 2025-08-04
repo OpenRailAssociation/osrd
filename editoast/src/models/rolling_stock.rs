@@ -193,16 +193,18 @@ impl RollingStockChangeset {
 
     fn validate_primary_category(&self, validation_errors: &mut ValidationErrors) {
         if let Some(primary_category) = &self.primary_category {
-            if let Some(other_categories) = &self.other_categories {
-                if other_categories
+            if let Some(other_categories) = &self.other_categories
+                && other_categories
                     .iter()
                     .flatten()
                     .any(|category| category == primary_category)
-                {
-                    let mut error = ValidationError::new("primary_category");
-                    error.message = Some("The primary_category cannot be listed in other_categories for rolling stocks.".into());
-                    validation_errors.add("primary_category", error);
-                }
+            {
+                let mut error = ValidationError::new("primary_category");
+                error.message = Some(
+                    "The primary_category cannot be listed in other_categories for rolling stocks."
+                        .into(),
+                );
+                validation_errors.add("primary_category", error);
             }
         } else {
             validation_errors.add(

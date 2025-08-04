@@ -201,11 +201,11 @@ impl Client {
             settings,
             inner: reqwest::Client::new(),
         };
-        if client.settings.reset_store {
-            if let Some(store) = client.find_store(&store_name).await? {
-                tracing::debug!(old = ?store, "removing old store for reset");
-                client.delete_stores(&store.id).await?;
-            }
+        if client.settings.reset_store
+            && let Some(store) = client.find_store(&store_name).await?
+        {
+            tracing::debug!(old = ?store, "removing old store for reset");
+            client.delete_stores(&store.id).await?;
         }
         client.store = client.post_stores(&store_name).await?;
         Ok(client)
