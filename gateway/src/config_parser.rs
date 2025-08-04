@@ -165,13 +165,12 @@ pub async fn parse_auth_config(config: AuthConfig) -> AuthContext {
             }
             Some(AuthProviderHandler::Identity(_)) => {
                 eprintln!(
-                    "the default session provider cannot handle sessions: {}",
-                    default_provider_id
+                    "the default session provider cannot handle sessions: {default_provider_id}"
                 );
                 exit(1);
             }
             None => {
-                eprintln!("unknown default provider: {}", default_provider_id);
+                eprintln!("unknown default provider: {default_provider_id}");
                 exit(1);
             }
         }
