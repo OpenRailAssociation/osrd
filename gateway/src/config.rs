@@ -36,13 +36,6 @@ pub enum TracingTelemetry {
     Otlp { endpoint: String },
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-#[serde(untagged)]
-pub enum Endpoint {
-    Kube { kube_node_ip_env: String },
-    Direct { endpoint: String },
-}
-
 impl TracingTelemetry {
     fn enable_otlp(&self, endpoint: &String) {
         let exporter = opentelemetry_otlp::new_exporter()
