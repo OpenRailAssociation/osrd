@@ -297,10 +297,10 @@ impl SessionProvider for OidcProvider {
             let name = name.unwrap_or_else(|| subject.clone());
 
             // If there is a whitelist, check that the user is part of it
-            if let Some(whitelist) = &self.username_whitelist {
-                if !whitelist.contains(&name) {
-                    return Err(CallbackError::UserNotAuthorized.into());
-                }
+            if let Some(whitelist) = &self.username_whitelist
+                && !whitelist.contains(&name)
+            {
+                return Err(CallbackError::UserNotAuthorized.into());
             }
 
             ctx.login(OidcSessionState::LoggedIn {
