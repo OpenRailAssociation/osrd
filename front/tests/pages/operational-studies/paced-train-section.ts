@@ -82,7 +82,7 @@ class PacedTrainSection extends CommonPage {
     return {
       root,
       indicator: root.getByTestId('occurrence-indicator'),
-      tooltip: root.getByTestId('exception-info'),
+      tooltip: root.getByTestId('osrd-tooltip'),
       image: root.getByTestId('rolling-stock-image'),
       menuIcon: root.getByTestId('occurrence-item-menu-btn'),
     };
