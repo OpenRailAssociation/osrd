@@ -92,7 +92,7 @@ pub fn derive_type(input: TokenStream) -> TokenStream {
     }
 }
 
-/// Derive macro for the marker trait `fga::model::User`
+/// Derive macro for the trait `fga::model::User`
 #[proc_macro_derive(User)]
 pub fn derive_user(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as DeriveInput);
@@ -103,7 +103,7 @@ pub fn derive_user(input: TokenStream) -> TokenStream {
     .into()
 }
 
-/// Derive macro for the marker trait `fga::model::Object`
+/// Derive macro for the trait `fga::model::Object`
 #[proc_macro_derive(Object)]
 pub fn derive_object(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as DeriveInput);

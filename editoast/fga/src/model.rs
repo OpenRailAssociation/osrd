@@ -84,7 +84,7 @@ pub trait Type: FromStr + Sized {
 ///     }
 /// }
 ///
-/// // can be used as a marker trait, but has functions to override
+/// // can be used with the trait methods default implementations or have them overriden
 /// impl fga::model::User for Person {}
 /// ```
 ///
@@ -294,7 +294,7 @@ pub trait Relation: fmt::Debug + Sized {
 ///     }
 /// }
 ///
-/// // can be used as a marker trait, but has functions to override
+/// // can be used with the trait methods default implementations or have them overriden
 /// impl fga::model::Object for Document {}
 /// ```
 ///

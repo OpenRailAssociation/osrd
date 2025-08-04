@@ -65,7 +65,7 @@
 //!     }
 //! }
 //!
-//! // marker trait indicating that a Person can appear at the USER part of an OpenFGA tuple
+//! // trait indicating that a Person can appear at the USER part of an OpenFGA tuple
 //! impl fga::model::User for Person {}
 //!
 //! // needed to build back Persons from OpenFGA's responses (such as /list-users)
@@ -88,7 +88,7 @@
 //!     }
 //! }
 //!
-//! // marker trait indicating that a Document can appear at the OBJECT part of an OpenFGA tuple
+//! // trait indicating that a Document can appear at the OBJECT part of an OpenFGA tuple
 //! impl fga::model::Object for Document {}
 //!
 //! // needed to build back Documents from OpenFGA's responses (such as /list-objects)
