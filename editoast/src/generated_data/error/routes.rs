@@ -184,10 +184,10 @@ fn check_path(
         let detector = infra_cache.detectors().get::<String>(detector).unwrap();
         let detector = detector.unwrap_detector();
         let track_range = track_ranges.get(&detector.track);
-        if let Some(track_range) = track_range {
-            if (track_range.0..=track_range.1).contains(&detector.position) {
-                continue;
-            }
+        if let Some(track_range) = track_range
+            && (track_range.0..=track_range.1).contains(&detector.position)
+        {
+            continue;
         }
 
         res.push(InfraError::new_object_out_of_path(

@@ -139,12 +139,12 @@ impl<'de, const MAX_PAGE_SIZE: u64> serde::de::Deserialize<'de>
         if page == 0 {
             return Err(serde::de::Error::custom("invalid page 0, pages start at 1"));
         }
-        if let Some(size) = page_size {
-            if !(0 < size && size <= MAX_PAGE_SIZE) {
-                return Err(serde::de::Error::custom(format!(
-                    "invalid page size ({size}), expected an integer 0 < page_size <= {MAX_PAGE_SIZE}",
-                )));
-            }
+        if let Some(size) = page_size
+            && !(0 < size && size <= MAX_PAGE_SIZE)
+        {
+            return Err(serde::de::Error::custom(format!(
+                "invalid page size ({size}), expected an integer 0 < page_size <= {MAX_PAGE_SIZE}",
+            )));
         }
         Ok(Self {
             page,

@@ -89,13 +89,13 @@ impl<'de> Deserialize<'de> for PacedTrain {
         let num_occurrences = (time_window_secs / interval_secs) as usize;
 
         for ex in &raw.exceptions {
-            if let ExceptionType::Modified { occurrence_index } = ex.exception_type {
-                if occurrence_index as usize > num_occurrences {
-                    return Err(serde::de::Error::custom(format!(
-                        "Modified exception '{}' references invalid occurrence index {}",
-                        ex.key, occurrence_index,
-                    )));
-                }
+            if let ExceptionType::Modified { occurrence_index } = ex.exception_type
+                && occurrence_index as usize > num_occurrences
+            {
+                return Err(serde::de::Error::custom(format!(
+                    "Modified exception '{}' references invalid occurrence index {}",
+                    ex.key, occurrence_index,
+                )));
             }
         }
 

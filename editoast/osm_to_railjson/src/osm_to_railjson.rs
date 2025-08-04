@@ -85,10 +85,10 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     for (node, mut adj) in adjacencies {
         for e1 in &adj.edges {
             for e2 in &adj.edges {
-                if e1.id < e2.id {
-                    if let Some(branch) = try_into_branch(node, e1, e2) {
-                        adj.branches.push(branch);
-                    }
+                if e1.id < e2.id
+                    && let Some(branch) = try_into_branch(node, e1, e2)
+                {
+                    adj.branches.push(branch);
                 }
             }
         }

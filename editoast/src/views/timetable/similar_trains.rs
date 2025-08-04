@@ -443,11 +443,12 @@ async fn validate_rolling_stock_input(
 fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
     let mut result = Vec::<Waypoint>::with_capacity(waypoints.len());
     for waypoint in waypoints {
-        if let Some(prev) = result.last_mut() {
-            if prev.ci == waypoint.ci && prev.ch == waypoint.ch {
-                prev.stop |= waypoint.stop;
-                continue;
-            }
+        if let Some(prev) = result.last_mut()
+            && prev.ci == waypoint.ci
+            && prev.ch == waypoint.ch
+        {
+            prev.stop |= waypoint.stop;
+            continue;
         }
         result.push(waypoint);
     }
