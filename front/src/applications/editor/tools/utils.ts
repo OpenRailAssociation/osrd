@@ -304,10 +304,8 @@ export async function centerMapOnObject(
   // Center the map on the object
   const bbox = await getEntitiesBbox(infraId, entities, dispatch);
   if (bbox) {
-    // zoom to the bbox
-    mapRef.fitBounds(bbox as LngLatBoundsLike, { animate: false });
-    // make a zoom out to have some kind of "margin" around the bbox
-    mapRef.zoomOut();
+    // Zoom to the bbox with padding added (in pixels)
+    mapRef.fitBounds(bbox as LngLatBoundsLike, { padding: 40, animate: false });
   }
 }
 
