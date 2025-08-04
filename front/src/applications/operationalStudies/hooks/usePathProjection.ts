@@ -1,14 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
-import {
-  osrdEditoastApi,
-  type InfraWithState,
-  type PathfindingResult,
-  type PathfindingResultSuccess,
-  type PathProperties,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type InfraWithState } from 'common/api/osrdEditoastApi';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -18,53 +13,46 @@ import {
 
 const usePathProjection = (infra: InfraWithState) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const [pathUsedForProjection, setPathUsedForProjection] = useState<{
-    path: PathfindingResultSuccess;
-    geometry: PathProperties['geometry'];
-  }>();
 
-  const [getTrainSchedulePath] = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useLazyQuery();
-  const [getPacedTrainPath] = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useLazyQuery();
-  const [postPathProperties] =
-    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
+  const trainScheduleId =
+    trainIdUsedForProjection && isTrainScheduleId(trainIdUsedForProjection)
+      ? extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection)
+      : undefined;
 
-  useEffect(() => {
-    const fetchPathUsedForProjection = async () => {
-      if (!trainIdUsedForProjection) return;
+  const pacedTrainId =
+    trainIdUsedForProjection && !isTrainScheduleId(trainIdUsedForProjection)
+      ? extractEditoastIdFromPacedTrainId(trainIdUsedForProjection)
+      : undefined;
 
-      let path: PathfindingResult;
-      if (isTrainScheduleId(trainIdUsedForProjection)) {
-        path = await getTrainSchedulePath({
-          id: extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection),
-          infraId: infra.id,
-        }).unwrap();
-      } else {
-        path = await getPacedTrainPath({
-          id: extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
-          infraId: infra.id,
-        }).unwrap();
-      }
+  const scheduleArg = trainScheduleId ? { id: trainScheduleId, infraId: infra.id } : skipToken;
+  const pacedArg = pacedTrainId ? { id: pacedTrainId, infraId: infra.id } : skipToken;
 
-      if (path.status !== 'success') return;
+  const { data: schedulePath } =
+    osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
+  const { data: pacedPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
 
-      const pathProperties = await postPathProperties({
-        infraId: infra.id,
-        props: ['geometry'],
-        pathPropertiesInput: {
-          track_section_ranges: path.track_section_ranges,
-        },
-      }).unwrap();
+  const path = schedulePath ?? pacedPath;
 
-      setPathUsedForProjection({
-        path,
-        geometry: pathProperties.geometry,
-      });
+  const { data: pathProperties } =
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
+      path?.status === 'success'
+        ? {
+            infraId: infra.id,
+            props: ['geometry'],
+            pathPropertiesInput: { track_section_ranges: path.track_section_ranges },
+          }
+        : skipToken
+    );
+
+  return useMemo(() => {
+    if (path?.status !== 'success' || !pathProperties) {
+      return undefined;
+    }
+    return {
+      path,
+      geometry: pathProperties.geometry,
     };
-
-    fetchPathUsedForProjection();
-  }, [trainIdUsedForProjection]);
-
-  return pathUsedForProjection;
+  }, [path, pathProperties]);
 };
 
 export default usePathProjection;
