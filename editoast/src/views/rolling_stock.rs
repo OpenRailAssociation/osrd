@@ -290,7 +290,7 @@ async fn get_power_restrictions(
     Ok(Json(
         power_restrictions
             .into_iter()
-            .map(|pr| (pr.power_restriction))
+            .map(|pr| pr.power_restriction)
             .collect(),
     ))
 }
