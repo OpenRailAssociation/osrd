@@ -153,10 +153,10 @@ impl Display for QueueUpdateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self {
             QueueUpdateError::QueueNotEmpty(key) => {
-                write!(f, "queue {:?} is not empty", key)
+                write!(f, "queue {key:?} is not empty")
             }
             QueueUpdateError::LapinError(err) => {
-                write!(f, "lapin error: {:?}", err)
+                write!(f, "lapin error: {err:?}")
             }
         }
     }

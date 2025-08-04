@@ -123,8 +123,8 @@ impl WorkerDriver for DockerDriver {
 
             let final_env = {
                 let mut env: Vec<String> = self.options.default_env.clone();
-                env.push(format!("WORKER_ID={}", new_id));
-                env.push(format!("WORKER_KEY={}", worker_key));
+                env.push(format!("WORKER_ID={new_id}"));
+                env.push(format!("WORKER_KEY={worker_key}"));
                 env.push(format!("WORKER_AMQP_URI={}", self.amqp_uri));
                 env.push(format!("WORKER_MAX_MSG_SIZE={}", self.max_message_size));
                 env
