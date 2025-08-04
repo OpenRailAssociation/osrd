@@ -59,7 +59,7 @@ services:
       OPENFGA_DATASTORE_ENGINE: "postgres"
       OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
       OPENFGA_HTTP_ADDR: "0.0.0.0:8091"
-      OPENFGA_GRPC_ADDR: "0.0.0.0:8093" # avoid squatting 8081 (used by osrd-images in pr-tests)
+      OPENFGA_GRPC_ADDR: "0.0.0.0:8093"
       OPENFGA_PLAYGROUND_PORT: 8092
     command: run
     ports:
@@ -174,8 +174,8 @@ services:
     container_name: osrd-images
     restart: unless-stopped
     environment:
-      - NGINX_PORT=8080
-    ports: [ "8080:8080" ]
+      - NGINX_PORT=8075
+    ports: [ "8075:8075" ]
 
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-osrdyne:${TAG-dev}

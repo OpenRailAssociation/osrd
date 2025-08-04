@@ -26,7 +26,7 @@ require_auth = true
 [[targets]]
 tracing_name = "images"
 prefix = "/images"
-upstream = "http://osrd-images:8080"
+upstream = "http://osrd-images:8076"
 require_auth = false
 
 
