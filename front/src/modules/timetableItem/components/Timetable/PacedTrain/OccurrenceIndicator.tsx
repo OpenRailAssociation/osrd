@@ -1,11 +1,12 @@
 /* eslint-disable no-nested-ternary */
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
+import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getExceptionType } from 'utils/trainId';
 
@@ -17,8 +18,6 @@ type OccurrenceIndicatorProps = {
   subCategories?: SubCategory[];
 };
 
-const TOOLTIP_BOTTOM_MARGIN = 24;
-
 /**
  * The bullet that marks each item of the list of occurrences, with its tooltip.
  */
@@ -27,45 +26,20 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
     keyPrefix: 'main.timetable',
   });
   const dotRef = useRef<HTMLDivElement>(null);
-  const changeGroupsRef = useRef<HTMLDivElement>(null);
 
   const [isHovering, setIsHovering] = useState(false);
-  const [position, setPosition] = useState<{
-    top?: number;
-    left: number;
-    bottom?: number;
-  } | null>(null);
 
   const exceptionType = getExceptionType(occurrence);
 
-  useLayoutEffect(() => {
-    if (!dotRef.current || !isHovering) return;
-
-    const rect = dotRef.current.getBoundingClientRect();
-    const changeGroupsRect = changeGroupsRef.current?.getBoundingClientRect();
-
-    const wouldOverflowBottom =
-      changeGroupsRect &&
-      rect.bottom + changeGroupsRect?.height + TOOLTIP_BOTTOM_MARGIN > window.innerHeight;
-
-    const tooltipLeftPosition = rect.left + window.scrollX + rect.width;
-
-    if (wouldOverflowBottom) {
-      setPosition({
-        left: tooltipLeftPosition,
-        top: undefined,
-        bottom: TOOLTIP_BOTTOM_MARGIN,
-      });
-      return;
+  const tooltipHeader = () => {
+    if (occurrence.disabled) {
+      return t('occurrenceType.disabledOccurrence');
     }
-
-    // no overflow
-    setPosition({
-      top: rect.top + window.scrollY + rect.height / 2,
-      left: tooltipLeftPosition,
-      bottom: undefined,
-    });
-  }, [isHovering]);
+    if (exceptionType === 'modified') {
+      return t('occurrenceType.editedOccurrence');
+    }
+    return t('occurrenceType.addedOccurrence');
+  };
 
   const categoryValue = occurrence.exceptionChangeGroups?.rolling_stock_category?.value;
 
@@ -73,7 +47,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup], i) => {
+      .map(([changeGroup]) => {
         let occurrenceCategory;
 
         if (categoryValue && isMainCategory(categoryValue)) {
@@ -99,13 +73,9 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
           });
         }
 
-        return (
-          <span key={i} className="change-group">
-            {changeGroup !== 'rolling_stock_category'
-              ? t(`occurrenceChangeGroup.${changeGroup}`)
-              : occurrenceCategory}
-          </span>
-        );
+        return changeGroup !== 'rolling_stock_category'
+          ? t(`occurrenceChangeGroup.${changeGroup}`)
+          : occurrenceCategory;
       });
 
   const currentSubCategory =
@@ -119,36 +89,20 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
       className="occurrence-indicator"
       ref={dotRef}
       onMouseEnter={() => {
-        setPosition(null);
         setIsHovering(true);
       }}
       onMouseLeave={() => {
-        setPosition(null);
         setIsHovering(false);
       }}
     >
       {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptionChangeGroups)) && (
-        <div
-          data-testid="exception-info"
-          className="exception-info"
-          style={{
-            top: position?.top ? position.top - window.scrollY : undefined,
-            left: position?.left ? position.left - window.scrollX : undefined,
-            bottom: position?.bottom ? position.bottom - window.scrollY : undefined,
-          }}
-        >
-          <div ref={changeGroupsRef}>
-            <span className="exception-type">
-              {occurrence.disabled
-                ? t('occurrenceType.disabledOccurrence')
-                : exceptionType === 'modified'
-                  ? t('occurrenceType.editedOccurrence')
-                  : t('occurrenceType.addedOccurrence')}
-            </span>
-            <hr />
-            <div className="change-groups">{displayedChangeGroups}</div>
-          </div>
-        </div>
+        <OSRDTooltip
+          containerRef={dotRef}
+          isOpen={isHovering}
+          header={tooltipHeader()}
+          items={displayedChangeGroups || []}
+          offsetRatio={{ top: 0.5, left: 1 }}
+        />
       )}
       <span
         className={cx(
