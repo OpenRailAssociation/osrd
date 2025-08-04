@@ -90,9 +90,7 @@ mod tests {
                 assert_eq!(
                     classifier.forwardable(case),
                     *expected,
-                    "with conn header '{:?}' header '{}' was incorrectly classified",
-                    conn_header,
-                    case,
+                    "with conn header '{conn_header:?}' header '{case}' was incorrectly classified",
                 );
             }
         }
