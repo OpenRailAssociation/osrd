@@ -1,81 +1,83 @@
-.simulation-results {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  > :last-child {
-    margin-bottom: 16px;
-  }
-
-  .osrd-simulation-container {
+.scenario-results {
+  .simulation-results {
     position: relative;
-    border-radius: 4px;
-  }
-
-  .simulation-map {
-    position: relative;
-    height: 720px;
-    width: 100%;
-    border-radius: 10px;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 1) inset,
-      0 4px 7px -3px rgba(255, 171, 88, 0.17),
-      0 2px 4px rgba(0, 0, 0, 0.22);
-  }
-
-  .driver-train-schedule {
-    background-color: white;
-    padding: 16px;
-    border-radius: 4px;
-    margin-inline: 38px 30px;
-  }
-
-  .simulation-sheet-container {
     display: flex;
-    justify-content: space-between;
-    padding: 16px;
-    width: 100%;
-    box-shadow: 0 1px 0 0 inset var(--black10);
-    border-radius: 0 0 8px 8px;
-    background-color: var(--ambiantB15);
+    flex-direction: column;
+    gap: 16px;
 
-    button {
-      background-color: var(--black5);
+    > :last-child {
+      margin-bottom: 16px;
+    }
+
+    .osrd-simulation-container {
+      position: relative;
+      border-radius: 4px;
+    }
+
+    .simulation-map {
+      position: relative;
+      height: 720px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 1) inset,
+        0 4px 7px -3px rgba(255, 171, 88, 0.17),
+        0 2px 4px rgba(0, 0, 0, 0.22);
+    }
+
+    .driver-train-schedule {
+      background-color: white;
+      padding: 16px;
+      border-radius: 4px;
+      margin-inline: 38px 30px;
+    }
+
+    .simulation-sheet-container {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+      width: 100%;
+      box-shadow: 0 1px 0 0 inset var(--black10);
+      border-radius: 0 0 8px 8px;
+      background-color: var(--ambiantB15);
+
+      button {
+        background-color: var(--black5);
+        font-weight: 500;
+        font-size: 1rem;
+      }
+      svg {
+        color: var(--primary60);
+      }
+    }
+
+    /* MAP */
+    .train-speed-label {
+      text-shadow: 0 0 3px #fff;
+      padding-bottom: 24px;
+    }
+
+    .map-pathfinding-marker {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      position: absolute;
       font-weight: 500;
-      font-size: 1rem;
-    }
-    svg {
-      color: var(--primary60);
-    }
-  }
-
-  /* MAP */
-  .train-speed-label {
-    text-shadow: 0 0 3px #fff;
-    padding-bottom: 24px;
-  }
-
-  .map-pathfinding-marker {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    position: absolute;
-    font-weight: 500;
-    border-radius: 4px;
-    line-height: 11.2px;
-    padding: 2.4px 4px;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    &.via-number {
-      padding: 0;
-      font-weight: bold;
-      color: white;
-    }
-    &.stdcm-via {
-      align-self: flex-start;
-      padding-top: 8px;
-      color: black;
+      border-radius: 4px;
+      line-height: 11.2px;
+      padding: 2.4px 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      &.via-number {
+        padding: 0;
+        font-weight: bold;
+        color: white;
+      }
+      &.stdcm-via {
+        align-self: flex-start;
+        padding-top: 8px;
+        color: black;
+      }
     }
   }
 }
