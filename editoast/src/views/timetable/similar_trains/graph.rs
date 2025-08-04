@@ -150,20 +150,22 @@ pub(super) struct MatchingState {
 }
 
 impl MatchingState {
-    pub(super) fn new(segment: Segment, graph: Graph) -> Self {
+    pub(super) fn try_new(segment: Segment, graph: Graph) -> Result<Self, ()> {
         let mut path = segment.into_path();
-        let current_waypoint = path.pop_front().expect("empty segment");
-        let GraphNode { trains, .. } = graph
+        let current_waypoint = path.pop_front().ok_or(())?;
+        let trains = graph
             .get_node(&current_waypoint.codes)
-            .expect("first node should be in the graph");
-        debug_assert!(!trains.is_empty());
-        Self {
+            .ok_or(())?
+            .trains
+            .clone();
+
+        Ok(Self {
             path,
-            correct_trains_so_far: trains.clone(),
+            correct_trains_so_far: trains,
             graph,
             current_waypoint,
             skipped: None,
-        }
+        })
     }
 
     #[tracing::instrument(skip_all, err)]
