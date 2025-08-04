@@ -456,11 +456,11 @@ async fn activity_processor(
         }
 
         // debouncing
-        if let Some(&last_activity) = last_activities.get(&key) {
-            if last_activity + extra_lifetime < now {
-                last_activities.insert(key.clone(), now);
-                continue;
-            }
+        if let Some(&last_activity) = last_activities.get(&key)
+            && last_activity + extra_lifetime < now
+        {
+            last_activities.insert(key.clone(), now);
+            continue;
         }
         last_activities.insert(key.clone(), now);
 
@@ -508,15 +508,15 @@ async fn worker_control_iteration(
 
     // Remove unwanted groups
     for worker_key in current_worker_keys {
-        if !wanted_worker_keys.contains(worker_key) {
-            if let Err(e) = driver.destroy_worker_group(worker_key.clone()).await {
-                error!(
-                    ?e,
-                    "Failed to destroy worker group. Aborting current loop iteration."
-                );
-                tokio::time::sleep(sleep_interval).await;
-                continue;
-            }
+        if !wanted_worker_keys.contains(worker_key)
+            && let Err(e) = driver.destroy_worker_group(worker_key.clone()).await
+        {
+            error!(
+                ?e,
+                "Failed to destroy worker group. Aborting current loop iteration."
+            );
+            tokio::time::sleep(sleep_interval).await;
+            continue;
         }
     }
 
