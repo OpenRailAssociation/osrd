@@ -66,13 +66,13 @@ jobs:
           artifact_name: ${{ env.artifact_name }}
           condition_production: ${{ startsWith(github.ref, 'refs/tags/ui-v') }}
           domain_production: https://ui.osrd.fr
-          domain_preview: https://web-preview.openrailassociation.org
-          dir_base: /var/www/virtual/openrail
+          domain_preview: ${{ vars.WEB_DOMAIN_PREVIEW }}
+          dir_base: ${{ vars.WEB_DIR_BASE }}
           dir_production: ui.osrd.fr
-          dir_preview_base: web-preview.openrailassociation.org
+          dir_preview_base: ${{ vars.WEB_DIR_PREVIEW_BASE }}
           dir_preview_subdir: osrdui-pr-${{ github.event.number }}
-          ssh_host: uberspace1.openrailassociation.org
-          ssh_user: openrail
+          ssh_host: ${{ vars.WEB_SSH_HOST }}
+          ssh_user: ${{ vars.WEB_SSH_USER }}
           ssh_key: ${{ secrets.UI_WEBSITE_SSH_KEY }}
           # Disable link checker and sticky comment, reports only via step summaries
           linkchecker_enabled: false
