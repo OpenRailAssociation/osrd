@@ -23,7 +23,7 @@ require_auth = true
 [[targets]]
 tracing_name = "images"
 prefix = "/images"
-upstream = "http://localhost:8080"
+upstream = "http://localhost:8075"
 require_auth = false
 
 [auth]

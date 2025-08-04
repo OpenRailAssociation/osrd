@@ -76,7 +76,7 @@ services:
       OPENFGA_DATASTORE_ENGINE: "postgres"
       OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5433/osrd?search_path=openfga"
       OPENFGA_HTTP_ADDR: "0.0.0.0:8191"
-      OPENFGA_GRPC_ADDR: "0.0.0.0:8193" # avoid squatting 8081 (used by osrd-images in pr-tests)
+      OPENFGA_GRPC_ADDR: "0.0.0.0:8193"
       OPENFGA_PLAYGROUND_PORT: 8192
     command: run
     ports:
@@ -185,8 +185,8 @@ services:
     platform: linux/x86_64
     restart: unless-stopped
     environment:
-      - NGINX_PORT=8081
-    ports: [ "8081:8081" ]
+      - NGINX_PORT=8076
+    ports: [ "8076:8076" ]
     networks:
       - pr-tests
 
