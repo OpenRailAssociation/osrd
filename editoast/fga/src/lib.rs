@@ -227,6 +227,7 @@
 pub mod client;
 pub mod model;
 
+use client::AuthorizationModel;
 pub use client::Client;
 
 pub use fga_derive::Object;
@@ -304,7 +305,7 @@ macro_rules! relations {
 /// This function will panic if:
 /// - A temporary file cannot be created or written to.
 /// - The `fga` command fails to execute (errored model or binary not in `$PATH`).
-pub fn compile_model(model: &str) -> serde_json::Value {
+pub fn compile_model(model: &str) -> AuthorizationModel {
     use std::process::Command;
 
     let dir = tempfile::tempdir().unwrap();
