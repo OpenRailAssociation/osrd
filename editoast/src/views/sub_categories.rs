@@ -33,6 +33,10 @@ editoast_common::schemas! {
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "sub_categories")]
+// TODO: Remove this once it is used.
+// It cannot be an expect since older rust versions
+// don't detect it as unused.
+#[allow(dead_code)]
 enum SubCategoryError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
