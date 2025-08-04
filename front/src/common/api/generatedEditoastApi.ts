@@ -2157,7 +2157,11 @@ export type PostSimilarTrainsApiResponse =
     similar_trains: {
       begin: SimilarTrainWaypointResponse;
       end: SimilarTrainWaypointResponse;
-      start_time: string;
+      /** Both `train_name` and `start_time` are `None` if no similar train
+        was found for the segment; otherwise, both are `Some`. */
+      start_time?: string | null;
+      /** Both `train_name` and `start_time` are `None` if no similar train
+        was found for the segment; otherwise, both are `Some`. */
       train_name: string;
     }[];
   };

@@ -132,9 +132,13 @@ struct WaypointResponse {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
+    /// Both `train_name` and `start_time` are `None` if no similar train
+    /// was found for the segment; otherwise, both are `Some`.
     #[schema(value_type = String)]
-    train_name: past_train::Name,
-    start_time: DateTime<Utc>,
+    train_name: Option<past_train::Name>,
+    /// Both `train_name` and `start_time` are `None` if no similar train
+    /// was found for the segment; otherwise, both are `Some`.
+    start_time: Option<DateTime<Utc>>,
     #[schema(value_type = SimilarTrainWaypointResponse)]
     begin: WaypointResponse,
     #[schema(value_type = SimilarTrainWaypointResponse)]
@@ -318,7 +322,13 @@ async fn similar_trains(
         let end = segment.end().clone();
         #[cfg(debug_assertions)]
         std::fs::write("/tmp/dot.txt", graph.to_dot()).unwrap();
-        let mut state = graph::MatchingState::new(segment, graph);
+        let mut state = match graph::MatchingState::try_new(segment, graph) {
+            Ok(state) => state,
+            Err(()) => {
+                trains.push(((begin, end), HashSet::new()));
+                continue;
+            }
+        };
         loop {
             match state.advance() {
                 Ok(new_state) => state = new_state,
@@ -360,8 +370,13 @@ async fn similar_trains(
     // Step 6: determine which similar train to choose for each segment
     // ----------------------------------------------------------------
 
-    let similar_trains =
-        decide_best_train_combination(trains.iter().map(|(_, trains)| trains).cloned().collect());
+    let similar_trains = decide_best_train_combination(
+        trains
+            .iter()
+            .map(|(_, trains)| trains)
+            .filter(|trains| !trains.is_empty())
+            .collect::<Vec<_>>(),
+    );
 
     // Final step: build the API response
     // ----------------------------------
@@ -369,12 +384,7 @@ async fn similar_trains(
     // Compresses successive segments with the same retained train name
     let similar_trains = trains
         .into_iter()
-        .map(|(seg, trains)| {
-            (
-                seg,
-                trains.intersection(&similar_trains).next().unwrap().clone(),
-            )
-        })
+        .map(|(seg, trains)| (seg, trains.intersection(&similar_trains).next().cloned()))
         .fold(Vec::new(), |mut trains, ((begin, end), train_name)| {
             if let Some(((_, prev_end), prev_train)) = trains.last_mut() {
                 if *prev_train == train_name {
@@ -390,19 +400,22 @@ async fn similar_trains(
 
     let response_items = similar_trains
         .into_iter()
-        .map(|((begin, end), train_name)| SimilarTrainItem {
-            start_time: *candidate_schedules_departure_date
-                .get(&train_name)
-                .expect("retained similar trains are in the candidate schedules pool"),
-            train_name,
-            begin: WaypointResponse {
-                ci: begin.codes.primary as i64,
-                ch: begin.codes.secondary,
-            },
-            end: WaypointResponse {
-                ci: end.codes.primary as i64,
-                ch: end.codes.secondary,
-            },
+        .map(|((begin, end), train_name)| {
+            let start_time = train_name
+                .as_ref()
+                .and_then(|name| candidate_schedules_departure_date.get(name).cloned());
+            SimilarTrainItem {
+                start_time,
+                train_name,
+                begin: WaypointResponse {
+                    ci: begin.codes.primary as i64,
+                    ch: begin.codes.secondary,
+                },
+                end: WaypointResponse {
+                    ci: end.codes.primary as i64,
+                    ch: end.codes.secondary,
+                },
+            }
         })
         .collect();
 
@@ -638,7 +651,7 @@ async fn simulate_past_trains(
 // TODO: minimize the number of trains to duplicate or minimize the disjoint segments in the simulation sheet?
 #[tracing::instrument(ret(level = "debug"))]
 fn decide_best_train_combination(
-    mut segments_trains: Vec<HashSet<past_train::Name>>,
+    mut segments_trains: Vec<&HashSet<past_train::Name>>,
 ) -> HashSet<past_train::Name> {
     let mut trains = HashSet::default();
 
@@ -648,7 +661,7 @@ fn decide_best_train_combination(
             let mut train_count = HashMap::new();
 
             for segment in &segments_trains {
-                for train in segment {
+                for train in *segment {
                     *train_count.entry(train).or_insert(0) += 1;
                 }
             }
@@ -660,10 +673,10 @@ fn decide_best_train_combination(
             let (_, longest_train) = histo.pop().expect("Heap should not be empty");
             longest_train.clone()
         };
+
         segments_trains.retain(|segment| !segment.contains(&longest_train));
         trains.insert(longest_train);
     }
-
     trains
 }
 
@@ -800,11 +813,12 @@ mod tests {
 
     #[test]
     fn decide_best_train_combination_mutually_disjoint() {
-        let segments_trains = vec![
+        let segments_trains = [
             HashSet::from(["train1".to_smolstr()]),
             HashSet::from(["train2".to_smolstr()]),
             HashSet::from(["train3".to_smolstr()]),
         ];
+        let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
         assert_eq!(
             result,
@@ -818,18 +832,19 @@ mod tests {
 
     #[test]
     fn decide_best_train_combination_single_common_element() {
-        let segments_trains = vec![
+        let segments_trains = [
             HashSet::from(["common_train".to_smolstr(), "train1".to_smolstr()]),
             HashSet::from(["common_train".to_smolstr(), "train2".to_smolstr()]),
             HashSet::from(["common_train".to_smolstr(), "train1".to_smolstr()]),
         ];
+        let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
         assert_eq!(result, HashSet::from(["common_train".to_smolstr()]));
     }
 
     #[test]
     fn decide_best_train_combination_partial_overlap() {
-        let segments_trains = vec![
+        let segments_trains = [
             HashSet::from(["frequent_train".to_smolstr(), "train1".to_smolstr()]),
             HashSet::from(["frequent_train".to_smolstr(), "train2".to_smolstr()]),
             HashSet::from(["frequent_train".to_smolstr(), "train3".to_smolstr()]),
@@ -839,6 +854,7 @@ mod tests {
             HashSet::from(["less_common".to_smolstr(), "train6".to_smolstr()]),
             HashSet::from(["thomas".to_smolstr()]),
         ];
+        let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
         assert_eq!(
             result,
@@ -1050,8 +1066,8 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: train_name.clone().into(),
-                start_time,
+                train_name: Some(train_name.clone().into()),
+                start_time: Some(start_time),
                 begin,
                 end,
             }],
@@ -1267,8 +1283,8 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_name: train_name_1.into(),
-                    start_time: start_time_1,
+                    train_name: Some(train_name_1.into()),
+                    start_time: Some(start_time_1),
                     begin: WaypointResponse {
                         ci: 22,
                         ch: "BV".into(),
@@ -1279,8 +1295,8 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_name: train_name_2.into(),
-                    start_time: start_time_2,
+                    train_name: Some(train_name_2.into()),
+                    start_time: Some(start_time_2),
                     begin: WaypointResponse {
                         ci: 44,
                         ch: "BV".into(),
@@ -1472,8 +1488,8 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: train_name.into(),
-                start_time,
+                train_name: Some(train_name.into()),
+                start_time: Some(start_time),
                 begin: WaypointResponse {
                     ci: 22,
                     ch: "BV".into(),
@@ -1483,6 +1499,183 @@ mod tests {
                     ch: "BV".into(),
                 },
             }],
+        };
+        assert_eq!(response, expected_response);
+    }
+
+    #[rstest]
+    async fn no_similar_trains_for_some_segments() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        let operational_points_ws_mws = vec![
+            OperationalPointOnPath::new_test("West_station", 22, "WS"),
+            OperationalPointOnPath::new_test("Mid_West_station", 33, "MWS"),
+        ];
+        let operational_points_mes_ns = vec![
+            OperationalPointOnPath::new_test("Mid_East_station", 44, "MES"),
+            OperationalPointOnPath::new_test("North_station", 55, "NS"),
+        ];
+        core.stub("/path_properties")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(create_path_properties_response(operational_points_ws_mws)) // train_1
+            .json(create_path_properties_response(operational_points_mes_ns)) // train_2
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let train_name_1 = "train_1".to_string();
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("West_station"), // WS
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+        ];
+        let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
+            "Mid_West_station",
+            Duration::new(0, 0).expect("Failed to parse duration"),
+        )];
+        let start_time_1 =
+            DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
+
+        // WS(22):stop  MWS(33):stop
+        create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_name_1.clone(),
+            rolling_stock.name.clone(),
+            path,
+            start_time_1,
+            schedule,
+            Some("MA100".to_string()),
+        )
+        .await;
+
+        let train_name_2 = "train_2".to_string();
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("Mid_East_station"), // MES
+            PathItem::new_operational_point("North_station"),    // NS
+        ];
+        let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
+            "North_station",
+            Duration::new(0, 0).expect("Failed to parse duration"),
+        )];
+        let start_time_2 =
+            DateTime::from_str("2025-01-01T11:00:00Z").expect("Failed to parse datetime");
+
+        // MES(44):stop  NS(55):stop
+        create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_name_2.clone(),
+            rolling_stock.name.clone(),
+            path,
+            start_time_2,
+            schedule,
+            Some("MA100".to_string()),
+        )
+        .await;
+
+        // WS(22):stop  MWS(33):stop  MES(44):stop  NS(55):stop  SS(66):stop
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: rolling_stock.name,
+                speed_limit_tag: Some("MA100".to_string()),
+            },
+            waypoints: vec![
+                Waypoint {
+                    ci: 22,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 33,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 44,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 55,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    ci: 66,
+                    ch: "BV".into(),
+                    stop: true,
+                },
+            ],
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let expected_response = Response {
+            similar_trains: vec![
+                SimilarTrainItem {
+                    train_name: Some(train_name_1.into()),
+                    start_time: Some(start_time_1),
+                    begin: WaypointResponse {
+                        ci: 22,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 33,
+                        ch: "BV".into(),
+                    },
+                },
+                SimilarTrainItem {
+                    train_name: None,
+                    start_time: None,
+                    begin: WaypointResponse {
+                        ci: 33,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 44,
+                        ch: "BV".into(),
+                    },
+                },
+                SimilarTrainItem {
+                    train_name: Some(train_name_2.into()),
+                    start_time: Some(start_time_2),
+                    begin: WaypointResponse {
+                        ci: 44,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 55,
+                        ch: "BV".into(),
+                    },
+                },
+                SimilarTrainItem {
+                    train_name: None,
+                    start_time: None,
+                    begin: WaypointResponse {
+                        ci: 55,
+                        ch: "BV".into(),
+                    },
+                    end: WaypointResponse {
+                        ci: 66,
+                        ch: "BV".into(),
+                    },
+                },
+            ],
         };
         assert_eq!(response, expected_response);
     }
