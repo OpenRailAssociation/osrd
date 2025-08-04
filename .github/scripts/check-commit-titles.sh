@@ -14,19 +14,21 @@ fi
 
 checks='check_fixup check_forbidden_chars check_structure'
 
-
+# shellcheck disable=SC2329 # Called indirectly
 check_fixup() {
     if grep -q -i '^fixup'; then
         echo 'Found a fixup commit'
     fi
 }
 
+# shellcheck disable=SC2329 # Called indirectly
 check_forbidden_chars() {
     if grep -q -P -v '^[^#[:cntrl:]]*$'; then
         echo 'Forbidden character found ("#" or control character)'
     fi
 }
 
+# shellcheck disable=SC2329 # Called indirectly
 check_structure() {
     if grep -q -E -v '^([-_.a-z0-9]+[,:] )*[-_.a-z0-9]+: [a-z](:[^ ]|[^:])*$'; then
         echo 'Invalid commit title structure'
