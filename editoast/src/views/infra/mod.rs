@@ -682,7 +682,7 @@ async fn get_speed_limit_tags(
     let infra_tags = infra.get_speed_limit_tags(conn).await?;
     let union_tags: HashSet<String> = infra_tags
         .into_iter()
-        .map(|el| (el.tag))
+        .map(|el| el.tag)
         .chain(builtin_tags.0.clone())
         .collect();
     Ok(Json(union_tags))
@@ -737,7 +737,7 @@ async fn get_voltages(
     let voltages = infra
         .get_voltages(&mut db_pool.get().await?, include_rolling_stock_modes)
         .await?;
-    Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
+    Ok(Json(voltages.into_iter().map(|el| el.voltage).collect()))
 }
 
 /// Returns the set of voltages for all infras and rolling_stocks modes.
@@ -762,7 +762,7 @@ async fn get_all_voltages(
     }
 
     let voltages = Infra::get_all_voltages(&mut db_pool.get().await?).await?;
-    Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
+    Ok(Json(voltages.into_iter().map(|el| el.voltage).collect()))
 }
 
 async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
