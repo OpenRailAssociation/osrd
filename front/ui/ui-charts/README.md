@@ -24,9 +24,9 @@ state management, including paths, offsets, scales, and zoom levels, must be han
 component.
 
 You can have a look at its stories
-[here](https://openrailassociation.github.io/osrd-ui/?path=/story/spacetimechart-rendering--default-args)
+[here](https://ui.osrd.fr/?path=/story/spacetimechart-rendering--default-args)
 or
-[here](https://openrailassociation.github.io/osrd-ui/?path=/story/manchette-with-spacetimechart-rendering--waypoint-menu)
+[here](https://ui.osrd.fr/?path=/story/manchette-with-spacetimechart-rendering--waypoint-menu)
 with its manchette.
 
 ## Speed Space Chart
@@ -36,7 +36,7 @@ a path. It also allow to visualize some data along the path, such as the electri
 max speed profile, the power restrictions, etc.
 
 You can have a look at its stories
-[here](https://openrailassociation.github.io/osrd-ui/?path=/story/trackoccupancydiagram-rendering--track-occupancy-diagram-story-default).
+[here](https://ui.osrd.fr/?path=/story/trackoccupancydiagram-rendering--track-occupancy-diagram-story-default).
 
 ## Track Occupancy Diagram
 
@@ -44,7 +44,7 @@ The `TrackOccupancyDiagram` is a React component designed to visualize the track
 station.
 
 You can have a look at its story
-[here](https://openrailassociation.github.io/osrd-ui/?path=/story/trackoccupancydiagram-rendering--track-occupancy-diagram-story-default).
+[here](https://ui.osrd.fr/?path=/story/trackoccupancydiagram-rendering--track-occupancy-diagram-story-default).
 
 ## Resources
 
