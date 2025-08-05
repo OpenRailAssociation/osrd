@@ -3,6 +3,8 @@
 ##############
 FROM lukemathwalker/cargo-chef:0.1.71-rust-1.88-alpine3.22 AS chef
 WORKDIR /editoast
+ENV CARGO_HOME=/cargo_editoast
+ENV PATH="/cargo_editoast/bin:$PATH"
 
 #######################
 # Cargo chef : Recipe #
@@ -68,11 +70,11 @@ COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 ARG CARGO_PROFILE=release
 ARG CARGO_FEATURES
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
+RUN --mount=type=cache,target=/cargo_editoast/registry \
     --mount=type=cache,target=/editoast/target \
     cargo chef cook --profile="${CARGO_PROFILE}" --recipe-path recipe.json
 COPY . .
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
+RUN --mount=type=cache,target=/cargo_editoast/registry \
     --mount=type=cache,target=/editoast/target \
     cargo install --profile="${CARGO_PROFILE}" --locked --path .
 
@@ -82,9 +84,9 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM alpine:3.22 AS running_env
 RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client
 
-COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
+COPY --from=run_builder /cargo_editoast/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /editoast/migrations /migrations
-COPY --from=base_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
+COPY --from=base_builder /cargo_editoast/bin/diesel /usr/local/bin/diesel
 COPY --from=base_builder /usr/local/bin/fga /usr/local/bin/fga
 COPY --from=editoast_assets /assets /assets
 
