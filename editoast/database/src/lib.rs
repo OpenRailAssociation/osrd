@@ -1,5 +1,6 @@
 pub mod db_connection_pool;
 pub mod tables;
+mod tables_patch;
 
 pub use db_connection_pool::DbConnection;
 pub use db_connection_pool::DbConnectionPoolV2;

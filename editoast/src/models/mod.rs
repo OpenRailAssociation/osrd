@@ -7,6 +7,7 @@ pub mod infra;
 pub mod infra_objects;
 pub mod layers;
 pub mod macro_node;
+pub mod round_trips;
 pub mod stdcm_log;
 
 mod auth_driver;
@@ -44,6 +45,7 @@ pub use paced_train::PacedTrain;
 pub use project::Project;
 pub use rolling_stock::RollingStock;
 pub use rolling_stock_image::RollingStockImage;
+pub use round_trips::TrainScheduleRoundTrips;
 pub use scenario::Scenario;
 pub use study::Study;
 pub use subject::Subject;

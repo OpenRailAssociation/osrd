@@ -3029,7 +3029,6 @@ paths:
               items:
                 type: integer
                 format: int64
-                minimum: 0
         required: true
       responses:
         '204':
@@ -11874,7 +11873,6 @@ components:
           items:
             type: integer
             format: int64
-            minimum: 0
           description: List of one-way trains
         round_trips:
           type: array
