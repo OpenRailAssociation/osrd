@@ -14,7 +14,7 @@ import { replaceElementAtIndex } from 'utils/array';
 import { msToKmh } from 'utils/physics';
 
 import formatCurve from './formatSpreadSheetCurve';
-import type { ConditionalEffortCurveForm, DataSheetCurve, EffortCurveForms } from './types';
+import type { ConditionalEffortCurveForm, DataSheetCurve, EffortCurveForms } from '../types';
 
 type CurveSpreadsheetProps = {
   selectedCurve: ConditionalEffortCurveForm;

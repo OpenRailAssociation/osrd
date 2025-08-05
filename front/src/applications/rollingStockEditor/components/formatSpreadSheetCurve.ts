@@ -1,8 +1,6 @@
-import type {
-  DataSheetCurve,
-  EffortCurveForm,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
 import { kmhToMs } from 'utils/physics';
+
+import type { DataSheetCurve, EffortCurveForm } from '../types';
 
 const formatCurve = (rows: DataSheetCurve[]) =>
   rows.reduce<EffortCurveForm>(

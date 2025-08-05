@@ -9,15 +9,15 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import type { MultiUnit, MultiUnitsParameter } from 'modules/rollingStock/types';
 
-import { RollingStockEditorParameter, RS_REQUIRED_FIELDS } from './consts';
+import { RollingStockEditorParameter, RS_REQUIRED_FIELDS } from '../consts';
 import {
   handleUnitValue,
   isMassDependentUnit,
   isMultiUnitsParam,
   rescaleMassDependentParam,
-} from './helpers/units';
-import { splitRollingStockProperties } from './helpers/utils';
-import type { RollingStockParametersValues, SchemaProperty, EffortCurveForms } from './types';
+} from '../helpers/units';
+import { splitRollingStockProperties } from '../helpers/utils';
+import type { RollingStockParametersValues, SchemaProperty, EffortCurveForms } from '../types';
 
 type RollingStockEditorParameterFormProps = {
   rollingStockValues: RollingStockParametersValues;

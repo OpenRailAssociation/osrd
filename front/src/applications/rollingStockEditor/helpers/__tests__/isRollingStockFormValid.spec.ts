@@ -1,13 +1,14 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect } from 'vitest';
 
-import type { EffortCurves } from 'common/api/osrdEditoastApi';
-import { makeEffortCurve } from 'modules/rollingStock/components/RollingStockEditor/helpers/defaultValues';
-import isRollingStockFormValid from 'modules/rollingStock/components/RollingStockEditor/helpers/isRollingStockFormValid';
 import type {
-  EffortCurveForms,
   RollingStockParametersValues,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
+  EffortCurveForms,
+} from 'applications/rollingStockEditor/types';
+import type { EffortCurves } from 'common/api/osrdEditoastApi';
+
+import { makeEffortCurve } from '../defaultValues';
+import isRollingStockFormValid from '../isRollingStockFormValid';
 
 function setupEffortCurve(tractionMode: string, max_efforts: number[], speeds: number[]) {
   const curves = makeEffortCurve(tractionMode);

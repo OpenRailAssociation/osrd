@@ -6,22 +6,22 @@ import { isEmpty } from 'lodash';
 import type { EffortCurves, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { getCurvesComforts } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
-import CurveParamSelectors from 'modules/rollingStock/components/RollingStockEditor/CurveParamSelectors';
-import CurveSpreadsheet from 'modules/rollingStock/components/RollingStockEditor/CurveSpreadsheet';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { removeDuplicates } from 'utils/array';
 
-import { filterNullValueInCurve } from './helpers/curves';
-import { orderElectricalProfils } from './helpers/electricalValues';
+import { filterNullValueInCurve } from '../helpers/curves';
+import { orderElectricalProfils } from '../helpers/electricalValues';
 import {
   getElectricalProfilesAndPowerRestrictions,
   orderSelectorList,
-} from './helpers/powerRestrictions';
+} from '../helpers/powerRestrictions';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,
   RollingStockParametersValues,
-} from './types';
+} from '../types';
+import CurveParamSelectors from './CurveParamSelectors';
+import CurveSpreadsheet from './CurveSpreadsheet';
 
 const EMPTY_PARAMS = {
   comfortLevels: [STANDARD_COMFORT_LEVEL],
