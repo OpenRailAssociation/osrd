@@ -5,16 +5,19 @@ import { Filter } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
-import type { PairingItem } from '../types';
+import type { PairDataToolTip, PairingItem } from '../types';
 
 type RoundTripsModalPairingColumnProps = {
   closePairingMode: () => void;
   suggestions: PairingItem[];
   others: PairingItem[];
   pairItems: (candidate: PairingItem) => void;
+  pairingItemsById: Map<TimetableItemId, PairingItem>;
+
   subCategories: SubCategory[];
 };
 
@@ -23,6 +26,7 @@ const RoundTripsModalPairingColumn = ({
   suggestions,
   others,
   pairItems,
+  pairingItemsById,
   subCategories,
 }: RoundTripsModalPairingColumnProps) => {
   const { t } = useTranslation('operational-studies', {
@@ -34,6 +38,20 @@ const RoundTripsModalPairingColumn = ({
   const [filter, setFilter] = useState('');
 
   useOutsideClick(modalRef, closePairingMode);
+
+  const getPairData = (itemA: PairingItem): PairDataToolTip | undefined => {
+    if (itemA.status !== 'roundTrips') return;
+
+    const itemB = pairingItemsById.get(itemA.pairedItemId);
+    if (!itemB) throw new Error('item in roundtrips column must have a paired item');
+    return {
+      name: itemB.name,
+      origin: itemB.origin,
+      startTime: itemB.startTime,
+      destination: itemB.destination,
+      requestedArrivalTime: itemB.requestedArrivalTime,
+    };
+  };
 
   return (
     <>
@@ -69,6 +87,7 @@ const RoundTripsModalPairingColumn = ({
                     pairingItem={item}
                     isCandidate
                     subCategories={subCategories}
+                    pairData={getPairData(item)}
                   />
                 </div>
               ))}
@@ -90,6 +109,7 @@ const RoundTripsModalPairingColumn = ({
                     pairingItem={item}
                     isCandidate
                     subCategories={subCategories}
+                    pairData={getPairData(item)}
                   />
                 </div>
               ))}

@@ -223,6 +223,7 @@ const TodoColumn = ({
           suggestions={pairingCandidates.suggestions}
           others={pairingCandidates.others}
           pairItems={pairItems}
+          pairingItemsById={pairingItemsById}
           subCategories={subCategories}
         />
       )}

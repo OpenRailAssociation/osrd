@@ -150,6 +150,7 @@
       "cadence": "Cadence",
       "intermediateStops": "Arrêts intermédiaires",
       "manageRoundTrips": "Gérer les aller-retours",
+      "matchedWith": "Associé à",
       "oneWays": "Aller simples",
       "openRoundTripsMenu": "Ouvrir le menu de gestion des aller-retours",
       "others": "Autres",
