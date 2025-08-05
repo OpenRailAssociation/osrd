@@ -9,6 +9,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
+import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
@@ -37,8 +38,10 @@ const RoundTripsModalCard = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const stopsRef = useRef<HTMLDivElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isStopsTooltipOpen, setIsStopsTooltipOpen] = useState(false);
 
   const {
     id,
@@ -155,10 +158,25 @@ const RoundTripsModalCard = ({
         {menu}
       </div>
       <div className="round-trips-card-body">
-        <div className="stops">
+        <div
+          ref={stopsRef}
+          className="stops"
+          onMouseEnter={() => setIsStopsTooltipOpen(true)}
+          onMouseLeave={() => setIsStopsTooltipOpen(false)}
+        >
           <span className={cx({ 'no-stops': stops.length === 0 })}>{stops.length}</span>
           <Services className="stops-icon" />
         </div>
+        {isStopsTooltipOpen && stops.length > 0 && (
+          <OSRDTooltip
+            containerRef={stopsRef}
+            isOpen={isStopsTooltipOpen}
+            header={t('intermediateStops')}
+            items={stops}
+            offsetRatio={{ top: 1.2, left: 0.22 }} // ratio computed based on container size and tooltip offset
+            reverseIfOverflow
+          />
+        )}
         <div className="od-infos">
           <div className="extremity">
             <div className="times">{startTime.getMinutes().toString().padStart(2, '0')}</div>

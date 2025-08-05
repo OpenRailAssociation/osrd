@@ -315,6 +315,10 @@
             font-weight: 600;
             text-align: end;
 
+            &:hover * {
+              color: var(--black100) !important;
+            }
+
             span:first-child {
               color: var(--primary60);
               margin-top: 2px; // Vertical alignment with icon
