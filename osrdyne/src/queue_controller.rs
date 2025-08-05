@@ -146,7 +146,7 @@ pub async fn queues_control_loop(
 #[derive(Debug)]
 enum QueueUpdateError {
     QueueNotEmpty(Key),
-    LapinError(lapin::Error),
+    LapinError(lapin::ErrorKind),
 }
 
 impl Display for QueueUpdateError {
@@ -164,6 +164,12 @@ impl Display for QueueUpdateError {
 
 impl From<lapin::Error> for QueueUpdateError {
     fn from(value: lapin::Error) -> Self {
+        Self::LapinError(value.kind().clone())
+    }
+}
+
+impl From<lapin::ErrorKind> for QueueUpdateError {
+    fn from(value: lapin::ErrorKind) -> Self {
         Self::LapinError(value)
     }
 }
@@ -230,8 +236,9 @@ async fn update_queue(
                     },
                 )
                 .await
+                .map_err(|err| err.kind().clone())
             {
-                Err(lapin::Error::ProtocolError(err)) => {
+                Err(lapin::ErrorKind::ProtocolError(err)) => {
                     debug!(?err, "got protocol error (assuming non empty queue)");
                     return Err(QueueUpdateError::QueueNotEmpty(key));
                 }
