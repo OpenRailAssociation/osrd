@@ -381,7 +381,7 @@ impl TestApp {
         )
     }
 
-    pub fn group(&self, name: impl ToString) -> GroupBuilder {
+    pub fn group(&self, name: impl ToString) -> GroupBuilder<'_> {
         GroupBuilder::new(
             self,
             GroupInfo {
