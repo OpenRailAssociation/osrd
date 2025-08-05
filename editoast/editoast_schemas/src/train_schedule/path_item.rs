@@ -72,7 +72,7 @@ pub enum TrackReference {
     },
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum OperationalPointIdentifier {
     OperationalPointId {

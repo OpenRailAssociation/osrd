@@ -1875,7 +1875,22 @@ export type PostPacedTrainProjectPathOpApiArg = {
     infra_id: number;
     /** Distances between operational points in mm */
     operational_points_distances: number[];
-    operational_points_ids: string[];
+    operational_points_refs: (
+      | {
+          operational_point: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          trigram: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+          uic: number;
+        }
+    )[];
     train_ids: number[];
   };
 };
@@ -2435,7 +2450,22 @@ export type PostTrainScheduleProjectPathOpApiArg = {
     infra_id: number;
     /** Distances between operational points in mm */
     operational_points_distances: number[];
-    operational_points_ids: string[];
+    operational_points_refs: (
+      | {
+          operational_point: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          trigram: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+          uic: number;
+        }
+    )[];
     train_ids: number[];
   };
 };

@@ -1793,7 +1793,7 @@ paths:
               required:
               - infra_id
               - train_ids
-              - operational_points_ids
+              - operational_points_refs
               - operational_points_distances
               properties:
                 electrical_profile_set_id:
@@ -1810,10 +1810,42 @@ paths:
                     format: int64
                     minimum: 0
                   description: Distances between operational points in mm
-                operational_points_ids:
+                operational_points_refs:
                   type: array
                   items:
-                    type: string
+                    oneOf:
+                    - type: object
+                      required:
+                      - operational_point
+                      properties:
+                        operational_point:
+                          type: string
+                          maxLength: 255
+                          minLength: 1
+                    - type: object
+                      required:
+                      - trigram
+                      properties:
+                        secondary_code:
+                          type: string
+                          description: An optional secondary code to identify a more specific location
+                          nullable: true
+                        trigram:
+                          type: string
+                          minLength: 1
+                    - type: object
+                      required:
+                      - uic
+                      properties:
+                        secondary_code:
+                          type: string
+                          description: An optional secondary code to identify a more specific location
+                          nullable: true
+                        uic:
+                          type: integer
+                          format: int32
+                          description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                          minimum: 0
                 train_ids:
                   type: array
                   items:
@@ -4172,7 +4204,7 @@ paths:
               required:
               - infra_id
               - train_ids
-              - operational_points_ids
+              - operational_points_refs
               - operational_points_distances
               properties:
                 electrical_profile_set_id:
@@ -4189,10 +4221,42 @@ paths:
                     format: int64
                     minimum: 0
                   description: Distances between operational points in mm
-                operational_points_ids:
+                operational_points_refs:
                   type: array
                   items:
-                    type: string
+                    oneOf:
+                    - type: object
+                      required:
+                      - operational_point
+                      properties:
+                        operational_point:
+                          type: string
+                          maxLength: 255
+                          minLength: 1
+                    - type: object
+                      required:
+                      - trigram
+                      properties:
+                        secondary_code:
+                          type: string
+                          description: An optional secondary code to identify a more specific location
+                          nullable: true
+                        trigram:
+                          type: string
+                          minLength: 1
+                    - type: object
+                      required:
+                      - uic
+                      properties:
+                        secondary_code:
+                          type: string
+                          description: An optional secondary code to identify a more specific location
+                          nullable: true
+                        uic:
+                          type: integer
+                          format: int32
+                          description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                          minimum: 0
                 train_ids:
                   type: array
                   items:
@@ -6175,7 +6239,7 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfDistances'
-      - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfIds'
+      - $ref: '#/components/schemas/EditoastOperationalPointProjectionErrorInvalidNumberOfRefs'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
@@ -6711,7 +6775,7 @@ components:
           type: string
           enum:
           - editoast:operationalPointProjection:InvalidNumberOfDistances
-    EditoastOperationalPointProjectionErrorInvalidNumberOfIds:
+    EditoastOperationalPointProjectionErrorInvalidNumberOfRefs:
       type: object
       required:
       - type
@@ -6729,7 +6793,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:operationalPointProjection:InvalidNumberOfIds
+          - editoast:operationalPointProjection:InvalidNumberOfRefs
     EditoastPacedTrainErrorBatchNotFound:
       type: object
       required:
