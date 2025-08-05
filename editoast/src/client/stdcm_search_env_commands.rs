@@ -52,8 +52,7 @@ where
     <T as Exists<i64>>::Error: Sync + 'static,
 {
     if !T::exists(conn, object_id).await? {
-        let err_msg = format!("❌ {readable_name} not found, id: {object_id}");
-        anyhow::bail!("{}", err_msg);
+        anyhow::bail!("{readable_name} not found, id: {object_id}");
     }
     Ok(())
 }
@@ -89,8 +88,9 @@ async fn set_stdcm_search_env_from_scenario(
     #[expect(deprecated)]
     let scenario_option = Scenario::retrieve(conn, args.scenario_id).await?;
 
-    let scenario = scenario_option
-        .ok_or_else(|| anyhow::anyhow!("❌ Scenario not found, id: {}", args.scenario_id))?;
+    let scenario = scenario_option.ok_or_else(|| {
+        anyhow::anyhow!("Scenario not found, id: {scenario_id}", scenario_id = args.scenario_id)
+    })?;
 
     let (begin, end) = resolve_search_window(
         scenario.timetable_id,
@@ -218,8 +218,8 @@ async fn resolve_search_window(
 
         let (Some(min), Some(max)) = (start_times.iter().min(), start_times.iter().max()) else {
             let error_msg =
-                "❌ Timetable specified contains no train. Please fully specify search window.";
-            anyhow::bail!("{}", error_msg);
+                "Timetable specified contains no train. Please fully specify search window.";
+            anyhow::bail!("{error_msg}");
         };
 
         let begin = search_window_begin.unwrap_or(*min);
@@ -228,8 +228,7 @@ async fn resolve_search_window(
     };
 
     if begin >= end {
-        let error_msg = format!("❌ Resolved window is empty: begin ({begin}) >= end ({end})");
-        anyhow::bail!("{}", error_msg);
+        anyhow::bail!("Resolved window is empty: begin ({begin}) >= end ({end})");
     }
 
     Ok((begin, end))

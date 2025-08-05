@@ -75,10 +75,12 @@ pub async fn clone_infra(
     #[expect(deprecated)]
     let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
         .await?
-        .ok_or_else(|| anyhow::anyhow!("❌ Infrastructure not found, ID: {}", infra_args.id))?;
+        .ok_or_else(|| {
+            anyhow::anyhow!("Infrastructure not found, ID: {id}", id = infra_args.id)
+        })?;
     let new_name = infra_args
         .new_name
-        .unwrap_or_else(|| format!("{} (clone)", infra.name));
+        .unwrap_or_else(|| format!("{name} (clone)", name = infra.name));
     let cloned_infra = infra.clone(&mut db_pool.get().await?, new_name).await?;
     println!(
         "✅ Infra {} (ID: {}) was successfully cloned",
@@ -96,7 +98,7 @@ pub async fn import_railjson(
         Ok(file) => file,
         Err(_) => {
             anyhow::bail!(
-                "❌ Railjson file not found, Path: {}",
+                "Railjson file not found, Path: {}",
                 args.railjson_path.to_string_lossy()
             );
         }
@@ -240,7 +242,7 @@ async fn batch_retrieve_infras(conn: &mut DbConnection, ids: &[u64]) -> anyhow::
     let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
     if !missing.is_empty() {
         anyhow::bail!(
-            "❌ Infrastructures not found: {}",
+            "Infrastructures not found: {}",
             missing
                 .iter()
                 .map(|id| id.to_string())

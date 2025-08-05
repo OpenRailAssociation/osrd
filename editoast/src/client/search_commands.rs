@@ -58,19 +58,16 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
         skip_down,
     } = args;
     let Some(search_config) = SearchConfigFinder::find(&object) else {
-        let error = format!("❌ No search object found for {object}");
-        anyhow::bail!("{}", error);
+        anyhow::bail!("No search object found for {object}");
     };
     if !search_config.has_migration() {
-        let error = format!("❌ No migration defined for {object}");
-        anyhow::bail!("{}", error);
+        anyhow::bail!("No migration defined for {object}");
     }
     if !migration.is_dir() {
-        let error = format!(
-            "❌ {} is not a directory",
+        anyhow::bail!(
+            "{} is not a directory",
             migration.to_str().unwrap_or("<unprintable path>")
         );
-        anyhow::bail!("{}", error);
     }
     let up_path = migration.join("up.sql");
     let down_path = migration.join("down.sql");
@@ -83,12 +80,11 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
         && (up_path.exists() && fs::read(up_path.clone()).is_ok_and(|v| !v.is_empty())
             || down_path.exists() && fs::read(down_path.clone()).is_ok_and(|v| !v.is_empty()))
     {
-        let error = format!(
-            "❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
+        anyhow::bail!(
+            "Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
             migration.to_str().unwrap_or("<unprintable path>"),
             "--force".bold()
         );
-        anyhow::bail!("{}", error);
     }
     println!(
         "🤖 Generating migration {}",
@@ -96,14 +92,12 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
     );
     let (up, down) = search_config.make_up_down();
     if let Err(err) = fs::write(up_path, up) {
-        let error = format!("❌ Failed to write to {up_path_str}: {err}");
-        anyhow::bail!("{}", error);
+        anyhow::bail!("Failed to write to {up_path_str}: {err}");
     }
     println!("➡️  Wrote to {up_path_str}");
     if !skip_down {
         if let Err(err) = fs::write(down_path, down) {
-            let error = format!("❌ Failed to write to {down_path_str}: {err}");
-            anyhow::bail!("{}", error);
+            anyhow::bail!("Failed to write to {down_path_str}: {err}");
         }
         println!("➡️  Wrote to {down_path_str}");
     }
@@ -131,11 +125,11 @@ pub async fn refresh_search_tables(
 
     for object in objects {
         let Some(search_config) = SearchConfigFinder::find(&object) else {
-            eprintln!("❌ No search object found for {object}");
+            eprintln!("❗ No search object found for {object}");
             continue;
         };
         if !search_config.has_migration() {
-            eprintln!("❌ No migration defined for {object}");
+            eprintln!("❗ No migration defined for {object}");
             continue;
         }
         println!("🤖 Refreshing search table for {object}");

@@ -83,7 +83,7 @@ async fn main() {
     match run().await {
         Ok(_) => (),
         Err(e) => {
-            error!("{e}");
+            error!("❌ {e}");
             exit(1);
         }
     }

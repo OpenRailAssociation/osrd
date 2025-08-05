@@ -36,7 +36,7 @@ pub async fn healthcheck_cmd(
         regulator.openfga(),
     )
     .await
-    .map_err(|e| anyhow!("❌ healthcheck failed: {e}"))?;
+    .map_err(|e| anyhow!("healthcheck failed: {e}"))?;
 
     tracing::info!("✅ Healthcheck passed");
     Ok(())
