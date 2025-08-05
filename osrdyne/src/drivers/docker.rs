@@ -2,8 +2,9 @@ use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin};
 
 use bollard::{
     Docker,
-    container::{
-        Config, CreateContainerOptions, NetworkingConfig, RemoveContainerOptions,
+    models::{ContainerCreateBody, NetworkingConfig},
+    query_parameters::{
+        CreateContainerOptionsBuilder, ListContainersOptions, RemoveContainerOptions,
         StartContainerOptions,
     },
     secret::HostConfig,
@@ -145,18 +146,17 @@ impl WorkerDriver for DockerDriver {
                 self.options.container_prefix, self.worker_pool, worker_key
             );
             info!(%container_name, "Creating container");
-            let options = CreateContainerOptions {
-                name: container_name.clone(),
-                platform: None,
-            };
+            let options = CreateContainerOptionsBuilder::new()
+                .name(&container_name)
+                .build();
 
             let mut networking_config = Some(NetworkingConfig {
-                endpoints_config: HashMap::from([(
+                endpoints_config: Some(HashMap::from([(
                     self.options.network.clone(),
                     bollard::models::EndpointSettings {
                         ..Default::default()
                     },
-                )]),
+                )])),
             });
 
             let mut host_config = HostConfig {
@@ -169,7 +169,7 @@ impl WorkerDriver for DockerDriver {
                 host_config.network_mode = Some("host".to_string());
             }
 
-            let config = Config {
+            let config = ContainerCreateBody {
                 image: Some(self.options.worker_image.clone()),
                 env: Some(final_env),
                 labels: Some(labels),
@@ -185,10 +185,7 @@ impl WorkerDriver for DockerDriver {
                 .map_err(DriverError::DockerError)?;
 
             self.client
-                .start_container(
-                    container_name.as_str(),
-                    None::<StartContainerOptions<String>>,
-                )
+                .start_container(container_name.as_str(), None::<StartContainerOptions>)
                 .await
                 .map_err(DriverError::DockerError)?;
 
@@ -230,7 +227,7 @@ impl WorkerDriver for DockerDriver {
         Box::pin(async move {
             let containers = self
                 .client
-                .list_containers::<String>(None)
+                .list_containers(None::<ListContainersOptions>)
                 .await
                 .map_err(DriverError::DockerError)?;
 
