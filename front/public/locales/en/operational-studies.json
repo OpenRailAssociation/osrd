@@ -148,6 +148,7 @@
     "requestedPointUnknown": "requested point",
     "roundTripsModal": {
       "cadence": "Cadence",
+      "intermediateStops": "Intermediate stops",
       "manageRoundTrips": "Manage round trips",
       "oneWays": "One-ways",
       "openRoundTripsMenu": "Open round trips management menu",

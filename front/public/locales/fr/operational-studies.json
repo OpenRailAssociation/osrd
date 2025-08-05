@@ -148,6 +148,7 @@
     "requestedPointUnknown": "point demandé",
     "roundTripsModal": {
       "cadence": "Cadence",
+      "intermediateStops": "Arrêts intermédiaires",
       "manageRoundTrips": "Gérer les aller-retours",
       "oneWays": "Aller simples",
       "openRoundTripsMenu": "Ouvrir le menu de gestion des aller-retours",
