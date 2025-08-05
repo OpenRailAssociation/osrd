@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -52,7 +51,7 @@ pub struct ListProfileSetArgs {
 pub async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
     let electrical_profile_set_data: ElectricalProfileSetData =
@@ -69,7 +68,7 @@ pub async fn electrical_profile_set_import(
 pub async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let electrical_profile_sets = ElectricalProfileSet::list_light(&mut db_pool.get().await?)
         .await
         .unwrap();
@@ -88,7 +87,7 @@ pub async fn electrical_profile_set_list(
 pub async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     for profile_set_id in args.profile_set_ids {
         let deleted =
             ElectricalProfileSet::delete_static(&mut db_pool.get().await?, profile_set_id)

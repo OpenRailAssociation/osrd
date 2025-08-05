@@ -1,4 +1,3 @@
-use crate::CliError;
 use crate::Exists;
 use crate::Model;
 use crate::Retrieve;
@@ -16,7 +15,6 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -31,7 +29,7 @@ pub enum StdcmSearchEnvCommands {
 pub async fn handle_stdcm_search_env_command(
     command: StdcmSearchEnvCommands,
     db_pool: DbConnectionPoolV2,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
     match command {
         StdcmSearchEnvCommands::SetFromScenario(args) => {
@@ -48,14 +46,14 @@ async fn check_exists<T>(
     conn: &mut DbConnection,
     object_id: i64,
     readable_name: &str,
-) -> Result<(), Box<dyn Error + Send + Sync>>
+) -> anyhow::Result<()>
 where
     T: Exists<i64>,
     <T as Exists<i64>>::Error: Sync + 'static,
 {
     if !T::exists(conn, object_id).await? {
         let err_msg = format!("❌ {readable_name} not found, id: {object_id}");
-        return Err(Box::new(CliError::new(1, err_msg)));
+        anyhow::bail!("{}", err_msg);
     }
     Ok(())
 }
@@ -82,7 +80,7 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
 async fn set_stdcm_search_env_from_scenario(
     args: SetSTDCMSearchEnvFromScenarioArgs,
     conn: &mut DbConnection,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     if let Some(work_schedule_group_id) = args.work_schedule_group_id {
         check_exists::<WorkScheduleGroup>(conn, work_schedule_group_id, "Work Schedule Group")
             .await?;
@@ -91,13 +89,8 @@ async fn set_stdcm_search_env_from_scenario(
     #[expect(deprecated)]
     let scenario_option = Scenario::retrieve(conn, args.scenario_id).await?;
 
-    let scenario = scenario_option.ok_or_else(|| {
-        let error = CliError::new(
-            1,
-            format!("❌ Scenario not found, id: {0}", args.scenario_id),
-        );
-        Box::new(error)
-    })?;
+    let scenario = scenario_option
+        .ok_or_else(|| anyhow::anyhow!("❌ Scenario not found, id: {}", args.scenario_id))?;
 
     let (begin, end) = resolve_search_window(
         scenario.timetable_id,
@@ -160,7 +153,7 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
 async fn set_stdcm_search_env_from_scratch(
     args: SetSTDCMSearchEnvFromScratchArgs,
     conn: &mut DbConnection,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     check_exists::<Timetable>(conn, args.timetable_id, "Timetable").await?;
 
     check_exists::<Infra>(conn, args.infra_id, "Infra").await?;
@@ -217,7 +210,7 @@ async fn resolve_search_window(
     search_window_begin: Option<DateTime<Utc>>,
     search_window_end: Option<DateTime<Utc>>,
     conn: &mut DbConnection,
-) -> Result<(DateTime<Utc>, DateTime<Utc>), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<(DateTime<Utc>, DateTime<Utc>)> {
     let (begin, end) = if let (Some(begin), Some(end)) = (search_window_begin, search_window_end) {
         (begin, end)
     } else {
@@ -226,7 +219,7 @@ async fn resolve_search_window(
         let (Some(min), Some(max)) = (start_times.iter().min(), start_times.iter().max()) else {
             let error_msg =
                 "❌ Timetable specified contains no train. Please fully specify search window.";
-            return Err(Box::new(CliError::new(1, error_msg)));
+            anyhow::bail!("{}", error_msg);
         };
 
         let begin = search_window_begin.unwrap_or(*min);
@@ -236,15 +229,13 @@ async fn resolve_search_window(
 
     if begin >= end {
         let error_msg = format!("❌ Resolved window is empty: begin ({begin}) >= end ({end})");
-        return Err(Box::new(CliError::new(1, error_msg)));
+        anyhow::bail!("{}", error_msg);
     }
 
     Ok((begin, end))
 }
 
-async fn show_stdcm_search_env(
-    conn: &mut DbConnection,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn show_stdcm_search_env(conn: &mut DbConnection) -> anyhow::Result<()> {
     let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
     if let Some(search_env) = search_env {
         println!("{search_env:#?}");

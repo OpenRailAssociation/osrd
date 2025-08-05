@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -9,7 +8,6 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainSchedule;
 
-use crate::CliError;
 use crate::models;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
@@ -45,12 +43,11 @@ pub struct ExportTimetableArgs {
 pub async fn trains_export(
     args: ExportTimetableArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let train_ids = match TimetableWithTrains::retrieve(db_pool.get().await?, args.id).await? {
         Some(timetable) => timetable.train_ids,
         None => {
-            let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
-            return Err(Box::new(error));
+            anyhow::bail!("❌ Timetable not found, id: {}", args.id);
         }
     };
 
@@ -78,15 +75,11 @@ pub async fn trains_export(
 pub async fn trains_import(
     args: ImportTimetableArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let train_file = match File::open(args.path.clone()) {
         Ok(file) => file,
         Err(e) => {
-            let error = CliError::new(
-                1,
-                format!("❌ Could not open file {:?} ({:?})", args.path, e),
-            );
-            return Err(Box::new(error));
+            anyhow::bail!("❌ Could not open file {:?} ({:?})", args.path, e);
         }
     };
 
@@ -95,8 +88,7 @@ pub async fn trains_import(
         Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
             Some(timetable) => timetable,
             None => {
-                let error = CliError::new(1, format!("❌ Timetable not found, id: {timetable}"));
-                return Err(Box::new(error));
+                anyhow::bail!("❌ Timetable not found, id: {}", timetable);
             }
         },
         None => {

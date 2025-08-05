@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -9,7 +8,6 @@ use colored::Colorize as _;
 use database::DbConnectionPoolV2;
 use validator::ValidationErrorsKind;
 
-use crate::CliError;
 use crate::models::RollingStock;
 use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStock;
@@ -28,7 +26,7 @@ pub struct ImportRollingStockArgs {
 pub async fn import_rolling_stock(
     args: ImportRollingStockArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     for rolling_stock_path in args.rolling_stock_path {
         let mut conn = db_pool.get().await?;
         let rolling_stock_file = File::open(rolling_stock_path)?;
@@ -100,7 +98,7 @@ pub async fn import_rolling_stock(
                         }
                     }
                 }
-                return Err(Box::new(CliError::new(2, error_message)));
+                anyhow::bail!("{}", error_message);
             }
         };
     }
@@ -110,7 +108,7 @@ pub async fn import_rolling_stock(
 pub async fn import_towed_rolling_stock(
     args: ImportRollingStockArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     for towed_rolling_stock_path in args.rolling_stock_path {
         let towed_rolling_stock_file = File::open(towed_rolling_stock_path)?;
         let towed_rolling_stock: editoast_schemas::TowedRollingStock =

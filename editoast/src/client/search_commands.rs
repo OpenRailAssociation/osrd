@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -11,7 +10,6 @@ use diesel::sql_query;
 use diesel_async::RunQueryDsl as _;
 use editoast_search::SearchConfigStore as _;
 
-use crate::CliError;
 use crate::views::search::SearchConfigFinder;
 
 #[derive(Subcommand, Debug)]
@@ -52,7 +50,7 @@ pub fn list_search_objects() {
     });
 }
 
-pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
     let MakeMigrationArgs {
         object,
         migration,
@@ -61,18 +59,18 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
     } = args;
     let Some(search_config) = SearchConfigFinder::find(&object) else {
         let error = format!("❌ No search object found for {object}");
-        return Err(Box::new(CliError::new(2, error)));
+        anyhow::bail!("{}", error);
     };
     if !search_config.has_migration() {
         let error = format!("❌ No migration defined for {object}");
-        return Err(Box::new(CliError::new(2, error)));
+        anyhow::bail!("{}", error);
     }
     if !migration.is_dir() {
         let error = format!(
             "❌ {} is not a directory",
             migration.to_str().unwrap_or("<unprintable path>")
         );
-        return Err(Box::new(CliError::new(2, error)));
+        anyhow::bail!("{}", error);
     }
     let up_path = migration.join("up.sql");
     let down_path = migration.join("down.sql");
@@ -90,7 +88,7 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
             migration.to_str().unwrap_or("<unprintable path>"),
             "--force".bold()
         );
-        return Err(Box::new(CliError::new(2, error)));
+        anyhow::bail!("{}", error);
     }
     println!(
         "🤖 Generating migration {}",
@@ -99,13 +97,13 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
     let (up, down) = search_config.make_up_down();
     if let Err(err) = fs::write(up_path, up) {
         let error = format!("❌ Failed to write to {up_path_str}: {err}");
-        return Err(Box::new(CliError::new(2, error)));
+        anyhow::bail!("{}", error);
     }
     println!("➡️  Wrote to {up_path_str}");
     if !skip_down {
         if let Err(err) = fs::write(down_path, down) {
             let error = format!("❌ Failed to write to {down_path_str}: {err}");
-            return Err(Box::new(CliError::new(2, error)));
+            anyhow::bail!("{}", error);
         }
         println!("➡️  Wrote to {down_path_str}");
     }
@@ -121,7 +119,7 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
 pub async fn refresh_search_tables(
     args: RefreshArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let objects = if args.objects.is_empty() {
         SearchConfigFinder::all()
             .into_iter()

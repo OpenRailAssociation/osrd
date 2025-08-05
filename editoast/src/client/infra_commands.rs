@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -11,14 +10,12 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
 
-use crate::CliError;
 use crate::ValkeyClient;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::map::MapLayers;
 use crate::models::Infra;
 use crate::models::prelude::*;
-use crate::views::infra::InfraApiError;
 
 use super::ValkeyConfig;
 
@@ -74,18 +71,11 @@ pub struct ImportRailjsonArgs {
 pub async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     #[expect(deprecated)]
     let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
         .await?
-        .ok_or_else(|| {
-            // When EditoastError will be removed from the models crate,
-            // this can become a retrieve_or_fail
-            CliError::new(
-                1,
-                format!("❌ Infrastructure not found, ID: {}", infra_args.id),
-            )
-        })?;
+        .ok_or_else(|| anyhow::anyhow!("❌ Infrastructure not found, ID: {}", infra_args.id))?;
     let new_name = infra_args
         .new_name
         .unwrap_or_else(|| format!("{} (clone)", infra.name));
@@ -101,18 +91,14 @@ pub async fn clone_infra(
 pub async fn import_railjson(
     args: ImportRailjsonArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let railjson_file = match File::open(args.railjson_path.clone()) {
         Ok(file) => file,
         Err(_) => {
-            let error = CliError::new(
-                1,
-                format!(
-                    "❌ Railjson file not found, Path: {}",
-                    args.railjson_path.to_string_lossy()
-                ),
+            anyhow::bail!(
+                "❌ Railjson file not found, Path: {}",
+                args.railjson_path.to_string_lossy()
             );
-            return Err(Box::new(error));
         }
     };
 
@@ -128,10 +114,7 @@ pub async fn import_railjson(
     }
     let mut infra = infra.persist(railjson, &mut db_pool.get().await?).await?;
 
-    infra
-        .bump_version(&mut db_pool.get().await?)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
+    infra.bump_version(&mut db_pool.get().await?).await?;
 
     if !args.quiet {
         println!("✅ Infra {infra_name}[{}] saved!", infra.id);
@@ -168,7 +151,7 @@ pub async fn clear_infra(
     args: ClearArgs,
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -199,7 +182,7 @@ pub async fn generate_infra(
     args: GenerateArgs,
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -241,41 +224,29 @@ pub async fn generate_infra(
 async fn build_valkey_pool_and_invalidate_all_cache(
     valkey_config: ValkeyConfig,
     infra_id: i64,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> anyhow::Result<()> {
     let valkey = ValkeyClient::new(valkey_config.into()).unwrap();
     let mut conn = valkey.get_connection().await.unwrap();
-    Ok(map::invalidate_all(
+    map::invalidate_all(
         &mut conn,
         &MapLayers::default().layers.keys().cloned().collect(),
         infra_id,
     )
     .await
-    .map_err(|e| {
-        Box::new(CliError::new(
-            1,
-            format!("Couldn't refresh valkey cache layers: {e}"),
-        ))
-    })?)
+    .map_err(|e| anyhow::anyhow!("Couldn't refresh valkey cache layers: {e}"))
 }
 
-async fn batch_retrieve_infras(
-    conn: &mut DbConnection,
-    ids: &[u64],
-) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
+async fn batch_retrieve_infras(conn: &mut DbConnection, ids: &[u64]) -> anyhow::Result<Vec<Infra>> {
     let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
     if !missing.is_empty() {
-        let error = CliError::new(
-            1,
-            format!(
-                "❌ Infrastructures not found: {missing}",
-                missing = missing
-                    .iter()
-                    .map(|id| id.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
+        anyhow::bail!(
+            "❌ Infrastructures not found: {}",
+            missing
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
         );
-        return Err(Box::new(error));
     }
     Ok(infras)
 }
@@ -306,14 +277,6 @@ mod tests {
 
         // THEN
         assert!(result.is_err());
-        assert_eq!(
-            result
-                .unwrap_err()
-                .downcast_ref::<CliError>()
-                .unwrap()
-                .exit_code,
-            1
-        );
     }
 
     #[rstest::rstest]
