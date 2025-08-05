@@ -21,7 +21,7 @@ use super::pathfinding::PathfindingResult;
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 
 /// Gather information about several path items, factorizing db calls.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct PathItemCache {
     uic_to_ops: HashMap<u32, Vec<OperationalPointModel>>,
     trigram_to_ops: HashMap<String, Vec<OperationalPointModel>>,

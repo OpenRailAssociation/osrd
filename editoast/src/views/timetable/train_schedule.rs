@@ -23,6 +23,7 @@ use editoast_derive::EditoastError;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
+use editoast_schemas::train_schedule::OperationalPointReference;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::TrainSchedule;
 use editoast_schemas::train_schedule::TrainScheduleLike;
@@ -731,7 +732,7 @@ async fn project_path_op(
         infra_id,
         train_ids,
         electrical_profile_set_id,
-        operational_points_ids,
+        operational_points_refs,
         operational_points_distances,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, Arc<SpaceTimeCurves>>>> {
@@ -765,14 +766,37 @@ async fn project_path_op(
         })
         .await?;
 
-    let operational_points_projection =
-        OperationalPointProjection::new(operational_points_ids, operational_points_distances)?;
+    // Transform operational point references into a list of path item locations
+    let path_item_locations_projection = operational_points_refs
+        .iter()
+        .map(|op_ref| {
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: op_ref.clone(),
+                track_reference: None,
+            })
+        })
+        .collect::<Vec<_>>();
+
+    let path_item_locations: Vec<&PathItemLocation> = train_schedules
+        .iter()
+        .flat_map(|ts| ts.path().iter().map(|p| &p.location))
+        .chain(&path_item_locations_projection)
+        .collect();
+
+    let path_item_cache = PathItemCache::load(conn, infra.id, &path_item_locations).await?;
+
+    let operational_points_projection = OperationalPointProjection::new(
+        operational_points_refs,
+        operational_points_distances,
+        &path_item_cache,
+    )?;
 
     let compute_project_path_op = compute_projected_train_path_op(
         conn,
         valkey_client,
         core_client,
         &train_schedules,
+        &path_item_cache,
         operational_points_projection,
         infra,
         electrical_profile_set_id,

@@ -56,7 +56,8 @@ pub struct ProjectPathOperationalPointForm {
     pub infra_id: i64,
     pub electrical_profile_set_id: Option<i64>,
     pub train_ids: HashSet<i64>,
-    pub operational_points_ids: Vec<String>,
+    #[schema(inline)]
+    pub operational_points_refs: Vec<OperationalPointIdentifier>,
     /// Distances between operational points in mm
     pub operational_points_distances: Vec<u64>,
 }
@@ -555,33 +556,51 @@ impl TrainToProjectOnOperationalPoint {
     }
 }
 
-pub struct OperationalPointProjection(HashMap<String, u64>);
+#[derive(Debug, Default)]
+pub struct OperationalPointProjection(HashMap<OperationalPointIdentifier, u64>);
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "operationalPointProjection", default_status = 422)]
 pub enum OperationalPointProjectionError {
     #[error("Expected {expected} distances, but got {found}")]
     InvalidNumberOfDistances { expected: usize, found: usize },
-    #[error("Expected at least two ids")]
-    InvalidNumberOfIds,
+    #[error("Expected at least two refs")]
+    InvalidNumberOfRefs,
 }
 
 impl OperationalPointProjection {
     pub fn new(
-        ids: Vec<String>,
+        op_refs: Vec<OperationalPointIdentifier>,
         distances: Vec<u64>,
+        path_item_cache: &PathItemCache,
     ) -> Result<Self, OperationalPointProjectionError> {
-        if ids.len() < 2 {
-            return Err(OperationalPointProjectionError::InvalidNumberOfIds);
+        if op_refs.len() < 2 {
+            return Err(OperationalPointProjectionError::InvalidNumberOfRefs);
         }
-        if ids.len() != distances.len() + 1 {
+        if op_refs.len() != distances.len() + 1 {
             return Err(OperationalPointProjectionError::InvalidNumberOfDistances {
-                expected: ids.len() - 1,
+                expected: op_refs.len() - 1,
                 found: distances.len(),
             });
         }
+        // Transform operational point references into a list of operational point ids if it exists
+        // Otherwise, keep the original operational point references
+        let op_refs = op_refs
+            .into_iter()
+            .map(|op_ref| {
+                path_item_cache
+                    .get_op_ref_id(&op_ref)
+                    .map_or(op_ref, |op_id| {
+                        OperationalPointIdentifier::OperationalPointId {
+                            operational_point: op_id.into(),
+                        }
+                    })
+            })
+            .collect::<Vec<_>>();
+
         Ok(Self(
-            ids.into_iter()
+            op_refs
+                .into_iter()
                 .zip(std::iter::once(0).chain(distances).scan(0, |acc, i| {
                     *acc += i;
                     Some(*acc)
@@ -598,27 +617,31 @@ impl OperationalPointProjection {
         op_ref: &OperationalPointIdentifier,
         path_item_cache: &PathItemCache,
     ) -> Option<u64> {
-        let op_id = path_item_cache.get_op_ref_id(op_ref)?;
-        self.0.get(&op_id).copied()
+        let op_id = path_item_cache.get_op_ref_id(op_ref).map(|op_id| {
+            OperationalPointIdentifier::OperationalPointId {
+                operational_point: op_id.into(),
+            }
+        });
+
+        if let Some(op_id) = op_id {
+            self.0.get(&op_id).copied()
+        } else {
+            self.0.get(op_ref).copied()
+        }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
     train_schedules: &[T],
+    path_item_cache: &PathItemCache,
     operational_points_projection: OperationalPointProjection,
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<Arc<SpaceTimeCurves>>> {
-    let path_item_locations: Vec<&PathItemLocation> = train_schedules
-        .iter()
-        .flat_map(|ts| ts.path().iter().map(|p| &p.location))
-        .collect();
-
-    let path_item_cache = PathItemCache::load(conn, infra.id, &path_item_locations).await?;
-
     let simulations = train_simulation_batch(
         conn,
         valkey_client.clone(),
@@ -647,7 +670,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         let train_to_project = TrainToProjectOnOperationalPoint::new(ts, sim);
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
-            &path_item_cache,
+            path_item_cache,
             &operational_points_projection,
         ));
 
@@ -1004,13 +1027,14 @@ mod tests {
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                "South_West_station".to_string(),
-                "Mid_West_station".to_string(),
-                "Mid_East_station".to_string(),
-                "North_station".to_string(),
-                "South_station".to_string(),
+                create_path_item_from_trigram("SWS"),
+                create_path_item_from_trigram("MWS"),
+                create_path_item_from_trigram("MES"),
+                create_path_item_from_trigram("NS"),
+                create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
+            &path_item_cache,
         )
         .expect("Failed to create operational point projection");
 
@@ -1066,13 +1090,14 @@ mod tests {
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                "South_West_station".to_string(),
-                "Mid_West_station".to_string(),
-                "Mid_East_station".to_string(),
-                "North_station".to_string(),
-                "South_station".to_string(),
+                create_path_item_from_trigram("SWS"),
+                create_path_item_from_trigram("MWS"),
+                create_path_item_from_trigram("MES"),
+                create_path_item_from_trigram("NS"),
+                create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
+            &path_item_cache,
         )
         .expect("Failed to create operational point projection");
 
@@ -1128,13 +1153,14 @@ mod tests {
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                "South_West_station".to_string(),
-                "Mid_West_station".to_string(),
-                "Mid_East_station".to_string(),
-                "North_station".to_string(),
-                "South_station".to_string(),
+                create_path_item_from_trigram("SWS"),
+                create_path_item_from_trigram("MWS"),
+                create_path_item_from_trigram("MES"),
+                create_path_item_from_trigram("NS"),
+                create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
+            &path_item_cache,
         )
         .expect("Failed to create operational point projection");
 
@@ -1173,13 +1199,14 @@ mod tests {
         // Manchette
         let projection_op_id_to_positions = OperationalPointProjection::new(
             vec![
-                "South_West_station".to_string(),
-                "Mid_West_station".to_string(),
-                "Mid_East_station".to_string(),
-                "North_station".to_string(),
-                "South_station".to_string(),
+                create_path_item_from_trigram("SWS"),
+                create_path_item_from_trigram("MWS"),
+                create_path_item_from_trigram("MES"),
+                create_path_item_from_trigram("NS"),
+                create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
+            &path_item_cache,
         )
         .expect("Failed to create operational point projection");
 

@@ -12,6 +12,8 @@ use database::DbConnectionPoolV2;
 use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::paced_train::PacedTrain;
+use editoast_schemas::train_schedule::OperationalPointReference;
+use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -27,6 +29,7 @@ use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
+use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::OperationalPointProjection;
@@ -716,7 +719,7 @@ async fn project_path_op(
         infra_id,
         train_ids,
         electrical_profile_set_id,
-        operational_points_ids,
+        operational_points_refs,
         operational_points_distances,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
@@ -771,14 +774,37 @@ async fn project_path_op(
         })
         .collect();
 
-    let operational_points_projection =
-        OperationalPointProjection::new(operational_points_ids, operational_points_distances)?;
+    // Transform operational point references into a list of path item locations
+    let path_item_locations_projection = operational_points_refs
+        .iter()
+        .map(|op_ref| {
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: op_ref.clone(),
+                track_reference: None,
+            })
+        })
+        .collect::<Vec<_>>();
+
+    let path_item_locations: Vec<&PathItemLocation> = train_schedules
+        .iter()
+        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
+        .chain(&path_item_locations_projection)
+        .collect();
+
+    let path_item_cache = PathItemCache::load(conn, infra.id, &path_item_locations).await?;
+
+    let operational_points_projection = OperationalPointProjection::new(
+        operational_points_refs,
+        operational_points_distances,
+        &path_item_cache,
+    )?;
 
     let projected_trains = compute_projected_train_path_op(
         conn,
         valkey_client,
         core_client,
         &train_schedules,
+        &path_item_cache,
         operational_points_projection,
         infra,
         electrical_profile_set_id,
