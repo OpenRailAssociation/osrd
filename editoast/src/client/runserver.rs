@@ -110,5 +110,5 @@ pub async fn runserver(
     };
 
     let server = views::Server::new(config).await?;
-    server.start().await.map_err(Into::into)
+    Ok(server.start().await?)
 }
