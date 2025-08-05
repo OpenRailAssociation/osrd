@@ -44,12 +44,10 @@ pub async fn trains_export(
     args: ExportTimetableArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let train_ids = match TimetableWithTrains::retrieve(db_pool.get().await?, args.id).await? {
-        Some(timetable) => timetable.train_ids,
-        None => {
-            anyhow::bail!("Timetable not found, id: {id}", id = args.id);
-        }
-    };
+    let train_ids = TimetableWithTrains::retrieve(db_pool.get().await?, args.id)
+        .await?
+        .ok_or_else(|| anyhow::anyhow!("Timetable not found, id: {}", args.id))?
+        .train_ids;
 
     let (train_schedules, missing): (Vec<_>, _) =
         models::TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
@@ -84,13 +82,12 @@ pub async fn trains_import(
     };
 
     let timetable = match args.id {
-        #[expect(deprecated)]
-        Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
-            Some(timetable) => timetable,
-            None => {
-                anyhow::bail!("Timetable not found, id: {timetable}");
-            }
-        },
+        Some(timetable) => {
+            Timetable::retrieve_real_or_fail(db_pool.get().await?, timetable, || {
+                anyhow::anyhow!("Timetable not found, id: {}", timetable)
+            })
+            .await?
+        }
         None => {
             Timetable::changeset()
                 .create(&mut db_pool.get().await?)

@@ -85,12 +85,10 @@ async fn set_stdcm_search_env_from_scenario(
             .await?;
     }
 
-    #[expect(deprecated)]
-    let scenario_option = Scenario::retrieve(conn, args.scenario_id).await?;
-
-    let scenario = scenario_option.ok_or_else(|| {
-        anyhow::anyhow!("Scenario not found, id: {scenario_id}", scenario_id = args.scenario_id)
-    })?;
+    let scenario = Scenario::retrieve_real_or_fail(conn.clone(), args.scenario_id, || {
+        anyhow::anyhow!("Scenario not found, id: {}", args.scenario_id)
+    })
+    .await?;
 
     let (begin, end) = resolve_search_window(
         scenario.timetable_id,
