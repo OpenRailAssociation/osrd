@@ -14,7 +14,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
-import type { PairingItem } from '../types';
+import type { PairDataToolTip, PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
@@ -23,6 +23,7 @@ type RoundTripsModalCardProps = {
   moveItemToOneWays?: (item: PairingItem) => void;
   openPairingMode?: (itemId: TimetableItemId) => void | undefined;
   isCandidate?: boolean;
+  pairData?: PairDataToolTip;
   subCategories: SubCategory[];
 };
 
@@ -33,15 +34,18 @@ const RoundTripsModalCard = ({
   moveItemToOneWays,
   openPairingMode,
   isCandidate,
+  pairData,
   subCategories,
 }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const stopsRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStopsTooltipOpen, setIsStopsTooltipOpen] = useState(false);
+  const [isStatusTooltipOpen, setIsStatusTooltipOpen] = useState(false);
 
   const {
     id,
@@ -70,7 +74,17 @@ const RoundTripsModalCard = ({
     setIsMenuOpen(false);
   };
 
-  // TODO : add actions for each menu item
+  const statusTooltipBody = (
+    pair: Pick<
+      PairingItem,
+      'name' | 'origin' | 'startTime' | 'destination' | 'requestedArrivalTime'
+    >
+  ) => [
+    pair.name,
+    `${pair.startTime.getMinutes().toString().padStart(2, '0')} | ${pair.origin}`,
+    `${pair.requestedArrivalTime ? pair.requestedArrivalTime.getMinutes().toString().padStart(2, '0') : '\u00A0\u00A0\u00A0?'} | ${pair.destination}`,
+  ];
+
   const menuItems: Record<string, OSRDMenuItem> = {
     restore: {
       title: t('restore'),
@@ -142,7 +156,24 @@ const RoundTripsModalCard = ({
         <div className="interval" title={t('cadence')}>
           {interval ? `${interval.total('minute')}\u2019` : '\u2013'}
         </div>
-        <div className="status">{getStatusIcon(status)}</div>
+        <div
+          ref={statusRef}
+          className="status"
+          onMouseEnter={() => setIsStatusTooltipOpen(true)}
+          onMouseLeave={() => setIsStatusTooltipOpen(false)}
+        >
+          {getStatusIcon(status)}
+        </div>
+        {isStatusTooltipOpen && status === 'roundTrips' && pairData && (
+          <OSRDTooltip
+            containerRef={statusRef}
+            isOpen={isStatusTooltipOpen}
+            header={t('matchedWith')}
+            items={statusTooltipBody(pairData)}
+            offsetRatio={{ top: 1.2, left: 0.22 }} // ratio computed based on container size and tooltip offset
+            reverseIfOverflow
+          />
+        )}
         <button
           ref={menuButtonRef}
           type="button"

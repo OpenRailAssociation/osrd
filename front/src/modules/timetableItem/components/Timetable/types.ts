@@ -142,6 +142,11 @@ export type PairingItem = {
     }
 );
 
+export type PairDataToolTip = Pick<
+  PairingItem,
+  'name' | 'origin' | 'startTime' | 'destination' | 'requestedArrivalTime'
+>;
+
 export type RoundTripsColumnPair = { pair: [PairingItem, PairingItem]; isValid: boolean };
 
 export type PairingCandidates = {
