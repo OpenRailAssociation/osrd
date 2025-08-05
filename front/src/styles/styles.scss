@@ -1,6 +1,7 @@
 @use '../applications/operationalStudies/views/Study/styles/study';
 @use '../applications/operationalStudies/views/Project/styles/project';
 @use '../applications/operationalStudies/views/ProjectList/styles/projectList';
+@use '../applications/rollingStockEditor/styles.scss';
 @use '../applications/stdcm/styles/stdcm';
 
 @use '../modules/modules.scss';
@@ -16,7 +17,6 @@
 
 @use 'scss/applications/editor/editor';
 @use 'scss/applications/operationalStudies';
-@use 'scss/applications/rollingStockEditor/rollingStockForm';
 @use 'scss/_uiManchette.scss';
 @use 'scss/uiSpeedSpaceChart.scss';
 @use 'scss/uiSpaceTimeChart';
