@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+import type { MultiUnit, MultiUnitsParameter } from 'modules/rollingStock/types';
+
 import {
   convertUnitsWithMass,
   handleUnitValue,
   isMassDependentUnit,
   rescaleMassDependentParam,
-} from 'modules/rollingStock/components/RollingStockEditor/helpers/units';
-import type { MultiUnit, MultiUnitsParameter } from 'modules/rollingStock/types';
+} from '../units';
 
 describe('convertUnitsWithMass', () => {
   it('should divide the unit value by mass with current mass in t', () => {

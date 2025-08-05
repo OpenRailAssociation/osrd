@@ -8,12 +8,15 @@ import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Loader } from 'common/Loaders/Loader';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
-import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor';
-import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+
+import {
+  RollingStockEditorForm,
+  RollingStockEditorButtons,
+  RollingStockEditorFormModal,
+  RollingStockInformationPanel,
+} from './components';
 
 const RollingStockEditor = () => {
   const { t } = useTranslation();

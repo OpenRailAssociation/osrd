@@ -1,11 +1,9 @@
 import { isNull } from 'lodash';
 
 import type { Comfort } from 'common/api/osrdEditoastApi';
-import type {
-  EffortCurveForms,
-  ElectricalParamsLists,
-} from 'modules/rollingStock/components/RollingStockEditor/types';
 import type { ValueOf } from 'utils/types';
+
+import type { EffortCurveForms, ElectricalParamsLists } from '../types';
 
 /** Get the list of electrical profiles and power restrictions for an ModeEffortCurves */
 export const getElectricalProfilesAndPowerRestrictions = (

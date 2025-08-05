@@ -1,5 +1,5 @@
+import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
-import type { EffortCurveForms } from 'modules/rollingStock/components/RollingStockEditor/types';
 
 export function isElectric(effortCurves: EffortCurveForms | null) {
   if (!effortCurves) {

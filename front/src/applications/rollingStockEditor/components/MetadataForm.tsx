@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
-import { RS_REQUIRED_FIELDS, RollingStockEditorMetadata } from './consts';
-import { splitRollingStockProperties } from './helpers/utils';
-import type { RollingStockParametersValues, SchemaProperty } from './types';
+import { RS_REQUIRED_FIELDS, RollingStockEditorMetadata } from '../consts';
+import { splitRollingStockProperties } from '../helpers/utils';
+import type { RollingStockParametersValues, SchemaProperty } from '../types';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;

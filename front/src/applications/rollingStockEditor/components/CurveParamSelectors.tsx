@@ -15,18 +15,18 @@ import {
   THERMAL_TRACTION_IDENTIFIER,
 } from 'modules/rollingStock/consts';
 
-import { EP_BY_MODE } from './consts';
-import { sortSelectedModeCurves } from './helpers/curves';
-import { createEmptyCurve, createEmptyCurves } from './helpers/defaultValues';
-import { translateItemsList } from './helpers/utils';
+import { EP_BY_MODE } from '../consts';
 import PowerRestrictionGridModal from './PowerRestrictionGridModal';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
+import { sortSelectedModeCurves } from '../helpers/curves';
+import { createEmptyCurve, createEmptyCurves } from '../helpers/defaultValues';
+import { translateItemsList } from '../helpers/utils';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,
   ElectricalProfileByMode,
   RollingStockSelectorParams,
-} from './types';
+} from '../types';
 
 const addNewCurveToMode = (
   effortCurves: EffortCurveForms,

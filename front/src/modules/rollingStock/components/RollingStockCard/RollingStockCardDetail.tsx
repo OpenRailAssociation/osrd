@@ -4,12 +4,12 @@ import cx from 'classnames';
 import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
-import type { EffortCurveForms } from 'modules/rollingStock/components/RollingStockEditor/types';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import convertUnits from 'modules/rollingStock/helpers/convertUnits';
 import { setFailure } from 'reducers/main';

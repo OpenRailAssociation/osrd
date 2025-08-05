@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { setSuccess, setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorStatus } from 'utils/error';
+
+import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;

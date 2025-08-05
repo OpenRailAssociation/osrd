@@ -14,8 +14,6 @@ import Tabs from 'common/Tabs';
 import type { TabProps } from 'common/Tabs';
 import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { handleFileReadingError } from 'modules/timetableItem/components/ManageTimetableItem/helpers/handleParseFiles';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -23,17 +21,19 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import CategoryForm from './CategoryForm';
-import {
-  getDefaultRollingStockMode,
-  getRollingStockEditorDefaultValues,
-} from './helpers/defaultValues';
-import { modifyRollingStockElectricalValues } from './helpers/electricalValues';
-import isRollingStockFormValid from './helpers/isRollingStockFormValid';
-import { rollingStockEditorQueryArg } from './helpers/utils';
 import MetadataForm from './MetadataForm';
 import OnboardSystemEquipmentForm from './OnboardSystemEquipmentForm';
 import ParametersForm from './ParametersForm';
-import type { EffortCurveForms, RollingStockParametersValues } from './types';
+import RollingStockEditorCurves from './RollingStockEditorCurves';
+import {
+  getDefaultRollingStockMode,
+  getRollingStockEditorDefaultValues,
+} from '../helpers/defaultValues';
+import { modifyRollingStockElectricalValues } from '../helpers/electricalValues';
+import isRollingStockFormValid from '../helpers/isRollingStockFormValid';
+import { rollingStockEditorQueryArg } from '../helpers/utils';
+import type { EffortCurveForms, RollingStockParametersValues } from '../types';
+import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
