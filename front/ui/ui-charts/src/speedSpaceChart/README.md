@@ -118,7 +118,7 @@ const yourTranslations = {
 ## Visualization
 
 The `ui-speedspacechart` component can be observed and manipulated on Storybook at this address:
-[storybook/speedspacechart](https://openrailassociation.github.io/osrd-ui/?path=/story/speedspacechart-rendering--speed-space-chart-default)
+[storybook/speedspacechart](https://ui.osrd.fr/?path=/story/speedspacechart-rendering--speed-space-chart-default)
 
 ## Contributing
 
