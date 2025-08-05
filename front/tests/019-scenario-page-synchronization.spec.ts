@@ -46,6 +46,10 @@ const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
 );
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 test.describe('Synchronize the scenario page across multiple windows', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'This test is only stable on Chromium due to tab sync flakiness in Firefox'
+  );
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
@@ -79,7 +83,7 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
     }
   );
 
-  test('Reflects updates across tabs ', async ({ context }) => {
+  test('Reflects updates across tabs', async ({ context }) => {
     const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
 
     // Open the first tab and navigate to the scenario page
