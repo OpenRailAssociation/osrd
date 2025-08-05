@@ -47,7 +47,7 @@ pub async fn trains_export(
     let train_ids = match TimetableWithTrains::retrieve(db_pool.get().await?, args.id).await? {
         Some(timetable) => timetable.train_ids,
         None => {
-            anyhow::bail!("❌ Timetable not found, id: {}", args.id);
+            anyhow::bail!("Timetable not found, id: {id}", id = args.id);
         }
     };
 
@@ -79,7 +79,7 @@ pub async fn trains_import(
     let train_file = match File::open(args.path.clone()) {
         Ok(file) => file,
         Err(e) => {
-            anyhow::bail!("❌ Could not open file {:?} ({:?})", args.path, e);
+            anyhow::bail!("Could not open file {path:?} ({e:?})", path = args.path);
         }
     };
 
@@ -88,7 +88,7 @@ pub async fn trains_import(
         Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
             Some(timetable) => timetable,
             None => {
-                anyhow::bail!("❌ Timetable not found, id: {}", timetable);
+                anyhow::bail!("Timetable not found, id: {timetable}");
             }
         },
         None => {

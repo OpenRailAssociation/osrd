@@ -83,22 +83,25 @@ pub async fn import_rolling_stock(
                 }
             }
             Err(e) => {
-                let mut error_message = "❌ Rolling stock was not created!".to_string();
                 if let Some(ValidationErrorsKind::Field(field_errors)) = e.errors().get("__all__") {
                     for error in field_errors {
                         if &error.code == "electrical_power_startup_time" {
-                            error_message.push_str(
-                                "\nRolling stock is electrical, but electrical_power_startup_time is missing"
+                            tracing::error!(
+                                "Rolling stock is electrical, but electrical_power_startup_time is missing"
                             );
-                        }
-                        if &error.code == "raise_pantograph_time" {
-                            error_message.push_str(
-                                "\nRolling stock is electrical, but raise_pantograph_time is missing"
+                        } else if &error.code == "raise_pantograph_time" {
+                            tracing::error!(
+                                "Rolling stock is electrical, but raise_pantograph_time is missing"
+                            );
+                        } else {
+                            tracing::error!(
+                                code = error.code,
+                                "Unknown rolling stock validation error"
                             );
                         }
                     }
                 }
-                anyhow::bail!("{}", error_message);
+                anyhow::bail!("Rolling stock import failed");
             }
         };
     }
