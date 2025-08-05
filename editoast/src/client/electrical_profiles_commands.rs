@@ -69,9 +69,8 @@ pub async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let electrical_profile_sets = ElectricalProfileSet::list_light(&mut db_pool.get().await?)
-        .await
-        .unwrap();
+    let electrical_profile_sets =
+        ElectricalProfileSet::list_light(&mut db_pool.get().await?).await?;
     if !args.quiet {
         println!("Electrical profile sets:\nID - Name");
     }
@@ -90,9 +89,7 @@ pub async fn electrical_profile_set_delete(
 ) -> anyhow::Result<()> {
     for profile_set_id in args.profile_set_ids {
         let deleted =
-            ElectricalProfileSet::delete_static(&mut db_pool.get().await?, profile_set_id)
-                .await
-                .unwrap();
+            ElectricalProfileSet::delete_static(&mut db_pool.get().await?, profile_set_id).await?;
         if !deleted {
             println!("❎ Electrical profile set {profile_set_id} not found");
         } else {

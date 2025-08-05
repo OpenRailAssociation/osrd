@@ -72,12 +72,10 @@ pub async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    #[expect(deprecated)]
-    let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
-        .await?
-        .ok_or_else(|| {
-            anyhow::anyhow!("Infrastructure not found, ID: {id}", id = infra_args.id)
-        })?;
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_args.id as i64, || {
+        anyhow::anyhow!("Infrastructure not found, ID: {}", infra_args.id)
+    })
+    .await?;
     let new_name = infra_args
         .new_name
         .unwrap_or_else(|| format!("{name} (clone)", name = infra.name));
@@ -227,8 +225,8 @@ async fn build_valkey_pool_and_invalidate_all_cache(
     valkey_config: ValkeyConfig,
     infra_id: i64,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(valkey_config.into()).unwrap();
-    let mut conn = valkey.get_connection().await.unwrap();
+    let valkey = ValkeyClient::new(valkey_config.into())?;
+    let mut conn = valkey.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &MapLayers::default().layers.keys().cloned().collect(),
