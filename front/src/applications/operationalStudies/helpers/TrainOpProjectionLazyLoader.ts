@@ -1,5 +1,6 @@
 import {
   osrdEditoastApi,
+  type OperationalPointReference,
   type PathProperties,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathOpApiResponse,
@@ -21,7 +22,7 @@ import TrainProjectionLazyLoaderAbstract, {
 } from './TrainProjectionLazyLoaderAbstract';
 
 export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
-  readonly opIds: string[];
+  readonly opRefs: OperationalPointReference[];
 
   readonly opDistances: number[];
 
@@ -30,11 +31,11 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     operationalPoints: PathProperties['operational_points']
   ) {
     super(options);
-    this.opIds = [];
+    this.opRefs = [];
     this.opDistances = [];
     if (!operationalPoints || operationalPoints.length === 0) return;
     operationalPoints.forEach(({ id, position }, index) => {
-      this.opIds.push(id);
+      this.opRefs.push({ operational_point: id });
       if (index > 0) {
         this.opDistances.push(position - operationalPoints[index - 1].position);
       }
@@ -44,7 +45,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
   async processBatch(batch: TimetableItemId[]) {
     const { infraId, path, electricalProfileSetId } = this.options;
 
-    if (this.opIds.length < 2) {
+    if (this.opRefs.length < 2) {
       this.options.onProgress(new Map());
       return;
     }
@@ -73,7 +74,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
               body: {
                 infra_id: infraId,
                 train_ids: rawTrainScheduleIds,
-                operational_points_ids: this.opIds,
+                operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
               },
             },
@@ -110,7 +111,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
               body: {
                 infra_id: infraId,
                 train_ids: rawPacedTrainIds,
-                operational_points_ids: this.opIds,
+                operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
               },
             },

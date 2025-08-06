@@ -125,7 +125,7 @@
     },
     "operationalPointProjection": {
       "InvalidNumberOfDistances": "Excpected {{expected}} distances, but got {{found}}",
-      "InvalidNumberOfIds": "Expected at least two ids"
+      "InvalidNumberOfRefs": "Expected at least two operational points references"
     },
     "paced_train": {
       "BatchNotFound": "'{{count}}' paced train(s) could not be found",

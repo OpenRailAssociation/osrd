@@ -125,7 +125,7 @@
     },
     "operationalPointProjection": {
       "InvalidNumberOfDistances": "{{expected}} distances attendues, mais {{found}} reçues",
-      "InvalidNumberOfIds": "Au moins 2 ids attendus"
+      "InvalidNumberOfRefs": "Au moins 2 références de points opérationnels attendues"
     },
     "paced_train": {
       "BatchNotFound": "'{{count}}' mission(s) sont introuvable(s)",
