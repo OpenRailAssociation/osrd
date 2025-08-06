@@ -5,14 +5,10 @@ use strum::EnumString;
 use strum::IntoStaticStr;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    TrainMainCategory,
-    TrainMainCategories,
-}
-
 // This enum maps to a Postgres enum type, specifically `train_category`.
 // Any changes made to this enum must be reflected in the corresponding Postgres enum,
 // and vice versa, to ensure consistency between the application and the database.
+#[editoast_derive::openapi_schema]
 #[derive(
     Debug,
     Clone,
@@ -40,6 +36,7 @@ pub enum TrainMainCategory {
     WorkTrain,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct TrainMainCategories(pub Vec<TrainMainCategory>);
 

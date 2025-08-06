@@ -4,10 +4,7 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::LoadingGaugeType;
 
-editoast_common::schemas! {
-    LoadingGaugeLimit,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {

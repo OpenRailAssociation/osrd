@@ -13,10 +13,7 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDObject;
 use crate::primitives::ObjectType;
 
-editoast_common::schemas! {
-    InfraObject,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
 pub enum InfraObject {

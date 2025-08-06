@@ -15,11 +15,7 @@ type NodeType = &'static str;
 type NodePorts = &'static [&'static str];
 type NodeGroups = &'static [&'static [StaticMap]];
 
-editoast_common::schemas! {
-    SwitchType,
-    SwitchPortConnection,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[schema(example = json!(
@@ -52,6 +48,7 @@ impl OSRDIdentified for SwitchType {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchPortConnection {

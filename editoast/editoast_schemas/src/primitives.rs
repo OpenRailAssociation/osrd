@@ -12,12 +12,6 @@ pub use non_blank_string::NonBlankString;
 pub use object_ref::ObjectRef;
 pub use object_type::ObjectType;
 
-editoast_common::schemas! {
-    object_type::schemas(),
-    bounding_box::schemas(),
-    object_ref::schemas(),
-}
-
 /// This trait should be implemented by all struct that represents an OSRD type.
 pub trait OSRDTyped {
     fn get_type() -> ObjectType;

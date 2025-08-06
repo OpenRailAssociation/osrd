@@ -58,20 +58,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 
-editoast_common::schemas! {
-    effort_curves::schemas(),
-    energy_source::schemas(),
-    etcs_brake_params::schemas(),
-    loading_gauge_type::schemas(),
-    rolling_stock_metadata::schemas(),
-    rolling_resistance::schemas(),
-    rolling_stock_livery::schemas(),
-    supported_signaling_systems::schemas(),
-    train_main_category::schemas(),
-    sub_category::schemas(),
-    train_category::schemas(),
-}
-
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]

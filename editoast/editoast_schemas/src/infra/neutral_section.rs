@@ -9,15 +9,12 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-editoast_common::schemas! {
-    NeutralSection,
-}
-
 /// Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
 ///
 /// In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
 ///
 /// For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct NeutralSection {

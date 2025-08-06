@@ -2,10 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    RollingStockSupportedSignalingSystems,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockSupportedSignalingSystems(pub Vec<String>);
 

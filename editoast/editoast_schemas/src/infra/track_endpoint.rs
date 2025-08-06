@@ -7,10 +7,7 @@ use super::Direction;
 use super::Endpoint;
 use crate::primitives::Identifier;
 
-editoast_common::schemas! {
-    TrackEndpoint,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[educe(Default)]
 #[serde(deny_unknown_fields)]

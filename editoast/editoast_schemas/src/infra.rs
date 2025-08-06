@@ -85,33 +85,3 @@ pub use track_section_extensions::TrackSectionExtensions;
 pub use track_section_sncf_extension::TrackSectionSncfExtension;
 pub use track_section_source_extension::TrackSectionSourceExtension;
 pub use waypoint::Waypoint;
-
-editoast_common::schemas! {
-    applicable_directions::schemas(),
-    applicable_directions_track_range::schemas(),
-    buffer_stop::schemas(),
-    detector::schemas(),
-    direction::schemas(),
-    directional_track_range::schemas(),
-    electrical_profiles::schemas(),
-    electrification::schemas(),
-    endpoint::schemas(),
-    infra_object::schemas(),
-    loading_gauge_limit::schemas(),
-    neutral_section::schemas(),
-    operational_point::schemas(),
-    railjson::schemas(),
-    route::schemas(),
-    side::schemas(),
-    sign::schemas(),
-    signal::schemas(),
-    speed_section::schemas(),
-    switch::schemas(),
-    switch_type::schemas(),
-    track_endpoint::schemas(),
-    track_location::schemas(),
-    track_offset::schemas(),
-    track_section::schemas(),
-    track_range::schemas(),
-    directional_track_range::schemas(),
-}

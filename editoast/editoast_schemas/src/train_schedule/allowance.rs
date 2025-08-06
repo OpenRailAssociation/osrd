@@ -2,15 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    Allowance,
-    AllowanceValue,
-    AllowanceDistribution,
-    RangeAllowance,
-    EngineeringAllowance,
-    StandardAllowance,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "allowance_type", rename_all = "lowercase")]
 pub enum Allowance {
@@ -18,6 +10,7 @@ pub enum Allowance {
     Standard(StandardAllowance),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 
 pub struct EngineeringAllowance {
@@ -29,6 +22,7 @@ pub struct EngineeringAllowance {
     capacity_speed_limit: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct StandardAllowance {
     default_value: AllowanceValue,
@@ -42,6 +36,7 @@ const fn default_capacity_speed_limit() -> f64 {
     -1.0
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "value_type")]
 pub enum AllowanceValue {
@@ -53,6 +48,7 @@ pub enum AllowanceValue {
     Percent { percentage: f64 },
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct RangeAllowance {
     begin_position: f64,
@@ -60,6 +56,7 @@ pub struct RangeAllowance {
     value: AllowanceValue,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AllowanceDistribution {

@@ -5,11 +5,7 @@ use serde::Serialize;
 use serde::Serializer;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    EtcsBrakeParams,
-    SpeedIntervalValueCurve,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]
@@ -51,6 +47,7 @@ pub struct EtcsBrakeParams {
     pub t_be: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields, remote = "Self")]
