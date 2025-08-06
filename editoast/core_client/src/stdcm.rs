@@ -19,10 +19,7 @@ use super::simulation::SimulationSuccess;
 use crate::AsCoreRequest;
 use crate::Json;
 
-editoast_common::schemas! {
-    Request,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = StdcmRequest)]
 pub struct Request {
@@ -103,6 +100,7 @@ pub struct WorkSchedule {
 }
 
 /// Lighter description of a work schedule with only the relevant information for core
+
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TemporarySpeedLimit {
     /// Speed limitation in m/s

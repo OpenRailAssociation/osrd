@@ -125,7 +125,6 @@ crate::routes! {
 editoast_common::schemas! {
     editoast_schemas::schemas(),
     models::schemas(),
-    core_client::schemas(),
     generated_data::schemas(),
     authz::schemas(),
     electrical_profiles::schemas(),

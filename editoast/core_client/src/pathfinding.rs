@@ -11,17 +11,6 @@ use crate::AsCoreRequest;
 use crate::Json;
 use crate::RawError;
 
-editoast_common::schemas! {
-    IncompatibleConstraints,
-    IncompatibleOffsetRangeWithValue,
-    IncompatibleOffsetRange,
-    PathfindingResultSuccess,
-    OffsetRange,
-    TrackRange,
-    PathfindingInputError,
-    PathfindingNotFound,
-}
-
 #[derive(Debug, Serialize)]
 pub struct PathfindingRequest {
     /// Infrastructure id
@@ -45,23 +34,27 @@ pub struct PathfindingRequest {
     pub rolling_stock_length: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct OffsetRange {
     start: u64,
     end: u64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRangeWithValue {
     range: OffsetRange,
     value: String,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRange {
     range: OffsetRange,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleConstraints {
     incompatible_electrification_ranges: Vec<IncompatibleOffsetRangeWithValue>,
@@ -105,6 +98,7 @@ pub enum PathfindingCoreResult {
 }
 
 /// A successful pathfinding result. This is also used for STDCM response.
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[cfg_attr(feature = "mocking_client", derive(Default))]
 pub struct PathfindingResultSuccess {
@@ -124,6 +118,7 @@ pub struct PathfindingResultSuccess {
 }
 
 // Enum for input-related errors
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingInputError {
@@ -139,6 +134,7 @@ pub enum PathfindingInputError {
 }
 
 // Enum for not-found results and incompatible constraints
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Default)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
@@ -160,6 +156,7 @@ pub enum PathfindingNotFound {
 
 /// An oriented range on a track section.
 /// `begin` is always less than `end`.
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 pub struct TrackRange {
     /// The track section identifier.

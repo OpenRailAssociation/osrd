@@ -10,10 +10,6 @@ use crate::simulation::ZoneUpdate;
 
 use super::pathfinding::TrackRange;
 
-editoast_common::schemas! {
-    SignalUpdate,
-}
-
 #[derive(Debug, Serialize)]
 pub struct SignalUpdatesRequest<'a> {
     /// Infrastructure id
@@ -30,6 +26,7 @@ pub struct SignalUpdatesRequest<'a> {
     pub train_simulations: Vec<TrainSimulation<'a>>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct SignalUpdate {
     /// The id of the updated signal

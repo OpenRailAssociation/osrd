@@ -12,12 +12,6 @@ use crate::simulation::SimulationPowerRestrictionItem;
 use crate::simulation::SimulationScheduleItem;
 use crate::simulation::SpeedLimitProperties;
 
-editoast_common::schemas! {
-    Response,
-    ETCSCurves,
-    ETCSConflictCurves,
-}
-
 #[derive(Debug, Serialize)]
 pub struct Request {
     pub infra: i64,
@@ -32,6 +26,7 @@ pub struct Request {
     pub mrsp: SpeedLimitProperties,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[schema(as = ETCSBrakingCurvesResponse)]
 pub struct Response {
@@ -46,6 +41,7 @@ pub struct Response {
     pub conflicts: Vec<ETCSConflictCurves>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct ETCSCurves {
     #[schema(inline)]
@@ -56,6 +52,7 @@ pub struct ETCSCurves {
     pub guidance: SimpleEnvelope,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct ETCSConflictCurves {
     #[schema(inline)]
