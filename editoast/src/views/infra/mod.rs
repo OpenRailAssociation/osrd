@@ -25,10 +25,10 @@ use editoast_authz::InfraGrant;
 use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_models::model;
-use editoast_osrdyne_client::OsrdyneClient;
 use editoast_schemas::infra::SwitchType;
 use editoast_schemas::primitives::Identifier;
 use itertools::Itertools;
+use osrdyne_client::OsrdyneClient;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -298,13 +298,13 @@ pub enum InfraState {
     Error,
 }
 
-impl From<editoast_osrdyne_client::WorkerStatus> for InfraState {
-    fn from(status: editoast_osrdyne_client::WorkerStatus) -> Self {
+impl From<osrdyne_client::WorkerStatus> for InfraState {
+    fn from(status: osrdyne_client::WorkerStatus) -> Self {
         match status {
-            editoast_osrdyne_client::WorkerStatus::Unscheduled => InfraState::NotLoaded,
-            editoast_osrdyne_client::WorkerStatus::Started => InfraState::Initializing,
-            editoast_osrdyne_client::WorkerStatus::Ready => InfraState::Cached,
-            editoast_osrdyne_client::WorkerStatus::Error => InfraState::Error,
+            osrdyne_client::WorkerStatus::Unscheduled => InfraState::NotLoaded,
+            osrdyne_client::WorkerStatus::Started => InfraState::Initializing,
+            osrdyne_client::WorkerStatus::Ready => InfraState::Cached,
+            osrdyne_client::WorkerStatus::Error => InfraState::Error,
         }
     }
 }
@@ -909,7 +909,7 @@ async fn load(
 pub enum InfraStateError {
     #[error("Failed to fetch infra state: {0}")]
     #[editoast_error(status = 500)]
-    FetchError(#[from] editoast_osrdyne_client::Error),
+    FetchError(#[from] osrdyne_client::Error),
 }
 
 pub async fn fetch_infra_state(infra_id: i64, osrdyne: &OsrdyneClient) -> Result<InfraState> {
@@ -1139,8 +1139,6 @@ pub mod tests {
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
     use editoast_common::geometry::GeoJsonPointValue;
-    use editoast_osrdyne_client::OsrdyneClient;
-    use editoast_osrdyne_client::WorkerStatus;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::infra::Speed;
@@ -1148,6 +1146,8 @@ pub mod tests {
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::primitives::ObjectType;
     use editoast_schemas::train_schedule::TrackReference;
+    use osrdyne_client::OsrdyneClient;
+    use osrdyne_client::WorkerStatus;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;

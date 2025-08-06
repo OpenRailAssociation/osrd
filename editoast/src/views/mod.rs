@@ -54,9 +54,9 @@ use editoast_authz::Authorizer;
 use editoast_authz::Role;
 use editoast_authz::identity::UserInfo;
 
-use editoast_osrdyne_client::OsrdyneClient;
 use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
+use osrdyne_client::OsrdyneClient;
 
 use axum::extract::Json;
 use axum::extract::State;

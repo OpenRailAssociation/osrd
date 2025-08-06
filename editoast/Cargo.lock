@@ -1331,7 +1331,6 @@ dependencies = [
  "editoast_common",
  "editoast_derive",
  "editoast_models",
- "editoast_osrdyne_client",
  "editoast_schemas",
  "educe",
  "enum-map",
@@ -1356,6 +1355,7 @@ dependencies = [
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
  "ordered-float",
+ "osrdyne_client",
  "paste",
  "pathfinding",
  "petgraph",
@@ -1474,20 +1474,6 @@ dependencies = [
  "tracing",
  "url",
  "utoipa",
-]
-
-[[package]]
-name = "editoast_osrdyne_client"
-version = "0.1.0"
-dependencies = [
- "itertools",
- "reqwest",
- "serde",
- "thiserror 2.0.12",
- "tokio",
- "tracing",
- "url",
- "urlencoding",
 ]
 
 [[package]]
@@ -3216,6 +3202,20 @@ dependencies = [
  "pub-iterator-type",
  "self_cell",
  "smartstring",
+]
+
+[[package]]
+name = "osrdyne_client"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "reqwest",
+ "serde",
+ "thiserror 2.0.12",
+ "tokio",
+ "tracing",
+ "url",
+ "urlencoding",
 ]
 
 [[package]]
