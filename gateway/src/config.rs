@@ -8,13 +8,12 @@ use figment::{
     providers::{Env, Format, Serialized, Toml},
 };
 use log::info;
-use opentelemetry::global;
-use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_otlp::{SpanExporter, WithExportConfig};
 use opentelemetry_sdk::{
+    Resource,
     propagation::TraceContextPropagator,
     resource::{EnvResourceDetector, SdkProvidedResourceDetector, TelemetryResourceDetector},
-    runtime::TokioCurrentThread,
-    trace::TracerProvider,
+    trace::SdkTracerProvider,
 };
 use serde::{Deserialize, Serialize};
 
@@ -38,29 +37,29 @@ pub enum TracingTelemetry {
 
 impl TracingTelemetry {
     fn enable_otlp(&self, endpoint: &String) {
-        let exporter = opentelemetry_otlp::new_exporter()
-            .tonic()
+        let exporter = SpanExporter::builder()
+            .with_tonic()
             .with_endpoint(endpoint)
-            .build_span_exporter()
+            .build()
             .expect("Failed to initialize otlp exporter");
 
         info!("Tracing enabled with otlp");
 
-        let resource = opentelemetry_sdk::Resource::from_detectors(
-            Duration::from_secs(10),
-            vec![
+        let resource = Resource::builder()
+            .with_detectors(&[
                 Box::new(SdkProvidedResourceDetector),
                 Box::new(TelemetryResourceDetector),
                 Box::new(EnvResourceDetector::new()),
-            ],
-        );
-        let provider = TracerProvider::builder()
-            .with_config(opentelemetry_sdk::trace::Config::default().with_resource(resource))
-            .with_batch_exporter(exporter, TokioCurrentThread)
+            ])
             .build();
 
-        global::set_text_map_propagator(TraceContextPropagator::new());
-        global::set_tracer_provider(provider);
+        let provider = SdkTracerProvider::builder()
+            .with_resource(resource)
+            .with_batch_exporter(exporter)
+            .build();
+
+        opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
+        opentelemetry::global::set_tracer_provider(provider);
     }
 
     pub fn enable_providers(&self) {

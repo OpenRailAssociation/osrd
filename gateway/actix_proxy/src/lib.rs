@@ -21,7 +21,7 @@ use either::Either;
 use futures_util::future::LocalBoxFuture;
 use log::{debug, warn};
 use opentelemetry::{
-    Context,
+    Context, InstrumentationScope,
     global::{self, BoxedTracer},
     trace::Tracer,
 };
@@ -112,11 +112,12 @@ const REQUIRES_PATH_ENCODING: &AsciiSet = &percent_encoding::CONTROLS
     .add(b'?');
 
 fn get_tracer() -> BoxedTracer {
-    global::tracer_provider()
-        .tracer_builder("actix_proxy")
+    let tracer_provider = global::tracer_provider();
+    let scope = InstrumentationScope::builder("actix_proxy")
         .with_version(env!("CARGO_PKG_VERSION"))
         .with_schema_url("https://opentelemetry.io/schemas/1.17.0")
-        .build()
+        .build();
+    tracer_provider.tracer_with_scope(scope)
 }
 
 impl Proxy {
