@@ -99,7 +99,7 @@ const StdcmConsist = ({
     setMaxSpeedChanged,
   } = useStdcmConsist();
 
-  const createFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
+  const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
     useConsistFieldStatus(
       field,
       statusWithMessage,
@@ -109,9 +109,9 @@ const StdcmConsist = ({
       towedRollingStock
     );
 
-  const massFieldStatus = createFieldStatus('totalMass');
-  const lengthFieldStatus = createFieldStatus('totalLength');
-  const speedFieldStatus = createFieldStatus('maxSpeed');
+  const massFieldStatus = useFieldStatus('totalMass');
+  const lengthFieldStatus = useFieldStatus('totalLength');
+  const speedFieldStatus = useFieldStatus('maxSpeed');
 
   const getMissingFieldMessage = (value?: number): string | null => {
     if (!value) {
