@@ -1,4 +1,4 @@
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import type { Comfort, TrainCategory, TrainMainCategory } from 'common/api/osrdEditoastApi';
 
 export type TransformedCurves = {
   [index: string]: {
@@ -47,3 +47,19 @@ export type MultiUnitsParameter = {
   unit: MultiUnit;
   value: number;
 };
+
+export type CategoryOptionWithId = {
+  id: string;
+  label: string;
+} & (
+  | {
+      category: TrainCategory | null;
+    }
+  | {
+      category: TrainCategory;
+      color: string;
+      background_color: string;
+      hovered_color: string;
+      main_category: TrainMainCategory;
+    }
+);

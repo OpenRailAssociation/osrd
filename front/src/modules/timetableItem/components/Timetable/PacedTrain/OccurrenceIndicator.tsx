@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getExceptionType } from 'utils/trainId';
 
@@ -13,6 +14,7 @@ import type { Occurrence } from '../types';
 
 type OccurrenceIndicatorProps = {
   occurrence: Occurrence;
+  subCategories?: SubCategory[];
 };
 
 const TOOLTIP_BOTTOM_MARGIN = 24;
@@ -20,7 +22,7 @@ const TOOLTIP_BOTTOM_MARGIN = 24;
 /**
  * The bullet that marks each item of the list of occurrences, with its tooltip.
  */
-const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
+const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], {
     keyPrefix: 'main.timetable',
   });
@@ -65,22 +67,38 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
     });
   }, [isHovering]);
 
+  const categoryValue = occurrence.exceptionChangeGroups?.rolling_stock_category?.value;
+
   const displayedChangeGroups =
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
       .map(([changeGroup], i) => {
-        const occurrenceCategory =
-          occurrence.exceptionChangeGroups?.rolling_stock_category?.value &&
-          isMainCategory(occurrence.exceptionChangeGroups?.rolling_stock_category?.value)
-            ? t(
-                `rollingStock.categoriesOptions.${occurrence.exceptionChangeGroups?.rolling_stock_category?.value.main_category}`,
-                { ns: 'translation', keyPrefix: '' }
-              )
-            : t('rollingStock.categoriesOptions.noCategory', {
-                ns: 'translation',
-                keyPrefix: '',
-              });
+        let occurrenceCategory;
+
+        if (categoryValue && isMainCategory(categoryValue)) {
+          occurrenceCategory = t(`rollingStock.categoriesOptions.${categoryValue.main_category}`, {
+            ns: 'translation',
+            keyPrefix: '',
+          });
+        } else if (categoryValue && !isMainCategory(categoryValue)) {
+          const matchingSubCategory = subCategories?.find(
+            (opt) => opt.code === categoryValue.sub_category_code
+          );
+
+          occurrenceCategory =
+            matchingSubCategory?.name ||
+            t('rollingStock.categoriesOptions.noCategory', {
+              ns: 'translation',
+              keyPrefix: '',
+            });
+        } else {
+          occurrenceCategory = t('rollingStock.categoriesOptions.noCategory', {
+            ns: 'translation',
+            keyPrefix: '',
+          });
+        }
+
         return (
           <span key={i} className="change-group">
             {changeGroup !== 'rolling_stock_category'
@@ -89,6 +107,12 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
           </span>
         );
       });
+
+  const currentSubCategory =
+    categoryValue && !isMainCategory(categoryValue)
+      ? subCategories?.find((opt) => opt.code === categoryValue.sub_category_code)
+      : null;
+
   return (
     <div
       data-testid="occurrence-indicator"
@@ -135,6 +159,9 @@ const OccurrenceIndicator = ({ occurrence }: OccurrenceIndicatorProps) => {
             disabled: occurrence.disabled,
           }
         )}
+        style={{
+          backgroundColor: currentSubCategory?.background_color,
+        }}
       />
     </div>
   );

@@ -9,7 +9,7 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type Comfort } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
@@ -228,14 +228,34 @@ const ManageTimetableItem = () => {
     []
   );
 
-  const showCategoryWarning =
-    rollingStock &&
-    currentCategory &&
-    isMainCategory(currentCategory) &&
-    currentCategory.main_category !== rollingStock.primary_category &&
-    !rollingStock.other_categories.includes(currentCategory.main_category);
-  const categoryWarning = showCategoryWarning ? t('categoryMismatch') : undefined;
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
 
+  const currentSubCategory = useMemo(() => {
+    if (isMainCategory(currentCategory)) return undefined;
+    return subCategories.find((option) => option.code === currentCategory.sub_category_code);
+  }, [currentCategory, subCategories]);
+
+  const isCategoryWarning = (() => {
+    if (!rollingStock || !currentCategory) return false;
+
+    if (isMainCategory(currentCategory)) {
+      return (
+        currentCategory.main_category !== rollingStock.primary_category &&
+        !rollingStock.other_categories.includes(currentCategory.main_category)
+      );
+    }
+
+    if (currentSubCategory) {
+      return currentSubCategory.main_category !== rollingStock.primary_category;
+    }
+
+    return false;
+  })();
+
+  const categoryWarning = isCategoryWarning ? t('categoryMismatch') : undefined;
   return (
     <>
       <div className="osrd-config-item-container mb-3">

@@ -2,6 +2,8 @@ import { ArrowRight, ArrowSwitch } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import type { PairingItem, RoundTripsModalColumnsData } from '../types';
 import RoundTripsModalCard from './RoundTripsModalCard';
 
@@ -44,6 +46,11 @@ const RoundTripsModalColumn = ({
     }));
   };
 
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
+
   return (
     <section
       className={cx('round-trips-modal-column', {
@@ -68,6 +75,7 @@ const RoundTripsModalColumn = ({
                 status={type}
                 restoreItems={() => restoreItems([pairingItem])}
                 moveItemToOneWays={moveItemToOneWays}
+                subCategories={subCategories}
               />
             ))
           ))}
@@ -85,6 +93,7 @@ const RoundTripsModalColumn = ({
                   pairingItem={pair[0]}
                   status={type}
                   restoreItems={() => restoreItems(pair)}
+                  subCategories={subCategories}
                 />
                 <div
                   className={cx('separator', {
@@ -96,6 +105,7 @@ const RoundTripsModalColumn = ({
                   pairingItem={pair[1]}
                   status={type}
                   restoreItems={() => restoreItems(pair)}
+                  subCategories={subCategories}
                 />
               </div>
             ))

@@ -258,7 +258,7 @@ export const getNetzgrafikColors = () =>
     colorDarkModeRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
   }));
 
-export const getTrainCategoryFromId = (id: number): TrainMainCategory | null => {
+export const getTrainMainCategoryFromId = (id: number): TrainMainCategory | null => {
   for (const key of OSRD_TRAINRUN_CATEGORY_MAPPING.keys()) {
     if (OSRD_TRAINRUN_CATEGORY_MAPPING.get(key)!.id === id) {
       return key !== 'NO_CATEGORY' ? key : null;

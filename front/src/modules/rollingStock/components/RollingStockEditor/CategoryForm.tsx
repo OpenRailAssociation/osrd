@@ -5,7 +5,7 @@ import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
-import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
+import { getMainCategoryOptions } from 'modules/rollingStock/hooks/getMainCategoryOptions';
 
 import type { RollingStockParametersValues } from './types';
 
@@ -24,7 +24,7 @@ const RollingStockEditorCategoryForm = ({
 }: RollingStockEditorCategoryFormProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
 
-  const categoryOptions = useCategoryOptions();
+  const mainCategoriesOptions = getMainCategoryOptions(t);
 
   const handlePrimaryCategoryChange = (selectedCategory?: CategoryOption) => {
     setRollingStockValues((prevValues) => {
@@ -68,7 +68,7 @@ const RollingStockEditorCategoryForm = ({
                 }
               : { label: t('categoriesOptions.choose') }
           }
-          options={categoryOptions}
+          options={mainCategoriesOptions}
           onChange={handlePrimaryCategoryChange}
         />
       </div>
@@ -79,7 +79,7 @@ const RollingStockEditorCategoryForm = ({
           {t('otherCategories')}
         </label>
         <div className="d-flex flex-wrap" id="rs_category_checkboxes">
-          {Object.values(TrainMainCategoryDict).map((category) => (
+          {Array.from(TrainMainCategoryDict.values()).map((category) => (
             <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
               <CheckboxRadioSNCF
                 type="checkbox"

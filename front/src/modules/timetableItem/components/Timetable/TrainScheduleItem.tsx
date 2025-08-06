@@ -8,7 +8,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -43,6 +43,7 @@ type TrainScheduleItemProps = {
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
+  subCategories: SubCategory[];
 };
 
 const TrainScheduleItem = ({
@@ -55,6 +56,7 @@ const TrainScheduleItem = ({
   removeTrains,
   projectionPathIsUsed,
   selectTrainToEdit,
+  subCategories,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
@@ -156,6 +158,13 @@ const TrainScheduleItem = ({
     ? dayjs(arrivalTime).isAfter(train.startTime, 'day')
     : undefined;
 
+  const { category } = train;
+
+  const currentSubCategory =
+    category && !isMainCategory(category)
+      ? subCategories.find((option) => option.code === category.sub_category_code)
+      : undefined;
+
   return (
     <div
       data-testid="scenario-timetable-item"
@@ -198,6 +207,7 @@ const TrainScheduleItem = ({
                     'train-info',
                     `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category && isMainCategory(train.category) ? train.category.main_category : 'None']}`
                   )}
+                  style={{ color: currentSubCategory?.color }}
                 >
                   {projectionPathIsUsed && (
                     <div className="train-projected">

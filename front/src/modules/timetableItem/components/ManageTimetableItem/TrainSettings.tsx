@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-
 import { Ruby } from '@osrd-project/ui-icons';
+import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineTags } from 'react-icons/ai';
 import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
@@ -11,10 +10,7 @@ import { isInvalidName } from 'applications/operationalStudies/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import isMainCategory from 'modules/rollingStock/helpers/category';
-import useCategoryOptions, {
-  type CategoryOption,
-} from 'modules/rollingStock/hooks/useCategoryOptions';
+import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 import {
   updateLabels,
   updateName,
@@ -36,7 +32,7 @@ import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 
 const TrainSettings = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
-  const { t: tRollingStock } = useTranslation();
+
   const dispatch = useAppDispatch();
   const categoryOptions = useCategoryOptions();
 
@@ -45,8 +41,6 @@ const TrainSettings = () => {
   const initialSpeed = useSelector(getInitialSpeed);
   const startTime = useSelector(getStartTime);
   const categoryFromStore = useSelector(getCategory);
-
-  const [trainCategory, setTrainCategory] = useState<CategoryOption>();
 
   const removeTag = (idx: number) => {
     const newTags = [...labels];
@@ -64,27 +58,6 @@ const TrainSettings = () => {
       dispatch(updateStartTime(newStartTime));
     }
   };
-
-  useEffect(() => {
-    dispatch(
-      updateCategory(
-        trainCategory?.id
-          ? {
-              main_category: trainCategory.id,
-            }
-          : null
-      )
-    );
-  }, [trainCategory?.id]);
-
-  useEffect(() => {
-    if (categoryFromStore) {
-      setTrainCategory({
-        id: isMainCategory(categoryFromStore) ? categoryFromStore.main_category : undefined,
-        label: tRollingStock(`rollingStock.categoriesOptions.${categoryFromStore}`),
-      });
-    }
-  }, [categoryFromStore, tRollingStock]);
 
   const isInvalidTimetableItemName = isInvalidName(name);
 
@@ -140,8 +113,12 @@ const TrainSettings = () => {
               <small className="text-nowrap">{t('category')}</small>
             </>
           }
-          onChange={setTrainCategory}
-          value={trainCategory ?? { label: tRollingStock('rollingStock.categoriesOptions.choose') }}
+          onChange={(option) => {
+            if (option !== undefined) {
+              dispatch(updateCategory(option.category));
+            }
+          }}
+          value={categoryOptions.find((option) => isEqual(option.category, categoryFromStore))}
           options={categoryOptions}
         />
       </div>

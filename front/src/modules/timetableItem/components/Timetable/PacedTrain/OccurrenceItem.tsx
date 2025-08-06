@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 
 import AnchoredMenu from 'common/AnchoredMenu';
+import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addElementAtIndex } from 'utils/array';
@@ -55,6 +56,7 @@ type OccurrenceItemProps = {
   isSelected: boolean;
   nextOccurrence?: Occurrence;
   occurrenceActions: ReturnType<typeof useOccurrenceActions>;
+  subCategories?: SubCategory[];
 };
 
 const OccurrenceItem = ({
@@ -68,6 +70,7 @@ const OccurrenceItem = ({
     resetOccurrenceExceptions,
     deleteAddedException,
   },
+  subCategories,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const menuRef = useRef<HTMLDivElement>(null);
@@ -204,7 +207,7 @@ const OccurrenceItem = ({
       >
         <div className="title-img">
           <div className="indicator-title">
-            <OccurrenceIndicator occurrence={occurrence} />
+            <OccurrenceIndicator occurrence={occurrence} subCategories={subCategories} />
 
             <div className="label">
               <div
