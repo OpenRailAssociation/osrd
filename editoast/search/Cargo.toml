@@ -1,5 +1,5 @@
 [package]
-name = "editoast_search"
+name = "search"
 version = "0.1.0"
 edition = "2021"
 license = "LGPL-3.0"

@@ -22,49 +22,41 @@ pub struct Track {
 // Macro expansion
 // -----------------------------------------------------------------------------
 
-impl editoast_search::SearchObject for Track {
-    fn search_config() -> editoast_search::SearchConfig {
-        editoast_search::SearchConfig {
+impl search::SearchObject for Track {
+    fn search_config() -> search::SearchConfig {
+        search::SearchConfig {
             table: "search_track".to_owned(),
             distinct_on: None,
             joins: None,
             criterias: Vec::from([
-                editoast_search::Criteria {
+                search::Criteria {
                     name: "infra_id".to_owned(),
-                    data_type: editoast_search::TypeSpec::Type(
-                        editoast_search::AstType::Integer,
-                    ),
+                    data_type: search::TypeSpec::Type(search::AstType::Integer),
                     migration: None,
                 },
-                editoast_search::Criteria {
+                search::Criteria {
                     name: "line_code".to_owned(),
-                    data_type: editoast_search::TypeSpec::Type(
-                        editoast_search::AstType::Integer,
-                    ),
+                    data_type: search::TypeSpec::Type(search::AstType::Integer),
                     migration: None,
                 },
-                editoast_search::Criteria {
+                search::Criteria {
                     name: "line_name".to_owned(),
-                    data_type: editoast_search::TypeSpec::Type(
-                        editoast_search::AstType::String,
-                    ),
+                    data_type: search::TypeSpec::Type(search::AstType::String),
                     migration: None,
                 },
             ]),
             properties: Vec::from([
-                editoast_search::Property {
+                search::Property {
                     name: "infra_id".to_owned(),
                     sql: "search_track.infra_id".to_owned(),
                     data_type: None,
                 },
-                editoast_search::Property {
+                search::Property {
                     name: "line_name".to_owned(),
                     sql: "search_track.unprocessed_line_name".to_owned(),
-                    data_type: Some(
-                        editoast_search::TypeSpec::Type(editoast_search::AstType::String),
-                    ),
+                    data_type: Some(search::TypeSpec::Type(search::AstType::String)),
                 },
-                editoast_search::Property {
+                search::Property {
                     name: "code".to_owned(),
                     sql: "search_track.line_code".to_owned(),
                     data_type: None,

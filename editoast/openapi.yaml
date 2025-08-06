@@ -3018,7 +3018,7 @@ paths:
 
         Where:
         - `object` can be any search object declared in `search.yml`
-        - `query` is a JSON document which can be deserialized into a [editoast_search::SearchAst].
+        - `query` is a JSON document which can be deserialized into a [search::SearchAst].
         Check out examples below.
 
         # Response
@@ -3036,7 +3036,7 @@ paths:
 
         # Available functions
 
-        See [editoast_search::create_processing_context()].
+        See [search::create_processing_context()].
 
         # A few query examples
 
@@ -3046,7 +3046,7 @@ paths:
         * All railway stations with "Paris" in their name but not PNO :
         `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 
-        See [editoast_search::SearchAst] for a more detailed view of the query language.
+        See [search::SearchAst] for a more detailed view of the query language.
       parameters:
       - name: page
         in: query

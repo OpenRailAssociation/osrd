@@ -8,7 +8,7 @@ use colored::Colorize as _;
 use database::DbConnectionPoolV2;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl as _;
-use editoast_search::SearchConfigStore as _;
+use search::SearchConfigStore as _;
 
 use crate::views::search::SearchConfigFinder;
 

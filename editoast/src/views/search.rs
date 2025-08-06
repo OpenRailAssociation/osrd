@@ -1,7 +1,7 @@
 // Clippy doesn't seem to understand the `Search` derive macro
 #![allow(clippy::duplicated_attributes)]
 
-//! Defines the route [search] that can efficiently search all objects declared
+//! Defines the route [search()] that can efficiently search all objects declared
 //! in `search.yml` in a generic way
 //!
 //! # Example
@@ -126,9 +126,9 @@
 //!
 //! The query in the payload is a JSON value that represent a boolean expression
 //! with operators and function calls in prefix notation. It is first checked
-//! and converted to a [editoast_search::SearchAst] which is a formalization of the AST.
+//! and converted to a [search::SearchAst] which is a formalization of the AST.
 //!
-//! See [editoast_search::searchast].
+//! See [search::searchast].
 //!
 //! # Type checking
 //!
@@ -151,9 +151,9 @@
 //!   makes sense because the SQL LIKE operator expects a string pattern and
 //!   not an integer.
 //!
-//! The structure that represents that context is [editoast_search::QueryContext] which provides
-//! the function [editoast_search::QueryContext::typecheck_search_query()]. The functions the
-//! route [search] uses are defined by [editoast_search::create_processing_context()] and
+//! The structure that represents that context is [search::QueryContext] which provides
+//! the function [search::QueryContext::typecheck_search_query()]. The functions the
+//! route [search()] uses are defined by [search::create_processing_context()] and
 //! the columns defined in the `search.yml` configuration file are added to
 //! that context.
 //!
@@ -162,7 +162,7 @@
 //! # Evaluation
 //!
 //! In order to turn the ✨typechecked✨ query into an SQL statement, it is "evaluated"
-//! within a [editoast_search::QueryContext] ; which contains several things:
+//! within a [search::QueryContext] ; which contains several things:
 //!
 //! - The list of expected columns and their type. That data is extracted from `search.yml`.
 //! - The name of the search table (e.g.: `search_operational_point`). That
@@ -172,13 +172,13 @@
 //!   (with possible overloads) and their definition.
 //!
 //! The transformation of the search expression into a valid SQL query occurs
-//! in [editoast_search::QueryContext::search_ast_to_sql()], which will evaluate every function call,
+//! in [search::QueryContext::search_ast_to_sql()], which will evaluate every function call,
 //! each one using the input arguments to build an SQL expression that will
 //! be part of the final SQL query.
 //!
 //! # SQL query construction and execution
 //!
-//! The evaluation step produces an [editoast_search::sqlquery::SqlQuery] object that can
+//! The evaluation step produces an [search::sqlquery::SqlQuery] object that can
 //! be converted to a string containing valid PostgreSQL code ready to be inserted
 //! into the search query's WHERE statement.
 //!
@@ -222,9 +222,9 @@ use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
-use editoast_search::SearchConfigStore as _;
-use editoast_search::SearchError;
-use editoast_search::query_into_sql;
+use search::SearchConfigStore as _;
+use search::SearchError;
+use search::query_into_sql;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
@@ -306,7 +306,7 @@ struct SearchDBResult {
 ///
 /// Where:
 /// - `object` can be any search object declared in `search.yml`
-/// - `query` is a JSON document which can be deserialized into a [editoast_search::SearchAst].
+/// - `query` is a JSON document which can be deserialized into a [search::SearchAst].
 ///   Check out examples below.
 ///
 /// # Response
@@ -324,7 +324,7 @@ struct SearchDBResult {
 ///
 /// # Available functions
 ///
-/// See [editoast_search::create_processing_context()].
+/// See [search::create_processing_context()].
 ///
 /// # A few query examples
 ///
@@ -334,7 +334,7 @@ struct SearchDBResult {
 /// * All railway stations with "Paris" in their name but not PNO :
 ///   `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 ///
-/// See [editoast_search::SearchAst] for a more detailed view of the query language.
+/// See [search::SearchAst] for a more detailed view of the query language.
 #[utoipa::path(
     post, path = "",
     tag = "search",
@@ -785,7 +785,7 @@ pub(super) struct SearchResultItemTrainSchedule {
     options: TrainScheduleOptions,
 }
 
-/// See [editoast_search::SearchConfigStore::find]
+/// See [search::SearchConfigStore::find]
 #[derive(SearchConfigStore)]
 #[search_config_store(
     object(name = "track", config = SearchResultItemTrack),
