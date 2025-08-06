@@ -920,6 +920,7 @@ dependencies = [
  "core_client",
  "deadpool",
  "editoast_common",
+ "editoast_derive",
  "editoast_schemas",
  "educe",
  "futures-util",

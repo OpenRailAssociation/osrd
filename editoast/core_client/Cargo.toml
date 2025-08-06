@@ -12,6 +12,7 @@ approx.workspace = true
 chrono.workspace = true
 deadpool.workspace = true
 editoast_common = { workspace = true }
+editoast_derive.workspace = true
 editoast_schemas = { workspace = true, features = ["testing"] }
 educe.workspace = true
 futures-util.workspace = true
