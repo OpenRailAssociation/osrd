@@ -34,6 +34,7 @@ import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { compact, keyBy, sortBy } from 'lodash';
+import { createPortal } from 'react-dom';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
@@ -71,16 +72,14 @@ import {
 import SettingsPanel from './SettingsPanel';
 import getPathStyle from './utils';
 import { Spinner } from '../../../../common/Loaders';
-import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
-type ManchetteWithSpaceTimeChartProps = {
+type ManchetteWithSpaceTimeChartBaseProps = {
   operationalPoints: PathOperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
-  waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
   occupancyZonesLayers?: {
@@ -114,6 +113,20 @@ type ManchetteWithSpaceTimeChartProps = {
   timetableItemsWithDetails?: TimetableItemWithDetails[];
 };
 
+type ManchetteWithSpaceTimeChartProps = ManchetteWithSpaceTimeChartBaseProps &
+  (
+    | {
+        waypointsPanelData: WaypointsPanelData;
+        waypointsPanelIsOpen: boolean;
+        setWaypointsPanelIsOpen: (waypointsModalOpen: boolean) => void;
+      }
+    | {
+        waypointsPanelData?: undefined;
+        waypointsPanelIsOpen?: undefined;
+        setWaypointsPanelIsOpen?: undefined;
+      }
+  );
+
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
 const ManchetteWithSpaceTimeChartWrapper = ({
@@ -131,6 +144,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   selectedProjectionId,
   selectedTrainId,
   timetableItemsWithDetails,
+  waypointsPanelIsOpen,
+  setWaypointsPanelIsOpen,
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
@@ -151,8 +166,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   }, [timetableItemsWithDetails, selectedProjectionId]);
 
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
-
-  const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
 
   const subCategories = useSubCategoryContext();
 
@@ -559,28 +572,23 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   return (
     <div data-testid="manchette-space-time-chart" className="manchette-space-time-chart-wrapper">
-      <div className="header">
-        {waypointsPanelData && (
-          <>
-            <ManchetteMenuButton setWaypointsPanelIsOpen={setWaypointsPanelIsOpen} />
-            {waypointsPanelIsOpen && (
-              <WaypointsPanel
-                waypointsPanelIsOpen={waypointsPanelIsOpen}
-                setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
-                waypoints={operationalPoints}
-                waypointsPanelData={waypointsPanelData}
-              />
-            )}
-          </>
+      {waypointsPanelData &&
+        waypointsPanelIsOpen &&
+        createPortal(
+          <WaypointsPanel
+            waypointsPanelIsOpen={waypointsPanelIsOpen}
+            setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+            waypoints={operationalPoints}
+            waypointsPanelData={waypointsPanelData}
+          />,
+          document.body
         )}
-        {!allTrainsProjected && (
-          <ProjectionLoadingMessage
-            projectedTrainsNb={projectPathTrainResult.length}
-            totalTrains={totalTrains}
-          />
-        )}
-      </div>
-      <div className="header-separator" />
+      {!allTrainsProjected && (
+        <ProjectionLoadingMessage
+          projectedTrainsNb={projectPathTrainResult.length}
+          totalTrains={totalTrains}
+        />
+      )}
       <div
         ref={manchetteWithSpaceTimeChartRef}
         className="manchette flex"
