@@ -691,3 +691,35 @@
     gap: 16px;
   }
 }
+
+$train-category-colors: (
+  high-speed: 'trainRed50',
+  intercity: 'trainParma50',
+  regional: 'trainOrange30',
+  commuter: 'trainCyan50',
+  freight: 'trainGreen50',
+  fast-freight: 'trainMint50',
+  tram-train: 'trainSage50',
+  work: 'trainYellow30',
+  night: 'trainPurple50',
+  touristic: 'trainBrown50',
+  none: 'grey50',
+);
+
+@each $category, $color in $train-category-colors {
+  .train-category-text-#{$category} {
+    color: var(--#{$color});
+  }
+
+  .train-category-bg-#{$category} {
+    background-color: var(--#{$color});
+  }
+
+  .train-name-card.train-category-text-#{$category} {
+    color: var(--#{$color}) !important;
+
+    &::before {
+      background: var(--#{$color}) !important;
+    }
+  }
+}
