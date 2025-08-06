@@ -26,9 +26,9 @@ pub mod work_schedules;
 
 #[cfg(test)]
 mod test_app;
-use editoast_authz::Authorization;
-use editoast_authz::Infra;
-use editoast_authz::StorageDriver;
+use ::authz::Authorization;
+use ::authz::Infra;
+use ::authz::StorageDriver;
 use editoast_common::Version;
 use fga::client::Limits;
 #[cfg(test)]
@@ -40,6 +40,9 @@ use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use ::authz::Authorizer;
+use ::authz::Role;
+use ::authz::identity::UserInfo;
 use axum::Router;
 use axum::ServiceExt;
 use axum::extract::DefaultBodyLimit;
@@ -50,9 +53,6 @@ use axum::response::Response;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chrono::Duration;
 use dashmap::DashMap;
-use editoast_authz::Authorizer;
-use editoast_authz::Role;
-use editoast_authz::identity::UserInfo;
 
 use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
@@ -353,8 +353,7 @@ async fn authentication_middleware(
     Ok(next.run(req).await)
 }
 
-pub type AuthorizerError =
-    editoast_authz::Error<<PgAuthDriver as editoast_authz::StorageDriver>::Error>;
+pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "authz")]
@@ -525,7 +524,7 @@ pub struct Server {
     router: NormalizePath<Router>,
 }
 
-pub type Regulator = editoast_authz::Regulator<PgAuthDriver>;
+pub type Regulator = ::authz::Regulator<PgAuthDriver>;
 
 /// The state of the whole Editoast service, available to all handlers
 ///
@@ -625,7 +624,7 @@ impl AppState {
         };
         tracing::info!(url = %config.openfga_config.url, "connected to OpenFGA");
         if config.enable_authorization {
-            editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
+            ::authz::ensure_latest_authorization_model(&mut openfga).await?;
         }
 
         let auth_driver = PgAuthDriver::new(db_pool.clone());

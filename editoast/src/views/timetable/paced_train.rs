@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -9,7 +10,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::paced_train::PacedTrain;
 use serde::Deserialize;

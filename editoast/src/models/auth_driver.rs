@@ -3,17 +3,17 @@ use std::sync::Arc;
 
 use crate::models::Infra;
 use crate::models::prelude::Exists;
+use authz::StorageDriver;
+use authz::identity::GroupInfo;
+use authz::identity::GroupName;
+use authz::identity::User;
+use authz::identity::UserIdentity;
+use authz::identity::UserInfo;
 use database::DbConnectionPoolV2;
 use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
-use editoast_authz::StorageDriver;
-use editoast_authz::identity::GroupInfo;
-use editoast_authz::identity::GroupName;
-use editoast_authz::identity::User;
-use editoast_authz::identity::UserIdentity;
-use editoast_authz::identity::UserInfo;
 
 use database::tables::*;
 use futures::StreamExt;

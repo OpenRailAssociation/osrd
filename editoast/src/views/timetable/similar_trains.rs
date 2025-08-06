@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use authz::Role;
 use axum::Extension;
 use axum::Json;
 use axum::extract::State;
@@ -15,7 +16,6 @@ use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use database::DbConnection;
-use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::OperationalPointSncfExtension;
 use itertools::Itertools as _;
@@ -219,7 +219,7 @@ async fn similar_trains(
 
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&editoast_authz::Infra(infra_id))
+            .authorize_infra_read(&authz::Infra(infra_id))
             .await
     })
     .await?;

@@ -1,5 +1,6 @@
 pub mod macro_nodes;
 
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -10,7 +11,6 @@ use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
-use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;

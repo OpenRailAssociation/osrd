@@ -1,5 +1,5 @@
 [package]
-name = "editoast_authz"
+name = "authz"
 license.workspace = true
 version.workspace = true
 edition.workspace = true

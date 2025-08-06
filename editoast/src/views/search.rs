@@ -205,6 +205,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use chrono::DateTime;
 
+use authz::Role;
 use chrono::Utc;
 use diesel::QueryableByName;
 use diesel::pg::Pg;
@@ -212,7 +213,6 @@ use diesel::sql_query;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_authz::Role;
 use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;

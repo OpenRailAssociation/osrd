@@ -341,8 +341,8 @@ impl EditoastError for core_client::Error {
     }
 }
 
-impl From<editoast_authz::Unauthorized> for InternalError {
-    fn from(editoast_authz::Unauthorized { reason }: editoast_authz::Unauthorized) -> Self {
+impl From<authz::Unauthorized> for InternalError {
+    fn from(authz::Unauthorized { reason }: authz::Unauthorized) -> Self {
         tracing::error!(reason, "Unauthorized operation");
         crate::views::AuthorizationError::Forbidden.into()
     }

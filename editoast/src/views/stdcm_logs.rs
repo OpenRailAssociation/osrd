@@ -1,9 +1,9 @@
+use authz;
 use axum::Extension;
 use axum::Json;
 use axum::extract::Query;
 use axum::extract::State;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -154,6 +154,8 @@ async fn stdcm_log_by_id_or_trace_id(
 mod tests {
     use std::str::FromStr;
 
+    use authz;
+    use authz::InfraGrant;
     use axum::http::StatusCode;
     use chrono::DateTime;
     use core_client::CoreClient;
@@ -165,8 +167,6 @@ mod tests {
     use core_client::simulation::Response;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
-    use editoast_authz as authz;
-    use editoast_authz::InfraGrant;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;

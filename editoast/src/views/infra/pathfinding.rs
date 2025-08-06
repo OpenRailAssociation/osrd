@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use educe::Educe;
 use pathfinding::prelude::yen;

@@ -4,6 +4,8 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
 
+use authz;
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -16,8 +18,6 @@ use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
-use editoast_authz as authz;
-use editoast_authz::Role;
 use editoast_common::units;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;

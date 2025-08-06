@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::ObjectType;
 use thiserror::Error;
