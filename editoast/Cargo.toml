@@ -12,11 +12,11 @@ members = [
   "editoast_common",
   "editoast_derive",
   "editoast_models",
-  "editoast_osrdyne_client",
   "editoast_schemas",
   "fga",
   "fga_derive",
   "osm_to_railjson",
+  "osrdyne_client",
   "search",
 ]
 
@@ -63,7 +63,6 @@ editoast_authz = { path = "./editoast_authz" }
 editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
-editoast_osrdyne_client = { path = "./editoast_osrdyne_client" }
 editoast_schemas = { path = "./editoast_schemas" }
 educe = "0.6.0"
 enum-map = "2.7.3"
@@ -85,6 +84,7 @@ opentelemetry-semantic-conventions = { version = "0.26", features = [
   "semconv_experimental",
 ] }
 opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio", "trace"] }
+osrdyne_client = { path = "./osrdyne_client" }
 paste = "1.0.15"
 postgis_diesel = { version = "2.5.0", features = ["serde"] }
 postgres-openssl = "0.5.1"
@@ -158,7 +158,6 @@ editoast_authz.workspace = true
 editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
-editoast_osrdyne_client.workspace = true
 editoast_schemas.workspace = true
 educe.workspace = true
 enum-map.workspace = true
@@ -197,6 +196,7 @@ opentelemetry-otlp = { version = "0.30.0", default-features = false, features = 
 opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float = { version = "5.0.0", features = ["serde"] }
+osrdyne_client.workspace = true
 paste.workspace = true
 pathfinding = "4.14.0"
 petgraph = "0.8.2"
@@ -250,8 +250,8 @@ core_client = { workspace = true, features = ["mocking_client"] }
 database = { workspace = true, features = ["testing"] }
 editoast_authz = { workspace = true }
 editoast_models = { workspace = true, features = ["testing"] }
-editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
 editoast_schemas = { workspace = true, features = ["testing"] }
+osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.2.0"
