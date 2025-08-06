@@ -35,11 +35,13 @@ const RollingStockEditorFormModal = ({
       <div className=" d-flex flex-column form-error mb-3">
         <span className="text-uppercase text-center mb-2">{mainText}</span>
         <span>{t('rollingStock.errorMessages.rollingStockUsed')}</span>
-        {Object.keys(projectList).map((projectName: string, index: number) => (
-          <ul className="mt-1 mb-0">
+        {Object.entries(projectList).map(([projectName, projectRefs], index) => (
+          <ul key={projectRefs[0].project_id} className="mt-1 mb-0">
             <span>{t('rollingStock.project', { projectName })}</span>
-            {Object.keys(scenarioList[index]).map((scenarioName) => (
-              <li className="ml-5">{scenarioName}</li>
+            {Object.entries(scenarioList[index]).map(([scenarioName, scenarioRefs]) => (
+              <li key={scenarioRefs[0].scenario_id} className="ml-5">
+                {scenarioName}
+              </li>
             ))}
           </ul>
         ))}
