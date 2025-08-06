@@ -598,7 +598,7 @@ impl Service<ServiceRequest> for ProxyService {
                     {
                         Ok(resp) => Ok(req.into_response(resp)),
                         Err(e) => {
-                            warn!("proxy: error forwarding request: {}", e);
+                            warn!("proxy: error forwarding request: {e}");
                             Err(e)
                         }
                     }

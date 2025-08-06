@@ -275,7 +275,7 @@ impl SessionProvider for OidcProvider {
                 .collect();
 
             if !self.amr.is_empty() {
-                log::info!("claims_amr: {:?}", claims_amr);
+                log::info!("claims_amr: {claims_amr:?}");
 
                 if !self.amr.iter().all(|amr_value| {
                     claims_amr
@@ -283,9 +283,8 @@ impl SessionProvider for OidcProvider {
                         .any(|c_amr_value| c_amr_value == amr_value)
                 }) {
                     log::warn!(
-                        "failed to validate amr. required values: {:?}, found values: {:?}",
-                        self.amr,
-                        claims_amr
+                        "failed to validate amr. required values: {:?}, found values: {claims_amr:?}",
+                        self.amr
                     );
                     return Err(CallbackError::InvalidAmr.into());
                 }

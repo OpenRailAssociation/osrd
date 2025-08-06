@@ -51,7 +51,7 @@ pub fn parse_targets(
                 .map(|header_name| match header_name.parse() {
                     Ok(header_name) => header_name,
                     Err(_) => {
-                        error!("invalid header name: {}", header_name);
+                        error!("invalid header name: {header_name}");
                         exit(1);
                     }
                 })
@@ -67,7 +67,7 @@ pub fn parse_targets(
                     .map(|header_name| match header_name.parse() {
                         Ok(header_name) => header_name,
                         Err(_) => {
-                            error!("invalid header name: {}", header_name);
+                            error!("invalid header name: {header_name}");
                             exit(1);
                         }
                     })
@@ -206,7 +206,7 @@ impl Files {
                     let response = match named_file {
                         Ok(named_file) => named_file.into_response(&http_req),
                         Err(err) => {
-                            error!("failed to open 404 file: {}", err);
+                            error!("failed to open 404 file: {err}");
                             actix_web::HttpResponse::InternalServerError().finish()
                         }
                     };
