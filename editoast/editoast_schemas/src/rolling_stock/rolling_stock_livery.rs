@@ -2,11 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    RollingStockLivery,
-    RollingStockLiveryMetadata,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockLivery {
     pub id: i64,
@@ -15,6 +11,7 @@ pub struct RollingStockLivery {
     pub compound_image_id: Option<i64>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockLiveryMetadata {
     pub id: i64,

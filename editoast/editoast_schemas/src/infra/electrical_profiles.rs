@@ -5,12 +5,7 @@ use utoipa::ToSchema;
 
 use super::TrackRange;
 
-editoast_common::schemas! {
-    ElectricalProfile,
-    ElectricalProfileSetData,
-    LevelValues,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfile {
     #[schema(example = "A")]
@@ -20,9 +15,11 @@ pub struct ElectricalProfile {
     pub track_ranges: Vec<TrackRange>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct LevelValues(Vec<String>);
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfileSetData {
     pub levels: Vec<ElectricalProfile>,

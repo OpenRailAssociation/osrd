@@ -49,20 +49,7 @@ use utoipa::ToSchema;
 use crate::primitives::NonBlankString;
 use crate::rolling_stock::TrainCategory;
 
-editoast_common::schemas! {
-    margins::schemas(),
-    schedule_item::schemas(),
-    path_item::schemas(),
-    train_schedule_options::schemas(),
-    power_restriction_item::schemas(),
-    distribution::schemas(),
-    comfort::schemas(),
-    // TODO TrainSchedule V1 (it will be removed)
-    allowance::schemas(),
-    rjs_power_restriction_range::schemas(),
-    TrainSchedule,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub struct TrainSchedule {

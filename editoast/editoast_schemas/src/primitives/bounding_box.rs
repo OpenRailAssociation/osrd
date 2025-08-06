@@ -8,11 +8,8 @@ use utoipa::ToSchema;
 
 use crate::errors::GeometryError;
 
-editoast_common::schemas! {
-    BoundingBox,
-}
-
 /// A bounding box
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct BoundingBox(pub (f64, f64), pub (f64, f64));
 

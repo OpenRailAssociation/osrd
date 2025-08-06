@@ -7,14 +7,7 @@ use utoipa::ToSchema;
 
 use crate::train_schedule::Comfort;
 
-editoast_common::schemas! {
-    ConditionalEffortCurve,
-    EffortCurve,
-    EffortCurves,
-    EffortCurveConditions,
-    ModeEffortCurves,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
@@ -44,6 +37,7 @@ impl EffortCurves {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ModeEffortCurves {
@@ -52,6 +46,7 @@ pub struct ModeEffortCurves {
     pub is_electric: bool,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ConditionalEffortCurve {
@@ -59,6 +54,7 @@ pub struct ConditionalEffortCurve {
     curve: EffortCurve,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
@@ -70,6 +66,7 @@ pub struct EffortCurveConditions {
     power_restriction_code: Option<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]

@@ -10,12 +10,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    RollingResistance,
-    RollingResistancePerWeight,
-}
-
 #[editoast_derive::annotate_units]
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]
@@ -38,6 +34,7 @@ pub struct RollingResistance {
 }
 
 #[editoast_derive::annotate_units]
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]

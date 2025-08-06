@@ -24,22 +24,6 @@ use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainSchedule;
 use crate::train_schedule::TrainScheduleOptions;
 
-editoast_common::schemas! {
-    PacedTrain,
-    PacedTrainException,
-    TrainNameChangeGroup,
-    RollingStockChangeGroup,
-    RollingStockCategoryChangeGroup,
-    LabelsChangeGroup,
-    SpeedLimitTagChangeGroup,
-    StartTimeChangeGroup,
-    ConstraintDistributionChangeGroup,
-    InitialSpeedChangeGroup,
-    OptionsChangeGroup,
-    PathAndScheduleChangeGroup,
-    PositiveDuration,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
@@ -48,6 +32,7 @@ pub struct Paced {
     pub interval: PositiveDuration,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct PacedTrain {
     #[serde(flatten)]
@@ -115,6 +100,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
 /// - Created: A new occurrence manually added by the user, not originally present in the automatically generated occurrences based on the paced train.
 /// - Modified: An existing occurrence that has been changed
 #[skip_serializing_none]
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[cfg_attr(feature = "testing", derive(Default))]
 pub struct PacedTrainException {
@@ -176,53 +162,63 @@ impl ToSchema<'_> for ExceptionType {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct TrainNameChangeGroup {
     pub value: String,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct RollingStockChangeGroup {
     pub rolling_stock_name: String,
     pub comfort: Comfort,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct RollingStockCategoryChangeGroup {
     pub value: Option<TrainCategory>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct LabelsChangeGroup {
     pub value: Vec<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct SpeedLimitTagChangeGroup {
     #[schema(inline)]
     pub value: Option<NonBlankString>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct StartTimeChangeGroup {
     pub value: DateTime<Utc>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct ConstraintDistributionChangeGroup {
     pub value: Distribution,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct InitialSpeedChangeGroup {
     pub value: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct OptionsChangeGroup {
     pub value: TrainScheduleOptions,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct PathAndScheduleChangeGroup {
     pub path: Vec<PathItem>,

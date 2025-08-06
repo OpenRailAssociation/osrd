@@ -4,11 +4,8 @@ use utoipa::ToSchema;
 
 use crate::primitives::Identifier;
 
-editoast_common::schemas! {
-    TrackLocation,
-}
-
 /// A track location is a track section and an offset
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct TrackLocation {
     /// The track section UUID

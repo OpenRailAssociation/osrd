@@ -17,11 +17,8 @@ use super::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.13";
 
-editoast_common::schemas! {
-    RailJson,
-}
-
 /// An infrastructure description in the RailJson format
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Educe, Serialize, Clone, Debug, ToSchema)]
 #[educe(Default)]
 #[serde(deny_unknown_fields)]

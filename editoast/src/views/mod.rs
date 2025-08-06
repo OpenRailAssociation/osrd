@@ -123,7 +123,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    editoast_schemas::schemas(),
     models::schemas(),
     generated_data::schemas(),
     authz::schemas(),

@@ -3,10 +3,7 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    Comfort,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(
     Debug, Default, PartialEq, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash,
 )]
