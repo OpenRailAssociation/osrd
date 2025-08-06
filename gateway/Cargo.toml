@@ -12,22 +12,22 @@ default-members = [".", "actix_auth", "actix_proxy"]
 
 [workspace.dependencies]
 # common utils
-dyn-clone = "1.0.19"
+dyn-clone = "1.0.20"
 either = "1"
 env_logger = "0.11"
 futures = "0.3"
 futures-util = "0.3.31"
-log = "0.4.26"
-smallvec = "1.14.0"
-thiserror = "1.0.69"
+log = "0.4.27"
+smallvec = "1.15.1"
+thiserror = "2.0.12"
 
 # main crate
-actix-cors = "0.7.0"
+actix-cors = "0.7.1"
 actix-files = "0.6"
-actix-session = "0.9"
-actix-web = "4.10"
+actix-session = "0.10"
+actix-web = "4.11"
 actix-web-opentelemetry = { version = "0.18.0", features = ["awc", "metrics"] }
-base64ct = "1.6"
+base64ct = "1.8"
 figment = "0.10.19"
 humantime = "2"
 humantime-serde = "1"
@@ -45,15 +45,15 @@ actix = "0.13"
 actix-web-actors = "4.3"
 awc = { version = "3", features = ["rustls"] } # the http / ws client
 bytestring = "1"
-ipnet = "2.10"
+ipnet = "2.11"
 percent-encoding = "2.3"
-phf = "0.11"
+phf = "0.12"
 regex = "1.11.1"
 
 # actix_auth
 actix-web-httpauth = "0.8"
 
-openidconnect = "4.0.0-rc.1"
+openidconnect = "4.0.1"
 reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
