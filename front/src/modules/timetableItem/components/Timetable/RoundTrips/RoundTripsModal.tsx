@@ -2,12 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, Input } from '@osrd-project/ui-core';
 import { Filter } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
-import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
+import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/helpers';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -39,6 +42,8 @@ const RoundTripsModal = ({
     keyPrefix: 'common',
   });
 
+  const timetableId = useSelector(getOperationalStudiesTimetableID);
+
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
@@ -50,6 +55,16 @@ const RoundTripsModal = ({
     osrdEditoastApi.endpoints.getSubCategory.useQuery({
       pageSize: 100,
     });
+
+  const { data: { results: trainScheduleRoundtrips } = { results: undefined } } =
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery(
+      timetableId ? { id: timetableId } : skipToken
+    );
+
+  const { data: { results: pacedTrainRoundtrips } = { results: undefined } } =
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery(
+      timetableId ? { id: timetableId } : skipToken
+    );
 
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
 
@@ -120,10 +135,17 @@ const RoundTripsModal = ({
 
   useModalFocusTrap(modalRef, closeModal);
 
-  // TODO : Handle format with pairing items when back is ready in issue https://github.com/OpenRailAssociation/osrd/issues/12376
   useEffect(() => {
-    setPairingItems(formatPairingItems(timetableItemsWithOps, t));
-  }, [timetableItemsWithOps, t]);
+    if (!trainScheduleRoundtrips || !pacedTrainRoundtrips || timetableItemsWithOpsById.size === 0)
+      return;
+
+    const roundTripGroups = groupRoundTrips(timetableItemsWithOpsById, {
+      trainSchedules: trainScheduleRoundtrips,
+      pacedTrains: pacedTrainRoundtrips,
+    });
+
+    setPairingItems(formatPairingItems(roundTripGroups, t));
+  }, [trainScheduleRoundtrips, pacedTrainRoundtrips, timetableItemsWithOpsById]);
 
   useEffect(() => {
     if (roundTripsModalIsOpen) {
