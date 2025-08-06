@@ -2,21 +2,44 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-crate::schemas! {
-    GeoJson,
-    GeoJsonPoint,
-    GeoJsonMultiPoint,
-    GeoJsonLineString,
-    GeoJsonMultiLineString,
-    GeoJsonPolygon,
-    GeoJsonMultiPolygon,
-    GeoJsonPointValue,
-    GeoJsonMultiPointValue,
-    GeoJsonLineStringValue,
-    GeoJsonMultiLineStringValue,
-    GeoJsonPolygonValue,
-    GeoJsonMultiPolygonValue,
-}
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSON_SLICE_ITEM: crate::OpenApiSchemaSliceItem = <GeoJson as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonPoint as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTIPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiPoint as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONLINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonLineString as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTILINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiLineString as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonPolygon as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTIPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiPolygon as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonPointValue as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTIPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiPointValue as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONLINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonLineStringValue as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTILINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiLineStringValue as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonPolygonValue as utoipa::ToSchema>::schema;
+#[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
+static _GEOJSONMULTIPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
+    <GeoJsonMultiPolygonValue as utoipa::ToSchema>::schema;
 
 // Schema of a GeoJson value meant to be used **exclusively** in the OpenApi
 /// A GeoJSON geometry item

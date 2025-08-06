@@ -76,6 +76,7 @@ geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
 itertools = "0.14.0"
 lapin = "2.5.3"
+linkme = "0.3.33"
 mvt = "0.10.3"
 openssl = "0.10.73"
 opentelemetry = { version = "0.30.0", default-features = false, features = [
@@ -183,6 +184,7 @@ json-patch = { version = "4.0.0", default-features = false, features = [
   "utoipa",
 ] }
 lapin.workspace = true
+linkme.workspace = true
 lz4_flex = { version = "0.11.5", default-features = false, features = [
   "frame",
 ] }

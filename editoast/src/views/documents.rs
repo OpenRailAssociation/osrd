@@ -30,10 +30,6 @@ crate::routes! {
     },
 }
 
-editoast_common::schemas! {
-    NewDocumentResponse,
-}
-
 #[derive(Error, Debug, EditoastError)]
 #[editoast_error(base_id = "document")]
 pub enum DocumentErrors {
@@ -85,6 +81,7 @@ async fn get(
     ))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 struct NewDocumentResponse {
     document_key: i64,

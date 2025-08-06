@@ -476,12 +476,12 @@ impl OpenApiRoot {
         if openapi.components.is_none() {
             openapi.components = Some(Default::default());
         }
-        openapi
-            .components
-            .as_mut()
-            .unwrap()
-            .schemas
-            .extend(crate::views::schemas());
+        let schemas = &mut openapi.components.as_mut().unwrap().schemas;
+        schemas.extend(crate::views::schemas());
+        schemas.extend(editoast_common::OPENAPI_SCHEMAS.iter().map(|f| {
+            let (name, schema) = f();
+            (name.to_string(), schema)
+        }));
     }
 
     // Remove the operation_id that defaults to the endpoint function name
