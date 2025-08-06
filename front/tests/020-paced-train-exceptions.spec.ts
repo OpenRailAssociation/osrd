@@ -397,9 +397,17 @@ test.describe('Paced trains and exception management', () => {
       translations: frTranslations,
     });
 
-    // TODO: 6. projection
+    // 6. projection
+    await pacedTrainSection.clickOccurrenceMenuButton('project');
+    // TODO: check snapshots
 
     // 7. restoring to model
+    await pacedTrainSection.checkOccurrenceMenuIcon(addedOccurrenceIndex);
+    await pacedTrainSection.checkOccurrenceActionMenu({
+      occurrenceIndex: addedOccurrenceIndex,
+      expectedButtons: ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS,
+      translations: frTranslations,
+    });
     await pacedTrainSection.clickOccurrenceMenuButton('restore');
     await pacedTrainSection.verifyOccurrenceDetails(
       {
