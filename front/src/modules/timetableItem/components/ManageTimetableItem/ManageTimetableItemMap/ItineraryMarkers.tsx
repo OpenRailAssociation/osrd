@@ -119,8 +119,6 @@ const ItineraryMarkers = ({
     [simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs]
   );
 
-  if (!markersInformation) return null;
-
   const [trackSections, setTrackSections] = useState<Record<string, TrackSection>>({});
 
   useEffect(() => {
