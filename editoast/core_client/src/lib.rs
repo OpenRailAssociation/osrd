@@ -25,15 +25,6 @@ use tracing::trace;
 
 pub use mq_client::RabbitMQClient;
 
-editoast_common::schemas! {
-    simulation::schemas(),
-    pathfinding::schemas(),
-    conflict_detection::schemas(),
-    stdcm::schemas(),
-    signal_projection::schemas(),
-    etcs_braking_curves::schemas(),
-}
-
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     MessageQueue(RabbitMQClient),

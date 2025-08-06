@@ -12,11 +12,6 @@ use super::simulation::RoutingRequirement;
 use super::simulation::SpacingRequirement;
 use super::stdcm::WorkSchedule;
 
-editoast_common::schemas! {
-    ConflictDetectionResponse,
-    ConflictRequirement,
-}
-
 #[derive(Debug, Serialize)]
 pub struct ConflictDetectionRequest {
     pub infra: i64,
@@ -41,6 +36,7 @@ pub struct WorkSchedulesRequest {
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct ConflictDetectionResponse {
     /// List of conflicts detected
@@ -69,6 +65,7 @@ pub struct Conflict {
 ///
 /// The start and end time describe the conflicting time span (not the full
 /// requirement's time span).
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct ConflictRequirement {
     pub zone: String,

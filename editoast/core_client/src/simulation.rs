@@ -28,16 +28,6 @@ use super::pathfinding::TrackRange;
 use crate::AsCoreRequest;
 use crate::Json;
 
-editoast_common::schemas! {
-    CompleteReportTrain,
-    RoutingRequirement,
-    SignalCriticalPosition,
-    SpacingRequirement,
-    RoutingZoneRequirement,
-    ZoneUpdate,
-    ReportTrain,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
 #[educe(Hash)]
 pub struct PhysicsConsist {
@@ -97,6 +87,7 @@ pub struct PhysicsConsist {
     pub raise_pantograph_time: Option<Time>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ZoneUpdate {
     pub zone: String,
@@ -144,6 +135,7 @@ pub struct SimulationPath {
     pub path_item_positions: Vec<u64>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct ReportTrain {
     /// List of positions of a train
@@ -159,6 +151,7 @@ pub struct ReportTrain {
     pub path_item_times: Vec<u64>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
@@ -169,6 +162,7 @@ pub struct CompleteReportTrain {
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, ToSchema)]
 /// First position (space and time) along the path where given signal must
 /// be free (sighting time or closed-signal stop ending)
@@ -181,6 +175,7 @@ pub struct SignalCriticalPosition {
     pub state: String,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SpacingRequirement {
     pub zone: String,
@@ -190,6 +185,7 @@ pub struct SpacingRequirement {
     pub end_time: u64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingRequirement {
     pub route: String,
@@ -198,6 +194,7 @@ pub struct RoutingRequirement {
     pub zones: Vec<RoutingZoneRequirement>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingZoneRequirement {
     pub zone: String,
@@ -247,6 +244,7 @@ pub struct SpeedLimitProperty {
 }
 
 /// A MRSP computation result (Most Restrictive Speed Profile)
+
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SpeedLimitProperties {
     /// List of `n` boundaries of the ranges (block path).
