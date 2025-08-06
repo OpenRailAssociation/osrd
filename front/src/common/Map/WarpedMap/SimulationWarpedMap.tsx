@@ -226,11 +226,10 @@ const SimulationWarpedMap = ({
       {state.type !== 'dataLoaded' && <LoaderFill />}
       {state.type === 'dataLoaded' && (
         <div
-          className="bg-white border m-3"
+          className="bg-white border"
           style={{
             width: WIDTH,
             borderRadius: 4,
-            marginRight: '0.5rem',
           }}
         >
           <WarpedMap

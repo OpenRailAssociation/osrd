@@ -41,7 +41,7 @@ import type { Board } from '../types';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
-const MANCHETTE_HEIGHT_DIFF = 76;
+const HIDDEN_CHART_TOP_HEIGHT = 35;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
@@ -196,31 +196,32 @@ const SimulationResults = ({
   return (
     <div className="simulation-results">
       {/* SIMULATION : SPACE TIME CHART */}
-      <ResizableSection
-        height={manchetteWithSpaceTimeChartHeight}
-        setHeight={setManchetteWithSpaceTimeChartHeight}
-        minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT}
-      >
-        <div
-          className="simulation-warped-map d-flex flex-row align-items-stretch mb-2"
-          style={{ height: manchetteWithSpaceTimeChartHeight }}
+      {activeBoards.has('std') && projectionData && projectionData.projectedTrains.length > 0 && (
+        <ResizableSection
+          height={manchetteWithSpaceTimeChartHeight + HIDDEN_CHART_TOP_HEIGHT}
+          setHeight={setManchetteWithSpaceTimeChartHeight}
+          minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT + HIDDEN_CHART_TOP_HEIGHT}
         >
-          {projectionData && projectionData.projectedTrains.length > 0 && (
-            <>
-              <button
-                type="button"
-                className="show-warped-map-button my-3 ml-3 mr-1"
-                aria-label={t('simulationResults.toggleWarpedMap')}
-                title={t('simulationResults.toggleWarpedMap')}
-                onClick={() => setShowWarpedMap(!showWarpedMap)}
+          <BoardWrapper name={t('simulationResults.timeSpaceChart')}>
+            <div className="std-container">
+              <div
+                className="simulation-warped-map d-flex flex-row align-items-stretch"
+                style={{ height: manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT }}
               >
-                {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
-              </button>
-              <SimulationWarpedMap
-                collapsed={!showWarpedMap}
-                pathGeometry={projectionData.geometry}
-              />
-
+                <button
+                  type="button"
+                  className="show-warped-map-button"
+                  aria-label={t('simulationResults.toggleWarpedMap')}
+                  title={t('simulationResults.toggleWarpedMap')}
+                  onClick={() => setShowWarpedMap(!showWarpedMap)}
+                >
+                  {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
+                </button>
+                <SimulationWarpedMap
+                  collapsed={!showWarpedMap}
+                  pathGeometry={projectionData.geometry}
+                />
+              </div>
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 <div className="chart-container">
                   {trainIdUsedForProjection && (
@@ -245,7 +246,7 @@ const SimulationResults = ({
                       }
                       conflicts={conflictZones}
                       projectionLoaderData={projectionData.projectionLoaderData}
-                      height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
+                      height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
                       handleTrainDrag={handleTrainDrag}
                       onTrainClick={(trainId) => {
                         dispatch(updateSelectedTrainId(trainId));
@@ -255,10 +256,10 @@ const SimulationResults = ({
                   )}
                 </div>
               </div>
-            </>
-          )}
-        </div>
-      </ResizableSection>
+            </div>
+          </BoardWrapper>
+        </ResizableSection>
+      )}
 
       {simulationResults && (
         <>

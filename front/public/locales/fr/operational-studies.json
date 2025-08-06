@@ -523,6 +523,7 @@
       "temporarySpeedLimits": "Limites temporaires de vit.",
       "tractionStatus": "Statut de la traction"
     },
+    "timeSpaceChart": "GET",
     "timeSpaceChartSettings": {
       "capacity": "Capacité",
       "conflicts": "Conflits",
