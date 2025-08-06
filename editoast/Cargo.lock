@@ -1333,7 +1333,6 @@ dependencies = [
  "editoast_models",
  "editoast_osrdyne_client",
  "editoast_schemas",
- "editoast_search",
  "educe",
  "enum-map",
  "enumset",
@@ -1367,6 +1366,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rstest",
+ "search",
  "serde",
  "serde_json",
  "serde_qs",
@@ -1513,18 +1513,6 @@ dependencies = [
  "uom",
  "utoipa",
  "uuid",
-]
-
-[[package]]
-name = "editoast_search"
-version = "0.1.0"
-dependencies = [
- "itertools",
- "serde",
- "serde_json",
- "strum",
- "thiserror 2.0.12",
- "utoipa",
 ]
 
 [[package]]
@@ -4238,6 +4226,18 @@ name = "sdd"
 version = "3.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "584e070911c7017da6cb2eb0788d09f43d789029b5877d3e5ecc8acf86ceee21"
+
+[[package]]
+name = "search"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "serde",
+ "serde_json",
+ "strum",
+ "thiserror 2.0.12",
+ "utoipa",
+]
 
 [[package]]
 name = "security-framework"

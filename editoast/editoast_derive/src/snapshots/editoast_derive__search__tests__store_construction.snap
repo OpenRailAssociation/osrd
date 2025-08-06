@@ -19,76 +19,60 @@ pub struct SearchStore;
 // Macro expansion
 // -----------------------------------------------------------------------------
 
-impl editoast_search::SearchConfigStore for SearchStore {
-    fn find<S: AsRef<str>>(object_name: S) -> Option<editoast_search::SearchConfig> {
+impl search::SearchConfigStore for SearchStore {
+    fn find<S: AsRef<str>>(object_name: S) -> Option<search::SearchConfig> {
         match object_name.as_ref() {
             "track" => {
-                Some(
-                    <SearchResultItemTrack as editoast_search::SearchObject>::search_config(),
-                )
+                Some(<SearchResultItemTrack as search::SearchObject>::search_config())
             }
             "operationalpoint" => {
                 Some(
-                    <SearchResultItemOperationalPoint as editoast_search::SearchObject>::search_config(),
+                    <SearchResultItemOperationalPoint as search::SearchObject>::search_config(),
                 )
             }
             "signal" => {
-                Some(
-                    <SearchResultItemSignal as editoast_search::SearchObject>::search_config(),
-                )
+                Some(<SearchResultItemSignal as search::SearchObject>::search_config())
             }
             "project" => {
-                Some(
-                    <SearchResultItemProject as editoast_search::SearchObject>::search_config(),
-                )
+                Some(<SearchResultItemProject as search::SearchObject>::search_config())
             }
             "study" => {
-                Some(
-                    <SearchResultItemStudy as editoast_search::SearchObject>::search_config(),
-                )
+                Some(<SearchResultItemStudy as search::SearchObject>::search_config())
             }
             "scenario" => {
-                Some(
-                    <SearchResultItemScenario as editoast_search::SearchObject>::search_config(),
-                )
+                Some(<SearchResultItemScenario as search::SearchObject>::search_config())
             }
             "trainschedule" => {
                 Some(
-                    <SearchResultItemTrainSchedule as editoast_search::SearchObject>::search_config(),
+                    <SearchResultItemTrainSchedule as search::SearchObject>::search_config(),
                 )
             }
             _ => None,
         }
     }
-    fn all() -> Vec<(&'static str, editoast_search::SearchConfig)> {
+    fn all() -> Vec<(&'static str, search::SearchConfig)> {
         Vec::from([
-            (
-                "track",
-                <SearchResultItemTrack as editoast_search::SearchObject>::search_config(),
-            ),
+            ("track", <SearchResultItemTrack as search::SearchObject>::search_config()),
             (
                 "operationalpoint",
-                <SearchResultItemOperationalPoint as editoast_search::SearchObject>::search_config(),
+                <SearchResultItemOperationalPoint as search::SearchObject>::search_config(),
             ),
             (
                 "signal",
-                <SearchResultItemSignal as editoast_search::SearchObject>::search_config(),
+                <SearchResultItemSignal as search::SearchObject>::search_config(),
             ),
             (
                 "project",
-                <SearchResultItemProject as editoast_search::SearchObject>::search_config(),
+                <SearchResultItemProject as search::SearchObject>::search_config(),
             ),
-            (
-                "study",
-                <SearchResultItemStudy as editoast_search::SearchObject>::search_config(),
-            ),
+            ("study", <SearchResultItemStudy as search::SearchObject>::search_config()),
             (
                 "scenario",
-                <SearchResultItemScenario as editoast_search::SearchObject>::search_config(),
+                <SearchResultItemScenario as search::SearchObject>::search_config(),
             ),
             (
                 "trainschedule",
-                <SearchResultItemTrainSchedule as editoast_search::SearchObject>::search_config(),
+                <SearchResultItemTrainSchedule as search::SearchObject>::search_config(),
             ),
         ])
     }
