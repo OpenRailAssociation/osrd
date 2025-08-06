@@ -9,6 +9,11 @@
       margin-bottom: 16px;
     }
 
+    .std-container {
+      display: flex;
+      flex-direction: row;
+    }
+
     .osrd-simulation-container {
       position: relative;
       border-radius: 4px;
