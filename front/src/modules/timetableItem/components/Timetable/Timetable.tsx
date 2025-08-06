@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type InfraState } from 'common/api/osrdEditoastApi';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
@@ -139,6 +139,11 @@ const Timetable = ({
     []
   );
 
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
+
   return (
     <div className="scenario-timetable">
       <div
@@ -173,6 +178,7 @@ const Timetable = ({
                   projectionPathIsUsed={
                     infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
                   }
+                  subCategories={subCategories}
                 />
               ) : (
                 <PacedTrainItem
@@ -189,6 +195,7 @@ const Timetable = ({
                   isProjectionPathUsed={
                     infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
                   }
+                  subCategories={subCategories}
                 />
               )}
             </div>

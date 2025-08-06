@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
+import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
   DEFAULT_TRAIN_PATH_COLORS,
@@ -14,6 +15,7 @@ const getPathStyle = (
   hovered: HoveredItem | null,
   train: { color: string; id: string },
   dragging: boolean,
+  subCategories: SubCategory[],
   timetableItemsWithDetails?: TimetableItemWithDetails[],
   selectedTrainId?: TrainId
 ): {
@@ -32,10 +34,22 @@ const getPathStyle = (
   const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
   const category = item?.category;
 
-  const colors =
-    category && isMainCategory(category)
-      ? TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category]
-      : DEFAULT_TRAIN_PATH_COLORS;
+  const currentSubCategory =
+    category && !isMainCategory(category)
+      ? subCategories.find((option) => option.code === category.sub_category_code)
+      : undefined;
+
+  let colors = DEFAULT_TRAIN_PATH_COLORS;
+
+  if (category && isMainCategory(category)) {
+    colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
+  } else if (category && !isMainCategory(category) && currentSubCategory) {
+    colors = {
+      normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
+      hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
+      background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
+    };
+  }
 
   if (hovered && 'pathId' in hovered.element && !dragging) {
     const hoveredTrainId = hovered.element.pathId as TrainId;

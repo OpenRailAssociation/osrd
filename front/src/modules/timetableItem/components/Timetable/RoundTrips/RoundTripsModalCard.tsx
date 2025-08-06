@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { BsXCircleFill } from 'react-icons/bs';
 
 import AnchoredMenu from 'common/AnchoredMenu';
+import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -18,6 +19,7 @@ type RoundTripsModalCardProps = {
   status: 'todo' | 'oneWays' | 'roundTrips';
   restoreItems: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
+  subCategories: SubCategory[];
 };
 
 const RoundTripsModalCard = ({
@@ -25,6 +27,7 @@ const RoundTripsModalCard = ({
   status,
   restoreItems,
   moveItemToOneWays,
+  subCategories,
 }: RoundTripsModalCardProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main.roundTripsModal' });
   const menuRef = useRef<HTMLDivElement>(null);
@@ -95,6 +98,11 @@ const RoundTripsModalCard = ({
     container: document.querySelector('.round-trips-modal'),
   });
 
+  const currentSubCategory =
+    category && !isMainCategory(category)
+      ? subCategories.find((option) => option.code === category.sub_category_code)
+      : undefined;
+
   return (
     <div className="round-trips-card">
       <div className="round-trips-card-header">
@@ -103,6 +111,7 @@ const RoundTripsModalCard = ({
             'name',
             `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category && isMainCategory(category) ? category.main_category : 'None']}`
           )}
+          style={{ color: currentSubCategory?.color }}
         >
           {name}
         </h3>

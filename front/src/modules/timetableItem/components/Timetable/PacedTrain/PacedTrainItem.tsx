@@ -13,6 +13,7 @@ import {
   osrdEditoastApi,
   type PacedTrain,
   type PacedTrainResponse,
+  type SubCategory,
 } from 'common/api/osrdEditoastApi';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
@@ -62,6 +63,7 @@ type PacedTrainItemProps = {
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
+  subCategories: SubCategory[];
 };
 
 const PacedTrainItem = ({
@@ -76,6 +78,7 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
+  subCategories,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -201,6 +204,24 @@ const PacedTrainItem = ({
     );
   };
 
+  const { category } = pacedTrain;
+
+  const currentSubCategory =
+    category && !isMainCategory(category)
+      ? subCategories.find((option) => option.code === category.sub_category_code)
+      : undefined;
+
+  const getTrainCategoryClassName = (
+    trainCategory: PacedTrain['category'],
+    type: 'bg' | 'text'
+  ) => {
+    if (!trainCategory) return 'None';
+    if (isMainCategory(trainCategory)) {
+      return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
+    }
+    return 'None';
+  };
+
   const worstCase = useMemo(
     () => getOccurrencesWorstStatus(pacedTrain),
     [pacedTrain.summary, pacedTrain.exceptions]
@@ -246,13 +267,15 @@ const PacedTrainItem = ({
           )}
           <div
             data-testid="occurrences-count"
-            className={cx(
-              'occurrences-count',
-              `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category && isMainCategory(pacedTrain.category) ? pacedTrain.category.main_category : 'None']}`
-            )}
+            className={cx('occurrences-count', {
+              [getTrainCategoryClassName(pacedTrain.category, 'bg')]:
+                category !== undefined && isMainCategory(category),
+            })}
+            style={{ backgroundColor: currentSubCategory?.color }}
           >
             {occurrencesCount}
           </div>
+
           {isOccurrencesListOpen ? (
             <ChevronDown className="toggle-icon center-icon" />
           ) : (
@@ -261,10 +284,11 @@ const PacedTrainItem = ({
           <div className="train-info">
             <span
               data-testid="paced-train-name"
-              className={cx(
-                'train-name',
-                `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[pacedTrain.category && isMainCategory(pacedTrain.category) ? pacedTrain.category.main_category : 'None']}`
-              )}
+              className={cx('train-name', {
+                [getTrainCategoryClassName(pacedTrain.category, 'text')]:
+                  category !== undefined && isMainCategory(category),
+              })}
+              style={{ color: currentSubCategory?.color }}
             >
               {pacedTrain.name}
             </span>
@@ -350,6 +374,7 @@ const PacedTrainItem = ({
               isSelected={selectedTrainId === occurrence.id}
               nextOccurrence={occurrences[index + 1]}
               occurrenceActions={occurrenceActions}
+              subCategories={subCategories}
             />
           ))}
         </div>

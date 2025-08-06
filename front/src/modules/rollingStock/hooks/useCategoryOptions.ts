@@ -1,23 +1,55 @@
 import { useTranslation } from 'react-i18next';
 
-import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
-export type CategoryOptionWithId = { id: TrainMainCategory; label: string };
+import type { CategoryOptionWithId } from '../types';
 
-export type CategoryOption = { id?: TrainMainCategory; label: string };
+export type CategoryOption = { id?: string; label: string };
 
 export default function useCategoryOptions(withPlaceholder = true) {
   const { t } = useTranslation();
 
-  const options = Object.values(TrainMainCategoryDict).map((category) => ({
-    id: category,
-    label: t(`rollingStock.categoriesOptions.${category}`),
-  }));
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
 
-  if (withPlaceholder) {
-    return [{ label: t('rollingStock.categoriesOptions.choose') }, ...options];
+  const validMainCategories = Array.from(TrainMainCategoryDict.keys());
+
+  const groupedOptions: CategoryOptionWithId[] = [];
+
+  for (const mainCategory of validMainCategories) {
+    groupedOptions.push({
+      id: `main:${mainCategory}`,
+      label: t(`rollingStock.categoriesOptions.${mainCategory}`),
+      category: { main_category: mainCategory },
+    });
+
+    const matchedSubCategories = subCategories.filter((sub) => sub.main_category === mainCategory);
+
+    groupedOptions.push(
+      ...matchedSubCategories.map((sub) => ({
+        id: `sub:${sub.code}`,
+        label: sub.name,
+        category: { sub_category_code: sub.code },
+        color: sub.color,
+        background_color: sub.background_color,
+        hovered_color: sub.hovered_color,
+        main_category: sub.main_category,
+      }))
+    );
   }
 
-  return options as CategoryOptionWithId[];
+  if (withPlaceholder) {
+    return [
+      {
+        id: 'placeholder',
+        label: t('rollingStock.categoriesOptions.choose'),
+        category: null,
+      },
+      ...groupedOptions,
+    ];
+  }
+  return groupedOptions;
 }

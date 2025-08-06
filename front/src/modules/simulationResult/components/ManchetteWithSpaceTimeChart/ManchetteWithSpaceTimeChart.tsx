@@ -36,7 +36,10 @@ import dayjs from 'dayjs';
 import { compact, keyBy, sortBy } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
-import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PostWorkSchedulesProjectPathApiResponse,
+} from 'common/api/osrdEditoastApi';
 import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
@@ -145,6 +148,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
+
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
 
   const projectedTrains = useMemo(
     () =>
@@ -322,6 +330,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
                   hoveredItem,
                   path,
                   !!draggingState,
+                  subCategories,
                   timetableItemsWithDetails,
                   selectedTrainId
                 );
@@ -643,6 +652,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
                   hoveredItem,
                   path,
                   !!draggingState,
+                  subCategories,
                   timetableItemsWithDetails,
                   selectedTrainId
                 )}
