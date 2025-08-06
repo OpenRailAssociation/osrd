@@ -1,7 +1,9 @@
 import type { TFunction } from 'i18next';
 
+import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
 import {
   getInvalidStepLabel,
+  checkRoundTripCompatible,
   getStationFromOps,
   isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
@@ -47,41 +49,72 @@ const getStepLabels = (
     return acc;
   }, []);
 
+const formatBasePairingItem = (
+  item: TimetableItemWithPathOps,
+  status: 'todo' | 'oneWays' | 'roundTrips',
+  t: TFunction<'operational-studies', 'main'>
+): PairingItem => {
+  const stepLabels = getStepLabels(item.pathOps, item.path, item.schedule, t);
+
+  const arrivalStepId = item.path.at(-1)?.id;
+  const destinationSchedule = item.schedule?.find(
+    (scheduleStep) => scheduleStep.at === arrivalStepId
+  );
+  const requestedArrivalTime = destinationSchedule?.arrival
+    ? addDurationToDate(new Date(item.start_time), Duration.parse(destinationSchedule.arrival))
+    : null;
+
+  return {
+    id: item.id,
+    name: item.train_name,
+    category: item.category,
+    interval: isPacedTrainResponseWithPacedTrainId(item)
+      ? Duration.parse(item.paced.interval)
+      : null,
+    origin: stepLabels.at(0)!,
+    stops: stepLabels.slice(1, -1),
+    destination: stepLabels.at(-1)!,
+    startTime: new Date(item.start_time),
+    requestedArrivalTime,
+    ...(status === 'roundTrips'
+      ? {
+          status: 'roundTrips',
+          pairedItemId: item.id,
+          isValidPair: false,
+        }
+      : { status }),
+  };
+};
+
 const formatPairingItems = (
-  items: TimetableItemWithPathOps[],
+  roundTripGroups: TimetableItemRoundTripGroups,
   t: TFunction<'operational-studies', 'main'>
 ): PairingItem[] => {
-  const sortedItems = items.sort((a, b) =>
-    a.train_name.toLowerCase().localeCompare(b.train_name.toLowerCase())
+  const todoItems = roundTripGroups.others.map((item) => formatBasePairingItem(item, 'todo', t));
+  const oneWayItems = roundTripGroups.oneWays.map((item) =>
+    formatBasePairingItem(item, 'oneWays', t)
   );
-
-  // TODO : handle status with round-trips data in issue https://github.com/OpenRailAssociation/osrd/issues/12376
-  return sortedItems.map((item) => {
-    const stepLabels = getStepLabels(item.pathOps, item.path, item.schedule, t);
-
-    const arrivalStepId = item.path.at(-1)?.id;
-    const destinationSchedule = item.schedule?.find(
-      (scheduleStep) => scheduleStep.at === arrivalStepId
-    );
-    const requestedArrivalTime = destinationSchedule?.arrival
-      ? addDurationToDate(new Date(item.start_time), Duration.parse(destinationSchedule.arrival))
-      : null;
-
-    return {
-      id: item.id,
-      name: item.train_name,
-      category: item.category,
-      interval: isPacedTrainResponseWithPacedTrainId(item)
-        ? Duration.parse(item.paced.interval)
-        : null,
-      origin: stepLabels.at(0)!,
-      stops: stepLabels.slice(1, -1),
-      destination: stepLabels.at(-1)!,
-      startTime: new Date(item.start_time),
-      requestedArrivalTime,
-      status: 'todo',
-    };
+  const roundTripItems = roundTripGroups.roundTrips.map(([itemA, itemB]) => {
+    const formattedItemA = formatBasePairingItem(itemA, 'roundTrips', t);
+    const formattedItemB = formatBasePairingItem(itemB, 'roundTrips', t);
+    const isValidPair = checkRoundTripCompatible(itemA, itemB);
+    return [
+      {
+        ...formattedItemA,
+        pairedItemId: formattedItemB.id,
+        isValidPair,
+      },
+      {
+        ...formattedItemB,
+        pairedItemId: formattedItemA.id,
+        isValidPair,
+      },
+    ];
   });
+
+  return [...todoItems, ...oneWayItems, ...roundTripItems]
+    .flat()
+    .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 };
 
 export default formatPairingItems;
