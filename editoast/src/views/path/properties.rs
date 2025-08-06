@@ -5,6 +5,7 @@
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
 //! - Then if the user requests the curves and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the curves.
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -17,7 +18,6 @@ use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
-use editoast_authz as authz;
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;

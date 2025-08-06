@@ -3,10 +3,10 @@ use anyhow::bail;
 use clap::Args;
 use clap::Subcommand;
 
-use editoast_authz as authz;
-use editoast_authz::StorageDriver;
-use editoast_authz::identity::GroupInfo;
-use editoast_authz::identity::UserInfo;
+use authz;
+use authz::StorageDriver;
+use authz::identity::GroupInfo;
+use authz::identity::UserInfo;
 
 use database::DbConnectionPoolV2;
 use futures::TryStreamExt;

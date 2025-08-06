@@ -7,6 +7,7 @@ pub use form::RollingStockForm;
 
 use std::io::Cursor;
 
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Multipart;
@@ -18,7 +19,6 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
-use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use image::DynamicImage;
 use image::GenericImage;

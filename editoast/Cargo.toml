@@ -7,6 +7,7 @@ edition.workspace = true
 [workspace]
 members = [
   ".",
+  "authz",
   "core_client",
   "database",
   "editoast_common",
@@ -32,6 +33,7 @@ license = "LGPL-3.0"
 [workspace.dependencies]
 approx = "0.5.1"
 async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
+authz = { path = "./authz" }
 chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 core_client = { path = "./core_client" }
@@ -59,7 +61,6 @@ diesel-async = { version = "0.5", default-features = false, features = [
   "deadpool",
   "postgres",
 ] }
-editoast_authz = { path = "./editoast_authz" }
 editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
@@ -128,6 +129,7 @@ uuid = { version = "1.17.0", features = ["serde", "v4"] }
 [dependencies]
 anyhow = "1.0"
 approx.workspace = true
+authz.workspace = true
 axum = { version = "0.8.4", default-features = false, features = [
   "multipart",
   "tracing",
@@ -154,7 +156,6 @@ derive_more.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
 diesel_json = "0.2.1"
-editoast_authz.workspace = true
 editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
@@ -241,6 +242,7 @@ validator = { version = "0.19.0", features = ["derive"] }
 
 [dev-dependencies]
 async-std.workspace = true
+authz = { workspace = true }
 axum = { version = "0.8.4", default-features = false, features = [
   "macros",
   "multipart",
@@ -248,7 +250,6 @@ axum = { version = "0.8.4", default-features = false, features = [
 ] }
 core_client = { workspace = true, features = ["mocking_client"] }
 database = { workspace = true, features = ["testing"] }
-editoast_authz = { workspace = true }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_schemas = { workspace = true, features = ["testing"] }
 osrdyne_client = { workspace = true, features = ["mock_client"] }

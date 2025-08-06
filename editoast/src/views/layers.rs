@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -8,7 +9,6 @@ use axum::extract::State;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
 use deadpool_redis::redis::AsyncCommands;
-use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;

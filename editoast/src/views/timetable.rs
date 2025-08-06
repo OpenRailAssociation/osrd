@@ -9,6 +9,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -28,7 +29,6 @@ use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::PhysicsConsist;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
 use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Length;
 use editoast_common::units::quantities::Mass;

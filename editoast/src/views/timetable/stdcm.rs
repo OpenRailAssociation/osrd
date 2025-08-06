@@ -1,6 +1,7 @@
 mod failure_handler;
 pub(crate) mod request;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -17,7 +18,6 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::MarginValue;

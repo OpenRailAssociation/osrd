@@ -55,7 +55,7 @@ impl OpenfgaConfig {
                 result => result?,
             }
         };
-        editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
+        authz::ensure_latest_authorization_model(&mut openfga).await?;
         let driver = PgAuthDriver::new(pool);
         Ok(views::Regulator::new(openfga, driver))
     }

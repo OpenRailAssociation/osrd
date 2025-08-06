@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
+use authz;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_authz as authz;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;

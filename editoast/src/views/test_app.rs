@@ -7,7 +7,11 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use authz::InfraGrant;
+use authz::Role;
+use authz::StorageDriver;
 use authz::identity::GroupInfo;
+use authz::identity::UserInfo;
 use axum::Router;
 use axum_test::TestRequest;
 use axum_test::TestServer;
@@ -16,11 +20,6 @@ use core_client::CoreClient;
 use core_client::mocking::MockingClient;
 use dashmap::DashMap;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
-use editoast_authz::InfraGrant;
-use editoast_authz::Role;
-use editoast_authz::StorageDriver;
-use editoast_authz::identity::UserInfo;
 use editoast_common::tracing::Stream;
 use editoast_common::tracing::Telemetry;
 use editoast_common::tracing::TracingConfig;
@@ -133,8 +132,7 @@ impl TestAppBuilder {
     }
 
     pub fn enable_authorization(mut self, enable_authorization: bool) -> Self {
-        self.authorization_model =
-            enable_authorization.then_some(editoast_authz::AUTHORIZATION_MODEL);
+        self.authorization_model = enable_authorization.then_some(authz::AUTHORIZATION_MODEL);
         self
     }
 

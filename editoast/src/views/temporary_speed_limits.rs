@@ -24,7 +24,7 @@ use crate::models::temporary_speed_limits::TemporarySpeedLimit;
 use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use editoast_authz::Role;
+use authz::Role;
 
 crate::routes! {
     "/temporary_speed_limit_group" => create_temporary_speed_limit_group,

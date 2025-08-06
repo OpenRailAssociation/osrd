@@ -1,3 +1,4 @@
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -5,7 +6,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_authz::Role;
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;

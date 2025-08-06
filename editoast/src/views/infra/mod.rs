@@ -9,6 +9,8 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
+use authz;
+use authz::InfraGrant;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -20,8 +22,6 @@ use core_client::AsCoreRequest;
 use core_client::infra_loading::InfraLoadRequest;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_authz as authz;
-use editoast_authz::InfraGrant;
 use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_models::model;
@@ -60,7 +60,7 @@ use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::path_item_cache::retrieve_op_from_ids;
 use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
 use crate::views::path::path_item_cache::retrieve_op_from_uic;
-use editoast_authz::Role;
+use authz::Role;
 use editoast_schemas::infra::OperationalPoint;
 use editoast_schemas::infra::builtin_node_types_list;
 use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -994,7 +994,7 @@ async fn match_operational_points(
     }
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&editoast_authz::Infra(infra_id))
+            .authorize_infra_read(&authz::Infra(infra_id))
             .await
     })
     .await?;

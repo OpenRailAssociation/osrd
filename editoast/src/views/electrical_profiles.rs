@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -8,7 +9,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::infra::LevelValues;

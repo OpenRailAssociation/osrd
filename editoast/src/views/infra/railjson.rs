@@ -1,3 +1,5 @@
+use authz;
+use authz::InfraGrant;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -6,8 +8,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::http::header;
 use axum::response::IntoResponse;
-use editoast_authz as authz;
-use editoast_authz::InfraGrant;
 use editoast_schemas::infra::RailJson;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
