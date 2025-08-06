@@ -3,6 +3,7 @@ extern crate proc_macro;
 mod annotate_units;
 mod error;
 mod model;
+mod openapi_schema;
 mod search;
 
 use proc_macro::TokenStream;
@@ -241,8 +242,6 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .into()
 }
 
-#[cfg(test)]
-use test_utils::assert_macro_expansion;
 /// Annotates fields of a structs with documentation and value_type for a better utoipa schema
 ///
 /// It must be used on structs that use #[derive(ToSchema)]
@@ -260,6 +259,17 @@ pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
+
+#[proc_macro_attribute]
+pub fn openapi_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    openapi_schema::openapi_schema(&input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+#[cfg(test)]
+use test_utils::assert_macro_expansion;
 
 #[cfg(test)]
 mod test_utils {

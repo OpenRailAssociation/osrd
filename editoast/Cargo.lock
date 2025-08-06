@@ -927,6 +927,7 @@ dependencies = [
  "http",
  "itertools",
  "lapin",
+ "linkme",
  "opentelemetry",
  "pretty_assertions",
  "reqwest",
@@ -1346,6 +1347,7 @@ dependencies = [
  "itertools",
  "json-patch",
  "lapin",
+ "linkme",
  "lz4_flex",
  "mime",
  "mvt",
@@ -1399,6 +1401,7 @@ dependencies = [
  "fga",
  "futures 0.3.31",
  "itertools",
+ "linkme",
  "pretty_assertions",
  "serde",
  "stdext",
@@ -1413,6 +1416,7 @@ dependencies = [
 name = "editoast_common"
 version = "0.1.0"
 dependencies = [
+ "linkme",
  "opentelemetry",
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
@@ -1496,6 +1500,7 @@ dependencies = [
  "enum-map",
  "geojson",
  "iso8601",
+ "linkme",
  "rand 0.9.2",
  "regex",
  "rstest",
@@ -2720,6 +2725,26 @@ name = "libm"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8355be11b20d696c8f18f6cc018c4e372165b1fa8126cef092399c9951984ffa"
+
+[[package]]
+name = "linkme"
+version = "0.3.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1b1703c00b2a6a70738920544aa51652532cacddfec2e162d2e29eae01e665c"
+dependencies = [
+ "linkme-impl",
+]
+
+[[package]]
+name = "linkme-impl"
+version = "0.3.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04d55ca5d5a14363da83bf3c33874b8feaa34653e760d5216d7ef9829c88001a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
+]
 
 [[package]]
 name = "linux-raw-sys"

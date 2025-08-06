@@ -9,6 +9,7 @@ derive_more.workspace = true
 fga.workspace = true
 futures.workspace = true
 itertools.workspace = true
+linkme.workspace = true
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true
 thiserror.workspace = true
