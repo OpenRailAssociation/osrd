@@ -43,7 +43,7 @@ export const TRAIN_MAIN_CATEGORY_PATH_COLORS: Record<
   TrainMainCategory,
   { normal: string; hovered: string; background: string }
 > = {
-  HIGH_SPEED_TRAIN: { normal: '#E6221A', hovered: '#A62924', background: '#FAE7E6' },
+  HIGH_SPEED_TRAIN: { normal: '#E5221A', hovered: '#A62924', background: '#FAE7E6' },
   INTERCITY_TRAIN: { normal: '#E02271', hovered: '#9A2053', background: '#FFE8F2' },
   REGIONAL_TRAIN: { normal: '#C75300', hovered: '#943E00', background: '#FFE7D6' },
   NIGHT_TRAIN: { normal: '#B2539E', hovered: '#732963', background: '#FAE6F6' },
