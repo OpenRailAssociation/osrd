@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 
-import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -74,6 +74,8 @@ const SimulationResults = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [showWarpedMap, setShowWarpedMap] = useState(false);
+
+  const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
 
   const [manchetteWithSpaceTimeChartHeight, setManchetteWithSpaceTimeChartHeight] = useState(
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
@@ -202,7 +204,18 @@ const SimulationResults = ({
           setHeight={setManchetteWithSpaceTimeChartHeight}
           minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT + HIDDEN_CHART_TOP_HEIGHT}
         >
-          <BoardWrapper name={t('simulationResults.timeSpaceChart')}>
+          <BoardWrapper
+            name={t('simulationResults.timeSpaceChart')}
+            items={[
+              {
+                title: t('simulationResults.manchetteSettings.waypointsVisibility'),
+                icon: <Eye />,
+                onClick: () => {
+                  setWaypointsPanelIsOpen(true);
+                },
+              },
+            ]}
+          >
             <div className="std-container">
               <div
                 className="simulation-warped-map d-flex flex-row align-items-stretch"
@@ -252,6 +265,8 @@ const SimulationResults = ({
                         dispatch(updateSelectedTrainId(trainId));
                       }}
                       selectedProjectionId={trainIdUsedForProjection}
+                      waypointsPanelIsOpen={waypointsPanelIsOpen}
+                      setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
                     />
                   )}
                 </div>
