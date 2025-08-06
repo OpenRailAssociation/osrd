@@ -81,7 +81,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const [deleteStudies, { error: deleteStudyError }] =
     osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
 
-  const studyStateOptions = createSelectOptions(studyStates);
+  const studyStateOptions = createSelectOptions(t, studyStates);
 
   const initialValuesRef = useRef<StudyForm | null>(null);
 

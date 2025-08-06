@@ -1,5 +1,5 @@
+import type { TFunction } from 'i18next';
 import { isEmpty, sortBy } from 'lodash';
-import { useTranslation } from 'react-i18next';
 
 import { isInvalidName } from 'applications/operationalStudies/utils';
 import type { StudyState } from 'applications/operationalStudies/views/Study/consts';
@@ -8,10 +8,10 @@ import { SMALL_INPUT_MAX_LENGTH, SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } f
 
 import type { StudyForm } from './components/AddOrEditStudyModal';
 
-type OptionsList = StudyState[];
-
-export const createSelectOptions = (list: OptionsList): SelectOptionObject[] => {
-  const { t } = useTranslation('operational-studies');
+export const createSelectOptions = (
+  t: TFunction<'operational-studies'>,
+  list: StudyState[]
+): SelectOptionObject[] => {
   if (isEmpty(list)) return [{ label: t('study.nothingSelected').toString() }];
   return sortBy(
     list.map((key) => ({ id: key, label: t(`study.studyStates.${key}`) })),
