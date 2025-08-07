@@ -200,9 +200,9 @@ const SimulationResults = ({
       {/* SIMULATION : SPACE TIME CHART */}
       {activeBoards.has('std') && projectionData && projectionData.projectedTrains.length > 0 && (
         <ResizableSection
-          height={manchetteWithSpaceTimeChartHeight + HIDDEN_CHART_TOP_HEIGHT}
+          height={manchetteWithSpaceTimeChartHeight}
           setHeight={setManchetteWithSpaceTimeChartHeight}
-          minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT + HIDDEN_CHART_TOP_HEIGHT}
+          minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT}
         >
           <BoardWrapper
             name={t('simulationResults.timeSpaceChart')}

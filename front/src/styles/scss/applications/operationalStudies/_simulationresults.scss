@@ -9,9 +9,45 @@
       margin-bottom: 16px;
     }
 
+    /*
+     * Temporary style while waiting for the STD style to be updated
+    */
     .std-container {
       display: flex;
       flex-direction: row;
+
+      .simulation-warped-map {
+        margin-right: 1px;
+      }
+
+      .warped-map > :first-child {
+        border-radius: 0 !important;
+        border-color: var(--black10) !important;
+        border-bottom: 0 !important;
+        border-top: 0 !important;
+        padding-left: 1px !important;
+      }
+
+      .osrd-simulation-container {
+        .manchette-space-time-chart-wrapper {
+          border-radius: 0;
+
+          .manchette-container {
+            > :first-child {
+              box-shadow: inset 1px 0 0 var(--white);
+              background-color: var(--ambientB15);
+            }
+
+            .manchette-actions {
+              border-radius: 0;
+              background-color: var(--ambientB15);
+              box-shadow:
+                inset 1px 0 0 var(--white),
+                inset 0 1px 0 var(--white);
+            }
+          }
+        }
+      }
     }
 
     .osrd-simulation-container {
