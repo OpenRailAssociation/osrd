@@ -30,6 +30,7 @@ struct RowWithCount<T: QueryableByName<Pg>> {
 
 /// `load`s and returns the content of a diesel query, along with the total count of items that would
 /// be returned if the query was not paginated
+#[tracing::instrument(name = "load_for_pagination", skip_all, err, fields(page, page_size))]
 pub async fn load_for_pagination<Q, T>(
     conn: &mut DbConnection,
     query: Q,
