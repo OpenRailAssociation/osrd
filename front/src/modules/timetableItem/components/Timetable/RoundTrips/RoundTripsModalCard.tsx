@@ -16,7 +16,7 @@ import type { PairingItem } from '../types';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
-  restoreItems: () => void;
+  restoreItems?: () => void;
   moveItemToOneWays?: (item: PairingItem) => void;
   subCategories: SubCategory[];
 };
@@ -65,7 +65,7 @@ const RoundTripsModalCard = ({
       title: t('restore'),
       icon: <BsXCircleFill />,
       onClick: () => {
-        restoreItems();
+        restoreItems?.();
         closeMenu();
       },
     },

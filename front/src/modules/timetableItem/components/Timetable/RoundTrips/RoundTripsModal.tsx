@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-import RoundTripsModalColumn from './RoundTripsModalColumn';
+import OneWaysColumn from './OneWaysColumn';
+import RoundTripsColumn from './RoundTripsColumn';
+import TodoColumn from './TodoColumn';
 import formatPairingItems from './utils';
 import type { PairingItem } from '../types';
 
@@ -35,7 +38,34 @@ const RoundTripsModal = ({
 
   const [pairingItems, setPairingItems] = useState<PairingItem[]>([]);
 
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
+
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
+
+  const pairingItemsByColumn = useMemo(
+    () =>
+      pairingItems.reduce<{
+        todo: PairingItem[];
+        oneWays: PairingItem[];
+        roundTrips: { pair: [PairingItem, PairingItem]; isValid: boolean }[];
+      }>(
+        (acc, item) => {
+          if (item.status === 'todo') {
+            acc.todo.push(item);
+          }
+          if (item.status === 'oneWays') {
+            acc.oneWays.push(item);
+          }
+          // TODO : handle roundtrips column
+          return acc;
+        },
+        { todo: [], oneWays: [], roundTrips: [] }
+      ),
+    [pairingItems]
+  );
 
   const openModal = () => {
     modalRef.current?.showModal();
@@ -65,20 +95,20 @@ const RoundTripsModal = ({
         <h1 className="title">{t('roundTripsModal.roundTripsManagement')}</h1>
       </div>
       <div className="round-trips-modal-body">
-        <RoundTripsModalColumn
-          type="todo"
-          pairingItems={pairingItems.filter((item) => item.status === 'todo')}
+        <TodoColumn
+          pairingItems={pairingItemsByColumn.todo}
           setPairingItems={setPairingItems}
+          subCategories={subCategories}
         />
-        <RoundTripsModalColumn
-          type="oneWays"
-          pairingItems={pairingItems.filter((item) => item.status === 'oneWays')}
+        <OneWaysColumn
+          pairingItems={pairingItemsByColumn.oneWays}
           setPairingItems={setPairingItems}
+          subCategories={subCategories}
         />
-        <RoundTripsModalColumn
-          type="roundTrips"
-          pairingItems={[]}
+        <RoundTripsColumn
+          pairingItems={pairingItemsByColumn.roundTrips}
           setPairingItems={setPairingItems}
+          subCategories={subCategories}
         />
       </div>
       <div className="round-trips-modal-footer">
