@@ -18,10 +18,6 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 
-crate::routes! {
-    "/lines/{line_code}/bbox" => get_line_bbox,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:lines")]
 enum LinesErrors {
@@ -30,6 +26,7 @@ enum LinesErrors {
 }
 
 /// Returns the BBoxes of a line
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -41,7 +38,7 @@ enum LinesErrors {
         (status = 200, body = BoundingBox, description = "The BBox of the line"),
     )
 )]
-async fn get_line_bbox(
+pub(in crate::views) async fn get_line_bbox(
     Path((infra_id, line_code)): Path<(i64, i64)>,
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,

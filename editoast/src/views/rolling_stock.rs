@@ -1,6 +1,6 @@
-pub mod form;
-pub mod light;
-mod towed;
+pub(in crate::views) mod form;
+pub(in crate::views) mod light;
+pub(in crate::views) mod towed;
 
 use editoast_models::model;
 pub use form::RollingStockForm;
@@ -43,24 +43,6 @@ use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-
-crate::routes! {
-    "/rolling_stock" => {
-        create,
-        "/power_restrictions" => get_power_restrictions,
-        "/name/{rolling_stock_name}" => get_by_name,
-        "/{rolling_stock_id}" => {
-            get,
-            update,
-            delete,
-            "/locked" => update_locked,
-            "/livery" => create_livery,
-            "/usage" => get_usage,
-        },
-    },
-    &light,
-    &towed,
-}
 
 editoast_common::schemas! {
     RollingStockForm,
@@ -204,6 +186,7 @@ pub struct RollingStockNameParam {
 }
 
 /// Get a rolling stock by Id
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -212,7 +195,7 @@ pub struct RollingStockNameParam {
         (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
@@ -235,6 +218,7 @@ async fn get(
 }
 
 /// Get a rolling stock by name
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -243,7 +227,7 @@ async fn get(
         (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
     )
 )]
-async fn get_by_name(
+pub(in crate::views) async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_name): Path<String>,
@@ -267,6 +251,7 @@ async fn get_by_name(
 }
 
 /// Returns the set of power restrictions for all rolling_stocks modes.
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -274,7 +259,7 @@ async fn get_by_name(
         (status = 200, description = "Retrieve the power restrictions list", body = Vec<String>)
     )
 )]
-async fn get_power_restrictions(
+pub(in crate::views) async fn get_power_restrictions(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
@@ -297,12 +282,13 @@ async fn get_power_restrictions(
 
 #[derive(Debug, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
-struct PostRollingStockQueryParams {
+pub(in crate::views) struct PostRollingStockQueryParams {
     #[serde(default)]
     locked: bool,
 }
 
 /// Create a rolling stock
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock",
@@ -312,7 +298,7 @@ struct PostRollingStockQueryParams {
         (status = 200, description = "The created rolling stock", body = RollingStock)
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
@@ -341,6 +327,7 @@ async fn create(
 }
 
 /// Patch a rolling stock
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -350,7 +337,7 @@ async fn create(
         (status = 200, description = "The created rolling stock", body = RollingStockWithLiveries)
     )
 )]
-async fn update(
+pub(in crate::views) async fn update(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
@@ -411,13 +398,14 @@ async fn update(
 
 #[derive(Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
-struct DeleteRollingStockQueryParams {
+pub(in crate::views) struct DeleteRollingStockQueryParams {
     /// force the deletion even if it's used
     #[serde(default)]
     force: bool,
 }
 
 /// Delete a rolling_stock and all entities linked to it
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "rolling_stock",
@@ -429,7 +417,7 @@ struct DeleteRollingStockQueryParams {
         (status = 409, description = "The requested rolling stock is used"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
@@ -481,12 +469,13 @@ async fn delete_rolling_stock(conn: &mut DbConnection, rolling_stock_id: i64) ->
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
-struct RollingStockLockedUpdateForm {
+pub(in crate::views) struct RollingStockLockedUpdateForm {
     /// New locked value
     pub locked: bool,
 }
 
 /// Update rolling_stock locked field
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -496,7 +485,7 @@ struct RollingStockLockedUpdateForm {
         (status = 204, description = "No content when successful")
     )
 )]
-async fn update_locked(
+pub(in crate::views) async fn update_locked(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
@@ -568,6 +557,7 @@ async fn parse_multipart_content(
 }
 
 /// Create a rolling stock livery
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock,rolling_stock_livery",
@@ -578,7 +568,7 @@ async fn parse_multipart_content(
         (status = 404, description = "The requested rolling stock was not found"),
     )
 )]
-async fn create_livery(
+pub(in crate::views) async fn create_livery(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
@@ -637,6 +627,7 @@ async fn create_livery(
 }
 
 /// List the scenarios (and their respective studies and projects) which use a given rolling stock.
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -646,7 +637,7 @@ async fn create_livery(
         (status = 404, description = "The requested rolling stock was not found"),
     )
 )]
-pub async fn get_usage(
+pub(in crate::views) async fn get_usage(
     State(db_pool): State<DbConnectionPoolV2>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<Vec<ScenarioReference>>> {

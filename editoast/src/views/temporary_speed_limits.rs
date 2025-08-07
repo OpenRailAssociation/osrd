@@ -26,10 +26,6 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use authz::Role;
 
-crate::routes! {
-    "/temporary_speed_limit_group" => create_temporary_speed_limit_group,
-}
-
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
@@ -43,14 +39,14 @@ struct TemporarySpeedLimitItemForm {
 
 #[derive(Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
-struct TemporarySpeedLimitCreateForm {
+pub(in crate::views) struct TemporarySpeedLimitCreateForm {
     speed_limit_group_name: String,
     #[schema(inline)]
     speed_limits: Vec<TemporarySpeedLimitItemForm>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct TemporarySpeedLimitCreateResponse {
+pub(in crate::views) struct TemporarySpeedLimitCreateResponse {
     group_id: i64,
 }
 
@@ -123,6 +119,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     }
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "temporary_speed_limits",
@@ -131,7 +128,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
         (status = 201, body = inline(TemporarySpeedLimitCreateResponse), description = "The id of the created temporary speed limit group." ),
     )
 )]
-async fn create_temporary_speed_limit_group(
+pub(in crate::views) async fn create_temporary_speed_limit_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(TemporarySpeedLimitCreateForm {

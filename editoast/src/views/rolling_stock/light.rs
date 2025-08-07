@@ -48,14 +48,6 @@ use serde::Deserialize;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
-crate::routes! {
-    "/light_rolling_stock" => {
-        list,
-        "/name/{rolling_stock_name}" => get_by_name,
-        "/{rolling_stock_id}" => get,
-    },
-}
-
 editoast_common::schemas! {
     LightEffortCurves,
     LightModeEffortCurves,
@@ -65,7 +57,7 @@ editoast_common::schemas! {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct LightRollingStockWithLiveries {
+pub(in crate::views) struct LightRollingStockWithLiveries {
     #[serde(flatten)]
     rolling_stock: LightRollingStock,
     #[schema(value_type = Vec<RollingStockLivery>)]
@@ -93,7 +85,7 @@ impl LightRollingStockWithLiveries {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct LightRollingStockWithLiveriesCountList {
+pub(in crate::views) struct LightRollingStockWithLiveriesCountList {
     #[schema(value_type = Vec<LightRollingStockWithLiveries>)]
     results: Vec<LightRollingStockWithLiveries>,
     #[serde(flatten)]
@@ -101,6 +93,7 @@ struct LightRollingStockWithLiveriesCountList {
 }
 
 /// Paginated list of rolling stock with a lighter response
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -109,7 +102,7 @@ struct LightRollingStockWithLiveriesCountList {
         (status = 200, body = inline(LightRollingStockWithLiveriesCountList)),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
@@ -142,6 +135,7 @@ async fn list(
 }
 
 /// Retrieve a rolling stock's light representation by its id
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -150,7 +144,7 @@ async fn list(
         (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_id): Path<i64>,
@@ -176,6 +170,7 @@ async fn get(
 }
 
 /// Retrieve a rolling stock's light representation by its name
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -184,7 +179,7 @@ async fn get(
         (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
     )
 )]
-async fn get_by_name(
+pub(in crate::views) async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_name): Path<String>,

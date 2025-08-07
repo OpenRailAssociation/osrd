@@ -37,11 +37,6 @@ use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
 
-crate::routes! {
-    "/macro_nodes" => {list, create,},
-    "/macro_nodes/{node_id}" => {get, update, delete,},
-}
-
 editoast_common::schemas! {
     MacroNodeForm,
     MacroNodeBatchForm,
@@ -70,7 +65,7 @@ struct MacroNodeIdParam {
 
 #[derive(Debug, Deserialize, ToSchema, Clone)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
-struct MacroNodeForm {
+pub(in crate::views) struct MacroNodeForm {
     position_x: i64,
     position_y: i64,
     full_name: Option<String>,
@@ -82,7 +77,7 @@ struct MacroNodeForm {
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
-struct MacroNodeBatchForm {
+pub(in crate::views) struct MacroNodeBatchForm {
     macro_nodes: Vec<MacroNodeForm>,
 }
 
@@ -102,7 +97,7 @@ impl MacroNodeForm {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
-struct MacroNodeResponse {
+pub(in crate::views) struct MacroNodeResponse {
     id: i64,
     position_x: i64,
     position_y: i64,
@@ -115,7 +110,7 @@ struct MacroNodeResponse {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
-struct MacroNodeBatchResponse {
+pub(in crate::views) struct MacroNodeBatchResponse {
     macro_nodes: Vec<MacroNodeResponse>,
 }
 
@@ -136,13 +131,14 @@ impl From<MacroNode> for MacroNodeResponse {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct MacroNodeListResponse {
+pub(in crate::views) struct MacroNodeListResponse {
     #[serde(flatten)]
     stats: PaginationStats,
     results: Vec<MacroNodeResponse>,
 }
 
 /// Get macro node list by scenario id
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -152,7 +148,7 @@ struct MacroNodeListResponse {
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
@@ -188,6 +184,7 @@ async fn list(
     }))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
@@ -197,7 +194,7 @@ async fn list(
         (status = 201, body = MacroNodeBatchResponse, description = "Macro nodes created"),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
@@ -247,6 +244,7 @@ async fn create(
     }))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -256,7 +254,7 @@ async fn create(
         (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
@@ -280,6 +278,7 @@ async fn get(
     Ok(Json(MacroNodeResponse::from(macro_node)))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "scenarios",
@@ -290,7 +289,7 @@ async fn get(
         (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
-async fn update(
+pub(in crate::views) async fn update(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
@@ -343,6 +342,7 @@ async fn update(
     Ok(Json(MacroNodeResponse::from(updated)))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
@@ -352,7 +352,7 @@ async fn update(
         (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,

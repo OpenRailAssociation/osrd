@@ -51,11 +51,6 @@ use crate::views::infra::InfraIdParam;
 use database::DbConnection;
 use editoast_schemas::infra::InfraObject;
 
-crate::routes! {
-    edit,
-    "/split_track_section" => split_track_section,
-}
-
 /// Edit the content of an infrastructure
 ///
 /// Takes a batch of operations. An operation is a JSON patch document that will
@@ -66,6 +61,7 @@ crate::routes! {
 ///
 /// After editing the object, the generated cartographic layers are invalidated and
 /// regenerated. The edition step fails if the regeneration fails.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -75,7 +71,7 @@ crate::routes! {
         (status = 200, body = Vec<InfraObject>, description = "The result of the operations")
     )
 )]
-async fn edit(
+pub(in crate::views) async fn edit(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
         db_pool,
@@ -131,6 +127,7 @@ async fn edit(
     Ok(Json(operation_results))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -140,7 +137,7 @@ async fn edit(
         (status = 200, body = inline(Vec<String>), description = "ID of the trackSections created")
     ),
 )]
-pub async fn split_track_section(
+pub(in crate::views) async fn split_track_section(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
         db_pool,

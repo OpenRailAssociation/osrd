@@ -19,10 +19,6 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use editoast_schemas::primitives::ObjectType;
 
-crate::routes! {
-    "/attached/{track_id}" => attached,
-}
-
 /// Objects types that can be attached to a track
 const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::Signal,
@@ -43,7 +39,7 @@ enum AttachedError {
 }
 
 #[derive(utoipa::IntoParams, Deserialize)]
-struct InfraAttachedParams {
+pub(in crate::views) struct InfraAttachedParams {
     /// An infra ID
     infra_id: i64,
     /// A track section ID
@@ -51,6 +47,7 @@ struct InfraAttachedParams {
 }
 
 /// Retrieve all objects attached to a given track
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -63,7 +60,7 @@ struct InfraAttachedParams {
         ),
     ),
 )]
-async fn attached(
+pub(in crate::views) async fn attached(
     Path(InfraAttachedParams { infra_id, track_id }): Path<InfraAttachedParams>,
     State(AppState {
         infra_caches,

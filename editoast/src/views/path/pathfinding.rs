@@ -44,10 +44,6 @@ use crate::views::get_app_version;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
 
-crate::routes! {
-    "/infra/{infra_id}/pathfinding/blocks" => post,
-}
-
 editoast_common::schemas! {
     PathfindingInput,
     PathfindingFailure,
@@ -57,7 +53,7 @@ editoast_common::schemas! {
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
-struct PathfindingInput {
+pub(in crate::views) struct PathfindingInput {
     /// The loading gauge of the rolling stock
     rolling_stock_loading_gauge: LoadingGaugeType,
     /// Can the rolling stock run on non-electrified tracks
@@ -176,6 +172,7 @@ pub enum PathfindingFailure {
 }
 
 /// Compute a pathfinding
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "pathfinding",
@@ -187,7 +184,7 @@ pub enum PathfindingFailure {
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),
     ),
 )]
-async fn post(
+pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
         valkey,

@@ -21,11 +21,6 @@ use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 
-crate::routes! {
-    "/stdcm_logs" => list_stdcm_logs,
-    "/stdcm_log" => stdcm_log_by_id_or_trace_id,
-}
-
 editoast_common::schemas! {
     StdcmLogListItem,
 }
@@ -55,12 +50,13 @@ struct StdcmLogListItem {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct StdcmLogListResponse {
+pub(in crate::views) struct StdcmLogListResponse {
     results: Vec<StdcmLogListItem>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_log",
@@ -69,7 +65,7 @@ struct StdcmLogListResponse {
         (status = 200, body = inline(StdcmLogListResponse), description = "The list of STDCM Logs"),
     )
 )]
-async fn list_stdcm_logs(
+pub(in crate::views) async fn list_stdcm_logs(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParams<25>>,
@@ -101,11 +97,12 @@ async fn list_stdcm_logs(
 
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct StdcmLogParams {
+pub(in crate::views) struct StdcmLogParams {
     trace_id: Option<String>,
     id: Option<i64>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     params(StdcmLogParams),
@@ -114,7 +111,7 @@ struct StdcmLogParams {
         (status = 200, body = StdcmLog, description = "The STDCM log"),
     )
 )]
-async fn stdcm_log_by_id_or_trace_id(
+pub(in crate::views) async fn stdcm_log_by_id_or_trace_id(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(StdcmLogParams { id, trace_id }): Query<StdcmLogParams>,

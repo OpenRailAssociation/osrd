@@ -12,30 +12,6 @@ use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
 
-crate::routes! {
-    "/round_trips" => {
-        "/train_schedules" => {
-            post_train_schedules,
-            "/delete" => delete_train_schedules,
-        },
-        "/paced_trains" => {
-            post_paced_trains,
-            "/delete" => delete_paced_trains,
-        },
-    },
-}
-
-pub(in crate::views) mod timetable_routes {
-    use super::*;
-
-    crate::routes! {
-        "/round_trips" => {
-            "/train_schedules" => list_train_schedules,
-            "/paced_trains" => list_paced_trains,
-        },
-    }
-}
-
 editoast_common::schemas! {
     RoundTrips,
 }
@@ -73,30 +49,33 @@ fn schema_round_trips() -> RefOr<Schema> {
 }
 
 /// Upsert a list of round trips / one-way of train schedules
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "round_trips",
     request_body = RoundTrips,
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
-async fn post_train_schedules() -> Result<impl IntoResponse> {
+pub(in crate::views) async fn post_train_schedules() -> Result<impl IntoResponse> {
     // TODO: Implement this endpoint
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Upsert a list of round trips / one-way of paced trains
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "round_trips",
     request_body = RoundTrips,
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
-async fn post_paced_trains() -> Result<impl IntoResponse> {
+pub(in crate::views) async fn post_paced_trains() -> Result<impl IntoResponse> {
     // TODO: Implement this endpoint
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Delete a list of round trips / one-way of train schedules
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "round_trips",
@@ -106,12 +85,13 @@ async fn post_paced_trains() -> Result<impl IntoResponse> {
     ),
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
-async fn delete_train_schedules() -> Result<impl IntoResponse> {
+pub(in crate::views) async fn delete_train_schedules() -> Result<impl IntoResponse> {
     // TODO: Implement this endpoint
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Delete a list of round trips / one-way of paced trains
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "round_trips",
@@ -121,27 +101,28 @@ async fn delete_train_schedules() -> Result<impl IntoResponse> {
     ),
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
-async fn delete_paced_trains() -> Result<impl IntoResponse> {
+pub(in crate::views) async fn delete_paced_trains() -> Result<impl IntoResponse> {
     // TODO: Implement this endpoint
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Paginated list of round trips / one-way
 #[derive(Serialize, ToSchema)]
-struct ListRoundTripsResponse {
+pub(in crate::views) struct ListRoundTripsResponse {
     #[serde(flatten)]
     stats: PaginationStats,
     results: RoundTrips,
 }
 
 /// Upsert a list of round trips / one-way of train schedules
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable,round_trips",
     params(TimetableIdParam, PaginationQueryParams<1000>),
     responses((status = 200, body = inline(ListRoundTripsResponse)))
 )]
-async fn list_train_schedules(
+pub(in crate::views) async fn list_train_schedules(
     Path(TimetableIdParam { id: _ }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<ListRoundTripsResponse>> {
@@ -153,13 +134,14 @@ async fn list_train_schedules(
 }
 
 /// Upsert a list of round trips / one-way of paced trains
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable,round_trips",
     params(TimetableIdParam, PaginationQueryParams<1000>),
     responses((status = 200, body = inline(ListRoundTripsResponse)))
 )]
-async fn list_paced_trains(
+pub(in crate::views) async fn list_paced_trains(
     Path(TimetableIdParam { id: _ }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<ListRoundTripsResponse>> {

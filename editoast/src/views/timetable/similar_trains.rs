@@ -76,10 +76,6 @@ editoast_common::schemas! {
     WaypointResponse,
 }
 
-crate::routes! {
-    "/similar_trains" => similar_trains,
-}
-
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 struct RollingStockCharacteristics {
@@ -111,7 +107,7 @@ impl std::fmt::Debug for Waypoint {
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
-struct Request {
+pub(in crate::views) struct Request {
     #[schema(inline)]
     rolling_stock: RollingStockCharacteristics,
     #[schema(value_type = Vec<SimilarTrainWaypoint>)]
@@ -147,7 +143,7 @@ struct SimilarTrainItem {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
-struct Response {
+pub(in crate::views) struct Response {
     #[schema(inline)]
     similar_trains: Vec<SimilarTrainItem>,
 }
@@ -181,6 +177,7 @@ enum SimilarTrainsError {
     Database(editoast_models::model::Error),
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "similar_trains,stdcm,sncf",
@@ -193,7 +190,7 @@ enum SimilarTrainsError {
         ),
     ),
 )]
-async fn similar_trains(
+pub(in crate::views) async fn similar_trains(
     Extension(auth): AuthenticationExt,
     State(AppState {
         db_pool,

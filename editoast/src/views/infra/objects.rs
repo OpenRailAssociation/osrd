@@ -20,11 +20,6 @@ use crate::models::infra::ObjectQueryable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
-crate::routes! {
-    "/objects/{object_type}" => get_objects,
-    "/objects/{object_type}/ids" => list_objects_ids,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:objects")]
 enum GetObjectsErrors {
@@ -40,11 +35,12 @@ fn has_unique_ids(obj_ids: &[String]) -> bool {
 }
 
 #[derive(serde::Deserialize, utoipa::IntoParams)]
-struct ObjectTypeParam {
+pub(in crate::views) struct ObjectTypeParam {
     object_type: ObjectType,
 }
 
 /// Retrieves specific infra objects
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -56,7 +52,7 @@ struct ObjectTypeParam {
         (status = 404, description = "Object ID or infra ID invalid")
     )
 )]
-async fn get_objects(
+pub(in crate::views) async fn get_objects(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
     State(db_pool): State<DbConnectionPoolV2>,
@@ -125,10 +121,11 @@ async fn get_objects(
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
-struct ListObjectsResponse {
+pub(in crate::views) struct ListObjectsResponse {
     ids: Vec<String>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -137,7 +134,7 @@ struct ListObjectsResponse {
         (status = 200, description = "The list of objects", body = inline(ListObjectsResponse)),
     )
 )]
-async fn list_objects_ids(
+pub(in crate::views) async fn list_objects_ids(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(ObjectTypeParam { object_type }): Path<ObjectTypeParam>,
     State(db_pool): State<DbConnectionPoolV2>,

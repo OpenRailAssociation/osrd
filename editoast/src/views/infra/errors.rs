@@ -27,13 +27,9 @@ use database::DbConnectionPoolV2;
 
 use super::InfraApiError;
 
-crate::routes! {
-    "/errors" => list_errors,
-}
-
 #[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
 #[into_params(parameter_in = Query)]
-struct ErrorListQueryParams {
+pub(in crate::views) struct ErrorListQueryParams {
     /// Whether the response should include errors or warnings
     #[serde(default)]
     #[param(inline)]
@@ -62,6 +58,7 @@ pub(in crate::views) struct InfraErrorResponse {
 }
 
 /// A paginated list of errors related to an infra
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
      tag = "infra",
@@ -70,7 +67,7 @@ pub(in crate::views) struct InfraErrorResponse {
          (status = 200, body = inline(ErrorListResponse), description = "A paginated list of errors"),
      ),
  )]
-async fn list_errors(
+pub(in crate::views) async fn list_errors(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,

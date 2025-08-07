@@ -39,19 +39,6 @@ use crate::views::project::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
 
-crate::routes! {
-    "/projects/{project_id}/studies/{study_id}/scenarios" => {
-        create,
-        list,
-        "/{scenario_id}" => {
-            get,
-            delete,
-            patch,
-            &macro_nodes,
-        },
-    },
-}
-
 editoast_common::schemas! {
     ScenarioPatchForm,
     Scenario,
@@ -61,7 +48,7 @@ editoast_common::schemas! {
 }
 
 #[derive(IntoParams, Deserialize)]
-struct ScenarioPathParam {
+pub(in crate::views) struct ScenarioPathParam {
     project_id: i64,
     study_id: i64,
     scenario_id: i64,
@@ -75,7 +62,7 @@ pub struct ScenarioIdParam {
 
 /// This structure is used by the post endpoint to create a scenario
 #[derive(Serialize, Deserialize, Default, ToSchema)]
-struct ScenarioCreateForm {
+pub(in crate::views) struct ScenarioCreateForm {
     pub name: String,
     #[serde(default)]
     pub description: String,
@@ -170,6 +157,7 @@ impl ScenarioResponse {
 }
 
 /// Create a scenario
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
@@ -179,7 +167,7 @@ impl ScenarioResponse {
         (status = 201, body = ScenarioResponse, description = "The created scenario"),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
@@ -229,6 +217,7 @@ async fn create(
 }
 
 /// Delete a scenario
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
@@ -238,7 +227,7 @@ async fn create(
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
@@ -287,7 +276,7 @@ async fn delete(
 
 /// This structure is used by the patch endpoint to patch a scenario
 #[derive(Serialize, Deserialize, Default, ToSchema)]
-struct ScenarioPatchForm {
+pub(in crate::views) struct ScenarioPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
     pub tags: Option<Tags>,
@@ -309,6 +298,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
 }
 
 /// Update a scenario
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "scenarios",
@@ -319,7 +309,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-async fn patch(
+pub(in crate::views) async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
@@ -373,6 +363,7 @@ async fn patch(
 }
 
 /// Return a specific scenario
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -382,7 +373,7 @@ async fn patch(
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
@@ -442,13 +433,14 @@ async fn get(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct ListScenariosResponse {
+pub(in crate::views) struct ListScenariosResponse {
     #[serde(flatten)]
     stats: PaginationStats,
     results: Vec<ScenarioWithDetails>,
 }
 
 /// Return a list of scenarios
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -458,7 +450,7 @@ struct ListScenariosResponse {
         (status = 404, description = "Project or study doesn't exist")
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,

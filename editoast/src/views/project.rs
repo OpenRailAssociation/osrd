@@ -35,19 +35,6 @@ use crate::models::Update;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 
-crate::routes! {
-    "/projects" => {
-        create,
-        list,
-        "/{project_id}" => {
-            get,
-            delete,
-            patch,
-            &study,
-        },
-    },
-}
-
 editoast_common::schemas! {
     ProjectCreateForm,
     ProjectPatchForm,
@@ -76,7 +63,7 @@ pub enum ProjectError {
 
 /// Creation form for a project
 #[derive(Serialize, Deserialize, Default, ToSchema)]
-struct ProjectCreateForm {
+pub(in crate::views) struct ProjectCreateForm {
     #[schema(max_length = 128)]
     pub name: String,
     #[schema(max_length = 1024)]
@@ -144,6 +131,7 @@ impl ProjectWithStudyCount {
 }
 
 /// Create a new project
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "projects",
@@ -152,7 +140,7 @@ impl ProjectWithStudyCount {
         (status = 201, body = ProjectWithStudies, description = "The created project"),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(project_create_form): Json<ProjectCreateForm>,
@@ -177,7 +165,7 @@ async fn create(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct ProjectWithStudyCountList {
+pub(in crate::views) struct ProjectWithStudyCountList {
     #[schema(value_type = Vec<ProjectWithStudies>)]
     results: Vec<ProjectWithStudyCount>,
     #[serde(flatten)]
@@ -185,6 +173,7 @@ struct ProjectWithStudyCountList {
 }
 
 /// Returns a paginated list of projects
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "projects",
@@ -193,7 +182,7 @@ struct ProjectWithStudyCountList {
         (status = 200, body = inline(ProjectWithStudyCountList), description = "The list of projects"),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
@@ -235,6 +224,7 @@ pub struct ProjectIdParam {
 }
 
 /// Retrieve a project
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "projects",
@@ -244,7 +234,7 @@ pub struct ProjectIdParam {
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
@@ -267,6 +257,7 @@ async fn get(
 }
 
 /// Delete a project
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "projects",
@@ -276,7 +267,7 @@ async fn get(
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     Path(project_id): Path<i64>,
     Extension(auth): AuthenticationExt,
     State(db_pool): State<DbConnectionPoolV2>,
@@ -310,7 +301,7 @@ async fn delete(
 
 /// Patch form for a project
 #[derive(Serialize, Deserialize, ToSchema)]
-struct ProjectPatchForm {
+pub(in crate::views) struct ProjectPatchForm {
     #[schema(max_length = 128)]
     pub name: Option<String>,
     #[schema(max_length = 1024)]
@@ -346,6 +337,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
 }
 
 /// Update a project
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "projects",
@@ -359,7 +351,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-async fn patch(
+pub(in crate::views) async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,

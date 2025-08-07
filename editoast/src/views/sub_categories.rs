@@ -19,14 +19,6 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 
-crate::routes! {
-    "/sub_category" => {
-        get_sub_categories,
-        create_sub_categories,
-        "/{code}" => delete_sub_category,
-    },
-}
-
 editoast_common::schemas! {
     SubCategoryPage,
 }
@@ -44,12 +36,13 @@ enum SubCategoryError {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-struct SubCategoryPage {
+pub(in crate::views) struct SubCategoryPage {
     results: Vec<SubCategory>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "sub_categories",
@@ -58,7 +51,7 @@ struct SubCategoryPage {
         (status = 200, description = "The list of sub categories", body = SubCategoryPage),
     ),
 )]
-async fn get_sub_categories(
+pub(in crate::views) async fn get_sub_categories(
     State(_db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(_pagination): Query<PaginationQueryParams<1000>>,
@@ -77,6 +70,7 @@ async fn get_sub_categories(
     }))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "sub_categories",
@@ -85,7 +79,7 @@ async fn get_sub_categories(
         (status = 200, description = "Create sub categories", body = Vec<SubCategory>),
     ),
 )]
-async fn create_sub_categories(
+pub(in crate::views) async fn create_sub_categories(
     State(_db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(data): Json<Vec<SubCategory>>,
@@ -120,6 +114,7 @@ struct SubCategoryCodeParam {
     code: String,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "sub_categories",
@@ -128,7 +123,7 @@ struct SubCategoryCodeParam {
         (status = 200, description = "Delete a sub category"),
     ),
 )]
-async fn delete_sub_category(
+pub(in crate::views) async fn delete_sub_category(
     State(_db_pool): State<DbConnectionPoolV2>,
     Path(_code): Path<String>,
     Extension(auth): AuthenticationExt,

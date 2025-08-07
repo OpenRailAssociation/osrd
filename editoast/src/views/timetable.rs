@@ -1,6 +1,6 @@
 mod occupancy_blocks;
 pub mod paced_train;
-mod similar_trains;
+pub(in crate::views) mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
 pub mod train_schedule;
@@ -70,31 +70,7 @@ use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::round_trips::timetable_routes as round_trip_timetable_routes;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-
-crate::routes! {
-    "/timetable" => {
-        post,
-        "/{id}" => {
-            delete,
-            "/train_schedules" => {
-                 get_train_schedules,
-                 post_train_schedule,
-            },
-            "/conflicts" => conflicts,
-            "/paced_trains" => {
-                get_paced_trains,
-                post_paced_train,
-            },
-            &stdcm,
-            &round_trip_timetable_routes,
-        },
-    },
-    &paced_train,
-    &train_schedule,
-    &similar_trains,
-}
 
 editoast_common::schemas! {
     Conflict,
@@ -127,7 +103,7 @@ enum TimetableError {
 /// Creation result for a Timetable
 #[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
-struct TimetableResult {
+pub(in crate::views) struct TimetableResult {
     pub timetable_id: i64,
 }
 
@@ -147,7 +123,7 @@ pub struct TimetableIdParam {
 
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
-struct ListTrainSchedulesResponse {
+pub(in crate::views) struct ListTrainSchedulesResponse {
     #[schema(value_type = Vec<TrainScheduleResponse>)]
     results: Vec<TrainScheduleResponse>,
     #[serde(flatten)]
@@ -155,6 +131,7 @@ struct ListTrainSchedulesResponse {
 }
 
 /// Return a specific timetable with its associated schedules
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
@@ -164,7 +141,7 @@ struct ListTrainSchedulesResponse {
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn get_train_schedules(
+pub(in crate::views) async fn get_train_schedules(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -195,6 +172,7 @@ async fn get_train_schedules(
 }
 
 /// Create a timetable
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "timetable",
@@ -203,7 +181,7 @@ async fn get_train_schedules(
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn post(
+pub(in crate::views) async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
@@ -223,6 +201,7 @@ async fn post(
 }
 
 /// Delete a timetable
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "timetable",
@@ -232,7 +211,7 @@ async fn post(
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -254,6 +233,7 @@ async fn delete(
 }
 
 /// Create train schedule by batch
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "timetable,train_schedule",
@@ -263,7 +243,7 @@ async fn delete(
         (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
     )
 )]
-async fn post_train_schedule(
+pub(in crate::views) async fn post_train_schedule(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -299,6 +279,7 @@ async fn post_train_schedule(
 }
 
 /// Create paced trains by batch
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "timetable,paced_train",
@@ -308,7 +289,7 @@ async fn post_train_schedule(
         (status = 200, description = "The created paced trains", body = Vec<PacedTrainResponse>)
     )
 )]
-async fn post_paced_train(
+pub(in crate::views) async fn post_paced_train(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -342,7 +323,7 @@ async fn post_paced_train(
 
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
-struct ListPacedTrainsResponse {
+pub(in crate::views) struct ListPacedTrainsResponse {
     #[schema(value_type = Vec<PacedTrainResponse>)]
     results: Vec<PacedTrainResponse>,
     #[serde(flatten)]
@@ -350,6 +331,7 @@ struct ListPacedTrainsResponse {
 }
 
 /// Return a specific timetable with its associated paced trains
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
@@ -359,7 +341,7 @@ struct ListPacedTrainsResponse {
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn get_paced_trains(
+pub(in crate::views) async fn get_paced_trains(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
@@ -580,6 +562,7 @@ impl FromStr for TrainId {
 }
 
 /// Retrieve the list of conflict of the timetable (invalid trains are ignored)
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
@@ -588,7 +571,7 @@ impl FromStr for TrainId {
         (status = 200, description = "List of conflict", body = Vec<Conflict>),
     ),
 )]
-async fn conflicts(
+pub(in crate::views) async fn conflicts(
     State(AppState {
         db_pool,
         valkey: valkey_client,

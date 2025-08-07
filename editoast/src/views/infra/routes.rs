@@ -25,14 +25,6 @@ use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
 
-crate::routes! {
-    "/routes" => {
-        "/track_ranges" => get_routes_track_ranges,
-        "/{waypoint_type}/{waypoint_id}" => get_routes_from_waypoint,
-        "/nodes" => get_routes_nodes,
-    },
-}
-
 #[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
 enum WaypointType {
     Detector,
@@ -40,7 +32,7 @@ enum WaypointType {
 }
 
 #[derive(Debug, Deserialize, utoipa::IntoParams)]
-struct RoutesFromWaypointParams {
+pub(in crate::views) struct RoutesFromWaypointParams {
     /// Infra ID
     infra_id: i64,
     /// Type of the waypoint
@@ -51,12 +43,13 @@ struct RoutesFromWaypointParams {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
-struct RoutesResponse {
+pub(in crate::views) struct RoutesResponse {
     starting: Vec<String>,
     ending: Vec<String>,
 }
 
 /// Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra,routes",
@@ -65,7 +58,7 @@ struct RoutesResponse {
         (status = 200, body = inline(RoutesResponse), description = "All routes that starting and ending by the given waypoint")
     ),
 )]
-async fn get_routes_from_waypoint(
+pub(in crate::views) async fn get_routes_from_waypoint(
     Path(path): Path<RoutesFromWaypointParams>,
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
@@ -117,7 +110,7 @@ async fn get_routes_from_waypoint(
 
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields, tag = "type")]
-enum RouteTrackRangesResult {
+pub(in crate::views) enum RouteTrackRangesResult {
     /// RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
     Computed(RoutePath),
     NotFound,
@@ -126,14 +119,14 @@ enum RouteTrackRangesResult {
 
 #[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
 #[into_params(parameter_in = Query)]
-struct RouteTrackRangesParams {
+pub(in crate::views) struct RouteTrackRangesParams {
     /// A list of comma-separated route ids
     #[param(value_type = String)]
     routes: List<String>,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, PartialEq, ToSchema)]
-struct RoutesFromNodesPositions {
+pub(in crate::views) struct RoutesFromNodesPositions {
     /// List of route ids crossing a selection of nodes
     routes: Vec<String>,
     /// List of available positions for each node on the corresponding routes
@@ -141,6 +134,7 @@ struct RoutesFromNodesPositions {
 }
 
 /// Compute the track ranges through which routes passes.
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra,routes",
@@ -153,7 +147,7 @@ struct RoutesFromNodesPositions {
         )
     ),
 )]
-async fn get_routes_track_ranges(
+pub(in crate::views) async fn get_routes_track_ranges(
     State(AppState {
         db_pool,
         infra_caches,
@@ -219,6 +213,7 @@ async fn get_routes_track_ranges(
 }
 
 /// Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra,routes",
@@ -228,7 +223,7 @@ async fn get_routes_track_ranges(
         (status = 200, body = inline(RoutesFromNodesPositions), description = "A list of route IDs along with available positions for each specified node")
     ),
 )]
-async fn get_routes_nodes(
+pub(in crate::views) async fn get_routes_nodes(
     State(AppState {
         db_pool,
         infra_caches,

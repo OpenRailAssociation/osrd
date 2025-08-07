@@ -31,10 +31,6 @@ use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-crate::routes! {
-    "/delimited_area" => delimited_area,
-}
-
 editoast_common::schemas! {
     DelimitedAreaResponse,
     DirectedLocation,
@@ -48,7 +44,7 @@ editoast_common::schemas! {
 const MAXIMUM_DISTANCE: f64 = 5000.;
 
 #[derive(Deserialize, ToSchema)]
-struct DelimitedAreaForm {
+pub(in crate::views) struct DelimitedAreaForm {
     #[schema(inline)]
     entries: Vec<DirectedLocation>,
     #[schema(inline)]
@@ -56,7 +52,7 @@ struct DelimitedAreaForm {
 }
 
 #[derive(Deserialize, Serialize, ToSchema)]
-struct DelimitedAreaResponse {
+pub(in crate::views) struct DelimitedAreaResponse {
     track_ranges: Vec<DirectionalTrackRange>,
 }
 
@@ -116,6 +112,7 @@ impl From<Sign> for DirectedLocation {
     }
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "delimited_area",
@@ -131,7 +128,7 @@ impl From<Sign> for DirectedLocation {
 /// be reached from an entry before reaching an exit.
 /// To prevent a missing exit to cause the graph traversal to never stop exploring, the exploration
 /// stops when a maximum distance is reached and no exit has been found.
-async fn delimited_area(
+pub(in crate::views) async fn delimited_area(
     Extension(auth): AuthenticationExt,
     State(AppState {
         infra_caches,

@@ -72,24 +72,6 @@ use crate::views::timetable::simulation::build_sim_schedule_items;
 use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
 
-crate::routes! {
-    "/train_schedule" => {
-        delete,
-        "/project_path" => project_path,
-        "/project_path_op" => project_path_op,
-        "/occupancy_blocks" => occupancy_blocks,
-        "/track_occupancy" => track_occupancy,
-        "/simulation_summary" => simulation_summary,
-        "/{id}" => {
-            get,
-            put,
-            "/simulation" => simulation,
-            "/path" => get_path,
-            "/etcs_braking_curves" => etcs_braking_curves,
-        },
-    },
-}
-
 editoast_common::schemas! {
     TrainSchedule,
     TrainScheduleForm,
@@ -129,7 +111,7 @@ pub enum TrainScheduleError {
 }
 
 #[derive(IntoParams, Deserialize)]
-struct TrainScheduleIdParam {
+pub(in crate::views) struct TrainScheduleIdParam {
     /// A train schedule ID
     id: i64,
 }
@@ -172,6 +154,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
 }
 
 /// Return a specific train schedule
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule",
@@ -180,7 +163,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
         (status = 200, description = "The train schedule", body = TrainScheduleResponse)
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
@@ -205,11 +188,12 @@ async fn get(
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
-struct TrainScheduleIds {
+pub(in crate::views) struct TrainScheduleIds {
     ids: HashSet<i64>,
 }
 
 /// Delete a train schedule and its result
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "timetable,train_schedule",
@@ -218,7 +202,7 @@ struct TrainScheduleIds {
         (status = 204, description = "All train schedules have been deleted")
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(TrainScheduleIds { ids: train_ids }): Json<TrainScheduleIds>,
@@ -241,6 +225,7 @@ async fn delete(
 }
 
 /// Update  train schedule at once
+#[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "train_schedule,timetable",
@@ -250,7 +235,7 @@ async fn delete(
         (status = 200, description = "The train schedule have been updated", body = TrainScheduleResponse)
     )
 )]
-async fn put(
+pub(in crate::views) async fn put(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
@@ -285,6 +270,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 }
 
 /// Retrieve the space, speed and time curve of a given train
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule",
@@ -293,7 +279,7 @@ pub struct ElectricalProfileSetIdQueryParam {
         (status = 200, description = "Simulation Output", body = SimulationResponse),
     ),
 )]
-async fn simulation(
+pub(in crate::views) async fn simulation(
     State(AppState {
         valkey: valkey_client,
         core_client,
@@ -358,6 +344,7 @@ async fn simulation(
 }
 
 /// Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule,etcs_braking_curves",
@@ -366,7 +353,7 @@ async fn simulation(
         (status = 200, description = "ETCS Braking Curves Output", body = ETCSBrakingCurvesResponse),
     ),
 )]
-async fn etcs_braking_curves(
+pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         valkey: valkey_client,
         core_client,
@@ -494,7 +481,7 @@ async fn etcs_braking_curves(
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
-struct SimulationBatchForm {
+pub(in crate::views) struct SimulationBatchForm {
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
@@ -502,6 +489,7 @@ struct SimulationBatchForm {
 
 /// Associate each train id with its simulation summary response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -510,7 +498,7 @@ struct SimulationBatchForm {
         (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, SimulationSummaryResult>),
     ),
 )]
-async fn simulation_summary(
+pub(in crate::views) async fn simulation_summary(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -577,6 +565,7 @@ async fn simulation_summary(
 }
 
 /// Get a path from a trainschedule given an infrastructure id and a train schedule id
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "train_schedule,pathfinding",
@@ -586,7 +575,7 @@ async fn simulation_summary(
         (status = 404, description = "Infrastructure or Train schedule not found")
     )
 )]
-async fn get_path(
+pub(in crate::views) async fn get_path(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -640,6 +629,7 @@ async fn get_path(
 /// - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 ///
 /// Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -648,7 +638,7 @@ async fn get_path(
         (status = 200, description = "Project Path Output", body = HashMap<i64, Vec<SpaceTimeCurve>>),
     ),
 )]
-async fn project_path(
+pub(in crate::views) async fn project_path(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -712,6 +702,7 @@ async fn project_path(
     Ok(Json(project_path_result))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -720,7 +711,7 @@ async fn project_path(
         (status = 200, description = "Project train schedules on a list of operational points.", body = HashMap<i64, Vec<SpaceTimeCurve>>),
     ),
 )]
-async fn project_path_op(
+pub(in crate::views) async fn project_path_op(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -812,6 +803,7 @@ async fn project_path_op(
     Ok(Json(results))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -820,7 +812,7 @@ async fn project_path_op(
         (status = 200, body = HashMap<i64, Vec<SignalUpdate>>),
     ),
 )]
-async fn occupancy_blocks(
+pub(in crate::views) async fn occupancy_blocks(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -888,7 +880,7 @@ async fn occupancy_blocks(
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
-struct TrackOccupancyForm {
+pub(in crate::views) struct TrackOccupancyForm {
     train_schedule_ids: Vec<i64>,
     operational_point_id: String,
     infra_id: i64,
@@ -896,7 +888,7 @@ struct TrackOccupancyForm {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-struct TrackOccupancy {
+pub(in crate::views) struct TrackOccupancy {
     time_begin: DateTime<Utc>,
     #[schema(value_type = chrono::Duration, example = "PT5M")]
     duration: PositiveDuration,
@@ -911,6 +903,7 @@ struct TrackOccupancy {
 ///
 /// If a path item ID is provided, it uses schedule data to determine stop duration and location.
 /// If not, it infers the position and time based on track offsets and interpolation.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule",
@@ -919,7 +912,7 @@ struct TrackOccupancy {
         (status = 200, description = "Track section occupancy periods for a set of train schedules", body = inline(HashMap<String, Vec<TrackOccupancy>>)),
     ),
 )]
-async fn track_occupancy(
+pub(in crate::views) async fn track_occupancy(
     State(AppState {
         db_pool,
         valkey,

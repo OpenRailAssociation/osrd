@@ -33,18 +33,6 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
 use crate::views::project::ProjectIdParam;
 
-crate::routes! {
-    "/studies" => {
-        create,
-        list,
-        "/{study_id}" => {
-            get,
-            delete,
-            patch,
-        },
-    },
-}
-
 editoast_common::schemas! {
     Study,
     StudyCreateForm,
@@ -89,7 +77,7 @@ impl StudyResponse {
 
 /// This structure is used by the post endpoint to create a study
 #[derive(Serialize, Deserialize, Default, ToSchema)]
-struct StudyCreateForm {
+pub(in crate::views) struct StudyCreateForm {
     pub name: String,
     pub description: Option<String>,
     pub start_date: Option<NaiveDate>,
@@ -126,6 +114,7 @@ impl StudyCreateForm {
     }
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "studies",
@@ -135,7 +124,7 @@ impl StudyCreateForm {
         (status = 201, body = StudyResponse, description = "The created study"),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
@@ -182,6 +171,7 @@ pub struct StudyIdParam {
 }
 
 /// Delete a study
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "studies",
@@ -191,7 +181,7 @@ pub struct StudyIdParam {
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
@@ -218,6 +208,7 @@ async fn delete(
 }
 
 /// Return a specific study
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "studies",
@@ -227,7 +218,7 @@ async fn delete(
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
@@ -274,7 +265,7 @@ async fn get(
 
 /// This structure is used by the patch endpoint to patch a study
 #[derive(Serialize, Deserialize, Default, ToSchema)]
-struct StudyPatchForm {
+pub(in crate::views) struct StudyPatchForm {
     pub name: Option<String>,
     #[serde(default, with = "double_option")]
     pub description: Option<Option<String>>,
@@ -316,6 +307,7 @@ impl StudyPatchForm {
 }
 
 /// Update a study
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "studies",
@@ -329,7 +321,7 @@ impl StudyPatchForm {
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-async fn patch(
+pub(in crate::views) async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
@@ -386,7 +378,7 @@ impl StudyWithScenarioCount {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct StudyListResponse {
+pub(in crate::views) struct StudyListResponse {
     #[schema(value_type = Vec<StudyWithScenarios>)]
     results: Vec<StudyWithScenarioCount>,
     #[serde(flatten)]
@@ -394,6 +386,7 @@ struct StudyListResponse {
 }
 
 /// Return a list of studies
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "studies",
@@ -402,7 +395,7 @@ struct StudyListResponse {
         (status = 200, body = inline(StudyListResponse), description = "The list of studies"),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,

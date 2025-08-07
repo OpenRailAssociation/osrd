@@ -41,10 +41,6 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
 
-crate::routes! {
-    "/infra/{infra_id}/path_properties" => post,
-}
-
 editoast_common::schemas! {
     PathProperties,
     PathPropertiesInput,
@@ -61,7 +57,7 @@ pub struct PathPropertiesInput {
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
-struct PathProperties {
+pub(in crate::views) struct PathProperties {
     #[schema(inline)]
     /// Slopes along the path
     slopes: Option<PropertyValuesF64>,
@@ -113,7 +109,7 @@ impl PathProperties {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Props {
+pub(in crate::views) struct Props {
     props: Vec<Property>,
 }
 
@@ -130,7 +126,7 @@ impl From<Props> for Properties {
 /// Enum representing the various associated properties that can be returned
 #[derive(Debug, Serialize, Deserialize, ToSchema, EnumSetType)]
 #[serde(rename_all = "snake_case")]
-enum Property {
+pub(in crate::views) enum Property {
     Slopes,
     Curves,
     Electrifications,
@@ -142,6 +138,7 @@ enum Property {
 type Properties = EnumSet<Property>;
 
 /// Compute path properties
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "pathfinding",
@@ -154,7 +151,7 @@ type Properties = EnumSet<Property>;
         (status = 200, description = "Path properties", body = PathProperties),
     ),
 )]
-async fn post(
+pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
         valkey,

@@ -32,10 +32,6 @@ use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
-crate::routes! {
-    "/pathfinding" => pathfinding_view,
-}
-
 editoast_common::schemas! {
     PathfindingTrackLocationInput,
     InfraPathfindingInput,
@@ -65,13 +61,13 @@ struct PathfindingTrackLocationInput {
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
-struct InfraPathfindingInput {
+pub(in crate::views) struct InfraPathfindingInput {
     starting: PathfindingTrackLocationInput,
     ending: PathfindingTrackLocationInput,
 }
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
-struct PathfindingOutput {
+pub(in crate::views) struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
     #[schema(inline)]
     detectors: Vec<Identifier>,
@@ -81,11 +77,12 @@ struct PathfindingOutput {
 
 #[derive(Debug, Clone, IntoParams, Deserialize)]
 #[into_params(parameter_in = Query)]
-struct QueryParam {
+pub(in crate::views) struct QueryParam {
     number: Option<u8>,
 }
 
 /// This endpoint search path between starting and ending track locations
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra,pathfinding",
@@ -95,7 +92,7 @@ struct QueryParam {
         (status = 200, description = "A list of shortest paths between starting and ending track locations", body = Vec<PathfindingOutput>)
     )
 )]
-async fn pathfinding_view(
+pub(in crate::views) async fn pathfinding_view(
     State(AppState {
         db_pool,
         infra_caches,

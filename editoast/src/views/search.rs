@@ -237,10 +237,6 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use database::DbConnectionPoolV2;
 
-crate::routes! {
-    "/search" => search,
-}
-
 editoast_common::schemas! {
     SearchPayload,
     SearchQuery,
@@ -335,6 +331,7 @@ struct SearchDBResult {
 ///   `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 ///
 /// See [search::SearchAst] for a more detailed view of the query language.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "search",
@@ -344,7 +341,7 @@ struct SearchDBResult {
         (status = 200, body = Vec<SearchResultItem>, description = "The search results"),
     )
 )]
-async fn search(
+pub(in crate::views) async fn search(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
