@@ -96,19 +96,19 @@ const StdcmResults = ({
       />
       {outputs && (
         <>
-          {alternativePath && (
-            <div className="alternative-path-message">
-              <span className="stdcm-header__notification alternative-path">
-                {alternativePath === 'upstream' ? (
-                  <Trans components={{ underline: <u /> }}>{t('simulationUpstream')}</Trans>
-                ) : (
-                  <Trans components={{ underline: <u /> }}>{t('simulationDownstream')}</Trans>
-                )}
-              </span>
-            </div>
-          )}
           <div className="simulation-results">
             <div className="results-with-feedback">
+              {alternativePath && (
+                <div className="alternative-path-message">
+                  <span className="stdcm-header__notification alternative-path">
+                    {alternativePath === 'upstream' ? (
+                      <Trans components={{ underline: <u /> }}>{t('simulationUpstream')}</Trans>
+                    ) : (
+                      <Trans components={{ underline: <u /> }}>{t('simulationDownstream')}</Trans>
+                    )}
+                  </span>
+                </div>
+              )}
               {hasSimulationResults && !hasConflictResults ? (
                 <div className="results-and-sheet">
                   <StcdmResultsTable
