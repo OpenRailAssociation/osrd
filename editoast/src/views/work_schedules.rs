@@ -34,22 +34,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-crate::routes! {
-    "/work_schedules" => {
-        create,
-        "/project_path" => project_path,
-        "/group" => {
-            create_group,
-            list_groups,
-            "/{id}" => {
-                delete_group,
-                get_group,
-                put_in_group,
-            },
-        },
-    },
-}
-
 editoast_common::schemas! {
     WorkSchedule,
     WorkScheduleItemForm,
@@ -57,7 +41,7 @@ editoast_common::schemas! {
 }
 
 #[derive(IntoParams, Deserialize)]
-struct WorkScheduleGroupIdParam {
+pub(in crate::views) struct WorkScheduleGroupIdParam {
     /// A work schedule group ID
     id: i64,
 }
@@ -90,7 +74,7 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
-struct WorkScheduleItemForm {
+pub(in crate::views) struct WorkScheduleItemForm {
     pub start_date_time: DateTime<Utc>,
     pub end_date_time: DateTime<Utc>,
     pub track_ranges: Vec<TrackRange>,
@@ -142,16 +126,17 @@ impl WorkScheduleItemForm {
 
 /// This structure is used by the post endpoint to create a work schedule
 #[derive(Serialize, Deserialize, ToSchema)]
-struct WorkScheduleCreateForm {
+pub(in crate::views) struct WorkScheduleCreateForm {
     work_schedule_group_name: String,
     work_schedules: Vec<WorkScheduleItemForm>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct WorkScheduleCreateResponse {
+pub(in crate::views) struct WorkScheduleCreateResponse {
     work_schedule_group_id: i64,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "work_schedules",
@@ -160,7 +145,7 @@ struct WorkScheduleCreateResponse {
         (status = 201, body = inline(WorkScheduleCreateResponse), description = "The id of the created work schedule group"),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleCreateForm {
@@ -196,7 +181,7 @@ async fn create(
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct WorkScheduleProjectForm {
+pub(in crate::views) struct WorkScheduleProjectForm {
     work_schedule_group_id: i64,
     #[schema(value_type = Vec<TrackRange>)]
     path_track_ranges: Vec<core_client::pathfinding::TrackRange>,
@@ -204,7 +189,7 @@ struct WorkScheduleProjectForm {
 
 /// Represents the projection of a work schedule on a path.
 #[derive(Serialize, Deserialize, ToSchema, PartialEq, Debug)]
-struct WorkScheduleProjection {
+pub(in crate::views) struct WorkScheduleProjection {
     #[serde(rename = "type")]
     #[schema(inline)]
     /// The type of the work schedule.
@@ -219,6 +204,7 @@ struct WorkScheduleProjection {
     pub path_position_ranges: Vec<Intersection>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "work_schedules",
@@ -231,7 +217,7 @@ struct WorkScheduleProjection {
         ),
     )
 )]
-async fn project_path(
+pub(in crate::views) async fn project_path(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleProjectForm {
@@ -289,15 +275,16 @@ async fn project_path(
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct WorkScheduleGroupCreateForm {
+pub(in crate::views) struct WorkScheduleGroupCreateForm {
     work_schedule_group_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct WorkScheduleGroupCreateResponse {
+pub(in crate::views) struct WorkScheduleGroupCreateResponse {
     work_schedule_group_id: i64,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "work_schedules",
@@ -306,7 +293,7 @@ struct WorkScheduleGroupCreateResponse {
         (status = 200, body = inline(WorkScheduleGroupCreateResponse), description = "The id of the created work schedule group"),
     )
 )]
-async fn create_group(
+pub(in crate::views) async fn create_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleGroupCreateForm {
@@ -337,6 +324,7 @@ async fn create_group(
     }))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "work_schedules",
@@ -346,7 +334,7 @@ async fn create_group(
         (status = 404, description = "The work schedule group does not exist"),
     )
 )]
-async fn delete_group(
+pub(in crate::views) async fn delete_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
@@ -368,6 +356,7 @@ async fn delete_group(
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "work_schedules",
@@ -375,7 +364,7 @@ async fn delete_group(
         (status = 201, body = Vec<i64>, description = "The existing work schedule group ids"),
     )
 )]
-async fn list_groups(
+pub(in crate::views) async fn list_groups(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<i64>>> {
@@ -399,6 +388,7 @@ async fn list_groups(
     Ok(Json(work_schedule_group_ids))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "work_schedules",
@@ -409,7 +399,7 @@ async fn list_groups(
         (status = 404, description = "Work schedule group not found"),
     )
 )]
-async fn put_in_group(
+pub(in crate::views) async fn put_in_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
@@ -450,7 +440,7 @@ async fn put_in_group(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct GroupContentResponse {
+pub(in crate::views) struct GroupContentResponse {
     #[schema(value_type = Vec<WorkSchedule>)]
     results: Vec<WorkSchedule>,
     #[serde(flatten)]
@@ -464,6 +454,7 @@ pub struct WorkScheduleOrderingParam {
     pub ordering: Ordering,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "work_schedules",
@@ -473,7 +464,7 @@ pub struct WorkScheduleOrderingParam {
         (status = 404, description = "Work schedule group not found"),
     )
 )]
-async fn get_group(
+pub(in crate::views) async fn get_group(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,

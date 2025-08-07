@@ -10,10 +10,6 @@ use tower_http::services::ServeFile;
 use crate::AppState;
 use crate::error::Result;
 
-crate::routes! {
-    "/fonts/{font}/{glyph}" => fonts,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "fonts")]
 enum FontErrors {
@@ -23,6 +19,7 @@ enum FontErrors {
 }
 
 /// This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "fonts",
@@ -35,7 +32,7 @@ enum FontErrors {
         (status = 404, description = "Font not found"),
     ),
 )]
-async fn fonts(
+pub(in crate::views) async fn fonts(
     Path((font, file_name)): Path<(String, String)>,
     State(AppState { config, .. }): State<AppState>,
     request: Request,

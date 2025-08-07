@@ -14,11 +14,6 @@ use crate::error::Result;
 use crate::models::Infra;
 use crate::models::prelude::*;
 
-crate::routes! {
-    &properties,
-    &pathfinding,
-}
-
 editoast_common::schemas! {
     pathfinding::schemas(),
     projection::schemas(),

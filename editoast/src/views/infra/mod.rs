@@ -1,13 +1,13 @@
-mod attached;
-mod auto_fixes;
-mod delimited_area;
-mod edition;
-mod errors;
-mod lines;
-mod objects;
-mod pathfinding;
-mod railjson;
-mod routes;
+pub(in crate::views) mod attached;
+pub(in crate::views) mod auto_fixes;
+pub(in crate::views) mod delimited_area;
+pub(in crate::views) mod edition;
+pub(in crate::views) mod errors;
+pub(in crate::views) mod lines;
+pub(in crate::views) mod objects;
+pub(in crate::views) mod pathfinding;
+pub(in crate::views) mod railjson;
+pub(in crate::views) mod routes;
 
 use authz;
 use authz::InfraGrant;
@@ -67,39 +67,6 @@ use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::OperationalPointReference;
 use editoast_schemas::train_schedule::PathItemLocation;
 
-crate::routes! {
-    "/infra" => {
-        list,
-        create,
-        "/refresh" => refresh,
-        "/voltages" => get_all_voltages,
-        &railjson,
-        "/{infra_id}" => {
-            &objects,
-            &routes,
-            &lines,
-            &auto_fixes,
-            &pathfinding,
-            &attached,
-            &edition,
-            &errors,
-            &delimited_area,
-
-            get,
-            "/load" => load,
-            delete,
-            put,
-            "/clone" => clone,
-            "/lock" => lock,
-            "/unlock" => unlock,
-            "/speed_limit_tags" => get_speed_limit_tags,
-            "/voltages" => get_voltages,
-            "/switch_types" => get_switch_types,
-            "/match_operational_points" => match_operational_points,
-        },
-    },
-}
-
 editoast_common::schemas! {
     pathfinding::schemas(),
     delimited_area::schemas(),
@@ -130,7 +97,7 @@ pub(in crate::views) struct InfraIdQueryParam {
 
 #[derive(Debug, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct RefreshQueryParams {
+pub(in crate::views) struct RefreshQueryParams {
     #[serde(default)]
     force: bool,
     /// A comma-separated list of infra IDs to refresh
@@ -142,12 +109,13 @@ struct RefreshQueryParams {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-struct RefreshResponse {
+pub(in crate::views) struct RefreshResponse {
     /// The list of infras that were refreshed successfully
     infra_refreshed: Vec<i64>,
 }
 
 /// Refresh infra generated geographic layers
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -157,7 +125,7 @@ struct RefreshResponse {
         (status = 404, description = "Invalid infra ID query parameters"),
     )
 )]
-async fn refresh(
+pub(in crate::views) async fn refresh(
     State(AppState {
         db_pool,
         valkey: valkey_client,
@@ -219,13 +187,14 @@ async fn refresh(
 }
 
 #[derive(Serialize, ToSchema)]
-struct InfraListResponse {
+pub(in crate::views) struct InfraListResponse {
     #[serde(flatten)]
     stats: PaginationStats,
     results: Vec<InfraWithState>,
 }
 
 /// Lists all infras along with their current loading state in Core
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -234,7 +203,7 @@ struct InfraListResponse {
         (status = 200, description = "All infras, paginated", body = inline(InfraListResponse))
     ),
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(AppState {
         db_pool,
         osrdyne_client,
@@ -310,7 +279,7 @@ impl From<osrdyne_client::WorkerStatus> for InfraState {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-struct InfraWithState {
+pub(in crate::views) struct InfraWithState {
     #[serde(flatten)]
     pub infra: Infra,
     pub state: InfraState,
@@ -318,12 +287,13 @@ struct InfraWithState {
 
 #[derive(IntoParams, Deserialize)]
 #[allow(unused)]
-struct InfraIdParam {
+pub(in crate::views) struct InfraIdParam {
     /// An existing infra ID
     infra_id: i64,
 }
 
 /// Retrieve a specific infra
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -333,7 +303,7 @@ struct InfraIdParam {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(AppState {
         db_pool,
         osrdyne_client,
@@ -385,6 +355,7 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 /// Creates an empty infra
 ///
 /// The infra may be edited by batch later via the `POST /infra/ID` or `POST /infra/ID/railjson` endpoints.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -393,7 +364,7 @@ impl From<InfraCreateForm> for Changeset<Infra> {
         (status = 201, description = "The created infra", body = Infra),
     ),
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(AppState {
         db_pool, regulator, ..
     }): State<AppState>,
@@ -428,12 +399,13 @@ async fn create(
 
 #[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct CloneQuery {
+pub(in crate::views) struct CloneQuery {
     /// The name of the new infra
     name: String,
 }
 
 /// Duplicate an infra
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -443,7 +415,7 @@ struct CloneQuery {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-async fn clone(
+pub(in crate::views) async fn clone(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
@@ -501,6 +473,7 @@ async fn clone(
 /// You've been warned.
 ///
 /// This operation may take a while to complete.
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "infra",
@@ -510,7 +483,7 @@ async fn clone(
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -540,7 +513,7 @@ async fn delete(
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-struct InfraPatchForm {
+pub(in crate::views) struct InfraPatchForm {
     /// The new name to give the infra
     pub name: String,
 }
@@ -552,6 +525,7 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 }
 
 /// Rename an infra
+#[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "infra",
@@ -562,7 +536,7 @@ impl From<InfraPatchForm> for Changeset<Infra> {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-async fn put(
+pub(in crate::views) async fn put(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(infra): Path<i64>,
@@ -586,6 +560,7 @@ async fn put(
 }
 
 /// Return the railjson list of switch types
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -595,7 +570,7 @@ async fn put(
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn get_switch_types(
+pub(in crate::views) async fn get_switch_types(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
@@ -642,6 +617,7 @@ async fn get_switch_types(
 }
 
 /// Returns the set of speed limit tags for a given infra
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -651,7 +627,7 @@ async fn get_switch_types(
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn get_speed_limit_tags(
+pub(in crate::views) async fn get_speed_limit_tags(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
@@ -690,13 +666,14 @@ async fn get_speed_limit_tags(
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct GetVoltagesQueryParams {
+pub(in crate::views) struct GetVoltagesQueryParams {
     #[serde(default)]
     include_rolling_stock_modes: bool,
 }
 
 /// Returns the set of voltages for a given infra and/or rolling_stocks modes.
 /// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -706,7 +683,7 @@ struct GetVoltagesQueryParams {
         (status = 404, description = "The infra was not found",),
     )
 )]
-async fn get_voltages(
+pub(in crate::views) async fn get_voltages(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
@@ -741,6 +718,7 @@ async fn get_voltages(
 }
 
 /// Returns the set of voltages for all infras and rolling_stocks modes.
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra,rolling_stock",
@@ -749,7 +727,7 @@ async fn get_voltages(
         (status = 404, description = "The infra was not found",),
     )
 )]
-async fn get_all_voltages(
+pub(in crate::views) async fn get_all_voltages(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
@@ -778,6 +756,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
 }
 
 /// Lock an infra
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -787,7 +766,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
         (status = 404, description = "The infra was not found",),
     )
 )]
-async fn lock(
+pub(in crate::views) async fn lock(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
@@ -813,6 +792,7 @@ async fn lock(
 }
 
 /// Unlock an infra
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -822,7 +802,7 @@ async fn lock(
         (status = 404, description = "The infra was not found",),
     )
 )]
-async fn unlock(
+pub(in crate::views) async fn unlock(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
@@ -849,11 +829,12 @@ async fn unlock(
 
 #[derive(Deserialize, Debug, Clone, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct TimetableQueryParam {
+pub(in crate::views) struct TimetableQueryParam {
     timetable: Option<i64>,
 }
 
 /// Instructs Core to load an infra
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -863,7 +844,7 @@ struct TimetableQueryParam {
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn load(
+pub(in crate::views) async fn load(
     State(AppState {
         db_pool,
         core_client,
@@ -941,7 +922,7 @@ pub async fn fetch_all_infra_states(
 
 #[derive(Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
-struct MatchOperationalPointsForm {
+pub(in crate::views) struct MatchOperationalPointsForm {
     operational_point_references: Vec<OperationalPointReference>,
 }
 
@@ -955,11 +936,12 @@ struct RelatedOperationalPoint {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct MatchOperationalPointsResponse {
+pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Vec<RelatedOperationalPoint>>,
     track_names: HashMap<Identifier, Option<String>>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -977,7 +959,7 @@ matches the input track reference).
 ", body = inline(MatchOperationalPointsResponse))
     ),
 )]
-async fn match_operational_points(
+pub(in crate::views) async fn match_operational_points(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,

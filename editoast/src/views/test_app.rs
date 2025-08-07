@@ -43,6 +43,7 @@ use crate::map::MapLayers;
 use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
+use crate::views::routerv2;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
@@ -290,7 +291,7 @@ impl TestAppBuilder {
 
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
-            .merge(crate::views::router())
+            .merge(routerv2().router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,

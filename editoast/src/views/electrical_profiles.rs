@@ -26,18 +26,6 @@ use crate::models::Retrieve;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::electrical_profiles::LightElectricalProfileSet;
 
-crate::routes! {
-    "/electrical_profile_set" => {
-        post_electrical_profile,
-        list,
-        "/{electrical_profile_set_id}" => {
-            get,
-            delete,
-            "/level_order" => get_level_order,
-        },
-    },
-}
-
 editoast_common::schemas! {
     LightElectricalProfileSet,
     ElectricalProfileSet,
@@ -50,6 +38,7 @@ pub struct ElectricalProfileSetId {
 }
 
 /// Retrieve the list of ids and names of electrical profile sets available
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "electrical_profiles",
@@ -57,7 +46,7 @@ pub struct ElectricalProfileSetId {
         (status = 200, body = Vec<LightElectricalProfileSet>, description = "The list of ids and names of electrical profile sets available"),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
@@ -73,6 +62,7 @@ async fn list(
 }
 
 /// Return a specific set of electrical profiles
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "electrical_profiles",
@@ -82,7 +72,7 @@ async fn list(
         (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
@@ -106,6 +96,7 @@ async fn get(
 }
 
 /// Return the electrical profile value order for this set
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "electrical_profiles",
@@ -122,7 +113,7 @@ async fn get(
         (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
-async fn get_level_order(
+pub(in crate::views) async fn get_level_order(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
@@ -146,6 +137,7 @@ async fn get_level_order(
 }
 
 /// Delete an electrical profile set
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "electrical_profiles",
@@ -155,7 +147,7 @@ async fn get_level_order(
         (status = 404, body = InternalError, description = "The requested electrical profile was not found"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
@@ -178,11 +170,12 @@ async fn delete(
 
 #[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct ElectricalProfileQueryArgs {
+pub(in crate::views) struct ElectricalProfileQueryArgs {
     name: String,
 }
 
 /// import a new electrical profile set
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "electrical_profiles",
@@ -192,7 +185,7 @@ struct ElectricalProfileQueryArgs {
         (status = 200, body = ElectricalProfileSet, description = "The list of ids and names of electrical profile sets available"),
     )
 )]
-async fn post_electrical_profile(
+pub(in crate::views) async fn post_electrical_profile(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,

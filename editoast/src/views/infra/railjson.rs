@@ -30,12 +30,8 @@ use crate::views::infra::InfraIdParam;
 use database::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
-crate::routes! {
-    "/{infra_id}/railjson" => get_railjson,
-    "/railjson" => post_railjson,
-}
-
 /// Serialize an infra
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -45,7 +41,7 @@ crate::routes! {
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn get_railjson(
+pub(in crate::views) async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
@@ -144,7 +140,7 @@ async fn get_railjson(
 /// Represents the query parameters for a `POST /infra/railjson` request
 #[derive(Debug, Clone, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct PostRailjsonQueryParams {
+pub(in crate::views) struct PostRailjsonQueryParams {
     /// The name of the infrastructure.
     name: String,
     /// Flag indicating whether to generate data.
@@ -153,11 +149,12 @@ struct PostRailjsonQueryParams {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
-struct PostRailjsonResponse {
+pub(in crate::views) struct PostRailjsonResponse {
     pub infra: i64,
 }
 
 /// Import an infra from railjson
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -168,7 +165,7 @@ struct PostRailjsonResponse {
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn post_railjson(
+pub(in crate::views) async fn post_railjson(
     State(AppState {
         db_pool,
         infra_caches,

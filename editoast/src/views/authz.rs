@@ -35,18 +35,6 @@ use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 
-crate::routes! {
-    "/authz" => {
-        "/me" => {
-            whoami,
-            "/privileges" => user_privileges,
-            "/grants" => user_grants,
-        },
-        "/grants" => update_grants,
-        "/{resource_type}/{resource_id}" => subjects_with_grant_on_resource,
-    },
-}
-
 editoast_common::schemas! {
     InfraGrant,
     InfraPrivilege,
@@ -70,7 +58,7 @@ enum SubjectType {
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(test, derive(Debug))]
-enum ResourceType {
+pub(in crate::views) enum ResourceType {
     Infra,
 }
 
@@ -106,12 +94,13 @@ impl From<AuthorizerError> for AuthzError {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
-struct WhoamiResponse {
+pub(in crate::views) struct WhoamiResponse {
     id: i64,
     name: String,
     roles: Vec<Role>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get,
     path = "",
@@ -122,7 +111,9 @@ struct WhoamiResponse {
         body = inline(WhoamiResponse),
     ))
 )]
-async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiResponse>> {
+pub(in crate::views) async fn whoami(
+    Extension(auth): AuthenticationExt,
+) -> Result<Json<WhoamiResponse>> {
     Ok(Json(WhoamiResponse {
         // TODO: don't return -1 and a hardcoded name, return a different schema instead, requires frontend changes
         id: auth.user_id()?.unwrap_or(-1),
@@ -133,11 +124,12 @@ async fn whoami(Extension(auth): AuthenticationExt) -> Result<Json<WhoamiRespons
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq, Eq))]
-struct ResourcePrivileges {
+pub(in crate::views) struct ResourcePrivileges {
     resource_id: i64,
     privileges: HashSet<InfraPrivilege>,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post,
     path = "",
@@ -152,7 +144,7 @@ struct ResourcePrivileges {
         body = inline(HashMap<ResourceType, Vec<ResourcePrivileges>>)
     )),
 )]
-async fn user_privileges(
+pub(in crate::views) async fn user_privileges(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -217,11 +209,12 @@ async fn user_privileges(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
-struct UserResourceGrant {
+pub(in crate::views) struct UserResourceGrant {
     id: i64,
     grant: InfraGrant,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post,
     path = "",
@@ -236,7 +229,7 @@ struct UserResourceGrant {
         body = inline(HashMap<ResourceType, Vec<UserResourceGrant>>)
     )),
 )]
-async fn user_grants(
+pub(in crate::views) async fn user_grants(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -271,12 +264,12 @@ async fn user_grants(
 }
 
 #[derive(Deserialize, IntoParams)]
-struct ResourceTypeParam {
+pub(in crate::views) struct ResourceTypeParam {
     resource_type: ResourceType,
 }
 
 #[derive(Deserialize, IntoParams)]
-struct ResourceIdParam {
+pub(in crate::views) struct ResourceIdParam {
     resource_id: i64,
 }
 
@@ -291,12 +284,13 @@ struct SubjectGrant {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize))]
-struct SubjectsWithGrantOnResource {
+pub(in crate::views) struct SubjectsWithGrantOnResource {
     #[schema(inline)]
     subjects: Vec<SubjectGrant>,
     stats: PaginationStats,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get,
     path = "",
@@ -306,7 +300,7 @@ struct SubjectsWithGrantOnResource {
         (status = 200, description = "Get list of user that have a grant on the resource", body = inline(SubjectsWithGrantOnResource)),
     ),
 )]
-async fn subjects_with_grant_on_resource(
+pub(in crate::views) async fn subjects_with_grant_on_resource(
     Extension(authn): AuthenticationExt,
     State(AppState {
         db_pool, regulator, ..
@@ -444,7 +438,7 @@ async fn subjects_with_grant_on_resource(
 }
 
 #[derive(Deserialize, ToSchema)]
-struct GrantBody {
+pub(in crate::views) struct GrantBody {
     resource_type: ResourceType,
     resource_id: i64,
     subject_id: i64,
@@ -452,7 +446,7 @@ struct GrantBody {
 }
 
 #[derive(Deserialize, ToSchema)]
-struct RevokeBody {
+pub(in crate::views) struct RevokeBody {
     resource_type: ResourceType,
     resource_id: i64,
     subject_id: i64,
@@ -461,11 +455,12 @@ struct RevokeBody {
 /// `grant` XOR `revoke` is expected
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "lowercase")]
-enum BodyUpdateGrants {
+pub(in crate::views) enum BodyUpdateGrants {
     Grant(Vec<GrantBody>),
     Revoke(Vec<RevokeBody>),
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post,
     path = "",
@@ -479,7 +474,7 @@ enum BodyUpdateGrants {
         (status = 204, description = "Successful revoking"),
     ),
 )]
-async fn update_grants(
+pub(in crate::views) async fn update_grants(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<BodyUpdateGrants>,

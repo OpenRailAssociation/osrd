@@ -455,24 +455,19 @@ impl OpenApiRoot {
     }
 
     fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
-        let paths = crate::views::openapi_paths()
-            .into_flat_path_list()
+        let paths = routerv2()
+            .path_trees
             .into_iter()
-            .chain(
-                routerv2()
-                    .path_trees
-                    .into_iter()
-                    .flat_map(|t| t.flatten())
-                    .map(|(parts, item)| {
-                        (
-                            parts
-                                .into_iter()
-                                .map(String::from)
-                                .fold(String::new(), concat_path),
-                            item,
-                        )
-                    }),
-            );
+            .flat_map(|t| t.flatten())
+            .map(|(parts, item)| {
+                (
+                    parts
+                        .into_iter()
+                        .map(String::from)
+                        .fold(String::new(), concat_path),
+                    item,
+                )
+            });
         for (mut path, path_item) in paths {
             // We are required by axum to have trailing slashes in the `Router`s.
             // But that's not OpenApi compliant, so we remove them here.

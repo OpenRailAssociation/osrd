@@ -12,13 +12,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 
-crate::routes! {
-    "/sprites" => {
-        "/{signaling_system}/{file_name}" => sprites,
-        "/signaling_systems" => signaling_systems,
-    },
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "sprites")]
 enum SpriteErrors {
@@ -31,6 +24,7 @@ enum SpriteErrors {
 }
 
 /// This endpoint returns the list of supported signaling systems
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "sprites",
@@ -38,13 +32,14 @@ enum SpriteErrors {
         (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
-async fn signaling_systems() -> Result<Json<Vec<String>>> {
+pub(in crate::views) async fn signaling_systems() -> Result<Json<Vec<String>>> {
     let sprite_configs = SpriteConfig::load();
     let signaling_systems = sprite_configs.keys().cloned().collect();
     Ok(Json(signaling_systems))
 }
 
 /// This endpoint is used by map libre to retrieve the atlas of each signaling system
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "sprites",
@@ -57,7 +52,7 @@ async fn signaling_systems() -> Result<Json<Vec<String>>> {
         (status = 404, description = "Signaling system not found"),
     ),
 )]
-async fn sprites(
+pub(in crate::views) async fn sprites(
     Path((signaling_system, file_name)): Path<(String, String)>,
     State(AppState { config, .. }): State<AppState>,
     request: Request,

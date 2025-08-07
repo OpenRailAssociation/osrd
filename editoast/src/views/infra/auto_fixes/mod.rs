@@ -70,11 +70,9 @@ pub enum OrderedOperation {
 }
 
 // Return `/infra/<infra_id>/auto_fixes` routes
-crate::routes! {
-    "/auto_fixes" => list_auto_fixes,
-}
 
 /// Retrieve a list of operations to fix infra issues
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "infra",
@@ -83,7 +81,7 @@ crate::routes! {
         (status = 200, description = "The list of suggested operations", body = Vec<Operation>)
     )
 )]
-async fn list_auto_fixes(
+pub(in crate::views) async fn list_auto_fixes(
     Path(infra_id): Path<i64>,
     State(AppState {
         infra_caches,

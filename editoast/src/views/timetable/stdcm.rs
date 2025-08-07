@@ -66,16 +66,12 @@ editoast_common::schemas! {
     StdcmResponse,
 }
 
-crate::routes! {
-    "/stdcm" => stdcm,
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
 #[allow(clippy::large_enum_variant)]
-enum StdcmResponse {
+pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
         path: PathfindingResultSuccess,
@@ -124,7 +120,7 @@ enum StdcmError {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-struct InfraIdQueryParam {
+pub(in crate::views) struct InfraIdQueryParam {
     infra: i64,
 }
 
@@ -137,6 +133,7 @@ struct InfraIdQueryParam {
 /// If the simulation fails, the function uses a virtual train to detect conflicts
 /// with existing train schedules. It then returns both the conflict information
 /// and the pathfinding result from the virtual train's simulation.
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "stdcm",
@@ -148,7 +145,7 @@ struct InfraIdQueryParam {
         (status = 201, body = inline(StdcmResponse), description = "The simulation result"),
     )
 )]
-async fn stdcm(
+pub(in crate::views) async fn stdcm(
     State(AppState {
         config,
         db_pool,

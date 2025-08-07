@@ -32,15 +32,6 @@ use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
-crate::routes! {
-    "/stdcm/search_environment" => {
-        create,
-        retrieve_latest,
-        "/list" => list,
-        "/{env_id}" => delete,
-    },
-}
-
 editoast_common::schemas! {
     StdcmSearchEnvironmentCreateForm,
     StdcmSearchEnvironment,
@@ -62,7 +53,7 @@ enum StdcmSearchEnvError {
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
-struct StdcmSearchEnvironmentCreateForm {
+pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
     work_schedule_group_id: Option<i64>,
@@ -125,6 +116,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
     }
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "stdcm_search_environment",
@@ -133,7 +125,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
         (status = 201, body = StdcmSearchEnvironment),
     )
 )]
-async fn create(
+pub(in crate::views) async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
@@ -151,6 +143,7 @@ async fn create(
     Ok((StatusCode::CREATED, Json(changeset.create(conn).await?)))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_search_environment",
@@ -159,7 +152,7 @@ async fn create(
         (status = 204, description = "No search environment was created")
     )
 )]
-async fn retrieve_latest(
+pub(in crate::views) async fn retrieve_latest(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Response> {
@@ -183,11 +176,12 @@ async fn retrieve_latest(
 
 #[derive(IntoParams, Deserialize)]
 #[allow(unused)]
-struct StdcmSearchEnvIdParam {
+pub(in crate::views) struct StdcmSearchEnvIdParam {
     /// An stdcm search environment ID
     env_id: i64,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "stdcm_search_environment",
@@ -196,7 +190,7 @@ struct StdcmSearchEnvIdParam {
         (status = 204, description = "The stdcm search environment was deleted successfully"),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
@@ -220,13 +214,14 @@ async fn delete(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct SdcmSearchEnvListResponse {
+pub(in crate::views) struct SdcmSearchEnvListResponse {
     #[schema(value_type = Vec<StdcmSearchEnvironment>)]
     results: Vec<StdcmSearchEnvironment>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "stdcm_search_environment",
@@ -235,7 +230,7 @@ struct SdcmSearchEnvListResponse {
         (status = 200, body = inline(SdcmSearchEnvListResponse), description = "The paginated list of all existing stdcm search environments"),
     )
 )]
-async fn list(
+pub(in crate::views) async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,

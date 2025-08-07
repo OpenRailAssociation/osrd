@@ -28,13 +28,6 @@ use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
-crate::routes! {
-     "/layers" => {
-        "/layer/{layer_slug}/mvt/{view_slug}" => layer_view,
-        "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}" => cache_and_get_mvt_tile,
-    },
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "layers", default_status = 404)]
 enum LayersError {
@@ -71,7 +64,7 @@ impl LayersError {
 
 #[derive(Deserialize, Debug, Clone, IntoParams)]
 #[into_params(parameter_in = Query)]
-struct InfraQueryParam {
+pub(in crate::views) struct InfraQueryParam {
     infra: i64,
 }
 
@@ -83,7 +76,7 @@ struct LayerViewParams {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
-struct ViewMetadata {
+pub(in crate::views) struct ViewMetadata {
     #[serde(rename = "type")]
     data_type: String,
     #[schema(example = "track_sections")]
@@ -102,6 +95,7 @@ struct ViewMetadata {
 }
 
 /// Returns layer view metadata to query tiles
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "layers",
@@ -110,7 +104,7 @@ struct ViewMetadata {
         (status = 200, body = inline(ViewMetadata), description = "Successful Response"),
     )
 )]
-async fn layer_view(
+pub(in crate::views) async fn layer_view(
     State(AppState {
         map_layers, config, ..
     }): State<AppState>,
@@ -167,6 +161,7 @@ struct TileParams {
 }
 
 /// Mvt tile from the cache if possible, otherwise gets data from the database and caches it in valkey
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "layers",
@@ -175,7 +170,7 @@ struct TileParams {
         (status = 200, body = Vec<u8>, description = "Successful Response"),
     )
 )]
-async fn cache_and_get_mvt_tile(
+pub(in crate::views) async fn cache_and_get_mvt_tile(
     State(AppState {
         map_layers,
         db_pool,

@@ -32,18 +32,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-crate::routes! {
-    "/towed_rolling_stock" => {
-        get_list,
-        post,
-        "/{towed_rolling_stock_id}" => {
-            get_by_id,
-            patch_by_id,
-            "/locked" => patch_by_id_locked,
-        },
-    },
-}
-
 editoast_common::schemas! {
     TowedRollingStockCountList,
     TowedRollingStockForm,
@@ -108,6 +96,7 @@ impl From<TowedRollingStockForm> for Changeset<TowedRollingStock> {
 }
 
 /// Create a rolling stock
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock",
@@ -116,7 +105,7 @@ impl From<TowedRollingStockForm> for Changeset<TowedRollingStock> {
         (status = 200, description = "The created towed rolling stock", body = TowedRollingStock)
     )
 )]
-async fn post(
+pub(in crate::views) async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
@@ -138,12 +127,13 @@ async fn post(
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct TowedRollingStockCountList {
+pub(in crate::views) struct TowedRollingStockCountList {
     results: Vec<TowedRollingStock>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -152,7 +142,7 @@ struct TowedRollingStockCountList {
         (status = 200, body = inline(TowedRollingStockCountList)),
     )
 )]
-async fn get_list(
+pub(in crate::views) async fn get_list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<50>>,
@@ -181,6 +171,7 @@ pub struct TowedRollingStockIdParam {
     towed_rolling_stock_id: i64,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -189,7 +180,7 @@ pub struct TowedRollingStockIdParam {
         (status = 200, body = TowedRollingStock, description = "The requested towed rolling stock"),
     )
 )]
-async fn get_by_id(
+pub(in crate::views) async fn get_by_id(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
@@ -216,6 +207,7 @@ async fn get_by_id(
     Ok(Json(towed_rolling_stock))
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -225,7 +217,7 @@ async fn get_by_id(
         (status = 200, description = "The created towed rolling stock", body = TowedRollingStock)
     )
 )]
-async fn patch_by_id(
+pub(in crate::views) async fn patch_by_id(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
@@ -286,11 +278,12 @@ async fn patch_by_id(
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
-struct TowedRollingStockLockedForm {
+pub(in crate::views) struct TowedRollingStockLockedForm {
     /// New locked value
     pub locked: bool,
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     patch, path = "",
     tag = "rolling_stock",
@@ -300,7 +293,7 @@ struct TowedRollingStockLockedForm {
         (status = 204, description = "No content when successful")
     )
 )]
-async fn patch_by_id_locked(
+pub(in crate::views) async fn patch_by_id_locked(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(towed_rolling_stock_id): Path<i64>,
