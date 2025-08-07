@@ -2,31 +2,30 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use itertools::Itertools as _;
-use smol_str::SmolStr;
 
 use crate::views::timetable::similar_trains::Codes;
 use crate::views::timetable::similar_trains::new_train::Segment;
 
 use super::graph;
 
-pub(super) type Name = SmolStr;
+pub(super) type Id = i64;
 
 #[derive(Debug)]
 pub(super) struct PastTrain {
-    name: Name, // TODO: use train schedule ID
+    id: Id,
     path: Vec<graph::Waypoint>,
 }
 
 impl PastTrain {
-    pub(super) fn new(name: Name, path: impl IntoIterator<Item = graph::Waypoint>) -> Self {
+    pub(super) fn new(id: Id, path: impl IntoIterator<Item = graph::Waypoint>) -> Self {
         Self {
-            name,
+            id,
             path: path.into_iter().collect(),
         }
     }
 
-    pub(super) fn name(&self) -> Name {
-        self.name.clone()
+    pub(super) fn id(&self) -> Id {
+        self.id
     }
 
     fn iter_stops(&self) -> impl Iterator<Item = &graph::Waypoint> {
@@ -49,7 +48,7 @@ impl PastTrain {
                 tracing::debug!(
                     begin = ?segment.begin(),
                     end = ?segment.end(),
-                    past_train = %self.name,
+                    past_train = %self.id,
                     "past train found for segment, but not in the opposite direction"
                 );
                 None
