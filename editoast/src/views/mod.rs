@@ -94,7 +94,7 @@ use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 
-fn routerv2() -> router::DocumentedRouter {
+fn service_router() -> router::DocumentedRouter {
     use router::delete;
     use router::get;
     use router::patch;
@@ -940,7 +940,7 @@ impl Server {
 
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
-            .merge(routerv2().router)
+            .merge(service_router().router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,
