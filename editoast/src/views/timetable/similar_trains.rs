@@ -481,7 +481,8 @@ async fn search_candidate_train_schedules(
 ) -> Result<Vec<models::TrainSchedule>> {
     let filter = SelectionSettings::new()
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
-        .filter(move || models::TrainSchedule::ROLLING_STOCK_NAME.eq(rolling_stock_name.clone()));
+        .filter(move || models::TrainSchedule::ROLLING_STOCK_NAME.eq(rolling_stock_name.clone()))
+        .order_by(|| models::TrainSchedule::ID.asc());
     let train_schedules = models::TrainSchedule::list(
         conn,
         if let Some(speed) = speed_limit_tag {
