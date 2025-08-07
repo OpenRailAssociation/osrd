@@ -27,7 +27,7 @@ type NodeIndex = petgraph::graph::NodeIndex;
 #[derive(Debug)]
 struct GraphNode {
     waypoint: Waypoint,
-    trains: HashSet<past_train::Name>,
+    trains: HashSet<past_train::Id>,
 }
 
 #[derive(Debug, Default)]
@@ -43,23 +43,19 @@ impl Graph {
             .and_then(|&node| self.graph.node_weight(node))
     }
 
-    fn get_or_create_node(
-        &mut self,
-        waypoint: Waypoint,
-        train_name: past_train::Name,
-    ) -> NodeIndex {
+    fn get_or_create_node(&mut self, waypoint: Waypoint, train_id: past_train::Id) -> NodeIndex {
         if let Some(node) = self.codes_index.get(&waypoint.codes) {
             self.graph
                 .node_weight_mut(*node)
                 .unwrap()
                 .trains
-                .insert(train_name.to_owned());
+                .insert(train_id);
             *node
         } else {
             let key = waypoint.codes.clone();
             let node = self.graph.add_node(GraphNode {
                 waypoint,
-                trains: HashSet::from([train_name.to_owned()]),
+                trains: HashSet::from([train_id]),
             });
             self.codes_index.insert(key, node);
             node
@@ -68,12 +64,12 @@ impl Graph {
 
     pub(super) fn push(
         &mut self,
-        name: past_train::Name,
+        train_id: past_train::Id,
         waypoints: impl Iterator<Item = Waypoint>,
     ) {
         for (wp1, wp2) in waypoints.into_iter().tuple_windows() {
-            let from = self.get_or_create_node(wp1, name.clone());
-            let to = self.get_or_create_node(wp2, name.clone());
+            let from = self.get_or_create_node(wp1, train_id);
+            let to = self.get_or_create_node(wp2, train_id);
             self.graph
                 .find_edge(from, to)
                 .unwrap_or_else(|| self.graph.add_edge(from, to, ()));
@@ -115,9 +111,9 @@ impl Graph {
     pub(super) fn to_dot(&self) -> String {
         let pretty = self.graph.map(
             |_, GraphNode { waypoint, trains }| {
-                let mut names = trains.iter().map(|name| name.as_str()).collect::<Vec<_>>();
-                names.sort();
-                let names = names.join(",");
+                let mut train_ids = trains.iter().map(|id| id.to_string()).collect::<Vec<_>>();
+                train_ids.sort();
+                let names = train_ids.join(",");
                 format!("{waypoint:?}  —  {names}")
             },
             |_, ()| String::new(),
@@ -128,7 +124,7 @@ impl Graph {
 }
 
 enum TrainsOnPath<'a> {
-    Trains(HashSet<past_train::Name>),
+    Trains(HashSet<past_train::Id>),
     MissingInitialWaypoint(&'a new_train::Waypoint),
     MissingTargetWaypoint(&'a new_train::Waypoint),
     MaxDistanceExceeded(usize),
@@ -144,7 +140,7 @@ pub(super) struct MatchingState {
     path: VecDeque<new_train::Waypoint>,
     #[educe(Debug = "ignore")]
     graph: Graph,
-    pub(super) correct_trains_so_far: HashSet<past_train::Name>,
+    pub(super) correct_trains_so_far: HashSet<past_train::Id>,
     current_waypoint: new_train::Waypoint,
     skipped: Option<new_train::Waypoint>,
 }

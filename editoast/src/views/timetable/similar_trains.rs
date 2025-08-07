@@ -125,11 +125,11 @@ struct WaypointResponse {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
-    /// Both `train_name` and `start_time` are `None` if no similar train
+    /// Both `train_id` and `start_time` are `None` if no similar train
     /// was found for the segment; otherwise, both are `Some`.
     #[schema(value_type = String)]
-    train_name: Option<past_train::Name>,
-    /// Both `train_name` and `start_time` are `None` if no similar train
+    train_id: Option<past_train::Id>,
+    /// Both `train_id` and `start_time` are `None` if no similar train
     /// was found for the segment; otherwise, both are `Some`.
     start_time: Option<DateTime<Utc>>,
     #[schema(value_type = SimilarTrainWaypointResponse)]
@@ -273,7 +273,7 @@ pub(in crate::views) async fn similar_trains(
     // keep the departure date in memory in order to build the API response later on
     let candidate_schedules_departure_date = candidate_schedules
         .iter()
-        .map(|ts| (ts.train_name.to_smolstr(), ts.start_time))
+        .map(|ts| (ts.id, ts.start_time))
         .collect::<HashMap<_, _>>();
 
     // Step 3 : simulate candidate train schedules
@@ -302,7 +302,7 @@ pub(in crate::views) async fn similar_trains(
             let waypoints = past_train
                 .clamp_path(&segment)
                 .expect("past trains are selected to stop at segment endpoints");
-            graph.push(past_train.name(), waypoints.iter().cloned());
+            graph.push(past_train.id(), waypoints.iter().cloned());
         }
         graphs.push((segment, graph));
     }
@@ -394,13 +394,13 @@ pub(in crate::views) async fn similar_trains(
 
     let response_items = similar_trains
         .into_iter()
-        .map(|((begin, end), train_name)| {
-            let start_time = train_name
+        .map(|((begin, end), train_id)| {
+            let start_time = train_id
                 .as_ref()
-                .and_then(|name| candidate_schedules_departure_date.get(name).cloned());
+                .and_then(|train_id| candidate_schedules_departure_date.get(train_id).cloned());
             SimilarTrainItem {
                 start_time,
-                train_name,
+                train_id,
                 begin: WaypointResponse {
                     ci: begin.codes.primary as i64,
                     ch: begin.codes.secondary,
@@ -635,7 +635,7 @@ async fn simulate_past_trains(
                         })
                     },
                 );
-                past_train::PastTrain::new(ts.train_name.to_smolstr(), ops)
+                past_train::PastTrain::new(ts.id, ops)
             },
         )
         .collect_vec();
@@ -646,8 +646,8 @@ async fn simulate_past_trains(
 // TODO: minimize the number of trains to duplicate or minimize the disjoint segments in the simulation sheet?
 #[tracing::instrument(ret(level = "debug"))]
 fn decide_best_train_combination(
-    mut segments_trains: Vec<&HashSet<past_train::Name>>,
-) -> HashSet<past_train::Name> {
+    mut segments_trains: Vec<&HashSet<past_train::Id>>,
+) -> HashSet<past_train::Id> {
     let mut trains = HashSet::default();
 
     while !segments_trains.is_empty() {
@@ -666,11 +666,11 @@ fn decide_best_train_combination(
             }
 
             let (_, longest_train) = histo.pop().expect("Heap should not be empty");
-            longest_train.clone()
+            longest_train
         };
 
-        segments_trains.retain(|segment| !segment.contains(&longest_train));
-        trains.insert(longest_train);
+        segments_trains.retain(|segment| !segment.contains(longest_train));
+        trains.insert(*longest_train);
     }
     trains
 }
@@ -808,57 +808,42 @@ mod tests {
 
     #[test]
     fn decide_best_train_combination_mutually_disjoint() {
-        let segments_trains = [
-            HashSet::from(["train1".to_smolstr()]),
-            HashSet::from(["train2".to_smolstr()]),
-            HashSet::from(["train3".to_smolstr()]),
-        ];
+        let segments_trains = [HashSet::from([1]), HashSet::from([2]), HashSet::from([3])];
         let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
-        assert_eq!(
-            result,
-            HashSet::from([
-                "train1".to_smolstr(),
-                "train2".to_smolstr(),
-                "train3".to_smolstr()
-            ])
-        );
+        assert_eq!(result, HashSet::from([1, 2, 3]));
     }
 
     #[test]
     fn decide_best_train_combination_single_common_element() {
+        let (frequent_train, train1, train2) = (0..).tuples().next().unwrap();
         let segments_trains = [
-            HashSet::from(["common_train".to_smolstr(), "train1".to_smolstr()]),
-            HashSet::from(["common_train".to_smolstr(), "train2".to_smolstr()]),
-            HashSet::from(["common_train".to_smolstr(), "train1".to_smolstr()]),
+            HashSet::from([frequent_train, train1]),
+            HashSet::from([frequent_train, train2]),
+            HashSet::from([frequent_train, train1]),
         ];
         let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
-        assert_eq!(result, HashSet::from(["common_train".to_smolstr()]));
+        assert_eq!(result, HashSet::from([frequent_train]));
     }
 
     #[test]
     fn decide_best_train_combination_partial_overlap() {
+        let (frequent_train, less_common, thomas, train1, train2, train3, train4, train5, train6) =
+            (0..).tuples().next().unwrap();
         let segments_trains = [
-            HashSet::from(["frequent_train".to_smolstr(), "train1".to_smolstr()]),
-            HashSet::from(["frequent_train".to_smolstr(), "train2".to_smolstr()]),
-            HashSet::from(["frequent_train".to_smolstr(), "train3".to_smolstr()]),
-            HashSet::from(["frequent_train".to_smolstr(), "train4".to_smolstr()]),
-            HashSet::from(["frequent_train".to_smolstr(), "less_common".to_smolstr()]),
-            HashSet::from(["less_common".to_smolstr(), "train5".to_smolstr()]),
-            HashSet::from(["less_common".to_smolstr(), "train6".to_smolstr()]),
-            HashSet::from(["thomas".to_smolstr()]),
+            HashSet::from([frequent_train, train1]),
+            HashSet::from([frequent_train, train2]),
+            HashSet::from([frequent_train, train3]),
+            HashSet::from([frequent_train, train4]),
+            HashSet::from([frequent_train, less_common]),
+            HashSet::from([less_common, train5]),
+            HashSet::from([less_common, train6]),
+            HashSet::from([thomas]),
         ];
         let segments_trains = segments_trains.iter().collect::<Vec<_>>();
         let result = decide_best_train_combination(segments_trains);
-        assert_eq!(
-            result,
-            HashSet::from([
-                "frequent_train".to_smolstr(),
-                "less_common".to_smolstr(),
-                "thomas".to_smolstr()
-            ])
-        );
+        assert_eq!(result, HashSet::from([frequent_train, less_common, thomas]));
     }
 
     // The `/pathfinding/blocks` endpoint doesn't need a correct response.
@@ -896,16 +881,15 @@ mod tests {
     async fn create_train_schedule(
         conn: &mut DbConnection,
         timetable_id: i64,
-        train_name: String,
         rolling_stock_name: String,
         path: Vec<PathItem>,
         start_time: DateTime<Utc>,
         schedule: Vec<ScheduleItem>,
         speed_limit_tag: Option<String>,
-    ) {
-        let _ = TrainSchedule::changeset()
+    ) -> past_train::Id {
+        let train_schedule = TrainSchedule::changeset()
             .timetable_id(timetable_id)
-            .train_name(train_name)
+            .train_name(Uuid::new_v4().to_string())
             .rolling_stock_name(rolling_stock_name)
             .path(path)
             .labels(Vec::new())
@@ -924,6 +908,7 @@ mod tests {
             .create(conn)
             .await
             .expect("Failed to create train schedule");
+        train_schedule.id
     }
 
     struct InitTestResponse {
@@ -931,7 +916,7 @@ mod tests {
         infra_id: i64,
         rolling_stock_names: Vec<String>,
         timetable_id: i64,
-        train_name: String,
+        train_id: i64,
         start_time: DateTime<Utc>,
     }
     async fn init_test() -> InitTestResponse {
@@ -966,7 +951,6 @@ mod tests {
             create_fast_rolling_stock(&mut app.db_pool().get_ok(), &Uuid::new_v4().to_string())
                 .await;
 
-        let train_name = "train_1".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
             PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -992,10 +976,9 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):stop  MES(44):passing_by  NS(55):stop  SS(66):stop
-        create_train_schedule(
+        let train_id = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name.clone(),
             rolling_stock.name.clone(),
             path,
             start_time,
@@ -1008,7 +991,7 @@ mod tests {
             infra_id: small_infra.id,
             rolling_stock_names: vec![rolling_stock.name, rolling_stock_2.name],
             timetable_id: timetable.id,
-            train_name,
+            train_id,
             start_time,
         }
     }
@@ -1043,7 +1026,7 @@ mod tests {
             infra_id,
             rolling_stock_names,
             timetable_id,
-            train_name,
+            train_id,
             start_time,
         } = init_test().await;
 
@@ -1061,7 +1044,7 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: Some(train_name.clone().into()),
+                train_id: Some(train_id),
                 start_time: Some(start_time),
                 begin,
                 end,
@@ -1184,7 +1167,6 @@ mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
 
-        let train_name_1 = "train_name_1".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
             PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -1198,10 +1180,9 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop
-        create_train_schedule(
+        let train_1 = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name_1.clone(),
             rolling_stock.name.clone(),
             path,
             start_time_1,
@@ -1210,7 +1191,6 @@ mod tests {
         )
         .await;
 
-        let train_name_2 = "train_name_2".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("Mid_East_station"), // MES
             PathItem::new_operational_point("North_station"),    // NS
@@ -1224,10 +1204,9 @@ mod tests {
             DateTime::from_str("2025-01-01T12:00:00Z").expect("Failed to parse datetime");
 
         // MES(44):passing_by  NS(55):stop  SS(66):stop
-        create_train_schedule(
+        let train_2 = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name_2.clone(),
             rolling_stock.name.clone(),
             path,
             start_time_2,
@@ -1278,7 +1257,7 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_name: Some(train_name_1.into()),
+                    train_id: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
                         ci: 22,
@@ -1290,7 +1269,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_name: Some(train_name_2.into()),
+                    train_id: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
                         ci: 44,
@@ -1357,8 +1336,7 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
 
         let mut hour = 10;
-        for i in 1..3 {
-            let train_name = format!("train_{i}");
+        for _ in 1..3 {
             let path: Vec<PathItem> = vec![
                 PathItem::new_operational_point("West_station"), // WS
                 PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -1373,10 +1351,9 @@ mod tests {
             hour += 1;
 
             // WS(22):stop  MWS(33):passing_by  MES(44):stop
-            create_train_schedule(
+            let _ = create_train_schedule(
                 &mut db_pool.get_ok(),
                 timetable.id,
-                train_name,
                 rolling_stock.name.clone(),
                 path,
                 start_time,
@@ -1386,8 +1363,7 @@ mod tests {
             .await;
         }
 
-        for i in 3..5 {
-            let train_name = format!("train_{i}");
+        for _ in 3..5 {
             let path: Vec<PathItem> = vec![
                 PathItem::new_operational_point("Mid_East_station"), // MES
                 PathItem::new_operational_point("North_East_station"), // NES
@@ -1401,10 +1377,9 @@ mod tests {
             hour += 1;
 
             // MES(44):stop  NES(77):stop
-            create_train_schedule(
+            let _ = create_train_schedule(
                 &mut db_pool.get_ok(),
                 timetable.id,
-                train_name,
                 rolling_stock.name.clone(),
                 path,
                 start_time,
@@ -1414,7 +1389,6 @@ mod tests {
             .await;
         }
 
-        let train_name = "train_5".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
             PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -1435,10 +1409,9 @@ mod tests {
             .expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
-        create_train_schedule(
+        let train_id = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name.clone(),
             rolling_stock.name.clone(),
             path,
             start_time,
@@ -1483,7 +1456,7 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: Some(train_name.into()),
+                train_id: Some(train_id),
                 start_time: Some(start_time),
                 begin: WaypointResponse {
                     ci: 22,
@@ -1531,7 +1504,6 @@ mod tests {
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
 
-        let train_name_1 = "train_1".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
             PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -1544,10 +1516,9 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):stop
-        create_train_schedule(
+        let train_1 = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name_1.clone(),
             rolling_stock.name.clone(),
             path,
             start_time_1,
@@ -1556,7 +1527,6 @@ mod tests {
         )
         .await;
 
-        let train_name_2 = "train_2".to_string();
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("Mid_East_station"), // MES
             PathItem::new_operational_point("North_station"),    // NS
@@ -1569,10 +1539,9 @@ mod tests {
             DateTime::from_str("2025-01-01T11:00:00Z").expect("Failed to parse datetime");
 
         // MES(44):stop  NS(55):stop
-        create_train_schedule(
+        let train_2 = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
-            train_name_2.clone(),
             rolling_stock.name.clone(),
             path,
             start_time_2,
@@ -1623,7 +1592,7 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_name: Some(train_name_1.into()),
+                    train_id: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
                         ci: 22,
@@ -1635,7 +1604,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_name: None,
+                    train_id: None,
                     start_time: None,
                     begin: WaypointResponse {
                         ci: 33,
@@ -1647,7 +1616,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_name: Some(train_name_2.into()),
+                    train_id: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
                         ci: 44,
@@ -1659,7 +1628,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_name: None,
+                    train_id: None,
                     start_time: None,
                     begin: WaypointResponse {
                         ci: 55,
