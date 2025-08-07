@@ -275,7 +275,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                         registerStep(
                             newRange,
                             step.prev,
-                            step.totalDistance,
+                            step.prev?.totalDistance ?: 0.0,
                             newNReachedTargets,
                             stepTargets
                         )
