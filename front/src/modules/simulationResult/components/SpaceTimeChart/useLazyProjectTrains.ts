@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
+import NotSimulatedProjectionLazyLoader from 'applications/operationalStudies/helpers/NotSimulatedProjectionLazyLoader';
 import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
 import type { ProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
@@ -65,7 +66,12 @@ const useLazyProjectTrains = ({
     const loader =
       projectionType === 'trackProjection'
         ? new TrainTrackProjectionLazyLoader(options)
-        : new TrainOpProjectionLazyLoader(options, pathProperties?.operational_points);
+        : projectionType === 'operationalPointProjection'
+          ? new TrainOpProjectionLazyLoader(options, pathProperties?.operational_points)
+          : new NotSimulatedProjectionLazyLoader(
+              options,
+              timetableItemUsedForProjection?.path_steps || []
+            );
 
     loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
 
