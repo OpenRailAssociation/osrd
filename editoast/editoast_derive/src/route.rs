@@ -1,0 +1,37 @@
+use std::hash::Hash as _;
+use std::hash::Hasher as _;
+
+use proc_macro2::TokenStream;
+use syn::Ident;
+use syn::ItemFn;
+
+pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
+    let name = &input.sig.ident;
+    // some handlers have the same name (eg: get, create, list) which would result in duplicate
+    // static names
+    let hex_hash = {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        quote::quote! { #input }.to_string().hash(&mut hasher);
+        let hash = hasher.finish();
+        format!("{hash:x}")
+    };
+    let static_name = Ident::new(
+        &format!(
+            "_{}_OPENAPI_ROUTE_{}",
+            name.to_string().to_uppercase(),
+            hex_hash.to_uppercase()
+        ),
+        name.span(),
+    );
+    let path_name = Ident::new(&format!("__path_{name}"), name.span());
+    Ok(quote::quote! {
+        #[doc(hidden)]
+        #[unsafe(no_mangle)]
+        #[linkme::distributed_slice(crate::views::router::OPENAPI_ROUTES)]
+        static #static_name: crate::views::router::OpenApiRouteSliceItem = |type_name: &str| {
+            (type_name == std::any::type_name_of_val(&#name)).then_some(<#path_name as utoipa::Path>::path_item)
+        };
+
+        #input
+    })
+}
