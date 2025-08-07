@@ -50,7 +50,13 @@ class STDCMGraph(
     val allowanceManager = EngineeringAllowanceManager(rollingStock.constGamma, this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
     val mrspBuilder =
-        CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock, temporarySpeedLimitManager)
+        CachedBlockMRSPBuilder(
+            rawInfra,
+            blockInfra,
+            rollingStock,
+            speedLimitTag = tag,
+            temporarySpeedLimitManager = temporarySpeedLimitManager,
+        )
 
     // min 30s between two edges, determined empirically
     // TODO: this value *should* reflect twice the min delay between two trains,

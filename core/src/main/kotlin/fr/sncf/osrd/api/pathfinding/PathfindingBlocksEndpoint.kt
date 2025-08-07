@@ -171,6 +171,7 @@ private fun computePaths(
             infra.blockInfra,
             initialRequest.rollingStockMaximumSpeed,
             initialRequest.rollingStockLength,
+            initialRequest.speedLimitTag,
         )
     val constraintCombiner = ConstraintCombiner(constraints.toMutableList())
 

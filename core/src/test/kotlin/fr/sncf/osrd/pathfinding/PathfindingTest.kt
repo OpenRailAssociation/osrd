@@ -37,6 +37,7 @@ fun getPathfindingBlockRequest(
         rs.maxSpeed,
         rs.length,
         null,
+        null,
         infra,
         1,
         pathItems,
