@@ -58,7 +58,7 @@ data class CachedBlockMRSPBuilder(
                 pathProps,
                 rsMaxSpeed,
                 rsLength,
-                useSpeedLimits = true,
+                addRollingStockLength = true,
                 speedLimitTag,
                 temporarySpeedLimitManager,
             )

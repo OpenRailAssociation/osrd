@@ -10750,6 +10750,10 @@ components:
           items:
             type: string
           description: List of supported signaling systems
+        speed_limit_tag:
+          type: string
+          description: Speed limit tag, used to estimate the travel time
+          nullable: true
     PathfindingInputError:
       oneOf:
       - type: object

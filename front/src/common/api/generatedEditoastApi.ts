@@ -3452,6 +3452,8 @@ export type PathfindingInput = {
   rolling_stock_supported_electrifications: string[];
   /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: string[];
+  /** Speed limit tag, used to estimate the travel time */
+  speed_limit_tag?: string | null;
 };
 export type RoutePath = {
   switches_directions: (string & string)[][];
