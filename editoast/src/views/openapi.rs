@@ -18,6 +18,7 @@ use utoipa::openapi::schema::AnyOf;
 
 use crate::AppState;
 use crate::error::ErrorDefinition;
+use crate::views::routerv2;
 
 #[derive(Debug)]
 pub struct OpenApiPathScope {
@@ -66,6 +67,14 @@ where
     }
 }
 
+fn concat_path<A: AsRef<str>, B: AsRef<str>>(a: A, b: B) -> String {
+    let (a, b) = (a.as_ref(), b.as_ref());
+    match (a.ends_with('/'), b.starts_with('/')) {
+        (true, true) => format!("{}{}", a, &b[1..]),
+        _ => format!("{a}{b}"),
+    }
+}
+
 #[allow(unused)]
 impl OpenApiPathScope {
     pub fn new(prefix: Option<&'static str>) -> Self {
@@ -89,14 +98,6 @@ impl OpenApiPathScope {
     pub fn into_flat_path_list(self) -> Vec<(String, PathItem)> {
         let prefix = self.prefix.unwrap_or_default();
         let mut paths = Vec::new();
-
-        fn concat_path<A: AsRef<str>, B: AsRef<str>>(a: A, b: B) -> String {
-            let (a, b) = (a.as_ref(), b.as_ref());
-            match (a.ends_with('/'), b.starts_with('/')) {
-                (true, true) => format!("{}{}", a, &b[1..]),
-                _ => format!("{a}{b}"),
-            }
-        }
 
         for item in self.paths {
             match item {
@@ -454,8 +455,25 @@ impl OpenApiRoot {
     }
 
     fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
-        let paths = crate::views::openapi_paths();
-        for (mut path, path_item) in paths.into_flat_path_list() {
+        let paths = crate::views::openapi_paths()
+            .into_flat_path_list()
+            .into_iter()
+            .chain(
+                routerv2()
+                    .path_trees
+                    .into_iter()
+                    .flat_map(|t| t.flatten())
+                    .map(|(parts, item)| {
+                        (
+                            parts
+                                .into_iter()
+                                .map(String::from)
+                                .fold(String::new(), concat_path),
+                            item,
+                        )
+                    }),
+            );
+        for (mut path, path_item) in paths {
             // We are required by axum to have trailing slashes in the `Router`s.
             // But that's not OpenApi compliant, so we remove them here.
             if path.ends_with('/') {

@@ -20,16 +20,6 @@ use database::DbConnectionPoolV2;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
-crate::routes! {
-    "/documents" => {
-        post,
-        "/{document_key}" => {
-            get,
-            delete,
-        },
-    },
-}
-
 #[derive(Error, Debug, EditoastError)]
 #[editoast_error(base_id = "document")]
 pub enum DocumentErrors {
@@ -42,6 +32,7 @@ pub enum DocumentErrors {
 }
 
 /// Returns a document of any type
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "documents",
@@ -53,7 +44,7 @@ pub enum DocumentErrors {
         (status = 404, description = "Document not found", body = InternalError),
     )
 )]
-async fn get(
+pub(in crate::views) async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
@@ -88,6 +79,7 @@ struct NewDocumentResponse {
 }
 
 /// Post a new document (content_type by header + binary data)
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "documents",
@@ -99,7 +91,7 @@ struct NewDocumentResponse {
         (status = 201, description = "The document was created", body = NewDocumentResponse),
     )
 )]
-async fn post(
+pub(in crate::views) async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
@@ -132,6 +124,7 @@ async fn post(
 }
 
 /// Delete an existing document
+#[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "documents",
@@ -143,7 +136,7 @@ async fn post(
         (status = 404, description = "Document not found", body = InternalError),
     )
 )]
-async fn delete(
+pub(in crate::views) async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,

@@ -13,6 +13,7 @@ pub mod project;
 pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
+mod router;
 pub mod scenario;
 pub mod search;
 pub mod sprites;
@@ -93,16 +94,50 @@ use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 
+fn routerv2() -> router::DocumentedRouter {
+    use router::delete;
+    use router::get;
+    use router::patch;
+    use router::post;
+    use router::put;
+
+    // This whole expression has been designed to be as compact as possible, keep paths relatively aligned,
+    // while also keeping rustfmt happy.
+    // - the closure incites rustfmt to not break line after the path
+    // - the nests function name is 5 characters long to be symmetric to route (unlike axum::Router::nest)
+    // - the closure parameter is named path to incite rustfmt to keep the first route call on the same line
+    //   - a longer name would cause a line break before the first .
+    //   - a shorter name breaks alignment
+    //
+    // # Ordering
+    //
+    // - arbitrary toplevel sections
+    // - for sub routers, routes first, nests second
+    // - paths ordered by number of segments
+    // - equal number of segments in a path => alphabetical order
+    //
+    // Of course, these conventions are to be broken if they get in the way of request path resolution.
+
+    router::DocumentedRouter::root(|path| {
+        path.route("/health", get!(health))
+            .nests("/documents", |path| {
+                path.route("/", post!(documents::post))
+                    .nests("/{document_key}", |path| {
+                        path.route("/", get!(documents::get))
+                            .route("/", delete!(documents::delete))
+                    })
+            })
+    })
+}
+
 crate::routes! {
     fn router();
     fn openapi_paths();
 
-    "/health" => health,
     "/version" => version,
     "/version/core" => core_version,
 
     &authz,
-    &documents,
     &electrical_profiles,
     &fonts,
     &infra,
@@ -393,6 +428,7 @@ pub enum AppHealthError {
     Core(#[from] core_client::Error),
 }
 
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     responses(
@@ -673,6 +709,7 @@ impl Server {
 
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
+            .merge(routerv2().router)
             .merge(router())
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),

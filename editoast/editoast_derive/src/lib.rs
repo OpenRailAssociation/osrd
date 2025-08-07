@@ -4,6 +4,7 @@ mod annotate_units;
 mod error;
 mod model;
 mod openapi_schema;
+mod route;
 mod search;
 
 use proc_macro::TokenStream;
@@ -264,6 +265,14 @@ pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
 pub fn openapi_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     openapi_schema::openapi_schema(&input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+#[proc_macro_attribute]
+pub fn route(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as syn::ItemFn);
+    route::route(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
