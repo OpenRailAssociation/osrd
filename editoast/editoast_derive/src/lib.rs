@@ -192,7 +192,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 ///
 /// * `#[model(table = crate::table::osrd_yourtable")]` (**REQUIRED**): the path to the diesel table
 /// * `#[model(row(type_name = "YourRowType"))]`: the name of the row struct (defaults to `ModelRow`)
-/// * `#[model(row(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the row struct (always implicitly derives `Queryable` and `QueryableByName`)
+/// * `#[model(row(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the row struct (always implicitly derives `Queryable`)
 /// * `#[model(row(public))]`: make the row struct fields `pub` (private by default)
 /// * `#[model(changeset(type_name = "YourChangesetType"))]`: the name of the changeset struct (defaults to `ModelChangeset`)
 /// * `#[model(changeset(derive(ADDITIONAL_DERIVES*,)))]`: additional derives for the changeset struct (always implicitly derives `Default, Queryable, QueryableByName, AsChangeset, Insertable`)
