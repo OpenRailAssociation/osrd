@@ -711,6 +711,7 @@ mod tests {
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
+    use crate::models::train_schedule::TrainScheduleChangeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
@@ -898,8 +899,7 @@ mod tests {
     }
 
     #[allow(clippy::too_many_arguments)]
-    async fn create_train_schedule(
-        conn: &mut DbConnection,
+    fn train_schedule_changeset(
         timetable_id: i64,
         train_name: String,
         rolling_stock_name: String,
@@ -907,8 +907,8 @@ mod tests {
         start_time: DateTime<Utc>,
         schedule: Vec<ScheduleItem>,
         speed_limit_tag: Option<String>,
-    ) {
-        let _ = TrainSchedule::changeset()
+    ) -> TrainScheduleChangeset {
+        TrainSchedule::changeset()
             .timetable_id(timetable_id)
             .train_name(train_name)
             .rolling_stock_name(rolling_stock_name)
@@ -926,9 +926,6 @@ mod tests {
                 use_speed_limits_for_simulation: true,
             })
             .speed_limit_tag(speed_limit_tag)
-            .create(conn)
-            .await
-            .expect("Failed to create train schedule");
     }
 
     struct InitTestResponse {
@@ -997,8 +994,7 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):stop  MES(44):passing_by  NS(55):stop  SS(66):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changeset(
             timetable.id,
             train_name.clone(),
             rolling_stock.name.clone(),
@@ -1007,7 +1003,10 @@ mod tests {
             schedule,
             Some("MA100".to_string()),
         )
-        .await;
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
+
         InitTestResponse {
             app,
             infra_id: small_infra.id,
@@ -1203,8 +1202,7 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changeset(
             timetable.id,
             train_name_1.clone(),
             rolling_stock.name.clone(),
@@ -1213,7 +1211,9 @@ mod tests {
             schedule,
             Some("MA100".to_string()),
         )
-        .await;
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
 
         let train_name_2 = "train_name_2".to_string();
         let path: Vec<PathItem> = vec![
@@ -1229,8 +1229,7 @@ mod tests {
             DateTime::from_str("2025-01-01T12:00:00Z").expect("Failed to parse datetime");
 
         // MES(44):passing_by  NS(55):stop  SS(66):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changeset(
             timetable.id,
             train_name_2.clone(),
             rolling_stock.name.clone(),
@@ -1239,7 +1238,9 @@ mod tests {
             schedule,
             Some("MA100".to_string()),
         )
-        .await;
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop NS(55):passing_by  SS(66):stop
         let request = Request {
@@ -1362,6 +1363,7 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
 
         let mut hour = 10;
+        let mut train_schedule_changesets = Vec::new();
         for i in 1..3 {
             let train_name = format!("train_{i}");
             let path: Vec<PathItem> = vec![
@@ -1378,8 +1380,7 @@ mod tests {
             hour += 1;
 
             // WS(22):stop  MWS(33):passing_by  MES(44):stop
-            create_train_schedule(
-                &mut db_pool.get_ok(),
+            train_schedule_changesets.push(train_schedule_changeset(
                 timetable.id,
                 train_name,
                 rolling_stock.name.clone(),
@@ -1387,8 +1388,7 @@ mod tests {
                 start_time,
                 schedule,
                 Some("MA100".to_string()),
-            )
-            .await;
+            ))
         }
 
         for i in 3..5 {
@@ -1406,8 +1406,7 @@ mod tests {
             hour += 1;
 
             // MES(44):stop  NES(77):stop
-            create_train_schedule(
-                &mut db_pool.get_ok(),
+            train_schedule_changesets.push(train_schedule_changeset(
                 timetable.id,
                 train_name,
                 rolling_stock.name.clone(),
@@ -1415,8 +1414,7 @@ mod tests {
                 start_time,
                 schedule,
                 Some("MA100".to_string()),
-            )
-            .await;
+            ));
         }
 
         let train_name = "train_5".to_string();
@@ -1440,8 +1438,7 @@ mod tests {
             .expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changesets.push(train_schedule_changeset(
             timetable.id,
             train_name.clone(),
             rolling_stock.name.clone(),
@@ -1449,8 +1446,14 @@ mod tests {
             start_time,
             schedule,
             Some("MA100".to_string()),
+        ));
+
+        let _ = TrainSchedule::create_batch::<_, Vec<_>>(
+            &mut db_pool.get_ok(),
+            train_schedule_changesets,
         )
-        .await;
+        .await
+        .expect("Failed to create train schedules");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
         let request = Request {
@@ -1549,8 +1552,7 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changeset(
             timetable.id,
             train_name_1.clone(),
             rolling_stock.name.clone(),
@@ -1559,7 +1561,9 @@ mod tests {
             schedule,
             Some("MA100".to_string()),
         )
-        .await;
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
 
         let train_name_2 = "train_2".to_string();
         let path: Vec<PathItem> = vec![
@@ -1574,8 +1578,7 @@ mod tests {
             DateTime::from_str("2025-01-01T11:00:00Z").expect("Failed to parse datetime");
 
         // MES(44):stop  NS(55):stop
-        create_train_schedule(
-            &mut db_pool.get_ok(),
+        train_schedule_changeset(
             timetable.id,
             train_name_2.clone(),
             rolling_stock.name.clone(),
@@ -1584,7 +1587,9 @@ mod tests {
             schedule,
             Some("MA100".to_string()),
         )
-        .await;
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create train schedule");
 
         // WS(22):stop  MWS(33):stop  MES(44):stop  NS(55):stop  SS(66):stop
         let request = Request {
