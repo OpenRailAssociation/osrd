@@ -32,6 +32,8 @@ pub struct PathfindingRequest {
     pub rolling_stock_maximum_speed: f64,
     /// Rolling stock length in meters:
     pub rolling_stock_length: f64,
+    /// Speed limit tag, used to estimate the max speed and travel time
+    pub speed_limit_tag: Option<String>,
 }
 
 #[editoast_derive::openapi_schema]
