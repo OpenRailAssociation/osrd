@@ -3,11 +3,8 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { TrainMainCategory } from 'common/api/osrdEditoastApi';
-import {
-  getMainCategoryOptions,
-  type MainCategoryOptionWithId,
-} from 'modules/rollingStock/hooks/getMainCategoryOptions';
+import type { SubCategory, TrainMainCategories } from 'common/api/osrdEditoastApi';
+import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 
 import type {
   ValidityFilter,
@@ -15,6 +12,7 @@ import type {
   TimetableFilters,
   TrainTypeFilter,
 } from './types';
+import { extractCategoryId } from './utils';
 
 type FilterPanelProps = {
   toggleFilterPanel: () => void;
@@ -23,8 +21,7 @@ type FilterPanelProps = {
 
 const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
-  const { t: translation } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-  const categoryOptions = getMainCategoryOptions(translation, false);
+  const categoryOptions = useCategoryOptions(false);
 
   const {
     nameLabelFilter,
@@ -63,13 +60,13 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
   ];
 
   const formattedCategoryOptions: {
-    id: 'all' | 'noCategory' | TrainMainCategory;
+    id: 'all' | 'noCategory' | (TrainMainCategories | SubCategory['code']);
     label: string;
   }[] = [
     { id: 'all', label: t('timetable.showAllCategories') },
     { id: 'noCategory', label: t('timetable.showTrainsWithNoCategory') },
     ...categoryOptions.map((option) => ({
-      id: (option as MainCategoryOptionWithId).id,
+      id: extractCategoryId(option.id),
       label: option.label,
     })),
   ];
