@@ -1,1 +1,11 @@
-{}
+{
+  "arriveAt": "Chega às {{ time }}",
+  "consist": {
+    "compositionCode": "Código da composição",
+    "errors": {
+      "maxSpeed": {
+        "negative": "Deve ser positivo."
+      }
+    }
+  }
+}
