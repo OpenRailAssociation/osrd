@@ -2,12 +2,22 @@
   "Editor": {
     "directions": {
       "BOTH": "Ambos",
-      "START_TO_STOP": "Partida até chegada"
+      "START_TO_STOP": "Partida até chegada",
+      "STOP_TO_START": "Chegada até partida"
     },
     "entities": {
       "errors-linked": "Problemas associados"
     },
     "infra-errors": {
+      "corrector-modal": {
+        "create-actions": "{{creation_count}} criações de objeto",
+        "delete-actions": "{{deletion_count}} eliminações de objeto",
+        "loading-loader": "A calcular as correções possíveis",
+        "no-fixes-found": "Não foram encontradas correções.",
+        "saving-loader": "Aplicar correções à infraestrutura",
+        "title": "Corretor automático de erro",
+        "update-actions": "{{update_count}} atualizações de objeto existentes"
+      },
       "error-level": {
         "all": "Todos",
         "errors": "Erros",
@@ -25,13 +35,153 @@
           "description": "A rota « {{obj_id}} » é inválida, o caminho solicitado não é consistente",
           "name": "Rota inválida"
         },
+        "invalid_switch_ports": {
+          "name": "Ramo inválido da agulha ou nó"
+        },
         "missing_route": {
+          "description": "A linha « {{obj_id}} » não tem nenhuma rota associada",
           "name": "Rota em falta"
         },
         "out_of_range": {
           "name": "Valor inválido"
+        },
+        "overlapping_electrifications": {
+          "description": "A eletrificação « {{obj_id}} » sobrepõe-se à eletrificação « {{reference.obj_id}} » na mesma linha e com a mesma voltagem",
+          "name": "Sobreposição das zonas de eletrificação"
+        },
+        "overlapping_speed_sections": {
+          "description": "O limite da velocidade « {{obj_id}} » sobrepõe-se a « {{reference.obj_id}} »",
+          "name": "Sobreposição dos limites de velocidade"
+        }
+      },
+      "infra-locked": "Por favor, note que não poderá guardar quaisquer alterações.",
+      "infra-readonly": "Por favor, note que está no modo 'só de leitura' nesta infraestrutura",
+      "label": {
+        "title-with-filter_one": "{{count}} problemas de {{total}}",
+        "title-with-filter_other": "{{count}} problemas de {{total}}",
+        "title-with-filter_zero": "zero problemas de {{total}}",
+        "title_one": "{{count}} problema",
+        "title_other": "{{count}} problemas",
+        "title_zero": "Nenhum problema"
+      },
+      "list": {
+        "filter-type": "Tipo de erro",
+        "goto-error": "Selecione e localize no mapa"
+      }
+    },
+    "tools": {
+      "switch-edition": {
+        "help": {
+          "no-move": "Os AMVs não podem ser movidos, e são colocados automaticamente na sua primeira porta."
         }
       }
     }
+  },
+  "common": {
+    "delete": "Eliminar",
+    "details": "Detalhes",
+    "duplicate": "Duplicar",
+    "edit": "Editar",
+    "error": "Ocorreu um erro",
+    "expand": "Expandir",
+    "failure": {
+      "save": {
+        "text": "Não foi possível publicar as suas modificações",
+        "title": "Não foi possível guardar as modificações"
+      }
+    },
+    "help": "Ajuda",
+    "help-display": "Mostrar ajuda",
+    "map-actions": {
+      "help-legend": "Mostrar legenda",
+      "reset-north": "Reiniciar câmara"
+    },
+    "navigation": {
+      "goBack": "Voltar à página anterior",
+      "goHome": "Ir para a página inicial"
+    },
+    "next": "Seguinte",
+    "no": "Não",
+    "open": "Abrir",
+    "previous": "Anterior",
+    "reset": "Reiniciar",
+    "save": "Guardar",
+    "saveEdits": "Guardar edições",
+    "search": "Procurar",
+    "selected": "já selecionado",
+    "success": {
+      "save": {
+        "text": "As suas modificações foram publicadas",
+        "title": "Modificações guardadas"
+      }
+    },
+    "units": {
+      "day": "d",
+      "hour": "h",
+      "km": "km",
+      "minute": "min"
+    },
+    "validate": "Guardar",
+    "yes": "Sim",
+    "zoom-in": "Zoom +",
+    "zoom-out": "Zoom -",
+    "zoom-reset": "Reiniciar zoom"
+  },
+  "editor": "Editor de infraestrutura",
+  "infraManagement": {
+    "actions": {
+      "cancel": "Cancelar",
+      "check": "Validar",
+      "copy": "Clonar",
+      "delete": "Eliminar",
+      "export": "Exportar para RailJSON",
+      "lock": "Bloquear",
+      "rename": "Renomear",
+      "unlock": "Desbloquear",
+      "waiting": "Por favor, aguarde"
+    },
+    "addInfra": "Criar uma infraestrutura",
+    "addInfraJSON": "Criar uma infraestrutura a partir de um ficheiro RailJSON",
+    "addInfraJSONFile": "Adicionar um ficheiro RailJSON",
+    "addInfraJSONFileRemove": "Cancelar importação de RailJSON",
+    "createInfra": "Criar",
+    "goToEditionMode": "Editar",
+    "goToStandardMode": "Voltar para a seleção",
+    "infraChoice": "Infraestrutura",
+    "infraDeleted": "O nome {{name}} da infraestrutura foi eliminado.",
+    "infraManagement": "Gestão de infraestruturas",
+    "infraName": "Nome da infraestrutura",
+    "locked": "Bloqueada",
+    "no": "Não",
+    "yes": "Sim"
+  },
+  "infrastructure": "Infraestrutura",
+  "interval-editor": {
+    "add": "Adicionar",
+    "begin": "Início",
+    "delete": "Eliminar",
+    "end": "FIm",
+    "merge": "Unir com o segmento seguinte",
+    "split": "Dividir",
+    "value": "Valor"
+  },
+  "jsonUpload": {
+    "emptyFile": "O ficheiro está vazio",
+    "uploadError": "Ocorreu um erro enquanto enviava o ficheiro"
+  },
+  "map": "Cartografia",
+  "mapKey": {
+    "alternatingCurrent": "CA",
+    "directCurrent": "CC",
+    "electrifications": "Eletrificação",
+    "keyTitle": "Legenda"
+  },
+  "mapSettings": {
+    "layers": {
+      "switches": "AMV"
+    }
+  },
+  "nav-bar": {
+    "about": "Sobre"
   }
 }
