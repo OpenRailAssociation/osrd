@@ -1,1 +1,83 @@
-{}
+{
+  "ApplicableDirections": {
+    "description": "Isto é utilizado para saber a direção da aplicação de certos objetos",
+    "title": "Direções aplicáveis"
+  },
+  "ApplicableDirectionsTrackRange": {
+    "description": "Um intervalo da linha das direções aplicáveis é um intervalo de linhas com direções associadas.",
+    "properties": {
+      "applicable_directions": {
+        "description": "Direção onde o objeto correspondente é aplicado"
+      },
+      "track": {
+        "description": "Identificador da secção da linha",
+        "title": "Linha"
+      }
+    }
+  },
+  "BalSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "title": "Parâmetros condicionais"
+      },
+      "default_parameters": {
+        "description": "Parâmetros de sinal BAL"
+      },
+      "next_signaling_systems": {
+        "description": "A lista dos sistemas de sinalização de entrada permitidos",
+        "title": "Próximos sistemas de sinalização"
+      },
+      "settings": {
+        "description": "Definições de sinal BAL"
+      },
+      "signaling_system": {
+        "title": "Sistema de sinalização"
+      }
+    },
+    "title": "Sistema BAL"
+  },
+  "BaprSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "Parâmetros de sinal BAPR para rotas específicas",
+        "title": "Parâmetros condicionais"
+      },
+      "next_signaling_systems": {
+        "description": "A lista dos sistemas de sinalização de entrada permitidos",
+        "title": "Próximos sistemas de sinalização"
+      },
+      "parameters": {
+        "description": "Parâmetros de sinal BAPR"
+      },
+      "settings": {
+        "description": "Definições de sinal BAPR"
+      },
+      "signaling_system": {
+        "title": "Sistema de sinalização"
+      }
+    }
+  },
+  "OperationalPointIdentifierExtension": {
+    "properties": {
+      "uic": {
+        "description": "Código da União Internacional dos Caminhos de Ferro do ponto operacional"
+      }
+    }
+  },
+  "Switch": {
+    "description": "Os AMVs são dispositivos utilizados para as mudanças de linha."
+  },
+  "SwitchType": {
+    "properties": {
+      "ports": {
+        "description": "Lista de portas. As portas são mapeadas para as extremidades dos AMVs"
+      }
+    }
+  },
+  "properties": {
+    "switches": {
+      "description": "AMVs da infraestrutura",
+      "title": "AMVs"
+    }
+  }
+}
