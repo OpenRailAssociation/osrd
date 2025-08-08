@@ -1,29 +1,16 @@
 import type { TFunction } from 'i18next';
 
 import {
+  getInvalidStepLabel,
   getStationFromOps,
   isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
-import type {
-  OperationalPoint,
-  OperationalPointReference,
-  PathItemLocation,
-} from 'common/api/osrdEditoastApi';
+import type { OperationalPoint, PathItemLocation } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import type { PairingItem } from '../types';
-
-const getInvalidStepLabel = (step: OperationalPointReference) => {
-  if ('uic' in step) {
-    return step.uic.toString();
-  }
-  if ('trigram' in step) {
-    return step.trigram;
-  }
-  return step.operational_point;
-};
 
 const getStepLabels = (
   ops: (OperationalPoint[] | null)[],
