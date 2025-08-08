@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import cx from 'classnames';
 
@@ -102,15 +102,16 @@ export const ResizingScale = ({
     setTicks(newTicks);
   }, [begin, end, wrapper]);
 
+  const debounceTimeoutRef = useRef<number>(undefined);
+
   /**
    * When the window is resized horizontally
    * => we recompute the operationalPoints4viz
    */
   useEffect(() => {
     const debounceResize = () => {
-      let debounceTimeoutId;
-      clearTimeout(debounceTimeoutId);
-      debounceTimeoutId = setTimeout(() => {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = window.setTimeout(() => {
         const newTicks = computeTicks(begin, end, wrapper);
         setTicks(newTicks);
       }, 15);
