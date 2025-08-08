@@ -26,15 +26,40 @@ use editoast_schemas::primitives::ObjectType;
 
 editoast_common::schemas! {
     Operation,
-    &json_patch::AddOperation,
-    &json_patch::CopyOperation,
-    &json_patch::MoveOperation,
-    &json_patch::PatchOperation,
-    &json_patch::RemoveOperation,
-    &json_patch::ReplaceOperation,
-    &json_patch::TestOperation,
-    &json_patch::Patch,
 }
+
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _ADDOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::AddOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _COPYOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::CopyOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _MOVEOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::MoveOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _PATCHOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::PatchOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _REMOVEOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::RemoveOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _REPLACEOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::ReplaceOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _TESTOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::TestOperation as utoipa::ToSchema>::schema;
+#[doc(hidden)]
+#[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
+static _PATCH_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
+    <json_patch::Patch as utoipa::ToSchema>::schema;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "operation_type", deny_unknown_fields, rename_all = "UPPERCASE")]
