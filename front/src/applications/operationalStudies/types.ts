@@ -98,6 +98,8 @@ export type PathPropertiesFormatted = {
   voltages: RangedValue[];
 };
 
+export type PositionedOperationalPoint = PathPropertiesFormatted['operationalPoints'][number];
+
 export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
 
 export type ElectrificationVoltage = {
