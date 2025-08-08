@@ -18,7 +18,7 @@ interface TrainPath : PhysicsPath, PathProperties {
 }
 
 fun concat(vararg paths: TrainPath): TrainPath {
-    TODO("Necessary for actual backtracks, not necessary earlier than that")
+    TODO("Required for actual backtracks, not necessary earlier than that")
 }
 
 data class GenericLinearRange<ValueType, OffsetType>(
@@ -38,3 +38,5 @@ typealias RouteRange = LinearObjectRange<Route>
 typealias BlockRange = LinearObjectRange<Block>
 
 typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
+
+typealias DirTrackRange = LinearObjectRange<TrackSection>

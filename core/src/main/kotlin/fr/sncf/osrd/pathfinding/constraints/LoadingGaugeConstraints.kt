@@ -1,7 +1,7 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.path.implementations.buildTrainPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -17,7 +17,7 @@ data class LoadingGaugeConstraints(
 ) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
-        val path = buildTrainPath(infra, blockInfra, edge)
+        val path = buildTrainPathFromBlock(infra, blockInfra, edge)
         res.addAll(getBlockedRanges(loadingGaugeType, path))
         return res
     }

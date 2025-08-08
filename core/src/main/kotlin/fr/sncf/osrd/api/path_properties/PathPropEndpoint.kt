@@ -25,7 +25,8 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
 
-            val pathProps = makePathProps(infra.rawInfra, request.trackSectionRanges)
+            val pathProps =
+                makePathProps(infra.rawInfra, infra.blockInfra, request.trackSectionRanges)
             val res = makePathPropResponse(pathProps, infra.rawInfra)
 
             RsJson(RsWithBody(pathPropResponseAdapter.toJson(res)))

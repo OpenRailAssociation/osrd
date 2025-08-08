@@ -3,7 +3,7 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.buildTrainPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -47,7 +47,7 @@ data class CachedBlockMRSPBuilder(
     /** Returns the speed limits for the given block (cached). */
     fun getMRSP(block: BlockId): Envelope {
         return mrspCache.computeIfAbsent(block) {
-            val pathProps = buildTrainPath(rawInfra, blockInfra, block, routes = listOf())
+            val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
             computeMRSP(pathProps, rsMaxSpeed, rsLength, false, null, temporarySpeedLimitManager)
         }
     }
