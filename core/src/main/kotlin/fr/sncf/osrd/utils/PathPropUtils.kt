@@ -3,10 +3,10 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.buildChunkPath
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.implementations.buildRangeMap
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunks
+import fr.sncf.osrd.path.interfaces.DirChunkRange
 import fr.sncf.osrd.path.interfaces.PathProperties
-import fr.sncf.osrd.path.interfaces.buildPathPropertiesFrom
-import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -15,45 +15,35 @@ import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Distance.Companion.max
+import fr.sncf.osrd.utils.units.Distance.Companion.min
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-
-/**
- * Creates the path from given blocks.
- *
- * @param rawInfra RawSignalingInfra
- * @param blockInfra BlockInfra
- * @param blockIds the blocks in the order they are encountered
- * @param offsetFirstBlock the path offset on the first block in millimeters
- * @param routes non-overlapping list of routes the path follows
- * @return corresponding path
- */
-fun makePathProps(
-    rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    blockIds: List<BlockId>,
-    offsetFirstBlock: Length<BlockPath>,
-    routes: List<RouteId>? = null,
-): PathProperties {
-    val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    var totalLength: Length<BlockPath> = Length(0.meters)
-    for (blockId in blockIds) {
-        for (zoneId in blockInfra.getBlockZonePaths(blockId)) {
-            chunks.addAll(rawInfra.getZonePathChunks(zoneId))
-            totalLength += rawInfra.getZonePathLength(zoneId).distance
-        }
-    }
-    return buildPathPropertiesFrom(rawInfra, chunks, offsetFirstBlock, totalLength, routes)
-}
 
 /** Builds a PathProperties from a List<TrackRange> */
 fun makePathProps(
     rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
     trackRanges: List<DirectionalTrackRange>,
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, trackRanges)
-    return makePathProperties(rawInfra, chunkPath)
+
+    val chunkRanges = mutableListOf<DirChunkRange>()
+    var prevChunksLength = 0.meters
+    for (chunk in chunkPath.chunks) {
+        val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
+        val start = max(chunkPath.beginOffset.distance - prevChunksLength, 0.meters)
+        val end = min(chunkPath.endOffset.distance - prevChunksLength, chunkLength.distance)
+        val range = DirChunkRange(chunk, Offset(start), Offset(end))
+        chunkRanges.add(range)
+        prevChunksLength += chunkLength.distance
+    }
+    return buildTrainPathFromChunks(
+        rawInfra,
+        blockInfra,
+        buildRangeMap(chunkRanges),
+        routes = listOf(),
+    )
 }
 
 fun makeChunkPath(

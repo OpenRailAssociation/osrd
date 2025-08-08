@@ -14,11 +14,11 @@ fun exportPathGeo(infra: FullInfra, res: PathfindingBlockSuccess) {
     File("$name-tracks.csv").printWriter().use { out ->
         out.println("index;linestring;id")
         for ((i, track) in res.trackSectionRanges.withIndex()) {
-            val geo = makePathProps(infra.rawInfra, listOf(track)).getGeo()
+            val geo = makePathProps(infra.rawInfra, infra.blockInfra, listOf(track)).getGeo()
             out.println("$i;$geo;${track.trackSection}")
         }
     }
-    val fullPath = makePathProps(infra.rawInfra, res.trackSectionRanges)
+    val fullPath = makePathProps(infra.rawInfra, infra.blockInfra, res.trackSectionRanges)
     val lineString = fullPath.getGeo()
     File("$name-points.csv").printWriter().use { out ->
         out.println("index;x;y")
