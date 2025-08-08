@@ -47,10 +47,12 @@ const TimesStopsOutput = ({
       tableType={TableType.Output}
       cellClassName={({ rowData: rowData_, columnId }) => {
         const rowData = rowData_ as TimesStopsRow;
-        const arrivalScheduleNotRespected = rowData.arrival?.time
-          ? rowData.calculatedArrival !== rowData.arrival.time
-          : false;
-        const negativeDiffMargins = Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
+        const arrivalScheduleNotRespected =
+          rowData.arrival?.time && rowData.calculatedArrival
+            ? rowData.calculatedArrival !== rowData.arrival.time
+            : false;
+        const negativeDiffMargins =
+          rowData.diffMargins && Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
         return cx({
           'warning-schedule': arrivalScheduleNotRespected,
           'warning-margin': negativeDiffMargins,
