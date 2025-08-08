@@ -6,7 +6,7 @@ import type { ScheduleEntry } from '../types';
 import { receptionSignalToSignalBooleans } from './utils';
 
 /** Format the stopFor, calculatedDeparture, shortSlipDistance and onStopSignal properties */
-export const formatSchedule = (arrivalTime: Date, schedule?: ScheduleEntry) => {
+export const formatSchedule = (arrivalTime?: Date, schedule?: ScheduleEntry) => {
   if (!schedule) {
     return {
       stopFor: undefined,
@@ -26,6 +26,13 @@ export const formatSchedule = (arrivalTime: Date, schedule?: ScheduleEntry) => {
 
   const stopFor = Duration.parse(schedule.stop_for);
 
+  if (!arrivalTime) {
+    return {
+      stopFor: `${stopFor.total('second')}`,
+      calculatedDeparture: undefined,
+      ...receptionSignalToSignalBooleans(schedule.reception_signal),
+    };
+  }
   return {
     stopFor: `${stopFor.total('second')}`,
     calculatedDeparture: dateToHHMMSS(addDurationToDate(arrivalTime, stopFor)),
