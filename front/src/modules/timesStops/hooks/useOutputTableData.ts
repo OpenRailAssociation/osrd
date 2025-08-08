@@ -4,7 +4,10 @@ import { keyBy } from 'lodash';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type {
+  PathfindingResultSuccess,
+  SimulationResponseSuccess,
+} from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
@@ -22,6 +25,7 @@ const useOutputTableData = (
   isValid: boolean,
   selectedTrain?: Train,
   simulatedTrain?: SimulationResponseSuccess['final_output'],
+  simulatedPath?: PathfindingResultSuccess,
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
   simulatedOperationalPoints?: PathPropertiesFormatted['operationalPoints']
 ): TimesStopsRow[] => {
@@ -33,19 +37,29 @@ const useOutputTableData = (
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
   const pathStepRowsById: Map<string, Partial<TimesStopsRow>> = useMemo(() => {
-    if (!selectedTrain || !isValid || !simulatedPathItemTimes) return new Map();
+    if (
+      !selectedTrain ||
+      !isValid ||
+      !simulatedPathItemTimes ||
+      !simulatedPath ||
+      !simulatedOperationalPoints
+    )
+      return new Map();
 
     const startDatetime = new Date(selectedTrain.start_time);
     let lastReferenceDate = startDatetime;
 
     return new Map(
       selectedTrain.path.map((pathStep, index) => {
-        const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
+        const opPositionOnPath = simulatedPath?.path_item_positions[index];
+        const matchingOperationalPoint = simulatedOperationalPoints.find(
+          (op) => op.position === opPositionOnPath
+        );
 
+        const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
         const computedArrival = new Date(
           startDatetime.getTime() + simulatedPathItemTimes.final[index]
         );
-
         const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
           computedArrival,
           schedule
@@ -81,7 +95,9 @@ const useOutputTableData = (
 
         const pathStepRow = {
           pathStepId: pathStep.id,
-          ch: undefined,
+          opId: matchingOperationalPoint?.id,
+          name: matchingOperationalPoint?.extensions?.identifier?.name,
+          ch: matchingOperationalPoint?.extensions?.sncf?.ch,
 
           arrival,
           departure,
@@ -114,6 +130,7 @@ const useOutputTableData = (
       const trackSections = await getTrackSectionsByIds(trackIds);
 
       const formattedRows = simulatedOperationalPoints.map((op) => {
+        const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
         const matchingPathStep = selectedTrain?.path.find((pathStep) =>
           matchPathStepAndOp(pathStep, {
             opId: op.id,
@@ -132,10 +149,7 @@ const useOutputTableData = (
         if (matchingPathStepRow) {
           return {
             ...matchingPathStepRow,
-            opId: op.id,
-            name: op.extensions?.identifier?.name,
-            ch: op.extensions?.sncf?.ch,
-            trackName: trackSections[op.part.track]?.extensions?.sncf?.track_name,
+            trackName,
           };
         }
 
@@ -155,7 +169,7 @@ const useOutputTableData = (
           name: op.extensions?.identifier?.name,
           ch: op.extensions?.sncf?.ch,
           calculatedArrival: dateToHHMMSS(calculatedArrival),
-          trackName: trackSections[op.part.track]?.extensions?.sncf?.track_name,
+          trackName,
         };
       });
       setRows(formattedRows);
