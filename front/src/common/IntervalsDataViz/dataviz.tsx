@@ -172,15 +172,16 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     }
   }, [operationalPoints, fullLength]);
 
+  const debounceTimeoutRef = useRef<number>(undefined);
+
   /**
    * When the window is resized horizontally
    * => we recompute the operationalPoints4viz
    */
   useEffect(() => {
     const debounceResize = () => {
-      let debounceTimeoutId;
-      clearTimeout(debounceTimeoutId);
-      debounceTimeoutId = setTimeout(() => {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = window.setTimeout(() => {
         const nOperationalPoints = cropOperationPointsForDatavizViewbox(
           operationalPoints || [],
           viewBox,
