@@ -29,7 +29,7 @@
     },
     "length": "Length",
     "loadingGauge": "Loading gauge",
-    "maxSpeed": "Max speed",
+    "maxSpeed": "Max speed.",
     "tonnage": "Tonnage",
     "towedRollingStock": "Towed rolling stock",
     "tractionEngine": "Traction engine"
@@ -69,7 +69,7 @@
   },
   "noCorrespondingResults": "No results matching your search.",
   "pathfindingStatus": {
-    "calculating": "Validating path...",
+    "calculating": "Validating path…",
     "success": "The requested path is valid."
   },
   "reportSheet": {
@@ -126,8 +126,8 @@
     "studyLegend": "study"
   },
   "simulation": {
-    "additionalResults": "No results were found for your request; alternative options are being computed",
-    "calculatingSimulation": "Calculation in progress...",
+    "additionalResults": "No results were found for your request; alternative options are being computed.",
+    "calculatingSimulation": "Calculation in progress…",
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
     "results": {
@@ -164,7 +164,7 @@
         "arrivalIncompatible": "Arrival time incompatible",
         "helpUs": "Help us improve {{stdcmName}}",
         "other": "Other",
-        "reason": "This simulation does not meet your needs because ...",
+        "reason": "This simulation does not meet your needs because…",
         "startIncompatible": "Departure time incompatible",
         "unqualifiedDriver": "Unqualified driver"
       },
