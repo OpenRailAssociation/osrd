@@ -49,7 +49,7 @@
     "incompleteForm": "Formulaire incomplet",
     "viaNotDefined": "Au moins une localisation n'est pas renseignée"
   },
-  "infrastructure": "Infra ",
+  "infrastructure": "Infra",
   "leaveAt": "Partir à {{ time }}",
   "linkedTrainDefaultCard": {
     "anterior": "Indiquer le sillon antérieur",
@@ -69,7 +69,7 @@
   },
   "noCorrespondingResults": "Aucun résultat ne correspond à votre recherche.",
   "pathfindingStatus": {
-    "calculating": "Validation de l'itinéraire en cours...",
+    "calculating": "Validation de l'itinéraire en cours…",
     "success": "L'itinéraire demandé est valide."
   },
   "reportSheet": {
@@ -113,7 +113,7 @@
     "weight": "tonnage",
     "withoutWarranty": "Simulation de sillon sans garantie de disponibilité"
   },
-  "scenario": "Scénario ",
+  "scenario": "Scénario",
   "scenarioExplorer": {
     "infraLegend": "infra",
     "noScenarioSelected": "Cliquez ici pour sélectionner un scénario afin de déterminer une infrastructure et une grille horaire.",
@@ -127,7 +127,7 @@
   },
   "simulation": {
     "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
-    "calculatingSimulation": "Calcul en cours...",
+    "calculatingSimulation": "Calcul en cours…",
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
     "results": {
@@ -164,7 +164,7 @@
         "arrivalIncompatible": "Heure arrivée incompatible",
         "helpUs": "Aidez-nous à améliorer {{stdcmName}}",
         "other": "Autre",
-        "reason": "Cette simulation ne répond pas à vos besoin car ...",
+        "reason": "Cette simulation ne répond pas à vos besoin car…",
         "startIncompatible": "Heure départ incompatible",
         "unqualifiedDriver": "Conducteur non habilité"
       },
