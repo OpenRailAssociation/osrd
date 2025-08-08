@@ -61,11 +61,7 @@ use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
 use crate::views::timetable::train_simulation_batch;
 
-editoast_common::schemas! {
-    request::schemas(),
-    StdcmResponse,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants

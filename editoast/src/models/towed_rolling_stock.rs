@@ -11,7 +11,6 @@ use serde::Serialize;
 
 use crate::models::prelude::*;
 
-
 #[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, utoipa::ToSchema)]

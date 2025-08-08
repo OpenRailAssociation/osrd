@@ -5,10 +5,6 @@ use std::collections::HashMap;
 
 use super::TrackRange;
 
-editoast_common::schemas! {
-    Intersection,
-}
-
 /// This object is useful to:
 /// - Get the position in the path given a location (track section and offset).
 /// - Get the location (track section and offset) given a position in a path.
@@ -213,6 +209,7 @@ impl<'a> PathProjection<'a> {
 }
 
 /// Represent the intersection between a track range and a path, relative to the beginning of the path
+#[editoast_derive::openapi_schema]
 #[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, utoipa::ToSchema)]
 pub struct Intersection {
     /// Distance of the beginning of the intersection relative to the beginning of the path

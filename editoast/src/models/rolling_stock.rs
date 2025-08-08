@@ -32,7 +32,6 @@ use crate::models::prelude::*;
 mod schedules_from_rolling_stock;
 pub use schedules_from_rolling_stock::ScenarioReference;
 
-
 #[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]

@@ -32,11 +32,6 @@ use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 
-editoast_common::schemas! {
-    StdcmSearchEnvironmentCreateForm,
-    StdcmSearchEnvironment,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "stdcm_search_env")]
 enum StdcmSearchEnvError {
@@ -50,6 +45,7 @@ enum StdcmSearchEnvError {
     Database(#[from] editoast_models::model::Error),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]

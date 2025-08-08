@@ -33,10 +33,7 @@ use crate::views::path::pathfinding::PathfindingResult;
 
 use super::StdcmError;
 
-editoast_common::schemas! {
-    PathfindingItem,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub(crate) struct PathfindingItem {
     /// The stop duration in milliseconds, None if the train does not stop.

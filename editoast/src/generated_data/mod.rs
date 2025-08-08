@@ -42,7 +42,6 @@ use crate::infra_cache::operation::CacheOperation;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 
-
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
     fn table_name() -> &'static str;

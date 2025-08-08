@@ -17,7 +17,6 @@ use crate::views::project::ProjectError;
 use database::DbConnection;
 use editoast_models::model;
 
-
 #[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]

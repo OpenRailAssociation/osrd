@@ -85,7 +85,6 @@ use url::Url;
 use crate::ValkeyClient;
 use crate::client::get_app_version;
 use crate::error::Result;
-use crate::error::{self};
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
@@ -382,28 +381,6 @@ fn service_router() -> router::DocumentedRouter {
                     })
             })
     })
-}
-
-editoast_common::schemas! {
-    authz::schemas(),
-    electrical_profiles::schemas(),
-    error::schemas(),
-    infra::schemas(),
-    operational_studies::schemas(),
-    pagination::schemas(),
-    path::schemas(),
-    project::schemas(),
-    projection::schemas(),
-    rolling_stock::schemas(),
-    scenario::schemas(),
-    scenario::macro_nodes::schemas(),
-    search::schemas(),
-    stdcm_search_environment::schemas(),
-    timetable::schemas(),
-    work_schedules::schemas(),
-    stdcm_logs::schemas(),
-    round_trips::schemas(),
-    sub_categories::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request

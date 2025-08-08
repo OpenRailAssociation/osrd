@@ -16,6 +16,7 @@ use editoast_models::model;
 #[cfg(test)]
 use serde::Deserialize;
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Model, ToSchema, Serialize)]
 #[model(table = database::tables::stdcm_search_environment)]
 #[model(gen(ops = crd, list))]

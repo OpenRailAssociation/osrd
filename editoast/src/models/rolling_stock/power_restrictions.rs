@@ -11,7 +11,6 @@ use utoipa::ToSchema;
 use super::RollingStock;
 use crate::error::Result;
 
-
 #[editoast_derive::openapi_schema]
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PowerRestriction {

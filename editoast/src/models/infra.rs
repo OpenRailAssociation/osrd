@@ -44,7 +44,6 @@ use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::ObjectType;
 
-
 /// The default version of a newly created infrastructure
 ///
 /// This value is set by the database. This constant is used

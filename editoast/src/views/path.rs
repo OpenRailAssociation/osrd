@@ -14,12 +14,6 @@ use crate::error::Result;
 use crate::models::Infra;
 use crate::models::prelude::*;
 
-editoast_common::schemas! {
-    pathfinding::schemas(),
-    projection::schemas(),
-    properties::schemas(),
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]
 pub enum PathfindingError {

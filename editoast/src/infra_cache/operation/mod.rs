@@ -24,7 +24,6 @@ use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
-
 #[doc(hidden)]
 #[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
 static _ADDOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =

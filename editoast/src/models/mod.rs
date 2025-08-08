@@ -55,7 +55,6 @@ pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
 pub use user::User;
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;

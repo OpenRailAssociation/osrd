@@ -48,13 +48,7 @@ use serde::Deserialize;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 
-editoast_common::schemas! {
-    LightEffortCurves,
-    LightModeEffortCurves,
-    LightRollingStock,
-    LightRollingStockWithLiveries,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct LightRollingStockWithLiveries {
@@ -205,6 +199,7 @@ pub(in crate::views) async fn get_by_name(
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
+#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
@@ -302,12 +297,14 @@ impl From<RollingStock> for LightRollingStock {
 }
 
 // Light effort curves schema for LightRollingStock
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct LightModeEffortCurves {
     is_electric: bool,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 #[serde(deny_unknown_fields)]

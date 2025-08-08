@@ -274,7 +274,6 @@ impl OpenApiRoot {
             openapi.components = Some(Default::default());
         }
         let schemas = &mut openapi.components.as_mut().unwrap().schemas;
-        schemas.extend(crate::views::schemas());
         schemas.extend(editoast_common::OPENAPI_SCHEMAS.iter().map(|f| {
             let (name, schema) = f();
             (name.to_string(), schema)

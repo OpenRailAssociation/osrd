@@ -26,10 +26,6 @@ use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 
-editoast_common::schemas! {
-    SubCategoryPage,
-}
-
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "sub_categories")]
 enum SubCategoryError {
@@ -54,6 +50,7 @@ impl From<sub_category::Error> for SubCategoryError {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 pub(in crate::views) struct SubCategoryPage {
@@ -226,10 +223,10 @@ pub mod tests {
     use serde_json::json;
 
     use crate::models;
-    use crate::models::fixtures::{
-        create_timetable, simple_paced_train_changeset, simple_sub_category,
-        simple_train_schedule_changeset,
-    };
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::models::fixtures::simple_sub_category;
+    use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::models::prelude::*;
     use crate::views::sub_categories::SubCategoryPage;
     use crate::views::test_app::TestAppBuilder;

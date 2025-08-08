@@ -34,12 +34,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-editoast_common::schemas! {
-    WorkSchedule,
-    WorkScheduleItemForm,
-    WorkScheduleType,
-}
-
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct WorkScheduleGroupIdParam {
     /// A work schedule group ID
@@ -72,6 +66,7 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub(in crate::views) struct WorkScheduleItemForm {

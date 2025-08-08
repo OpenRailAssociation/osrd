@@ -19,8 +19,6 @@ use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
 use editoast_common::geometry::GeoJsonLineString;
-use editoast_schemas::infra::OperationalPointExtensions;
-use editoast_schemas::infra::OperationalPointPart;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Either;
@@ -41,14 +39,7 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
 
-editoast_common::schemas! {
-    PathProperties,
-    PathPropertiesInput,
-    Property,
-    OperationalPointPart,
-    OperationalPointExtensions,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
 pub struct PathPropertiesInput {
     /// List of track sections
@@ -56,6 +47,7 @@ pub struct PathPropertiesInput {
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
 pub(in crate::views) struct PathProperties {
     #[schema(inline)]
@@ -124,6 +116,7 @@ impl From<Props> for Properties {
 }
 
 /// Enum representing the various associated properties that can be returned
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, ToSchema, EnumSetType)]
 #[serde(rename_all = "snake_case")]
 pub(in crate::views) enum Property {

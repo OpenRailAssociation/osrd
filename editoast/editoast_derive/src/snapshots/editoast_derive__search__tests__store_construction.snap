@@ -77,6 +77,7 @@ impl search::SearchConfigStore for SearchStore {
         ])
     }
 }
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[serde(untagged)]
 #[allow(unused, clippy::enum_variant_names)]
@@ -89,11 +90,4 @@ pub(super) enum SearchResultItem {
     SearchResultItemStudy(SearchResultItemStudy),
     SearchResultItemScenario(SearchResultItemScenario),
     SearchResultItemTrainSchedule(SearchResultItemTrainSchedule),
-}
-impl SearchResultItem {
-    editoast_common::schemas! {
-        SearchResultItemTrack, SearchResultItemOperationalPoint, SearchResultItemSignal,
-        SearchResultItemProject, SearchResultItemStudy, SearchResultItemScenario,
-        SearchResultItemTrainSchedule, SearchResultItem,
-    }
 }

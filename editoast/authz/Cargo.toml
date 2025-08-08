@@ -6,6 +6,8 @@ edition.workspace = true
 
 [dependencies]
 derive_more.workspace = true
+editoast_common.workspace = true
+editoast_derive.workspace = true
 fga.workspace = true
 futures.workspace = true
 itertools.workspace = true

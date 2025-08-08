@@ -32,12 +32,6 @@ use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
-editoast_common::schemas! {
-    PathfindingTrackLocationInput,
-    InfraPathfindingInput,
-    PathfindingOutput,
-}
-
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
 const MAX_NUMBER_OF_PATHS: u8 = 5;
 
@@ -52,6 +46,7 @@ enum PathfindingViewErrors {
     InvalidNumberOfPaths { path_number: u8, max_number: u8 },
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationInput {
@@ -60,12 +55,14 @@ struct PathfindingTrackLocationInput {
     position: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub(in crate::views) struct InfraPathfindingInput {
     starting: PathfindingTrackLocationInput,
     ending: PathfindingTrackLocationInput,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub(in crate::views) struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,

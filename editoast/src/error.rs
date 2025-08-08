@@ -24,10 +24,6 @@ use utoipa::ToSchema;
 use validator::ValidationErrors;
 use validator::ValidationErrorsKind;
 
-editoast_common::schemas! {
-    InternalError,
-}
-
 pub type Result<T, E = InternalError> = StdResult<T, E>;
 
 /// Trait for all errors that can be returned by editoast
@@ -55,6 +51,7 @@ pub(crate) fn default_status_code() -> StatusCode {
     StatusCode::INTERNAL_SERVER_ERROR
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
 pub struct InternalError {
     #[serde(with = "StatusCodeRemoteDef", default = "default_status_code")]

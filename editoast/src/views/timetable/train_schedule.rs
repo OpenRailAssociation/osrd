@@ -72,14 +72,6 @@ use crate::views::timetable::simulation::build_sim_schedule_items;
 use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
 
-editoast_common::schemas! {
-    TrainSchedule,
-    TrainScheduleForm,
-    TrainScheduleResponse,
-    ElectricalProfileSetIdQueryParam,
-    OccupancyBlockForm,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
 #[allow(clippy::enum_variant_names)] // Variant have the same postfix by chance, it's not a problem
@@ -116,6 +108,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
     id: i64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainScheduleResponse {
     id: i64,
@@ -134,6 +127,7 @@ impl From<models::TrainSchedule> for TrainScheduleResponse {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainScheduleForm {
     /// Timetable attached to the train schedule
@@ -262,6 +256,7 @@ pub(in crate::views) async fn put(
     Ok(Json(ts_result.into()))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub struct ElectricalProfileSetIdQueryParam {
