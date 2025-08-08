@@ -301,6 +301,7 @@ const SimulationResults = ({
       >
         <div className="time-stop-outputs">
           <TimesStopsOutput
+            infraId={infraId}
             selectedTrain={simulationResults?.train}
             {...(simulationResults?.isValid && simulationSummary?.isValid
               ? {
