@@ -4,10 +4,7 @@ import { keyBy } from 'lodash';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type {
-  PathfindingResultSuccess,
-  SimulationResponseSuccess,
-} from 'common/api/osrdEditoastApi';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
@@ -22,11 +19,11 @@ import { formatSchedule } from '../helpers/scheduleData';
 import { type ScheduleEntry, type TimesStopsRow } from '../types';
 
 const useOutputTableData = (
-  simulatedTrain?: SimulationResponseSuccess['final_output'],
-  simulationSummary?: SimulationSummary,
-  operationalPoints?: PathPropertiesFormatted['operationalPoints'],
+  isValid: boolean,
   selectedTrain?: Train,
-  path?: PathfindingResultSuccess
+  simulatedTrain?: SimulationResponseSuccess['final_output'],
+  simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
+  simulatedOperationalPoints?: PathPropertiesFormatted['operationalPoints']
 ): TimesStopsRow[] => {
   const { getTrackSectionsByIds } = useScenarioContext();
 
@@ -36,9 +33,7 @@ const useOutputTableData = (
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
   const pathStepRowsById: Map<string, Partial<TimesStopsRow>> = useMemo(() => {
-    if (!selectedTrain || !simulationSummary?.isValid || !path) return new Map();
-
-    const { pathItemTimes } = simulationSummary;
+    if (!selectedTrain || !isValid || !simulatedPathItemTimes) return new Map();
 
     const startDatetime = new Date(selectedTrain.start_time);
     let lastReferenceDate = startDatetime;
@@ -47,7 +42,9 @@ const useOutputTableData = (
       selectedTrain.path.map((pathStep, index) => {
         const schedule: ScheduleEntry | undefined = scheduleByAt[pathStep.id];
 
-        const computedArrival = new Date(startDatetime.getTime() + pathItemTimes.final[index]);
+        const computedArrival = new Date(
+          startDatetime.getTime() + simulatedPathItemTimes.final[index]
+        );
 
         const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
           computedArrival,
@@ -59,7 +56,13 @@ const useOutputTableData = (
           theoreticalMarginSeconds,
           calculatedMargin,
           diffMargins,
-        } = computeMargins(theoreticalMargins, selectedTrain, scheduleByAt, index, pathItemTimes);
+        } = computeMargins(
+          theoreticalMargins,
+          selectedTrain,
+          scheduleByAt,
+          index,
+          simulatedPathItemTimes
+        );
 
         const { theoreticalArrival, arrival, departure, refDate } = computeInputDatetimes(
           startDatetime,
@@ -98,19 +101,19 @@ const useOutputTableData = (
         return [pathStepRow.pathStepId, pathStepRow];
       })
     );
-  }, [selectedTrain, path, simulationSummary]);
+  }, [selectedTrain, simulatedPathItemTimes]);
 
   useEffect(() => {
     const formatRows = async () => {
-      if (!operationalPoints || !selectedTrain || !simulatedTrain) {
+      if (!simulatedOperationalPoints || !selectedTrain || !simulatedTrain || !isValid) {
         setRows([]);
         return;
       }
 
-      const trackIds = operationalPoints.map((op) => op.part.track);
+      const trackIds = simulatedOperationalPoints.map((op) => op.part.track);
       const trackSections = await getTrackSectionsByIds(trackIds);
 
-      const formattedRows = operationalPoints.map((op) => {
+      const formattedRows = simulatedOperationalPoints.map((op) => {
         const matchingPathStep = selectedTrain?.path.find((pathStep) =>
           matchPathStepAndOp(pathStep, {
             opId: op.id,
@@ -159,7 +162,7 @@ const useOutputTableData = (
     };
 
     formatRows();
-  }, [operationalPoints, pathStepRowsById, simulatedTrain, getTrackSectionsByIds]);
+  }, [simulatedOperationalPoints, pathStepRowsById, simulatedTrain, getTrackSectionsByIds]);
 
   return rows;
 };

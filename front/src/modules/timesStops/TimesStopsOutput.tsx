@@ -1,10 +1,7 @@
 import cx from 'classnames';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type {
-  PathfindingResultSuccess,
-  SimulationResponseSuccess,
-} from 'common/api/osrdEditoastApi';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
@@ -14,30 +11,30 @@ import TimesStops from './TimesStops';
 import { TableType, type TimesStopsRow } from './types';
 
 type TimesStopsOutputProps = {
-  simulatedTimetableItem?: SimulationResponseSuccess;
-  simulationSummary?: SimulationSummary;
-  operationalPoints?: PathPropertiesFormatted['operationalPoints'];
+  isValid: boolean;
   selectedTrain?: Train;
-  path?: PathfindingResultSuccess;
+  simulatedTrain?: SimulationResponseSuccess['final_output'];
+  simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
+  simulatedOperationalPoints?: PathPropertiesFormatted['operationalPoints'];
 };
 
 const TimesStopsOutput = ({
-  simulatedTimetableItem,
-  simulationSummary,
-  operationalPoints,
+  isValid,
   selectedTrain,
-  path,
+  simulatedTrain,
+  simulatedPathItemTimes,
+  simulatedOperationalPoints,
 }: TimesStopsOutputProps) => {
-  const enrichedOperationalPoints = useOutputTableData(
-    simulatedTimetableItem?.final_output,
-    simulationSummary,
-    operationalPoints,
+  const rows = useOutputTableData(
+    isValid,
     selectedTrain,
-    path
+    simulatedTrain,
+    simulatedPathItemTimes,
+    simulatedOperationalPoints
   );
   return (
     <TimesStops
-      rows={enrichedOperationalPoints}
+      rows={rows}
       tableType={TableType.Output}
       cellClassName={({ rowData: rowData_, columnId }) => {
         const rowData = rowData_ as TimesStopsRow;
@@ -52,7 +49,7 @@ const TimesStopsOutput = ({
         });
       }}
       headerRowHeight={40}
-      dataIsLoading={!simulationSummary || !operationalPoints || !selectedTrain}
+      dataIsLoading={!simulatedPathItemTimes || !simulatedOperationalPoints || !selectedTrain}
     />
   );
 };

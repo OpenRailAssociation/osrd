@@ -301,17 +301,15 @@ const SimulationResults = ({
       >
         <div className="time-stop-outputs">
           <TimesStopsOutput
-            simulatedTimetableItem={
-              simulationResults?.isValid ? simulationResults.simulation : undefined
-            }
-            simulationSummary={simulationSummary}
-            operationalPoints={
-              simulationResults?.isValid
-                ? simulationResults.pathProperties.operationalPoints
-                : undefined
-            }
             selectedTrain={simulationResults?.train}
-            path={simulationResults?.isValid ? simulationResults.path : undefined}
+            {...(simulationResults?.isValid && simulationSummary?.isValid
+              ? {
+                  isValid: true,
+                  simulatedTrain: simulationResults.simulation.final_output,
+                  simulatedPathItemTimes: simulationSummary.pathItemTimes,
+                  simulatedOperationalPoints: simulationResults.pathProperties.operationalPoints,
+                }
+              : { isValid: false })}
           />
         </div>
 
