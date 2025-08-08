@@ -14,6 +14,7 @@ import TimesStops from './TimesStops';
 import { TableType, type TimesStopsRow } from './types';
 
 type TimesStopsOutputProps = {
+  infraId: number;
   isValid: boolean;
   selectedTrain?: Train;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
@@ -23,6 +24,7 @@ type TimesStopsOutputProps = {
 };
 
 const TimesStopsOutput = ({
+  infraId,
   isValid,
   selectedTrain,
   simulatedTrain,
@@ -31,6 +33,7 @@ const TimesStopsOutput = ({
   simulatedOperationalPoints,
 }: TimesStopsOutputProps) => {
   const rows = useOutputTableData(
+    infraId,
     isValid,
     selectedTrain,
     simulatedTrain,
@@ -55,7 +58,7 @@ const TimesStopsOutput = ({
         });
       }}
       headerRowHeight={40}
-      dataIsLoading={!simulatedPathItemTimes || !simulatedOperationalPoints || !selectedTrain}
+      dataIsLoading={!selectedTrain}
     />
   );
 };
