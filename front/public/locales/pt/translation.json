@@ -27,6 +27,9 @@
         },
         "missing_route": {
           "name": "Rota em falta"
+        },
+        "out_of_range": {
+          "name": "Valor inválido"
         }
       }
     }
