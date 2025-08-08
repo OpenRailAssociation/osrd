@@ -4,7 +4,12 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
-import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
+import type { PositionedOperationalPoint } from 'applications/operationalStudies/types';
+import {
+  getInvalidStepLabel,
+  isOperationalPointReference,
+} from 'applications/operationalStudies/utils';
+import type { PathItemLocation, ReceptionSignal, TrackReference } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
@@ -341,3 +346,45 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
   }
   return { shortSlipDistance: false, onStopSignal: false };
 }
+
+export const matchOpRefAndOp = (
+  op: PositionedOperationalPoint,
+  opRef: PathItemLocation
+): boolean => {
+  if ('operational_point' in opRef) return op.id === opRef.operational_point;
+  if ('trigram' in opRef) {
+    return (
+      opRef.trigram === op.extensions?.sncf?.trigram &&
+      (opRef.secondary_code ? opRef.secondary_code === op.extensions.sncf?.ch : true)
+    );
+  }
+  if ('uic' in opRef) {
+    return (
+      opRef.uic === op.extensions?.identifier?.uic &&
+      (opRef.secondary_code ? opRef.secondary_code === op.extensions.sncf?.ch : true)
+    );
+  }
+  return false;
+};
+
+export const getTrackReferenceLabel = (trackReference?: TrackReference | null) => {
+  if (!trackReference) return undefined;
+  return 'track_id' in trackReference ? trackReference.track_id : trackReference.track_name;
+};
+
+export const getOperationalPointName = (
+  op: PositionedOperationalPoint | undefined,
+  step: PathItemLocation,
+  mapWaypointCount: number,
+  t: TFunction<'operational-studies'>
+) => {
+  // We have a matching operational point
+  if (op) return op.extensions?.identifier?.name;
+
+  // TrackOffset
+  if (!isOperationalPointReference(step))
+    return t('main.requestedPoint', { count: mapWaypointCount });
+
+  // Invalid step
+  return getInvalidStepLabel(step);
+};
