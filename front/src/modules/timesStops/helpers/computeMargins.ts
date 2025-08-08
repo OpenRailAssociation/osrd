@@ -1,4 +1,4 @@
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 
@@ -34,9 +34,7 @@ function computeMargins(
   train: Pick<Train, 'path' | 'margins'>,
   scheduleByAt: Record<string, ScheduleEntry>,
   pathStepIndex: number,
-  pathItemTimes: NonNullable<
-    Extract<NonNullable<TrainScheduleWithDetails['summary']>, { isValid: true }>['pathItemTimes']
-  > // in ms
+  pathItemTimes: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'] | undefined // in ms
 ) {
   const { path, margins } = train;
   const pathStepId = path[pathStepIndex].id;
@@ -57,6 +55,15 @@ function computeMargins(
   }
 
   const { theoreticalMargin, isBoundary } = stepTheoreticalMarginInfo;
+
+  if (!pathItemTimes) {
+    return {
+      theoreticalMargin: formatDigitsAndUnit(theoreticalMargin),
+      isTheoreticalMarginBoundary: isBoundary,
+      calculatedMargin: undefined,
+      diffMargins: undefined,
+    };
+  }
 
   // find the next pathStep where constraints are defined
   let nextIndex = path.length - 1;
