@@ -20,7 +20,7 @@ object CoastingGenerator {
         envelope: Envelope,
         context: EnvelopeSimContext,
         startPos: Double,
-        startSpeed: Double
+        startSpeed: Double,
     ): EnvelopePart? {
         val partBuilder = EnvelopePartBuilder()
         partBuilder.setAttr(EnvelopeProfile.COASTING)
@@ -28,7 +28,7 @@ object CoastingGenerator {
             ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
+                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
             )
         EnvelopeCoasting.coast(context, startPos, startSpeed, constrainedBuilder, 1.0)
         if (constrainedBuilder.lastIntersection == 0) {
@@ -48,7 +48,7 @@ object CoastingGenerator {
         envelope: Envelope,
         context: EnvelopeSimContext,
         endPos: Double,
-        lowSpeedLimit: Double
+        lowSpeedLimit: Double,
     ): EnvelopePart? {
         assert(endPos >= 0 && endPos <= context.path.length)
 
@@ -59,7 +59,7 @@ object CoastingGenerator {
             ConstrainedEnvelopePartBuilder(
                 backwardPartBuilder,
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
+                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
             )
 
         var position = endPos
@@ -98,7 +98,7 @@ object CoastingGenerator {
                 envelope,
                 context,
                 constrainedBuilder.lastPos,
-                constrainedBuilder.lastSpeed
+                constrainedBuilder.lastSpeed,
             )
         if (resultCoast == null || resultCoast.endPos > endPos + context.timeStep * speed) {
             // The coasting envelope didn't intersect with the base envelope,

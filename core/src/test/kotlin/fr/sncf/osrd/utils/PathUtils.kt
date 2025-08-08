@@ -19,7 +19,7 @@ fun pathFromTracks(
     trackIds: List<String>,
     dir: Direction,
     start: Distance,
-    end: Distance
+    end: Distance,
 ): PathProperties {
     val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
     trackIds
@@ -30,10 +30,7 @@ fun pathFromTracks(
 }
 
 /** Build a path from route ids */
-fun pathFromRoutes(
-    infra: RawInfra,
-    routes: List<RouteId>,
-): ChunkPath {
+fun pathFromRoutes(infra: RawInfra, routes: List<RouteId>): ChunkPath {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     var length = Length<BlockPath>(0.meters)
     for (route in routes) {

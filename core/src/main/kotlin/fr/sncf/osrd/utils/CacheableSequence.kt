@@ -7,7 +7,7 @@ package fr.sncf.osrd.utils
  */
 data class CacheableSequence<T>(
     val baseIterator: Iterator<T>,
-    val cache: MutableList<T> = mutableListOf<T>()
+    val cache: MutableList<T> = mutableListOf<T>(),
 ) : Sequence<T> {
     class CacheableIterator<T>(var sequence: CacheableSequence<T>) : Iterator<T> {
         var i = 0

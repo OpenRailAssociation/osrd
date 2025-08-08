@@ -43,7 +43,7 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
                         routePath,
                         trainSimulation.signalCriticalPositions,
                         trainSimulation.zoneUpdates,
-                        trainSimulation.simulationEndTime
+                        trainSimulation.simulationEndTime,
                     )
                 signalProjections.add(signalProjection)
             }

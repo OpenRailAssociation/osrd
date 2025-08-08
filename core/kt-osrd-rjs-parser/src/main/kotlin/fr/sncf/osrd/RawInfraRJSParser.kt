@@ -62,7 +62,7 @@ private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
             if (rjsSlope.begin < 0 || rjsSlope.end > rjsTrackSection.length)
                 throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsTrackSection.id
+                    rjsTrackSection.id,
                 )
             if (rjsSlope.gradient != 0.0) {
                 slopes.put(rjsSlope.begin.meters, rjsSlope.end.meters, rjsSlope.gradient)
@@ -85,7 +85,7 @@ private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
             if (rjsCurve.begin < 0 || rjsCurve.end > rjsTrackSection.length)
                 throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsTrackSection.id
+                    rjsTrackSection.id,
                 )
             if (rjsCurve.radius != 0.0) {
                 curves.put(rjsCurve.begin.meters, rjsCurve.end.meters, rjsCurve.radius)
@@ -102,7 +102,7 @@ private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
 private fun getChunkDirectionalDistanceRange(
     distanceRangeMap: DistanceRangeMap<Double>,
     chunkStartOffset: Offset<TrackSection>,
-    chunkEndOffset: Offset<TrackSection>
+    chunkEndOffset: Offset<TrackSection>,
 ): DirectionalMap<DistanceRangeMap<Double>> {
     val increasingChunkRange =
         distanceRangeMap.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
@@ -117,11 +117,11 @@ private fun getChunkDirectionalDistanceRange(
                     DistanceRangeMap.RangeMapEntry(
                         chunkLength - it.upper,
                         chunkLength - it.lower,
-                        if (it.value == 0.0) 0.0 else -it.value
+                        if (it.value == 0.0) 0.0 else -it.value,
                     )
                 }
                 .toList()
-        )
+        ),
     )
 }
 
@@ -132,7 +132,7 @@ private fun getChunkDirectionalDistanceRange(
  */
 private fun getGradients(
     slopes: DistanceRangeMap<Double>,
-    curves: DistanceRangeMap<Double>
+    curves: DistanceRangeMap<Double>,
 ): DistanceRangeMap<Double> {
     assert(slopes.lowerBound() == Distance(0)) {
         "Assertion failed: slopes' lower bound must be 0 when processing gradient"
@@ -382,17 +382,17 @@ private fun parseRjsTrackSection(
                     chunkStartOffset.distance.millimeters.toDouble() /
                         trackSectionLength.distance.millimeters,
                     chunkEndOffset.distance.millimeters.toDouble() /
-                        trackSectionLength.distance.millimeters
+                        trackSectionLength.distance.millimeters,
                 ),
                 chunkSlopes,
                 chunkCurves,
                 DirectionalMap(
                     getGradients(chunkSlopes.get(INCREASING), chunkCurves.get(INCREASING)),
-                    getGradients(chunkSlopes.get(DECREASING), chunkCurves.get(DECREASING))
+                    getGradients(chunkSlopes.get(DECREASING), chunkCurves.get(DECREASING)),
                 ),
                 Offset(chunkLength),
                 chunkStartOffset,
-                chunkBlockedGauges
+                chunkBlockedGauges,
             )
         trackSectionChunks.add(chunkIdx)
     }
@@ -403,10 +403,7 @@ private fun parseRjsTrackSection(
     }
 }
 
-fun parseRjsElectrification(
-    builder: RawInfraBuilder,
-    electrification: RJSElectrification,
-) {
+fun parseRjsElectrification(builder: RawInfraBuilder, electrification: RJSElectrification) {
     if (electrification.voltage == "") return
     for (electrificationRange in electrification.trackRanges) {
         val applyElectrificationForChunkBetween =
@@ -416,8 +413,8 @@ fun parseRjsElectrification(
                         DistanceRangeMap.RangeMapEntry(
                             chunkLower,
                             chunkUpper,
-                            electrification.voltage
-                        ),
+                            electrification.voltage,
+                        )
                     )
                 chunk.electrificationVoltage.updateMapIntersection(newMap) { a, b -> a + b }
             }
@@ -425,7 +422,7 @@ fun parseRjsElectrification(
             electrificationRange.trackSectionID,
             electrificationRange.begin.meters,
             electrificationRange.end.meters,
-            applyElectrificationForChunkBetween
+            applyElectrificationForChunkBetween,
         )
     }
 }
@@ -469,7 +466,7 @@ fun parseNeutralRanges(
             trackRange.trackSectionID,
             trackRange.begin.meters,
             trackRange.end.meters,
-            applyNeutralSectionForChunkBetween
+            applyNeutralSectionForChunkBetween,
         )
     }
 }
@@ -480,7 +477,7 @@ fun mergeIntoSpeedSections(
     direction: Direction,
     lower: Distance,
     upper: Distance,
-    incomingSpeedSection: RJSSpeedSection
+    incomingSpeedSection: RJSSpeedSection,
 ) {
     val speedSections = initialSpeedSections.get(direction)
     val subMap =
@@ -488,7 +485,7 @@ fun mergeIntoSpeedSections(
             DistanceRangeMap.RangeMapEntry(
                 prevSpeedSection.lower,
                 prevSpeedSection.upper,
-                SpeedSection.merge(prevSpeedSection.value, parseSpeedSection(incomingSpeedSection))
+                SpeedSection.merge(prevSpeedSection.value, parseSpeedSection(incomingSpeedSection)),
             )
         }
     initialSpeedSections.get(direction).putMany(subMap)
@@ -507,7 +504,7 @@ fun parseSpeedSection(rjsSpeedSection: RJSSpeedSection): SpeedSection {
         (rjsSpeedSection.speedLimitByTag ?: mapOf())
             .map { entry -> Pair(entry.key, entry.value.metersPerSecond) }
             .toMap(),
-        routeLimits
+        routeLimits,
     )
 }
 
@@ -522,7 +519,7 @@ fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
                         INCREASING,
                         chunkLower,
                         chunkUpper,
-                        speedSection
+                        speedSection,
                     )
                 }
                 if (speedRange.applicableDirections.appliesToReverse()) {
@@ -531,7 +528,7 @@ fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
                         DECREASING,
                         chunk.length.distance - chunkUpper,
                         chunk.length.distance - chunkLower,
-                        speedSection
+                        speedSection,
                     )
                 }
             }
@@ -539,7 +536,7 @@ fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
             speedRange.trackSectionID,
             speedRange.begin.meters,
             speedRange.end.meters,
-            applySpeedSectionForChunkBetween
+            applySpeedSectionForChunkBetween,
         )
     }
 }
@@ -547,7 +544,7 @@ fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
 fun parseTrackNode(
     builder: RawInfraBuilder,
     switchTypeMap: Map<String, RJSSwitchType>,
-    rjsNode: RJSSwitch
+    rjsNode: RJSSwitch,
 ) {
     val ports = StaticPool<TrackNodePort, EndpointTrackSectionId>()
     val portMap = mutableMapOf<String, TrackNodePortId>()
@@ -567,7 +564,7 @@ fun parseTrackNode(
             rjsNode.id,
             switchType.id,
             switchType.ports,
-            portMap.keys
+            portMap.keys,
         )
     }
     val configs = StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>()
@@ -575,7 +572,7 @@ fun parseTrackNode(
         configs.add(
             TrackNodeConfigDescriptor(
                 group.key,
-                group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) }.toList()
+                group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) }.toList(),
             )
         )
     }
@@ -654,7 +651,7 @@ fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
         rjsSignal.id,
         rjsSignal.sightDistance.meters,
         DirTrackSectionId(trackSectionId, direction),
-        undirectedTrackOffset
+        undirectedTrackOffset,
     ) {
         if (rjsSignal.logicalSignals == null) {
             return@physicalSignal
@@ -682,7 +679,7 @@ fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
                 rjsLogicalSignal.signalingSystem,
                 rjsLogicalSignal.nextSignalingSystems,
                 rjsLogicalSignal.settings,
-                signalParameters
+                signalParameters,
             )
         }
     }
@@ -700,9 +697,7 @@ fun EdgeEndpoint.toEndpoint(): Endpoint {
 }
 
 @Serializable
-data class YamlSpeedLimitTagDescriptor(
-    @SerialName("fallback_list") val fallbackList: List<String>,
-)
+data class YamlSpeedLimitTagDescriptor(@SerialName("fallback_list") val fallbackList: List<String>)
 
 fun parseSpeedLimitTags(builder: RawInfraBuilder) {
     val resourceURL =
@@ -717,12 +712,7 @@ fun parseSpeedLimitTags(builder: RawInfraBuilder) {
         )
 
     for ((tagCode, tagDescriptor) in speedLimitTagDescriptors.entries) {
-        builder.speedLimitTag(
-            tagCode,
-            SpeedLimitTagDescriptor(
-                tagDescriptor.fallbackList,
-            )
-        )
+        builder.speedLimitTag(tagCode, SpeedLimitTagDescriptor(tagDescriptor.fallbackList))
     }
 }
 
@@ -734,16 +724,10 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
         mutableMapOf<String, TreeMap<Offset<TrackSection>, MutableList<String>>>()
 
     for (detector in rjsInfra.detectors) {
-        parseRjsRouteWaypoint(
-            detector,
-            trackSectionNameToDistanceSortedDetectors,
-        )
+        parseRjsRouteWaypoint(detector, trackSectionNameToDistanceSortedDetectors)
     }
     for (detector in rjsInfra.bufferStops) {
-        parseRjsRouteWaypoint(
-            detector,
-            trackSectionNameToDistanceSortedDetectors,
-        )
+        parseRjsRouteWaypoint(detector, trackSectionNameToDistanceSortedDetectors)
     }
 
     // Parse track-sections
@@ -803,7 +787,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                     operationalPointId,
                     trackSectionName,
                     trackSectionOffset,
-                    props
+                    props,
                 )
             if (partId == null) {
                 // TODO: link warning to specific request (through response or tracing)

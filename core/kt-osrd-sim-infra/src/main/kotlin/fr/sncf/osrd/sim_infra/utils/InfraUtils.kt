@@ -26,7 +26,7 @@ fun TrackNetworkInfra.getNextTrackSections(
 /** Converts a list of dir chunks into a list of routes */
 fun BlockInfra.chunksToRoutes(
     infra: RawSignalingInfra,
-    pathChunks: DirStaticIdxList<TrackChunk>
+    pathChunks: DirStaticIdxList<TrackChunk>,
 ): StaticIdxList<Route> {
     var chunkStartIndex = 0
     val res = mutableStaticIdxArrayListOf<Route>()
@@ -81,7 +81,7 @@ fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
 fun BlockInfra.getRouteBlocks(
     rawInfra: RawInfra,
     route: RouteId,
-    allowedSigSystems: StaticIdxList<SignalingSystem>? = null
+    allowedSigSystems: StaticIdxList<SignalingSystem>? = null,
 ): StaticIdxList<Block> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
@@ -98,7 +98,7 @@ private fun findRoute(
     blockInfra: BlockInfra,
     chunks: DirStaticIdxList<TrackChunk>,
     startIndex: Int,
-    routeMustIncludeStart: Boolean
+    routeMustIncludeStart: Boolean,
 ): RouteId {
     val routes = infra.getRoutesOnTrackChunk(chunks[startIndex])
 
@@ -119,7 +119,7 @@ private fun routeMatchPath(
     chunks: DirStaticIdxList<TrackChunk>,
     chunkIndex: Int,
     routeMustIncludeStart: Boolean,
-    routeId: RouteId
+    routeId: RouteId,
 ): Boolean {
     var mutChunkIndex = chunkIndex
     if (!routeHasBlockPath(infra, blockInfra, routeId))
@@ -152,7 +152,7 @@ private fun routeMatchPath(
 private fun routeHasBlockPath(
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    routeId: RouteId
+    routeId: RouteId,
 ): Boolean {
     val blockPaths = recoverBlocks(infra, blockInfra, mutableStaticIdxArrayListOf(routeId), null)
     return blockPaths.isNotEmpty()

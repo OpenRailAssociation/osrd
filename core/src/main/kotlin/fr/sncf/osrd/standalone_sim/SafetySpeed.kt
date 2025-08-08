@@ -22,10 +22,7 @@ import fr.sncf.osrd.utils.units.meters
  * Simple internal class representing a stop with safety speed. Makes the function logic more
  * straightforward.
  */
-private data class SafetySpeedStop(
-    val offset: Offset<TravelledPath>,
-    val isShortSlip: Boolean,
-)
+private data class SafetySpeedStop(val offset: Offset<TravelledPath>, val isShortSlip: Boolean)
 
 /**
  * Compute safety speed ranges, areas where the train has a lower speed limit because of a scheduled
@@ -37,7 +34,7 @@ fun makeSafetySpeedRanges(
     chunkPath: ChunkPath,
     routes: StaticIdxList<Route>,
     schedule: List<SimulationScheduleItem>,
-    signalingRanges: DistanceRangeMap<String>
+    signalingRanges: DistanceRangeMap<String>,
 ): DistanceRangeMap<Speed> {
     val rawInfra = infra.rawInfra
     val zonePaths = routes.flatMap { rawInfra.getRoutePath(it) }
@@ -50,16 +47,12 @@ fun makeSafetySpeedRanges(
                 it.receptionSignal.isStopOnClosedSignal &&
                     // ETCS signaling system already handles Safety Approach Speed via braking
                     // curves
-                    !isStopInSignalingSystemRange(
-                        it.pathOffset,
-                        signalingRanges,
-                        ETCS_LEVEL2.id,
-                    )
+                    !isStopInSignalingSystemRange(it.pathOffset, signalingRanges, ETCS_LEVEL2.id)
             }
             .map {
                 SafetySpeedStop(
                     it.pathOffset,
-                    it.receptionSignal == RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+                    it.receptionSignal == RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP,
                 )
             }
             .toMutableList()
@@ -115,7 +108,7 @@ private fun isStopInSignalingSystemRange(
 private fun makeEndOfPathStop(
     infra: RawSignalingInfra,
     routes: StaticIdxList<Route>,
-    signalOffsets: List<Offset<TravelledPath>>
+    signalOffsets: List<Offset<TravelledPath>>,
 ): SafetySpeedStop? {
     val lastRouteExit = infra.getRouteExit(routes.last())
     val isBufferStop = infra.isBufferStop(lastRouteExit.value)

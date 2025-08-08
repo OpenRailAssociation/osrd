@@ -29,14 +29,14 @@ fun ZoneStatus.toProtectionStatus(): ProtectionStatus {
 class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : SignalingSimulator {
     private fun loadSignalSetting(
         rawSettings: Map<String, String>,
-        schema: SigSettingsSchema
+        schema: SigSettingsSchema,
     ): SigSettings {
         return schema(rawSettings)
     }
 
     private fun loadSignalParameters(
         rawParameters: RawSignalParameters,
-        schema: SigParametersSchema
+        schema: SigParametersSchema,
     ): SignalParameters {
         val default = schema(rawParameters.default)
         val conditional = rawParameters.conditional.mapValues { schema(it.value) }
@@ -81,17 +81,11 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
 
     override fun buildBlocks(
         rawSignalingInfra: RawSignalingInfra,
-        loadedSignalInfra: LoadedSignalInfra
+        loadedSignalInfra: LoadedSignalInfra,
     ): BlockInfra {
         val blockInfra = internalBuildBlocks(sigModuleManager, rawSignalingInfra, loadedSignalInfra)
-        val blockLogAggregator =
-            LogAggregator(
-                { logger.debug(it) },
-            )
-        val signalLogAggregator =
-            LogAggregator(
-                { logger.debug(it) },
-            )
+        val blockLogAggregator = LogAggregator({ logger.debug(it) })
+        val signalLogAggregator = LogAggregator({ logger.debug(it) })
         for (block in blockInfra.blocks) {
             val sigSystem = blockInfra.getBlockSignalingSystem(block)
             val path = blockInfra.getBlockZonePaths(block)
@@ -114,7 +108,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                     signalTypes,
                     signalSettings,
                     signalsPositions,
-                    length
+                    length,
                 )
             val reporter =
                 object : BlockDiagReporter {
@@ -148,13 +142,13 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 val driver =
                     sigModuleManager.findDriver(
                         loadedSignalInfra.getSignalingSystem(signal),
-                        loadedSignalInfra.getSignalingSystem(nextSignal)
+                        loadedSignalInfra.getSignalingSystem(nextSignal),
                     )
                 sigModuleManager.checkSignal(
                     signalReporter,
                     driver,
                     loadedSignalInfra.getSettings(signal),
-                    sigBlock
+                    sigBlock,
                 )
             }
         }
@@ -238,7 +232,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         class MovementAuthorityViewImpl(
             override val protectionStatus: ProtectionStatus,
             private val _nextSignalState: SigState?,
-            private val _nextSignalSettings: SigSettings?
+            private val _nextSignalSettings: SigSettings?,
         ) : MovementAuthorityView {
             override val hasNextSignal
                 get() = _nextSignalState != null
@@ -281,7 +275,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                     resolvedParameters,
                     schema,
                     mav,
-                    null // TODO: Handle speed limits
+                    null, // TODO: Handle speed limits
                 )
 
             res[signal] = state

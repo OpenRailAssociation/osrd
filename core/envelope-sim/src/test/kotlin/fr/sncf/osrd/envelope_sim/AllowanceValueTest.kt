@@ -17,7 +17,7 @@ class AllowanceValueTest {
         val allowance = FixedTime(8.0)
         Assertions.assertEquals(
             2.0,
-            allowance.getSectionAllowanceTime(1.0, 4.0, Double.NaN, Double.NaN)
+            allowance.getSectionAllowanceTime(1.0, 4.0, Double.NaN, Double.NaN),
         )
     }
 

@@ -59,10 +59,10 @@ class MRSPTest {
                         "TA0",
                         ApplicableDirection.BOTH,
                         POSITION1,
-                        POSITION2
+                        POSITION2,
                     )
                 ),
-                null
+                null,
             )
         val speedSection2 =
             RJSSpeedSection(
@@ -74,10 +74,10 @@ class MRSPTest {
                         "TA0",
                         ApplicableDirection.BOTH,
                         POSITION2,
-                        POSITION3
+                        POSITION3,
                     )
                 ),
-                null
+                null,
             )
 
         // Speed sections that depend on the train's route
@@ -86,7 +86,7 @@ class MRSPTest {
                 "DA5->DC0",
                 RJSWaypointRef("DA5", RJSWaypointRef.RJSWaypointType.DETECTOR),
                 EdgeDirection.START_TO_STOP,
-                RJSWaypointRef("DC0", RJSWaypointRef.RJSWaypointType.DETECTOR)
+                RJSWaypointRef("DC0", RJSWaypointRef.RJSWaypointType.DETECTOR),
             )
         route1.switchesDirections["PC0"] = "A_B1"
         val route2 =
@@ -94,7 +94,7 @@ class MRSPTest {
                 "DA5->DC1",
                 RJSWaypointRef("DA5", RJSWaypointRef.RJSWaypointType.DETECTOR),
                 EdgeDirection.START_TO_STOP,
-                RJSWaypointRef("DC1", RJSWaypointRef.RJSWaypointType.DETECTOR)
+                RJSWaypointRef("DC1", RJSWaypointRef.RJSWaypointType.DETECTOR),
             )
         route2.switchesDirections["PC0"] = "A_B2"
         val da5 = rjsInfra.detectors.first { d -> d.id == "DA5" }
@@ -110,16 +110,16 @@ class MRSPTest {
                         da5.track,
                         ApplicableDirection.BOTH,
                         da5.position,
-                        10_000.0
+                        10_000.0,
                     ),
                     RJSApplicableDirectionsTrackRange(
                         dc0.track,
                         ApplicableDirection.BOTH,
                         0.0,
-                        dc0.position
-                    )
+                        dc0.position,
+                    ),
                 ),
-                listOf(route1.id)
+                listOf(route1.id),
             )
         val speedSection4 =
             RJSSpeedSection(
@@ -131,16 +131,16 @@ class MRSPTest {
                         da5.track,
                         ApplicableDirection.BOTH,
                         da5.position,
-                        10_000.0
+                        10_000.0,
                     ),
                     RJSApplicableDirectionsTrackRange(
                         dc1.track,
                         ApplicableDirection.BOTH,
                         0.0,
-                        dc1.position
-                    )
+                        dc1.position,
+                    ),
                 ),
-                listOf(route2.id)
+                listOf(route2.id),
             )
         rjsInfra.speedSections = ArrayList()
         rjsInfra.speedSections.addAll(
@@ -199,9 +199,9 @@ class MRSPTest {
                         LimitKind.SPEED_LIMIT,
                         0.0,
                         routeLen(ROUTES[0]),
-                        50.0
+                        50.0,
                     )
-                )
+                ),
             )
     }
 
@@ -219,7 +219,7 @@ class MRSPTest {
         rollingStock: RollingStock,
         addRollingStockLength: Boolean,
         trainTag: String?,
-        expectedEnvelope: Envelope?
+        expectedEnvelope: Envelope?,
     ) {
         val mrsp = computeMRSP(path, rollingStock, addRollingStockLength, trainTag, null)
         EnvelopeTestUtils.assertEquals(expectedEnvelope, mrsp, 0.001)
@@ -241,7 +241,7 @@ class MRSPTest {
                         listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         0.0,
                         POSITION1,
-                        TestTrains.MAX_SPEED
+                        TestTrains.MAX_SPEED,
                     ),
                     // Speed section with incorrect train tag => speed 1
                     EnvelopeTestUtils.makeFlatPart(
@@ -249,27 +249,27 @@ class MRSPTest {
                             LimitKind.SPEED_LIMIT,
                             CONSTANT_SPEED,
                             UnknownTag(),
-                            HasMissingSpeedTag
+                            HasMissingSpeedTag,
                         ),
                         POSITION1,
                         POSITION2,
-                        SPEED1
+                        SPEED1,
                     ),
                     // Speed section with correct train tag => speed 3
                     EnvelopeTestUtils.makeFlatPart(
                         listOf(LimitKind.SPEED_LIMIT, CONSTANT_SPEED, GivenTrainTag(TRAIN_TAG2)),
                         POSITION2,
                         POSITION3,
-                        SPEED3
+                        SPEED3,
                     ),
                     // No speed section at end => train speed limit
                     EnvelopeTestUtils.makeFlatPart(
                         listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         POSITION3,
                         pathLength,
-                        TestTrains.MAX_SPEED
-                    )
-                )
+                        TestTrains.MAX_SPEED,
+                    ),
+                ),
             ),
 
             // Multiple speed sections with rolling stock length
@@ -284,14 +284,14 @@ class MRSPTest {
                         LimitKind.TRAIN_LIMIT,
                         0.0,
                         POSITION1,
-                        TestTrains.MAX_SPEED
+                        TestTrains.MAX_SPEED,
                     ),
                     // Speed section with incorrect train tag: speed 1
                     EnvelopeTestUtils.makeFlatPart(
                         LimitKind.SPEED_LIMIT,
                         POSITION1,
                         POSITION2 + TestTrains.REALISTIC_FAST_TRAIN.length,
-                        SPEED1
+                        SPEED1,
                     ),
                     // Rolling stock length > speedSection2 length => speedSection2 not
                     // taken into account
@@ -300,9 +300,9 @@ class MRSPTest {
                         LimitKind.TRAIN_LIMIT,
                         POSITION2 + TestTrains.REALISTIC_FAST_TRAIN.length,
                         pathLength,
-                        TestTrains.MAX_SPEED
-                    )
-                )
+                        TestTrains.MAX_SPEED,
+                    ),
+                ),
             ),
 
             // No speed sections taken into account: speedSection1 speed2 > train maxSpeed,
@@ -317,21 +317,21 @@ class MRSPTest {
                         listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         0.0,
                         POSITION1,
-                        TestTrains.MAX_SPEED
+                        TestTrains.MAX_SPEED,
                     ),
                     EnvelopeTestUtils.makeFlatPart(
                         LimitKind.TRAIN_LIMIT,
                         POSITION1,
                         POSITION2,
-                        TestTrains.MAX_SPEED
+                        TestTrains.MAX_SPEED,
                     ),
                     EnvelopeTestUtils.makeFlatPart(
                         listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         POSITION2,
                         pathLength,
-                        TestTrains.MAX_SPEED
-                    )
-                )
+                        TestTrains.MAX_SPEED,
+                    ),
+                ),
             ),
 
             // 30 km/h speed limit applicable to the route
@@ -342,7 +342,7 @@ class MRSPTest {
                 null,
                 Envelope.make(
                     EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED30)
-                )
+                ),
             ),
 
             // 60 km/h speed limit applicable to the route
@@ -353,7 +353,7 @@ class MRSPTest {
                 null,
                 Envelope.make(
                     EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED60)
-                )
+                ),
             ),
             pathTo1!!.makeArguments(),
             pathTo2!!.makeArguments(),

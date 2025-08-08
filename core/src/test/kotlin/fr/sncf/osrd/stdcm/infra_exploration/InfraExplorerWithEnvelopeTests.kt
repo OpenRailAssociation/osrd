@@ -43,7 +43,7 @@ class InfraExplorerWithEnvelopeTests {
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN
+                rollingStock = REALISTIC_FAST_TRAIN,
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
@@ -58,7 +58,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         )
@@ -68,7 +68,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(20.0, 20.0)
+                    doubleArrayOf(20.0, 20.0),
                 )
             )
         )
@@ -78,7 +78,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         )
@@ -87,7 +87,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(20.0, 20.0)
+                    doubleArrayOf(20.0, 20.0),
                 )
             )
         )
@@ -97,20 +97,20 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             ),
-            extended[0].getFullEnvelope()
+            extended[0].getFullEnvelope(),
         )
         testEnvelopeTimeEquality(
             Envelope.make(
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
-                    doubleArrayOf(20.0, 20.0)
+                    doubleArrayOf(20.0, 20.0),
                 )
             ),
-            extended[1].getFullEnvelope()
+            extended[1].getFullEnvelope(),
         )
     }
 
@@ -121,18 +121,14 @@ class InfraExplorerWithEnvelopeTests {
          */
         val infra = DummyInfra()
         val fullInfra = infra.fullInfra()
-        val blocks =
-            listOf(
-                infra.addBlock("a", "b"),
-                infra.addBlock("b", "c"),
-            )
+        val blocks = listOf(infra.addBlock("a", "b"), infra.addBlock("b", "c"))
 
         // a --> b
         val firstExplorers =
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN
+                rollingStock = REALISTIC_FAST_TRAIN,
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
@@ -148,7 +144,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         )
@@ -162,7 +158,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         )
@@ -171,7 +167,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
-                    doubleArrayOf(42.0, 42.0)
+                    doubleArrayOf(42.0, 42.0),
                 )
             )
         )
@@ -181,20 +177,20 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             ),
-            explorer.getFullEnvelope()
+            explorer.getFullEnvelope(),
         )
         testEnvelopeTimeEquality(
             Envelope.make(
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0, 100.1, 200.0),
-                    doubleArrayOf(30.0, 30.0, 42.00, 42.0)
+                    doubleArrayOf(30.0, 30.0, 42.00, 42.0),
                 )
             ),
-            cloned.getFullEnvelope()
+            cloned.getFullEnvelope(),
         )
     }
 
@@ -205,18 +201,14 @@ class InfraExplorerWithEnvelopeTests {
          */
         val infra = DummyInfra()
         val fullInfra = infra.fullInfra()
-        val blocks =
-            listOf(
-                infra.addBlock("a", "b"),
-                infra.addBlock("b", "c"),
-            )
+        val blocks = listOf(infra.addBlock("a", "b"), infra.addBlock("b", "c"))
 
         // a --> b
         val firstExplorers =
             initInfraExplorerWithEnvelope(
                 fullInfra,
                 PathfindingEdgeLocationId(blocks[0], Offset(30.meters)),
-                rollingStock = REALISTIC_FAST_TRAIN
+                rollingStock = REALISTIC_FAST_TRAIN,
             )
         var explorer = firstExplorers.single()
         explorer = explorer.cloneAndExtendLookahead().single()
@@ -227,7 +219,7 @@ class InfraExplorerWithEnvelopeTests {
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 70.0),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         )

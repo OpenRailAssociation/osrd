@@ -110,13 +110,13 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     request.rollingStockSupportedSignalingSystems.filter {
                         // Ignoring ETCS as it is not (yet) supported for STDCM
                         it != ETCS_LEVEL2.id
-                    }
+                    },
                 )
             val trainsRequirements =
                 parseTrainsRequirements(
                         infra.rawInfra,
                         request.trainsRequirements,
-                        request.startTime
+                        request.startTime,
                     )
                     .toMutableList()
             request.trainsRequirements = mapOf() // Free up the RAM taken by raw requirements
@@ -138,7 +138,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                         spacingRequirements,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
-                        timeStep = request.timeStep!!.seconds
+                        timeStep = request.timeStep!!.seconds,
                     ),
                     request.timeStep.seconds,
                     request.maximumDepartureDelay!!.seconds,
@@ -161,7 +161,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     rollingStock,
                     request.speedLimitTag,
                     temporarySpeedLimitManager,
-                    request.comfort
+                    request.comfort,
                 )
 
             // Check for conflicts
@@ -169,7 +169,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 infra.rawInfra(),
                 trainsRequirements,
                 simulationResponse,
-                path.departureTime
+                path.departureTime,
             )
 
             val departureTime =
@@ -197,7 +197,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 Offset(path.trainPath.getLength()),
                 null,
                 0.1.seconds,
-                RJSTrainStop.RJSReceptionSignal.STOP
+                RJSTrainStop.RJSReceptionSignal.STOP,
             )
         )
         val reportTrain =
@@ -220,7 +220,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 reportTrain.times,
                 reportTrain.speeds,
                 reportTrain.energyConsumption,
-                reportTrain.pathItemTimes
+                reportTrain.pathItemTimes,
             )
         val speedLimits =
             computeMRSP(
@@ -228,7 +228,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 rollingStock,
                 false,
                 speedLimitTag,
-                temporarySpeedLimitManager
+                temporarySpeedLimitManager,
             )
 
         // All simulations are the same for now
@@ -246,7 +246,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
         infra: FullInfra,
         path: STDCMResult,
         rollingStock: RollingStock,
-        comfort: Comfort
+        comfort: Comfort,
     ): RangeValues<ElectricalProfileValue> {
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path.trainPath, null)
         val electrificationMap =
@@ -254,7 +254,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                 rollingStock.basePowerClass,
                 ImmutableRangeMap.of(),
                 rollingStock.powerRestrictions,
-                false
+                false,
             )
         val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
         val electrificationRanges =
@@ -266,7 +266,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
 @WithSpan(value = "Parsing speed limits", kind = SpanKind.SERVER)
 fun buildTemporarySpeedLimitManager(
     infra: FullInfra,
-    speedLimits: Collection<STDCMTemporarySpeedLimit>
+    speedLimits: Collection<STDCMTemporarySpeedLimit>,
 ): TemporarySpeedLimitManager {
     val outputSpeedLimits: MutableMap<DirTrackChunkId, DistanceRangeMap<SpeedLimitProperty>> =
         mutableMapOf()
@@ -297,8 +297,8 @@ fun buildTemporarySpeedLimitManager(
                             endOffset,
                             SpeedLimitProperty(
                                 Speed.fromMetersPerSecond(speedLimit.speedLimit),
-                                null
-                            )
+                                null,
+                            ),
                         )
                     )
                 if (outputSpeedLimits.contains(dirTrackChunkId)) {
@@ -310,7 +310,7 @@ fun buildTemporarySpeedLimitManager(
                             } else {
                                 s2
                             }
-                        }
+                        },
                     )
                 } else {
                     outputSpeedLimits[dirTrackChunkId] = chunkSpeedLimitRangeMap
@@ -324,7 +324,7 @@ fun buildTemporarySpeedLimitManager(
 private fun parseSteps(
     infra: FullInfra,
     pathItems: List<STDCMPathItem>,
-    startTime: ZonedDateTime
+    startTime: ZonedDateTime,
 ): List<STDCMStep> {
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
@@ -348,9 +348,9 @@ private fun parseSteps(
                     PlannedTimingData(
                         TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
                         it.stepTimingData.arrivalTimeToleranceBefore,
-                        it.stepTimingData.arrivalTimeToleranceAfter
+                        it.stepTimingData.arrivalTimeToleranceAfter,
                     )
-                else null
+                else null,
             )
         }
         .toList()
@@ -386,7 +386,7 @@ private fun checkForConflicts(
     rawInfra: RawSignalingInfra,
     timetableTrainRequirements: List<Requirements>,
     simResult: SimulationSuccess,
-    departureTime: Double
+    departureTime: Double,
 ) {
     // Shifts the requirements generated by the new train to account for its departure time
     val newTrainSpacingRequirement =
@@ -395,7 +395,7 @@ private fun checkForConflicts(
                 rawInfra.getZoneFromName(it.zone),
                 it.beginTime.seconds + departureTime,
                 it.endTime.seconds + departureTime,
-                true
+                true,
             )
         }
     val conflictDetector = IncrementalConflictDetector(timetableTrainRequirements)
@@ -409,7 +409,7 @@ private fun checkForConflicts(
 
 private fun findWaypointBlocks(
     infra: FullInfra,
-    waypoints: Collection<TrackLocation>
+    waypoints: Collection<TrackLocation>,
 ): Set<PathfindingEdgeLocationId<Block>> {
     val waypointBlocks = HashSet<PathfindingEdgeLocationId<Block>>()
     for (waypoint in waypoints) {

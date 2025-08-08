@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.Mutex
 
 fun movableElementSim(
     infra: TrackNetworkInfra,
-    initPolicy: MovableElementInitPolicy
+    initPolicy: MovableElementInitPolicy,
 ): MovableElementSim {
     return MovableElementSimImpl(infra, initPolicy)
 }

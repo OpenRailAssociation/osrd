@@ -14,7 +14,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
         context.codeGenerator.createNewFile(
             Dependencies(true, currentFile),
             generatedPackage,
-            fileName
+            fileName,
         )
     file.appendText(
         """
@@ -91,7 +91,7 @@ class InterfacesGenerator {
         override fun generate(
             context: GeneratorContext,
             currentFile: KSFile,
-            itemType: CollectionItemType
+            itemType: CollectionItemType,
         ) {
             itemType.generateInterfaces(context, currentFile)
         }

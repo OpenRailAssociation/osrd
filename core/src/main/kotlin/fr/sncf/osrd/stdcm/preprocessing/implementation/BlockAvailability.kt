@@ -25,7 +25,7 @@ data class BlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<BlockPath>,
         endOffset: Offset<BlockPath>,
-        startTime: Double
+        startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
         var firstConflictOffset: Offset<TravelledPath>? = null
@@ -44,7 +44,7 @@ data class BlockAvailability(
                     startOffset,
                     pathStartTime,
                     shiftedStartTime,
-                    endTime
+                    endTime,
                 )
             val availability =
                 getMostRestrictiveAvailability(stepAvailability, conflictAvailability)
@@ -56,7 +56,7 @@ data class BlockAvailability(
                     ) { // Availability is available due to adding a delay: timeShift
                         return BlockAvailabilityInterface.Unavailable(
                             timeShift,
-                            firstConflictOffset ?: defaultOffset
+                            firstConflictOffset ?: defaultOffset,
                         )
                     }
                     // Availability is directly available without adding any delay
@@ -73,7 +73,7 @@ data class BlockAvailability(
         // No available solution with a finite delay was found
         return BlockAvailabilityInterface.Unavailable(
             Double.POSITIVE_INFINITY,
-            firstConflictOffset ?: defaultOffset
+            firstConflictOffset ?: defaultOffset,
         )
     }
 
@@ -107,12 +107,12 @@ data class BlockAvailability(
                     infraExplorer,
                     startOffset,
                     endOffset,
-                    pathStartTime
+                    pathStartTime,
                 ) ?: continue
             if (availabilityProperties.minimumDelayToBecomeAvailable == Double.POSITIVE_INFINITY) {
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
-                    availabilityProperties.firstUnavailabilityOffset
+                    availabilityProperties.firstUnavailabilityOffset,
                 )
             } else if (
                 availabilityProperties.minimumDelayToBecomeAvailable > minimumDelayToBecomeAvailable
@@ -132,19 +132,19 @@ data class BlockAvailability(
                 // step
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
-                    firstUnavailabilityOffset
+                    firstUnavailabilityOffset,
                 )
             }
             // Adding minimumDelayToBecomeAvailable solves every planned step problem
             return BlockAvailabilityInterface.Unavailable(
                 minimumDelayToBecomeAvailable,
-                firstUnavailabilityOffset
+                firstUnavailabilityOffset,
             )
         }
         // Every planned step was respected
         return BlockAvailabilityInterface.Available(
             maximumDelayToStayAvailable,
-            timeOfNextUnavailability
+            timeOfNextUnavailability,
         )
     }
 
@@ -153,7 +153,7 @@ data class BlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<BlockPath>,
         endOffset: Offset<BlockPath>,
-        pathStartTime: Double
+        pathStartTime: Double,
     ): AvailabilityProperties? {
         val incrementalPath = infraExplorer.getIncrementalPath()
         val plannedTimingData = step.originalStep.plannedTimingData ?: return null
@@ -179,7 +179,7 @@ data class BlockAvailability(
                 max(plannedMinTimeAtStep - timeAtStep, 0.0),
                 stepOffsetOnTravelledPath,
                 0.0,
-                0.0
+                0.0,
             )
         } else if (timeAtStep > plannedMaxTimeAtStep) {
             // Train passes through planned timing data after it is available:
@@ -188,7 +188,7 @@ data class BlockAvailability(
                 Double.POSITIVE_INFINITY,
                 stepOffsetOnTravelledPath,
                 0.0,
-                0.0
+                0.0,
             )
         }
         // Planned timing data respected
@@ -196,7 +196,7 @@ data class BlockAvailability(
             0.0,
             Offset(0.meters),
             plannedMaxTimeAtStep - timeAtStep,
-            plannedMaxTimeAtStep
+            plannedMaxTimeAtStep,
         )
     }
 
@@ -206,7 +206,7 @@ data class BlockAvailability(
         startOffset: Offset<BlockPath>,
         pathStartTime: Double,
         startTime: Double,
-        endTime: Double
+        endTime: Double,
     ): BlockAvailabilityInterface.Availability {
         val needFullRequirements = startOffset < infraExplorer.getPredecessorLength()
         val spacingRequirements =
@@ -240,7 +240,7 @@ data class BlockAvailability(
                         it.zone,
                         max(pathStartTime + it.beginTime, minRelevantTime),
                         min(pathStartTime + it.endTime, endTime),
-                        it.isComplete
+                        it.isComplete,
                     )
                 }
                 .filter { it.beginTime < it.endTime }
@@ -250,18 +250,18 @@ data class BlockAvailability(
             is NoConflictResponse -> {
                 return BlockAvailabilityInterface.Available(
                     conflictProperties.maxDelayWithoutConflicts,
-                    conflictProperties.timeOfNextConflict
+                    conflictProperties.timeOfNextConflict,
                 )
             }
             is ConflictResponse -> {
                 val firstConflictOffset =
                     getEnvelopeOffsetFromTime(
                         infraExplorer,
-                        conflictProperties.firstConflictTime - pathStartTime
+                        conflictProperties.firstConflictTime - pathStartTime,
                     )
                 return BlockAvailabilityInterface.Unavailable(
                     conflictProperties.minDelayWithoutConflicts,
-                    firstConflictOffset
+                    firstConflictOffset,
                 )
             }
         }
@@ -275,7 +275,7 @@ data class BlockAvailability(
      */
     private fun getMostRestrictiveAvailability(
         firstAvailability: BlockAvailabilityInterface.Availability,
-        secondAvailability: BlockAvailabilityInterface.Availability
+        secondAvailability: BlockAvailabilityInterface.Availability,
     ): BlockAvailabilityInterface.Availability {
         when {
             firstAvailability is BlockAvailabilityInterface.Unavailable &&
@@ -305,7 +305,7 @@ data class BlockAvailability(
      */
     private fun getEnvelopeOffsetFromTime(
         explorer: InfraExplorerWithEnvelope,
-        time: Double
+        time: Double,
     ): Offset<TravelledPath> {
         if (time < 0.0) return Offset(0.meters)
         val envelope = explorer.getFullEnvelope()
@@ -334,7 +334,7 @@ private data class AvailabilityProperties(
     val maximumDelayToStayAvailable: Double,
     // If everything is available, minimum begin time of the next resource that could become
     // unavailable
-    val timeOfNextUnavailability: Double
+    val timeOfNextUnavailability: Double,
 )
 
 fun makeBlockAvailability(
@@ -366,6 +366,6 @@ fun makeBlockAvailability(
         IncrementalConflictDetector(requirements),
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
-        timeStep
+        timeStep,
     )
 }

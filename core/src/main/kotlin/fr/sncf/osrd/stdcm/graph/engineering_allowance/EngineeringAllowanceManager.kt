@@ -104,17 +104,14 @@ class EngineeringAllowanceManager(
 
             val maxAdditionalDelayOnSegment = segment.maxAddedDelay - travelTimeDiff
             maxNextAllowanceValue =
-                min(
-                    maxNextAllowanceValue,
-                    currentAddedDelay + maxAdditionalDelayOnSegment,
-                )
+                min(maxNextAllowanceValue, currentAddedDelay + maxAdditionalDelayOnSegment)
 
             // We now compute the (simplified) deceleration sequence to have the full allowance
             val decelerationSequence =
                 computeConstDeceleration(
                     cachedSegments.drop(i + 1),
                     newBeginSpeed,
-                    constDeceleration * constDecelerationScaling
+                    constDeceleration * constDecelerationScaling,
                 )
             val decelerationResults = checkDeceleration(decelerationSequence, newBeginSpeed)
             if (decelerationResults.hasConflict) break
@@ -154,7 +151,7 @@ class EngineeringAllowanceManager(
      */
     private fun checkDeceleration(
         decelerationSequence: Sequence<ConstDecelerationData>,
-        decelerationEndSpeed: Double
+        decelerationEndSpeed: Double,
     ): DecelerationResults {
         var decelerationLength = 0.meters
         // Keep track of how much delay we can add before causing conflict on the braking sequence
@@ -165,17 +162,13 @@ class EngineeringAllowanceManager(
             decelerationLength += decelerationSegment.segment.length
             val maxDelayOnSegment =
                 decelerationSegment.segment.maxAddedDelay - decelerationSegment.addedTimeOnSegment
-            maxBrakingDelay =
-                min(
-                    maxBrakingDelay,
-                    maxDelayOnSegment + totalBrakingDelay,
-                )
+            maxBrakingDelay = min(maxBrakingDelay, maxDelayOnSegment + totalBrakingDelay)
 
             if (totalBrakingDelay >= maxBrakingDelay) {
                 return DecelerationResults(
                     hasConflict = true,
                     addedDelay = 0.0,
-                    decelerationLength = null
+                    decelerationLength = null,
                 )
             }
         }
@@ -184,7 +177,7 @@ class EngineeringAllowanceManager(
         return DecelerationResults(
             hasConflict = false,
             addedDelay = totalBrakingDelay,
-            decelerationLength
+            decelerationLength,
         )
     }
 
@@ -207,17 +200,13 @@ class EngineeringAllowanceManager(
     private fun computeConstDeceleration(
         prevSegments: Sequence<SimulationSegment>,
         decelerationEndSpeed: Double,
-        constDeceleration: Double
+        constDeceleration: Double,
     ): Sequence<ConstDecelerationData> = sequence {
         var endSpeed = decelerationEndSpeed
         var intersection = false
         for (segment in prevSegments) {
             val pureDecelerationSim =
-                runSimplifiedSimulation(
-                    -constDeceleration,
-                    endSpeed,
-                    segment.length.meters,
-                )
+                runSimplifiedSimulation(-constDeceleration, endSpeed, segment.length.meters)
             var simTravelTime = pureDecelerationSim.newDuration
             if (pureDecelerationSim.newBeginSpeed > segment.beginSpeed) {
                 // Intersection with base sim. We estimate the new time with a basic speed plateau +
@@ -229,7 +218,7 @@ class EngineeringAllowanceManager(
                         constDeceleration,
                         segment.beginSpeed,
                         endSpeed,
-                        segment.length.meters
+                        segment.length.meters,
                     )
                 intersection = true
                 simTravelTime = newTime
@@ -239,13 +228,7 @@ class EngineeringAllowanceManager(
             newTravelTime = max(newTravelTime, segment.travelTime)
             val addedTimeOnSegment = newTravelTime - segment.travelTime
 
-            yield(
-                ConstDecelerationData(
-                    segment,
-                    newTravelTime,
-                    addedTimeOnSegment,
-                )
-            )
+            yield(ConstDecelerationData(segment, newTravelTime, addedTimeOnSegment))
             if (intersection) break
             endSpeed = pureDecelerationSim.newBeginSpeed
         }

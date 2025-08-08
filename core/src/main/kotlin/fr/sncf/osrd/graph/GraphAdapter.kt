@@ -6,7 +6,7 @@ import fr.sncf.osrd.sim_infra.utils.getBlockExit
 /** Implements the Graph interface for the Block infra where node = detector and edge = block */
 class GraphAdapter(
     private val blockInfra: BlockInfra,
-    private val rawSignalingInfra: RawSignalingInfra
+    private val rawSignalingInfra: RawSignalingInfra,
 ) : Graph<DirDetectorId, BlockId, Block> {
     override fun getEdgeEnd(edge: BlockId): DirDetectorId {
         return blockInfra.getBlockExit(rawSignalingInfra, edge)

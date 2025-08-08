@@ -17,7 +17,7 @@ object EnvelopeTrainPath {
     fun from(
         infra: RawSignalingInfra,
         path: PathProperties,
-        electricalProfileMapping: ElectricalProfileMapping? = null
+        electricalProfileMapping: ElectricalProfileMapping? = null,
     ): EnvelopeSimPath {
         val gradePositions = DoubleArrayList()
         gradePositions.add(0.0)
@@ -45,13 +45,13 @@ object EnvelopeTrainPath {
             gradePositions.toArray(),
             gradeValues.toArray(),
             electrificationMap,
-            electrificationMapByPowerClass
+            electrificationMapByPowerClass,
         )
     }
 
     private fun buildElectrificationMapByPowerClass(
         electrificationMap: DistanceRangeMap<Electrification>,
-        profileMap: Map<String, DistanceRangeMap<String>>
+        profileMap: Map<String, DistanceRangeMap<String>>,
     ): Map<String, DistanceRangeMap<Electrification>> {
         val res = mutableMapOf<String, DistanceRangeMap<Electrification>>()
         for (entry in profileMap.entries) {

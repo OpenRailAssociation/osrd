@@ -65,7 +65,7 @@ data class STDCMEdge(
             .moveForward(
                 infraExplorer.getCurrentBlock(),
                 envelopeStartOffset,
-                envelopeStartOffset + length.distance
+                envelopeStartOffset + length.distance,
             )
         return if (!endAtStop) {
             // We move on to the next block
@@ -94,7 +94,7 @@ data class STDCMEdge(
                     graph.delayManager.getMaxAdditionalStopDuration(
                         infraExplorerWithNewEnvelope,
                         getEdgeEndTime(),
-                    )
+                    ),
                 ),
                 endSpeed,
                 newExplorer,
@@ -130,10 +130,7 @@ data class STDCMEdge(
      * interpolation. The updated time data is used to account for any extra departure delay, it
      * should come from the last edge/node.
      */
-    fun getApproximateTimeAtLocation(
-        offset: Offset<STDCMEdge>,
-        updatedTimeData: TimeData,
-    ): Double {
+    fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>, updatedTimeData: TimeData): Double {
         val updatedEarliestTime = timeData.getUpdatedEarliestReachableTime(updatedTimeData)
         if (length.distance == 0.meters) return updatedEarliestTime // Avoids division by 0
         val offsetRatio = offset.distance.meters / length.distance.meters

@@ -19,7 +19,7 @@ import kotlin.math.abs
 fun <PointT> simplifyCurveByRdp(
     points: List<PointT>,
     epsilon: Double,
-    distFunction: RDPDist<PointT>
+    distFunction: RDPDist<PointT>,
 ): ArrayList<PointT> {
     val deleted = BooleanArray(points.size)
 
@@ -62,7 +62,7 @@ fun simplifyEnvelopePoints(
     points: List<EnvelopePoint>,
     speedScaling: Double = 1.0,
     timeScaling: Double = 0.0,
-    epsilon: Double = 1.0
+    epsilon: Double = 1.0,
 ): ArrayList<EnvelopePoint> {
     return simplifyCurveByRdp(points, epsilon) { point, start, end ->
         if (arePositionsEqual(start.position, end.position)) {

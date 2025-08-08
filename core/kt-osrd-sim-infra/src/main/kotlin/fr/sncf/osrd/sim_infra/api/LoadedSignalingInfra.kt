@@ -109,7 +109,7 @@ interface BlockInfra {
 
     fun getBlocksFromTrackChunk(
         trackChunk: TrackChunkId,
-        direction: Direction
+        direction: Direction,
     ): MutableStaticIdxArraySet<Block>
 
     fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>

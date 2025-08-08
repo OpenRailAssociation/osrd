@@ -36,7 +36,7 @@ private class PrimitiveSymbolProcessor(val context: GeneratorContext) : SymbolPr
                     primitiveType,
                     toPrimitiveFun,
                     fromPrimitiveFun,
-                    collections
+                    collections,
                 )
             }
         }

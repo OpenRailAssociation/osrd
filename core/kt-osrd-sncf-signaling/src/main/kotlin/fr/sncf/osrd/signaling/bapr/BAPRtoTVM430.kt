@@ -16,7 +16,7 @@ object BAPRtoTVM430 : SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         return stateSchema { value("aspect", "300VL") }
     }

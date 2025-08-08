@@ -44,7 +44,7 @@ import kotlin.math.min
 data class VisitedNodes(
     val minDelay: Double,
     val infra: FullInfra? = null,
-    val mrspBuilder: CachedBlockMRSPBuilder? = null
+    val mrspBuilder: CachedBlockMRSPBuilder? = null,
 ) {
 
     /** Data class representing a space location. Must be usable as map key. */
@@ -91,9 +91,7 @@ data class VisitedNodes(
     private val visitedAtDetector = mutableMapOf<Int, MutableMap<DirDetectorId, VisitedRangeMap>>()
 
     /** Returns true if the input has already been visited */
-    fun isVisited(
-        parameters: Parameters,
-    ): Boolean {
+    fun isVisited(parameters: Parameters): Boolean {
         if (
             (minPassedStepsForBlock[parameters.explorer?.getCurrentBlock()] ?: 0) >
                 parameters.fingerprint!!.waypointIndex
@@ -137,9 +135,7 @@ data class VisitedNodes(
     }
 
     /** Marks the input as visited */
-    fun markAsVisited(
-        parameters: Parameters,
-    ) {
+    fun markAsVisited(parameters: Parameters) {
         val fingerprint = parameters.fingerprint!!
         if (fingerprint.startOffset == 0.meters && parameters.explorer != null) {
             // The condition avoids discarding the first half of the block containing a step
@@ -158,11 +154,7 @@ data class VisitedNodes(
                 visitedAtDetector.getOrPut(parameters.fingerprint!!.waypointIndex) {
                     mutableMapOf()
                 }
-            val blockEntry =
-                infra.blockInfra.getBlockEntry(
-                    infra.rawInfra,
-                    block,
-                )
+            val blockEntry = infra.blockInfra.getBlockEntry(infra.rawInfra, block)
             val visitedRangesAtStartOfBlock =
                 mapAtStepIndex.getOrPut(blockEntry) { VisitedRangeMap() }
             visitedRangesAtStartOfBlock.putAll(newRangeMap)
@@ -176,7 +168,7 @@ data class VisitedNodes(
  */
 private fun visitedRangeMapFromParameters(
     parameters: Parameters,
-    extraTimePadding: Double
+    extraTimePadding: Double,
 ): VisitedRangeMap {
     val timeData = parameters.timeData
     val startTime = timeData.earliestReachableTime
@@ -184,7 +176,7 @@ private fun visitedRangeMapFromParameters(
         min(
             timeData.maxDepartureDelayingWithoutConflict,
             timeData.stopTimeData.minOfOrNull { it.maxDepartureDelayBeforeStop }
-                ?: Double.POSITIVE_INFINITY
+                ?: Double.POSITIVE_INFINITY,
         )
 
     // We still add some padding to the end of each range and value, to avoid evaluating trains
@@ -201,7 +193,7 @@ private fun visitedRangeMapFromParameters(
         endRangeExtraStopTime,
         endRangeExtraTravelTime,
         timeData.totalStopDuration,
-        parameters.nodeCost
+        parameters.nodeCost,
     )
     return map
 }

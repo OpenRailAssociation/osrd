@@ -48,7 +48,7 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
                 stopsAtBufferStop,
                 path,
                 signals,
-                signalsDistances
+                signalsDistances,
             )
         return blockSet.getOrPut(newBlock) { blockPool.add(newBlock) }
     }

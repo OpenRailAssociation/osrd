@@ -6,10 +6,7 @@ import com.google.devtools.ksp.symbol.KSFile
 import fr.sncf.osrd.fast_collections.generator.collections.*
 import java.io.OutputStream
 
-class GeneratorContext(
-    val codeGenerator: CodeGenerator,
-    val logger: KSPLogger,
-)
+class GeneratorContext(val codeGenerator: CodeGenerator, val logger: KSPLogger)
 
 class TypeParameter(val name: String, val bounds: List<GeneratorType>)
 
@@ -91,7 +88,7 @@ class CollectionItemType(
     val generatedPackage: String,
     // metadata about the primitive type used to store collection items,
     // or null if it is a primitive type
-    val storageType: StorageType?
+    val storageType: StorageType?,
 )
 
 fun OutputStream.appendText(str: String) {
@@ -104,11 +101,7 @@ interface CollectionGenerator {
     val dependencies: Array<String>
 
     // generate a custom collection for some wrapper type
-    fun generate(
-        context: GeneratorContext,
-        currentFile: KSFile,
-        itemType: CollectionItemType,
-    )
+    fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType)
 }
 
 val GENERATORS =

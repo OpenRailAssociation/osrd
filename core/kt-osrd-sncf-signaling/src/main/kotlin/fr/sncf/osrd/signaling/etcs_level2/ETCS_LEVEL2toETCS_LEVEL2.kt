@@ -18,7 +18,7 @@ object ETCS_LEVEL2toETCS_LEVEL2 : SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         return stateSchema {
             when (maView!!.protectionStatus) {

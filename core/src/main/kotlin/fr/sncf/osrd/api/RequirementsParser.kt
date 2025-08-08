@@ -22,7 +22,7 @@ val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsPars
 fun parseTrainsRequirements(
     infra: RawInfra,
     trainsRequirements: Map<String, TrainRequirementsRequest>,
-    startTime: ZonedDateTime
+    startTime: ZonedDateTime,
 ): List<Requirements> {
     val res = mutableListOf<Requirements>()
     for ((id, trainRequirements) in trainsRequirements) {
@@ -45,7 +45,7 @@ fun parseTrainsRequirements(
 fun parseSpacingRequirements(
     infra: RawInfra,
     spacingRequirements: Collection<RJSSpacingRequirement>,
-    timeToAdd: TimeDelta = Duration.ZERO
+    timeToAdd: TimeDelta = Duration.ZERO,
 ): List<SpacingRequirement> {
     val res = mutableListOf<SpacingRequirement>()
     for (spacingRequirement in spacingRequirements) {
@@ -54,9 +54,9 @@ fun parseSpacingRequirements(
                 RJSSpacingRequirement(
                     spacingRequirement.zone,
                     spacingRequirement.beginTime + timeToAdd,
-                    spacingRequirement.endTime + timeToAdd
+                    spacingRequirement.endTime + timeToAdd,
                 ),
-                infra
+                infra,
             )
         )
     }
@@ -66,7 +66,7 @@ fun parseSpacingRequirements(
 fun parseRoutingRequirements(
     infra: RawSignalingInfra,
     routingRequirements: Collection<RJSRoutingRequirement>,
-    timeToAdd: TimeDelta = Duration.ZERO
+    timeToAdd: TimeDelta = Duration.ZERO,
 ): List<RoutingRequirement> {
     val res = mutableListOf<RoutingRequirement>()
     for (routingRequirement in routingRequirements) {
@@ -81,11 +81,11 @@ fun parseRoutingRequirements(
                             it.entryDetector,
                             it.exitDetector,
                             it.switches,
-                            it.endTime + timeToAdd
+                            it.endTime + timeToAdd,
                         )
-                    }
+                    },
                 ),
-                infra
+                infra,
             )
         )
     }
@@ -95,7 +95,7 @@ fun parseRoutingRequirements(
 fun parseWorkSchedulesRequest(
     infra: RawSignalingInfra,
     workSchedulesRequest: WorkSchedulesRequest,
-    startTime: ZonedDateTime
+    startTime: ZonedDateTime,
 ): Collection<Requirements> {
     val delta = TimeDelta(between(startTime, workSchedulesRequest.startTime).toMillis())
     return convertWorkScheduleMap(infra, workSchedulesRequest.workScheduleRequirements, delta)
@@ -108,7 +108,7 @@ fun parseWorkSchedulesRequest(
 fun convertWorkScheduleMap(
     rawInfra: RawSignalingInfra,
     workSchedules: Map<String, WorkSchedule>,
-    timeToAdd: TimeDelta = 0.seconds
+    timeToAdd: TimeDelta = 0.seconds,
 ): Collection<Requirements> {
     val res = mutableListOf<Requirements>()
     val logAggregator = LogAggregator({ requirementsParserLogger.warn(it) })
@@ -121,7 +121,7 @@ fun convertWorkScheduleMap(
             Requirements(
                 RequirementId(entry.key, RequirementType.WORK_SCHEDULE),
                 workScheduleRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
-                listOf()
+                listOf(),
             )
         )
     }
@@ -148,7 +148,7 @@ fun convertWorkScheduleCollection(
     return Requirements(
         RequirementId(DEFAULT_WORK_SCHEDULE_ID, RequirementType.WORK_SCHEDULE),
         workSchedulesRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
-        listOf()
+        listOf(),
     )
 }
 

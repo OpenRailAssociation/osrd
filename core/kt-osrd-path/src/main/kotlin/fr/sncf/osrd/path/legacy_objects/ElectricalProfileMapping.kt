@@ -35,7 +35,7 @@ class ElectricalProfileMapping {
                 rangeMapping.put(
                     fromMeters(trackRange.begin),
                     fromMeters(trackRange.end),
-                    rjsProfile.value
+                    rjsProfile.value,
                 )
             }
         }
@@ -44,7 +44,7 @@ class ElectricalProfileMapping {
     /** Returns the electrical profiles encountered on a path */
     fun getProfilesOnPath(
         infra: RawInfra,
-        path: PathProperties
+        path: PathProperties,
     ): HashMap<String, DistanceRangeMap<String>> {
         val res = HashMap<String, DistanceRangeMap<String>>()
         for (entry in mapping.entries) {
@@ -62,7 +62,7 @@ class ElectricalProfileMapping {
     fun getProfilesOnChunk(
         infra: RawInfra,
         chunk: TrackChunkId,
-        mapping: HashMap<String, DistanceRangeMap<String>>
+        mapping: HashMap<String, DistanceRangeMap<String>>,
     ): DistanceRangeMap<String> {
         val chunkOffset = infra.getTrackChunkOffset(chunk)
         val trackId = infra.getTrackFromChunk(chunk)
@@ -73,7 +73,7 @@ class ElectricalProfileMapping {
             profilesOnChunk =
                 trackProfiles.subMap(
                     chunkOffset.distance,
-                    chunkOffset.distance + infra.getTrackChunkLength(chunk).distance
+                    chunkOffset.distance + infra.getTrackChunkLength(chunk).distance,
                 )
             profilesOnChunk.shiftPositions(-chunkOffset.distance)
         }

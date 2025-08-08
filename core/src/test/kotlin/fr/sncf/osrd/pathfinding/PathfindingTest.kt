@@ -27,7 +27,7 @@ import org.takes.rq.RqFake
 fun getPathfindingBlockRequest(
     rs: RollingStock,
     pathItems: List<Collection<TrackLocation>>,
-    infra: String = "unused_name"
+    infra: String = "unused_name",
 ): PathfindingBlockRequest {
     return PathfindingBlockRequest(
         rs.loadingGaugeType,
@@ -39,7 +39,7 @@ fun getPathfindingBlockRequest(
         null,
         infra,
         1,
-        pathItems
+        pathItems,
     )
 }
 
@@ -49,7 +49,7 @@ fun checkPathfindingSuccess(
     expectedTrackSectionRanges: List<DirectionalTrackRange>? = null,
     expectedBlocks: List<String>? = null,
     expectedRoutes: List<String>? = null,
-    expectedIntermediatePathItemPosition: List<Offset<TravelledPath>> = listOf()
+    expectedIntermediatePathItemPosition: List<Offset<TravelledPath>> = listOf(),
 ): PathfindingBlockSuccess {
     assertThat(pathResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
     val pathSuccess = pathResp as PathfindingBlockSuccess
@@ -85,7 +85,7 @@ class PathfindingTest : ApiTest() {
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 listOf(waypointsStart, waypointsEnd),
-                "tiny_infra/infra.json"
+                "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
             parsed,
@@ -94,12 +94,12 @@ class PathfindingTest : ApiTest() {
                 listOf(
                     "[il.sig.C3-BAL];[buffer_stop_b, tde.foo_b-switch_foo];[]",
                     "[il.sig.C3-BAL, il.sig.S7-BAL];[tde.foo_b-switch_foo, tde.track-bar];[il.switch_foo-A_B1]",
-                    "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"
+                    "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]",
                 ),
             expectedRoutes =
                 listOf(
                     "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                    "rt.tde.foo_b-switch_foo->buffer_stop_c"
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c",
                 ),
             expectedTrackSectionRanges =
                 listOf(
@@ -107,21 +107,21 @@ class PathfindingTest : ApiTest() {
                         "ne.micro.foo_b",
                         Offset(50.meters),
                         Offset(200.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
-                        EdgeDirection.START_TO_STOP
-                    )
-                )
+                        EdgeDirection.START_TO_STOP,
+                    ),
+                ),
         )
     }
 
@@ -187,11 +187,11 @@ class PathfindingTest : ApiTest() {
                         listOf(
                             RangeValue(
                                 Pathfinding.Range(Offset.zero(), Offset(10250.meters)),
-                                "" // range not electrified
+                                "", // range not electrified
                             )
                         ),
                     incompatibleGaugeRanges = listOf(),
-                    incompatibleSignalingSystemRanges = listOf()
+                    incompatibleSignalingSystemRanges = listOf(),
                 )
         )
     }
@@ -258,13 +258,13 @@ class PathfindingTest : ApiTest() {
                         listOf(
                             RangeValue(
                                 Pathfinding.Range(Offset.zero(), Offset(1960.meters)),
-                                "1500V"
+                                "1500V",
                             ),
                             // neutral section in-between
                             RangeValue(
                                 Pathfinding.Range(Offset(2010.meters), Offset(4000.meters)),
-                                "25000V"
-                            )
+                                "25000V",
+                            ),
                         ),
                     // multiple different loading gauges on the track
                     incompatibleGaugeRanges =
@@ -272,21 +272,21 @@ class PathfindingTest : ApiTest() {
                             RangeValue(Pathfinding.Range(Offset.zero(), Offset(100.meters)), null),
                             RangeValue(
                                 Pathfinding.Range(Offset(100.meters), Offset(200.meters)),
-                                null
+                                null,
                             ),
                             RangeValue(
                                 Pathfinding.Range(Offset(200.meters), Offset(1500.meters)),
-                                null
+                                null,
                             ),
                             RangeValue(
                                 Pathfinding.Range(Offset(1500.meters), Offset(1900.meters)),
-                                null
-                            )
+                                null,
+                            ),
                         ),
                     incompatibleSignalingSystemRanges =
                         listOf(
                             RangeValue(Pathfinding.Range(Offset.zero(), Offset(4000.meters)), "BAL")
-                        )
+                        ),
                 )
         )
     }
@@ -300,7 +300,7 @@ class PathfindingTest : ApiTest() {
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 listOf(waypointsStart, waypointsMid, waypointsEnd),
-                "tiny_infra/infra.json"
+                "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
             parsed,
@@ -310,12 +310,12 @@ class PathfindingTest : ApiTest() {
                 listOf(
                     "[il.sig.C3-BAL];[buffer_stop_b, tde.foo_b-switch_foo];[]",
                     "[il.sig.C3-BAL, il.sig.S7-BAL];[tde.foo_b-switch_foo, tde.track-bar];[il.switch_foo-A_B1]",
-                    "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]"
+                    "[il.sig.S7-BAL];[tde.track-bar, buffer_stop_c];[]",
                 ),
             expectedRoutes =
                 listOf(
                     "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                    "rt.tde.foo_b-switch_foo->buffer_stop_c"
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c",
                 ),
             expectedTrackSectionRanges =
                 listOf(
@@ -323,21 +323,21 @@ class PathfindingTest : ApiTest() {
                         "ne.micro.foo_b",
                         Offset(100.meters),
                         Offset(200.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
-                        EdgeDirection.START_TO_STOP
-                    )
-                )
+                        EdgeDirection.START_TO_STOP,
+                    ),
+                ),
         )
     }
 
@@ -350,7 +350,7 @@ class PathfindingTest : ApiTest() {
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
                     listOf(waypointsStart, waypointsEnd),
-                    "tiny_infra/infra.json"
+                    "tiny_infra/infra.json",
                 )
             )
         val rawResponse =
@@ -371,7 +371,7 @@ class PathfindingTest : ApiTest() {
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
                     listOf(waypointsStart),
-                    "tiny_infra/infra.json"
+                    "tiny_infra/infra.json",
                 )
             )
         val rawResponse =
@@ -402,8 +402,8 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         checkPathfindingSuccess(normalPathResp, 10200.meters)
 
@@ -413,8 +413,8 @@ class PathfindingTest : ApiTest() {
                     infra,
                     getPathfindingBlockRequest(
                         TestTrains.FAST_TRAIN_LARGE_GAUGE,
-                        listOf(waypointsStart, waypointsEnd)
-                    )
+                        listOf(waypointsStart, waypointsEnd),
+                    ),
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
@@ -427,7 +427,7 @@ class PathfindingTest : ApiTest() {
                     resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
                         RangeValue<String>(
                             Pathfinding.Range(Offset(1100.meters), Offset(2100.meters)),
-                            null
+                            null,
                         )
                 )
             })
@@ -439,8 +439,8 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, closerWaypointsEnd)
-                )
+                    listOf(waypointsStart, closerWaypointsEnd),
+                ),
             )
         checkPathfindingSuccess(shorterPathResp, 1100.meters)
     }
@@ -453,7 +453,7 @@ class PathfindingTest : ApiTest() {
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 listOf(waypointsStart, waypointsEnd),
-                "tiny_infra/infra.json"
+                "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
             parsed,
@@ -462,13 +462,13 @@ class PathfindingTest : ApiTest() {
                 listOf(
                     "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
                     "[il.sig.C2-BAL, il.sig.C6-BAL];[tde.track-bar, tde.switch_foo-track];[]",
-                    "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_b];[il.switch_foo-A_B1]"
+                    "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_b];[il.switch_foo-A_B1]",
                 ),
             expectedRoutes =
                 listOf(
                     "rt.buffer_stop_c->tde.track-bar",
                     "rt.tde.track-bar->tde.switch_foo-track",
-                    "rt.tde.switch_foo-track->buffer_stop_b"
+                    "rt.tde.switch_foo-track->buffer_stop_b",
                 ),
             expectedTrackSectionRanges =
                 listOf(
@@ -476,21 +476,21 @@ class PathfindingTest : ApiTest() {
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
-                        EdgeDirection.STOP_TO_START
+                        EdgeDirection.STOP_TO_START,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
-                        EdgeDirection.STOP_TO_START
+                        EdgeDirection.STOP_TO_START,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.foo_b",
                         Offset(100.meters),
                         Offset(200.meters),
-                        EdgeDirection.STOP_TO_START
-                    )
-                )
+                        EdgeDirection.STOP_TO_START,
+                    ),
+                ),
         )
     }
 
@@ -503,7 +503,7 @@ class PathfindingTest : ApiTest() {
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 listOf(waypointsStart, waypointsEnd),
-                "tiny_infra/infra.json"
+                "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
             parsed,
@@ -516,9 +516,9 @@ class PathfindingTest : ApiTest() {
                         "ne.micro.bar_a",
                         Offset(100.meters),
                         Offset(110.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     )
-                )
+                ),
         )
     }
 
@@ -530,28 +530,22 @@ class PathfindingTest : ApiTest() {
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
                 listOf(waypointsStart, waypointsEnd),
-                "tiny_infra/infra.json"
+                "tiny_infra/infra.json",
             )
         checkPathfindingSuccess(
             parsed,
             10.meters,
-            expectedBlocks =
-                listOf(
-                    "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
-                ),
-            expectedRoutes =
-                listOf(
-                    "rt.buffer_stop_c->tde.track-bar",
-                ),
+            expectedBlocks = listOf("[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]"),
+            expectedRoutes = listOf("rt.buffer_stop_c->tde.track-bar"),
             expectedTrackSectionRanges =
                 listOf(
                     DirectionalTrackRange(
                         "ne.micro.bar_a",
                         Offset(100.meters),
                         Offset(110.meters),
-                        EdgeDirection.STOP_TO_START
+                        EdgeDirection.STOP_TO_START,
                     )
-                )
+                ),
         )
     }
 
@@ -575,8 +569,8 @@ class PathfindingTest : ApiTest() {
                 infra,
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         checkPathfindingSuccess(
             normalPathResp,
@@ -592,21 +586,21 @@ class PathfindingTest : ApiTest() {
                         "ne.micro.foo_a",
                         Offset(200.meters),
                         Offset(200.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
-                        EdgeDirection.START_TO_STOP
+                        EdgeDirection.START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(0.meters),
-                        EdgeDirection.START_TO_STOP
-                    )
-                )
+                        EdgeDirection.START_TO_STOP,
+                    ),
+                ),
         )
     }
 

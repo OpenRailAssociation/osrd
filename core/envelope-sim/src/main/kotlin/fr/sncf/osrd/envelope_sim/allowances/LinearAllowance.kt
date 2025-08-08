@@ -13,7 +13,7 @@ class LinearAllowance(
     beginPos: Double,
     endPos: Double,
     capacitySpeedLimit: Double,
-    ranges: List<AllowanceRange>
+    ranges: List<AllowanceRange>,
 ) : AbstractAllowanceWithRanges(beginPos, endPos, capacitySpeedLimit, ranges.toMutableList()) {
     /** Compute the initial low bound for the binary search */
     override fun computeInitialLowBound(envelopeSection: Envelope): Double {
@@ -23,7 +23,7 @@ class LinearAllowance(
     /** Compute the initial high bound for the binary search */
     override fun computeInitialHighBound(
         envelopeSection: Envelope,
-        rollingStock: PhysicsRollingStock
+        rollingStock: PhysicsRollingStock,
     ): Double {
         return envelopeSection.maxSpeed
     }
@@ -35,7 +35,7 @@ class LinearAllowance(
     override fun computeCore(
         base: Envelope,
         context: EnvelopeSimContext,
-        speedCap: Double // Max speed
+        speedCap: Double, // Max speed
     ): Envelope {
         val ratio = speedCap / base.maxSpeed
         return scaleEnvelope(base, ratio)

@@ -7,7 +7,7 @@ import java.util.*
 
 private fun CollectionItemType.generateArraySortedSet(
     context: GeneratorContext,
-    currentFile: KSFile
+    currentFile: KSFile,
 ) {
     val simpleName = type.simpleName
     val decSimpleName = simpleName.replaceFirstChar { it.lowercase(Locale.getDefault()) }
@@ -24,7 +24,7 @@ private fun CollectionItemType.generateArraySortedSet(
         context.codeGenerator.createNewFile(
             Dependencies(true, currentFile),
             generatedPackage,
-            fileName
+            fileName,
         )
     file.appendText(
         """
@@ -412,7 +412,7 @@ class ArraySortedSetGenerator {
         override fun generate(
             context: GeneratorContext,
             currentFile: KSFile,
-            itemType: CollectionItemType
+            itemType: CollectionItemType,
         ) {
             itemType.generateArraySortedSet(context, currentFile)
         }

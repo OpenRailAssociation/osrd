@@ -10,7 +10,7 @@ fun build(
     rollingStock: RollingStock,
     path: EnvelopeSimPath,
     timeStep: Double,
-    comfort: Comfort?
+    comfort: Comfort?,
 ): EnvelopeSimContext {
     val elecCondMap =
         path.getElectrificationMap(null, null, null, true) // Only electrification modes for now

@@ -35,13 +35,13 @@ class WorkerCommand : CliCommand {
 
     @Parameter(
         names = ["--editoast-url"],
-        description = "The base URL of editoast (used to query infrastructures)"
+        description = "The base URL of editoast (used to query infrastructures)",
     )
     private var editoastUrl: String? = null
 
     @Parameter(
         names = ["--editoast-authorization"],
-        description = "The HTTP Authorization header sent to editoast"
+        description = "The HTTP Authorization header sent to editoast",
     )
     private var editoastAuthorization: String = "x-osrd-skip-authz"
 
@@ -102,7 +102,7 @@ class WorkerCommand : CliCommand {
         logger.info(
             "starting the API server with max {}Gi of java heap and {} threads",
             maxMemory,
-            WORKER_THREADS
+            WORKER_THREADS,
         )
 
         val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
@@ -142,7 +142,7 @@ class WorkerCommand : CliCommand {
                 WORKER_THREADS,
                 0L,
                 TimeUnit.MILLISECONDS,
-                LinkedBlockingQueue()
+                LinkedBlockingQueue(),
             )
         val factory = ConnectionFactory()
         factory.setUri(WORKER_AMQP_URI)
@@ -209,7 +209,7 @@ class WorkerCommand : CliCommand {
                                 "",
                                 replyTo,
                                 null,
-                                "missing x-rpc-path header".toByteArray()
+                                "missing x-rpc-path header".toByteArray(),
                             )
                         }
 
@@ -227,7 +227,7 @@ class WorkerCommand : CliCommand {
                                 "",
                                 replyTo,
                                 null,
-                                "unknown path $path".toByteArray()
+                                "unknown path $path".toByteArray(),
                             )
                         }
 
@@ -250,7 +250,7 @@ class WorkerCommand : CliCommand {
                             .extract(
                                 Context.current(),
                                 message.properties.headers,
-                                RabbitMQTextMapGetter()
+                                RabbitMQTextMapGetter(),
                             )
                     val span = tracer.spanBuilder(path).setParent(context).startSpan()
 
@@ -298,7 +298,7 @@ class WorkerCommand : CliCommand {
                     logger.info(
                         "request for path {} processed in {}s",
                         path,
-                        executionTimeMS / 1_000.0
+                        executionTimeMS / 1_000.0,
                     )
                 }
 
@@ -332,7 +332,7 @@ class WorkerCommand : CliCommand {
                 },
                 { consumerTag, e ->
                     logger.info("consume shutdown: {}, {}", consumerTag, e.toString())
-                }
+                },
             )
 
             while (true) {

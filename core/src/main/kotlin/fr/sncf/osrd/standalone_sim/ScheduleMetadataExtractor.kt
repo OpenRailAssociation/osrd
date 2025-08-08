@@ -58,7 +58,7 @@ private fun buildBlockInfoTable(
     blockInfra: BlockInfra,
     rawInfra: RawInfra,
     routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>
+    blockPath: StaticIdxList<Block>,
 ): List<BlockInfo> {
     val detailedBlocks = mutableListOf<BlockInfo>()
 
@@ -134,7 +134,7 @@ fun runScheduleMetadataExtractor(
             blockInfra,
             envelopeWithStops,
             rawInfra,
-            trainLength
+            trainLength,
         )
 
     val zoneUpdates =
@@ -170,7 +170,7 @@ fun runScheduleMetadataExtractor(
         var signalCriticalOffset =
             Offset.max(
                 Offset.zero(),
-                pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)
+                pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal),
             )
         if (indexPathSignal > 0) {
             val previousSignalOffset = pathSignals[indexPathSignal - 1].pathOffset
@@ -185,7 +185,7 @@ fun runScheduleMetadataExtractor(
                 getStopTravelledPathOffset(
                     closedSignalStops,
                     indexClosedSignalStop++,
-                    pathOffsetBuilder
+                    pathOffsetBuilder,
                 )
         }
         // if stop is before signal
@@ -195,7 +195,7 @@ fun runScheduleMetadataExtractor(
                 getStopTravelledPathOffset(
                     closedSignalStops,
                     indexClosedSignalStop + 1,
-                    pathOffsetBuilder
+                    pathOffsetBuilder,
                 )
             while (nextStopOffset != null && nextStopOffset <= pathSignal.pathOffset) {
                 closedSignalStopOffset = nextStopOffset
@@ -204,7 +204,7 @@ fun runScheduleMetadataExtractor(
                     getStopTravelledPathOffset(
                         closedSignalStops,
                         indexClosedSignalStop + 1,
-                        pathOffsetBuilder
+                        pathOffsetBuilder,
                     )
             }
 
@@ -225,7 +225,7 @@ fun runScheduleMetadataExtractor(
                 )!!,
                 maxOf(signalCriticalTime, TimeDelta.ZERO),
                 signalCriticalOffset,
-                "VL" // TODO: find out the real state
+                "VL", // TODO: find out the real state
             )
         )
     }
@@ -251,7 +251,7 @@ fun runScheduleMetadataExtractor(
             containsStart = true,
             containsEnd = true,
             startOffset,
-            endOffset
+            endOffset,
         )
     )
     // as the provided path is complete, the resource generator should never return NotEnoughPath
@@ -277,7 +277,7 @@ fun runScheduleMetadataExtractor(
             trainPath,
             rollingStock,
             schedule,
-            pathItemPositions
+            pathItemPositions,
         )
     return CompleteReportTrain(
         reportTrain.positions,
@@ -288,14 +288,14 @@ fun runScheduleMetadataExtractor(
         signalCriticalPositions,
         zoneUpdates,
         spacingRequirements.requirements.map { it.toRJS(rawInfra) },
-        routingRequirements.map { it.toRJS(rawInfra) }
+        routingRequirements.map { it.toRJS(rawInfra) },
     )
 }
 
 fun getStopTravelledPathOffset(
     pathStops: List<PathStop>,
     indexStop: Int,
-    pathOffsetBuilder: PathOffsetBuilder
+    pathOffsetBuilder: PathOffsetBuilder,
 ): Offset<TravelledPath>? {
     val stop = pathStops.getOrNull(indexStop) ?: return null
     return pathOffsetBuilder.toTravelledPath(stop.pathOffset)
@@ -348,7 +348,7 @@ fun makeSimpleReportTrain(
 fun getBlockOffsets(
     blockPath: StaticIdxList<Block>,
     pathOffsetBuilder: PathOffsetBuilder,
-    blockInfra: BlockInfra
+    blockInfra: BlockInfra,
 ): OffsetArray<TravelledPath> {
     val blockOffsets = MutableOffsetArray(blockPath.size) { Offset.zero<TravelledPath>() }
     var curOffset = Offset.zero<BlockPath>()
@@ -401,7 +401,7 @@ fun routingRequirements(
         val blockEndOffset =
             Offset.min(
                 Offset(envelope.endPos.meters),
-                blockOffset + blockInfra.getBlockLength(block).distance
+                blockOffset + blockInfra.getBlockLength(block).distance,
             )
         val signals = blockInfra.getBlockSignals(blockPath[i])
         val consideredSignals =
@@ -457,7 +457,7 @@ fun routingRequirements(
                 routePath.toList(),
                 routeStartBlockIndex,
                 zoneStates,
-                ZoneStatus.INCOMPATIBLE
+                ZoneStatus.INCOMPATIBLE,
             )
 
         // find the first non-open signal on the path
@@ -471,7 +471,7 @@ fun routingRequirements(
                 blockPath,
                 blockOffsets,
                 routeStartBlockIndex,
-                signalingTrainStates
+                signalingTrainStates,
             ) ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
@@ -544,13 +544,7 @@ fun routingRequirements(
                 envelope.interpolateDepartureFromClamp(exitCriticalPos.distance.meters).seconds
             zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, exitCriticalTime))
         }
-        res.add(
-            RoutingRequirement(
-                route,
-                routeSetDeadline.seconds,
-                zoneRequirements,
-            )
-        )
+        res.add(RoutingRequirement(route, routeSetDeadline.seconds, zoneRequirements))
     }
     return res
 }
@@ -559,7 +553,7 @@ fun routingRequirements(
 private fun routingZoneRequirement(
     rawInfra: RawInfra,
     zonePath: ZonePathId,
-    endTime: TimeDelta
+    endTime: TimeDelta,
 ): RoutingZoneRequirement {
     val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
     val zoneEntry = rawInfra.getZonePathEntry(zonePath)
@@ -569,13 +563,7 @@ private fun routingZoneRequirement(
     val switchConfigs = rawInfra.getZonePathMovableElementsConfigs(zonePath)
     for ((switch, config) in switches zip switchConfigs) resSwitches[
         rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
-    return RoutingZoneRequirement(
-        zone,
-        zoneEntry,
-        zoneExit,
-        resSwitches,
-        endTime.seconds,
-    )
+    return RoutingZoneRequirement(zone, zoneEntry, zoneExit, resSwitches, endTime.seconds)
 }
 
 data class LimitingSignal(val blockIndex: Int, val signalIndex: Int)
@@ -593,7 +581,7 @@ private fun findLimitingSignal(
     blockPath: StaticIdxList<Block>,
     blockOffsets: OffsetArray<TravelledPath>,
     routeStartBlockIndex: Int,
-    signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>
+    signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
 ): LimitingSignal? {
     var lastSignalBlockIndex = -1
     var lastSignalIndex = -1
@@ -638,7 +626,7 @@ fun zoneOccupationChangeEvents(
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
     rawInfra: RawInfra,
-    trainLength: Distance
+    trainLength: Distance,
 ): MutableList<ZoneOccupationChangeEvent> {
     var zoneCount = 0
     var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
@@ -729,7 +717,7 @@ fun pathSignalsInEnvelope(
         blockPath,
         blockInfra,
         0.meters,
-        envelope.endPos.meters
+        envelope.endPos.meters,
     )
 }
 

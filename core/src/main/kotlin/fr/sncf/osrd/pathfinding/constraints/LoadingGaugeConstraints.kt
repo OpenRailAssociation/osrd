@@ -13,7 +13,7 @@ import java.util.stream.Collectors
 data class LoadingGaugeConstraints(
     val blockInfra: BlockInfra,
     val infra: RawSignalingInfra,
-    val loadingGaugeType: RJSLoadingGaugeType
+    val loadingGaugeType: RJSLoadingGaugeType,
 ) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
@@ -25,7 +25,7 @@ data class LoadingGaugeConstraints(
     /** Returns the sections of the given block that can't be used by the given rolling stock */
     private fun getBlockedRanges(
         type: RJSLoadingGaugeType,
-        path: PathProperties
+        path: PathProperties,
     ): Collection<Pathfinding.Range<Block>> {
         return path
             .getLoadingGauge()

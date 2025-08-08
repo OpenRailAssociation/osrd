@@ -102,7 +102,7 @@ class TestBAPRtoBAL {
                 listOf(), // we don't use parameters here
                 fullPath.size,
                 zoneStates,
-                ZoneStatus.INCOMPATIBLE
+                ZoneStatus.INCOMPATIBLE,
             )
         val logicalSignals =
             listOf(signalm, signalM, signaln, signalN).map {
@@ -115,7 +115,7 @@ class TestBAPRtoBAL {
     private fun asserSignalListAspectEquals(
         expectedAspects: List<String>,
         actualAspects: Map<LogicalSignalId, SigState>,
-        signals: List<LogicalSignalId>
+        signals: List<LogicalSignalId>,
     ) {
         for ((aspect, signal) in expectedAspects.zip(signals)) {
             assertEquals(aspect, actualAspects[signal]!!.getEnum("aspect"))

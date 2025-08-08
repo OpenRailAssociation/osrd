@@ -38,7 +38,7 @@ class LoadingGaugeConstraintsTest {
             LoadingGaugeConstraints(
                 infra.blockInfra,
                 infra.rawInfra,
-                TestTrains.FAST_TRAIN_LARGE_GAUGE.loadingGaugeType
+                TestTrains.FAST_TRAIN_LARGE_GAUGE.loadingGaugeType,
             )
         val ta0 = infra.rawInfra.getTrackSectionFromName("TA0")!!
         val ta0Chunks = infra.rawInfra.getTrackSectionChunks(ta0)
@@ -66,7 +66,7 @@ class LoadingGaugeConstraintsTest {
     @MethodSource("testLoadingGaugeArgs")
     fun testLoadingGaugeBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>
+        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
     ) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -87,17 +87,17 @@ class LoadingGaugeConstraintsTest {
                     Pathfinding.Range(Length(0.meters), Length(100.meters)),
                     Pathfinding.Range(Length(100.meters), Length(200.meters)),
                     Pathfinding.Range(Length(200.meters), Length(1500.meters)),
-                    Pathfinding.Range(Length(1500.meters), ta0Chunk0Length)
-                )
+                    Pathfinding.Range(Length(1500.meters), ta0Chunk0Length),
+                ),
             ), // Different loading gauge constraints applied to all block
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Length<TrackChunk>(0.meters), Length(80.meters)))
+                setOf(Pathfinding.Range(Length<TrackChunk>(0.meters), Length(80.meters))),
             ), // Loading gauge constraints partially applied to block
             Arguments.of(
                 ta1Chunk0block!!.index.toInt(),
-                HashSet<Any>()
-            ) // No loading gauge constraints on TA1
+                HashSet<Any>(),
+            ), // No loading gauge constraints on TA1
         )
     }
 }

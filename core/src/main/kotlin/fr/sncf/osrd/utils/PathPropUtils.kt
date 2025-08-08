@@ -57,7 +57,7 @@ fun makePathProps(
     blockInfra: BlockInfra,
     blockIds: List<BlockId>,
     offsetFirstBlock: Length<BlockPath>,
-    routes: List<RouteId>? = null
+    routes: List<RouteId>? = null,
 ): PathProperties {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     var totalLength: Length<BlockPath> = Length(0.meters)
@@ -75,7 +75,7 @@ fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     blockRanges: List<PathfindingEdgeRangeId<Block>>,
-    routes: List<RouteId>? = null
+    routes: List<RouteId>? = null,
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, blockInfra, blockRanges)
     return makePathProperties(rawInfra, chunkPath, routes = routes)
@@ -90,7 +90,7 @@ fun makePathProps(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): PathPrope
 /** Builds a PathProperties from a List<TrackRange> */
 fun makePathProps(
     rawInfra: RawSignalingInfra,
-    trackRanges: List<DirectionalTrackRange>
+    trackRanges: List<DirectionalTrackRange>,
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, trackRanges)
     return makePathProperties(rawInfra, chunkPath)
@@ -100,7 +100,7 @@ fun makePathProps(
 fun makeChunkPath(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    blockRanges: List<PathfindingEdgeRangeId<Block>>
+    blockRanges: List<PathfindingEdgeRangeId<Block>>,
 ): ChunkPath {
     assert(blockRanges.isNotEmpty())
     var totalBlockPathLength: Length<BlockPath> = Length(0.meters)
@@ -170,7 +170,7 @@ fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath
 
 fun makeChunkPath(
     rawInfra: RawSignalingInfra,
-    trackRanges: List<DirectionalTrackRange>
+    trackRanges: List<DirectionalTrackRange>,
 ): ChunkPath {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     val firstRange = trackRanges[0]

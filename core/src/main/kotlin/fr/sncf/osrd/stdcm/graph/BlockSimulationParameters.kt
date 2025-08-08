@@ -12,5 +12,5 @@ data class BlockSimulationParameters(
     val block: BlockId,
     val initialSpeed: Double,
     val start: Offset<Block>,
-    val stop: Offset<Block>?
+    val stop: Offset<Block>?,
 )

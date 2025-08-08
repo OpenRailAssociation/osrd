@@ -13,7 +13,7 @@ internal class EnvelopePartTest {
             generateTimes(
                 listOf(EnvelopeProfile.ACCELERATING),
                 doubleArrayOf(1.5, 5.0),
-                doubleArrayOf(3.0, 4.0)
+                doubleArrayOf(3.0, 4.0),
             )
         Assertions.assertEquals("EnvelopePart { EnvelopeProfile=ACCELERATING }", part.toString())
     }
@@ -24,11 +24,11 @@ internal class EnvelopePartTest {
             generateTimes(
                 listOf(EnvelopeProfile.ACCELERATING),
                 doubleArrayOf(1.5, 5.0),
-                doubleArrayOf(3.0, 4.0)
+                doubleArrayOf(3.0, 4.0),
             )
         Assertions.assertEquals(
             EnvelopeProfile.ACCELERATING,
-            part.getAttr(EnvelopeProfile::class.java)
+            part.getAttr(EnvelopeProfile::class.java),
         )
     }
 
@@ -45,7 +45,7 @@ internal class EnvelopePartTest {
         val ep =
             EnvelopeTestUtils.generateTimes(
                 doubleArrayOf(1.5, 3.0, 5.0),
-                doubleArrayOf(3.0, 4.0, 4.0)
+                doubleArrayOf(3.0, 4.0, 4.0),
             )
 
         Assertions.assertEquals(0, ep.findLeft(1.5))
@@ -72,19 +72,19 @@ internal class EnvelopePartTest {
             generateTimes(
                 listOf(EnvelopeProfile.ACCELERATING),
                 doubleArrayOf(1.5, 3.0, 5.0),
-                doubleArrayOf(3.0, 4.0, 4.0)
+                doubleArrayOf(3.0, 4.0, 4.0),
             )
         val ep2 =
             generateTimes(
                 listOf(EnvelopeProfile.ACCELERATING),
                 doubleArrayOf(1.5, 3.0, 5.0),
-                doubleArrayOf(3.0, 4.0, 4.0)
+                doubleArrayOf(3.0, 4.0, 4.0),
             )
         val ep3 =
             generateTimes(
                 listOf(EnvelopeProfile.COASTING),
                 doubleArrayOf(1.5, 3.0, 5.0),
-                doubleArrayOf(3.0, 4.0, 4.0)
+                doubleArrayOf(3.0, 4.0, 4.0),
             )
         Assertions.assertEquals(ep1, ep2)
         Assertions.assertEquals(ep1.hashCode(), ep2.hashCode())
@@ -106,13 +106,13 @@ internal class EnvelopePartTest {
         val envelopeAllowance =
             AllowanceTests.makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, false)
 
-        for (i in 0 ..< envelopeAllowance.size()) {
+        for (i in 0..<envelopeAllowance.size()) {
             val envelopePart = envelopeAllowance.get(i)
             val envelopePartEnergy =
                 EnvelopePhysics.getPartMechanicalEnergyConsumed(
                     envelopePart,
                     testContext.path,
-                    testContext.rollingStock
+                    testContext.rollingStock,
                 )
             val expectedEnvelopePartEnergy: Double
             when (i) {
@@ -136,7 +136,7 @@ internal class EnvelopePartTest {
             Assertions.assertEquals(
                 expectedEnvelopePartEnergy,
                 envelopePartEnergy,
-                0.1 * expectedEnvelopePartEnergy + 1000
+                0.1 * expectedEnvelopePartEnergy + 1000,
             )
         }
     }

@@ -36,7 +36,7 @@ data class ChunkPath(
      * Offset of the head of the train when it ends its path, compared to the start of the first
      * element in `chunks`.
      */
-    val endOffset: Offset<BlockPath>
+    val endOffset: Offset<BlockPath>,
 ) {
     val length: Distance = endOffset.distance - beginOffset.distance
 }
@@ -89,7 +89,7 @@ data class PathPropertiesImpl(
 
     override fun getSpeedLimitProperties(
         trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?
+        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     ): DistanceRangeMap<SpeedLimitProperty> {
         assert(pathRoutes != null) {
             "the routes on a path should be set when attempting to compute a speed limit"
@@ -121,7 +121,7 @@ data class PathPropertiesImpl(
                             } else {
                                 s2
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -162,7 +162,7 @@ data class PathPropertiesImpl(
                 else
                     TrackLocation(
                         trackId,
-                        startChunkOffset + chunkLength.distance - offsetOnChunk.distance
+                        startChunkOffset + chunkLength.distance - offsetOnChunk.distance,
                     )
             }
             lengthPrevChunks += chunkLength.distance
@@ -187,7 +187,7 @@ data class PathPropertiesImpl(
         fun sliceChunkData(
             dirChunkId: DirTrackChunkId,
             beginChunkOffset: Offset<TrackChunk>?,
-            endChunkOffset: Offset<TrackChunk>?
+            endChunkOffset: Offset<TrackChunk>?,
         ): LineString {
             val chunkLength = infra.getTrackChunkLength(dirChunkId.value).distance.meters
             val beginSliceOffset = beginChunkOffset?.distance?.meters ?: 0.0
@@ -202,7 +202,7 @@ data class PathPropertiesImpl(
             return sliceChunkData(
                 chunks.first(),
                 chunkPath.beginOffset.cast(),
-                chunkPath.endOffset.cast()
+                chunkPath.endOffset.cast(),
             )
 
         val lineStrings = arrayListOf<LineString>()
@@ -290,7 +290,7 @@ data class PathPropertiesImpl(
      */
     private fun projectPosition(
         dirChunkId: DirTrackChunkId,
-        position: Offset<TrackChunk>
+        position: Offset<TrackChunk>,
     ): Offset<TrackChunk> {
         val chunkId = dirChunkId.value
         val end = infra.getTrackChunkLength(chunkId)
@@ -349,7 +349,7 @@ fun buildChunkPath(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,
     pathBeginOffset: Offset<BlockPath>,
-    pathEndOffset: Offset<BlockPath>
+    pathEndOffset: Offset<BlockPath>,
 ): ChunkPath {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
     var totalChunksLength = Offset<BlockPath>(0.meters)

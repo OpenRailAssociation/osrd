@@ -18,7 +18,7 @@ class ElectricalProfileMappingTest {
         val powerClass1Map =
             hashMapOf<String, DistanceRangeMap<String>>(
                 Pair("TA0", powerClass1TrackTA0),
-                Pair("TA1", powerClass1TrackTA1)
+                Pair("TA1", powerClass1TrackTA1),
             )
 
         val powerClass2TrackTA0 = DistanceRangeMapImpl<String>()
@@ -28,7 +28,7 @@ class ElectricalProfileMappingTest {
         val powerClass2Map =
             hashMapOf<String, DistanceRangeMap<String>>(
                 Pair("TA0", powerClass2TrackTA0),
-                Pair("TA1", powerClass2TrackTA1)
+                Pair("TA1", powerClass2TrackTA1),
             )
 
         val expectedProfileMapping = hashMapOf(Pair("1", powerClass1Map), Pair("2", powerClass2Map))
@@ -53,7 +53,7 @@ class ElectricalProfileMappingTest {
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 1_000.meters,
-                3_500.meters
+                3_500.meters,
             )
 
         val powerClass1Map = DistanceRangeMapImpl<String>()

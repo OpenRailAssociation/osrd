@@ -49,7 +49,7 @@ class CompleteReportTrain(
     val signalCriticalPositions: List<SignalCriticalPosition>,
     @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
     @Json(name = "spacing_requirements") val spacingRequirements: List<RJSSpacingRequirement>,
-    @Json(name = "routing_requirements") val routingRequirements: List<RJSRoutingRequirement>
+    @Json(name = "routing_requirements") val routingRequirements: List<RJSRoutingRequirement>,
 ) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes)
 
 open class ReportTrain(
@@ -60,9 +60,7 @@ open class ReportTrain(
     @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
 )
 
-class SimulationFailed(
-    @Json(name = "core_error") val coreError: OSRDError,
-) : SimulationResponse
+class SimulationFailed(@Json(name = "core_error") val coreError: OSRDError) : SimulationResponse
 
 val polymorphicSimulationResponseAdapter: PolymorphicJsonAdapterFactory<SimulationResponse> =
     PolymorphicJsonAdapterFactory.of(SimulationResponse::class.java, "status")

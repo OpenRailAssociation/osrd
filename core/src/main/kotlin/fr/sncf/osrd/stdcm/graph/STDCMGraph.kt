@@ -108,7 +108,7 @@ class STDCMGraph(
                 node.timeData,
                 maxMarginDuration,
                 node.remainingTimeEstimation,
-                explorer = node.infraExplorer
+                explorer = node.infraExplorer,
             )
         if (node.locationOnEdge != null) {
             val explorer = node.infraExplorer.clone()
@@ -116,7 +116,7 @@ class STDCMGraph(
                 VisitedNodes.Fingerprint(
                     explorer.getLastEdgeIdentifier(),
                     node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
-                    node.locationOnEdge.distance
+                    node.locationOnEdge.distance,
                 )
             if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
             visitedNodes.markAsVisited(visitedNodesParameters)
@@ -130,7 +130,7 @@ class STDCMGraph(
                     VisitedNodes.Fingerprint(
                         newPath.getLastEdgeIdentifier(),
                         node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
-                        0.meters
+                        0.meters,
                     )
                 visitedNodesParameters = visitedNodesParameters.copy(explorer = newPath)
                 if (visitedNodes.isVisited(visitedNodesParameters)) continue

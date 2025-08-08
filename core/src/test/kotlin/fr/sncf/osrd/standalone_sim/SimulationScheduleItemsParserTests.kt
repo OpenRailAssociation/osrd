@@ -21,7 +21,7 @@ class SimulationScheduleItemsParserTests {
     @MethodSource("testParseRawSimulationScheduleItemsArgs")
     fun parserOutputsMinimumArrivalForSamePathOffset(
         simulationScheduleItems: List<SimulationScheduleItem>,
-        expectedItems: List<SimulationScheduleItem>
+        expectedItems: List<SimulationScheduleItem>,
     ) {
         val mergedItems = parseRawSimulationScheduleItems(simulationScheduleItems)
         Assertions.assertThat(mergedItems).usingRecursiveComparison().isEqualTo(expectedItems)
@@ -29,7 +29,7 @@ class SimulationScheduleItemsParserTests {
 
     @SuppressFBWarnings(
         value = ["UPM_UNCALLED_PRIVATE_METHOD"],
-        justification = "called implicitly by MethodSource"
+        justification = "called implicitly by MethodSource",
     )
     private fun testParseRawSimulationScheduleItemsArgs(): Stream<Arguments> {
         return Stream.of(
@@ -44,7 +44,7 @@ class SimulationScheduleItemsParserTests {
                 listOf(
                     SimulationScheduleItem(Offset(Distance.ZERO), null, null, OPEN),
                     SimulationScheduleItem(Offset(Distance(1000)), TimeDelta(100), null, OPEN),
-                )
+                ),
             ),
             // Parser outputs sum of stopFor for same path offset
             Arguments.of(
@@ -57,7 +57,7 @@ class SimulationScheduleItemsParserTests {
                 listOf(
                     SimulationScheduleItem(Offset(Distance.ZERO), null, null, OPEN),
                     SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(100), OPEN),
-                )
+                ),
             ),
             // Parser outputs the most constrained (SHORT_SLIP_STOP, then STOP, then OPEN)
             // receptionSignal for the same path offset
@@ -70,8 +70,8 @@ class SimulationScheduleItemsParserTests {
                 listOf(
                     SimulationScheduleItem(Offset(Distance.ZERO), null, null, OPEN),
                     SimulationScheduleItem(Offset(Distance(1000)), null, null, OPEN),
-                )
-            )
+                ),
+            ),
         )
     }
 }

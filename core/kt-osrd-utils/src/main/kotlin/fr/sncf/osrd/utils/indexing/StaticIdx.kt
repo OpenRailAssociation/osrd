@@ -45,7 +45,7 @@ value class OptStaticIdx<T>(private val data: UInt) {
 value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
     constructor(
         value: StaticIdx<T>,
-        endpoint: Endpoint
+        endpoint: Endpoint,
     ) : this(
         (value.index shl 1) or
             when (endpoint) {

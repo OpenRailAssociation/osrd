@@ -80,6 +80,7 @@ internal constructor(
                 .max { obj: Double, anotherDouble: Double? -> obj.compareTo(anotherDouble!!) }
         return delay.map { delayNeeded: Double -> makeSingleEdge(delayNeeded) }.orElse(null)
     }
+
     /** Returns the envelope to be used for the new edges */
     private fun getEnvelope(): Envelope? {
         if (envelope == null)
@@ -96,10 +97,8 @@ internal constructor(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
                         startOffset,
-                        getNextStopOnCurrentBlock(
-                            infraExplorer,
-                        )
-                    )
+                        getNextStopOnCurrentBlock(infraExplorer),
+                    ),
                 )
         return envelope
     }
@@ -124,7 +123,7 @@ internal constructor(
                     StopTimeData(
                         stopDuration,
                         stopDuration,
-                        timeData.maxDepartureDelayingWithoutConflict
+                        timeData.maxDepartureDelayingWithoutConflict,
                     )
                 )
                 explorerWithNewEnvelope!!.updateTimeData(timeData.copy(stopTimeData = stopData))
@@ -189,7 +188,7 @@ internal constructor(
                         prevNode.timeData.earliestReachableTime + delayNeeded,
                         startOffset,
                         envelope!!,
-                    )
+                    ),
                 )
         }
         val endStopDuration = getEndOfEdgeStopDuration()
@@ -199,7 +198,7 @@ internal constructor(
             // (otherwise there would be an error when computing the end node for this new edge)
             graph.delayManager.getMaxAdditionalStopDuration(
                 getExplorerWithNewEnvelope()!!,
-                prevNode.timeData.earliestReachableTime
+                prevNode.timeData.earliestReachableTime,
             )
         }
         val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
@@ -237,7 +236,7 @@ internal constructor(
         fun fromNode(
             graph: STDCMGraph,
             node: STDCMNode,
-            infraExplorer: InfraExplorerWithEnvelope
+            infraExplorer: InfraExplorerWithEnvelope,
         ): STDCMEdgeBuilder {
             val builder = STDCMEdgeBuilder(infraExplorer, graph, node)
             if (node.locationOnEdge != null) {

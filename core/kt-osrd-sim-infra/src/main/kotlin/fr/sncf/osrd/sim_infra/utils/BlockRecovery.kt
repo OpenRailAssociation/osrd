@@ -113,7 +113,7 @@ fun recoverBlocks(
     sigInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     routes: StaticIdxList<Route>,
-    allowedSigSystems: StaticIdxList<SignalingSystem>?
+    allowedSigSystems: StaticIdxList<SignalingSystem>?,
 ): List<BlockPathElement> {
     var candidates: List<BlockPathElement>? = null
 

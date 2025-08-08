@@ -36,13 +36,13 @@ class BacktrackingTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph =
             ImmutableMultimap.of(
                 block,
-                OccupancySegment(runTime + 1, Double.POSITIVE_INFINITY, 0.meters, 1000.meters)
+                OccupancySegment(runTime + 1, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -79,13 +79,13 @@ class BacktrackingTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph =
             ImmutableMultimap.of(
                 lastBlock,
-                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 10.meters)
+                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 10.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -120,13 +120,13 @@ class BacktrackingTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val runTime = firstBlockEnvelope.totalTime
         val occupancyGraph =
             ImmutableMultimap.of(
                 firstBlock,
-                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 1000.meters)
+                OccupancySegment(runTime + 10, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()

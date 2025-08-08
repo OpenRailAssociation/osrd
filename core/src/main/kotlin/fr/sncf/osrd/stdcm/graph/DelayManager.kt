@@ -23,7 +23,7 @@ internal constructor(
     private val blockAvailability: BlockAvailabilityInterface,
     private val graph: STDCMGraph,
     private val internalMargin:
-        Double // Margin added to every occupancy, to account for binary search tolerance
+        Double, // Margin added to every occupancy, to account for binary search tolerance
 ) {
     /**
      * Returns one value per "opening" (interval between two unavailable times). Always returns the
@@ -43,12 +43,7 @@ internal constructor(
         while (java.lang.Double.isFinite(time)) {
             if (time - startTime > maximumDelay) break
             val availability =
-                getLastBlockAvailability(
-                    infraExplorerWithNewEnvelope,
-                    startOffset,
-                    endOffset,
-                    time,
-                )
+                getLastBlockAvailability(infraExplorerWithNewEnvelope, startOffset, endOffset, time)
             time +=
                 when (availability) {
                     is BlockAvailabilityInterface.Available -> {
@@ -83,13 +78,7 @@ internal constructor(
         envelope: Envelope,
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
-        val availability =
-            getLastBlockAvailability(
-                infraExplorer,
-                startOffset,
-                endOffset,
-                time,
-            )
+        val availability = getLastBlockAvailability(infraExplorer, startOffset, endOffset, time)
         assert(availability.javaClass == BlockAvailabilityInterface.Available::class.java)
         return (availability as BlockAvailabilityInterface.Available).timeOfNextConflict
     }
@@ -145,7 +134,7 @@ internal constructor(
             explorerWithNewEnvelope,
             startOffsetOnPath.cast(),
             endOffsetOnPath.cast(),
-            startTime
+            startTime,
         )
     }
 

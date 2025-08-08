@@ -19,14 +19,14 @@ data class ETCSBrakingCurvesResponse(
 data class ETCSCurves(
     val indication: SimpleEnvelope?, // null for open-signal stops
     @Json(name = "permitted_speed") val permittedSpeed: SimpleEnvelope,
-    val guidance: SimpleEnvelope
+    val guidance: SimpleEnvelope,
 )
 
 data class ETCSConflictCurves(
     val indication: SimpleEnvelope,
     @Json(name = "permitted_speed") val permittedSpeed: SimpleEnvelope,
     val guidance: SimpleEnvelope,
-    @Json(name = "conflict_type") val conflictType: ConflictType
+    @Json(name = "conflict_type") val conflictType: ConflictType,
 )
 
 data class SimpleEnvelope(

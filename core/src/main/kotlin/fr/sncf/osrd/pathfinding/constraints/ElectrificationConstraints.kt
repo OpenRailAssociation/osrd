@@ -16,7 +16,7 @@ import java.util.stream.Collectors
 data class ElectrificationConstraints(
     val blockInfra: BlockInfra,
     val rawInfra: RawSignalingInfra,
-    val compatibleElectrification: Collection<String>
+    val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
         val path = makePathProps(blockInfra, rawInfra, edge)
@@ -31,7 +31,7 @@ data class ElectrificationConstraints(
          */
         private fun getBlockedRanges(
             path: PathProperties,
-            compatibleElectrification: Collection<String>
+            compatibleElectrification: Collection<String>,
         ): Set<Pathfinding.Range<Block>> {
             val res = HashSet<Pathfinding.Range<Block>>()
             val voltages = path.getElectrification()
@@ -47,7 +47,7 @@ data class ElectrificationConstraints(
                         res.add(
                             Pathfinding.Range(
                                 Offset(blockingRange.lowerEndpoint()),
-                                Offset(blockingRange.upperEndpoint())
+                                Offset(blockingRange.upperEndpoint()),
                             )
                         )
                     }

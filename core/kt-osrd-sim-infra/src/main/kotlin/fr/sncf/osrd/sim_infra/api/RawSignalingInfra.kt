@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.units.OffsetList
 sealed interface Block
 
 typealias BlockId = StaticIdx<Block>
+
 /** A speed limit */
 sealed interface SpeedLimit
 
@@ -26,7 +27,7 @@ typealias LogicalSignalId = StaticIdx<LogicalSignal>
 
 data class RawSignalParameters(
     val default: Map<String, String>,
-    val conditional: Map<RouteId, Map<String, String>>
+    val conditional: Map<RouteId, Map<String, String>>,
 )
 
 interface RawSignalingInfra : RoutingInfra {

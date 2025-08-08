@@ -50,7 +50,7 @@ class STDCMSimulations {
         trainTag: String?,
         temporarySpeedLimitManager: TemporarySpeedLimitManager?,
         infraExplorer: InfraExplorer,
-        blockParams: BlockSimulationParameters
+        blockParams: BlockSimulationParameters,
     ): Envelope? {
         val cached = simulatedEnvelopes.getOrDefault(blockParams, null)?.get()
         if (cached != null) return cached
@@ -108,14 +108,7 @@ class STDCMSimulations {
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
         val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
         val context = build(rollingStock, envelopePath, timeStep, comfort)
-        val mrsp =
-            computeMRSP(
-                path,
-                rollingStock,
-                false,
-                trainTag,
-                temporarySpeedLimitManager,
-            )
+        val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
             val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
             maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)
@@ -154,7 +147,7 @@ private fun makeSinglePointEnvelope(speed: Double): Envelope {
             ),
             doubleArrayOf(0.0),
             doubleArrayOf(speed),
-            doubleArrayOf()
+            doubleArrayOf(),
         )
     )
 }
@@ -166,7 +159,7 @@ fun simulateBackwards(
     endSpeed: Double,
     start: Offset<Block>,
     oldEnvelope: Envelope,
-    graph: STDCMGraph
+    graph: STDCMGraph,
 ): Envelope {
     val path = infraExplorer.getCurrentEdgePathProperties(start, null)
     val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
@@ -178,7 +171,7 @@ fun simulateBackwards(
         ConstrainedEnvelopePartBuilder(
             partBuilder,
             SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-            EnvelopeConstraint(oldEnvelope, EnvelopePartConstraintType.CEILING)
+            EnvelopeConstraint(oldEnvelope, EnvelopePartConstraintType.CEILING),
         )
     EnvelopeDeceleration.decelerate(context, oldEnvelope.endPos, endSpeed, overlayBuilder, -1.0)
     val builder = OverlayEnvelopeBuilder.backward(oldEnvelope)

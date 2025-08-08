@@ -78,12 +78,12 @@ class RawInfraAdapterTest {
         assertEquals(mutableStaticIdxArrayListOf(signalU), infra.getSignals(routePath[0]))
         assertEquals(
             mutableOffsetArrayListOf(Offset(10.meters)),
-            infra.getSignalPositions(routePath[0])
+            infra.getSignalPositions(routePath[0]),
         )
         assertEquals(mutableStaticIdxArrayListOf(signalV), infra.getSignals(routePath[1]))
         assertEquals(
             mutableOffsetArrayListOf(Offset(10.meters)),
-            infra.getSignalPositions(routePath[0])
+            infra.getSignalPositions(routePath[0]),
         )
         assertEquals(mutableStaticIdxArrayListOf(), infra.getSignals(routePath[2]))
     }

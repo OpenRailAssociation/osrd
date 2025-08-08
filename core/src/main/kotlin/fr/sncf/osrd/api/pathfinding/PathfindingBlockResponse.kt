@@ -27,7 +27,7 @@ class PathfindingBlockSuccess(
     val length: Length<TravelledPath>,
 
     /** Offsets of the waypoints given as input */
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>,
 ) : PathfindingBlockResponse {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -61,7 +61,7 @@ class NotFoundInTracks : PathfindingBlockResponse
 
 class IncompatibleConstraintsPathResponse(
     @Json(name = "relaxed_constraints_path") val relaxedConstraintsPath: PathfindingBlockSuccess,
-    @Json(name = "incompatible_constraints") val incompatibleConstraints: IncompatibleConstraints
+    @Json(name = "incompatible_constraints") val incompatibleConstraints: IncompatibleConstraints,
 ) : PathfindingBlockResponse
 
 data class IncompatibleConstraints(
@@ -69,7 +69,7 @@ data class IncompatibleConstraints(
     val incompatibleElectrificationRanges: List<RangeValue<String>>,
     @Json(name = "incompatible_gauge_ranges") val incompatibleGaugeRanges: List<RangeValue<String>>,
     @Json(name = "incompatible_signaling_system_ranges")
-    val incompatibleSignalingSystemRanges: List<RangeValue<String>>
+    val incompatibleSignalingSystemRanges: List<RangeValue<String>>,
 )
 
 data class RangeValue<T>(val range: Range<TravelledPath>, val value: T?) {
@@ -79,9 +79,8 @@ data class RangeValue<T>(val range: Range<TravelledPath>, val value: T?) {
     }
 }
 
-class PathfindingFailed(
-    @Json(name = "core_error") val coreError: OSRDError,
-) : PathfindingBlockResponse
+class PathfindingFailed(@Json(name = "core_error") val coreError: OSRDError) :
+    PathfindingBlockResponse
 
 class NotEnoughPathItems : PathfindingBlockResponse
 

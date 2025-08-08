@@ -41,21 +41,21 @@ class RemainingDistanceEstimatorTest {
         edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
         remainingDistance: Distance,
         expectedDistance: Distance,
-        blockOffset: Offset<Block>
+        blockOffset: Offset<Block>,
     ) {
         val estimator =
             RemainingDistanceEstimator(
                 smallInfra!!.blockInfra,
                 smallInfra!!.rawInfra,
                 edgeLocations,
-                remainingDistance
+                remainingDistance,
             )
         Assertions.assertEquals(expectedDistance, estimator.apply(block!!, blockOffset))
     }
 
     @SuppressFBWarnings(
         value = ["UPM_UNCALLED_PRIVATE_METHOD"],
-        justification = "called implicitly by MethodSource"
+        justification = "called implicitly by MethodSource",
     )
     private fun testRemainingDistanceEstimatorArgs(): Stream<Arguments> {
         val points = path!!.getGeo().points
@@ -64,35 +64,35 @@ class RemainingDistanceEstimatorTest {
                 listOf(EdgeLocation(block, Offset<Block>(0.meters))),
                 0,
                 0,
-                0
+                0,
             ), // Test same point with non-null remaining distance
             Arguments.of(
                 listOf(EdgeLocation(block, Offset<Block>(0.meters))),
                 10,
                 10,
-                0
+                0,
             ), // Test with target at the end of the edge
             Arguments.of(
                 listOf(EdgeLocation(block, Offset<BlockPath>(path!!.getLength()))),
                 0,
                 fromMeters(points[0].distanceAsMeters(Iterables.getLast(points))).millimeters,
-                0
+                0,
             ), // Test multiple targets
             Arguments.of(
                 listOf(
                     EdgeLocation(block, Offset(0.meters)),
-                    EdgeLocation(block, Offset<BlockPath>(path!!.getLength()))
+                    EdgeLocation(block, Offset<BlockPath>(path!!.getLength())),
                 ),
                 0,
                 0,
-                0
+                0,
             ), // Test with an offset on the block
             Arguments.of(
                 listOf(EdgeLocation(block, Offset<BlockPath>(path!!.getLength()))),
                 0,
                 0,
-                path!!.getLength().millimeters
-            )
+                path!!.getLength().millimeters,
+            ),
         )
     }
 }

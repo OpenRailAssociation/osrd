@@ -10,7 +10,7 @@ class BrakingPhaseCoast(override val endPosition: Double) : CoastingOpportunity 
         base: Envelope,
         context: EnvelopeSimContext,
         v1: Double,
-        vf: Double
+        vf: Double,
     ): EnvelopePart? {
         // coast backwards from the last point of braking phases above vf. forbid going below vf,
         // continue until an intersection with the base is found. if vf was reached or no

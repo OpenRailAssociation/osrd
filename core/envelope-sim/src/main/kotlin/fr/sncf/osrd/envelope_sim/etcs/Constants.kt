@@ -66,7 +66,7 @@ private fun interpolateLinearSpeed(
     minSpeedLimit: Double,
     maxSpeedLimit: Double,
     minSpeed: Double,
-    maxSpeed: Double
+    maxSpeed: Double,
 ): Double {
     return if (speed <= minSpeedLimit) minSpeed
     else if (speed < maxSpeedLimit)

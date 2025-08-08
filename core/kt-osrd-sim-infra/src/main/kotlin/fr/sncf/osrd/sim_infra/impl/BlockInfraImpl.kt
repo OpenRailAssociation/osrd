@@ -147,7 +147,7 @@ class BlockInfraImpl(
 
     override fun getBlocksFromTrackChunk(
         trackChunk: TrackChunkId,
-        direction: Direction
+        direction: Direction,
     ): MutableStaticIdxArraySet<Block> {
         return trackChunkToBlockMap[DirStaticIdx(trackChunk, direction)]
             ?: mutableStaticIdxArraySetOf()
@@ -177,7 +177,7 @@ class BlockInfraImpl(
 private fun buildBlockName(
     rawInfra: RawInfra,
     block: BlockId,
-    blockPool: StaticPool<Block, BlockDescriptor>
+    blockPool: StaticPool<Block, BlockDescriptor>,
 ): String {
     // Two different blocks must differ in *either* detectors, signal / signaling system, or switch
     // config.

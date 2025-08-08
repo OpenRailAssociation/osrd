@@ -22,7 +22,7 @@ class MaxSpeedEnvelopeTest {
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.CONSTANT
+            EnvelopeShape.CONSTANT,
         )
         val delta = 2 * maxSpeedEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
@@ -44,7 +44,7 @@ class MaxSpeedEnvelopeTest {
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.CONSTANT
+            EnvelopeShape.CONSTANT,
         )
         val delta = 2 * maxSpeedEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
@@ -75,7 +75,7 @@ class MaxSpeedEnvelopeTest {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                effortCurveMap
+                effortCurveMap,
             )
         val stops = listOf(SimStop(Offset(8500.meters), RJSReceptionSignal.SHORT_SLIP_STOP))
 
@@ -85,14 +85,14 @@ class MaxSpeedEnvelopeTest {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                effortCurveMap
+                effortCurveMap,
             )
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         EnvelopeShape.check(
             maxSpeedEnvelope,
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.CONSTANT
+            EnvelopeShape.CONSTANT,
         )
         val delta = 2 * maxSpeedEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
@@ -109,7 +109,7 @@ class MaxSpeedEnvelopeTest {
         val stops =
             listOf(
                 SimStop(Offset(50000.meters), RJSReceptionSignal.SHORT_SLIP_STOP),
-                SimStop(Offset(length.meters), RJSReceptionSignal.SHORT_SLIP_STOP)
+                SimStop(Offset(length.meters), RJSReceptionSignal.SHORT_SLIP_STOP),
             )
 
         val mrsp = TestMRSPBuilder.makeComplexMRSP(testContext)
@@ -127,7 +127,7 @@ class MaxSpeedEnvelopeTest {
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
             EnvelopeShape.CONSTANT,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         EnvelopeTransitions.checkContinuity(
             maxSpeedEnvelope,
@@ -140,7 +140,7 @@ class MaxSpeedEnvelopeTest {
             false,
             true,
             true,
-            true
+            true,
         )
     }
 }

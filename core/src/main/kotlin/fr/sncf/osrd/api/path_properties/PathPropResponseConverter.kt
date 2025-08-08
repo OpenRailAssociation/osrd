@@ -13,7 +13,7 @@ import fr.sncf.osrd.utils.units.Offset
 
 fun makePathPropResponse(
     pathProperties: PathProperties,
-    rawInfra: RawSignalingInfra
+    rawInfra: RawSignalingInfra,
 ): PathPropResponse {
     return PathPropResponse(
         makeSlopes(pathProperties),
@@ -21,7 +21,7 @@ fun makePathPropResponse(
         makeElectrifications(pathProperties),
         makeGeographic(pathProperties),
         makeOperationalPoints(pathProperties, rawInfra),
-        makeZones(pathProperties, rawInfra)
+        makeZones(pathProperties, rawInfra),
     )
 }
 
@@ -41,7 +41,7 @@ private fun makeElectrifications(pathProperties: PathProperties): RangeValues<El
         // Neutral section has priority over any electrification on an overlapping range
         mergedMap.merge(
             Range.closed(neutralSection.lower, neutralSection.upper),
-            neutralSection.value
+            neutralSection.value,
         ) { _, neutralSectionValue ->
             neutralSectionValue
         }
@@ -58,7 +58,7 @@ private fun makeGeographic(path: PathProperties): RJSLineString {
 
 private fun makeOperationalPoints(
     path: PathProperties,
-    rawInfra: RawSignalingInfra
+    rawInfra: RawSignalingInfra,
 ): List<OperationalPointResponse> {
     val res = mutableListOf<OperationalPointResponse>()
     for ((opPartId, offset) in path.getOperationalPointParts()) {
@@ -79,7 +79,7 @@ private fun makeOperationalPoints(
                 else
                     OperationalPointPartExtension(
                         OperationalPointPartSncfExtension(opPartProps["kp"]!!)
-                    )
+                    ),
             )
         // If ci is null, then all its other values and the entire op sncf extension are null
         val opSncfExtension =
@@ -90,7 +90,7 @@ private fun makeOperationalPoints(
                     opPartProps["ch"]!!,
                     opPartProps["chShortLabel"]!!,
                     opPartProps["chLongLabel"]!!,
-                    opPartProps["trigram"]!!
+                    opPartProps["trigram"]!!,
                 )
         // if name is null, uic and the op id extension are null
         val opIdExtension =
@@ -98,7 +98,7 @@ private fun makeOperationalPoints(
             else
                 OperationalPointIdentifierExtension(
                     opPartProps["identifier"]!!,
-                    opPartProps["uic"]!!.toLong()
+                    opPartProps["uic"]!!.toLong(),
                 )
         val opExtensions =
             if (opSncfExtension == null && opIdExtension == null) null
@@ -144,7 +144,7 @@ private fun makeElectrificationMap(
                     entry.lower,
                     entry.upper,
                     if (values.isEmpty()) NonElectrified()
-                    else Electrified(values.first() as String)
+                    else Electrified(values.first() as String),
                 )
             }
             // Is neutral
@@ -152,7 +152,7 @@ private fun makeElectrificationMap(
                 res.put(
                     entry.lower,
                     entry.upper,
-                    Neutral((entry.value as NeutralSection).lowerPantograph)
+                    Neutral((entry.value as NeutralSection).lowerPantograph),
                 )
             }
             else -> {

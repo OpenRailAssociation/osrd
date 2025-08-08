@@ -22,7 +22,7 @@ import fr.sncf.osrd.utils.units.meters
  */
 class DummyBlockAvailability(
     private val blockInfra: BlockInfra,
-    private val unavailableSpace: Multimap<BlockId, OccupancySegment>
+    private val unavailableSpace: Multimap<BlockId, OccupancySegment>,
 ) : BlockAvailabilityInterface {
     /**
      * Simple record used to group together a block and the offset of its start on the given path
@@ -53,7 +53,7 @@ class DummyBlockAvailability(
                         blockWithOffset,
                         infraExplorer,
                         startOffset,
-                        endOffset
+                        endOffset,
                     ) ?: continue
                 val segmentStartOffset =
                     Offset<BlockPath>(blockWithOffset.pathOffset + unavailableSegment.distanceStart)
@@ -65,7 +65,7 @@ class DummyBlockAvailability(
                         segmentEndOffset,
                         trainInBlock.start,
                         trainInBlock.end,
-                        blockWithOffset.blockId
+                        blockWithOffset.blockId,
                     )
                 )
             }
@@ -79,7 +79,7 @@ class DummyBlockAvailability(
      */
     private fun getScheduledResources(
         infraExplorer: InfraExplorerWithEnvelope,
-        resource: ResourceUse
+        resource: ResourceUse,
     ): List<ResourceUse>? {
         val blocks = makeBlocksWithOffsets(infraExplorer)
         val res = mutableListOf<ResourceUse>()
@@ -102,7 +102,7 @@ class DummyBlockAvailability(
                     blockOffset + segment.distanceEnd,
                     segment.timeStart,
                     segment.timeEnd,
-                    resource.blockId
+                    resource.blockId,
                 )
             )
         }
@@ -113,7 +113,7 @@ class DummyBlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<BlockPath>,
         endOffset: Offset<BlockPath>,
-        startTime: Double
+        startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
         // startTime refers to the time at startOffset, we need to offset it
@@ -131,7 +131,7 @@ class DummyBlockAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         resourceUses: List<ResourceUse>,
         pathStartTime: Double,
-        startOffset: Offset<BlockPath>
+        startOffset: Offset<BlockPath>,
     ): BlockAvailabilityInterface.Unavailable? {
         var minimumDelay = 0.0
         var conflictOffset = Offset<BlockPath>(0.meters)
@@ -169,7 +169,7 @@ class DummyBlockAvailability(
                     infraExplorer,
                     resourceUses,
                     pathStartTime + minimumDelay,
-                    startOffset
+                    startOffset,
                 )
             if (
                 recursiveDelay != null
@@ -210,7 +210,7 @@ class DummyBlockAvailability(
 
     private fun getScheduledResourcesOrThrow(
         infraExplorer: InfraExplorerWithEnvelope,
-        resource: ResourceUse
+        resource: ResourceUse,
     ): List<ResourceUse> {
         return getScheduledResources(infraExplorer, resource)
             ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
@@ -237,7 +237,7 @@ class DummyBlockAvailability(
         block: BlockWithOffset,
         explorer: InfraExplorerWithEnvelope,
         startOffset: Offset<BlockPath>,
-        endOffset: Offset<BlockPath>
+        endOffset: Offset<BlockPath>,
     ): TimeInterval? {
         val blockEnterOffset = (block.pathOffset + unavailableSegment.distanceStart)
         val blockExitOffset = (block.pathOffset + unavailableSegment.distanceEnd)
@@ -253,7 +253,7 @@ class DummyBlockAvailability(
     private fun getBlocksInRange(
         blocks: List<BlockWithOffset>,
         start: Offset<BlockPath>,
-        end: Offset<BlockPath>
+        end: Offset<BlockPath>,
     ): List<BlockWithOffset> {
         return blocks
             .stream()

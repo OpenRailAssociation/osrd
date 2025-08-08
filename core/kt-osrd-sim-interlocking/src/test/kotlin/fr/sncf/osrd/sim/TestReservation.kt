@@ -46,7 +46,7 @@ class TestReservation {
                         rightTrack.begin,
                         lowerLeftTrack.begin,
                         upperLeftTrack.begin,
-                        0.01
+                        0.01,
                     )
                 val detU = bufferStop("U", upperLeftTrack.end)
                 detector("V", upperLeftTrack.at(5.0))

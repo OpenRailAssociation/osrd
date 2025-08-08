@@ -25,7 +25,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
         context.codeGenerator.createNewFile(
             Dependencies(true, currentFile),
             generatedPackage,
-            fileName
+            fileName,
         )
     file.appendText(
         """
@@ -293,7 +293,7 @@ class ArrayListGenerator {
         override fun generate(
             context: GeneratorContext,
             currentFile: KSFile,
-            itemType: CollectionItemType
+            itemType: CollectionItemType,
         ) {
             itemType.generateArrayList(context, currentFile)
         }

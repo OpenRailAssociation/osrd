@@ -48,7 +48,7 @@ class FullSTDCMTests {
             .setRollingStock(
                 parseRawRollingStock(
                     Helpers.getExampleRollingStock("fast_rolling_stock.json"),
-                    rollingStockSupportedSignalingSystems = listOf("BAL")
+                    rollingStockSupportedSignalingSystems = listOf("BAL"),
                 )
             )
             .setStartLocations(
@@ -56,7 +56,7 @@ class FullSTDCMTests {
                     convertRouteLocationToBlockLocation(
                         infra,
                         "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                        Offset(100.meters)
+                        Offset(100.meters),
                     )
                 )
             )
@@ -65,7 +65,7 @@ class FullSTDCMTests {
                     convertRouteLocationToBlockLocation(
                         infra,
                         "rt.tde.foo_b-switch_foo->buffer_stop_c",
-                        Offset(10125.meters)
+                        Offset(10125.meters),
                     )
                 )
             )
@@ -85,13 +85,13 @@ class FullSTDCMTests {
             convertRouteLocation(
                 infra,
                 "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                Offset(100.meters)
+                Offset(100.meters),
             )
         val end =
             convertRouteLocation(
                 infra,
                 "rt.tde.foo_b-switch_foo->buffer_stop_c",
-                Offset(10125.meters)
+                Offset(10125.meters),
             )
         val requirements =
             makeRequirementsFromPath(infra, start.trackLocations, end.trackLocations, 0.0)
@@ -151,7 +151,7 @@ class FullSTDCMTests {
                 smallInfra,
                 start.trackLocations,
                 end.trackLocations,
-                minDelay * 0.95
+                minDelay * 0.95,
             )
         )
         STDCMPathfindingBuilder()
@@ -176,9 +176,9 @@ class FullSTDCMTests {
                             WorkSchedule(
                                 listOf(TrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
                                 0.seconds,
-                                3600.seconds
+                                3600.seconds,
                             )
-                        )
+                        ),
                     )
                     .spacingRequirements
             )
@@ -205,10 +205,7 @@ class FullSTDCMTests {
         expectedPassageTime: Double,
         hasStandardAllowance: Boolean,
     ) {
-        val blockAvailability =
-            makeBlockAvailability(
-                listOf(),
-            )
+        val blockAvailability = makeBlockAvailability(listOf())
         val timeStep = 2.0
         var builder =
             STDCMPathfindingBuilder()
@@ -244,7 +241,7 @@ class FullSTDCMTests {
             convertRouteLocation(
                 infra,
                 "rt.det.a1.nf->det.b1.nf",
-                Offset(6_000.meters) // Within sight distance of a signal
+                Offset(6_000.meters), // Within sight distance of a signal
             )
         val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
         val zoneNameAtStop = "zone.[det.center.1:INCREASING, det.center.2:DECREASING]"
@@ -258,7 +255,7 @@ class FullSTDCMTests {
             .addStep(STDCMStep(stop.blockLocations, 5_000.0, true))
             .setEndLocations(
                 end.blockLocations,
-                PlannedTimingData(10_000.seconds, 0.seconds, 0.seconds)
+                PlannedTimingData(10_000.seconds, 0.seconds, 0.seconds),
             )
             .setBlockAvailability(makeBlockAvailability(requirements))
             .setMaxRunTime(Double.POSITIVE_INFINITY)
@@ -280,7 +277,7 @@ class FullSTDCMTests {
             convertRouteLocation(
                 infra,
                 "rt.det.a1.nf->det.b1.nf",
-                Offset(6_000.meters) // Within sight distance of a signal
+                Offset(6_000.meters), // Within sight distance of a signal
             )
         val end = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(10_000.meters))
         val zoneNameAfterStop = "zone.[det.center.2:INCREASING, det.center.3:DECREASING]"
@@ -402,7 +399,7 @@ class FullSTDCMTests {
 private fun convertRouteLocationToTrackLocation(
     infra: RawInfra,
     routeName: String,
-    offset: Offset<Route>
+    offset: Offset<Route>,
 ): TrackLocation {
     var mutOffset = offset
     val zones = infra.getRoutePath(infra.getRouteFromName(routeName))
@@ -427,7 +424,7 @@ private fun convertRouteLocationToTrackLocation(
 fun convertRouteLocation(infra: FullInfra, routeName: String, offset: Offset<Route>): LocationPair {
     return LocationPair(
         setOf(convertRouteLocationToBlockLocation(infra, routeName, offset)),
-        setOf(convertRouteLocationToTrackLocation(infra.rawInfra, routeName, offset))
+        setOf(convertRouteLocationToTrackLocation(infra.rawInfra, routeName, offset)),
     )
 }
 
@@ -453,7 +450,7 @@ fun makeRequirementsFromPath(
                 "",
                 null,
                 listOf(startLocations, endLocations),
-            )
+            ),
         )
             as PathfindingBlockSuccess
 

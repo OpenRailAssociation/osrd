@@ -38,10 +38,7 @@ data class SimulationSegment(
     }
 }
 
-data class SummarizedSimulationResult(
-    val newBeginSpeed: Double,
-    val newDuration: Double,
-) {
+data class SummarizedSimulationResult(val newBeginSpeed: Double, val newDuration: Double) {
     init {
         positive(newBeginSpeed)
         positive(newDuration)
@@ -59,7 +56,7 @@ data class SummarizedSimulationResult(
 fun generatePreviousSimulationSegments(
     initialEdge: STDCMEdge?,
     graph: STDCMGraph?,
-    maxLength: Distance = 100.meters
+    maxLength: Distance = 100.meters,
 ): Sequence<SimulationSegment> = sequence {
     var currentEdge = initialEdge
     var alreadyAddedDelay = 0.0
@@ -126,7 +123,7 @@ private fun computeAcceleration(
             graph.rollingStock,
             envelopePath,
             graph.timeStep,
-            graph.comfort
+            graph.comfort,
         )
 
     // Compute the speedup part to reach the end speed
@@ -143,14 +140,11 @@ private fun computeAcceleration(
         pathProperties.getLength().meters,
         endSpeed,
         overlayBuilder,
-        -1.0
+        -1.0,
     )
     val speedupPart = speedupPartBuilder.build()
     val envelope = Envelope.make(speedupPart)
     val newTime = scaleAllowanceTime(graph, envelope.totalTime, pathProperties.getLength())
 
-    return SummarizedSimulationResult(
-        envelope.beginSpeed,
-        newTime,
-    )
+    return SummarizedSimulationResult(envelope.beginSpeed, newTime)
 }

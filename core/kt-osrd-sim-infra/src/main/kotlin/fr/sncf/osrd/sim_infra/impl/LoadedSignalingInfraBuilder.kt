@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.indexing.*
 
 inline fun loadedSignalInfra(
     sigSystemManager: InfraSigSystemManager,
-    init: LoadedSignalingInfraBuilder.() -> Unit
+    init: LoadedSignalingInfraBuilder.() -> Unit,
 ): LoadedSignalInfra {
     val infraBuilder = LoadedSignalingInfraBuilderImpl(sigSystemManager)
     infraBuilder.init()
@@ -53,7 +53,7 @@ private class LoadedLogicalSignalBuilderImpl(
     var sigParameters: SignalParameters?,
     var signalingSystemId: SignalingSystemId?,
     val drivers: MutableStaticIdxArrayList<SignalDriver>,
-    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl,
 ) : LoadedLogicalSignalBuilder {
     constructor(
         infraBuilderImpl: LoadedSignalingInfraBuilderImpl
@@ -93,19 +93,11 @@ internal constructor(
     val signalSettingsMap: IdxMap<LogicalSignalId, SigSettings>,
     val signalParametersMap: IdxMap<LogicalSignalId, SignalParameters>,
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
-    val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>
+    val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>,
 ) : LoadedSignalingInfraBuilder {
     constructor(
         sigSystemManager: InfraSigSystemManager
-    ) : this(
-        sigSystemManager,
-        0u,
-        StaticPool(),
-        IdxMap(),
-        IdxMap(),
-        IdxMap(),
-        IdxMap(),
-    )
+    ) : this(sigSystemManager, 0u, StaticPool(), IdxMap(), IdxMap(), IdxMap(), IdxMap())
 
     override fun physicalSignal(init: LoadedPhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
         val builder = LoadedPhysicalSignalBuilderImpl(this)

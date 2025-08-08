@@ -32,7 +32,7 @@ class MaxEffortEnvelopeTest {
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
             EnvelopeShape.INCREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * maxEffortEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
@@ -51,7 +51,7 @@ class MaxEffortEnvelopeTest {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(6000.0, testPath.length)
         val maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
@@ -62,7 +62,7 @@ class MaxEffortEnvelopeTest {
             EnvelopeShape.DECREASING,
             EnvelopeShape.INCREASING,
             EnvelopeShape.CONSTANT,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * maxEffortEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
@@ -75,7 +75,7 @@ class MaxEffortEnvelopeTest {
             4993.0,
             6000.0,
             8727.0,
-            8993.0
+            8993.0,
         )
         Assertions.assertTrue(maxEffortEnvelope.continuous)
     }
@@ -91,7 +91,7 @@ class MaxEffortEnvelopeTest {
             EnvelopeShape.INCREASING,
             EnvelopeShape.DECREASING,
             EnvelopeShape.INCREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * maxEffortEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
@@ -110,7 +110,7 @@ class MaxEffortEnvelopeTest {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(6000.0, testPath.length)
         val maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
@@ -119,7 +119,7 @@ class MaxEffortEnvelopeTest {
             EnvelopeShape.INCREASING,
             EnvelopeShape.DECREASING,
             EnvelopeShape.INCREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * maxEffortEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
@@ -151,7 +151,7 @@ class MaxEffortEnvelopeTest {
             EnvelopeShape.INCREASING,
             EnvelopeShape.DECREASING,
             EnvelopeShape.CONSTANT,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         Assertions.assertTrue(maxEffortEnvelope.continuous)
     }
@@ -173,21 +173,21 @@ class MaxEffortEnvelopeTest {
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(0.0, 50.0),
-                doubleArrayOf(30.0, 30.0)
+                doubleArrayOf(30.0, 30.0),
             )
         )
         mrspBuilder.addPart(
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(50.0, 51.0),
-                doubleArrayOf(29.0, 29.0)
+                doubleArrayOf(29.0, 29.0),
             )
         )
         mrspBuilder.addPart(
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(51.0, 100.0),
-                doubleArrayOf(1.0, 1.0)
+                doubleArrayOf(1.0, 1.0),
             )
         )
         val mrsp = mrspBuilder.build()
@@ -204,7 +204,7 @@ class MaxEffortEnvelopeTest {
                 SimpleRollingStock.STANDARD_TRAIN,
                 path,
                 2.0,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(length.toDouble())
         val osrdError =
@@ -221,14 +221,14 @@ class MaxEffortEnvelopeTest {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 length.toDouble(),
                 doubleArrayOf(0.0, 5000.0, 5100.0, length.toDouble()),
-                doubleArrayOf(0.0, 1000.0, 0.0)
+                doubleArrayOf(0.0, 1000.0, 0.0),
             )
         val testContext =
             EnvelopeSimContext(
                 SimpleRollingStock.STANDARD_TRAIN,
                 path,
                 2.0,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(5100.0, length.toDouble())
         val osrdError =
@@ -252,7 +252,7 @@ class MaxEffortEnvelopeTest {
                 generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf((i * 10).toDouble(), ((i + 1) * 10).toDouble()),
-                    doubleArrayOf(30.0, 30.0)
+                    doubleArrayOf(30.0, 30.0),
                 )
             )
         }
@@ -260,7 +260,7 @@ class MaxEffortEnvelopeTest {
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(2000.0, 3000.0),
-                doubleArrayOf(1000.0, 1000.0)
+                doubleArrayOf(1000.0, 1000.0),
             )
         )
         val mrsp = mrspBuilder.build()
@@ -281,7 +281,7 @@ class MaxEffortEnvelopeTest {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP * 10,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = listOf<SimStop>()
         val speeds = TreeRangeMap.create<Double, Double>()

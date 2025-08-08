@@ -13,7 +13,7 @@ import fr.sncf.osrd.utils.units.meters
 
 data class SignalingSystemConstraints(
     val blockInfra: BlockInfra,
-    val rollingStocksSupportedSigSystems: List<List<SignalingSystemId>>
+    val rollingStocksSupportedSigSystems: List<List<SignalingSystemId>>,
 ) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
@@ -33,7 +33,7 @@ data class SignalingSystemConstraints(
     private fun getBlockedRanges(
         edge: BlockId,
         blockInfra: BlockInfra,
-        rollingStockSigSystems: List<SignalingSystemId>
+        rollingStockSigSystems: List<SignalingSystemId>,
     ): Set<Pathfinding.Range<Block>> {
         val blockSigSystem = blockInfra.getBlockSignalingSystem(edge)
         val isRSCompatibleWithBlock = rollingStockSigSystems.contains(blockSigSystem)

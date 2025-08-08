@@ -31,7 +31,7 @@ import fr.sncf.osrd.utils.units.Offset
  */
 data class SimStop(
     val offset: Offset<TravelledPath>,
-    val rjsReceptionSignal: RJSTrainStop.RJSReceptionSignal
+    val rjsReceptionSignal: RJSTrainStop.RJSReceptionSignal,
 )
 
 fun increase(prevPos: Double, prevSpeed: Double, nextPos: Double, nextSpeed: Double): Boolean {
@@ -46,7 +46,7 @@ fun increase(prevPos: Double, prevSpeed: Double, nextPos: Double, nextSpeed: Dou
 private fun addSlowdownBrakingCurves(
     etcsSimulator: ETCSBrakingSimulator,
     context: EnvelopeSimContext,
-    mrsp: Envelope
+    mrsp: Envelope,
 ): Envelope {
     var envelope = mrsp
     envelope = addETCSSlowdownBrakingCurves(etcsSimulator, envelope)
@@ -60,7 +60,7 @@ private fun addSlowdownBrakingCurves(
  */
 private fun addConstSlowdownBrakingCurves(
     context: EnvelopeSimContext,
-    envelope: Envelope
+    envelope: Envelope,
 ): Envelope {
     val builder = OverlayEnvelopeBuilder.backward(envelope)
     val cursor = EnvelopeCursor.backward(envelope)
@@ -77,7 +77,7 @@ private fun addConstSlowdownBrakingCurves(
             ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
+                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
             )
         val startSpeed = cursor.speed
         val startPosition = cursor.position
@@ -93,7 +93,7 @@ private fun addConstSlowdownBrakingCurves(
 /** Add braking curves following ETCS rules in relevant places */
 private fun addETCSSlowdownBrakingCurves(
     etcsSimulator: ETCSBrakingSimulator,
-    envelope: Envelope
+    envelope: Envelope,
 ): Envelope {
     val limitsOfAuthority = etcsSimulator.computeLoaLocations(envelope)
     return etcsSimulator.addSlowdownBrakingCurves(envelope, limitsOfAuthority)
@@ -104,7 +104,7 @@ private fun addStopBrakingCurves(
     etcsSimulator: ETCSBrakingSimulator,
     context: EnvelopeSimContext,
     stops: List<SimStop>,
-    curveWithDecelerations: Envelope
+    curveWithDecelerations: Envelope,
 ): Envelope {
     var envelope = curveWithDecelerations
     val etcsStops =
@@ -112,7 +112,7 @@ private fun addStopBrakingCurves(
             curveWithDecelerations,
             stops.map { it.offset },
             stops.map { it.rjsReceptionSignal.isStopOnClosedSignal },
-            EoaType.STOP
+            EoaType.STOP,
         )
     val constStops =
         stops
@@ -140,7 +140,7 @@ private fun addConstStopBrakingCurves(
             ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
+                EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
             )
         EnvelopeDeceleration.decelerate(context, stop.distance.meters, 0.0, overlayBuilder, -1.0)
 
@@ -155,7 +155,7 @@ private fun addConstStopBrakingCurves(
 private fun addETCSStopBrakingCurves(
     simulator: ETCSBrakingSimulator,
     envelope: Envelope,
-    stops: List<EndOfAuthority>
+    stops: List<EndOfAuthority>,
 ): Envelope {
     return simulator.addStopBrakingCurves(envelope, stops)
 }
@@ -164,7 +164,7 @@ private fun addETCSStopBrakingCurves(
 fun maxSpeedEnvelopeFrom(
     context: EnvelopeSimContext,
     stops: List<SimStop>,
-    mrsp: Envelope
+    mrsp: Envelope,
 ): Envelope {
     val etcsSimulator = ETCSBrakingSimulatorImpl(context)
     var maxSpeedEnvelope = addSlowdownBrakingCurves(etcsSimulator, context, mrsp)

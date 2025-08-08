@@ -47,16 +47,9 @@ class PathPropertiesTests {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0")) // 2km long
-                track.slopes =
-                    listOf(
-                        RJSSlope(0.0, 1_000.0, 10.0),
-                        RJSSlope(1_000.0, 2_000.0, 15.0),
-                    )
+             track.slopes = listOf(RJSSlope(0.0, 1_000.0, 10.0), RJSSlope(1_000.0, 2_000.0, 15.0))
             if (track.id.equals("TA1")) // 1.950km long
-                track.slopes =
-                    listOf(
-                        RJSSlope(1_000.0, 1_950.0, -5.0),
-                    )
+             track.slopes = listOf(RJSSlope(1_000.0, 1_950.0, -5.0))
         }
         val infra = parseRJSInfra(rjsInfra)
 
@@ -66,7 +59,7 @@ class PathPropertiesTests {
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 500.meters,
-                3_500.meters
+                3_500.meters,
             )
         val slopes = path.getSlopes()
         assertEquals(
@@ -76,7 +69,7 @@ class PathPropertiesTests {
                 RangeMapEntry(1_500.meters, 2_500.meters, .0),
                 RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
             ),
-            slopes.asList()
+            slopes.asList(),
         )
 
         val pathBackward =
@@ -85,7 +78,7 @@ class PathPropertiesTests {
                 listOf("TA1", "TA0"),
                 Direction.DECREASING,
                 950.meters,
-                2_950.meters
+                2_950.meters,
             )
         val slopesBackward = pathBackward.getSlopes()
         assertEquals(
@@ -93,7 +86,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 1_000.meters, .0),
                 RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
             ),
-            slopesBackward.asList()
+            slopesBackward.asList(),
         )
     }
 
@@ -111,7 +104,7 @@ class PathPropertiesTests {
                 "new_op_1",
                 listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, null)),
                 null,
-                null
+                null,
             )
         )
         rjsInfra.operationalPoints.add(
@@ -119,7 +112,7 @@ class PathPropertiesTests {
                 "new_op_2",
                 listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, null)),
                 null,
-                null
+                null,
             )
         )
         val infra = parseRJSInfra(rjsInfra)
@@ -129,18 +122,15 @@ class PathPropertiesTests {
                 listOf("ne.micro.foo_a", "ne.micro.foo_to_bar", "ne.micro.bar_a"),
                 Direction.INCREASING,
                 200.meters,
-                10_200.meters
+                10_200.meters,
             )
         val opIdsIdxWithOffset =
             path.getOperationalPointParts().map { op ->
                 Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
-            listOf(
-                Pair("new_op_1", Offset(0.meters)),
-                Pair("new_op_2", Offset(10_000.meters)),
-            ),
-            opIdsIdxWithOffset
+            listOf(Pair("new_op_1", Offset(0.meters)), Pair("new_op_2", Offset(10_000.meters))),
+            opIdsIdxWithOffset,
         )
     }
 
@@ -167,21 +157,21 @@ class PathPropertiesTests {
                             1_000.0,
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp1")
-                            )
+                            ),
                         ),
                         RJSOperationalPointPart(
                             "TA0",
                             1_500.0,
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp2")
-                            )
+                            ),
                         ),
                     ),
                     RJSOperationalPointExtensions(
                         RJSOperationalPointSncfExtension(0, "BV", "B", "0", "TRI"),
                         null,
                     ),
-                    null
+                    null,
                 ),
                 RJSOperationalPoint(
                     "point2",
@@ -191,13 +181,13 @@ class PathPropertiesTests {
                             0.0,
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp3")
-                            )
+                            ),
                         ),
                         RJSOperationalPointPart("TA1", 1_950.0, null),
                     ),
                     null,
-                    null
-                )
+                    null,
+                ),
             )
         val infra = parseRJSInfra(rjsInfra)
         val path =
@@ -206,7 +196,7 @@ class PathPropertiesTests {
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 500.meters,
-                3_500.meters
+                3_500.meters,
             )
         val opIdsIdxWithOffset =
             path.getOperationalPointParts().map { op ->
@@ -218,7 +208,7 @@ class PathPropertiesTests {
                 Pair("point1", Offset(1_000.meters)),
                 Pair("point2", Offset(1_500.meters)),
             ),
-            opIdsIdxWithOffset
+            opIdsIdxWithOffset,
         )
 
         val pathBackward =
@@ -227,7 +217,7 @@ class PathPropertiesTests {
                 listOf("TA1", "TA0"),
                 Direction.DECREASING,
                 0.meters,
-                2_950.meters
+                2_950.meters,
             )
         val opIdsIdxWithOffsetBackward =
             pathBackward.getOperationalPointParts().map { op ->
@@ -240,7 +230,7 @@ class PathPropertiesTests {
                 Pair("point1", Offset(2_450.meters)),
                 Pair("point1", Offset(2_950.meters)),
             ),
-            opIdsIdxWithOffsetBackward
+            opIdsIdxWithOffsetBackward,
         )
     }
 
@@ -261,10 +251,7 @@ class PathPropertiesTests {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) if (track.id.equals("TA0"))
             track.curves =
-                listOf(
-                    RJSCurve(0.0, 1_000.0, 5_000.0),
-                    RJSCurve(1_000.0, 2_000.0, 10_000.0),
-                )
+                listOf(RJSCurve(0.0, 1_000.0, 5_000.0), RJSCurve(1_000.0, 2_000.0, 10_000.0))
         val infra = parseRJSInfra(rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
@@ -274,7 +261,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 500.meters, -10_000.0),
                 RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
             ),
-            slopesBackward.asList()
+            slopesBackward.asList(),
         )
     }
 
@@ -295,15 +282,8 @@ class PathPropertiesTests {
          */
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) if (track.id.equals("TA0")) {
-            track.slopes =
-                listOf(
-                    RJSSlope(0.0, 1_000.0, 5.0),
-                    RJSSlope(1_000.0, 2_000.0, 15.0),
-                )
-            track.curves =
-                listOf(
-                    RJSCurve(0.0, 1_000.0, 5_000.0),
-                )
+            track.slopes = listOf(RJSSlope(0.0, 1_000.0, 5.0), RJSSlope(1_000.0, 2_000.0, 15.0))
+            track.curves = listOf(RJSCurve(0.0, 1_000.0, 5_000.0))
         }
         val infra = parseRJSInfra(rjsInfra)
         val pathBackward =
@@ -314,7 +294,7 @@ class PathPropertiesTests {
                 RangeMapEntry(0.meters, 500.meters, -15.0),
                 RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
             ),
-            slopesBackward.asList()
+            slopesBackward.asList(),
         )
     }
 
@@ -345,16 +325,16 @@ class PathPropertiesTests {
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 500.meters,
-                3_500.meters
+                3_500.meters,
             )
         val geoForward = path.getGeo()
         assertLinestringEqual(
             LineString.make(
                 doubleArrayOf(0.0, 0.0, 1.0, 1.0, 1.5),
-                doubleArrayOf(0.5, 1.0, 1.0, 2.0, 2.0)
+                doubleArrayOf(0.5, 1.0, 1.0, 2.0, 2.0),
             ),
             geoForward,
-            1e-3
+            1e-3,
         )
 
         val pathBackward =
@@ -363,13 +343,13 @@ class PathPropertiesTests {
                 listOf("TA1", "TA0"),
                 Direction.DECREASING,
                 950.meters,
-                2_950.meters
+                2_950.meters,
             )
         val geoBackward = pathBackward.getGeo()
         assertLinestringEqual(
             LineString.make(doubleArrayOf(1.0, 1.0, 0.0), doubleArrayOf(2.0, 1.0, 1.0)),
             geoBackward,
-            1e-3
+            1e-3,
         )
     }
 
@@ -395,15 +375,15 @@ class PathPropertiesTests {
                             "TA0",
                             ApplicableDirection.BOTH,
                             0.0,
-                            2_000.0
+                            2_000.0,
                         ),
                         RJSApplicableDirectionsTrackRange(
                             "TA1",
                             ApplicableDirection.BOTH,
                             0.0,
-                            1_000.0
-                        )
-                    )
+                            1_000.0,
+                        ),
+                    ),
                 ),
                 RJSElectrification(
                     "25000V",
@@ -412,10 +392,10 @@ class PathPropertiesTests {
                             "TA1",
                             ApplicableDirection.BOTH,
                             1_000.0,
-                            1_950.0
+                            1_950.0,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         val infra = parseRJSInfra(rjsInfra)
 
@@ -425,7 +405,7 @@ class PathPropertiesTests {
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 500.meters,
-                3_500.meters
+                3_500.meters,
             )
         val electrificationForward = path.getElectrification()
         assertEquals(
@@ -442,7 +422,7 @@ class PathPropertiesTests {
                 listOf("TA1", "TA0"),
                 Direction.DECREASING,
                 450.meters,
-                2_950.meters
+                2_950.meters,
             )
         val electrificationBackward = pathBackward.getElectrification()
         assertEquals(
@@ -485,7 +465,7 @@ class PathPropertiesTests {
                 listOf("TA1", "TA0"),
                 Direction.DECREASING,
                 450.meters,
-                2_950.meters
+                2_950.meters,
             )
         val loadingGauge = pathBackward.getLoadingGauge()
         assert(
@@ -511,7 +491,7 @@ class PathPropertiesTests {
                 listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)
                 ),
-                null
+                null,
             )
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
@@ -523,13 +503,13 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         400.meters,
-                        SpeedLimitProperty(42.42.metersPerSecond, GivenTrainTag("trainTag"))
+                        SpeedLimitProperty(42.42.metersPerSecond, GivenTrainTag("trainTag")),
                     ),
                     RangeMapEntry(
                         400.meters,
                         1_820.meters,
-                        SpeedLimitProperty(MAX_SPEED.metersPerSecond, UnknownTag())
-                    )
+                        SpeedLimitProperty(MAX_SPEED.metersPerSecond, UnknownTag()),
+                    ),
                 )
             )
     }
@@ -547,10 +527,10 @@ class PathPropertiesTests {
                         "TH1",
                         ApplicableDirection.BOTH,
                         4900.0,
-                        5000.0
+                        5000.0,
                     )
                 ),
-                null
+                null,
             )
         rjsInfra.speedSections.add(superLowSpeedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
@@ -561,7 +541,7 @@ class PathPropertiesTests {
                 infra.blockInfra,
                 infra.rawInfra,
                 blocks.last(),
-                routes = listOf("rt.DH2->buffer_stop.7")
+                routes = listOf("rt.DH2->buffer_stop.7"),
             )
 
         /*
@@ -584,23 +564,23 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         100.meters,
-                        SpeedLimitProperty(39.444.metersPerSecond, UnknownTag())
+                        SpeedLimitProperty(39.444.metersPerSecond, UnknownTag()),
                     ),
                     RangeMapEntry(
                         100.meters,
                         1000.meters,
-                        SpeedLimitProperty(22.222.metersPerSecond, GivenTrainTag("MA100"))
+                        SpeedLimitProperty(22.222.metersPerSecond, GivenTrainTag("MA100")),
                     ),
                     RangeMapEntry(
                         1000.meters,
                         1500.meters,
-                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag())
+                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag()),
                     ),
                     RangeMapEntry(
                         1500.meters,
                         1600.meters,
-                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag())
-                    )
+                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
+                    ),
                 )
             )
 
@@ -611,23 +591,23 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         100.meters,
-                        SpeedLimitProperty(39.444.metersPerSecond, UnknownTag())
+                        SpeedLimitProperty(39.444.metersPerSecond, UnknownTag()),
                     ),
                     RangeMapEntry(
                         100.meters,
                         1000.meters,
-                        SpeedLimitProperty(22.222.metersPerSecond, FallbackTag("MA100"))
+                        SpeedLimitProperty(22.222.metersPerSecond, FallbackTag("MA100")),
                     ),
                     RangeMapEntry(
                         1000.meters,
                         1500.meters,
-                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag())
+                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag()),
                     ),
                     RangeMapEntry(
                         1500.meters,
                         1600.meters,
-                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag())
-                    )
+                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
+                    ),
                 )
             )
 
@@ -638,23 +618,23 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         600.meters,
-                        SpeedLimitProperty(27.778.metersPerSecond, GivenTrainTag("E32C"))
+                        SpeedLimitProperty(27.778.metersPerSecond, GivenTrainTag("E32C")),
                     ),
                     RangeMapEntry(
                         600.meters,
                         1000.meters,
-                        SpeedLimitProperty(22.222.metersPerSecond, FallbackTag("MA100"))
+                        SpeedLimitProperty(22.222.metersPerSecond, FallbackTag("MA100")),
                     ),
                     RangeMapEntry(
                         1000.meters,
                         1500.meters,
-                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag())
+                        SpeedLimitProperty(83.333.metersPerSecond, UnknownTag()),
                     ),
                     RangeMapEntry(
                         1500.meters,
                         1600.meters,
-                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag())
-                    )
+                        SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
+                    ),
                 )
             )
 
@@ -665,23 +645,23 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         100.meters,
-                        SpeedLimitProperty(39.444.metersPerSecond, GivenTrainTag("HLP"))
+                        SpeedLimitProperty(39.444.metersPerSecond, GivenTrainTag("HLP")),
                     ),
                     RangeMapEntry(
                         100.meters,
                         1000.meters,
-                        SpeedLimitProperty(31.111.metersPerSecond, GivenTrainTag("HLP"))
+                        SpeedLimitProperty(31.111.metersPerSecond, GivenTrainTag("HLP")),
                     ),
                     RangeMapEntry(
                         1000.meters,
                         1500.meters,
-                        SpeedLimitProperty(69.444.metersPerSecond, GivenTrainTag("HLP"))
+                        SpeedLimitProperty(69.444.metersPerSecond, GivenTrainTag("HLP")),
                     ),
                     RangeMapEntry(
                         1500.meters,
                         1600.meters,
-                        SpeedLimitProperty(3.0.metersPerSecond, GivenTrainTag("HLP"))
-                    )
+                        SpeedLimitProperty(3.0.metersPerSecond, GivenTrainTag("HLP")),
+                    ),
                 )
             )
 
@@ -692,23 +672,23 @@ class PathPropertiesTests {
                     RangeMapEntry(
                         0.meters,
                         100.meters,
-                        SpeedLimitProperty(39.444.metersPerSecond, null)
+                        SpeedLimitProperty(39.444.metersPerSecond, null),
                     ),
                     RangeMapEntry(
                         100.meters,
                         1000.meters,
-                        SpeedLimitProperty(31.111.metersPerSecond, null)
+                        SpeedLimitProperty(31.111.metersPerSecond, null),
                     ),
                     RangeMapEntry(
                         1000.meters,
                         1500.meters,
-                        SpeedLimitProperty(83.333.metersPerSecond, null)
+                        SpeedLimitProperty(83.333.metersPerSecond, null),
                     ),
                     RangeMapEntry(
                         1500.meters,
                         1600.meters,
-                        SpeedLimitProperty(3.0.metersPerSecond, null)
-                    )
+                        SpeedLimitProperty(3.0.metersPerSecond, null),
+                    ),
                 )
             )
 
@@ -717,23 +697,23 @@ class PathPropertiesTests {
                 RangeMapEntry(
                     0.meters,
                     100.meters,
-                    SpeedLimitProperty(39.444.metersPerSecond, UnknownTag())
+                    SpeedLimitProperty(39.444.metersPerSecond, UnknownTag()),
                 ),
                 RangeMapEntry(
                     100.meters,
                     1000.meters,
-                    SpeedLimitProperty(31.111.metersPerSecond, UnknownTag())
+                    SpeedLimitProperty(31.111.metersPerSecond, UnknownTag()),
                 ),
                 RangeMapEntry(
                     1000.meters,
                     1500.meters,
-                    SpeedLimitProperty(83.333.metersPerSecond, UnknownTag())
+                    SpeedLimitProperty(83.333.metersPerSecond, UnknownTag()),
                 ),
                 RangeMapEntry(
                     1500.meters,
                     1600.meters,
-                    SpeedLimitProperty(3.0.metersPerSecond, UnknownTag())
-                )
+                    SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
+                ),
             )
         val speedLimitsMA90 = path.getSpeedLimitProperties("MA90", null)
         assertThat(speedLimitsMA90.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)

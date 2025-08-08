@@ -68,11 +68,7 @@ data class InfraExplorerWithEnvelopeImpl(
         // We want the intersection, which is what `zip` does here.
         assert(stopDurations.size <= stopOffsets.size)
         return (stopOffsets zip stopDurations).map {
-            TrainStop(
-                it.first.distance.meters,
-                it.second,
-                SHORT_SLIP_STOP,
-            )
+            TrainStop(it.first.distance.meters, it.second, SHORT_SLIP_STOP)
         }
     }
 
@@ -92,10 +88,7 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
         return copy(
-            envelopes =
-                appendOnlyLinkedListOf(
-                    LocatedEnvelopeInterpolate(envelope, 0.0, 0.0),
-                ),
+            envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
             spacingRequirementAutomaton =
                 SpacingRequirementAutomaton(
                     spacingRequirementAutomaton.rawInfra,

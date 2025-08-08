@@ -12,7 +12,7 @@ import kotlin.math.sqrt
 fun runSimplifiedSimulation(
     acceleration: Double,
     finalSpeed: Double,
-    distance: Double
+    distance: Double,
 ): SummarizedSimulationResult {
     // Derived from kinetic equations
     var initialSpeed = sqrt(finalSpeed * finalSpeed - 2 * acceleration * distance)
@@ -21,10 +21,7 @@ fun runSimplifiedSimulation(
         initialSpeed = 0.0
     }
     val time = abs((initialSpeed - finalSpeed) / acceleration)
-    return SummarizedSimulationResult(
-        initialSpeed,
-        time,
-    )
+    return SummarizedSimulationResult(initialSpeed, time)
 }
 
 /**
@@ -36,7 +33,7 @@ fun simplifiedSpeedPlateauThenDeceleration(
     acceleration: Double,
     initialSpeed: Double,
     finalSpeed: Double,
-    distance: Double
+    distance: Double,
 ): Double {
     require(initialSpeed > 0.0)
     require(finalSpeed >= 0.0)
@@ -55,7 +52,7 @@ fun simplifiedSpeedPlateauThenDeceleration(
  */
 internal fun fixedDistanceBackwardsEnvelopeIteration(
     envelope: EnvelopeTimeInterpolate,
-    distance: Double
+    distance: Double,
 ): Sequence<EnvelopePoint> = sequence {
     val points = envelope.iteratePoints().asReversed()
     var prevPoint = points[0]

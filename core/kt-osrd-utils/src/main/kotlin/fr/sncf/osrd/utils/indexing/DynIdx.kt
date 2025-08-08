@@ -25,7 +25,7 @@ interface DynIdxIterable<IndexT> : Iterable<DynIdx<IndexT>> {
 value class DynIdx<T> private constructor(val data: ULong) : NumIdx {
     constructor(
         index: UInt,
-        generation: UInt
+        generation: UInt,
     ) : this(index.toULong() or (generation.toULong() shl UInt.SIZE_BITS))
 
     constructor(index: UInt) : this(index.toULong())

@@ -76,7 +76,7 @@ class AStarTests {
                 "c3" to Point(.0, -1.0),
                 "d3" to Point(.0, -2.0),
                 "e3" to Point(-1.0, -3.0),
-                "f3" to Point(-2.0, -4.0)
+                "f3" to Point(-2.0, -4.0),
             )
 
         dummyInfra.addDetectorGeoPoints(pointsList)
@@ -101,7 +101,7 @@ class AStarTests {
                 fullDummyInfra.blockInfra,
                 fullDummyInfra.rawInfra,
                 destination,
-                0.meters
+                0.meters,
             )
         val seenWithHeuristic = HashSet<BlockId>()
         val seenWithoutHeuristic = HashSet<BlockId>()

@@ -53,11 +53,7 @@ fun ReservationInfra.getRequirements(zonePath: ZonePathId): ZoneRequirements {
     val movableElementRequirements = HashMap<TrackNodeId, TrackNodeConfigId>(movableElements.size)
     for (i in 0 until movableElements.size) movableElementRequirements[movableElements[i]] =
         movableElementsConfigs[i]
-    return ZoneRequirementsImpl(
-        entry,
-        exit,
-        movableElementRequirements,
-    )
+    return ZoneRequirementsImpl(entry, exit, movableElementRequirements)
 }
 
 /** A zone reservation by some actor */
@@ -70,7 +66,7 @@ internal data class ZoneReservationImpl(
 fun zoneReservation(
     train: TrainId,
     requirements: ZoneRequirements,
-    status: ZoneReservationStatus
+    status: ZoneReservationStatus,
 ): ZoneReservation {
     return ZoneReservationImpl(train, requirements, status)
 }
@@ -85,7 +81,7 @@ internal data class ZoneRequirementsImpl(
 fun zoneRequirements(
     entry: DirDetectorId,
     exit: DirDetectorId,
-    movableElements: Map<TrackNodeId, TrackNodeConfigId>
+    movableElements: Map<TrackNodeId, TrackNodeConfigId>,
 ): ZoneRequirements {
     return ZoneRequirementsImpl(entry, exit, movableElements)
 }
@@ -125,7 +121,7 @@ internal class ReservationSimImpl(
     private fun startReservationStatusUpdater(
         zone: ZoneId,
         reservation: ZoneReservationId,
-        train: TrainId
+        train: TrainId,
     ) {
         scope.launch(Dispatchers.Unconfined + CoroutineName("status updater")) {
             // wait for the train to enter the zone
@@ -148,7 +144,7 @@ internal class ReservationSimImpl(
                 ZoneReservationImpl(
                     prevReservation.train,
                     prevReservation.requirements,
-                    PENDING_RELEASE
+                    PENDING_RELEASE,
                 )
             }
         }
@@ -157,7 +153,7 @@ internal class ReservationSimImpl(
     private fun updateReservation(
         zone: ZoneId,
         reservation: ZoneReservationId,
-        updater: (ZoneReservation) -> ZoneReservation
+        updater: (ZoneReservation) -> ZoneReservation,
     ) {
         states[zone.index].update { prevState ->
             zoneState(prevState.reservations.update(reservation, updater))
@@ -174,7 +170,7 @@ internal class ReservationSimImpl(
             if (curRequirements != null && !curRequirements.compatibleWith(newRequirements))
                 throw OSRDError.newIncompatibleZoneRequirementsError(
                     curRequirements,
-                    newRequirements
+                    newRequirements,
                 )
 
             val newReservation = zoneReservation(train, newRequirements, PRE_RESERVED)
@@ -190,7 +186,7 @@ internal class ReservationSimImpl(
             if (prevReservation.status != PRE_RESERVED)
                 throw OSRDError.newUnexpectedReservationStatusError(
                     PRE_RESERVED,
-                    prevReservation.status
+                    prevReservation.status,
                 )
             startReservationStatusUpdater(zone, reservation, prevReservation.train)
             ZoneReservationImpl(prevReservation.train, prevReservation.requirements, RESERVED)
@@ -211,7 +207,7 @@ internal class ReservationSimImpl(
                     if (reservationData.status != PENDING_RELEASE)
                         throw OSRDError.newUnexpectedReservationStatusError(
                             PENDING_RELEASE,
-                            reservationData.status
+                            reservationData.status,
                         )
                     arena.release(reservation)
                 }

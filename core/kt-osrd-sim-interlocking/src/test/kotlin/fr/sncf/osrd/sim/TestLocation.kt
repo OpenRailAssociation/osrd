@@ -51,7 +51,7 @@ class TestLocation {
                 dynIdxArraySetOf(trainB),
                 dynIdxArraySetOf(trainB, trainA),
                 dynIdxArraySetOf(trainA),
-                dynIdxArraySetOf()
+                dynIdxArraySetOf(),
             )
 
         assertEquals(reference, occupationHistory)

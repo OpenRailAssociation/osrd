@@ -89,7 +89,7 @@ class MutableArenaMapImpl<IndexT, ValueT> :
             freeHead,
             usedHead,
             usedTail,
-            values
+            values,
         )
     }
 

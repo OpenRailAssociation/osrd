@@ -9,9 +9,7 @@ import kotlin.reflect.KProperty
  * actually accessed. It's then stored in a `SoftReference`, which may be cleared if the JVM needs
  * more RAM. Variables defined that way can then be used transparently, as if they were of type `T`.
  */
-class SoftLazy<T>(
-    private val computeValue: () -> T,
-) : ReadOnlyProperty<Any?, T> {
+class SoftLazy<T>(private val computeValue: () -> T) : ReadOnlyProperty<Any?, T> {
     var cache: SoftReference<T> = SoftReference(null)
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {

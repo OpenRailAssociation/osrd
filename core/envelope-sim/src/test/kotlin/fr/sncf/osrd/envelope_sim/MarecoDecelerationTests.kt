@@ -73,7 +73,7 @@ class MarecoDecelerationTests {
                     testRollingStock,
                     testPath,
                     SimpleContextBuilder.TIME_STEP,
-                    SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                    SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
                 )
             val mrsp = makeSimpleMaxEffortEnvelope(context, 1000.0)
             val builder = OverlayEnvelopeBuilder.backward(mrsp)
@@ -83,7 +83,7 @@ class MarecoDecelerationTests {
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                    EnvelopeConstraint(mrsp, EnvelopePartConstraintType.CEILING)
+                    EnvelopeConstraint(mrsp, EnvelopePartConstraintType.CEILING),
                 )
             EnvelopeDeceleration.decelerate(context, 100000.0, 0.0, overlayBuilder, -1.0)
             val envelope = builder.build()
@@ -93,14 +93,14 @@ class MarecoDecelerationTests {
                     startOffset,
                     endOffset,
                     1.0,
-                    listOf(AllowanceRange(startOffset, endOffset, AllowanceValue.Percentage(50.0)))
+                    listOf(AllowanceRange(startOffset, endOffset, AllowanceValue.Percentage(50.0))),
                 )
             try {
                 allowance.apply(envelope, context)
             } catch (err: OSRDError) {
                 Assertions.assertEquals(
                     err.osrdErrorType,
-                    ErrorType.AllowanceConvergenceTooMuchTime
+                    ErrorType.AllowanceConvergenceTooMuchTime,
                 )
             }
         }

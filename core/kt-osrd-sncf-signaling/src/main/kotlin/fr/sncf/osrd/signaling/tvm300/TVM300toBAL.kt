@@ -33,7 +33,7 @@ object TVM300toBAL : SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         return stateSchema {
             assert(maView!!.hasNextSignal)

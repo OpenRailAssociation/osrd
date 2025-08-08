@@ -20,7 +20,7 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
         context.codeGenerator.createNewFile(
             Dependencies(true, currentFile),
             generatedPackage,
-            fileName
+            fileName,
         )
     file.appendText(
         """
@@ -240,7 +240,7 @@ class RingBufferGenerator {
         override fun generate(
             context: GeneratorContext,
             currentFile: KSFile,
-            itemType: CollectionItemType
+            itemType: CollectionItemType,
         ) {
             itemType.generateRingBuffer(context, currentFile)
         }

@@ -65,8 +65,8 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                     old.infraExplorer.getCurrentBlock(),
                     old.beginSpeed,
                     old.envelopeStartOffset,
-                    getNextStopOnCurrentBlock(old.infraExplorer)
-                )
+                    getNextStopOnCurrentBlock(old.infraExplorer),
+                ),
             )
         val newEnvelope =
             simulateBackwards(
@@ -75,7 +75,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                 endSpeed,
                 old.envelopeStartOffset,
                 oldEnvelope!!,
-                graph
+                graph,
             )
         val prevNode = old.previousNode
         return STDCMEdgeBuilder.fromNode(graph, prevNode, old.infraExplorer)

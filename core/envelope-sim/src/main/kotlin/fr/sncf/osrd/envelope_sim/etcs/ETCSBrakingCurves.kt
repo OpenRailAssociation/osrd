@@ -35,7 +35,7 @@ enum class BrakingType {
     GUI, // Guidance
     PRE_PS, // Permitted Speed before applying minimum with guidance
     PS, // Permitted Speed
-    IND // Indication
+    IND, // Indication
 }
 
 val etcsBrakingCurvesLogger: Logger = LoggerFactory.getLogger("EtcsBrakingCurves")
@@ -45,7 +45,7 @@ fun computeBrakingCurvesAtLOA(
     limitOfAuthority: LimitOfAuthority,
     context: EnvelopeSimContext,
     maxSpeedEnvelope: Envelope,
-    beginPos: Double
+    beginPos: Double,
 ): BrakingCurves {
     val targetPosition = limitOfAuthority.offset.distance.meters
     assert(targetPosition > 0.0)
@@ -68,7 +68,7 @@ fun computeBrakingCurvesAtEOA(
     endOfAuthority: EndOfAuthority,
     context: EnvelopeSimContext,
     maxSpeedEnvelope: Envelope,
-    beginPos: Double
+    beginPos: Double,
 ): BrakingCurves {
     val targetPosition = endOfAuthority.offsetEOA.distance.meters
     assert(targetPosition > 0.0)
@@ -123,7 +123,7 @@ private fun computeSbdBrakingCurves(
             EnvelopePart.generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(0.0, targetPosition),
-                doubleArrayOf(maxSpeed, maxSpeed)
+                doubleArrayOf(maxSpeed, maxSpeed),
             )
         )
     val sbdCurve = computeBrakingCurve(context, overhead, targetPosition, targetSpeed, SBD)
@@ -162,7 +162,7 @@ private fun computeEbdBrakingCurves(
             EnvelopePart.generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(0.0, max(context.path.length, targetPosition)),
-                doubleArrayOf(maxSpeedEbd, maxSpeedEbd)
+                doubleArrayOf(maxSpeedEbd, maxSpeedEbd),
             )
         )
 
@@ -202,7 +202,7 @@ private fun computeEbdBrakingCurves(
 private fun maintainSpeedUntil(
     etcsBrakingCurve: BrakingCurve,
     maintainSpeed: Double,
-    targetPosition: Double
+    targetPosition: Double,
 ): BrakingCurve {
     val brakingCurve = etcsBrakingCurve.brakingCurve
     assert(brakingCurve.beginPos < targetPosition && brakingCurve.endSpeed <= maintainSpeed)
@@ -217,14 +217,14 @@ private fun maintainSpeedUntil(
                     currentPart.beginPos,
                     currentPart.beginSpeed,
                     intersection,
-                    maintainSpeed
+                    maintainSpeed,
                 )!!
             )
             brakingCurveWithMaintain.add(
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(intersection, targetPosition),
-                    doubleArrayOf(maintainSpeed, maintainSpeed)
+                    doubleArrayOf(maintainSpeed, maintainSpeed),
                 )
             )
             break
@@ -232,7 +232,7 @@ private fun maintainSpeedUntil(
     }
     return BrakingCurve(
         etcsBrakingCurve.brakingType,
-        Envelope.make(*brakingCurveWithMaintain.toTypedArray())
+        Envelope.make(*brakingCurveWithMaintain.toTypedArray()),
     )
 }
 
@@ -242,7 +242,7 @@ private fun computeBrakingCurve(
     envelope: Envelope,
     targetPosition: Double,
     targetSpeed: Double,
-    brakingType: BrakingType
+    brakingType: BrakingType,
 ): BrakingCurve {
     if (!listOf(EBD, SBD, GUI).contains(brakingType))
         throw IllegalArgumentException(
@@ -255,7 +255,7 @@ private fun computeBrakingCurve(
         throw RuntimeException(
             String.format(
                 "Trying to compute ETCS braking curve from out of bounds ERTMS end/limit of authority: %s",
-                targetPosition
+                targetPosition,
             )
         )
     val partBuilder = EnvelopePartBuilder()
@@ -265,7 +265,7 @@ private fun computeBrakingCurve(
             partBuilder,
             PositionConstraint(0.0, targetPosition),
             SpeedConstraint(targetSpeed, EnvelopePartConstraintType.FLOOR),
-            EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
+            EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
         )
     if (brakingType == EBD && targetSpeed != 0.0) {
         // When target is an LOA, EBD reaches target position at target speed + dVEbi. See Subset
@@ -279,7 +279,7 @@ private fun computeBrakingCurve(
             speedAtTargetPosition,
             overlayBuilder,
             -1.0,
-            brakingType
+            brakingType,
         )
         val leftPart = partBuilder.build()
         // Complete the curve by computing deceleration from the same point, but to the right (reset
@@ -290,7 +290,7 @@ private fun computeBrakingCurve(
             ConstrainedEnvelopePartBuilder(
                 rightPartBuilder,
                 PositionConstraint(0.0, Double.POSITIVE_INFINITY),
-                SpeedConstraint(targetSpeed, EnvelopePartConstraintType.FLOOR)
+                SpeedConstraint(targetSpeed, EnvelopePartConstraintType.FLOOR),
             )
         EnvelopeDeceleration.decelerate(
             context,
@@ -298,7 +298,7 @@ private fun computeBrakingCurve(
             speedAtTargetPosition,
             rightOverlayBuilder,
             1.0,
-            brakingType
+            brakingType,
         )
         val rightPart = rightPartBuilder.build()
         return BrakingCurve(brakingType, Envelope.make(leftPart, rightPart))
@@ -310,7 +310,7 @@ private fun computeBrakingCurve(
             targetSpeed,
             overlayBuilder,
             -1.0,
-            brakingType
+            brakingType,
         )
         return BrakingCurve(brakingType, Envelope.make(partBuilder.build()))
     }
@@ -322,7 +322,7 @@ private fun computeBrakingCurve(
 private fun computeEbiBrakingCurveFromEbd(
     context: EnvelopeSimContext,
     ebdCurve: BrakingCurve,
-    targetSpeed: Double
+    targetSpeed: Double,
 ): BrakingCurve {
     assert(ebdCurve.brakingType == EBD)
     val ebdPoints = ebdCurve.brakingCurve.iteratePoints().distinct()
@@ -359,9 +359,9 @@ private fun computeEbiBrakingCurveFromEbd(
                 fullBrakingCurve.beginPos,
                 fullBrakingCurve.beginSpeed,
                 intersection,
-                targetSpeed
+                targetSpeed,
             )!!
-        )
+        ),
     )
 }
 
@@ -376,7 +376,7 @@ private fun computeEbiBrakingCurveFromEbd(
 private fun computeBrakingCurvesFromRefs(
     context: EnvelopeSimContext,
     refBrakingCurve: BrakingCurve,
-    guiCurve: BrakingCurve
+    guiCurve: BrakingCurve,
 ): BrakingCurves {
     assert(guiCurve.brakingType == GUI)
     val rollingStock = context.rollingStock
@@ -407,7 +407,7 @@ private fun computeBrakingCurvesFromRefs(
             sbiBrakingCurveType,
             Envelope.make(
                 EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), sbiPositions, newSpeeds)
-            )
+            ),
         )
 
     val prePsCurve =
@@ -417,9 +417,9 @@ private fun computeBrakingCurvesFromRefs(
                 EnvelopePart.generateTimes(
                     listOf(EnvelopeProfile.BRAKING),
                     prePsPositions,
-                    newSpeeds
+                    newSpeeds,
                 )
-            )
+            ),
         )
     val psCurve = computeMinETCSBrakingCurves(prePsCurve, guiCurve)!!
 
@@ -432,7 +432,7 @@ private fun computeBrakingCurvesFromRefs(
             IND,
             Envelope.make(
                 EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), indPositions, indSpeeds)
-            )
+            ),
         )
 
     val brakingCurves = EnumMap<BrakingType, BrakingCurve?>(BrakingType::class.java)
@@ -450,7 +450,7 @@ private fun computeBrakingCurvesFromRefs(
  */
 private fun computeMinETCSBrakingCurves(
     brakingCurve1: BrakingCurve?,
-    brakingCurve2: BrakingCurve?
+    brakingCurve2: BrakingCurve?,
 ): BrakingCurve? {
     if (brakingCurve1 == null) return brakingCurve2
     else if (brakingCurve2 == null) return brakingCurve1
@@ -497,12 +497,12 @@ private fun computeMinETCSBrakingCurves(
     if (isCurveAtBeginCurve1 && beginPos1 < minCurveOnIntersectingRange.beginPos)
         minCurve.addAll(
             0,
-            brakingCurve1.brakingCurve.slice(beginPos1, intersectingRangeBegin).toList()
+            brakingCurve1.brakingCurve.slice(beginPos1, intersectingRangeBegin).toList(),
         )
     else if (!isCurveAtBeginCurve1 && beginPos2 < minCurveOnIntersectingRange.beginPos)
         minCurve.addAll(
             0,
-            brakingCurve2.brakingCurve.slice(beginPos2, intersectingRangeBegin).toList()
+            brakingCurve2.brakingCurve.slice(beginPos2, intersectingRangeBegin).toList(),
         )
 
     return BrakingCurve(brakingCurveType, Envelope.make(*minCurve.toTypedArray()))
@@ -515,7 +515,7 @@ private fun computeMinETCSBrakingCurves(
 private fun keepBrakingCurveUnderOverlay(
     etcsBrakingCurve: BrakingCurve?,
     overlay: Envelope,
-    beginPos: Double
+    beginPos: Double,
 ): BrakingCurve? {
     if (etcsBrakingCurve == null) return null
     var brakingCurve = etcsBrakingCurve.brakingCurve
@@ -557,7 +557,7 @@ private fun keepBrakingCurveUnderOverlay(
         ConstrainedEnvelopePartBuilder(
             partBuilder,
             PositionConstraint(max(beginPos, brakingCurve.beginPos), overlay.endPos),
-            EnvelopeConstraint(overlay, EnvelopePartConstraintType.CEILING)
+            EnvelopeConstraint(overlay, EnvelopePartConstraintType.CEILING),
         )
     val lastIndex = positions.lastIndex
     overlayBuilder.initEnvelopePart(positions[lastIndex], speeds[lastIndex], -1.0)
@@ -579,7 +579,7 @@ private fun computeBecParams(
     context: EnvelopeSimContext,
     position: Double,
     speed: Double,
-    targetSpeed: Double
+    targetSpeed: Double,
 ): BecParams {
     val rollingStock = context.rollingStock
 
@@ -592,7 +592,7 @@ private fun computeBecParams(
         max(
             rollingStock.rjsEtcsBrakeParams.tTractionCutOff -
                 (T_WARNING + rollingStock.rjsEtcsBrakeParams.tBs2),
-            0.0
+            0.0,
         )
     // Estimated acceleration during tTraction, worst case scenario (the train accelerates as much
     // as possible).
@@ -606,9 +606,9 @@ private fun computeBecParams(
                 speed,
                 // TODO: have a tractive effort curve map which extends until the last SvL instead
                 // of the end of the path.
-                context.tractiveEffortCurveMap.get(min(position, context.path.length))
+                context.tractiveEffortCurveMap.get(min(position, context.path.length)),
             ),
-            1.0
+            1.0,
         )
     // Speed correction due to the traction staying active during tTraction. See Subset:
     // §3.13.9.3.2.10.
@@ -648,7 +648,7 @@ private fun getPrePermittedSpeedPosition(sbiPosition: Double, speed: Double): Do
 private fun getIndicationPosition(
     permittedSpeedPosition: Double,
     speed: Double,
-    tBs: Double
+    tBs: Double,
 ): Double {
     val tIndication = max((0.8 * tBs), 5.0) + T_DRIVER
     return getPreviousPosition(permittedSpeedPosition, speed, tIndication)

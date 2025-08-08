@@ -106,11 +106,12 @@ class ActionLockRequired() : Exception("")
 
 class IncompatibleZoneRequirements(
     val currentRequirements: ZoneRequirements,
-    val newRequirements: ZoneRequirements
+    val newRequirements: ZoneRequirements,
 ) : Exception("")
 
 interface ReservationSim {
     fun watchZoneConfig(zone: ZoneId): StateFlow<ZoneState>
+
     /** Get the action lock */
     suspend fun lockZone(zone: ZoneId)
 

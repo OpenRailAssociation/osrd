@@ -11,7 +11,7 @@ interface IncrementalRequirementCallbacks {
     // a range is used rather than a point to properly handle the train appearing and disappearing
     fun arrivalTimeInRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double
 
     // the departure time from a given location, which has to take into account train length.
@@ -19,7 +19,7 @@ interface IncrementalRequirementCallbacks {
     // returned
     fun departureTimeFromRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double
 
     val currentTime: Double
@@ -31,7 +31,7 @@ interface IncrementalRequirementCallbacks {
 
     fun maxSpeedInRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double
 
     // departure time from a given stop. if the train never gets to a stop, +inf is returned

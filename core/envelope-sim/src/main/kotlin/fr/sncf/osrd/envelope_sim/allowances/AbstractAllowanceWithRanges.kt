@@ -32,7 +32,7 @@ protected constructor(
     val beginPos: Double,
     val endPos: Double, // potential speed limit under which the train would use too much capacity
     val capacitySpeedLimit: Double,
-    var ranges: MutableList<AllowanceRange>
+    var ranges: MutableList<AllowanceRange>,
 ) : Allowance {
     init {
         for (range in ranges) {
@@ -45,12 +45,12 @@ protected constructor(
     protected abstract fun computeCore(
         base: Envelope,
         context: EnvelopeSimContext,
-        speedCap: Double
+        speedCap: Double,
     ): Envelope
 
     protected abstract fun computeInitialHighBound(
         envelopeSection: Envelope,
-        rollingStock: PhysicsRollingStock
+        rollingStock: PhysicsRollingStock,
     ): Double
 
     protected abstract fun computeInitialLowBound(envelopeSection: Envelope): Double
@@ -138,18 +138,18 @@ protected constructor(
         val prevRangeTime =
             prevRange.value.getAllowanceTime(
                 base.getTimeBetween(prevRange.beginPos, prevRange.endPos),
-                prevRange.endPos - prevRange.beginPos
+                prevRange.endPos - prevRange.beginPos,
             )
         val nextRangeTime =
             nextRange.value.getAllowanceTime(
                 base.getTimeBetween(nextRange.beginPos, nextRange.endPos),
-                nextRange.endPos - nextRange.beginPos
+                nextRange.endPos - nextRange.beginPos,
             )
         val newRange =
             AllowanceRange(
                 prevRange.beginPos,
                 nextRange.endPos,
-                FixedTime(prevRangeTime + nextRangeTime)
+                FixedTime(prevRangeTime + nextRangeTime),
             )
         ranges = ArrayList(ranges)
         ranges[rangeIndex] = newRange
@@ -167,14 +167,14 @@ protected constructor(
      */
     private fun computeAllowanceRegion(
         envelopeRegion: Envelope,
-        context: EnvelopeSimContext
+        context: EnvelopeSimContext,
     ): List<Envelope> {
         // build an array of the imposed speeds between ranges
         // every time a range is computed, the imposed left and right speeds are memorized
 
         val imposedTransitionSpeeds = DoubleArray(ranges.size + 1)
         imposedTransitionSpeeds[0] = envelopeRegion.beginSpeed
-        for (i in 1 ..< ranges.size) imposedTransitionSpeeds[i] = Double.NaN
+        for (i in 1..<ranges.size) imposedTransitionSpeeds[i] = Double.NaN
         imposedTransitionSpeeds[ranges.size] = envelopeRegion.endSpeed
 
         // Set the transitions speeds on allowance ranges that don't add any time
@@ -184,7 +184,7 @@ protected constructor(
             val addedTime =
                 range.value.getAllowanceTime(
                     envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
-                    range.endPos - range.beginPos
+                    range.endPos - range.beginPos,
                 )
             if (areTimesEqual(0.0, addedTime)) {
                 imposedTransitionSpeeds[i] = envelopeRegion.interpolateSpeed(range.beginPos)
@@ -222,7 +222,7 @@ protected constructor(
                         range.value,
                         imposedBeginSpeed,
                         imposedEndSpeed,
-                        tolerance
+                        tolerance,
                     )
                 // memorize the beginning and end speeds
                 imposedTransitionSpeeds[rangeIndex] = allowanceRange.beginSpeed
@@ -247,7 +247,7 @@ protected constructor(
         value: AllowanceValue,
         imposedRangeBeginSpeed: Double,
         imposedRangeEndSpeed: Double,
-        tolerance: Double
+        tolerance: Double,
     ): Envelope {
         // compute the added time for all the allowance range
         val baseTime = envelopeRange.totalTime
@@ -270,7 +270,7 @@ protected constructor(
                 EnvelopeSpeedCap.from(
                     envelopeRange,
                     listOf(CapacitySpeedLimit()),
-                    capacitySpeedLimit
+                    capacitySpeedLimit,
                 )
             slowestRunningTime = slowestEnvelope.totalTime
         }
@@ -290,7 +290,7 @@ protected constructor(
 
         val builder = EnvelopeBuilder()
         // apply the allowance on each section of the allowance range
-        for (i in 0 ..< splitPoints.size - 1) {
+        for (i in 0..<splitPoints.size - 1) {
             val sectionBeginPos = splitPoints[i]
             val sectionEndPos = splitPoints[i + 1]
             val section = make(*envelopeRange.slice(sectionBeginPos, sectionEndPos))
@@ -315,7 +315,7 @@ protected constructor(
                     targetTime,
                     imposedBeginSpeed,
                     imposedEndSpeed,
-                    distributedTolerance
+                    distributedTolerance,
                 )
             assert(abs(allowanceSection!!.totalTime - targetTime) <= context.timeStep)
             builder.addEnvelope(allowanceSection)
@@ -330,7 +330,7 @@ protected constructor(
         targetTime: Double,
         imposedBeginSpeed: Double,
         imposedEndSpeed: Double,
-        tolerance: Double
+        tolerance: Double,
     ): Envelope? {
         // perform a binary search
         val initialLowBound = computeInitialLowBound(envelopeSection)
@@ -356,7 +356,7 @@ protected constructor(
                         context,
                         input,
                         imposedBeginSpeed,
-                        imposedEndSpeed
+                        imposedEndSpeed,
                     )
                 lastTime = res.totalTime
                 search.feedback(lastTime)
@@ -393,7 +393,7 @@ protected constructor(
                     "Closest time = {}, target time = {} +- {}",
                     lastTime,
                     targetTime,
-                    tolerance
+                    tolerance,
                 )
                 // TODO: raise a warning to be included in the response
             } else {
@@ -402,7 +402,7 @@ protected constructor(
                     "Closest time = {}, target time = {} +- {}",
                     lastTime,
                     targetTime,
-                    tolerance
+                    tolerance,
                 )
                 if (lastError != null) {
                     // If we couldn't converge and an error happened, it has more info
@@ -427,7 +427,7 @@ protected constructor(
         context: EnvelopeSimContext,
         input: Double,
         imposedBeginSpeed: Double,
-        imposedEndSpeed: Double
+        imposedEndSpeed: Double,
     ): Envelope {
         // The part of the envelope on which the margin is applied is split in 3:
         // left junction, then core phase, then right junction.
@@ -464,7 +464,7 @@ protected constructor(
             assert(
                 areSpeedsEqual(
                     coreEnvelope.interpolateSpeed(rightPartBeginPos),
-                    rightPartBeginSpeed
+                    rightPartBeginSpeed,
                 )
             )
         }
@@ -478,7 +478,7 @@ protected constructor(
                 leftPartEndPos,
                 leftPartEndSpeed,
                 rightPartBeginPos,
-                rightPartBeginSpeed
+                rightPartBeginSpeed,
             )
         )
         if (rightPart != null) builder.addPart(rightPart)
@@ -498,7 +498,7 @@ protected constructor(
         envelopeSection: Envelope,
         envelopeTarget: Envelope,
         context: EnvelopeSimContext,
-        imposedBeginSpeed: Double
+        imposedBeginSpeed: Double,
     ): EnvelopePart? {
         // if there is no imposed begin speed, no junction needs to be computed
         if (java.lang.Double.isNaN(imposedBeginSpeed)) return null
@@ -514,14 +514,14 @@ protected constructor(
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    *constraints.toTypedArray<EnvelopePartConstraint>()
+                    *constraints.toTypedArray<EnvelopePartConstraint>(),
                 )
             EnvelopeDeceleration.decelerate(
                 context,
                 envelopeSection.beginPos,
                 imposedBeginSpeed,
                 constrainedBuilder,
-                1.0
+                1.0,
             )
             partBuilder.setAttr(EnvelopeProfile.BRAKING)
             lastIntersection = constrainedBuilder.lastIntersection
@@ -531,14 +531,14 @@ protected constructor(
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    *constraints.toTypedArray<EnvelopePartConstraint>()
+                    *constraints.toTypedArray<EnvelopePartConstraint>(),
                 )
             EnvelopeAcceleration.accelerate(
                 context,
                 envelopeSection.beginPos,
                 imposedBeginSpeed,
                 constrainedBuilder,
-                1.0
+                1.0,
             )
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING)
             lastIntersection = constrainedBuilder.lastIntersection
@@ -561,7 +561,7 @@ protected constructor(
         envelopeSection: Envelope,
         envelopeTarget: Envelope,
         context: EnvelopeSimContext,
-        imposedEndSpeed: Double
+        imposedEndSpeed: Double,
     ): EnvelopePart? {
         if (java.lang.Double.isNaN(imposedEndSpeed)) return null
 
@@ -576,14 +576,14 @@ protected constructor(
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    *constraints.toTypedArray<EnvelopePartConstraint>()
+                    *constraints.toTypedArray<EnvelopePartConstraint>(),
                 )
             EnvelopeAcceleration.accelerate(
                 context,
                 envelopeSection.endPos,
                 imposedEndSpeed,
                 constrainedBuilder,
-                -1.0
+                -1.0,
             )
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING)
             lastIntersection = constrainedBuilder.lastIntersection
@@ -592,14 +592,14 @@ protected constructor(
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    *constraints.toTypedArray<EnvelopePartConstraint>()
+                    *constraints.toTypedArray<EnvelopePartConstraint>(),
                 )
             EnvelopeDeceleration.decelerate(
                 context,
                 envelopeSection.endPos,
                 imposedEndSpeed,
                 constrainedBuilder,
-                -1.0
+                -1.0,
             )
             partBuilder.setAttr(EnvelopeProfile.BRAKING)
             lastIntersection = constrainedBuilder.lastIntersection
@@ -621,7 +621,7 @@ protected constructor(
     private fun computeEnvelopeWithLeftJunction(
         envelopeSection: Envelope,
         coreEnvelope: Envelope,
-        leftJunction: EnvelopePart?
+        leftJunction: EnvelopePart?,
     ): Envelope {
         val builder = EnvelopeBuilder()
         if (leftJunction == null) return coreEnvelope
@@ -634,7 +634,7 @@ protected constructor(
     /** If the left and right part intersect, build an envelope with the intersection */
     private fun intersectLeftRightParts(
         leftPart: EnvelopePart?,
-        rightPart: EnvelopePart?
+        rightPart: EnvelopePart?,
     ): Envelope {
         if (rightPart == null || leftPart == null)
             throw OSRDError(ErrorType.AllowanceConvergenceTooMuchTime)
@@ -643,7 +643,7 @@ protected constructor(
                 Double.NEGATIVE_INFINITY,
                 Double.NaN,
                 rightPart.beginPos,
-                rightPart.beginSpeed
+                rightPart.beginSpeed,
             )
         if (slicedLeftPart == null || slicedLeftPart.endPos != rightPart.beginPos) {
             // The curves don't intersect at all

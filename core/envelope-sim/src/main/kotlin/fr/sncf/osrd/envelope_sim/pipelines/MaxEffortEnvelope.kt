@@ -38,7 +38,7 @@ fun addAccelerationAndConstantSpeedParts(
     context: EnvelopeSimContext,
     maxSpeedProfile: Envelope,
     initialPosition: Double,
-    initialSpeed: Double
+    initialSpeed: Double,
 ): Envelope {
     val builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile)
     val cursor = EnvelopeCursor.forward(maxSpeedProfile)
@@ -56,7 +56,7 @@ fun addAccelerationAndConstantSpeedParts(
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     SpeedConstraint(startSpeed, EnvelopePartConstraintType.EQUAL),
-                    PositionConstraint(cursor.getPart().beginPos, cursor.getPart().endPos)
+                    PositionConstraint(cursor.getPart().beginPos, cursor.getPart().endPos),
                 )
             EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1.0)
 
@@ -77,7 +77,7 @@ fun addAccelerationAndConstantSpeedParts(
                     ConstrainedEnvelopePartBuilder(
                         partBuilder,
                         SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-                        EnvelopeConstraint(maxSpeedProfile, EnvelopePartConstraintType.CEILING)
+                        EnvelopeConstraint(maxSpeedProfile, EnvelopePartConstraintType.CEILING),
                     )
                 startPosition = cursor.getPosition()
                 startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1.0)
@@ -86,7 +86,7 @@ fun addAccelerationAndConstantSpeedParts(
                     startPosition,
                     startSpeed,
                     overlayBuilder,
-                    1.0
+                    1.0,
                 )
                 cursor.findPosition(overlayBuilder.lastPos)
 
@@ -125,7 +125,7 @@ private fun accelerate(
     initialSpeed: Double,
     startPosition: Double,
     builder: OverlayEnvelopeBuilder,
-    cursor: EnvelopeCursor
+    cursor: EnvelopeCursor,
 ) {
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr<EnvelopeProfile>(EnvelopeProfile.ACCELERATING)
@@ -133,7 +133,7 @@ private fun accelerate(
         ConstrainedEnvelopePartBuilder(
             partBuilder,
             SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-            EnvelopeConstraint(maxSpeedProfile, EnvelopePartConstraintType.CEILING)
+            EnvelopeConstraint(maxSpeedProfile, EnvelopePartConstraintType.CEILING),
         )
     EnvelopeAcceleration.accelerate(context, startPosition, initialSpeed, overlayBuilder, 1.0)
     cursor.findPosition(overlayBuilder.lastPos)
@@ -158,7 +158,7 @@ private fun accelerate(
 fun maxEffortEnvelopeFrom(
     context: EnvelopeSimContext,
     initialSpeed: Double,
-    maxSpeedProfile: Envelope
+    maxSpeedProfile: Envelope,
 ): Envelope {
     val maxEffortEnvelope =
         addAccelerationAndConstantSpeedParts(context, maxSpeedProfile, 0.0, initialSpeed)

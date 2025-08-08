@@ -53,7 +53,7 @@ object Helpers {
     fun getExampleElectricalProfiles(externalGeneratedInputsPath: String): RJSElectricalProfileSet {
         return deserializeResource(
             RJSElectricalProfileSet.adapter,
-            "infras/" + externalGeneratedInputsPath
+            "infras/" + externalGeneratedInputsPath,
         )
     }
 
@@ -136,7 +136,7 @@ object Helpers {
     fun convertRouteLocationToBlockLocation(
         infra: FullInfra,
         routeName: String,
-        offset: Offset<Route>
+        offset: Offset<Route>,
     ): PathfindingEdgeLocationId<Block> {
         var mutOffset = offset
         val blocks = getBlocksOnRoutes(infra, listOf(routeName))

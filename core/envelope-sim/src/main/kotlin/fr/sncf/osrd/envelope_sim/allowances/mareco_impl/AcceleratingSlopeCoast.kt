@@ -21,7 +21,7 @@ private constructor(
     /** Position where the train starts accelerating again until it reaches the max speed */
     private val accelerationStartPosition: Double,
     /** The start and end speed limit of the accelerating slope */
-    private val speedLimit: Double
+    private val speedLimit: Double,
 ) : CoastingOpportunity {
     /** Position where the coasting envelope should merge back into the base envelope */
     override var endPosition: Double = Double.NaN
@@ -87,7 +87,7 @@ private constructor(
             accelerationNextStep,
             accelerationPrevStep,
             position + positionStep,
-            position
+            position,
         )
     }
 
@@ -108,7 +108,7 @@ private constructor(
         base: Envelope,
         context: EnvelopeSimContext,
         v1: Double,
-        vf: Double
+        vf: Double,
     ): EnvelopePart? {
         // for constant speed limit accelerating slopes, compute the minimum speed v for this
         // coasting opportunity, coast backwards from the end of accelerating slope, limiting the
@@ -127,7 +127,7 @@ private constructor(
         fun findAll(
             envelope: Envelope,
             context: EnvelopeSimContext,
-            vf: Double
+            vf: Double,
         ): ArrayList<AcceleratingSlopeCoast> {
             val res = ArrayList<AcceleratingSlopeCoast>()
             val cursor = EnvelopeCursor.forward(envelope)
@@ -158,7 +158,7 @@ private constructor(
                             currentAcceleratingSlope = AcceleratingSlopeCoast(position, speed)
                         currentAcceleratingSlope.meanAccelerationBuilder.addSegment(
                             positionStep,
-                            naturalAcceleration
+                            naturalAcceleration,
                         )
                     } else if (currentAcceleratingSlope != null) {
                         // end the accelerating slope
@@ -167,7 +167,7 @@ private constructor(
                                 naturalAcceleration,
                                 previousAcceleration,
                                 position,
-                                previousPosition
+                                previousPosition,
                             )
                         res.add(currentAcceleratingSlope.build(endPos, context))
                         currentAcceleratingSlope = null // reset the accelerating slope
@@ -187,7 +187,7 @@ private constructor(
         private fun getNaturalAcceleration(
             context: EnvelopeSimContext,
             position: Double,
-            speed: Double
+            speed: Double,
         ): Double {
             return TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, 1.0)
                 .acceleration
@@ -198,7 +198,7 @@ private constructor(
             currentAcceleration: Double,
             previousAcceleration: Double,
             currentPosition: Double,
-            previousPosition: Double
+            previousPosition: Double,
         ): Double {
             assert(!isNaN(previousAcceleration))
             if (arePositionsEqual(currentPosition, previousPosition)) return currentPosition

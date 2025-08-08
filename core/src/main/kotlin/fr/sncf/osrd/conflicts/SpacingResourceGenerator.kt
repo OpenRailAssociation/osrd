@@ -42,7 +42,7 @@ data class PendingSpacingRequirement(
     val zoneIndex: Int,
     val zoneEntryOffset: Offset<BlockPath>,
     val zoneExitOffset: Offset<BlockPath>,
-    val beginTime: Double
+    val beginTime: Double,
 )
 
 data class ProcessedStop(
@@ -120,13 +120,7 @@ class SpacingRequirementAutomaton(
                     nextStopToProcess++
                     continue
                 }
-                processedStops.add(
-                    ProcessedStop(
-                        stopOffset,
-                        blockIndex + 1,
-                        nextZoneIdx,
-                    )
-                )
+                processedStops.add(ProcessedStop(stopOffset, blockIndex + 1, nextZoneIdx))
                 nextStopToProcess++
             }
         }
@@ -143,7 +137,7 @@ class SpacingRequirementAutomaton(
                 zoneIndex,
                 zoneEntryOffset,
                 zoneExitOffset,
-                zoneRequirementTime
+                zoneRequirementTime,
             )
         pendingRequirements.add(req)
     }
@@ -239,7 +233,7 @@ class SpacingRequirementAutomaton(
         probedZoneIndex: Int,
         pathSignal: PathSignal,
         routes: List<RouteId>,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean? {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
@@ -277,14 +271,14 @@ class SpacingRequirementAutomaton(
                 routes,
                 blocks.size,
                 zoneStates,
-                ZoneStatus.OCCUPIED
+                ZoneStatus.OCCUPIED,
             )
         val signalState = simulatedSignalStates[pathSignal.signal]!!
 
         return simulator.sigModuleManager.isConstraining(
             loadedSignalInfra.getSignalingSystem(pathSignal.signal),
             signalState,
-            trainState
+            trainState,
         )
     }
 
@@ -294,7 +288,7 @@ class SpacingRequirementAutomaton(
     private fun findFirstNonRequiredZoneIndex(
         pathSignal: PathSignal,
         routes: List<RouteId>,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Int? {
         // Check if more path is needed for a valid solution
         // (i.e. the zone after the end of the path is required)
@@ -335,7 +329,7 @@ class SpacingRequirementAutomaton(
 
         // Handle the case where the result is higher than the initial upper bound
         while (
-            lowerBound in initialUpperBound ..< lastZoneIndex &&
+            lowerBound in initialUpperBound..<lastZoneIndex &&
                 isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes, trainState)!!
         ) lowerBound++
         return lowerBound
@@ -445,7 +439,7 @@ class SpacingRequirementAutomaton(
                     envelope!!,
                     listOf(signalOffset),
                     listOf(isRouteDelimiter),
-                    EoaType.SPACING
+                    EoaType.SPACING,
                 )
                 .first()
         val curvesList = etcsSimulator.computeStopBrakingCurves(envelope, listOf(eoa))
@@ -467,7 +461,7 @@ class SpacingRequirementAutomaton(
 
     private fun addSightSignalRequirements(
         pathSignal: PathSignal,
-        routes: List<RouteId>
+        routes: List<RouteId>,
     ): SignalRequirementsCreationStatus {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
@@ -558,12 +552,7 @@ class SpacingRequirementAutomaton(
             isComplete = callbacks.simulationComplete
         }
 
-        return SpacingRequirement(
-            zone,
-            beginTime,
-            endTime,
-            isComplete,
-        )
+        return SpacingRequirement(zone, beginTime, endTime, isComplete)
     }
 
     fun clone(): SpacingRequirementAutomaton {

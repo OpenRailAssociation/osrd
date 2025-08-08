@@ -30,7 +30,7 @@ val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM
 private data class FixedTimePoint(
     val time: Double,
     val offset: Offset<TravelledPath>,
-    val stopTime: Double?
+    val stopTime: Double?,
 ) : Comparable<FixedTimePoint> {
     override fun compareTo(other: FixedTimePoint): Int {
         return offset.compareTo(other.offset)
@@ -79,7 +79,7 @@ fun buildFinalEnvelope(
             standardAllowance != null &&
                 standardAllowance.getAllowanceTime(
                     maxSpeedEnvelope.totalTime,
-                    pathLength.distance.meters
+                    pathLength.distance.meters,
                 ) > 0.0,
             updatedTimeData,
         )
@@ -90,12 +90,8 @@ fun buildFinalEnvelope(
             val newEnvelope =
                 runSimulationWithFixedPoints(maxSpeedEnvelope, fixedPoints, context, isMareco)
             val conflictOffset =
-                findConflictOffsets(
-                    newEnvelope,
-                    blockAvailability,
-                    edges,
-                    updatedTimeData,
-                ) ?: return newEnvelope
+                findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
+                    ?: return newEnvelope
             if (fixedPoints.any { it.offset == conflictOffset }) {
                 // Error case: a conflict prevents us from finding a solution,
                 // despite the exploration data identifying a valid opening.
@@ -121,7 +117,7 @@ fun buildFinalEnvelope(
             val newPoint =
                 makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength, updatedTimeData)
             postProcessingLogger.info(
-                "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint",
+                "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint"
             )
             fixedPoints.add(newPoint)
         } catch (e: OSRDError) {
@@ -222,15 +218,7 @@ private fun initFixedPoints(
     }
     for (offset in allowanceEndOffsets) {
         if (res.none { it.offset.distance == offset }) {
-            res.add(
-                makeFixedPoint(
-                    res,
-                    edges,
-                    Offset(offset),
-                    length,
-                    updatedTimeData,
-                )
-            )
+            res.add(makeFixedPoint(res, edges, Offset(offset), length, updatedTimeData))
         }
     }
     logger.info("initial fixed time points:")
@@ -272,7 +260,7 @@ private fun makeFixedPoint(
     return FixedTimePoint(
         getTimeOnEdges(edges, offset, updatedTimeData),
         offset,
-        if (stopDuration > 0) stopDuration else null
+        if (stopDuration > 0) stopDuration else null,
     )
 }
 
@@ -283,7 +271,7 @@ private fun makeFixedPoint(
 private fun roundOffset(
     edges: List<STDCMEdge>,
     offset: Offset<TravelledPath>,
-    roundToEnd: Boolean
+    roundToEnd: Boolean,
 ): Offset<TravelledPath> {
     var prevEdgesLength = Offset<TravelledPath>(0.meters)
     for (edge in edges) {
@@ -358,15 +346,9 @@ private fun findConflictOffsets(
 private fun getUpdatedExplorer(
     edges: List<STDCMEdge>,
     envelope: Envelope,
-    updatedTimeData: TimeData
+    updatedTimeData: TimeData,
 ): InfraExplorerWithEnvelope {
-    return edges
-        .last()
-        .infraExplorer
-        .withReplacedEnvelope(
-            envelope,
-        )
-        .updateTimeData(updatedTimeData)
+    return edges.last().infraExplorer.withReplacedEnvelope(envelope).updateTimeData(updatedTimeData)
 }
 
 /**
@@ -377,7 +359,7 @@ private fun runSimulationWithFixedPoints(
     envelope: Envelope,
     fixedPoints: TreeSet<FixedTimePoint>,
     context: EnvelopeSimContext,
-    isMareco: Boolean
+    isMareco: Boolean,
 ): Envelope {
     val ranges = makeAllowanceRanges(envelope, fixedPoints)
     if (ranges.isEmpty()) return envelope
@@ -387,7 +369,7 @@ private fun runSimulationWithFixedPoints(
                 0.0,
                 envelope.endPos,
                 1.0, // Needs to be >0 to avoid problems when simulating low speeds
-                ranges
+                ranges,
             )
         else LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
     return allowance.apply(envelope, context)
@@ -396,7 +378,7 @@ private fun runSimulationWithFixedPoints(
 /** Create the list of `AllowanceRange`, with the given fixed points */
 private fun makeAllowanceRanges(
     envelope: Envelope,
-    fixedPoints: TreeSet<FixedTimePoint>
+    fixedPoints: TreeSet<FixedTimePoint>,
 ): List<AllowanceRange> {
     var transition = 0.0
     var transitionTime = 0.0
@@ -413,7 +395,7 @@ private fun makeAllowanceRanges(
             AllowanceRange(
                 transition,
                 point.offset.distance.meters,
-                AllowanceValue.FixedTime(neededDelay)
+                AllowanceValue.FixedTime(neededDelay),
             )
         )
         prevAddedTime += neededDelay

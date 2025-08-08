@@ -32,7 +32,7 @@ class EnvelopePart(
     /** A list of N speeds, one per position. Must stay private. */
     private val speeds: DoubleArray,
     /** A list of N - 1 time deltas between positions. Must stay private. */
-    private val timeDeltas: DoubleArray
+    private val timeDeltas: DoubleArray,
 ) : SearchableEnvelope {
 
     /**
@@ -64,7 +64,7 @@ class EnvelopePart(
         attrs: Iterable<SelfTypeHolder>,
         positions: DoubleArray,
         speeds: DoubleArray,
-        timeDeltas: DoubleArray
+        timeDeltas: DoubleArray,
     ) : this(makeAttrs(attrs), positions, speeds, timeDeltas)
 
     /** Return the given metadata attribute */
@@ -260,7 +260,7 @@ class EnvelopePart(
             positions[stepIndex + 1],
             speeds[stepIndex],
             speeds[stepIndex + 1],
-            position - positions[stepIndex]
+            position - positions[stepIndex],
         )
     }
 
@@ -274,7 +274,7 @@ class EnvelopePart(
             positions[stepIndex + 1],
             speeds[stepIndex],
             speeds[stepIndex + 1],
-            position - positions[stepIndex]
+            position - positions[stepIndex],
         )
     }
 
@@ -288,7 +288,7 @@ class EnvelopePart(
             positions[stepIndex + 1],
             speeds[stepIndex],
             speeds[stepIndex + 1],
-            position - positions[stepIndex]
+            position - positions[stepIndex],
         )
     }
 
@@ -340,7 +340,7 @@ class EnvelopePart(
                     speedBegin,
                     stepEnd,
                     speedEnd,
-                    speed
+                    speed,
                 )
         }
         throw IllegalStateException("This should be unreachable.")
@@ -374,7 +374,7 @@ class EnvelopePart(
             beginSpeed,
             stepCount() - 1,
             Double.POSITIVE_INFINITY,
-            Double.NaN
+            Double.NaN,
         )
     }
 
@@ -387,7 +387,7 @@ class EnvelopePart(
         beginPosition: Double,
         beginSpeed: Double,
         endPosition: Double,
-        endSpeed: Double
+        endSpeed: Double,
     ): EnvelopePart? {
         var newBeginPos = beginPosition
         var newEndPos = endPosition
@@ -430,7 +430,7 @@ class EnvelopePart(
         beginStepIndex: Int,
         beginPosition: Double,
         endStepIndex: Int,
-        endPosition: Double
+        endPosition: Double,
     ): EnvelopePart? {
         return slice(
             beginStepIndex,
@@ -438,7 +438,7 @@ class EnvelopePart(
             Double.NaN,
             endStepIndex,
             endPosition,
-            Double.NaN
+            Double.NaN,
         )
     }
 
@@ -459,7 +459,7 @@ class EnvelopePart(
         beginSpeed: Double,
         endStepIndex: Int,
         endPosition: Double,
-        endSpeed: Double
+        endSpeed: Double,
     ): EnvelopePart? {
         var newBeginStepIndex = beginStepIndex
         var newBeginPos = beginPosition
@@ -522,7 +522,7 @@ class EnvelopePart(
     fun copyAndShift(
         positionDelta: Double,
         minPosition: Double,
-        maxPosition: Double
+        maxPosition: Double,
     ): EnvelopePart {
         val newPositions = DoubleArrayList()
         val newSpeeds = DoubleArrayList()
@@ -543,7 +543,7 @@ class EnvelopePart(
             HashMap(attrs),
             newPositions.toArray(),
             newSpeeds.toArray(),
-            newTimeDeltas.toArray()
+            newTimeDeltas.toArray(),
         )
     }
 
@@ -582,7 +582,7 @@ class EnvelopePart(
         fun generateTimes(
             attrs: Iterable<SelfTypeHolder>,
             positions: DoubleArray,
-            speeds: DoubleArray
+            speeds: DoubleArray,
         ): EnvelopePart {
             return EnvelopePart(attrs, positions, speeds, computeTimes(positions, speeds))
         }
@@ -632,7 +632,7 @@ class EnvelopePart(
                         positions[i + 1],
                         speeds[i],
                         speeds[i + 1],
-                        posDelta
+                        posDelta,
                     )
             }
             return timeDeltas
@@ -654,7 +654,7 @@ class EnvelopePart(
 fun minEnvelopeParts(
     envelopePartA: EnvelopePart,
     envelopePartB: EnvelopePart,
-    attrs: Iterable<SelfTypeHolder>
+    attrs: Iterable<SelfTypeHolder>,
 ): EnvelopePart {
     assert(envelopePartA.beginPos == envelopePartB.beginPos)
     assert(envelopePartA.endPos == envelopePartB.endPos)
@@ -685,7 +685,7 @@ fun minEnvelopeParts(
                         prevPos,
                         prevSpeedB,
                         pos,
-                        speedB
+                        speedB,
                     )
                 // Add intersection point if it isn't either the previous or the current position.
                 if (

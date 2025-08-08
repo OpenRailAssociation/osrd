@@ -27,7 +27,7 @@ class PathfindingTests {
         data class Edge(
             val length: Length<Edge>,
             val label: String,
-            val blockedRanges: Set<Pathfinding.Range<Edge>>
+            val blockedRanges: Set<Pathfinding.Range<Edge>>,
         )
 
         class Node
@@ -51,7 +51,7 @@ class PathfindingTests {
             n1: Int,
             n2: Int,
             length: Distance,
-            blockedRanges: Set<Pathfinding.Range<Edge>> = setOf()
+            blockedRanges: Set<Pathfinding.Range<Edge>> = setOf(),
         ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
@@ -97,7 +97,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("3-4"))
+                        listOf(builder.getEdgeLocation("3-4")),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -126,7 +126,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("3-4"))
+                        listOf(builder.getEdgeLocation("3-4")),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -181,7 +181,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("5-6"))
+                        listOf(builder.getEdgeLocation("5-6")),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -212,7 +212,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("2-3"), builder.getEdgeLocation("5-6"))
+                        listOf(builder.getEdgeLocation("2-3"), builder.getEdgeLocation("5-6")),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -240,7 +240,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -265,7 +265,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("0-1"))
+                        listOf(builder.getEdgeLocation("0-1")),
                     )
                 )
         Assertions.assertNull(res)
@@ -290,7 +290,7 @@ class PathfindingTests {
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
                         listOf(builder.getEdgeLocation("2-3", 20.meters)),
-                        listOf(builder.getEdgeLocation("2-3", 10.meters))
+                        listOf(builder.getEdgeLocation("2-3", 10.meters)),
                     )
                 )
         Assertions.assertNull(res)
@@ -312,7 +312,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 30.meters))
+                        listOf(builder.getEdgeLocation("0-1", 30.meters)),
                     )
                 )
         Assertions.assertNull(res)
@@ -363,7 +363,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 30.meters))
+                        listOf(builder.getEdgeLocation("0-1", 30.meters)),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -395,17 +395,17 @@ class PathfindingTests {
                         listOf(builder.getEdgeLocation("0-1")),
                         listOf(
                             builder.getEdgeLocation("2-3", 500.meters),
-                            builder.getEdgeLocation("4-5", 10.meters)
-                        )
+                            builder.getEdgeLocation("4-5", 10.meters),
+                        ),
                     )
                 )!!
         Assertions.assertEquals(
             listOf(
                 SimpleRange("0-1", Offset(0.meters), Offset(0.meters)),
                 SimpleRange("1-4", Offset(0.meters), Offset(100.meters)),
-                SimpleRange("4-5", Offset(0.meters), Offset(10.meters))
+                SimpleRange("4-5", Offset(0.meters), Offset(10.meters)),
             ),
-            convertRes(res)
+            convertRes(res),
         )
     }
 
@@ -434,7 +434,7 @@ class PathfindingTests {
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 5.meters)),
                         listOf(builder.getEdgeLocation("4-5", 5.meters)),
-                        listOf(builder.getEdgeLocation("2-3", 5.meters))
+                        listOf(builder.getEdgeLocation("2-3", 5.meters)),
                     )
                 )!!
         Assertions.assertEquals(
@@ -443,9 +443,9 @@ class PathfindingTests {
                 SimpleRange("1-4", Offset(0.meters), Offset(1000.meters)),
                 SimpleRange("4-5", Offset(0.meters), Offset(10.meters)),
                 SimpleRange("5-2", Offset(0.meters), Offset(1000.meters)),
-                SimpleRange("2-3", Offset(0.meters), Offset(5.meters))
+                SimpleRange("2-3", Offset(0.meters), Offset(5.meters)),
             ),
-            convertRes(res)
+            convertRes(res),
         )
     }
 
@@ -466,7 +466,7 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters)))
+            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters))),
         )
         builder.makeEdge(1, 4, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
@@ -480,7 +480,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
-                        listOf(builder.getEdgeLocation("4-5"))
+                        listOf(builder.getEdgeLocation("4-5")),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -499,7 +499,7 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters)))
+            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters))),
         )
         val g = builder.build()
         val res =
@@ -509,7 +509,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 5.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 7.meters))
+                        listOf(builder.getEdgeLocation("0-1", 7.meters)),
                     )
                 )
         Assertions.assertNull(res)
@@ -529,8 +529,8 @@ class PathfindingTests {
             100.meters,
             setOf(
                 Pathfinding.Range(Offset(0.meters), Offset(30.meters)),
-                Pathfinding.Range(Offset(70.meters), Offset(100.meters))
-            )
+                Pathfinding.Range(Offset(70.meters), Offset(100.meters)),
+            ),
         )
         val g = builder.build()
         val res =
@@ -540,7 +540,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 40.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 50.meters))
+                        listOf(builder.getEdgeLocation("0-1", 50.meters)),
                     )
                 )
         Assertions.assertNotNull(res)
@@ -559,7 +559,7 @@ class PathfindingTests {
             1,
             2,
             100.meters,
-            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters)))
+            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters))),
         )
         val g = builder.build()
         val res =
@@ -569,7 +569,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
                     )
                 )
         Assertions.assertNotNull(res)
@@ -588,7 +588,7 @@ class PathfindingTests {
             1,
             2,
             100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters)))
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
         )
         val g = builder.build()
         val res =
@@ -598,7 +598,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
-                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                        listOf(builder.getEdgeLocation("1-2", 50.meters)),
                     )
                 )
         Assertions.assertNull(res)
@@ -616,7 +616,7 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters)))
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
         )
         val g = builder.build()
         val res =
@@ -627,9 +627,9 @@ class PathfindingTests {
                     listOf(
                         listOf(
                             builder.getEdgeLocation("0-1", 10.meters),
-                            builder.getEdgeLocation("0-1", 40.meters)
+                            builder.getEdgeLocation("0-1", 40.meters),
                         ),
-                        listOf(builder.getEdgeLocation("0-1", 50.meters))
+                        listOf(builder.getEdgeLocation("0-1", 50.meters)),
                     )
                 )
         Assertions.assertNotNull(res)
@@ -651,8 +651,8 @@ class PathfindingTests {
             100.meters,
             setOf(
                 Pathfinding.Range(Offset(10.meters), Offset(50.meters)),
-                Pathfinding.Range(Offset(30.meters), Offset(80.meters))
-            )
+                Pathfinding.Range(Offset(30.meters), Offset(80.meters)),
+            ),
         )
         val g = builder.build()
         val res =
@@ -662,7 +662,7 @@ class PathfindingTests {
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 55.meters)),
-                        listOf(builder.getEdgeLocation("0-1", 60.meters))
+                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
                     )
                 )
         Assertions.assertNull(res)
@@ -689,12 +689,12 @@ class PathfindingTests {
                     listOf(
                         listOf(
                             builder.getEdgeLocation("0-1", 5000.meters),
-                            builder.getEdgeLocation("2-3")
+                            builder.getEdgeLocation("2-3"),
                         ),
                         listOf(
                             builder.getEdgeLocation("0-1", 6999.meters),
-                            builder.getEdgeLocation("4-5", 1000.meters)
-                        )
+                            builder.getEdgeLocation("4-5", 1000.meters),
+                        ),
                     )
                 )
         val resIDs = res!!.stream().map { x -> x!!.label }.toList()
@@ -764,9 +764,7 @@ class PathfindingTests {
                             EdgeLocation(slow, Offset(0.meters)),
                             EdgeLocation(fast, Offset(0.meters)),
                         ),
-                        listOf(
-                            EdgeLocation(secondBlock, Offset(0.meters)),
-                        )
+                        listOf(EdgeLocation(secondBlock, Offset(0.meters))),
                     )
                 )
         Assertions.assertEquals(listOf(fast, secondBlock), res)

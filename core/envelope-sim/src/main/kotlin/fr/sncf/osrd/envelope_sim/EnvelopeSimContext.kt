@@ -34,7 +34,7 @@ constructor(
          * List of block-delimiting detectors (block entry/exit) offsets for every ETCS-block on the
          * path. Starts at the start of the path, can end after the end of the path.
          */
-        val detectorOffsets: List<Offset<TravelledPath>>
+        val detectorOffsets: List<Offset<TravelledPath>>,
     ) {
         /**
          * Returns the next danger point location: next buffer stop or switch, whichever is closest.
