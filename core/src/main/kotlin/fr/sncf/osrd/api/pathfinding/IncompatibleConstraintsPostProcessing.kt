@@ -2,6 +2,7 @@ package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingResultId
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
@@ -12,7 +13,6 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.filterIntersection
-import fr.sncf.osrd.utils.makePathProps
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
@@ -31,7 +31,7 @@ fun buildIncompatibleConstraintsResponse(
 
     val pathRanges = possiblePathWithoutErrorNoConstraints.ranges
     val pathProps =
-        makePathProps(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge }, Offset.zero())
+        buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge })
 
     val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()
     assert(elecConstraints.size < 2)

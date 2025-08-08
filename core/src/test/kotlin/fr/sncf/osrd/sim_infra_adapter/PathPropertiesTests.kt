@@ -3,7 +3,7 @@ package fr.sncf.osrd.sim_infra_adapter
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.parseRJSInfra
-import fr.sncf.osrd.path.implementations.buildTrainPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
@@ -495,7 +495,13 @@ class PathPropertiesTests {
             )
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val path = buildTrainPath(infra.rawInfra, infra.blockInfra, BlockId(0U), routes = listOf())
+        val path =
+            buildTrainPathFromBlock(
+                infra.rawInfra,
+                infra.blockInfra,
+                BlockId(0U),
+                routes = listOf(),
+            )
         val speedLimits = path.getSpeedLimitProperties("trainTag", null)
         assertThat(speedLimits.asList())
             .containsExactlyElementsOf(
@@ -537,7 +543,7 @@ class PathPropertiesTests {
         val routeName = "rt.DH2->buffer_stop.7"
         val blocks = Helpers.getBlocksOnRoutes(infra, listOf(routeName))
         val path =
-            buildTrainPath(
+            buildTrainPathFromBlock(
                 infra.rawInfra,
                 infra.blockInfra,
                 blocks.last(),

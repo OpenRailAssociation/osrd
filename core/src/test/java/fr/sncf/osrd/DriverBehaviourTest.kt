@@ -1,13 +1,12 @@
 package fr.sncf.osrd
 
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.makePathProps
-import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -22,7 +21,7 @@ class DriverBehaviourTest {
                 infra.addBlock("b", "c", 100.meters, 10.0),
                 infra.addBlock("c", "d", 100.meters, 20.0),
             )
-        val path: PathProperties = makePathProps(infra, infra, blocks, Length(0.meters), listOf())
+        val path: PathProperties = buildTrainPathFromBlocks(infra, infra, blocks, routes = listOf())
         val testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN
         val driverBehaviour = DriverBehaviour(2.0, 3.0)
         var mrsp = computeMRSP(path, testRollingStock, true, null, null)
