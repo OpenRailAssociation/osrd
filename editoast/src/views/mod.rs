@@ -167,7 +167,6 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/lock", post!(infra::lock))
                             .route("/match_operational_points", post!(infra::match_operational_points))
                             .route("/path_properties", post!(path::properties::post))
-                            .route("/pathfinding", post!(infra::pathfinding::pathfinding_view))
                             .route("/railjson", get!(infra::railjson::get_railjson))
                             .route("/speed_limit_tags", get!(infra::get_speed_limit_tags))
                             .route("/split_track_section", post!(infra::edition::split_track_section))
@@ -175,20 +174,19 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/unlock", post!(infra::unlock))
                             .route("/voltages", get!(infra::get_voltages))
                             .route("/attached/{track_id}", get!(infra::attached::attached))
-                            .nests("/lines", |path| {
-                                path.route("/{line_code}/bbox", get!(infra::lines::get_line_bbox))
-                            })
-                            .nests("/objects", |path| {
-                                path.route("/{object_type}", post!(infra::objects::get_objects))
-                                    .route("/{object_type}/ids", get!(infra::objects::list_objects_ids))
+                            .route("/lines/{line_code}/bbox",  get!(infra::lines::get_line_bbox))
+                            .nests("/pathfinding", |path| {
+                                path.route("/", post!(infra::pathfinding::pathfinding_view))
+                                    .route("/blocks", post!(path::pathfinding::post))
                             })
                             .nests("/routes", |path| {
                                 path.route("/nodes", post!(infra::routes::get_routes_nodes))
                                     .route("/track_ranges", get!(infra::routes::get_routes_track_ranges))
                                     .route("/{waypoint_type}/{waypoint_id}", get!(infra::routes::get_routes_from_waypoint))
                             })
-                            .nests("/pathfinding", |path| {
-                                path.route("/blocks", post!(path::pathfinding::post))
+                            .nests("/objects/{object_type}", |path| {
+                                path.route("/", post!(infra::objects::get_objects))
+                                    .route("/ids", get!(infra::objects::list_objects_ids))
                             })
                     })
             })
@@ -205,12 +203,8 @@ fn service_router() -> router::DocumentedRouter {
                                     .route("/", post!(timetable::post_paced_train))
                             })
                             .nests("/round_trips", |path| {
-                                path.nests("/train_schedules", |path| {
-                                    path.route("/", get!(round_trips::list_train_schedules))
-                                })
-                                .nests("/paced_trains", |path| {
-                                    path.route("/", get!(round_trips::list_paced_trains))
-                                })
+                                path.route("/paced_trains", get!(round_trips::list_paced_trains))
+                                    .route("/train_schedules", get!(round_trips::list_train_schedules))
                             })
                             .nests("/train_schedules", |path| {
                                 path.route("/", get!(timetable::get_train_schedules))
