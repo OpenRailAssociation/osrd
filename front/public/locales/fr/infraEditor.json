@@ -360,17 +360,33 @@
       },
       "exe": {
         "description": "Début des bp/cc zone neutre"
+      },
+      "rev": {
+        "description": "REV de la section neutre bp/cc",
+        "title": "Rev"
       }
-    }
+    },
+    "title": "Extension SNCF de la section neutre"
   },
   "OperationalPoint": {
     "description": "Décrit les points remarquables de l’infrastructure correspondante.",
     "properties": {
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "parts": {
         "title": "Parties de point remarquable"
+      },
+      "weight": {
+        "description": "représente l'importance du PR",
+        "title": "Poids"
       }
     },
     "title": "Point remarquable"
+  },
+  "OperationalPointExtensions": {
+    "title": "Extensions du point remarquable"
   },
   "OperationalPointIdentifierExtension": {
     "properties": {
@@ -382,7 +398,8 @@
         "description": "Code UIC",
         "title": "Code UIC"
       }
-    }
+    },
+    "title": "Extension de l'identifiant du point remarquable"
   },
   "OperationalPointPart": {
     "description": "Une partie de point remarquable correspond à un point unique sur l’infrastructure qui fait partie du point remarquable.",
@@ -398,13 +415,17 @@
     },
     "title": "Partie de point remarquable"
   },
+  "OperationalPointPartExtensions": {
+    "title": "Extensions du point remarquable"
+  },
   "OperationalPointPartSncfExtension": {
     "properties": {
       "kp": {
         "description": "Point kilométrique de la partie du point remarquable",
         "title": "PK"
       }
-    }
+    },
+    "title": "Extension SNCF d'une partie de point remarquable"
   },
   "OperationalPointSncfExtension": {
     "properties": {
@@ -428,7 +449,8 @@
         "description": "Identifiant unique d’un point remarquable, composé de trois lettres et propre à la SNCF.",
         "title": "Trigramme"
       }
-    }
+    },
+    "title": "Extension SNCF d'un point remarquable"
   },
   "Route": {
     "description": "Décrit des itinéraires sur l’infrastructure.",
@@ -441,6 +463,10 @@
       },
       "exit_point": {
         "title": "Point de sortie"
+      },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
       },
       "release_detectors": {
         "description": "Détecteur autorisant la libération des ressources réservées depuis le début de l’itinéraire",
@@ -463,6 +489,9 @@
       "angle": {
         "description": "Angle (en degrés)",
         "title": "Angle"
+      },
+      "direction": {
+        "description": "Orientation du panneau sur la piste"
       },
       "kp": {
         "description": "Point kilométrique du panneau",
@@ -496,6 +525,10 @@
       "direction": {
         "description": "Orientation du signal"
       },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
+      },
       "linked_detector": {
         "description": "Identifiant du détecteur lié au signal",
         "title": "Détecteur lié"
@@ -519,6 +552,9 @@
     },
     "title": "Signal"
   },
+  "SignalExtensions": {
+    "title": "Extensions du signal"
+  },
   "SignalSncfExtension": {
     "properties": {
       "kp": {
@@ -540,7 +576,8 @@
       "value": {
         "title": "Valeur"
       }
-    }
+    },
+    "title": "Extension SNCF du signal"
   },
   "SignalingSystem": {
     "title": "Système de signalisation"
@@ -566,6 +603,14 @@
   "SpeedSection": {
     "description": "Les limitations de vitesse sont repérables par leurs identifiants (en mètres par seconde).",
     "properties": {
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
+      },
+      "on_routes": {
+        "description": "Liste des itinéraires sur lesquels la limitation de vitesse est appliquée.\nSi le champ est vide ou nul, la limitation de vitesse est appliquée quel que soit l'itinéraire.",
+        "title": "Sur les itinéraires"
+      },
       "speed_limit": {
         "description": "Vitesse limite par défaut des trains qui ne sont dans aucune catégorie spécifique (en mètres par seconde).",
         "title": "Vitesse limite"
@@ -580,6 +625,9 @@
       }
     },
     "title": "Limitation de vitesse"
+  },
+  "SpeedSectionExtensions": {
+    "title": "Extensions de la vitesse limite"
   },
   "SpeedSectionPslSncfExtension": {
     "properties": {
@@ -604,6 +652,10 @@
         "description": "Temps nécessaire pour changer la configuration d’une aiguille.",
         "title": "Délai de changement de configuration d’un groupe d’aiguilles"
       },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
+      },
       "ports": {
         "description": "Emplacement des différentes branches selon des sections de voie",
         "title": "Branches de l’aiguille"
@@ -614,6 +666,9 @@
       }
     },
     "title": "Aiguille"
+  },
+  "SwitchExtensions": {
+    "title": "Extensions de l'aiguille"
   },
   "SwitchPortConnection": {
     "description": "Connexion entre chaque branche d’un type d’aiguille. Elle est toujours bidirectionnelle.",
@@ -645,6 +700,10 @@
         "description": "Groupe de connexion de branches",
         "title": "Groupes"
       },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Id"
+      },
       "ports": {
         "description": "Liste des branches d’une aiguille. Les branches correspondent aux extrémités des aiguilles.",
         "title": "Branches de l’aiguille"
@@ -672,6 +731,13 @@
         "description": "Liste des courbes de la section de voie",
         "title": "Courbes"
       },
+      "geo": {
+        "description": "Coordonnées géographiques de l'objet correspondant"
+      },
+      "id": {
+        "description": "Identifiant unique de l'objet",
+        "title": "Identifiant"
+      },
       "length": {
         "description": "Longueur de la section de voie (en mètres)",
         "title": "Longueur"
@@ -686,6 +752,9 @@
       }
     },
     "title": "Section de voie"
+  },
+  "TrackSectionExtensions": {
+    "title": "Extensions de la section de voie"
   },
   "TrackSectionSncfExtension": {
     "properties": {
@@ -705,7 +774,8 @@
         "description": "Numéro correspondant à la section de voie utilisée",
         "title": "Numéro de la section de voie"
       }
-    }
+    },
+    "title": "Extension SNCF de la section de voie"
   },
   "TrackSectionSourceExtension": {
     "properties": {
@@ -717,7 +787,52 @@
         "description": "Nom de la source",
         "title": "Nom"
       }
-    }
+    },
+    "title": "Extension origine de la section de voie"
+  },
+  "Tvm300System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "Paramètres du signal TVM pour des itinéraires spécifiques",
+        "title": "Paramètres conditionnels"
+      },
+      "default_parameters": {
+        "description": "Paramètres du signal TVM"
+      },
+      "next_signaling_systems": {
+        "description": "La liste des systèmes de signalisation d'entrée autorisés",
+        "title": "Systèmes de signalisation suivants"
+      },
+      "settings": {
+        "description": "Paramètres du signal TVM"
+      },
+      "signaling_system": {
+        "title": "Système de signalisation"
+      }
+    },
+    "title": "Système Tvm300"
+  },
+  "Tvm430System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "Paramètres du signal TVM pour des itinéraires spécifiques",
+        "title": "Paramètres conditionnels"
+      },
+      "default_parameters": {
+        "description": "Paramètres du signal TVM"
+      },
+      "next_signaling_systems": {
+        "description": "La liste des systèmes de signalisation d'entrée autorisés",
+        "title": "Systèmes de signalisation suivants"
+      },
+      "settings": {
+        "description": "Paramètres du signal TVM"
+      },
+      "signaling_system": {
+        "title": "Système de signalisation"
+      }
+    },
+    "title": "Système Tvm430"
   },
   "TvmSystem": {
     "properties": {
@@ -759,6 +874,21 @@
     },
     "title": "Paramètres BAL"
   },
+  "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire pour lequel ces paramètres sont actifs",
+        "title": "Itinéraire"
+      },
+      "parameters": {
+        "description": "Paramètre de signal BAPR"
+      }
+    },
+    "title": "Paramètres conditionnels"
+  },
+  "__main____BaprSystem__Parameters": {
+    "title": "Paramètres"
+  },
   "__main____BaprSystem__Settings": {
     "properties": {
       "Nf": {
@@ -769,6 +899,60 @@
       }
     },
     "title": "Paramètres BAPR"
+  },
+  "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire pour lequel ces paramètres sont actifs",
+        "title": "Itinéraire"
+      },
+      "parameters": {
+        "description": "Paramètres du signal ETCS_LEVEL2"
+      }
+    },
+    "title": "Paramètres conditionnels"
+  },
+  "__main____EtcsLevel2System__Parameters": {
+    "title": "Paramètres"
+  },
+  "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Signal non franchissable"
+      }
+    },
+    "title": "Paramètres"
+  },
+  "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire pour lequel ces paramètres sont actifs",
+        "title": "Itinéraire"
+      },
+      "parameters": {
+        "description": "Paramètres du signal TVM300"
+      }
+    },
+    "title": "Paramètres conditionnels"
+  },
+  "__main____Tvm300System__Parameters": {
+    "title": "Paramètres"
+  },
+  "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Signal non franchissable"
+      }
+    },
+    "title": "Paramètres"
+  },
+  "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire pour lequel ces paramètres sont actifs",
+        "title": "Itinéraire"
+      }
+    }
   },
   "__main____TvmSystem__Settings": {
     "properties": {
