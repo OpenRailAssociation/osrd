@@ -185,10 +185,10 @@
       "closeFilter": "Fermer le filtre",
       "copy": "copie",
       "delete": "Supprimer",
-      "deletePacedTrainAndTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) et $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
-      "deletePacedTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) ?",
+      "deletePacedTrainAndTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) et $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deletePacedTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.pacedTrain, { 'count': {{selectedPacedTrainsCount}} }) ?",
       "deleteSelection": "Supprimer les trains sélectionnés",
-      "deleteTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
+      "deleteTrainSelectionConfirmation": "Confirmez-vous la suppression de $t(main.train, { 'count': {{selectedTrainSchedulesCount}} }) ?",
       "duplicate": "Dupliquer",
       "exportSelection": "Exporter les trains sélectionnés",
       "filterLabel": "Nom, étiquette",
@@ -232,7 +232,7 @@
       "pacedTrainAdded": "Mission ajoutée",
       "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",
       "punctuality": "Ponctualité",
-      "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission?",
+      "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission ?",
       "resetExceptions": "Réinitialiser les exceptions",
       "rollingStockFilterPlaceholder": "Famille, détail, série",
       "selectAll": "Tout sélectionner",
@@ -288,7 +288,7 @@
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
-      "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute",
+      "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute.",
       "noDepartureTime": "Veuillez renseigner une heure de départ",
       "noDestination": "La destination n'est pas définie",
       "noName": "Veuillez choisir un nom pour le train",
@@ -350,7 +350,7 @@
       "departureDay": "Jour de départ",
       "departureTime": "Heure de départ",
       "interval": "Cadence de la mission",
-      "resetExceptionsConfirmation": "La modification de la cadence/durée de la mission réinitialisera les exceptions. Voulez-vous continuer?",
+      "resetExceptionsConfirmation": "La modification de la cadence/durée de la mission réinitialisera les exceptions. Voulez-vous continuer ?",
       "timeWindow": "Durée de la plage de répétition"
     },
     "pathfinding": "Recherche d’itinéraire",
@@ -504,10 +504,10 @@
       "waypointsVisibility": "Modifier la visibilité des PRs"
     },
     "powerRestriction": {
-      "incompatible": "Restriction de puissance incompatible",
+      "incompatible": "Restriction de puissance incompatible ",
       "used": "utilisée"
     },
-    "projectionInProgress": "Projection en cours: {{ count }}/{{ total }} trains",
+    "projectionInProgress": "Projection en cours : {{ count }}/{{ total }} trains",
     "simulationSheet": "Fiche de simulation",
     "speedSpaceChart": "Graphique Espace Vitesse",
     "speedSpaceSettings": {
